@@ -2,6 +2,7 @@
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import ArtStylesGallery from "@/components/ArtStylesGallery";
+import InteractiveDemo from "@/components/InteractiveDemo";
 
 const Index = () => {
   return (
@@ -9,6 +10,7 @@ const Index = () => {
       <Header />
       <Hero />
       <ArtStylesGallery />
+      <InteractiveDemo />
     </div>
   );
 };
