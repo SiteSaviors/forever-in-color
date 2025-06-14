@@ -6,6 +6,7 @@ import HowItWorks from "@/components/HowItWorks";
 import InteractiveDemo from "@/components/InteractiveDemo";
 import Testimonials from "@/components/Testimonials";
 import Pricing from "@/components/Pricing";
+import FAQ from "@/components/FAQ";
 
 const Index = () => {
   return (
@@ -17,6 +18,7 @@ const Index = () => {
       <InteractiveDemo />
       <Testimonials />
       <Pricing />
+      <FAQ />
     </div>
   );
 };
