@@ -4,6 +4,7 @@ import Hero from "@/components/Hero";
 import ArtStylesGallery from "@/components/ArtStylesGallery";
 import HowItWorks from "@/components/HowItWorks";
 import InteractiveDemo from "@/components/InteractiveDemo";
+import Testimonials from "@/components/Testimonials";
 
 const Index = () => {
   return (
@@ -13,6 +14,7 @@ const Index = () => {
       <ArtStylesGallery />
       <HowItWorks />
       <InteractiveDemo />
+      <Testimonials />
     </div>
   );
 };
