@@ -1,13 +1,21 @@
+
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
+
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  return <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100">
+
+  return (
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 my-[9px]">
         <div className="flex items-center justify-between h-16 py-0">
           {/* Logo */}
           <div className="flex items-center">
-            <img src="/lovable-uploads/ba672515-a01f-4297-afc3-57592598b1cd.png" alt="Forever In Color" className="h-10 w-auto object-fill" />
+            <img 
+              src="/lovable-uploads/ba672515-a01f-4297-afc3-57592598b1cd.png" 
+              alt="Forever In Color" 
+              className="h-20 w-auto object-fill" 
+            />
           </div>
 
           {/* Desktop Navigation */}
@@ -36,7 +44,8 @@ const Header = () => {
         </div>
 
         {/* Mobile Navigation */}
-        {isMenuOpen && <div className="md:hidden py-4 border-t border-gray-100">
+        {isMenuOpen && (
+          <div className="md:hidden py-4 border-t border-gray-100">
             <nav className="flex flex-col space-y-4">
               <a href="#styles" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium">
                 Art Styles
@@ -54,8 +63,11 @@ const Header = () => {
                 Create Art
               </button>
             </nav>
-          </div>}
+          </div>
+        )}
       </div>
-    </header>;
+    </header>
+  );
 };
+
 export default Header;
