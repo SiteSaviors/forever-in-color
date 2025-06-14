@@ -2,6 +2,7 @@
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import ArtStylesGallery from "@/components/ArtStylesGallery";
+import HowItWorks from "@/components/HowItWorks";
 import InteractiveDemo from "@/components/InteractiveDemo";
 
 const Index = () => {
@@ -10,6 +11,7 @@ const Index = () => {
       <Header />
       <Hero />
       <ArtStylesGallery />
+      <HowItWorks />
       <InteractiveDemo />
     </div>
   );
