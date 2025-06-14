@@ -1,5 +1,5 @@
 
-import { Heart, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useState } from "react";
 
 const Header = () => {
@@ -10,11 +10,12 @@ const Header = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-pink-500 via-purple-500 to-blue-500 rounded-full flex items-center justify-center">
-              <Heart className="w-5 h-5 text-white fill-white" />
-            </div>
-            <span className="text-xl font-bold text-gray-900">Forever In Color</span>
+          <div className="flex items-center">
+            <img 
+              src="/lovable-uploads/ba672515-a01f-4297-afc3-57592598b1cd.png" 
+              alt="Forever In Color" 
+              className="h-10 w-auto"
+            />
           </div>
 
           {/* Desktop Navigation */}
