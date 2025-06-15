@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -16,7 +15,8 @@ const ArtStylesGallery = () => {
       name: "Neon Synthwave",
       description: "Retro-futuristic vibes with electric colors and cyberpunk aesthetics",
       colors: ["from-pink-500", "via-purple-600", "to-cyan-400"],
-      popular: true
+      popular: true,
+      image: "/lovable-uploads/a1b70065-4181-40bc-9dca-1ebaa1352981.png"
     },
     {
       id: 2,
@@ -116,15 +116,25 @@ const ArtStylesGallery = () => {
                     <CardContent className="p-0 h-full flex flex-col">
                       {/* Style Preview */}
                       <div className="relative h-80 overflow-hidden">
-                        <div className={`absolute inset-0 bg-gradient-to-br ${style.colors.join(' ')} opacity-90`}></div>
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="text-center text-white space-y-2">
-                            <div className="w-20 h-20 border-4 border-white/50 rounded-full flex items-center justify-center mx-auto">
-                              <div className="w-12 h-12 bg-white/30 rounded-full"></div>
+                        {style.image ? (
+                          <img 
+                            src={style.image} 
+                            alt={style.name}
+                            className="absolute inset-0 w-full h-full object-cover"
+                          />
+                        ) : (
+                          <>
+                            <div className={`absolute inset-0 bg-gradient-to-br ${style.colors.join(' ')} opacity-90`}></div>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div className="text-center text-white space-y-2">
+                                <div className="w-20 h-20 border-4 border-white/50 rounded-full flex items-center justify-center mx-auto">
+                                  <div className="w-12 h-12 bg-white/30 rounded-full"></div>
+                                </div>
+                                <p className="text-sm font-medium opacity-90">Photo Transform</p>
+                              </div>
                             </div>
-                            <p className="text-sm font-medium opacity-90">Photo Transform</p>
-                          </div>
-                        </div>
+                          </>
+                        )}
                         
                         {/* Popular Badge */}
                         {style.popular && (
