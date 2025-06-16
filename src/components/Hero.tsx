@@ -1,4 +1,3 @@
-
 import { ArrowRight, Heart, Sparkles, Camera, Play } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
@@ -158,8 +157,8 @@ const Hero = () => {
                 </div>
               </div>
 
-              {/* Frame 4 - Bottom Left Position - NEW */}
-              <div className="absolute -left-8 sm:-left-12 top-48 sm:top-56 transform -rotate-6 z-15">
+              {/* Frame 4 - Bottom Left Position - MOVED DOWN */}
+              <div className="absolute -left-8 sm:-left-12 top-60 sm:top-72 transform -rotate-6 z-15">
                 <div className="bg-white rounded-3xl shadow-2xl p-3 sm:p-4 w-36 h-44 sm:w-48 sm:h-56">
                   <div className="aspect-square bg-gradient-to-br from-green-200 via-emerald-200 to-teal-200 rounded-2xl mb-3 overflow-hidden">
                     <div className="w-full h-full bg-gradient-to-br from-green-300 to-teal-400 rounded-2xl flex items-center justify-center">
@@ -177,8 +176,8 @@ const Hero = () => {
                 </div>
               </div>
 
-              {/* Frame 5 - Bottom Right Position - NEW */}
-              <div className="absolute -right-8 sm:-right-12 top-48 sm:top-56 transform rotate-6 z-15">
+              {/* Frame 5 - Bottom Right Position - MOVED DOWN */}
+              <div className="absolute -right-8 sm:-right-12 top-60 sm:top-72 transform rotate-6 z-15">
                 <div className="bg-white rounded-3xl shadow-2xl p-3 sm:p-4 w-36 h-44 sm:w-48 sm:h-56">
                   <div className="aspect-square bg-gradient-to-br from-amber-200 via-orange-200 to-yellow-200 rounded-2xl mb-3 overflow-hidden">
                     <div className="w-full h-full bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center">
