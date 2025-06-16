@@ -1,17 +1,22 @@
 
-import { Menu, X, Search, ShoppingCart, User } from "lucide-react";
+import { Menu, X, Search, ShoppingCart, User, Settings } from "lucide-react";
 import { useState } from "react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Slider } from "@/components/ui/slider";
+import { Label } from "@/components/ui/label";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [logoMarginLeft, setLogoMarginLeft] = useState(-32); // -ml-8 = -32px
+  const [showSpacingControls, setShowSpacingControls] = useState(false);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100">
       <div className="w-full px-12 lg:px-20 xl:px-24 my-[9px]">
         <div className="flex items-center h-16 py-0">
           {/* Logo - Far Left */}
-          <div className="flex items-center w-1/3 -ml-8">
+          <div className="flex items-center w-1/3" style={{ marginLeft: `${logoMarginLeft}px` }}>
             <img 
               src="/lovable-uploads/9e8397a4-ee91-45c4-b9ff-81b938018dd3.png" 
               alt="Forever In Color" 
@@ -39,6 +44,42 @@ const Header = () => {
 
           {/* Desktop Actions - Far Right */}
           <div className="hidden md:flex items-center justify-end space-x-8 w-1/3">
+            {/* Spacing Controls */}
+            <Popover open={showSpacingControls} onOpenChange={setShowSpacingControls}>
+              <PopoverTrigger asChild>
+                <button className="p-2 text-gray-700 hover:text-purple-600 transition-colors duration-200">
+                  <Settings className="w-5 h-5" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="logo-spacing">Logo Position</Label>
+                    <Slider
+                      id="logo-spacing"
+                      min={-100}
+                      max={100}
+                      step={4}
+                      value={[logoMarginLeft]}
+                      onValueChange={(value) => setLogoMarginLeft(value[0])}
+                      className="w-full"
+                    />
+                    <div className="flex justify-between text-xs text-gray-500">
+                      <span>Further Left</span>
+                      <span>Current: {logoMarginLeft}px</span>
+                      <span>Further Right</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setLogoMarginLeft(-32)}
+                    className="w-full bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded text-sm"
+                  >
+                    Reset to Default
+                  </button>
+                </div>
+              </PopoverContent>
+            </Popover>
+
             {/* Search */}
             <div className="relative">
               {isSearchOpen ? (
@@ -90,6 +131,25 @@ const Header = () => {
         {isMenuOpen && (
           <div className="md:hidden py-4 border-t border-gray-100">
             <nav className="flex flex-col space-y-4">
+              {/* Mobile Spacing Controls */}
+              <div className="space-y-2 pb-4 border-b border-gray-200">
+                <Label htmlFor="mobile-logo-spacing" className="text-sm font-medium">Logo Position</Label>
+                <Slider
+                  id="mobile-logo-spacing"
+                  min={-100}
+                  max={100}
+                  step={4}
+                  value={[logoMarginLeft]}
+                  onValueChange={(value) => setLogoMarginLeft(value[0])}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-xs text-gray-500">
+                  <span>Left</span>
+                  <span>{logoMarginLeft}px</span>
+                  <span>Right</span>
+                </div>
+              </div>
+
               {/* Mobile Search */}
               <div className="relative">
                 <input
