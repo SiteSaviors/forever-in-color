@@ -1,4 +1,3 @@
-
 import { ArrowRight, Heart, Sparkles, Camera, Play } from "lucide-react";
 
 const Hero = () => {
@@ -11,7 +10,7 @@ const Hero = () => {
         <div className="absolute top-1/2 left-1/3 w-24 h-24 bg-gradient-to-br from-purple-300/20 to-pink-400/20 rounded-full blur-xl"></div>
       </div>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
         <div className="grid lg:grid-cols-2 gap-12 items-center min-h-[80vh]">
           {/* Left Column - Content */}
           <div className="space-y-8">
