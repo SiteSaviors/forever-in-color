@@ -1,3 +1,4 @@
+
 import { Menu, X, Search, ShoppingCart, User } from "lucide-react";
 import { useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -11,37 +12,37 @@ const Header = () => {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100">
-      <div className="w-full px-12 lg:px-20 xl:px-24 my-[9px]">
-        <div className="flex items-center h-16 py-0">
-          {/* Logo - Far Left */}
-          <div className="flex items-center w-1/3" style={{ marginLeft: `${logoMarginLeft}px` }}>
+      <div className="w-full px-6 lg:px-12 xl:px-16">
+        <div className="flex items-center justify-between h-20">
+          {/* Logo - Left */}
+          <div className="flex items-center flex-shrink-0" style={{ marginLeft: `${logoMarginLeft}px` }}>
             <img 
               src="/lovable-uploads/9e8397a4-ee91-45c4-b9ff-81b938018dd3.png" 
               alt="Forever In Color" 
-              className="h-16 w-auto object-fill" 
+              className="h-12 w-auto object-contain" 
             />
           </div>
 
           {/* Desktop Navigation - Center */}
-          <nav className="hidden md:flex items-center justify-center w-1/3">
-            <div className="flex items-center space-x-12">
-              <a href="#styles" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium">
+          <nav className="hidden lg:flex items-center justify-center flex-1 mx-8">
+            <div className="flex items-center space-x-10">
+              <a href="#styles" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium whitespace-nowrap">
                 Art Styles
               </a>
-              <a href="#how-it-works" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium">
+              <a href="#how-it-works" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium whitespace-nowrap">
                 How It Works
               </a>
-              <a href="#ar-experience" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium">
+              <a href="#ar-experience" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium whitespace-nowrap">
                 AR Experience
               </a>
-              <a href="#testimonials" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium">
+              <a href="#testimonials" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium whitespace-nowrap">
                 Reviews
               </a>
             </div>
           </nav>
 
-          {/* Desktop Actions - Far Right */}
-          <div className="hidden md:flex items-center justify-end space-x-8 w-1/3">
+          {/* Desktop Actions - Right */}
+          <div className="hidden lg:flex items-center space-x-6 flex-shrink-0">
             {/* Search */}
             <div className="relative">
               {isSearchOpen ? (
@@ -49,7 +50,7 @@ const Header = () => {
                   <input
                     type="text"
                     placeholder="Search..."
-                    className="w-48 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-56 px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
                     autoFocus
                     onBlur={() => setIsSearchOpen(false)}
                   />
@@ -57,7 +58,7 @@ const Header = () => {
               ) : (
                 <button
                   onClick={() => setIsSearchOpen(true)}
-                  className="p-2 text-gray-700 hover:text-purple-600 transition-colors duration-200"
+                  className="p-2.5 text-gray-700 hover:text-purple-600 transition-colors duration-200 hover:bg-gray-50 rounded-lg"
                 >
                   <Search className="w-5 h-5" />
                 </button>
@@ -65,36 +66,36 @@ const Header = () => {
             </div>
 
             {/* Cart */}
-            <button className="relative p-2 text-gray-700 hover:text-purple-600 transition-colors duration-200">
+            <button className="relative p-2.5 text-gray-700 hover:text-purple-600 transition-colors duration-200 hover:bg-gray-50 rounded-lg">
               <ShoppingCart className="w-5 h-5" />
-              <span className="absolute -top-1 -right-1 bg-purple-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 bg-purple-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
                 0
               </span>
             </button>
 
             {/* Login */}
-            <button className="p-2 text-gray-700 hover:text-purple-600 transition-colors duration-200">
+            <button className="p-2.5 text-gray-700 hover:text-purple-600 transition-colors duration-200 hover:bg-gray-50 rounded-lg">
               <User className="w-5 h-5" />
             </button>
 
             {/* Create Art Button */}
-            <button className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200">
+            <button className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 whitespace-nowrap ml-4">
               Create Art
             </button>
           </div>
 
           {/* Mobile Menu Button */}
-          <button className="md:hidden p-2 ml-auto" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+          <button className="lg:hidden p-2.5 hover:bg-gray-50 rounded-lg transition-colors duration-200" onClick={() => setIsMenuOpen(!isMenuOpen)}>
             {isMenuOpen ? <X className="w-6 h-6 text-gray-700" /> : <Menu className="w-6 h-6 text-gray-700" />}
           </button>
         </div>
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 border-t border-gray-100">
-            <nav className="flex flex-col space-y-4">
+          <div className="lg:hidden py-6 border-t border-gray-100">
+            <nav className="flex flex-col space-y-6">
               {/* Mobile Spacing Controls */}
-              <div className="space-y-2 pb-4 border-b border-gray-200">
+              <div className="space-y-3 pb-6 border-b border-gray-200">
                 <Label htmlFor="mobile-logo-spacing" className="text-sm font-medium">Logo Position</Label>
                 <Slider
                   id="mobile-logo-spacing"
@@ -117,36 +118,36 @@ const Header = () => {
                 <input
                   type="text"
                   placeholder="Search..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 />
               </div>
 
-              <a href="#styles" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium">
+              <a href="#styles" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium py-2">
                 Art Styles
               </a>
-              <a href="#how-it-works" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium">
+              <a href="#how-it-works" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium py-2">
                 How It Works
               </a>
-              <a href="#ar-experience" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium">
+              <a href="#ar-experience" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium py-2">
                 AR Experience
               </a>
-              <a href="#testimonials" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium">
+              <a href="#testimonials" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium py-2">
                 Reviews
               </a>
 
               {/* Mobile Actions */}
-              <div className="flex items-center space-x-4 pt-2">
-                <button className="flex items-center space-x-2 text-gray-700 hover:text-purple-600 transition-colors duration-200">
+              <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+                <button className="flex items-center space-x-3 text-gray-700 hover:text-purple-600 transition-colors duration-200 py-2">
                   <ShoppingCart className="w-5 h-5" />
-                  <span>Cart (0)</span>
+                  <span className="whitespace-nowrap">Cart (0)</span>
                 </button>
-                <button className="flex items-center space-x-2 text-gray-700 hover:text-purple-600 transition-colors duration-200">
+                <button className="flex items-center space-x-3 text-gray-700 hover:text-purple-600 transition-colors duration-200 py-2">
                   <User className="w-5 h-5" />
-                  <span>Login</span>
+                  <span className="whitespace-nowrap">Login</span>
                 </button>
               </div>
 
-              <button className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-2 rounded-full font-semibold w-fit">
+              <button className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-8 py-3 rounded-full font-semibold w-full mt-4">
                 Create Art
               </button>
             </nav>
