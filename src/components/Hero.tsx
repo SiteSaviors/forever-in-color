@@ -95,16 +95,17 @@ const Hero = () => {
             {/* Rainbow Photo Frames Container - positioned higher */}
             <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-full">
               {/* Frame 1 - Left Arc Position - moved further left */}
-              <div className="absolute -left-8 sm:-left-12 top-8 transform -rotate-12 z-10">
+              <div className="absolute -left-16 sm:-left-20 top-8 transform -rotate-12 z-10">
                 <div className="bg-white rounded-3xl shadow-2xl p-4 sm:p-6 w-48 h-56 sm:w-64 sm:h-72">
-                  <div className="aspect-square bg-gradient-to-br from-orange-200 via-red-200 to-pink-200 rounded-2xl mb-4 flex items-center justify-center">
-                    <div className="text-center space-y-2">
-                      <Heart className="w-8 h-8 sm:w-12 sm:h-12 text-orange-500 mx-auto" />
-                      <p className="text-xs sm:text-sm text-orange-700 font-medium">Pop Art Style</p>
-                    </div>
+                  <div className="aspect-square bg-gradient-to-br from-orange-200 via-red-200 to-pink-200 rounded-2xl mb-4 overflow-hidden">
+                    <img 
+                      src="/lovable-uploads/b95a4d7b-b543-461e-926f-14769697918a.png" 
+                      alt="Elderly couple art example" 
+                      className="w-full h-full object-cover rounded-2xl"
+                    />
                   </div>
                   <div className="flex justify-between items-center">
-                    <div className="text-xs sm:text-sm font-medium text-gray-600">Oil Painting</div>
+                    <div className="text-xs sm:text-sm font-medium text-gray-600">Pop Art Style</div>
                     <div className="flex space-x-1">
                       <div className="w-2 h-2 sm:w-3 sm:h-3 bg-orange-400 rounded-full"></div>
                       <div className="w-2 h-2 sm:w-3 sm:h-3 bg-red-400 rounded-full"></div>
@@ -136,7 +137,7 @@ const Hero = () => {
               </div>
 
               {/* Frame 3 - Right Arc Position - moved further right */}
-              <div className="absolute -right-8 sm:-right-12 top-8 transform rotate-12 z-10">
+              <div className="absolute -right-16 sm:-right-20 top-8 transform rotate-12 z-10">
                 <div className="bg-white rounded-3xl shadow-2xl p-4 sm:p-6 w-48 h-56 sm:w-64 sm:h-72">
                   <div className="aspect-square bg-gradient-to-br from-cyan-200 via-blue-200 to-purple-200 rounded-2xl mb-4 flex items-center justify-center">
                     <div className="text-center space-y-2">
