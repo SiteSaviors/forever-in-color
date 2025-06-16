@@ -16,7 +16,7 @@ const ArtStylesGallery = () => {
       description: "Retro-futuristic vibes with electric colors and cyberpunk aesthetics",
       colors: ["from-pink-500", "via-purple-600", "to-cyan-400"],
       popular: true,
-      image: "/lovable-uploads/a1b70065-4181-40bc-9dca-1ebaa1352981.png"
+      image: "/lovable-uploads/1210f9a1-2907-4774-88bc-e3f3c22f6055.png"
     },
     {
       id: 2,
