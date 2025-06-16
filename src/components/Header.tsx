@@ -8,10 +8,10 @@ const Header = () => {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 my-[9px]">
+      <div className="max-w-7xl mx-auto px-8 sm:px-12 lg:px-16 my-[9px]">
         <div className="flex items-center justify-between h-16 py-0">
-          {/* Logo */}
-          <div className="flex items-center">
+          {/* Logo - Far Left */}
+          <div className="flex items-center flex-shrink-0">
             <img 
               src="/lovable-uploads/9e8397a4-ee91-45c4-b9ff-81b938018dd3.png" 
               alt="Forever In Color" 
@@ -19,24 +19,26 @@ const Header = () => {
             />
           </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
-            <a href="#styles" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium">
-              Art Styles
-            </a>
-            <a href="#how-it-works" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium">
-              How It Works
-            </a>
-            <a href="#ar-experience" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium">
-              AR Experience
-            </a>
-            <a href="#testimonials" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium">
-              Reviews
-            </a>
+          {/* Desktop Navigation - Center */}
+          <nav className="hidden md:flex items-center justify-center flex-1 mx-16">
+            <div className="flex items-center space-x-12">
+              <a href="#styles" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium">
+                Art Styles
+              </a>
+              <a href="#how-it-works" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium">
+                How It Works
+              </a>
+              <a href="#ar-experience" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium">
+                AR Experience
+              </a>
+              <a href="#testimonials" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium">
+                Reviews
+              </a>
+            </div>
           </nav>
 
-          {/* Desktop Actions */}
-          <div className="hidden md:flex items-center space-x-4">
+          {/* Desktop Actions - Far Right */}
+          <div className="hidden md:flex items-center space-x-6 flex-shrink-0">
             {/* Search */}
             <div className="relative">
               {isSearchOpen ? (
@@ -73,7 +75,7 @@ const Header = () => {
             </button>
 
             {/* Create Art Button */}
-            <button className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-2 rounded-full font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200">
+            <button className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 ml-4">
               Create Art
             </button>
           </div>
