@@ -1,6 +1,4 @@
-
 import { ArrowRight, Heart, Sparkles, Camera, Play } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
 
 const Hero = () => {
   return (
@@ -72,17 +70,15 @@ const Hero = () => {
 
             {/* Social Proof */}
             <div className="pt-8 border-t border-gray-200">
-              <div className="flex items-center justify-between max-w-sm">
+              <div className="flex items-center space-x-6">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-gray-900">10K+</div>
                   <div className="text-sm text-gray-600">Memories Preserved</div>
                 </div>
-                <Separator orientation="vertical" className="h-12 bg-gray-300" />
                 <div className="text-center">
                   <div className="text-2xl font-bold text-gray-900">4.9★</div>
                   <div className="text-sm text-gray-600">Customer Rating</div>
                 </div>
-                <Separator orientation="vertical" className="h-12 bg-gray-300" />
                 <div className="text-center">
                   <div className="text-2xl font-bold text-gray-900">6</div>
                   <div className="text-sm text-gray-600">Art Styles</div>
