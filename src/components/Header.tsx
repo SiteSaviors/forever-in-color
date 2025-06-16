@@ -14,7 +14,7 @@ const Header = () => {
             <img 
               src="/lovable-uploads/9e8397a4-ee91-45c4-b9ff-81b938018dd3.png" 
               alt="Forever In Color" 
-              className="h-20 w-auto object-fill" 
+              className="h-16 w-auto object-fill" 
             />
           </div>
 
