@@ -8,10 +8,10 @@ const Header = () => {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100">
-      <div className="max-w-7xl mx-auto px-8 sm:px-12 lg:px-16 my-[9px]">
-        <div className="flex items-center justify-between h-16 py-0">
+      <div className="w-full px-12 lg:px-20 xl:px-24 my-[9px]">
+        <div className="flex items-center h-16 py-0">
           {/* Logo - Far Left */}
-          <div className="flex items-center flex-shrink-0">
+          <div className="flex items-center w-1/3">
             <img 
               src="/lovable-uploads/9e8397a4-ee91-45c4-b9ff-81b938018dd3.png" 
               alt="Forever In Color" 
@@ -20,7 +20,7 @@ const Header = () => {
           </div>
 
           {/* Desktop Navigation - Center */}
-          <nav className="hidden md:flex items-center justify-center flex-1 mx-16">
+          <nav className="hidden md:flex items-center justify-center w-1/3">
             <div className="flex items-center space-x-12">
               <a href="#styles" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium">
                 Art Styles
@@ -38,7 +38,7 @@ const Header = () => {
           </nav>
 
           {/* Desktop Actions - Far Right */}
-          <div className="hidden md:flex items-center space-x-6 flex-shrink-0">
+          <div className="hidden md:flex items-center justify-end space-x-8 w-1/3">
             {/* Search */}
             <div className="relative">
               {isSearchOpen ? (
@@ -75,13 +75,13 @@ const Header = () => {
             </button>
 
             {/* Create Art Button */}
-            <button className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 ml-4">
+            <button className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200">
               Create Art
             </button>
           </div>
 
           {/* Mobile Menu Button */}
-          <button className="md:hidden p-2" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+          <button className="md:hidden p-2 ml-auto" onClick={() => setIsMenuOpen(!isMenuOpen)}>
             {isMenuOpen ? <X className="w-6 h-6 text-gray-700" /> : <Menu className="w-6 h-6 text-gray-700" />}
           </button>
         </div>
