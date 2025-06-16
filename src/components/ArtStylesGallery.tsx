@@ -93,7 +93,7 @@ const ArtStylesGallery = () => {
                     <CardContent className="p-0 h-full flex flex-col">
                       {/* Style Preview */}
                       <div className="relative h-80 overflow-hidden">
-                        {style.image ? <img src={style.image} alt={style.name} className="absolute inset-0 w-full h-full object-contain" /> : <>
+                        {style.image ? <img src={style.image} alt={style.name} className="absolute inset-0 w-full h-full object-fill" /> : <>
                             <div className={`absolute inset-0 bg-gradient-to-br ${style.colors.join(' ')} opacity-90`}></div>
                             <div className="absolute inset-0 flex items-center justify-center">
                               <div className="text-center text-white space-y-2">
