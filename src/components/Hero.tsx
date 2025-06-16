@@ -1,3 +1,4 @@
+
 import { ArrowRight, Heart, Sparkles, Camera, Play } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 const Hero = () => {
@@ -92,8 +93,8 @@ const Hero = () => {
           <div className="relative h-[600px] lg:h-[700px]">
             {/* Rainbow Photo Frames Container - positioned higher */}
             <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-full">
-              {/* Frame 1 - Left Arc Position */}
-              <div className="absolute left-0 top-8 transform -rotate-12 z-10">
+              {/* Frame 1 - Left Arc Position - moved further left */}
+              <div className="absolute -left-8 sm:-left-12 top-8 transform -rotate-12 z-10">
                 <div className="bg-white rounded-3xl shadow-2xl p-4 sm:p-6 w-48 h-56 sm:w-64 sm:h-72">
                   <div className="aspect-square bg-gradient-to-br from-orange-200 via-red-200 to-pink-200 rounded-2xl mb-4 flex items-center justify-center">
                     <div className="text-center space-y-2">
@@ -132,8 +133,8 @@ const Hero = () => {
                 </div>
               </div>
 
-              {/* Frame 3 - Right Arc Position */}
-              <div className="absolute right-0 top-8 transform rotate-12 z-10">
+              {/* Frame 3 - Right Arc Position - moved further right */}
+              <div className="absolute -right-8 sm:-right-12 top-8 transform rotate-12 z-10">
                 <div className="bg-white rounded-3xl shadow-2xl p-4 sm:p-6 w-48 h-56 sm:w-64 sm:h-72">
                   <div className="aspect-square bg-gradient-to-br from-cyan-200 via-blue-200 to-purple-200 rounded-2xl mb-4 flex items-center justify-center">
                     <div className="text-center space-y-2">
