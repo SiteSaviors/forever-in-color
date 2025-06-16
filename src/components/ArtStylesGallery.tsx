@@ -1,7 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-
 const ArtStylesGallery = () => {
   const artStyles = [{
     id: 1,
@@ -94,7 +93,7 @@ const ArtStylesGallery = () => {
                     <CardContent className="p-0 h-full flex flex-col">
                       {/* Style Preview */}
                       <div className="relative h-80 overflow-hidden">
-                        {style.image ? <img src={style.image} alt={style.name} className="absolute inset-0 w-full h-full object-cover" /> : <>
+                        {style.image ? <img src={style.image} alt={style.name} className="absolute inset-0 w-full h-full object-contain" /> : <>
                             <div className={`absolute inset-0 bg-gradient-to-br ${style.colors.join(' ')} opacity-90`}></div>
                             <div className="absolute inset-0 flex items-center justify-center">
                               <div className="text-center text-white space-y-2">
@@ -150,5 +149,4 @@ const ArtStylesGallery = () => {
       </div>
     </section>;
 };
-
 export default ArtStylesGallery;
