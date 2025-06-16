@@ -1,10 +1,7 @@
-
 import { ArrowRight, Heart, Sparkles, Camera, Play } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-
 const Hero = () => {
-  return (
-    <section className="relative min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 overflow-hidden">
+  return <section className="relative min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 overflow-hidden">
       {/* Background Elements */}
       <div className="absolute inset-0">
         <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-br from-pink-300/20 to-purple-400/20 rounded-full blur-xl"></div>
@@ -105,7 +102,7 @@ const Hero = () => {
                     </div>
                   </div>
                   <div className="flex justify-between items-center">
-                    <div className="text-xs sm:text-sm font-medium text-gray-600">Vibrant Pop</div>
+                    <div className="text-xs sm:text-sm font-medium text-gray-600">Oil Painting</div>
                     <div className="flex space-x-1">
                       <div className="w-2 h-2 sm:w-3 sm:h-3 bg-orange-400 rounded-full"></div>
                       <div className="w-2 h-2 sm:w-3 sm:h-3 bg-red-400 rounded-full"></div>
@@ -141,7 +138,8 @@ const Hero = () => {
                   <div className="aspect-square bg-gradient-to-br from-cyan-200 via-blue-200 to-purple-200 rounded-2xl mb-4 flex items-center justify-center">
                     <div className="text-center space-y-2">
                       <Sparkles className="w-8 h-8 sm:w-12 sm:h-12 text-cyan-500 mx-auto" />
-                      <p className="text-xs sm:text-sm text-cyan-700 font-medium">Neon Synthwave</p>
+                      <p className="text-xs sm:text-sm text-cyan-700 font-medium">Classic Oil Painting
+                    </p>
                     </div>
                   </div>
                   <div className="flex justify-between items-center">
@@ -206,8 +204,6 @@ const Hero = () => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default Hero;
