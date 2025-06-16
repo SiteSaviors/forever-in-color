@@ -11,7 +11,7 @@ const Header = () => {
       <div className="w-full px-12 lg:px-20 xl:px-24 my-[9px]">
         <div className="flex items-center h-16 py-0">
           {/* Logo - Far Left */}
-          <div className="flex items-center w-1/3">
+          <div className="flex items-center w-1/3 -ml-8">
             <img 
               src="/lovable-uploads/9e8397a4-ee91-45c4-b9ff-81b938018dd3.png" 
               alt="Forever In Color" 
