@@ -157,6 +157,44 @@ const Hero = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Frame 4 - Bottom Left Position - NEW */}
+              <div className="absolute -left-8 sm:-left-12 top-48 sm:top-56 transform -rotate-6 z-15">
+                <div className="bg-white rounded-3xl shadow-2xl p-3 sm:p-4 w-36 h-44 sm:w-48 sm:h-56">
+                  <div className="aspect-square bg-gradient-to-br from-green-200 via-emerald-200 to-teal-200 rounded-2xl mb-3 overflow-hidden">
+                    <div className="w-full h-full bg-gradient-to-br from-green-300 to-teal-400 rounded-2xl flex items-center justify-center">
+                      <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <div className="text-xs font-medium text-gray-600">Minimalist</div>
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                      <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
+                      <div className="w-2 h-2 bg-teal-400 rounded-full"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Frame 5 - Bottom Right Position - NEW */}
+              <div className="absolute -right-8 sm:-right-12 top-48 sm:top-56 transform rotate-6 z-15">
+                <div className="bg-white rounded-3xl shadow-2xl p-3 sm:p-4 w-36 h-44 sm:w-48 sm:h-56">
+                  <div className="aspect-square bg-gradient-to-br from-amber-200 via-orange-200 to-yellow-200 rounded-2xl mb-3 overflow-hidden">
+                    <div className="w-full h-full bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center">
+                      <Camera className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <div className="text-xs font-medium text-gray-600">Vintage Film</div>
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-amber-400 rounded-full"></div>
+                      <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
+                      <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Larger Phone Mockup with AR Video - positioned lower */}
