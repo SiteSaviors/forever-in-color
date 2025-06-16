@@ -1,5 +1,5 @@
 
-import { ArrowRight, Heart, Sparkles, Camera } from "lucide-react";
+import { ArrowRight, Heart, Sparkles, Camera, Play } from "lucide-react";
 
 const Hero = () => {
   return (
@@ -88,43 +88,118 @@ const Hero = () => {
             </div>
           </div>
 
-          {/* Right Column - Visual */}
+          {/* Right Column - Visual Showcase */}
           <div className="relative">
-            {/* Main Image Container */}
-            <div className="relative">
-              {/* Background Card */}
-              <div className="absolute inset-0 bg-white rounded-3xl shadow-2xl transform rotate-3"></div>
-              <div className="absolute inset-0 bg-gradient-to-br from-pink-100 to-purple-100 rounded-3xl shadow-xl transform rotate-1"></div>
-              
-              {/* Main Card */}
-              <div className="relative bg-white rounded-3xl shadow-2xl p-8 transform hover:scale-105 transition-transform duration-500">
-                {/* Placeholder for transformed photo */}
-                <div className="aspect-square bg-gradient-to-br from-pink-200 via-purple-200 to-blue-200 rounded-2xl mb-6 flex items-center justify-center">
-                  <div className="text-center space-y-2">
-                    <Heart className="w-16 h-16 text-purple-500 mx-auto" />
-                    <p className="text-purple-700 font-medium">Your Photo</p>
-                    <p className="text-sm text-purple-600">Transformed Into Art</p>
+            {/* Three Photo Frames Container */}
+            <div className="relative flex justify-center items-center">
+              {/* Frame 1 - Background Left */}
+              <div className="absolute -left-8 -top-4 transform rotate-12 z-10">
+                <div className="bg-white rounded-2xl shadow-xl p-4 w-48 h-56">
+                  <div className="aspect-square bg-gradient-to-br from-orange-200 via-red-200 to-pink-200 rounded-xl mb-3 flex items-center justify-center">
+                    <div className="text-center space-y-1">
+                      <Heart className="w-8 h-8 text-orange-500 mx-auto" />
+                      <p className="text-xs text-orange-700 font-medium">Pop Art Style</p>
+                    </div>
                   </div>
-                </div>
-                
-                {/* Style Preview Indicators */}
-                <div className="flex justify-between items-center">
-                  <div className="text-sm font-medium text-gray-700">Style: Neon Synthwave</div>
-                  <div className="flex space-x-1">
-                    <div className="w-3 h-3 bg-pink-400 rounded-full"></div>
-                    <div className="w-3 h-3 bg-purple-400 rounded-full"></div>
-                    <div className="w-3 h-3 bg-blue-400 rounded-full"></div>
+                  <div className="flex justify-between items-center">
+                    <div className="text-xs font-medium text-gray-600">Vibrant Pop</div>
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
+                      <div className="w-2 h-2 bg-red-400 rounded-full"></div>
+                      <div className="w-2 h-2 bg-pink-400 rounded-full"></div>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Floating Elements */}
-              <div className="absolute -top-4 -right-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-3 py-1 rounded-full text-sm font-semibold shadow-lg">
-                + AR Experience
+              {/* Frame 2 - Background Right */}
+              <div className="absolute -right-8 -top-4 transform -rotate-12 z-10">
+                <div className="bg-white rounded-2xl shadow-xl p-4 w-48 h-56">
+                  <div className="aspect-square bg-gradient-to-br from-cyan-200 via-blue-200 to-purple-200 rounded-xl mb-3 flex items-center justify-center">
+                    <div className="text-center space-y-1">
+                      <Sparkles className="w-8 h-8 text-cyan-500 mx-auto" />
+                      <p className="text-xs text-cyan-700 font-medium">Neon Synthwave</p>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <div className="text-xs font-medium text-gray-600">Retro Neon</div>
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
+                      <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                      <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="absolute -bottom-4 -left-4 bg-white shadow-lg rounded-full p-3">
-                <Camera className="w-6 h-6 text-purple-500" />
+
+              {/* Frame 3 - Center Main */}
+              <div className="relative z-20 transform hover:scale-105 transition-transform duration-500">
+                <div className="bg-white rounded-3xl shadow-2xl p-6 w-64 h-72">
+                  <div className="aspect-square bg-gradient-to-br from-pink-200 via-purple-200 to-blue-200 rounded-2xl mb-4 flex items-center justify-center">
+                    <div className="text-center space-y-2">
+                      <Camera className="w-12 h-12 text-purple-500 mx-auto" />
+                      <p className="text-sm text-purple-700 font-medium">Your Photo</p>
+                      <p className="text-xs text-purple-600">Watercolor Style</p>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <div className="text-sm font-medium text-gray-700">Soft Watercolor</div>
+                    <div className="flex space-x-1">
+                      <div className="w-3 h-3 bg-pink-400 rounded-full"></div>
+                      <div className="w-3 h-3 bg-purple-400 rounded-full"></div>
+                      <div className="w-3 h-3 bg-blue-400 rounded-full"></div>
+                    </div>
+                  </div>
+                </div>
               </div>
+
+              {/* Phone Mockup with AR Video */}
+              <div className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 z-30">
+                <div className="relative">
+                  {/* Phone Frame */}
+                  <div className="bg-gray-900 rounded-[2.5rem] p-2 shadow-2xl">
+                    <div className="bg-black rounded-[2rem] w-48 h-96 relative overflow-hidden">
+                      {/* Screen Content */}
+                      <div className="absolute inset-2 bg-gradient-to-br from-purple-900 via-pink-900 to-blue-900 rounded-[1.5rem] flex items-center justify-center">
+                        {/* Video Placeholder with Play Button */}
+                        <div className="relative w-full h-full flex items-center justify-center">
+                          <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 to-pink-600/20 rounded-[1.5rem]"></div>
+                          <div className="relative text-center space-y-3">
+                            <div className="bg-white/20 backdrop-blur-sm rounded-full p-4 w-16 h-16 flex items-center justify-center mx-auto">
+                              <Play className="w-8 h-8 text-white fill-white" />
+                            </div>
+                            <div className="text-white">
+                              <p className="text-sm font-semibold">AR Experience</p>
+                              <p className="text-xs opacity-75">Tap to play demo</p>
+                            </div>
+                            {/* AR Elements Overlay */}
+                            <div className="absolute -top-4 -right-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                              LIVE AR
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Phone Details */}
+                      <div className="absolute top-6 left-1/2 transform -translate-x-1/2 w-16 h-1 bg-gray-600 rounded-full"></div>
+                      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-gray-600 rounded-full"></div>
+                    </div>
+                  </div>
+                  
+                  {/* Floating AR Badge */}
+                  <div className="absolute -top-6 -right-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-3 py-1 rounded-full text-sm font-semibold shadow-lg animate-pulse">
+                    Live AR Demo
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Floating Elements */}
+            <div className="absolute -top-8 -right-8 bg-white shadow-lg rounded-full p-3 z-40">
+              <Sparkles className="w-6 h-6 text-purple-500" />
+            </div>
+            <div className="absolute -bottom-8 -left-8 bg-white shadow-lg rounded-full p-3 z-40">
+              <Camera className="w-6 h-6 text-pink-500" />
             </div>
           </div>
         </div>
