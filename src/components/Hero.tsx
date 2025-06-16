@@ -1,4 +1,5 @@
 
+
 import { ArrowRight, Heart, Sparkles, Camera, Play } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 const Hero = () => {
@@ -116,11 +117,12 @@ const Hero = () => {
               {/* Frame 2 - Center Top Arc Position */}
               <div className="absolute left-1/2 transform -translate-x-1/2 -top-4 rotate-3 z-20">
                 <div className="bg-white rounded-3xl shadow-2xl p-4 sm:p-6 w-48 h-56 sm:w-64 sm:h-72">
-                  <div className="aspect-square bg-gradient-to-br from-pink-200 via-purple-200 to-blue-200 rounded-2xl mb-4 flex items-center justify-center">
-                    <div className="text-center space-y-2">
-                      <Camera className="w-8 h-8 sm:w-12 sm:h-12 text-purple-500 mx-auto" />
-                      <p className="text-xs sm:text-sm text-purple-700 font-medium">Watercolor Style</p>
-                    </div>
+                  <div className="aspect-square bg-gradient-to-br from-pink-200 via-purple-200 to-blue-200 rounded-2xl mb-4 overflow-hidden">
+                    <img 
+                      src="/lovable-uploads/f0fb638f-ed49-4e86-aeac-0b87e27de424.png" 
+                      alt="Watercolor art example" 
+                      className="w-full h-full object-cover rounded-2xl"
+                    />
                   </div>
                   <div className="flex justify-between items-center">
                     <div className="text-xs sm:text-sm font-medium text-gray-700">Soft Watercolor</div>
@@ -208,3 +210,4 @@ const Hero = () => {
     </section>;
 };
 export default Hero;
+
