@@ -67,8 +67,8 @@ const PhotoFrames = () => {
         </div>
       </div>
 
-      {/* Frame 4 - Bottom Left Position */}
-      <div className="absolute -left-16 sm:-left-20 top-48 sm:top-56 transform -rotate-12 z-15">
+      {/* Frame 4 - Bottom Left Position - moved down more */}
+      <div className="absolute -left-16 sm:-left-20 top-60 sm:top-72 transform -rotate-12 z-15">
         <div className="bg-white rounded-3xl shadow-2xl p-4 sm:p-6 w-48 h-56 sm:w-64 sm:h-72">
           <div className="aspect-square bg-gradient-to-br from-green-200 via-emerald-200 to-teal-200 rounded-2xl mb-4 overflow-hidden">
             <div className="w-full h-full bg-gradient-to-br from-green-300 to-teal-400 rounded-2xl flex items-center justify-center">
@@ -86,8 +86,8 @@ const PhotoFrames = () => {
         </div>
       </div>
 
-      {/* Frame 5 - Bottom Right Position */}
-      <div className="absolute -right-16 sm:-right-20 top-48 sm:top-56 transform rotate-12 z-15">
+      {/* Frame 5 - Bottom Right Position - moved down more */}
+      <div className="absolute -right-16 sm:-right-20 top-60 sm:top-72 transform rotate-12 z-15">
         <div className="bg-white rounded-3xl shadow-2xl p-4 sm:p-6 w-48 h-56 sm:w-64 sm:h-72">
           <div className="aspect-square bg-gradient-to-br from-amber-200 via-orange-200 to-yellow-200 rounded-2xl mb-4 overflow-hidden">
             <div className="w-full h-full bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center">
