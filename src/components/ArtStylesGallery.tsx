@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+
 const ArtStylesGallery = () => {
   const artStyles = [{
     id: 1,
@@ -8,13 +9,14 @@ const ArtStylesGallery = () => {
     description: "Retro-futuristic vibes with electric colors and cyberpunk aesthetics",
     colors: ["from-pink-500", "via-purple-600", "to-cyan-400"],
     popular: true,
-    image: "/lovable-uploads/a1b70065-4181-40bc-9dca-1ebaa1352981.png"
+    image: "/lovable-uploads/1210f9a1-2907-4774-88bc-e3f3c22f6055.png"
   }, {
     id: 2,
     name: "Watercolor Dreams",
     description: "Soft, flowing watercolor effects with gentle color bleeds",
     colors: ["from-blue-300", "via-purple-300", "to-pink-300"],
-    popular: false
+    popular: false,
+    image: "/lovable-uploads/811a328b-ccfd-48a1-bab7-4307508692d7.png"
   }, {
     id: 3,
     name: "Pop Art Burst",
@@ -92,7 +94,7 @@ const ArtStylesGallery = () => {
                     <CardContent className="p-0 h-full flex flex-col">
                       {/* Style Preview */}
                       <div className="relative h-80 overflow-hidden">
-                        {style.image ? <img src={style.image} alt={style.name} className="absolute inset-0 w-full h-full object-fill" /> : <>
+                        {style.image ? <img src={style.image} alt={style.name} className="absolute inset-0 w-full h-full object-cover" /> : <>
                             <div className={`absolute inset-0 bg-gradient-to-br ${style.colors.join(' ')} opacity-90`}></div>
                             <div className="absolute inset-0 flex items-center justify-center">
                               <div className="text-center text-white space-y-2">
@@ -148,4 +150,5 @@ const ArtStylesGallery = () => {
       </div>
     </section>;
 };
+
 export default ArtStylesGallery;
