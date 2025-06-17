@@ -27,11 +27,6 @@ const PhoneMockup = () => {
                     />
                   </div>
                 </div>
-
-                {/* AR Elements Overlay */}
-                <div className="absolute -top-6 -right-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-2 py-1 sm:px-3 sm:py-2 rounded-full text-xs sm:text-sm font-semibold pointer-events-none">
-                  LIVE AR
-                </div>
               </div>
             </div>
             
