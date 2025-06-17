@@ -9,10 +9,9 @@ const PhoneMockup = () => {
         <div className="bg-gray-900 rounded-[3rem] p-3 shadow-2xl">
           <div className="bg-black rounded-[2.5rem] w-56 h-[450px] sm:w-64 sm:h-[520px] relative overflow-hidden">
             {/* Screen Content */}
-            <div className="absolute inset-3 bg-gradient-to-br from-purple-900 via-pink-900 to-blue-900 rounded-[2rem] flex items-center justify-center">
+            <div className="absolute inset-1 bg-gradient-to-br from-purple-900 via-pink-900 to-blue-900 rounded-[2rem] flex items-center justify-center">
               {/* Video Container */}
               <div className="relative w-full h-full flex items-center justify-center">
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-pink-600/10 rounded-[2rem]"></div>
                 
                 {/* Vimeo Video Embed */}
                 <div className="w-full h-full rounded-[2rem] overflow-hidden relative">
