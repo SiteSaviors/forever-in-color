@@ -17,15 +17,16 @@ const PhoneMockup = () => {
                 {/* Vimeo Video Embed */}
                 <div className="w-full h-full rounded-[2rem] overflow-hidden relative">
                   <iframe 
-                    src="https://player.vimeo.com/video/1093921547?badge=0&autopause=0&player_id=0&app_id=58479&autoplay=1&loop=1&muted=1" 
+                    src="https://player.vimeo.com/video/1093921547?badge=0&autopause=0&autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0&background=1" 
                     frameBorder="0" 
                     allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" 
-                    className="absolute top-0 left-0 w-full h-full object-cover"
+                    className="absolute top-0 left-0 w-full h-full"
                     title="Forever In Color Hero Video"
+                    loading="eager"
                   />
                   
                   {/* Fallback content if video doesn't load */}
-                  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-purple-900 via-pink-900 to-blue-900">
+                  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-purple-900 via-pink-900 to-blue-900 pointer-events-none">
                     <div className="relative text-center space-y-4">
                       <div className="bg-white/20 backdrop-blur-sm rounded-full p-4 sm:p-6 w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center mx-auto">
                         <Play className="w-8 h-8 sm:w-10 sm:h-10 text-white fill-white" />
