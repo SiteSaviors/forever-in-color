@@ -20,7 +20,7 @@ const Hero = () => {
           <HeroContent />
 
           {/* Right Column - Visual Showcase */}
-          <div className="relative h-[600px] lg:h-[700px]">
+          <div className="relative h-[400px] sm:h-[600px] lg:h-[700px] px-4 sm:px-0">
             {/* Rainbow Photo Frames Container */}
             <PhotoFrames />
 
@@ -28,11 +28,11 @@ const Hero = () => {
             <PhoneMockup />
 
             {/* Floating Elements */}
-            <div className="absolute top-4 right-4 bg-white shadow-lg rounded-full p-3 z-40">
-              <Sparkles className="w-4 h-4 sm:w-6 sm:h-6 text-purple-500" />
+            <div className="absolute top-4 right-4 bg-white shadow-lg rounded-full p-2 sm:p-3 z-40">
+              <Sparkles className="w-3 h-3 sm:w-6 sm:h-6 text-purple-500" />
             </div>
-            <div className="absolute bottom-4 left-4 bg-white shadow-lg rounded-full p-3 z-40">
-              <Camera className="w-4 h-4 sm:w-6 sm:h-6 text-pink-500" />
+            <div className="absolute bottom-4 left-4 bg-white shadow-lg rounded-full p-2 sm:p-3 z-40">
+              <Camera className="w-3 h-3 sm:w-6 sm:h-6 text-pink-500" />
             </div>
           </div>
         </div>
