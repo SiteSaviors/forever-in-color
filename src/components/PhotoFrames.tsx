@@ -92,9 +92,11 @@ const PhotoFrames = () => {
       <div className="absolute -right-16 sm:-right-20 top-60 sm:top-72 transform rotate-12 z-15">
         <div className="bg-white rounded-3xl shadow-2xl p-4 sm:p-6 w-48 h-56 sm:w-64 sm:h-72">
           <div className="aspect-square bg-gradient-to-br from-amber-200 via-orange-200 to-yellow-200 rounded-2xl mb-4 overflow-hidden">
-            <div className="w-full h-full bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center">
-              <Camera className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
-            </div>
+            <img 
+              src="/lovable-uploads/581d73aa-03e2-4173-838a-61286c6fb31c.png" 
+              alt="Vintage film art style couple" 
+              className="w-full h-full object-cover rounded-2xl"
+            />
           </div>
           <div className="flex justify-between items-center">
             <div className="text-xs sm:text-sm font-medium text-gray-600">Vintage Film</div>
