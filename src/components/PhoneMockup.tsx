@@ -40,12 +40,8 @@ const PhoneMockup = () => {
                   </video>
                   
                   {/* Fallback for when video doesn't load */}
-                  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-purple-900 via-pink-900 to-blue-900" 
-                       style={{ display: 'none' }} 
-                       onError={() => {
-                         const fallback = document.querySelector('.video-fallback');
-                         if (fallback) fallback.style.display = 'flex';
-                       }}>
+                  <div className="video-fallback absolute inset-0 flex items-center justify-center bg-gradient-to-br from-purple-900 via-pink-900 to-blue-900" 
+                       style={{ display: 'none' }}>
                     <div className="relative text-center space-y-4">
                       <div className="bg-white/20 backdrop-blur-sm rounded-full p-4 sm:p-6 w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center mx-auto">
                         <Play className="w-8 h-8 sm:w-10 sm:h-10 text-white fill-white" />
