@@ -14,26 +14,45 @@ const PhoneMockup = () => {
               <div className="relative w-full h-full flex items-center justify-center">
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-pink-600/10 rounded-[2rem]"></div>
                 
-                {/* Vimeo Video Embed */}
+                {/* HTML5 Video Element */}
                 <div className="w-full h-full rounded-[2rem] overflow-hidden relative">
-                  <iframe 
-                    src="https://player.vimeo.com/video/1093921547?badge=0&autopause=0&autoplay=1&loop=1&muted=1&controls=0&title=0&byline=0&portrait=0&background=1" 
-                    frameBorder="0" 
-                    allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" 
-                    className="absolute top-0 left-0 w-full h-full"
-                    title="Forever In Color Hero Video"
-                    loading="eager"
-                  />
+                  <video 
+                    className="absolute top-0 left-0 w-full h-full object-cover rounded-[2rem]"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    preload="auto"
+                  >
+                    <source src="/your-video.mp4" type="video/mp4" />
+                    {/* Fallback content */}
+                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-purple-900 via-pink-900 to-blue-900">
+                      <div className="relative text-center space-y-4">
+                        <div className="bg-white/20 backdrop-blur-sm rounded-full p-4 sm:p-6 w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center mx-auto">
+                          <Play className="w-8 h-8 sm:w-10 sm:h-10 text-white fill-white" />
+                        </div>
+                        <div className="text-white">
+                          <p className="text-sm sm:text-base font-semibold">AR Experience</p>
+                          <p className="text-xs sm:text-sm opacity-75">Video not supported</p>
+                        </div>
+                      </div>
+                    </div>
+                  </video>
                   
-                  {/* Fallback content if video doesn't load */}
-                  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-purple-900 via-pink-900 to-blue-900 pointer-events-none">
+                  {/* Fallback for when video doesn't load */}
+                  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-purple-900 via-pink-900 to-blue-900" 
+                       style={{ display: 'none' }} 
+                       onError={() => {
+                         const fallback = document.querySelector('.video-fallback');
+                         if (fallback) fallback.style.display = 'flex';
+                       }}>
                     <div className="relative text-center space-y-4">
                       <div className="bg-white/20 backdrop-blur-sm rounded-full p-4 sm:p-6 w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center mx-auto">
                         <Play className="w-8 h-8 sm:w-10 sm:h-10 text-white fill-white" />
                       </div>
                       <div className="text-white">
                         <p className="text-sm sm:text-base font-semibold">AR Experience</p>
-                        <p className="text-xs sm:text-sm opacity-75">Video loading...</p>
+                        <p className="text-xs sm:text-sm opacity-75">Demo Video</p>
                       </div>
                     </div>
                   </div>
