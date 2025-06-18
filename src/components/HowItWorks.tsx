@@ -8,7 +8,7 @@ const HowItWorks = () => {
       title: "Upload Your Photo",
       description: "Share a meaningful photo—loved ones, pets, homes, cars, or anything that holds special significance to you.",
       color: "from-purple-500 to-blue-500",
-      image: "/lovable-uploads/5f0a131f-67bf-4402-915b-712bf2b4d954.png"
+      image: "/lovable-uploads/57c424be-c5d9-4b6f-88fc-9ce28c38c109.png"
     },
     {
       id: 2,
