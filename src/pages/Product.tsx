@@ -3,6 +3,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import PhotoUpload from "@/components/product/PhotoUpload";
 import StylePreview from "@/components/product/StylePreview";
+import PricingSection from "@/components/product/PricingSection";
 import { 
   Accordion, 
   AccordionContent, 
@@ -194,6 +195,9 @@ const Product = () => {
           </Accordion>
         </div>
       </section>
+      
+      {/* Pricing Section */}
+      <PricingSection />
       
       <Footer />
     </div>
