@@ -1,9 +1,11 @@
+
 import { useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import PhotoUpload from "@/components/product/PhotoUpload";
 import StylePreview from "@/components/product/StylePreview";
 import PricingSection from "@/components/product/PricingSection";
+import { Progress } from "@/components/ui/progress";
 import { 
   Accordion, 
   AccordionContent, 
@@ -37,6 +39,10 @@ const Product = () => {
     setSelectedStyle({ id: styleId, name: styleName });
     handleStepComplete(2);
   };
+
+  // Calculate progress percentage
+  const totalSteps = 4;
+  const progressPercentage = (completedSteps.length / totalSteps) * 100;
 
   const steps = [
     {
@@ -86,6 +92,18 @@ const Product = () => {
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
             Transform your precious memories into stunning canvas art with AI-powered artistic styles and magical AR experiences.
           </p>
+          
+          {/* Progress Indicator */}
+          <div className="max-w-md mx-auto mb-8">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-medium text-gray-600">Progress</span>
+              <span className="text-sm font-medium text-purple-600">{Math.round(progressPercentage)}% Complete</span>
+            </div>
+            <Progress value={progressPercentage} className="h-2" />
+            <p className="text-xs text-gray-500 mt-1">
+              {completedSteps.length} of {totalSteps} steps completed
+            </p>
+          </div>
         </div>
       </section>
 
@@ -178,8 +196,12 @@ const Product = () => {
                         </div>
                       )}
                       {step.number === 3 && (
-                        <div className="text-center py-8 text-gray-500">
-                          Customization options coming next...
+                        <div className="space-y-6">
+                          <div className="text-center mb-6">
+                            <h3 className="text-2xl font-semibold text-gray-900 mb-2">Customize Your Canvas</h3>
+                            <p className="text-gray-600">Choose your size, frame options, and more</p>
+                          </div>
+                          <PricingSection />
                         </div>
                       )}
                       {step.number === 4 && (
@@ -195,9 +217,6 @@ const Product = () => {
           </Accordion>
         </div>
       </section>
-      
-      {/* Pricing Section */}
-      <PricingSection />
       
       <Footer />
     </div>
