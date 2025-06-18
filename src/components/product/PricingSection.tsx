@@ -1,73 +1,81 @@
 
-import { Check, Star, Sparkles } from "lucide-react";
+import { Check, Frame, Image } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const PricingSection = () => {
-  const packages = [
-    {
-      id: 1,
-      name: "Essential",
-      popular: false,
-      price: 89,
-      originalPrice: 129,
-      description: "Perfect for personal spaces and gifts",
-      sizes: ["12×16", "16×20"],
-      features: [
-        "Premium canvas print",
-        "Basic black or white frame",
-        "Professional art transformation",
-        "Digital preview before printing",
-        "Free shipping within US",
-        "30-day satisfaction guarantee"
-      ],
-      cta: "Choose Essential",
-      gradient: "from-blue-500 to-cyan-500"
-    },
-    {
-      id: 2,
-      name: "Premium",
-      popular: true,
-      price: 149,
-      originalPrice: 199,
-      description: "Our most popular choice for stunning results",
-      sizes: ["16×20", "20×24", "24×30"],
-      features: [
-        "Museum-quality canvas",
-        "Choice of 5 premium frame styles",
-        "Expert art transformation + touch-ups",
-        "Multiple digital previews",
-        "Priority processing (3-5 days)",
-        "Free shipping + rush delivery",
-        "60-day satisfaction guarantee",
-        "Free reprints if not satisfied"
-      ],
-      cta: "Choose Premium",
-      gradient: "from-purple-500 to-pink-500"
-    },
-    {
-      id: 3,
-      name: "Masterpiece",
-      popular: false,
-      price: 249,
-      originalPrice: 329,
-      description: "Gallery-grade artwork for the ultimate experience",
-      sizes: ["20×24", "24×30", "30×40", "Custom"],
-      features: [
-        "Gallery-grade archival canvas",
-        "Luxury handcrafted frames (10+ styles)",
-        "Master artist transformation",
-        "Multiple style options & revisions",
-        "White-glove delivery service",
-        "Professional installation guide",
-        "Lifetime satisfaction guarantee",
-        "Certificate of authenticity",
-        "Complimentary artwork consultation"
-      ],
-      cta: "Choose Masterpiece",
-      gradient: "from-amber-500 to-orange-500"
-    }
+  const framedPrices = [
+    { size: '16" x 12"', orientation: 'Horizontal', price: 159.99 },
+    { size: '24" x 18"', orientation: 'Horizontal', price: 199.99 },
+    { size: '36" x 24"', orientation: 'Horizontal', price: 249.99 },
+    { size: '40" x 30"', orientation: 'Horizontal', price: 319.99 },
+    { size: '48" x 32"', orientation: 'Horizontal', price: 449.99 },
+    { size: '60" x 40"', orientation: 'Horizontal', price: 599.99 },
+    { size: '12" x 16"', orientation: 'Vertical', price: 159.99 },
+    { size: '18" x 24"', orientation: 'Vertical', price: 199.99 },
+    { size: '24" x 36"', orientation: 'Vertical', price: 249.99 },
+    { size: '30" x 40"', orientation: 'Vertical', price: 319.99 },
+    { size: '32" x 48"', orientation: 'Vertical', price: 449.99 },
+    { size: '40" x 60"', orientation: 'Vertical', price: 599.99 },
+    { size: '16" x 16"', orientation: 'Square', price: 179.99 },
+    { size: '24" x 24"', orientation: 'Square', price: 219.99 },
+    { size: '32" x 32"', orientation: 'Square', price: 349.99 },
+    { size: '36" x 36"', orientation: 'Square', price: 499.99 },
   ];
+
+  const unframedPrices = [
+    { size: '16" x 12"', orientation: 'Horizontal', price: 109.99 },
+    { size: '24" x 18"', orientation: 'Horizontal', price: 149.99 },
+    { size: '36" x 24"', orientation: 'Horizontal', price: 199.99 },
+    { size: '40" x 30"', orientation: 'Horizontal', price: 269.99 },
+    { size: '48" x 32"', orientation: 'Horizontal', price: 349.00 },
+    { size: '60" x 40"', orientation: 'Horizontal', price: 499.99 },
+    { size: '12" x 16"', orientation: 'Vertical', price: 109.99 },
+    { size: '18" x 24"', orientation: 'Vertical', price: 149.99 },
+    { size: '24" x 36"', orientation: 'Vertical', price: 199.99 },
+    { size: '30" x 40"', orientation: 'Vertical', price: 269.99 },
+    { size: '32" x 48"', orientation: 'Vertical', price: 349.00 },
+    { size: '40" x 60"', orientation: 'Vertical', price: 499.99 },
+  ];
+
+  const PriceGrid = ({ prices, isFramed }: { prices: typeof framedPrices; isFramed: boolean }) => {
+    const groupedPrices = prices.reduce((acc, item) => {
+      if (!acc[item.orientation]) {
+        acc[item.orientation] = [];
+      }
+      acc[item.orientation].push(item);
+      return acc;
+    }, {} as Record<string, typeof prices>);
+
+    return (
+      <div className="space-y-8">
+        {Object.entries(groupedPrices).map(([orientation, items]) => (
+          <div key={orientation}>
+            <h4 className="text-lg font-semibold text-gray-900 mb-4">{orientation}</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {items.map((item, index) => (
+                <Card key={index} className="hover:shadow-md transition-shadow">
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-center mb-3">
+                      <span className="font-medium text-gray-900">{item.size}</span>
+                      <span className="text-xl font-bold text-purple-600">${item.price}</span>
+                    </div>
+                    <Button 
+                      className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:shadow-lg transform hover:scale-105 transition-all duration-300"
+                      size="sm"
+                    >
+                      Select Size
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
 
   return (
     <section className="py-16 bg-white">
@@ -77,72 +85,43 @@ const PricingSection = () => {
           <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
             Choose Your{" "}
             <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
-              Perfect Package
+              Perfect Size
             </span>
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-6">
-            Transform your precious memories into stunning framed canvas art with our carefully crafted packages
+            Select from our range of canvas sizes. All prints feature 1.25" depth premium canvas.
           </p>
-          <div className="inline-flex items-center bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium">
-            <Sparkles className="w-4 h-4 mr-2" />
-            Limited Time: Save up to 30% on all packages
-          </div>
         </div>
 
-        {/* Pricing Cards */}
-        <div className="grid lg:grid-cols-3 gap-6">
-          {packages.map((pkg) => (
-            <Card 
-              key={pkg.id} 
-              className={`relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
-                pkg.popular ? 'ring-2 ring-purple-500 scale-105' : ''
-              } bg-white border-0 shadow-lg`}
-            >
-              {pkg.popular && (
-                <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-center py-2 text-sm font-semibold">
-                  🔥 MOST POPULAR
-                </div>
-              )}
-              
-              <CardHeader className={`text-center ${pkg.popular ? 'pt-12' : 'pt-6'} pb-4`}>
-                <div className={`w-12 h-12 mx-auto mb-3 rounded-full bg-gradient-to-r ${pkg.gradient} flex items-center justify-center`}>
-                  <Star className="w-6 h-6 text-white" />
-                </div>
-                <CardTitle className="text-xl font-bold text-gray-900 mb-2">{pkg.name}</CardTitle>
-                <p className="text-gray-600 text-sm mb-3">{pkg.description}</p>
-                
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <span className="text-3xl font-bold text-gray-900">${pkg.price}</span>
-                  <div className="text-left">
-                    <div className="text-gray-400 line-through text-sm">${pkg.originalPrice}</div>
-                    <div className="text-green-600 text-xs font-semibold">Save ${pkg.originalPrice - pkg.price}</div>
-                  </div>
-                </div>
-                
-                <div className="text-gray-600 text-sm">
-                  Sizes: {pkg.sizes.join(", ")}
-                </div>
-              </CardHeader>
+        {/* Pricing Tabs */}
+        <Tabs defaultValue="framed" className="w-full">
+          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
+            <TabsTrigger value="framed" className="flex items-center gap-2">
+              <Frame className="w-4 h-4" />
+              Framed
+            </TabsTrigger>
+            <TabsTrigger value="unframed" className="flex items-center gap-2">
+              <Image className="w-4 h-4" />
+              Unframed
+            </TabsTrigger>
+          </TabsList>
 
-              <CardContent className="px-6 pb-6">
-                <ul className="space-y-2 mb-6">
-                  {pkg.features.map((feature, index) => (
-                    <li key={index} className="flex items-start">
-                      <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5 mr-2" />
-                      <span className="text-gray-700 text-sm">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
+          <TabsContent value="framed">
+            <div className="text-center mb-6">
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Framed Canvas Prints</h3>
+              <p className="text-gray-600">Premium canvas with professional framing</p>
+            </div>
+            <PriceGrid prices={framedPrices} isFramed={true} />
+          </TabsContent>
 
-                <Button 
-                  className={`w-full bg-gradient-to-r ${pkg.gradient} hover:shadow-lg transform hover:scale-105 transition-all duration-300 text-white font-semibold`}
-                >
-                  {pkg.cta}
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+          <TabsContent value="unframed">
+            <div className="text-center mb-6">
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Unframed Canvas Prints</h3>
+              <p className="text-gray-600">Ready-to-hang canvas prints without frames</p>
+            </div>
+            <PriceGrid prices={unframedPrices} isFramed={false} />
+          </TabsContent>
+        </Tabs>
 
         {/* Trust Elements */}
         <div className="mt-12 text-center">
@@ -153,11 +132,11 @@ const PricingSection = () => {
             </div>
             <div className="flex items-center gap-2">
               <Check className="w-4 h-4 text-green-500" />
-              <span>30-60 day guarantee</span>
+              <span>30-day satisfaction guarantee</span>
             </div>
             <div className="flex items-center gap-2">
               <Check className="w-4 h-4 text-green-500" />
-              <span>Secure payment processing</span>
+              <span>Premium 1.25" depth canvas</span>
             </div>
           </div>
         </div>
