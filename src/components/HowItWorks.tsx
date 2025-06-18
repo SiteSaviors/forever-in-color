@@ -1,4 +1,3 @@
-
 import { Upload, Palette, Settings, Package, ArrowRight } from "lucide-react";
 
 const HowItWorks = () => {
@@ -23,7 +22,7 @@ const HowItWorks = () => {
       id: 3,
       icon: Settings,
       title: "Add Customizations & Optional AR",
-      description: "Choose size, orientation, and frame to boost image quality with AI upscaling or add QR code for a magical AR experience—watch your art come to life through a 5 to 30 second video.",
+      description: "Choose size, orientation, and frame. to boost image quality or add a QR code for a magical AR experience.",
       color: "from-purple-500 to-pink-500",
       video: true
     },
