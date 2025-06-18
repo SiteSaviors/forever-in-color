@@ -1,5 +1,5 @@
 
-import { Upload, Palette, Smartphone, Package, ArrowRight } from "lucide-react";
+import { Upload, Palette, Settings, Package, ArrowRight } from "lucide-react";
 
 const HowItWorks = () => {
   const steps = [
@@ -7,142 +7,139 @@ const HowItWorks = () => {
       id: 1,
       icon: Upload,
       title: "Upload Your Photo",
-      description: "Choose any photo from your device or social media. High-resolution images work best for stunning results.",
-      color: "from-pink-500 to-purple-600"
+      description: "Share a meaningful photo—loved ones, pets, homes, cars, or anything that holds special significance to you.",
+      color: "from-purple-500 to-blue-500",
+      image: "/lovable-uploads/1210f9a1-2907-4774-88bc-e3f3c22f6055.png" // Using existing uploaded image as placeholder
     },
     {
       id: 2,
       icon: Palette,
       title: "Choose Your Style",
-      description: "Select from 10+ artistic styles including watercolor, pop art, neon synthwave, and more to transform your photo.",
-      color: "from-purple-500 to-blue-600"
+      description: "Select from 20+ artistic styles including watercolor, poster, pop art, neon, and more to transform your photo.",
+      color: "from-pink-500 to-purple-500",
+      image: "/lovable-uploads/55c1363e-f80a-482b-8adc-a129075dced5.png"
     },
     {
       id: 3,
-      icon: Smartphone,
-      title: "Optional AR & Customizations",
-      description: "Preview your artwork in AR, adjust the size, choose frame options, and see how it looks in your space.",
-      color: "from-blue-500 to-cyan-600"
+      icon: Settings,
+      title: "Add Customizations & Optional AR",
+      description: "Choose size, orientation, and frame to boost image quality with AI upscaling or add QR code for a magical AR experience—watch your art come to life through a 5 to 30 second video.",
+      color: "from-purple-500 to-pink-500",
+      image: "/lovable-uploads/9e8397a4-ee91-45c4-b9ff-81b938018dd3.png"
     },
     {
       id: 4,
       icon: Package,
       title: "Get Your Art",
-      description: "We print your custom artwork on premium canvas, frame it beautifully, and ship it directly to your door.",
-      color: "from-cyan-500 to-pink-600"
+      description: "Unbox your one-of-a-kind creation—delivered ready to hang, gift, or share. A modern heirloom made just for you that lasts a lifetime.",
+      color: "from-gray-400 to-gray-600",
+      image: "/lovable-uploads/a1b70065-4181-40bc-9dca-1ebaa1352981.png"
     }
   ];
 
   return (
-    <section id="how-it-works" className="py-20 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="how-it-works" className="py-20 bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100 relative overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute inset-0">
+        <div className="absolute top-10 left-10 w-32 h-32 bg-gradient-to-br from-purple-300/20 to-pink-400/20 rounded-full blur-xl"></div>
+        <div className="absolute bottom-20 right-10 w-40 h-40 bg-gradient-to-br from-blue-300/20 to-purple-400/20 rounded-full blur-xl"></div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         {/* Section Header */}
         <div className="text-center mb-16">
-          <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+          <h2 className="text-5xl lg:text-6xl font-bold text-gray-800 mb-6">
             How It{" "}
-            <span className="bg-gradient-to-r from-pink-500 via-purple-600 to-blue-600 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
               Works
             </span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
             Transform your memories into stunning framed canvas artwork in just 4 simple steps. 
             From upload to delivery, we make it effortless.
           </p>
         </div>
 
-        {/* Steps */}
-        <div className="relative">
-          {/* Desktop Layout */}
-          <div className="hidden lg:flex items-center justify-between mb-16">
-            {steps.map((step, index) => (
-              <div key={step.id} className="flex items-center">
-                {/* Step Card */}
-                <div className="group relative">
-                  <div className="text-center">
-                    {/* Icon */}
-                    <div className={`w-20 h-20 bg-gradient-to-r ${step.color} rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                      <step.icon className="w-10 h-10 text-white" />
-                    </div>
-                    
-                    {/* Step Number */}
-                    <div className="absolute -top-2 -right-2 w-8 h-8 bg-white border-4 border-gray-100 rounded-full flex items-center justify-center shadow-lg">
-                      <span className="text-sm font-bold text-gray-800">{step.id}</span>
-                    </div>
-                    
-                    {/* Content */}
-                    <div className="max-w-xs">
-                      <h3 className="text-xl font-bold text-gray-900 mb-2">{step.title}</h3>
-                      <p className="text-gray-600 text-sm leading-relaxed">{step.description}</p>
+        {/* Steps Grid */}
+        <div className="grid lg:grid-cols-4 gap-8 mb-16">
+          {steps.map((step, index) => (
+            <div key={step.id} className="relative group">
+              {/* Step Card */}
+              <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105 border border-white/50">
+                {/* Step Number Badge */}
+                <div className={`
+                  absolute -top-4 left-8 w-12 h-12 rounded-2xl flex items-center justify-center text-2xl font-bold text-white shadow-lg
+                  bg-gradient-to-r ${step.color}
+                `}>
+                  {step.id}
+                </div>
+
+                {/* Photo Frame */}
+                <div className="mb-6 mt-4">
+                  <div className={`
+                    relative w-full aspect-square rounded-2xl overflow-hidden shadow-lg
+                    bg-gradient-to-br ${step.color} p-1
+                  `}>
+                    <div className="w-full h-full bg-white rounded-xl overflow-hidden">
+                      <img 
+                        src={step.image} 
+                        alt={`Step ${step.id}`}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                   </div>
                 </div>
 
-                {/* Arrow (except for last step) */}
-                {index < steps.length - 1 && (
-                  <div className="mx-8 flex-shrink-0">
-                    <ArrowRight className="w-8 h-8 text-purple-300" />
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+                {/* Icon */}
+                <div className={`
+                  w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4
+                  bg-gradient-to-r ${step.color}
+                `}>
+                  <step.icon className="w-8 h-8 text-white" />
+                </div>
 
-          {/* Mobile Layout */}
-          <div className="lg:hidden space-y-8">
-            {steps.map((step, index) => (
-              <div key={step.id} className="relative">
-                <div className="flex items-start space-x-4">
-                  {/* Icon and Line */}
-                  <div className="flex-shrink-0 relative">
-                    <div className={`w-16 h-16 bg-gradient-to-r ${step.color} rounded-full flex items-center justify-center`}>
-                      <step.icon className="w-8 h-8 text-white" />
-                    </div>
-                    
-                    {/* Step Number */}
-                    <div className="absolute -top-2 -right-2 w-6 h-6 bg-white border-3 border-gray-100 rounded-full flex items-center justify-center shadow-lg">
-                      <span className="text-xs font-bold text-gray-800">{step.id}</span>
-                    </div>
-
-                    {/* Connecting Line (except for last step) */}
-                    {index < steps.length - 1 && (
-                      <div className="absolute top-16 left-1/2 transform -translate-x-1/2 w-0.5 h-12 bg-gradient-to-b from-purple-200 to-purple-100"></div>
-                    )}
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1 pt-2">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">{step.title}</h3>
-                    <p className="text-gray-600 leading-relaxed">{step.description}</p>
-                  </div>
+                {/* Content */}
+                <div className="text-center">
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">{step.title}</h3>
+                  <p className="text-gray-600 text-sm leading-relaxed">{step.description}</p>
                 </div>
               </div>
-            ))}
-          </div>
+
+              {/* Arrow connector (desktop only) */}
+              {index < steps.length - 1 && (
+                <div className="hidden lg:block absolute top-1/2 -right-4 transform -translate-y-1/2 z-10">
+                  <div className="w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center">
+                    <ArrowRight className="w-5 h-5 text-purple-500" />
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
         </div>
 
         {/* Bottom Stats */}
-        <div className="mt-16 grid grid-cols-2 lg:grid-cols-4 gap-8 bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-8">
+        <div className="mt-16 grid grid-cols-2 lg:grid-cols-4 gap-8 bg-white/60 backdrop-blur-sm rounded-3xl p-8 shadow-lg border border-white/50">
           <div className="text-center">
-            <div className="text-3xl font-bold text-purple-600 mb-2">2-3</div>
+            <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">2-3</div>
             <div className="text-gray-600 text-sm">Business Days</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-purple-600 mb-2">10+</div>
+            <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">20+</div>
             <div className="text-gray-600 text-sm">Art Styles</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-purple-600 mb-2">Premium</div>
+            <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">Premium</div>
             <div className="text-gray-600 text-sm">Canvas Quality</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-purple-600 mb-2">Free</div>
+            <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">Free</div>
             <div className="text-gray-600 text-sm">Shipping</div>
           </div>
         </div>
 
         {/* CTA */}
         <div className="text-center mt-12">
-          <button className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-8 py-4 rounded-full font-semibold text-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
+          <button className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-10 py-5 rounded-full font-semibold text-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 shadow-lg">
             Start Creating Your Art
           </button>
           <p className="text-gray-500 text-sm mt-3">No account required to get started</p>
