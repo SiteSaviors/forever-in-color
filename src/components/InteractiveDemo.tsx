@@ -1,234 +1,203 @@
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Upload, Camera, Smartphone, Play, Sparkles } from "lucide-react";
+import { Smartphone, Eye, Share2, Sparkles, Play, QrCode } from "lucide-react";
 
 const InteractiveDemo = () => {
-  const [selectedStyle, setSelectedStyle] = useState("neon");
-  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedFeature, setSelectedFeature] = useState("ar-view");
 
-  const artStyles = [
-    { id: "neon", name: "Neon Synthwave", colors: "from-pink-500 via-purple-600 to-cyan-400" },
-    { id: "watercolor", name: "Watercolor Dreams", colors: "from-blue-300 via-purple-300 to-pink-300" },
-    { id: "popart", name: "Pop Art Burst", colors: "from-red-500 via-yellow-400 to-blue-500" },
-    { id: "cartoon", name: "Cartoon Style", colors: "from-orange-400 via-red-500 to-pink-500" },
-    { id: "charcoal", name: "Charcoal Sketch", colors: "from-gray-400 via-gray-600 to-gray-800" },
-    { id: "impressionist", name: "Impressionist", colors: "from-blue-400 via-green-500 to-yellow-400" }
+  const features = [
+    {
+      id: "ar-view",
+      title: "AR View",
+      description: "See your artwork in your actual space before you buy",
+      icon: Eye,
+      color: "from-purple-500 to-pink-500",
+      video: "https://player.vimeo.com/video/1094210360?badge=0&autopause=0&autoplay=1&loop=1&player_id=0&app_id=58479&muted=1"
+    },
+    {
+      id: "qr-magic",
+      title: "QR Magic",
+      description: "Scan to bring your canvas to life with video memories",
+      icon: QrCode,
+      color: "from-blue-500 to-purple-500"
+    },
+    {
+      id: "share",
+      title: "Share & Gift",
+      description: "Share your AR experience with friends and family",
+      icon: Share2,
+      color: "from-pink-500 to-red-500"
+    }
   ];
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setUploadedImage(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    const files = e.dataTransfer.files;
-    if (files.length > 0) {
-      const file = files[0];
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setUploadedImage(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   return (
-    <section className="py-20 bg-gradient-to-br from-gray-50 to-purple-50">
+    <section className="py-20 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-16">
           <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-            See the{" "}
-            <span className="bg-gradient-to-r from-pink-500 via-purple-600 to-blue-600 bg-clip-text text-transparent">
+            Where Art Meets{" "}
+            <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
               Magic
-            </span>{" "}
-            in Action
+            </span>
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Upload a photo, choose your style, and watch your memories transform into stunning artwork. 
-            Then experience it in AR right from your phone.
+            Experience your memories like never before with cutting-edge AR technology. 
+            See, share, and relive your most precious moments in ways you never imagined.
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Photo Upload Demo */}
-          <Card className="group hover:shadow-xl transition-all duration-300">
-            <CardContent className="p-8">
-              <div className="text-center mb-6">
-                <div className="w-16 h-16 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Upload className="w-8 h-8 text-white" />
+        <div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
+          {/* Left side - AR Preview */}
+          <div className="relative">
+            <div className="aspect-square bg-gradient-to-br from-purple-100 to-pink-100 rounded-3xl overflow-hidden relative">
+              {selectedFeature === "ar-view" && (
+                <div className="w-full h-full relative">
+                  <iframe 
+                    src={features.find(f => f.id === selectedFeature)?.video}
+                    className="absolute top-0 left-0 w-full h-full rounded-3xl" 
+                    frameBorder="0" 
+                    allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" 
+                    title="AR Demo Video" 
+                  />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">1. Upload Your Photo</h3>
-                <p className="text-gray-600">Drag & drop or click to upload any photo</p>
-              </div>
-
-              {/* Upload Area */}
-              <div
-                className="border-2 border-dashed border-purple-200 rounded-xl p-8 text-center cursor-pointer hover:border-purple-400 transition-colors"
-                onDragOver={handleDragOver}
-                onDrop={handleDrop}
-                onClick={() => fileInputRef.current?.click()}
-              >
-                {uploadedImage ? (
-                  <div className="space-y-4">
-                    <img 
-                      src={uploadedImage} 
-                      alt="Uploaded" 
-                      className="w-32 h-32 object-cover rounded-lg mx-auto"
-                    />
-                    <p className="text-sm text-green-600 font-medium">✓ Photo uploaded successfully!</p>
-                    <button className="text-purple-600 text-sm hover:underline">
-                      Upload different photo
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <Camera className="w-12 h-12 text-purple-400 mx-auto" />
-                    <div>
-                      <p className="text-gray-600 font-medium">Drop your photo here</p>
-                      <p className="text-sm text-gray-500">or click to browse</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleFileUpload}
-                className="hidden"
-              />
-            </CardContent>
-          </Card>
-
-          {/* Style Selector */}
-          <Card className="group hover:shadow-xl transition-all duration-300">
-            <CardContent className="p-8">
-              <div className="text-center mb-6">
-                <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Sparkles className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">2. Choose Your Style</h3>
-                <p className="text-gray-600">Select from 10 unique artistic styles</p>
-              </div>
-
-              {/* Style Preview */}
-              <div className="mb-6">
-                <div className={`aspect-square bg-gradient-to-br ${artStyles.find(s => s.id === selectedStyle)?.colors} rounded-xl mb-4 flex items-center justify-center relative overflow-hidden`}>
-                  {uploadedImage ? (
-                    <div className="absolute inset-0">
-                      <img 
-                        src={uploadedImage} 
-                        alt="Style preview" 
-                        className="w-full h-full object-cover opacity-80"
-                      />
-                      <div className={`absolute inset-0 bg-gradient-to-br ${artStyles.find(s => s.id === selectedStyle)?.colors} mix-blend-overlay`}></div>
-                    </div>
-                  ) : (
-                    <div className="text-center text-white">
-                      <div className="w-16 h-16 border-4 border-white/50 rounded-full flex items-center justify-center mx-auto mb-2">
-                        <div className="w-8 h-8 bg-white/30 rounded-full"></div>
-                      </div>
-                      <p className="text-sm opacity-90">Upload a photo to see preview</p>
-                    </div>
-                  )}
-                </div>
-                <p className="text-center font-medium text-gray-700">
-                  {artStyles.find(s => s.id === selectedStyle)?.name}
-                </p>
-              </div>
-
-              {/* Style Options */}
-              <div className="grid grid-cols-2 gap-2">
-                {artStyles.map((style) => (
-                  <button
-                    key={style.id}
-                    onClick={() => setSelectedStyle(style.id)}
-                    className={`p-3 rounded-lg text-sm font-medium transition-all ${
-                      selectedStyle === style.id
-                        ? 'bg-purple-100 text-purple-700 border-2 border-purple-300'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    }`}
-                  >
-                    {style.name}
-                  </button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* AR Experience Preview */}
-          <Card className="group hover:shadow-xl transition-all duration-300">
-            <CardContent className="p-8">
-              <div className="text-center mb-6">
-                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Smartphone className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">3. Experience in AR</h3>
-                <p className="text-gray-600">View your artwork in your space with AR</p>
-              </div>
-
-              {/* AR Preview */}
-              <div className="relative">
-                <div className="aspect-square bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl mb-4 flex items-center justify-center relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-br from-purple-200/30 to-pink-200/30"></div>
+              )}
+              
+              {selectedFeature === "qr-magic" && (
+                <div className="w-full h-full flex items-center justify-center relative">
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-200/30 to-purple-200/30"></div>
                   <div className="text-center z-10">
-                    <div className="w-20 h-20 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Play className="w-10 h-10 text-purple-600" />
+                    <div className="w-32 h-32 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                      <QrCode className="w-16 h-16 text-gray-800" />
                     </div>
-                    <p className="text-purple-700 font-medium">AR Demo</p>
-                    <p className="text-sm text-purple-600">Tap to preview</p>
-                  </div>
-                  
-                  {/* Floating AR indicators */}
-                  <div className="absolute top-4 right-4">
-                    <Badge variant="secondary" className="bg-white/90 text-purple-700 font-semibold">
-                      AR Ready
-                    </Badge>
+                    <div className="bg-white/90 backdrop-blur-sm rounded-xl p-4 max-w-xs">
+                      <p className="text-gray-800 font-medium mb-2">Scan QR Code</p>
+                      <p className="text-sm text-gray-600">Watch your canvas come alive with video memories</p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
+              
+              {selectedFeature === "share" && (
+                <div className="w-full h-full flex items-center justify-center relative">
+                  <div className="absolute inset-0 bg-gradient-to-br from-pink-200/30 to-red-200/30"></div>
+                  <div className="text-center z-10">
+                    <div className="grid grid-cols-2 gap-4 mb-6">
+                      <div className="w-20 h-20 bg-white/80 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                        <Smartphone className="w-8 h-8 text-pink-600" />
+                      </div>
+                      <div className="w-20 h-20 bg-white/80 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                        <Share2 className="w-8 h-8 text-pink-600" />
+                      </div>
+                      <div className="w-20 h-20 bg-white/80 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                        <Eye className="w-8 h-8 text-pink-600" />
+                      </div>
+                      <div className="w-20 h-20 bg-white/80 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                        <Sparkles className="w-8 h-8 text-pink-600" />
+                      </div>
+                    </div>
+                    <div className="bg-white/90 backdrop-blur-sm rounded-xl p-4">
+                      <p className="text-gray-800 font-medium">Share the Magic</p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
-              {/* AR Features */}
-              <div className="space-y-3">
-                <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                  <span className="text-sm text-gray-600">See artwork on your wall</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                  <span className="text-sm text-gray-600">Adjust size & position</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                  <span className="text-sm text-gray-600">Share with friends</span>
-                </div>
+              {/* AR Badge */}
+              <div className="absolute top-6 right-6">
+                <Badge className="bg-white/90 text-purple-700 font-semibold border-0">
+                  AR Ready
+                </Badge>
               </div>
+            </div>
+          </div>
 
-              <button className="w-full mt-6 bg-gradient-to-r from-purple-500 to-pink-600 text-white py-3 rounded-lg font-medium hover:shadow-lg transition-all">
-                Try AR Experience
-              </button>
-            </CardContent>
-          </Card>
+          {/* Right side - Feature Selection */}
+          <div className="space-y-6">
+            {features.map((feature) => {
+              const Icon = feature.icon;
+              const isSelected = selectedFeature === feature.id;
+              
+              return (
+                <Card 
+                  key={feature.id}
+                  className={`cursor-pointer transition-all duration-300 hover:shadow-lg ${
+                    isSelected ? 'ring-2 ring-purple-500 shadow-lg' : ''
+                  }`}
+                  onClick={() => setSelectedFeature(feature.id)}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-start space-x-4">
+                      <div className={`w-12 h-12 rounded-full flex items-center justify-center bg-gradient-to-r ${feature.color} flex-shrink-0`}>
+                        <Icon className="w-6 h-6 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">{feature.title}</h3>
+                        <p className="text-gray-600">{feature.description}</p>
+                        
+                        {feature.id === "ar-view" && (
+                          <div className="mt-4 space-y-2">
+                            <div className="flex items-center space-x-2">
+                              <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                              <span className="text-sm text-gray-600">See artwork on your wall</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                              <span className="text-sm text-gray-600">Adjust size & position</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                              <span className="text-sm text-gray-600">Preview before purchase</span>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {feature.id === "qr-magic" && (
+                          <div className="mt-4 space-y-2">
+                            <div className="flex items-center space-x-2">
+                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                              <span className="text-sm text-gray-600">5-30 second video memories</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                              <span className="text-sm text-gray-600">Embedded QR code</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                              <span className="text-sm text-gray-600">Works with any phone</span>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {feature.id === "share" && (
+                          <div className="mt-4 space-y-2">
+                            <div className="flex items-center space-x-2">
+                              <div className="w-2 h-2 bg-pink-500 rounded-full"></div>
+                              <span className="text-sm text-gray-600">Send AR links to friends</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <div className="w-2 h-2 bg-pink-500 rounded-full"></div>
+                              <span className="text-sm text-gray-600">Perfect for gifting</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <div className="w-2 h-2 bg-pink-500 rounded-full"></div>
+                              <span className="text-sm text-gray-600">Social media ready</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
         </div>
 
         {/* Bottom CTA */}
-        <div className="text-center mt-16">
+        <div className="text-center">
           <div className="bg-white rounded-2xl p-8 shadow-xl border border-purple-100 max-w-4xl mx-auto">
             <h3 className="text-2xl font-bold text-gray-900 mb-4">Ready to Transform Your Memories?</h3>
             <p className="text-gray-600 mb-6">
