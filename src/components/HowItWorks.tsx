@@ -9,7 +9,7 @@ const HowItWorks = () => {
       title: "Upload Your Photo",
       description: "Share a meaningful photo—loved ones, pets, homes, cars, or anything that holds special significance to you.",
       color: "from-purple-500 to-blue-500",
-      image: "/lovable-uploads/1210f9a1-2907-4774-88bc-e3f3c22f6055.png" // Using existing uploaded image as placeholder
+      image: "/lovable-uploads/5f0a131f-67bf-4402-915b-712bf2b4d954.png"
     },
     {
       id: 2,
@@ -17,7 +17,7 @@ const HowItWorks = () => {
       title: "Choose Your Style",
       description: "Select from 20+ artistic styles including watercolor, poster, pop art, neon, and more to transform your photo.",
       color: "from-pink-500 to-purple-500",
-      image: "/lovable-uploads/55c1363e-f80a-482b-8adc-a129075dced5.png"
+      image: "/lovable-uploads/e0c0451d-410c-44df-a788-593bfecb9b68.png"
     },
     {
       id: 3,
