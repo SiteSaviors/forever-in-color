@@ -25,7 +25,7 @@ const HowItWorks = () => {
       title: "Add Customizations & Optional AR",
       description: "Choose size, orientation, and frame to boost image quality with AI upscaling or add QR code for a magical AR experience—watch your art come to life through a 5 to 30 second video.",
       color: "from-purple-500 to-pink-500",
-      image: "/lovable-uploads/9e8397a4-ee91-45c4-b9ff-81b938018dd3.png"
+      video: true
     },
     {
       id: 4,
@@ -74,18 +74,30 @@ const HowItWorks = () => {
                   {step.id}
                 </div>
 
-                {/* Photo Frame */}
+                {/* Photo Frame or Video */}
                 <div className="mb-6 mt-4">
                   <div className={`
                     relative w-full aspect-square rounded-2xl overflow-hidden shadow-lg
                     bg-gradient-to-br ${step.color} p-1
                   `}>
                     <div className="w-full h-full bg-white rounded-xl overflow-hidden">
-                      <img 
-                        src={step.image} 
-                        alt={`Step ${step.id}`}
-                        className="w-full h-full object-cover"
-                      />
+                      {step.video ? (
+                        <div className="w-full h-full relative">
+                          <iframe 
+                            src="https://player.vimeo.com/video/1094210360?badge=0&autopause=0&autoplay=1&loop=1&player_id=0&app_id=58479&muted=1" 
+                            className="absolute top-0 left-0 w-full h-full"
+                            frameBorder="0" 
+                            allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+                            title="AR Demo Video"
+                          />
+                        </div>
+                      ) : (
+                        <img 
+                          src={step.image} 
+                          alt={`Step ${step.id}`}
+                          className="w-full h-full object-cover"
+                        />
+                      )}
                     </div>
                   </div>
                 </div>
