@@ -2,26 +2,32 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Smartphone, Eye, Share2, Sparkles, Play, QrCode } from "lucide-react";
+import { Smartphone, Share2, QrCode, Play } from "lucide-react";
 
 const InteractiveDemo = () => {
-  const [selectedFeature, setSelectedFeature] = useState("ar-view");
+  const [selectedFeature, setSelectedFeature] = useState("qr-magic");
 
   const features = [
     {
-      id: "ar-view",
-      title: "AR View",
-      description: "See your artwork in your actual space before you buy",
-      icon: Eye,
-      color: "from-purple-500 to-pink-500",
-      video: "https://player.vimeo.com/video/1094210360?badge=0&autopause=0&autoplay=1&loop=1&player_id=0&app_id=58479&muted=1"
+      id: "qr-magic",
+      title: "Scan to Unlock",
+      description: "Each artwork includes an optional QR code that visitors can scan with their phone.",
+      icon: QrCode,
+      color: "from-purple-500 to-pink-500"
     },
     {
-      id: "qr-magic",
-      title: "QR Magic",
-      description: "Scan to bring your canvas to life with video memories",
-      icon: QrCode,
+      id: "ar-experience",
+      title: "AR Experience",
+      description: "Watch as your artwork comes alive with animations, glowing effects, or movement.",
+      icon: Smartphone,
       color: "from-blue-500 to-purple-500"
+    },
+    {
+      id: "living-memories",
+      title: "Living Memories",
+      description: "A neon car revs its engine, a loved one waves hello, or a pet bounds across the screen.",
+      icon: Play,
+      color: "from-pink-500 to-purple-500"
     },
     {
       id: "share",
@@ -53,28 +59,46 @@ const InteractiveDemo = () => {
           {/* Left side - AR Preview */}
           <div className="relative">
             <div className="aspect-square bg-gradient-to-br from-purple-100 to-pink-100 rounded-3xl overflow-hidden relative">
-              {selectedFeature === "ar-view" && (
-                <div className="w-full h-full relative">
-                  <iframe 
-                    src={features.find(f => f.id === selectedFeature)?.video}
-                    className="absolute top-0 left-0 w-full h-full rounded-3xl" 
-                    frameBorder="0" 
-                    allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" 
-                    title="AR Demo Video" 
-                  />
-                </div>
-              )}
-              
               {selectedFeature === "qr-magic" && (
                 <div className="w-full h-full flex items-center justify-center relative">
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-200/30 to-purple-200/30"></div>
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-200/30 to-pink-200/30"></div>
                   <div className="text-center z-10">
                     <div className="w-32 h-32 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
                       <QrCode className="w-16 h-16 text-gray-800" />
                     </div>
                     <div className="bg-white/90 backdrop-blur-sm rounded-xl p-4 max-w-xs">
                       <p className="text-gray-800 font-medium mb-2">Scan QR Code</p>
-                      <p className="text-sm text-gray-600">Watch your canvas come alive with video memories</p>
+                      <p className="text-sm text-gray-600">Each artwork includes an optional QR code</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {selectedFeature === "ar-experience" && (
+                <div className="w-full h-full flex items-center justify-center relative">
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-200/30 to-purple-200/30"></div>
+                  <div className="text-center z-10">
+                    <div className="w-32 h-32 bg-white/80 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                      <Smartphone className="w-16 h-16 text-blue-600" />
+                    </div>
+                    <div className="bg-white/90 backdrop-blur-sm rounded-xl p-4 max-w-xs">
+                      <p className="text-gray-800 font-medium mb-2">AR Experience</p>
+                      <p className="text-sm text-gray-600">Watch artwork come alive with effects</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {selectedFeature === "living-memories" && (
+                <div className="w-full h-full flex items-center justify-center relative">
+                  <div className="absolute inset-0 bg-gradient-to-br from-pink-200/30 to-purple-200/30"></div>
+                  <div className="text-center z-10">
+                    <div className="w-32 h-32 bg-white/80 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                      <Play className="w-16 h-16 text-pink-600" />
+                    </div>
+                    <div className="bg-white/90 backdrop-blur-sm rounded-xl p-4 max-w-xs">
+                      <p className="text-gray-800 font-medium mb-2">Living Memories</p>
+                      <p className="text-sm text-gray-600">Memories that come to life</p>
                     </div>
                   </div>
                 </div>
@@ -92,10 +116,10 @@ const InteractiveDemo = () => {
                         <Share2 className="w-8 h-8 text-pink-600" />
                       </div>
                       <div className="w-20 h-20 bg-white/80 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                        <Eye className="w-8 h-8 text-pink-600" />
+                        <QrCode className="w-8 h-8 text-pink-600" />
                       </div>
                       <div className="w-20 h-20 bg-white/80 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                        <Sparkles className="w-8 h-8 text-pink-600" />
+                        <Play className="w-8 h-8 text-pink-600" />
                       </div>
                     </div>
                     <div className="bg-white/90 backdrop-blur-sm rounded-xl p-4">
@@ -136,63 +160,35 @@ const InteractiveDemo = () => {
                       <div className="flex-1">
                         <h3 className="text-xl font-bold text-gray-900 mb-2">{feature.title}</h3>
                         <p className="text-gray-600">{feature.description}</p>
-                        
-                        {feature.id === "ar-view" && (
-                          <div className="mt-4 space-y-2">
-                            <div className="flex items-center space-x-2">
-                              <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                              <span className="text-sm text-gray-600">See artwork on your wall</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                              <span className="text-sm text-gray-600">Adjust size & position</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                              <span className="text-sm text-gray-600">Preview before purchase</span>
-                            </div>
-                          </div>
-                        )}
-                        
-                        {feature.id === "qr-magic" && (
-                          <div className="mt-4 space-y-2">
-                            <div className="flex items-center space-x-2">
-                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                              <span className="text-sm text-gray-600">5-30 second video memories</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                              <span className="text-sm text-gray-600">Embedded QR code</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                              <span className="text-sm text-gray-600">Works with any phone</span>
-                            </div>
-                          </div>
-                        )}
-                        
-                        {feature.id === "share" && (
-                          <div className="mt-4 space-y-2">
-                            <div className="flex items-center space-x-2">
-                              <div className="w-2 h-2 bg-pink-500 rounded-full"></div>
-                              <span className="text-sm text-gray-600">Send AR links to friends</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <div className="w-2 h-2 bg-pink-500 rounded-full"></div>
-                              <span className="text-sm text-gray-600">Perfect for gifting</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <div className="w-2 h-2 bg-pink-500 rounded-full"></div>
-                              <span className="text-sm text-gray-600">Social media ready</span>
-                            </div>
-                          </div>
-                        )}
                       </div>
                     </div>
                   </CardContent>
                 </Card>
               );
             })}
+
+            {/* Perfect for section */}
+            <div className="mt-12 p-6 bg-white/60 backdrop-blur-sm rounded-xl">
+              <h4 className="text-lg font-bold text-gray-900 mb-4">Perfect for:</h4>
+              <ul className="space-y-2">
+                <li className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                  <span className="text-gray-600">Memorial pieces that feel truly alive</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                  <span className="text-gray-600">Interactive gifts that wow recipients</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                  <span className="text-gray-600">Conversation starters in your home</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                  <span className="text-gray-600">Sharing memories in a whole new way</span>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
 
