@@ -1,10 +1,9 @@
-
 import { useState, useCallback } from "react";
 import { Upload, Check, X, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface PhotoUploadProps {
-  onUploadComplete: () => void;
+  onUploadComplete: (imageUrl: string) => void;
 }
 
 const PhotoUpload = ({ onUploadComplete }: PhotoUploadProps) => {
@@ -29,13 +28,14 @@ const PhotoUpload = ({ onUploadComplete }: PhotoUploadProps) => {
     // Create preview
     const reader = new FileReader();
     reader.onload = (e) => {
-      setPreviewUrl(e.target?.result as string);
+      const imageUrl = e.target?.result as string;
+      setPreviewUrl(imageUrl);
       setUploadedFile(file);
       setIsUploading(false);
       
       // Simulate upload delay then mark as complete
       setTimeout(() => {
-        onUploadComplete();
+        onUploadComplete(imageUrl);
       }, 500);
     };
     reader.readAsDataURL(file);

@@ -1,8 +1,8 @@
-
 import { useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import PhotoUpload from "@/components/product/PhotoUpload";
+import StylePreview from "@/components/product/StylePreview";
 import { 
   Accordion, 
   AccordionContent, 
@@ -14,6 +14,8 @@ import { Check, Upload, Palette, Settings, Gift } from "lucide-react";
 const Product = () => {
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [activeStep, setActiveStep] = useState("step-1");
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [selectedStyle, setSelectedStyle] = useState<{ id: number; name: string } | null>(null);
 
   const handleStepComplete = (stepNumber: number) => {
     if (!completedSteps.includes(stepNumber)) {
@@ -23,6 +25,16 @@ const Product = () => {
         setActiveStep(`step-${stepNumber + 1}`);
       }
     }
+  };
+
+  const handlePhotoUpload = (imageUrl: string) => {
+    setUploadedImage(imageUrl);
+    handleStepComplete(1);
+  };
+
+  const handleStyleSelect = (styleId: number, styleName: string) => {
+    setSelectedStyle({ id: styleId, name: styleName });
+    handleStepComplete(2);
   };
 
   const steps = [
@@ -122,6 +134,9 @@ const Product = () => {
                           ${isCompleted || isActive ? 'text-gray-900' : 'text-gray-500'}
                         `}>
                           {step.title}
+                          {step.number === 2 && selectedStyle && (
+                            <span className="text-purple-600 ml-2">- {selectedStyle.name}</span>
+                          )}
                         </h3>
                         <p className="text-gray-500 text-sm mt-1">
                           {step.description}
@@ -147,11 +162,18 @@ const Product = () => {
                   <AccordionContent className="px-8 pb-8">
                     <div className="border-t border-gray-100 pt-6">
                       {step.number === 1 && (
-                        <PhotoUpload onUploadComplete={() => handleStepComplete(1)} />
+                        <PhotoUpload onUploadComplete={handlePhotoUpload} />
                       )}
-                      {step.number === 2 && (
+                      {step.number === 2 && uploadedImage && (
+                        <StylePreview 
+                          uploadedImage={uploadedImage}
+                          onStyleSelect={handleStyleSelect}
+                          onComplete={() => handleStepComplete(2)}
+                        />
+                      )}
+                      {step.number === 2 && !uploadedImage && (
                         <div className="text-center py-8 text-gray-500">
-                          Style selection coming next...
+                          Please upload a photo first to see style previews.
                         </div>
                       )}
                       {step.number === 3 && (
