@@ -16,7 +16,7 @@ const HowItWorks = () => {
       title: "Choose Your Style",
       description: "Select from 20+ artistic styles including watercolor, poster, pop art, neon, and more to transform your photo.",
       color: "from-pink-500 to-purple-500",
-      image: "/lovable-uploads/e0c0451d-410c-44df-a788-593bfecb9b68.png"
+      image: "/lovable-uploads/89f58458-8846-4121-9643-d4951ca92893.png"
     },
     {
       id: 3,
