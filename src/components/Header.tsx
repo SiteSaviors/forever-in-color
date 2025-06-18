@@ -1,6 +1,6 @@
-
 import { Menu, X, Search, ShoppingCart, User } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
@@ -16,11 +16,13 @@ const Header = () => {
         <div className="flex items-center justify-between h-20">
           {/* Logo - Left */}
           <div className="flex items-center flex-shrink-0" style={{ marginLeft: `${logoMarginLeft}px` }}>
-            <img 
-              src="/lovable-uploads/9e8397a4-ee91-45c4-b9ff-81b938018dd3.png" 
-              alt="Forever In Color" 
-              className="h-12 w-auto object-contain" 
-            />
+            <Link to="/">
+              <img 
+                src="/lovable-uploads/9e8397a4-ee91-45c4-b9ff-81b938018dd3.png" 
+                alt="Forever In Color" 
+                className="h-12 w-auto object-contain" 
+              />
+            </Link>
           </div>
 
           {/* Desktop Navigation - Center */}
@@ -79,9 +81,12 @@ const Header = () => {
             </button>
 
             {/* Create Art Button */}
-            <button className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 whitespace-nowrap ml-4">
+            <Link 
+              to="/product"
+              className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 whitespace-nowrap ml-4"
+            >
               Create Art
-            </button>
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -147,9 +152,12 @@ const Header = () => {
                 </button>
               </div>
 
-              <button className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-8 py-3 rounded-full font-semibold w-full mt-4">
+              <Link 
+                to="/product"
+                className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-8 py-3 rounded-full font-semibold w-full mt-4 text-center"
+              >
                 Create Art
-              </button>
+              </Link>
             </nav>
           </div>
         )}
