@@ -87,7 +87,7 @@ const ProductStep = ({
                 ${isCompleted || isActive ? 'text-gray-900' : 'text-gray-500 group-hover:text-gray-700'}
               `}>
                 {step.title}
-                {step.number === 2 && selectedStyle && (
+                {step.number === 1 && selectedStyle && (
                   <span className="text-purple-600 ml-2 font-normal">- {selectedStyle.name}</span>
                 )}
               </h3>

@@ -24,13 +24,13 @@ const Product = () => {
     }
   };
 
-  const handlePhotoUpload = (imageUrl: string) => {
-    setUploadedImage(imageUrl);
+  const handleStyleSelect = (styleId: number, styleName: string) => {
+    setSelectedStyle({ id: styleId, name: styleName });
     handleStepComplete(1);
   };
 
-  const handleStyleSelect = (styleId: number, styleName: string) => {
-    setSelectedStyle({ id: styleId, name: styleName });
+  const handlePhotoUpload = (imageUrl: string) => {
+    setUploadedImage(imageUrl);
     handleStepComplete(2);
   };
 
@@ -40,20 +40,20 @@ const Product = () => {
     {
       id: "step-1",
       number: 1,
-      title: "Upload Your Photo",
-      icon: Upload,
-      description: "Choose a clear photo with good lighting",
-      required: true,
-      estimatedTime: "30 seconds"
-    },
-    {
-      id: "step-2", 
-      number: 2,
       title: "Choose Your Style",
       icon: Palette,
       description: "Select from 15 unique artistic styles",
       required: true,
       estimatedTime: "1-2 minutes"
+    },
+    {
+      id: "step-2", 
+      number: 2,
+      title: "Upload Your Photo",
+      icon: Upload,
+      description: "Choose a clear photo with good lighting",
+      required: true,
+      estimatedTime: "30 seconds"
     },
     {
       id: "step-3",
@@ -107,6 +107,7 @@ const Product = () => {
                   <StepContent
                     stepNumber={step.number}
                     uploadedImage={uploadedImage}
+                    selectedStyle={selectedStyle}
                     onPhotoUpload={handlePhotoUpload}
                     onStyleSelect={handleStyleSelect}
                     onStepComplete={handleStepComplete}
