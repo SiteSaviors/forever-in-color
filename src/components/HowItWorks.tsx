@@ -32,7 +32,7 @@ const HowItWorks = () => {
       title: "Get Your Art",
       description: "Unbox your one-of-a-kind creation—delivered ready to hang, gift, or share. A modern heirloom made just for you that lasts a lifetime.",
       color: "from-gray-400 to-gray-600",
-      image: "/lovable-uploads/a1b70065-4181-40bc-9dca-1ebaa1352981.png"
+      image: "/lovable-uploads/6ac56455-7d7e-4734-a024-eaecc752e908.png"
     }
   ];
 
