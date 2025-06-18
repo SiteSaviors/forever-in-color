@@ -45,9 +45,7 @@ const HowItWorks = () => {
               Works
             </span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">Transform your memories into stunning framed canvas artwork in just 4 simple steps. 
-Include a QR Code that brings your canvas to life with a 5 to 30 second video. 
- From upload to delivery, we make it effortless.</p>
+          <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">Transform your memories into stunning framed canvas artwork in just 4 simple steps.  Include a QR Code that brings your canvas to life with a 5 to 30 second video. From upload to delivery, we make it effortless.</p>
         </div>
 
         {/* Steps Grid */}
