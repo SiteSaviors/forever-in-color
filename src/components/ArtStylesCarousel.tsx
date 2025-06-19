@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { artStyles } from "@/data/artStyles";
 import { ArtStyle } from "@/types/artStyle";
@@ -85,7 +86,7 @@ const ArtStylesCarousel = () => {
   };
 
   return (
-    <section ref={sectionRef} className="relative py-20 overflow-hidden">
+    <section ref={sectionRef} className="relative py-12 overflow-hidden">
       {/* Enhanced Background with Parallax and Radial Gradient */}
       <div 
         className="absolute inset-0 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50"
@@ -141,7 +142,7 @@ const ArtStylesCarousel = () => {
 
         {/* 3D Carousel with enhanced container shadow and parallax */}
         <div 
-          className="relative h-[700px] flex items-center justify-center perspective-1000"
+          className="relative h-[700px] flex items-center justify-center perspective-1000 -mt-8"
           style={{
             transform: `translateY(${parallax.cards}px)`,
             transition: 'transform 0.1s ease-out'
@@ -169,6 +170,7 @@ const ArtStylesCarousel = () => {
         </div>
 
         <div
+          className="-mt-4"
           style={{
             transform: `translateY(${parallax.header * 0.5}px)`,
             transition: 'transform 0.1s ease-out'
