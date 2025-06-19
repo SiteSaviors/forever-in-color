@@ -142,7 +142,7 @@ const ArtStylesCarousel = () => {
 
         {/* 3D Carousel with enhanced container shadow and parallax */}
         <div 
-          className="relative h-[700px] flex items-center justify-center perspective-1000 -mt-8"
+          className="relative h-[700px] flex items-center justify-center perspective-1000 -mt-4"
           style={{
             transform: `translateY(${parallax.cards}px)`,
             transition: 'transform 0.1s ease-out'
