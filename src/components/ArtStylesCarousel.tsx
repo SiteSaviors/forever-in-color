@@ -11,17 +11,30 @@ import CarouselCTA from "@/components/carousel/CarouselCTA";
 const ArtStylesCarousel = () => {
   const [currentIndex, setCurrentIndex] = useState(7); // Start with middle item
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [hasInitialRotated, setHasInitialRotated] = useState(false);
+
+  // Initial auto-rotate on load to showcase interaction
+  useEffect(() => {
+    if (!hasInitialRotated) {
+      const initialRotateTimeout = setTimeout(() => {
+        setCurrentIndex((prev) => (prev + 1) % artStyles.length);
+        setHasInitialRotated(true);
+      }, 1500); // Wait 1.5s after load then rotate once
+
+      return () => clearTimeout(initialRotateTimeout);
+    }
+  }, [hasInitialRotated]);
 
   // Auto-play functionality
   useEffect(() => {
-    if (!isAutoPlaying) return;
+    if (!isAutoPlaying || !hasInitialRotated) return;
 
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % artStyles.length);
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [isAutoPlaying]);
+  }, [isAutoPlaying, hasInitialRotated]);
 
   const handlePrevious = () => {
     setIsAutoPlaying(false);
