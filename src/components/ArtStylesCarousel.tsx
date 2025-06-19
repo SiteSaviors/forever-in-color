@@ -86,7 +86,7 @@ const ArtStylesCarousel = () => {
   };
 
   return (
-    <section ref={sectionRef} className="relative pb-12 overflow-hidden">
+    <section ref={sectionRef} className="relative py-12 overflow-hidden">
       {/* Enhanced Background with Parallax and Radial Gradient */}
       <div 
         className="absolute inset-0 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50"
