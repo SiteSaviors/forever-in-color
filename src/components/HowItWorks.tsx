@@ -17,7 +17,7 @@ const HowItWorks = () => {
   }, {
     id: 3,
     icon: Settings,
-    title: "Add Customizations & Optional AR",
+    title: "Add Personalizations",
     description: "Choose size, orientation, and frame. to boost image quality or add a QR code for a magical AR experience.",
     color: "from-purple-500 to-pink-500",
     video: true
