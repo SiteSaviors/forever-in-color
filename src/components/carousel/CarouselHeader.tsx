@@ -1,9 +1,6 @@
-
 import { Palette } from "lucide-react";
-
 const CarouselHeader = () => {
-  return (
-    <div className="text-center mb-4">
+  return <div className="text-center mb-4">
       <div className="flex items-center justify-center mb-4">
         <Palette className="w-8 h-8 text-purple-600 mr-3" />
         <h2 className="text-4xl lg:text-5xl font-bold text-gray-900">
@@ -13,11 +10,9 @@ const CarouselHeader = () => {
           </span>
         </h2>
       </div>
-      <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+      <p className="text-gray-600 max-w-3xl mx-auto text-2xl">
         Explore our curated collection of artistic styles — each one transforms your photo into a one-of-a-kind masterpiece
       </p>
-    </div>
-  );
+    </div>;
 };
-
 export default CarouselHeader;
