@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -27,7 +26,7 @@ const StylePreview = ({ uploadedImage, onStyleSelect, onComplete }: StylePreview
     {
       id: 1,
       name: "Original Image",
-      description: "Keep your photo exactly as it is, with high-quality printing",
+      description: "Your photo exactly as it is—printed in stunning clarity",
       popular: false,
       colors: ["from-gray-400", "via-gray-500", "to-gray-600"],
       category: "Natural"
@@ -50,80 +49,80 @@ const StylePreview = ({ uploadedImage, onStyleSelect, onComplete }: StylePreview
     },
     {
       id: 4,
-      name: "Geometric Grace",
-      description: "Modern geometric patterns with clean lines and bold shapes",
+      name: "Pastel Bliss",
+      description: "Gentle pastel hues with soft blends for a dreamy, calming feel",
       popular: false,
-      colors: ["from-teal-400", "via-blue-500", "to-indigo-600"],
-      category: "Modern"
+      colors: ["from-pink-200", "via-purple-200", "to-blue-200"],
+      category: "Artistic"
     },
     {
       id: 5,
-      name: "3D Stylized",
-      description: "Three-dimensional effect with depth and modern digital styling",
+      name: "Crystalized Charm",
+      description: "Faceted, gem-like texture with a modern, artistic twist",
+      popular: false,
+      colors: ["from-emerald-400", "via-teal-500", "to-blue-600"],
+      category: "Modern"
+    },
+    {
+      id: 6,
+      name: "3D Storybook",
+      description: "Bold, fun, and full of personality—like a scene from your favorite animated movie",
       popular: true,
       colors: ["from-purple-500", "via-pink-500", "to-red-500"],
       category: "Digital"
     },
     {
-      id: 6,
+      id: 7,
       name: "Artisan Charcoal",
-      description: "Hand-drawn charcoal sketch with dramatic shadows and highlights",
+      description: "Soft, hand-drawn black-and-white sketch that looks like it came straight out of an artist's notebook",
       popular: false,
       colors: ["from-gray-600", "via-gray-800", "to-black"],
       category: "Classic"
     },
     {
-      id: 7,
-      name: "Vintage Pop Art",
-      description: "Bold, vibrant colors inspired by classic pop art movement",
+      id: 8,
+      name: "Pop Art Burst",
+      description: "Bold, vibrant colors inspired by the classic pop art movement",
       popular: true,
       colors: ["from-red-500", "via-yellow-400", "to-blue-500"],
       category: "Retro"
     },
     {
-      id: 8,
+      id: 9,
       name: "Neon Splash",
-      description: "Explosive neon colors with dynamic splashes and bursts",
+      description: "High-voltage color and explosive energy in every brushstroke",
       popular: false,
       colors: ["from-lime-400", "via-pink-500", "to-purple-600"],
       category: "Digital"
     },
     {
-      id: 9,
-      name: "Neon Glow",
-      description: "Retro-futuristic vibes with electric colors and cyberpunk aesthetics",
+      id: 10,
+      name: "Electric Bloom",
+      description: "Futuristic cyberpunk aesthetic",
       popular: true,
       colors: ["from-pink-500", "via-purple-600", "to-cyan-400"],
       category: "Digital"
     },
     {
-      id: 10,
+      id: 11,
       name: "Artistic Mashup",
-      description: "Creative blend of multiple artistic styles in one unique piece",
+      description: "A creative collision of styles—bold, expressive, and one of a kind",
       popular: false,
       colors: ["from-orange-400", "via-red-500", "to-purple-600"],
       category: "Creative"
     },
     {
-      id: 11,
-      name: "Crafted Embroidery",
-      description: "Detailed embroidery style with textile textures and patterns",
-      popular: false,
-      colors: ["from-rose-400", "via-pink-500", "to-red-500"],
-      category: "Textile"
-    },
-    {
       id: 12,
-      name: "Soft Pastel",
-      description: "Gentle pastel colors with dreamy, ethereal quality",
-      popular: true,
-      colors: ["from-pink-200", "via-purple-200", "to-blue-200"],
-      category: "Artistic"
+      name: "Modern Abstract",
+      description: "Retro poster design style",
+      popular: false,
+      colors: ["from-teal-400", "via-blue-500", "to-indigo-600"],
+      category: "Modern"
     },
     {
       id: 13,
       name: "100-Photo Mosaic",
-      description: "Your image recreated using 100 smaller photos in mosaic style",
+      description: "Your image recreated from 100 tiny memories—up close and meaningful",
       popular: false,
       colors: ["from-emerald-400", "via-teal-500", "to-blue-600"],
       category: "Creative"
@@ -131,7 +130,7 @@ const StylePreview = ({ uploadedImage, onStyleSelect, onComplete }: StylePreview
     {
       id: 14,
       name: "Intricate Ink",
-      description: "Detailed ink drawing with fine lines and artistic flourishes",
+      description: "Detailed ink drawing with fine lines and flourishes of elegance",
       popular: false,
       colors: ["from-slate-600", "via-gray-700", "to-black"],
       category: "Classic"
@@ -139,7 +138,7 @@ const StylePreview = ({ uploadedImage, onStyleSelect, onComplete }: StylePreview
     {
       id: 15,
       name: "Elegant Vintage",
-      description: "Timeless vintage aesthetic with aged, sophisticated charm",
+      description: "Timeless tones and aged charm, like a classic from another era",
       popular: false,
       colors: ["from-amber-500", "via-yellow-600", "to-orange-700"],
       category: "Retro"
