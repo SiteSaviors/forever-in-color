@@ -16,13 +16,13 @@ export const artStyles: ArtStyle[] = [
   {
     id: 3,
     name: "Watercolor Dreams",
-    image: "/lovable-uploads/538dcdf0-4fce-48ea-be55-314d68926919.png",
+    image: "/lovable-uploads/c7a9f734-bbdc-45b0-9c18-4a3e57dfe51d.png",
     description: "Soft, flowing watercolor effects with gentle color bleeds"
   },
   {
     id: 4,
     name: "Pastel Bliss",
-    image: "/lovable-uploads/538dcdf0-4fce-48ea-be55-314d68926919.png",
+    image: "/lovable-uploads/22357932-6c11-49ff-8dd7-fce9f6c2ea0e.png",
     description: "Gentle pastel hues with soft blends for a dreamy, calming feel"
   },
   {
