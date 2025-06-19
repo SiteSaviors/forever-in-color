@@ -58,9 +58,9 @@ const InteractiveDemo = () => {
         <div className="grid lg:grid-cols-2 gap-16 items-center mb-20">
           {/* Left side - Artwork Showcase */}
           <div className="relative flex justify-center">
-            <div className="relative max-w-md w-full">
+            <div className="relative max-w-lg w-full">
               {/* Main artwork image */}
-              <div className="relative bg-white rounded-2xl shadow-2xl p-6">
+              <div className="relative bg-white rounded-2xl shadow-2xl p-8">
                 <img 
                   src="/lovable-uploads/538dcdf0-4fce-48ea-be55-314d68926919.png" 
                   alt="Watercolor Dreams - Wedding portrait artwork with AR QR code"
@@ -68,16 +68,16 @@ const InteractiveDemo = () => {
                 />
                 
                 {/* AR Badge */}
-                <div className="absolute top-8 right-8">
-                  <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold border-0 shadow-lg">
+                <div className="absolute top-10 right-10">
+                  <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold border-0 shadow-lg text-sm px-3 py-1">
                     AR Ready
                   </Badge>
                 </div>
               </div>
               
               {/* Floating elements for visual enhancement */}
-              <div className="absolute -top-4 -left-4 w-24 h-24 bg-gradient-to-br from-purple-200 to-pink-200 rounded-full opacity-60 blur-xl"></div>
-              <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-gradient-to-br from-blue-200 to-purple-200 rounded-full opacity-40 blur-xl"></div>
+              <div className="absolute -top-6 -left-6 w-32 h-32 bg-gradient-to-br from-purple-200 to-pink-200 rounded-full opacity-60 blur-xl"></div>
+              <div className="absolute -bottom-8 -right-8 w-40 h-40 bg-gradient-to-br from-blue-200 to-purple-200 rounded-full opacity-40 blur-xl"></div>
             </div>
           </div>
 
