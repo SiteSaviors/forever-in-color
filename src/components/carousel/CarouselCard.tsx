@@ -1,6 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { ArtStyle } from "@/types/artStyle";
+import { Sparkles } from "lucide-react";
 
 interface CarouselCardProps {
   style: ArtStyle;
@@ -61,7 +62,7 @@ const CarouselCard = ({ style, index, currentIndex, onClick }: CarouselCardProps
       }}
       onClick={() => onClick(style)}
     >
-      <div className="w-full h-full bg-white rounded-2xl shadow-2xl overflow-hidden group hover:shadow-3xl transition-all duration-300">
+      <div className="w-full h-full bg-white rounded-2xl shadow-2xl overflow-hidden group hover:shadow-3xl hover:scale-[1.02] transition-all duration-300">
         {/* Image */}
         <div className="relative h-64 overflow-hidden">
           <img
@@ -85,13 +86,17 @@ const CarouselCard = ({ style, index, currentIndex, onClick }: CarouselCardProps
           <p className="text-gray-600 text-sm mb-4">{style.description}</p>
           
           <Button 
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-0"
+            className="w-full relative overflow-hidden bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-0 transition-all duration-300 group/btn"
             onClick={(e) => {
               e.stopPropagation();
               onClick(style);
             }}
           >
-            Try This Style
+            <span className="relative z-10 flex items-center justify-center gap-2">
+              Try This Style
+              <Sparkles className="w-4 h-4 opacity-0 group-hover/btn:opacity-100 transition-all duration-300 group-hover/btn:animate-pulse" />
+            </span>
+            <div className="absolute inset-0 bg-gradient-to-r from-pink-600 to-purple-600 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300" />
           </Button>
         </div>
       </div>
