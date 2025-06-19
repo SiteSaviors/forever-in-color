@@ -4,13 +4,13 @@ export const artStyles: ArtStyle[] = [
   {
     id: 1,
     name: "Original Image",
-    image: "/lovable-uploads/a4fd7c1c-a79f-432d-86c0-d26a4713f7d5.png",
+    image: "/lovable-uploads/36461b16-9b90-461a-b26c-f483c4cadc20.png",
     description: "Your photo exactly as it is—printed in stunning clarity"
   },
   {
     id: 2,
     name: "Classic Oil Painting",
-    image: "/lovable-uploads/b55f8c5c-6c04-4840-9058-b673bb17e2ea.png",
+    image: "/lovable-uploads/722e9b7c-c3b0-4810-9b8b-317b1f9dc5df.png",
     description: "Rich, textured brushstrokes reminiscent of traditional oil paintings"
   },
   {
