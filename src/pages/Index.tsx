@@ -3,6 +3,7 @@ import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import LogoMarquee from "@/components/LogoMarquee";
 import HowItWorks from "@/components/HowItWorks";
+import ArtStylesCarousel from "@/components/ArtStylesCarousel";
 import ArtStylesGallery from "@/components/ArtStylesGallery";
 import InteractiveDemo from "@/components/InteractiveDemo";
 import Testimonials from "@/components/Testimonials";
@@ -17,6 +18,7 @@ const Index = () => {
       <Hero />
       <LogoMarquee />
       <HowItWorks />
+      <ArtStylesCarousel />
       <ArtStylesGallery />
       <InteractiveDemo />
       <Testimonials />
