@@ -1,45 +1,35 @@
-
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Smartphone, Share2, QrCode, Play, Zap } from "lucide-react";
-
 const InteractiveDemo = () => {
   const [selectedFeature, setSelectedFeature] = useState("qr-magic");
-
-  const features = [
-    {
-      id: "qr-magic",
-      title: "QR Magic",
-      description: "Each artwork includes an optional QR code that visitors can scan with their phone to unlock special AR experiences.",
-      icon: QrCode,
-      color: "from-purple-500 to-pink-500"
-    },
-    {
-      id: "ar-experience",
-      title: "AR Experience",
-      description: "Watch as your artwork comes alive with animations, glowing effects, or movement when viewed through your phone.",
-      icon: Smartphone,
-      color: "from-blue-500 to-purple-500"
-    },
-    {
-      id: "living-memories",
-      title: "Living Memories",
-      description: "A neon car revs its engine, a loved one waves hello, or a pet bounds across the screen in magical AR.",
-      icon: Play,
-      color: "from-pink-500 to-purple-500"
-    },
-    {
-      id: "share",
-      title: "Share & Gift",
-      description: "Share your AR experience with friends and family, creating unforgettable moments together.",
-      icon: Share2,
-      color: "from-pink-500 to-red-500"
-    }
-  ];
-
-  return (
-    <section className="py-20 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
+  const features = [{
+    id: "qr-magic",
+    title: "QR Magic",
+    description: "Each artwork includes an optional QR code that visitors can scan with their phone to unlock special AR experiences.",
+    icon: QrCode,
+    color: "from-purple-500 to-pink-500"
+  }, {
+    id: "ar-experience",
+    title: "AR Experience",
+    description: "Watch as your artwork comes alive with animations, glowing effects, or movement when viewed through your phone.",
+    icon: Smartphone,
+    color: "from-blue-500 to-purple-500"
+  }, {
+    id: "living-memories",
+    title: "Living Memories",
+    description: "A neon car revs its engine, a loved one waves hello, or a pet bounds across the screen in magical AR.",
+    icon: Play,
+    color: "from-pink-500 to-purple-500"
+  }, {
+    id: "share",
+    title: "Share & Gift",
+    description: "Share your AR experience with friends and family, creating unforgettable moments together.",
+    icon: Share2,
+    color: "from-pink-500 to-red-500"
+  }];
+  return <section className="py-20 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-16">
@@ -61,11 +51,7 @@ const InteractiveDemo = () => {
             <div className="relative max-w-lg w-full space-y-8">
               {/* Main artwork image */}
               <div className="relative bg-white rounded-2xl shadow-2xl p-8">
-                <img 
-                  src="/lovable-uploads/538dcdf0-4fce-48ea-be55-314d68926919.png" 
-                  alt="Watercolor Dreams - Wedding portrait artwork with AR QR code"
-                  className="w-full h-auto rounded-lg"
-                />
+                <img src="/lovable-uploads/538dcdf0-4fce-48ea-be55-314d68926919.png" alt="Watercolor Dreams - Wedding portrait artwork with AR QR code" className="w-full h-auto rounded-lg" />
                 
                 {/* AR Badge */}
                 <div className="absolute top-10 right-10">
@@ -90,11 +76,7 @@ const InteractiveDemo = () => {
                 
                 <div className="flex justify-center mb-4">
                   <div className="relative">
-                    <img 
-                      src="/lovable-uploads/a81e502f-d833-4ae5-ac1d-3f1ad04724f9.png" 
-                      alt="Live Demo QR Code - Scan to experience AR"
-                      className="w-32 h-32 rounded-lg shadow-md"
-                    />
+                    <img src="/lovable-uploads/a81e502f-d833-4ae5-ac1d-3f1ad04724f9.png" alt="Live Demo QR Code - Scan to experience AR" className="w-32 h-32 rounded-lg shadow-md object-contain" />
                     <div className="absolute -top-2 -right-2">
                       <div className="w-6 h-6 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
                         <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
@@ -122,18 +104,10 @@ const InteractiveDemo = () => {
 
           {/* Right side - Feature Selection */}
           <div className="space-y-6">
-            {features.map((feature) => {
-              const Icon = feature.icon;
-              const isSelected = selectedFeature === feature.id;
-              
-              return (
-                <Card 
-                  key={feature.id}
-                  className={`cursor-pointer transition-all duration-300 hover:shadow-lg ${
-                    isSelected ? 'ring-2 ring-purple-500 shadow-lg' : ''
-                  }`}
-                  onClick={() => setSelectedFeature(feature.id)}
-                >
+            {features.map(feature => {
+            const Icon = feature.icon;
+            const isSelected = selectedFeature === feature.id;
+            return <Card key={feature.id} className={`cursor-pointer transition-all duration-300 hover:shadow-lg ${isSelected ? 'ring-2 ring-purple-500 shadow-lg' : ''}`} onClick={() => setSelectedFeature(feature.id)}>
                   <CardContent className="p-6">
                     <div className="flex items-start space-x-4">
                       <div className={`w-12 h-12 rounded-full flex items-center justify-center bg-gradient-to-r ${feature.color} flex-shrink-0`}>
@@ -145,9 +119,8 @@ const InteractiveDemo = () => {
                       </div>
                     </div>
                   </CardContent>
-                </Card>
-              );
-            })}
+                </Card>;
+          })}
 
             {/* Perfect for section */}
             <div className="mt-12 p-6 bg-white/60 backdrop-blur-sm rounded-xl">
@@ -187,8 +160,6 @@ const InteractiveDemo = () => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default InteractiveDemo;
