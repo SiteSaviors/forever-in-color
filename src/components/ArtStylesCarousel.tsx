@@ -61,8 +61,8 @@ const ArtStylesCarousel = () => {
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <CarouselHeader />
 
-        {/* 3D Carousel with enhanced container shadow */}
-        <div className="relative h-[500px] flex items-center justify-center perspective-1000">
+        {/* 3D Carousel with enhanced container shadow - increased height for taller cards */}
+        <div className="relative h-[600px] flex items-center justify-center perspective-1000">
           {/* Subtle container shadow for grounding effect */}
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/5 to-black/10 rounded-3xl blur-2xl transform translate-y-8 scale-110"></div>
           

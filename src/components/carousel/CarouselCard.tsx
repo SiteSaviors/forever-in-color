@@ -54,17 +54,17 @@ const CarouselCard = ({ style, index, currentIndex, onClick }: CarouselCardProps
 
   return (
     <div
-      className="absolute left-1/2 top-1/2 w-80 h-96 cursor-pointer transition-all duration-700 ease-out transform-gpu"
+      className="absolute left-1/2 top-1/2 w-80 h-[480px] cursor-pointer transition-all duration-700 ease-out transform-gpu"
       style={{
         ...getCardStyle(index),
         marginLeft: '-160px',
-        marginTop: '-192px',
+        marginTop: '-240px',
       }}
       onClick={() => onClick(style)}
     >
       <div className="w-full h-full bg-white rounded-2xl shadow-2xl overflow-hidden group hover:shadow-3xl hover:scale-[1.02] transition-all duration-300">
         {/* Image */}
-        <div className="relative h-64 overflow-hidden">
+        <div className="relative h-72 overflow-hidden">
           <img
             src={style.image}
             alt={style.name}
@@ -81,9 +81,11 @@ const CarouselCard = ({ style, index, currentIndex, onClick }: CarouselCardProps
         </div>
 
         {/* Content */}
-        <div className="p-6">
-          <h3 className="text-xl font-bold text-gray-900 mb-2">{style.name}</h3>
-          <p className="text-gray-600 text-sm mb-4">{style.description}</p>
+        <div className="p-6 h-48 flex flex-col justify-between">
+          <div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">{style.name}</h3>
+            <p className="text-gray-600 text-sm mb-4">{style.description}</p>
+          </div>
           
           <Button 
             className="w-full relative overflow-hidden bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-0 transition-all duration-300 group/btn"
