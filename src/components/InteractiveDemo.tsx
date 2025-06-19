@@ -55,7 +55,7 @@ const InteractiveDemo = () => {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-16 items-center mb-20">
+        <div className="grid lg:grid-cols-2 gap-16 items-start mb-20">
           {/* Left side - Artwork Showcase */}
           <div className="relative flex justify-center">
             <div className="relative max-w-lg w-full">
