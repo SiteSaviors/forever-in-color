@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { artStyles } from "@/data/artStyles";
 import { ArtStyle } from "@/types/artStyle";
@@ -142,7 +141,7 @@ const ArtStylesCarousel = () => {
 
         {/* 3D Carousel with enhanced container shadow and parallax */}
         <div 
-          className="relative h-[700px] flex items-center justify-center perspective-1000 -mt-4"
+          className="relative h-[700px] flex items-center justify-center perspective-1000 -mt-12"
           style={{
             transform: `translateY(${parallax.cards}px)`,
             transition: 'transform 0.1s ease-out'
