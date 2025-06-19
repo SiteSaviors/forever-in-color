@@ -9,7 +9,7 @@ import CarouselCTA from "@/components/carousel/CarouselCTA";
 import { useScrollParallax } from "@/hooks/useScrollParallax";
 
 const ArtStylesCarousel = () => {
-  const [currentIndex, setCurrentIndex] = useState(7); // Start with middle item
+  const [currentIndex, setCurrentIndex] = useState(8); // Start with "Original Style"
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [hasInitialRotated, setHasInitialRotated] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
