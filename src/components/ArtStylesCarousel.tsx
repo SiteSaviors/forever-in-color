@@ -44,12 +44,28 @@ const ArtStylesCarousel = () => {
   };
 
   return (
-    <section className="py-20 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="relative py-20 overflow-hidden">
+      {/* Enhanced Background with Radial Gradient and Subtle Patterns */}
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
+        {/* Radial gradient overlay for depth */}
+        <div className="absolute inset-0 bg-gradient-radial from-white/40 via-purple-50/60 to-pink-100/80"></div>
+        
+        {/* Subtle cloud-like patterns */}
+        <div className="absolute top-10 left-10 w-96 h-96 bg-gradient-to-br from-purple-100/30 to-transparent rounded-full blur-3xl"></div>
+        <div className="absolute top-32 right-20 w-80 h-80 bg-gradient-to-bl from-pink-100/40 to-transparent rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 left-1/4 w-72 h-72 bg-gradient-to-tr from-blue-100/30 to-transparent rounded-full blur-3xl"></div>
+        <div className="absolute bottom-32 right-1/3 w-64 h-64 bg-gradient-to-tl from-purple-100/25 to-transparent rounded-full blur-3xl"></div>
+      </div>
+
+      {/* Content with enhanced backdrop */}
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <CarouselHeader />
 
-        {/* 3D Carousel */}
+        {/* 3D Carousel with enhanced container shadow */}
         <div className="relative h-[500px] flex items-center justify-center perspective-1000">
+          {/* Subtle container shadow for grounding effect */}
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/5 to-black/10 rounded-3xl blur-2xl transform translate-y-8 scale-110"></div>
+          
           <div className="relative w-full h-full">
             {artStyles.map((style, index) => (
               <CarouselCard
