@@ -2,18 +2,18 @@ import { Upload, Palette, Settings, Package, ArrowRight } from "lucide-react";
 const HowItWorks = () => {
   const steps = [{
     id: 1,
+    icon: Palette,
+    title: "Choose Your Style",
+    description: "Select from 20+ artistic styles including watercolor, poster, pop art, neon, and more to transform your photo.",
+    color: "from-pink-500 to-purple-500",
+    image: "/lovable-uploads/c0f1ce8f-22e6-44e5-89d9-2b3327371fea.png"
+  }, {
+    id: 2,
     icon: Upload,
     title: "Upload Your Photo",
     description: "Share a meaningful photo—loved ones, pets, homes, cars, or anything that holds special significance to you.",
     color: "from-purple-500 to-blue-500",
     image: "/lovable-uploads/57c424be-c5d9-4b6f-88fc-9ce28c38c109.png"
-  }, {
-    id: 2,
-    icon: Palette,
-    title: "Choose Your Style",
-    description: "Select from 20+ artistic styles including watercolor, poster, pop art, neon, and more to transform your photo.",
-    color: "from-pink-500 to-purple-500",
-    image: "/lovable-uploads/e0c0451d-410c-44df-a788-593bfecb9b68.png"
   }, {
     id: 3,
     icon: Settings,
@@ -45,7 +45,7 @@ const HowItWorks = () => {
               Works
             </span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">Transform your memories into stunning framed canvas artwork in just 4 simple steps.  Include a QR Code that brings your canvas to life with a 5 to 30 second video. From upload to delivery, we make it effortless.</p>
+          <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">Transform your memories into stunning framed canvas artwork in just 4 simple steps.  Include a QR Code that brings your canvas to life with a 5 to 30 second video. From upload to delivery, we make it effortless.</p>
         </div>
 
         {/* Steps Grid */}
