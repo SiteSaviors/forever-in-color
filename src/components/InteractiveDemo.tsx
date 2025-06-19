@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Smartphone, Share2, QrCode, Play } from "lucide-react";
+import { Smartphone, Share2, QrCode, Play, Zap } from "lucide-react";
 
 const InteractiveDemo = () => {
   const [selectedFeature, setSelectedFeature] = useState("qr-magic");
@@ -58,7 +58,7 @@ const InteractiveDemo = () => {
         <div className="grid lg:grid-cols-2 gap-16 items-start mb-20">
           {/* Left side - Artwork Showcase */}
           <div className="relative flex justify-center">
-            <div className="relative max-w-lg w-full">
+            <div className="relative max-w-lg w-full space-y-8">
               {/* Main artwork image */}
               <div className="relative bg-white rounded-2xl shadow-2xl p-8">
                 <img 
@@ -72,6 +72,45 @@ const InteractiveDemo = () => {
                   <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold border-0 shadow-lg text-sm px-3 py-1">
                     AR Ready
                   </Badge>
+                </div>
+              </div>
+
+              {/* QR Code Demo Section */}
+              <div className="bg-white rounded-2xl shadow-xl p-6 border-2 border-dashed border-purple-200">
+                <div className="text-center mb-4">
+                  <div className="flex items-center justify-center space-x-2 mb-2">
+                    <Zap className="w-5 h-5 text-purple-600" />
+                    <h3 className="text-lg font-bold text-gray-900">Live AR Demo</h3>
+                    <Zap className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Scan this QR code with your phone camera to experience the magic!
+                  </p>
+                </div>
+                
+                <div className="flex justify-center mb-4">
+                  <div className="relative">
+                    <img 
+                      src="/lovable-uploads/a81e502f-d833-4ae5-ac1d-3f1ad04724f9.png" 
+                      alt="Live Demo QR Code - Scan to experience AR"
+                      className="w-32 h-32 rounded-lg shadow-md"
+                    />
+                    <div className="absolute -top-2 -right-2">
+                      <div className="w-6 h-6 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                        <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="text-center">
+                  <p className="text-xs text-gray-500 mb-2">
+                    📱 Open your camera app and point at the QR code
+                  </p>
+                  <div className="flex items-center justify-center space-x-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span className="text-xs font-medium text-green-600">Live Demo Ready</span>
+                  </div>
                 </div>
               </div>
               
