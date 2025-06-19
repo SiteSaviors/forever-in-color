@@ -34,7 +34,7 @@ export const artStyles: ArtStyle[] = [
   },
   {
     id: 6,
-    name: "Abstract Fusion",
+    name: "Modern Abstract",
     image: "/lovable-uploads/538dcdf0-4fce-48ea-be55-314d68926919.png",
     description: "Modern abstract interpretation"
   },
