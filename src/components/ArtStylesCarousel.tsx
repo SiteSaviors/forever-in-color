@@ -288,15 +288,6 @@ const ArtStylesCarousel = () => {
           </div>
         </div>
       </div>
-
-      <style jsx>{`
-        .perspective-1000 {
-          perspective: 1000px;
-        }
-        .transform-gpu {
-          transform-style: preserve-3d;
-        }
-      `}</style>
     </section>
   );
 };
