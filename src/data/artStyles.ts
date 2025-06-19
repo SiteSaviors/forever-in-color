@@ -28,13 +28,13 @@ export const artStyles: ArtStyle[] = [
   {
     id: 5,
     name: "Crystalized Charm",
-    image: "/lovable-uploads/538dcdf0-4fce-48ea-be55-314d68926919.png",
+    image: "/lovable-uploads/d883b2be-71cd-48d2-9bc8-0ea339cd52ef.png",
     description: "Faceted, gem-like texture with a modern, artistic twist"
   },
   {
     id: 6,
     name: "3D Storybook",
-    image: "/lovable-uploads/538dcdf0-4fce-48ea-be55-314d68926919.png",
+    image: "/lovable-uploads/d9eba048-5139-431c-b278-1c1b32a78602.png",
     description: "Bold, fun, and full of personality—like a scene from your favorite animated movie"
   },
   {
