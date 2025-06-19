@@ -9,7 +9,7 @@ import CarouselCTA from "@/components/carousel/CarouselCTA";
 import { useScrollParallax } from "@/hooks/useScrollParallax";
 
 const ArtStylesCarousel = () => {
-  const [currentIndex, setCurrentIndex] = useState(8); // Start with "Original Style"
+  const [currentIndex, setCurrentIndex] = useState(0); // Start with "Original Style" (index 0)
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [hasInitialRotated, setHasInitialRotated] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
@@ -47,7 +47,7 @@ const ArtStylesCarousel = () => {
       const initialRotateTimeout = setTimeout(() => {
         setCurrentIndex((prev) => (prev + 1) % artStyles.length);
         setHasInitialRotated(true);
-      }, 1500); // Wait 1.5s after load then rotate once
+      }, 4000); // Increased delay to 4 seconds so users can see "Original Style" first
 
       return () => clearTimeout(initialRotateTimeout);
     }
