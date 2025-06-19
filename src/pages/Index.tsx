@@ -7,7 +7,6 @@ import ArtStylesCarousel from "@/components/ArtStylesCarousel";
 import ArtStylesGallery from "@/components/ArtStylesGallery";
 import InteractiveDemo from "@/components/InteractiveDemo";
 import Testimonials from "@/components/Testimonials";
-import Pricing from "@/components/Pricing";
 import FAQ from "@/components/FAQ";
 import Footer from "@/components/Footer";
 
@@ -22,7 +21,6 @@ const Index = () => {
       <ArtStylesGallery />
       <InteractiveDemo />
       <Testimonials />
-      <Pricing />
       <FAQ />
       <Footer />
     </div>
