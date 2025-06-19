@@ -1,17 +1,16 @@
-
 import { ArtStyle } from "@/types/artStyle";
 
 export const artStyles: ArtStyle[] = [
   {
     id: 1,
     name: "Original Image",
-    image: "/lovable-uploads/538dcdf0-4fce-48ea-be55-314d68926919.png",
+    image: "/lovable-uploads/a4fd7c1c-a79f-432d-86c0-d26a4713f7d5.png",
     description: "Your photo exactly as it is—printed in stunning clarity"
   },
   {
     id: 2,
     name: "Classic Oil Painting",
-    image: "/lovable-uploads/538dcdf0-4fce-48ea-be55-314d68926919.png",
+    image: "/lovable-uploads/b55f8c5c-6c04-4840-9058-b673bb17e2ea.png",
     description: "Rich, textured brushstrokes reminiscent of traditional oil paintings"
   },
   {
