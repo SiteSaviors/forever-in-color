@@ -1,3 +1,4 @@
+
 import { ArtStyle } from "@/types/artStyle";
 
 export const artStyles: ArtStyle[] = [
@@ -52,13 +53,13 @@ export const artStyles: ArtStyle[] = [
   {
     id: 9,
     name: "Neon Splash",
-    image: "/lovable-uploads/538dcdf0-4fce-48ea-be55-314d68926919.png",
+    image: "/lovable-uploads/e235cbba-357a-429f-a7f3-43e8b187823b.png",
     description: "High-voltage color and explosive energy in every brushstroke"
   },
   {
     id: 10,
     name: "Electric Bloom",
-    image: "/lovable-uploads/538dcdf0-4fce-48ea-be55-314d68926919.png",
+    image: "/lovable-uploads/7787f528-8bd9-4638-9919-ce34a4594672.png",
     description: "Futuristic cyberpunk aesthetic"
   },
   {
