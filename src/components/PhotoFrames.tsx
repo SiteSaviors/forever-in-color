@@ -1,4 +1,5 @@
 
+
 import { Sparkles, Camera } from "lucide-react";
 
 const PhotoFrames = () => {
@@ -15,7 +16,7 @@ const PhotoFrames = () => {
             />
           </div>
           <div className="flex justify-between items-center">
-            <div className="text-[8px] sm:text-sm font-medium text-gray-600">Pop Art Style</div>
+            <div className="text-[8px] sm:text-sm font-medium text-gray-600">3D Storybook</div>
             <div className="flex space-x-0.5 sm:space-x-1">
               <div className="w-1 h-1 sm:w-3 sm:h-3 bg-orange-400 rounded-full"></div>
               <div className="w-1 h-1 sm:w-3 sm:h-3 bg-red-400 rounded-full"></div>
@@ -113,3 +114,4 @@ const PhotoFrames = () => {
 };
 
 export default PhotoFrames;
+
