@@ -18,7 +18,7 @@ const Hero = () => {
         {/* Mobile Layout - Badge/Headline First, Then Visual, Then Content */}
         <div className="lg:hidden">
           {/* Mobile Badge and Headline - Clean spacing below header */}
-          <div className="text-center mb-10">
+          <div className="text-center mb-12">
             {/* Badge */}
             <div className="inline-flex items-center space-x-2 bg-white/90 backdrop-blur-sm rounded-full px-5 py-2.5 border border-purple-100/60 shadow-sm mb-8">
               <Sparkles className="w-4 h-4 text-purple-500" />
@@ -26,12 +26,12 @@ const Hero = () => {
             </div>
 
             {/* Main Headline */}
-            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight px-2">
-              Your memories,{" "}
+            <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight px-2">
+              Your Memories{" "}
+              <br />
               <span className="bg-gradient-to-r from-pink-500 via-purple-600 to-blue-600 bg-clip-text text-transparent">
-                reimagined
-              </span>{" "}
-              in art
+                REIMAGINED
+              </span>
             </h1>
           </div>
 
