@@ -1,3 +1,4 @@
+
 import { ArtStyle } from "@/types/artStyle";
 
 export const artStyles: ArtStyle[] = [
@@ -64,7 +65,7 @@ export const artStyles: ArtStyle[] = [
   {
     id: 11,
     name: "Artistic Mashup",
-    image: "/lovable-uploads/90d532fa-1b26-42c4-a4e2-5ac701b04c05.png",
+    image: "/lovable-uploads/60a93ae3-c149-4515-aa89-356396b7ff33.png",
     description: "A creative collision of styles—bold, expressive, and one of a kind"
   },
   {
