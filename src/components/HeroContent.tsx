@@ -19,7 +19,7 @@ const HeroContent = ({ hideBadgeAndHeadline = false }: HeroContentProps) => {
 
           {/* Main Headline */}
           <div className="space-y-4">
-            <h1 className="text-5xl lg:text-8xl font-bold text-gray-900 leading-[0.9] text-center lg:text-left">
+            <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 leading-[0.9] text-center lg:text-left">
               <div className="text-white">Your Memories</div>
               <div className="bg-gradient-to-r from-pink-500 via-purple-600 to-blue-600 bg-clip-text text-transparent">
                 REIMAGINED
