@@ -2,29 +2,48 @@
 import { ArrowRight, Heart, Sparkles, Camera } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
-const HeroContent = () => {
+interface HeroContentProps {
+  hideBadgeAndHeadline?: boolean;
+}
+
+const HeroContent = ({ hideBadgeAndHeadline = false }: HeroContentProps) => {
   return (
     <div className="space-y-8">
-      {/* Badge */}
-      <div className="inline-flex items-center space-x-2 bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 border border-purple-100">
-        <Sparkles className="w-4 h-4 text-purple-500" />
-        <span className="text-sm font-medium text-purple-700">Modern Heirlooms, Made Just for You</span>
-      </div>
+      {/* Badge and Headline - Only show if not hidden */}
+      {!hideBadgeAndHeadline && (
+        <>
+          {/* Badge */}
+          <div className="inline-flex items-center space-x-2 bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 border border-purple-100">
+            <Sparkles className="w-4 h-4 text-purple-500" />
+            <span className="text-sm font-medium text-purple-700">Modern Heirlooms, Made Just for You</span>
+          </div>
 
-      {/* Main Headline */}
-      <div className="space-y-4">
-        <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
-          Your memories,{" "}
-          <span className="bg-gradient-to-r from-pink-500 via-purple-600 to-blue-600 bg-clip-text text-transparent">
-            reimagined
-          </span>{" "}
-          in art
-        </h1>
-        <p className="text-xl text-gray-600 leading-relaxed max-w-lg">
-          Transform your most precious photos into stunning, modern artwork. From beloved pets to lost loved ones, 
-          we create personalized pieces that preserve what matters most.
-        </p>
-      </div>
+          {/* Main Headline */}
+          <div className="space-y-4">
+            <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
+              Your memories,{" "}
+              <span className="bg-gradient-to-r from-pink-500 via-purple-600 to-blue-600 bg-clip-text text-transparent">
+                reimagined
+              </span>{" "}
+              in art
+            </h1>
+            <p className="text-xl text-gray-600 leading-relaxed max-w-lg">
+              Transform your most precious photos into stunning, modern artwork. From beloved pets to lost loved ones, 
+              we create personalized pieces that preserve what matters most.
+            </p>
+          </div>
+        </>
+      )}
+
+      {/* Description - Show on mobile when badge/headline are hidden */}
+      {hideBadgeAndHeadline && (
+        <div className="space-y-4">
+          <p className="text-xl text-gray-600 leading-relaxed max-w-lg">
+            Transform your most precious photos into stunning, modern artwork. From beloved pets to lost loved ones, 
+            we create personalized pieces that preserve what matters most.
+          </p>
+        </div>
+      )}
 
       {/* Key Features */}
       <div className="space-y-3">

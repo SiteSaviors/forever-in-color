@@ -15,9 +15,27 @@ const Hero = () => {
       </div>
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
-        {/* Mobile Layout - Visual First, Content Second */}
+        {/* Mobile Layout - Badge/Headline First, Then Visual, Then Content */}
         <div className="lg:hidden">
-          {/* Mobile Visual Showcase - Above Content */}
+          {/* Mobile Badge and Headline - Right Below Header */}
+          <div className="text-center mb-8">
+            {/* Badge */}
+            <div className="inline-flex items-center space-x-2 bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 border border-purple-100 mb-6">
+              <Sparkles className="w-4 h-4 text-purple-500" />
+              <span className="text-sm font-medium text-purple-700">Modern Heirlooms, Made Just for You</span>
+            </div>
+
+            {/* Main Headline */}
+            <h1 className="text-4xl font-bold text-gray-900 leading-tight">
+              Your memories,{" "}
+              <span className="bg-gradient-to-r from-pink-500 via-purple-600 to-blue-600 bg-clip-text text-transparent">
+                reimagined
+              </span>{" "}
+              in art
+            </h1>
+          </div>
+
+          {/* Mobile Visual Showcase - Below Badge/Headline */}
           <div className="relative h-[400px] mb-12">
             <PhotoFrames />
             <PhoneMockup />
@@ -31,8 +49,8 @@ const Hero = () => {
             </div>
           </div>
 
-          {/* Mobile Content - Below Visual */}
-          <HeroContent />
+          {/* Mobile Content - Below Visual (without badge and headline) */}
+          <HeroContent hideBadgeAndHeadline={true} />
         </div>
 
         {/* Desktop Layout - Side by Side */}
