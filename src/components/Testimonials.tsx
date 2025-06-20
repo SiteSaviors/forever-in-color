@@ -1,43 +1,101 @@
 
-import { Star, Quote } from "lucide-react";
+import { Star, Quote, Heart, Verified, Camera } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 
 const Testimonials = () => {
-  const testimonials = [
+  const photoReviews = [
     {
       id: 1,
-      name: "Sarah Johnson",
+      customerName: "Sarah Johnson",
       location: "Portland, OR",
       rating: 5,
-      text: "I commissioned a neon synthwave portrait of my late grandmother from an old family photo. The transformation was absolutely stunning - it brought such vibrant energy to her memory while still capturing her essence perfectly.",
-      image: "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=400&fit=crop&crop=face",
-      artworkBefore: "Original family photo",
-      artworkAfter: "Neon synthwave transformation",
-      style: "Neon Synthwave"
+      artStyle: "Neon Splash",
+      beforeImage: "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=400&fit=crop&crop=face",
+      afterImage: "/lovable-uploads/e235cbba-357a-429f-a7f3-43e8b187823b.png",
+      customerPhoto: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=500&h=400&fit=crop",
+      review: "Absolutely stunning transformation! It brought such vibrant energy to her memory while still capturing her essence perfectly.",
+      verifiedPurchase: true,
+      size: "large"
     },
     {
       id: 2,
-      name: "Mike Chen",
-      location: "Austin, TX",
+      customerName: "Mike Chen",
+      location: "Austin, TX", 
       rating: 5,
-      text: "The watercolor style portrait of our rescue dog turned out better than I could have imagined. It's now the centerpiece of our living room, and everyone who visits asks about it. The quality is museum-grade!",
-      image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&h=400&fit=crop&crop=face",
-      artworkBefore: "Photo of rescue dog",
-      artworkAfter: "Watercolor masterpiece",
-      style: "Watercolor Dreams"
+      artStyle: "Watercolor Dreams",
+      beforeImage: "https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=400&h=400&fit=crop",
+      afterImage: "/lovable-uploads/d53ba462-1fad-4ba8-8ac5-273c9a81b396.png",
+      customerPhoto: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&h=300&fit=crop",
+      review: "The watercolor style turned out better than I could have imagined. Museum-grade quality!",
+      verifiedPurchase: true,
+      size: "medium"
     },
     {
       id: 3,
-      name: "Emma Rodriguez",
+      customerName: "Emma Rodriguez", 
       location: "Miami, FL",
       rating: 5,
-      text: "I ordered a pop art style canvas of my daughter's graduation photo as a surprise gift. The colors are so vibrant and the framing is exceptional. She cried happy tears when she saw it - it's going straight to her new apartment!",
-      image: "https://images.unsplash.com/photo-1721322800607-8c38375eef04?w=400&h=400&fit=crop&crop=face",
-      artworkBefore: "Graduation photo",
-      artworkAfter: "Pop art celebration",
-      style: "Pop Art Burst"
+      artStyle: "Classic Oil Painting",
+      beforeImage: "https://images.unsplash.com/photo-1721322800607-8c38375eef04?w=400&h=400&fit=crop&crop=face",
+      afterImage: "/lovable-uploads/8c321d4c-0a53-4b43-8f4f-e718d2320392.png",
+      customerPhoto: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&h=400&fit=crop",
+      review: "The colors are so vibrant and the framing is exceptional. She cried happy tears when she saw it!",
+      verifiedPurchase: true,
+      size: "medium"
+    },
+    {
+      id: 4,
+      customerName: "David Kim",
+      location: "Seattle, WA",
+      rating: 5,
+      artStyle: "Pastel Bliss",
+      beforeImage: "https://images.unsplash.com/photo-1472396961693-142e6e269027?w=400&h=400&fit=crop",
+      afterImage: "/lovable-uploads/755c41d5-3b97-4a56-bdeb-ac8a77718919.png",
+      customerPhoto: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&h=300&fit=crop",
+      review: "Perfect for our nursery! The soft pastels create such a calming atmosphere.",
+      verifiedPurchase: true,
+      size: "small"
+    },
+    {
+      id: 5,
+      customerName: "Lisa Thompson",
+      location: "Denver, CO",
+      rating: 5,
+      artStyle: "Electric Bloom",
+      beforeImage: "https://images.unsplash.com/photo-1466721591366-2d5fba72006d?w=400&h=400&fit=crop",
+      afterImage: "/lovable-uploads/7787f528-8bd9-4638-9919-ce34a4594672.png",
+      customerPhoto: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=500&h=300&fit=crop",
+      review: "The futuristic style was exactly what we wanted for our modern living room!",
+      verifiedPurchase: true,
+      size: "large"
+    },
+    {
+      id: 6,
+      customerName: "James Wilson",
+      location: "Boston, MA",
+      rating: 5,
+      artStyle: "Original Image",
+      beforeImage: "https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=400&h=400&fit=crop",
+      afterImage: "/lovable-uploads/f12521ab-3c25-4353-831c-59f97d5dcd43.png",
+      customerPhoto: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&h=400&fit=crop",
+      review: "Sometimes the original is perfect! The print quality and framing exceeded expectations.",
+      verifiedPurchase: true,
+      size: "medium"
     }
   ];
+
+  const getGridItemClass = (size: string) => {
+    switch (size) {
+      case 'large':
+        return 'md:col-span-2 md:row-span-2';
+      case 'medium':
+        return 'md:col-span-1 md:row-span-2';
+      default:
+        return 'md:col-span-1 md:row-span-1';
+    }
+  };
 
   return (
     <section id="testimonials" className="py-20 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
@@ -45,14 +103,14 @@ const Testimonials = () => {
         {/* Section Header */}
         <div className="text-center mb-16">
           <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-            What Our{" "}
+            Real{" "}
             <span className="bg-gradient-to-r from-pink-500 via-purple-600 to-blue-600 bg-clip-text text-transparent">
-              Customers
+              Transformations
             </span>{" "}
-            Say
+            by Real Customers
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Real stories from customers who transformed their precious memories into stunning framed canvas artwork
+            See how our customers transformed their precious memories into stunning framed canvas art
           </p>
         </div>
 
@@ -81,111 +139,166 @@ const Testimonials = () => {
           </div>
         </div>
 
-        {/* Testimonials Grid */}
-        <div className="grid lg:grid-cols-3 gap-8">
-          {testimonials.map((testimonial) => (
-            <Card key={testimonial.id} className="group hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-white/80 backdrop-blur-sm border-0">
-              <CardContent className="p-8">
-                {/* Quote Icon */}
-                <div className="mb-6">
-                  <Quote className="w-8 h-8 text-purple-500 opacity-50" />
-                </div>
+        {/* Photo Grid Reviews */}
+        <div className="grid grid-cols-1 md:grid-cols-3 auto-rows-[300px] gap-6 mb-16">
+          {photoReviews.map((review) => (
+            <HoverCard key={review.id}>
+              <HoverCardTrigger asChild>
+                <Card className={`group cursor-pointer overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 ${getGridItemClass(review.size)}`}>
+                  <CardContent className="p-0 relative h-full">
+                    {/* Before/After Images */}
+                    <div className="relative h-2/3 overflow-hidden">
+                      <div className="absolute inset-0 grid grid-cols-2">
+                        <div className="relative overflow-hidden">
+                          <img
+                            src={review.beforeImage}
+                            alt="Before transformation"
+                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                          />
+                          <div className="absolute top-2 left-2">
+                            <Badge variant="secondary" className="text-xs bg-black/70 text-white">
+                              BEFORE
+                            </Badge>
+                          </div>
+                        </div>
+                        <div className="relative overflow-hidden">
+                          <img
+                            src={review.afterImage}
+                            alt="After transformation"
+                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                          />
+                          <div className="absolute top-2 right-2">
+                            <Badge variant="secondary" className="text-xs bg-purple-600 text-white">
+                              AFTER
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Overlay Elements */}
+                      <div className="absolute top-4 left-1/2 transform -translate-x-1/2">
+                        <Badge className="bg-gradient-to-r from-pink-500 to-purple-600 text-white">
+                          {review.artStyle}
+                        </Badge>
+                      </div>
+                      
+                      <div className="absolute bottom-4 right-4 flex items-center space-x-2">
+                        <div className="flex items-center bg-black/70 rounded-full px-2 py-1">
+                          {[...Array(review.rating)].map((_, i) => (
+                            <Star key={i} className="w-3 h-3 text-yellow-400 fill-current" />
+                          ))}
+                        </div>
+                        {review.verifiedPurchase && (
+                          <div className="bg-green-500 rounded-full p-1">
+                            <Verified className="w-3 h-3 text-white" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
 
-                {/* Rating */}
-                <div className="flex items-center mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
-                  ))}
-                  <span className="ml-2 text-gray-600 text-sm">({testimonial.rating}/5)</span>
-                </div>
-
-                {/* Testimonial Text */}
-                <p className="text-gray-700 leading-relaxed mb-6 italic">
-                  "{testimonial.text}"
-                </p>
-
-                {/* Artwork Details */}
-                <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 mb-6">
-                  <div className="text-sm text-gray-600 mb-2">
-                    <strong>Style:</strong> {testimonial.style}
+                    {/* Customer Info */}
+                    <div className="p-4 h-1/3 flex flex-col justify-between">
+                      <p className="text-sm text-gray-700 italic line-clamp-2 mb-2">
+                        "{review.review}"
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-semibold text-gray-900 text-sm">{review.customerName}</div>
+                          <div className="text-gray-500 text-xs">{review.location}</div>
+                        </div>
+                        <Heart className="w-4 h-4 text-pink-500 fill-current" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </HoverCardTrigger>
+              
+              <HoverCardContent className="w-80 p-4">
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-3">
+                    <img
+                      src={review.beforeImage}
+                      alt={review.customerName}
+                      className="w-12 h-12 rounded-full object-cover"
+                    />
+                    <div>
+                      <div className="font-semibold">{review.customerName}</div>
+                      <div className="text-sm text-gray-500">{review.location}</div>
+                    </div>
+                    {review.verifiedPurchase && (
+                      <Badge variant="secondary" className="text-xs">
+                        <Verified className="w-3 h-3 mr-1" />
+                        Verified
+                      </Badge>
+                    )}
                   </div>
-                  <div className="text-sm text-gray-600">
-                    <strong>Transformation:</strong> {testimonial.artworkBefore} → {testimonial.artworkAfter}
+                  
+                  <div className="flex items-center space-x-1">
+                    {[...Array(review.rating)].map((_, i) => (
+                      <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
+                    ))}
+                    <span className="text-sm text-gray-600 ml-2">Style: {review.artStyle}</span>
+                  </div>
+                  
+                  <p className="text-sm text-gray-700">"{review.review}"</p>
+                  
+                  {/* Customer's Photo */}
+                  <div className="mt-3">
+                    <div className="text-xs text-gray-500 mb-2 flex items-center">
+                      <Camera className="w-3 h-3 mr-1" />
+                      How it looks in their home:
+                    </div>
+                    <img
+                      src={review.customerPhoto}
+                      alt="Customer's photo"
+                      className="w-full h-32 object-cover rounded-lg"
+                    />
                   </div>
                 </div>
-
-                {/* Customer Info */}
-                <div className="flex items-center">
-                  <img
-                    src={testimonial.image}
-                    alt={testimonial.name}
-                    className="w-12 h-12 rounded-full object-cover mr-4"
-                  />
-                  <div>
-                    <div className="font-semibold text-gray-900">{testimonial.name}</div>
-                    <div className="text-gray-600 text-sm">{testimonial.location}</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+              </HoverCardContent>
+            </HoverCard>
           ))}
         </div>
 
-        {/* Before/After Gallery Preview */}
-        <div className="mt-16 text-center">
-          <h3 className="text-2xl font-bold text-gray-900 mb-8">
-            See the{" "}
+        {/* Trust Elements */}
+        <div className="text-center bg-white rounded-2xl p-8 shadow-lg">
+          <h3 className="text-2xl font-bold text-gray-900 mb-6">
+            Join Thousands of{" "}
             <span className="bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
-              Transformation
+              Satisfied Customers
             </span>
           </h3>
           
           <div className="grid md:grid-cols-3 gap-8 mb-8">
-            {/* Transformation Examples */}
-            <div className="bg-white rounded-2xl p-6 shadow-lg">
-              <div className="aspect-square bg-gradient-to-br from-gray-200 to-gray-300 rounded-lg mb-4 flex items-center justify-center">
-                <img 
-                  src="https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=300&h=300&fit=crop" 
-                  alt="Original pet photo" 
-                  className="w-full h-full object-cover rounded-lg"
-                />
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Verified className="w-8 h-8 text-white" />
               </div>
-              <div className="text-sm text-gray-600 mb-2">Original Photo</div>
-              <div className="text-lg font-semibold text-gray-900">→ Watercolor Dreams</div>
+              <h4 className="font-semibold text-gray-900 mb-2">100% Verified Reviews</h4>
+              <p className="text-gray-600 text-sm">Every review is from a real, verified customer</p>
             </div>
-
-            <div className="bg-white rounded-2xl p-6 shadow-lg">
-              <div className="aspect-square bg-gradient-to-br from-pink-200 to-purple-200 rounded-lg mb-4 flex items-center justify-center">
-                <div className="text-center text-purple-600">
-                  <div className="text-sm mb-2">Family Portrait</div>
-                  <div className="text-xs">Transformed to</div>
-                  <div className="font-bold">Neon Synthwave</div>
-                </div>
+            
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gradient-to-r from-pink-400 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Camera className="w-8 h-8 text-white" />
               </div>
-              <div className="text-sm text-gray-600 mb-2">Artistic Transformation</div>
-              <div className="text-lg font-semibold text-purple-600">Museum Quality Canvas</div>
+              <h4 className="font-semibold text-gray-900 mb-2">Real Customer Photos</h4>
+              <p className="text-gray-600 text-sm">Actual photos from customers in their homes</p>
             </div>
-
-            <div className="bg-white rounded-2xl p-6 shadow-lg">
-              <div className="aspect-square bg-gradient-to-br from-blue-200 to-cyan-200 rounded-lg mb-4 flex items-center justify-center">
-                <div className="text-center text-blue-600">
-                  <div className="text-sm mb-2">Special Moment</div>
-                  <div className="text-xs">Becomes</div>
-                  <div className="font-bold">Pop Art Masterpiece</div>
-                </div>
+            
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Heart className="w-8 h-8 text-white" />
               </div>
-              <div className="text-sm text-gray-600 mb-2">Framed & Ready</div>
-              <div className="text-lg font-semibold text-blue-600">Perfect for Your Wall</div>
+              <h4 className="font-semibold text-gray-900 mb-2">Loved by Families</h4>
+              <p className="text-gray-600 text-sm">Trusted by families across the country</p>
             </div>
           </div>
-        </div>
 
-        {/* CTA */}
-        <div className="text-center mt-12">
           <button className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-8 py-4 rounded-full font-semibold text-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
             Create Your Masterpiece
           </button>
-          <p className="text-gray-500 text-sm mt-3">Join thousands of satisfied customers</p>
+          <p className="text-gray-500 text-sm mt-3">See your transformation in 24 hours</p>
         </div>
       </div>
     </section>
