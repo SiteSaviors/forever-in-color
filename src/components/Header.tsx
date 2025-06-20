@@ -1,21 +1,18 @@
+
 import { Menu, X, Search, ShoppingCart, User } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Slider } from "@/components/ui/slider";
-import { Label } from "@/components/ui/label";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [logoMarginLeft, setLogoMarginLeft] = useState(-32); // -ml-8 = -32px
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100">
-      <div className="w-full px-6 lg:px-12 xl:px-16">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-          {/* Logo - Left */}
-          <div className="flex items-center flex-shrink-0" style={{ marginLeft: `${logoMarginLeft}px` }}>
+          {/* Logo - Left aligned */}
+          <div className="flex items-center flex-shrink-0">
             <Link to="/">
               <img 
                 src="/lovable-uploads/9e8397a4-ee91-45c4-b9ff-81b938018dd3.png" 
@@ -26,25 +23,25 @@ const Header = () => {
           </div>
 
           {/* Desktop Navigation - Center */}
-          <nav className="hidden lg:flex items-center justify-center flex-1 mx-8">
-            <div className="flex items-center space-x-10">
-              <a href="#styles" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium whitespace-nowrap">
+          <nav className="hidden lg:flex items-center justify-center flex-1 mx-12">
+            <div className="flex items-center space-x-8">
+              <a href="#styles" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium">
                 Art Styles
               </a>
-              <a href="#how-it-works" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium whitespace-nowrap">
+              <a href="#how-it-works" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium">
                 How It Works
               </a>
-              <a href="#ar-experience" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium whitespace-nowrap">
+              <a href="#ar-experience" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium">
                 AR Experience
               </a>
-              <a href="#testimonials" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium whitespace-nowrap">
+              <a href="#testimonials" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium">
                 Reviews
               </a>
             </div>
           </nav>
 
-          {/* Desktop Actions - Right */}
-          <div className="hidden lg:flex items-center space-x-6 flex-shrink-0">
+          {/* Desktop Actions - Right aligned with consistent spacing */}
+          <div className="hidden lg:flex items-center space-x-4 flex-shrink-0">
             {/* Search */}
             <div className="relative">
               {isSearchOpen ? (
@@ -80,10 +77,10 @@ const Header = () => {
               <User className="w-5 h-5" />
             </button>
 
-            {/* Create Art Button */}
+            {/* Create Art Button - Consistent styling */}
             <Link 
               to="/product"
-              className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 whitespace-nowrap ml-4"
+              className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 ml-4"
             >
               Create Art
             </Link>
@@ -95,29 +92,10 @@ const Header = () => {
           </button>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Mobile Navigation - Consistent spacing */}
         {isMenuOpen && (
           <div className="lg:hidden py-6 border-t border-gray-100">
             <nav className="flex flex-col space-y-6">
-              {/* Mobile Spacing Controls */}
-              <div className="space-y-3 pb-6 border-b border-gray-200">
-                <Label htmlFor="mobile-logo-spacing" className="text-sm font-medium">Logo Position</Label>
-                <Slider
-                  id="mobile-logo-spacing"
-                  min={-100}
-                  max={100}
-                  step={4}
-                  value={[logoMarginLeft]}
-                  onValueChange={(value) => setLogoMarginLeft(value[0])}
-                  className="w-full"
-                />
-                <div className="flex justify-between text-xs text-gray-500">
-                  <span>Left</span>
-                  <span>{logoMarginLeft}px</span>
-                  <span>Right</span>
-                </div>
-              </div>
-
               {/* Mobile Search */}
               <div className="relative">
                 <input
@@ -140,21 +118,21 @@ const Header = () => {
                 Reviews
               </a>
 
-              {/* Mobile Actions */}
-              <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-                <button className="flex items-center space-x-3 text-gray-700 hover:text-purple-600 transition-colors duration-200 py-2">
+              {/* Mobile Actions - Grid layout */}
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200">
+                <button className="flex items-center justify-center space-x-2 text-gray-700 hover:text-purple-600 transition-colors duration-200 py-3">
                   <ShoppingCart className="w-5 h-5" />
-                  <span className="whitespace-nowrap">Cart (0)</span>
+                  <span>Cart (0)</span>
                 </button>
-                <button className="flex items-center space-x-3 text-gray-700 hover:text-purple-600 transition-colors duration-200 py-2">
+                <button className="flex items-center justify-center space-x-2 text-gray-700 hover:text-purple-600 transition-colors duration-200 py-3">
                   <User className="w-5 h-5" />
-                  <span className="whitespace-nowrap">Login</span>
+                  <span>Login</span>
                 </button>
               </div>
 
               <Link 
                 to="/product"
-                className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-8 py-3 rounded-full font-semibold w-full mt-4 text-center"
+                className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-8 py-4 rounded-full font-semibold text-center mt-4"
               >
                 Create Art
               </Link>

@@ -4,27 +4,27 @@ import { Phone, Mail, MapPin, Clock, MessageCircle, Facebook, Instagram, Twitter
 const Footer = () => {
   return (
     <footer className="bg-gray-900 text-white">
-      {/* Main Footer Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      {/* Main Footer Content - Grid-based layout */}
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           
           {/* Company Info */}
-          <div className="space-y-6">
+          <div className="space-y-8">
             <div>
               <img 
                 src="/lovable-uploads/ba672515-a01f-4297-afc3-57592598b1cd.png" 
                 alt="Forever In Color" 
-                className="h-16 w-auto object-fill mb-4" 
+                className="h-16 w-auto object-fill mb-6" 
               />
               <p className="text-gray-300 text-sm leading-relaxed">
                 Transform your cherished memories into stunning works of art with our premium AI-powered photo transformation service.
               </p>
             </div>
             
-            {/* Social Links */}
+            {/* Social Links - Consistent grid spacing */}
             <div>
               <h4 className="font-semibold mb-4 text-white">Follow Us</h4>
-              <div className="flex space-x-4">
+              <div className="flex space-x-3">
                 <a href="#" className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-purple-600 transition-colors duration-300">
                   <Facebook className="w-5 h-5" />
                 </a>
@@ -41,10 +41,10 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Quick Links */}
+          {/* Quick Links - Consistent spacing */}
           <div>
             <h4 className="font-semibold mb-6 text-white">Quick Links</h4>
-            <ul className="space-y-3">
+            <ul className="space-y-4">
               <li>
                 <a href="#styles" className="text-gray-300 hover:text-purple-400 transition-colors duration-200 text-sm">
                   Art Styles
@@ -78,16 +78,15 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Customer Support */}
+          {/* Customer Support - Standardized layout */}
           <div>
             <h4 className="font-semibold mb-6 text-white">Customer Support</h4>
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div className="flex items-start space-x-3">
                 <Phone className="w-5 h-5 text-purple-400 mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="text-sm font-medium text-white">Call Us</p>
                   <p className="text-sm text-gray-300">1-800-ART-MAGIC</p>
-                  <p className="text-xs text-gray-400">(1-800-278-6244)</p>
                 </div>
               </div>
               
@@ -118,10 +117,10 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Company Address & Legal */}
+          {/* Company Address & Legal - Simplified structure */}
           <div>
             <h4 className="font-semibold mb-6 text-white">Company Info</h4>
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div className="flex items-start space-x-3">
                 <MapPin className="w-5 h-5 text-purple-400 mt-0.5 flex-shrink-0" />
                 <div>
@@ -134,8 +133,8 @@ const Footer = () => {
                 </div>
               </div>
               
-              <div className="space-y-2 pt-4">
-                <h5 className="font-medium text-white text-sm">Legal</h5>
+              <div>
+                <h5 className="font-medium text-white text-sm mb-3">Legal</h5>
                 <ul className="space-y-2">
                   <li>
                     <a href="#" className="text-gray-300 hover:text-purple-400 transition-colors duration-200 text-sm">
@@ -164,9 +163,9 @@ const Footer = () => {
         </div>
       </div>
 
-      {/* Bottom Bar */}
+      {/* Bottom Bar - Simplified and grid-aligned */}
       <div className="border-t border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-6">
               <p className="text-sm text-gray-400">
@@ -183,11 +182,9 @@ const Footer = () => {
               </div>
             </div>
             
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-sm text-gray-400">All systems operational</span>
-              </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span className="text-sm text-gray-400">All systems operational</span>
             </div>
           </div>
         </div>
