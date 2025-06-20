@@ -70,6 +70,105 @@ const Testimonials = () => {
       afterImage: "/lovable-uploads/f12521ab-3c25-4353-831c-59f97d5dcd43.png",
       review: "Print quality and framing exceeded expectations.",
       verifiedPurchase: true
+    },
+    {
+      id: 7,
+      customerName: "Ashley Martinez",
+      location: "Phoenix, AZ",
+      rating: 5,
+      artStyle: "Crystalized Charm",
+      beforeImage: "https://images.unsplash.com/photo-1494790108755-2616c2d0b3ef?w=400&h=400&fit=crop&crop=face",
+      afterImage: "/lovable-uploads/d883b2be-71cd-48d2-9bc8-0ea339cd52ef.png",
+      review: "The crystal effect is absolutely magical!",
+      verifiedPurchase: true
+    },
+    {
+      id: 8,
+      customerName: "Ryan O'Connor",
+      location: "Chicago, IL",
+      rating: 5,
+      artStyle: "3D Storybook",
+      beforeImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face",
+      afterImage: "/lovable-uploads/d9eba048-5139-431c-b278-1c1b32a78602.png",
+      review: "Kids love seeing themselves as cartoon characters!",
+      verifiedPurchase: true
+    },
+    {
+      id: 9,
+      customerName: "Maria Santos",
+      location: "Los Angeles, CA",
+      rating: 5,
+      artStyle: "Artisan Charcoal",
+      beforeImage: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop&crop=face",
+      afterImage: "/lovable-uploads/538dcdf0-4fce-48ea-be55-314d68926919.png",
+      review: "Elegant and timeless. Perfect for our bedroom.",
+      verifiedPurchase: true
+    },
+    {
+      id: 10,
+      customerName: "Tommy Park",
+      location: "Nashville, TN",
+      rating: 5,
+      artStyle: "Watercolor Dreams",
+      beforeImage: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop&crop=face",
+      afterImage: "/lovable-uploads/d53ba462-1fad-4ba8-8ac5-273c9a81b396.png",
+      review: "Exceeded expectations. Quality is incredible!",
+      verifiedPurchase: true
+    },
+    {
+      id: 11,
+      customerName: "Jennifer Lee",
+      location: "San Francisco, CA",
+      rating: 5,
+      artStyle: "Pastel Bliss",
+      beforeImage: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&crop=face",
+      afterImage: "/lovable-uploads/755c41d5-3b97-4a56-bdeb-ac8a77718919.png",
+      review: "So dreamy and beautiful. Everyone asks where I got it!",
+      verifiedPurchase: true
+    },
+    {
+      id: 12,
+      customerName: "Mark Thompson",
+      location: "Orlando, FL",
+      rating: 5,
+      artStyle: "Classic Oil Painting",
+      beforeImage: "https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?w=400&h=400&fit=crop&crop=face",
+      afterImage: "/lovable-uploads/8c321d4c-0a53-4b43-8f4f-e718d2320392.png",
+      review: "Looks like a painting from a famous museum!",
+      verifiedPurchase: true
+    },
+    {
+      id: 13,
+      customerName: "Rachel Green",
+      location: "New York, NY",
+      rating: 5,
+      artStyle: "Electric Bloom",
+      beforeImage: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=400&fit=crop&crop=face",
+      afterImage: "/lovable-uploads/7787f528-8bd9-4638-9919-ce34a4594672.png",
+      review: "Bold and modern. Perfect conversation starter!",
+      verifiedPurchase: true
+    },
+    {
+      id: 14,
+      customerName: "Carlos Rodriguez",
+      location: "San Diego, CA",
+      rating: 5,
+      artStyle: "Neon Splash",
+      beforeImage: "https://images.unsplash.com/photo-1566492031773-4f4e44671d66?w=400&h=400&fit=crop&crop=face",
+      afterImage: "/lovable-uploads/e235cbba-357a-429f-a7f3-43e8b187823b.png",
+      review: "The energy in this piece is incredible!",
+      verifiedPurchase: true
+    },
+    {
+      id: 15,
+      customerName: "Amanda White",
+      location: "Atlanta, GA",
+      rating: 5,
+      artStyle: "Original Image",
+      beforeImage: "https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?w=400&h=400&fit=crop&crop=face",
+      afterImage: "/lovable-uploads/f12521ab-3c25-4353-831c-59f97d5dcd43.png",
+      review: "Crystal clear quality. Better than expected!",
+      verifiedPurchase: true
     }
   ];
 
