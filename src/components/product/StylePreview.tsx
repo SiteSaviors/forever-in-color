@@ -41,6 +41,14 @@ const StylePreview = ({ uploadedImage, onStyleSelect, onComplete }: StylePreview
     },
     {
       id: 3,
+      name: "Calm WaterColor",
+      description: "Soft, gentle watercolor washes with subtle color transitions and peaceful tones",
+      popular: false,
+      colors: ["from-blue-200", "via-teal-200", "to-green-200"],
+      category: "Artistic"
+    },
+    {
+      id: 4,
       name: "Watercolor Dreams",
       description: "Soft, flowing watercolor effects with gentle color bleeds",
       popular: true,
@@ -48,7 +56,7 @@ const StylePreview = ({ uploadedImage, onStyleSelect, onComplete }: StylePreview
       category: "Artistic"
     },
     {
-      id: 4,
+      id: 5,
       name: "Pastel Bliss",
       description: "Gentle pastel hues with soft blends for a dreamy, calming feel",
       popular: false,
@@ -56,7 +64,7 @@ const StylePreview = ({ uploadedImage, onStyleSelect, onComplete }: StylePreview
       category: "Artistic"
     },
     {
-      id: 5,
+      id: 6,
       name: "Crystalized Charm",
       description: "Faceted, gem-like texture with a modern, artistic twist",
       popular: false,
@@ -64,7 +72,7 @@ const StylePreview = ({ uploadedImage, onStyleSelect, onComplete }: StylePreview
       category: "Modern"
     },
     {
-      id: 6,
+      id: 7,
       name: "3D Storybook",
       description: "Bold, fun, and full of personality—like a scene from your favorite animated movie",
       popular: true,
@@ -72,7 +80,7 @@ const StylePreview = ({ uploadedImage, onStyleSelect, onComplete }: StylePreview
       category: "Digital"
     },
     {
-      id: 7,
+      id: 8,
       name: "Artisan Charcoal",
       description: "Soft, hand-drawn black-and-white sketch that looks like it came straight out of an artist's notebook",
       popular: false,
@@ -80,7 +88,7 @@ const StylePreview = ({ uploadedImage, onStyleSelect, onComplete }: StylePreview
       category: "Classic"
     },
     {
-      id: 8,
+      id: 9,
       name: "Pop Art Burst",
       description: "Bold, vibrant colors inspired by the classic pop art movement",
       popular: true,
@@ -88,7 +96,7 @@ const StylePreview = ({ uploadedImage, onStyleSelect, onComplete }: StylePreview
       category: "Retro"
     },
     {
-      id: 9,
+      id: 10,
       name: "Neon Splash",
       description: "High-voltage color and explosive energy in every brushstroke",
       popular: false,
@@ -96,7 +104,7 @@ const StylePreview = ({ uploadedImage, onStyleSelect, onComplete }: StylePreview
       category: "Digital"
     },
     {
-      id: 10,
+      id: 11,
       name: "Electric Bloom",
       description: "Futuristic cyberpunk aesthetic",
       popular: true,
@@ -104,7 +112,7 @@ const StylePreview = ({ uploadedImage, onStyleSelect, onComplete }: StylePreview
       category: "Digital"
     },
     {
-      id: 11,
+      id: 12,
       name: "Artistic Mashup",
       description: "A creative collision of styles—bold, expressive, and one of a kind",
       popular: false,
@@ -112,20 +120,12 @@ const StylePreview = ({ uploadedImage, onStyleSelect, onComplete }: StylePreview
       category: "Creative"
     },
     {
-      id: 12,
+      id: 13,
       name: "Modern Abstract",
       description: "Retro poster design style",
       popular: false,
       colors: ["from-teal-400", "via-blue-500", "to-indigo-600"],
       category: "Modern"
-    },
-    {
-      id: 13,
-      name: "100-Photo Mosaic",
-      description: "Your image recreated from 100 tiny memories—up close and meaningful",
-      popular: false,
-      colors: ["from-emerald-400", "via-teal-500", "to-blue-600"],
-      category: "Creative"
     },
     {
       id: 14,
