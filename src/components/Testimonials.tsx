@@ -14,8 +14,7 @@ const Testimonials = () => {
       beforeImage: "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=400&fit=crop&crop=face",
       afterImage: "/lovable-uploads/e235cbba-357a-429f-a7f3-43e8b187823b.png",
       review: "Absolutely stunning transformation! The colors are so vibrant.",
-      verifiedPurchase: true,
-      size: "large"
+      verifiedPurchase: true
     },
     {
       id: 2,
@@ -26,8 +25,7 @@ const Testimonials = () => {
       beforeImage: "https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=400&h=400&fit=crop",
       afterImage: "/lovable-uploads/d53ba462-1fad-4ba8-8ac5-273c9a81b396.png",
       review: "Museum-quality artwork. Exceeded all expectations!",
-      verifiedPurchase: true,
-      size: "medium"
+      verifiedPurchase: true
     },
     {
       id: 3,
@@ -38,8 +36,7 @@ const Testimonials = () => {
       beforeImage: "https://images.unsplash.com/photo-1721322800607-8c38375eef04?w=400&h=400&fit=crop&crop=face",
       afterImage: "/lovable-uploads/8c321d4c-0a53-4b43-8f4f-e718d2320392.png",
       review: "Perfect for our living room. She cried happy tears!",
-      verifiedPurchase: true,
-      size: "medium"
+      verifiedPurchase: true
     },
     {
       id: 4,
@@ -50,8 +47,7 @@ const Testimonials = () => {
       beforeImage: "https://images.unsplash.com/photo-1472396961693-142e6e269027?w=400&h=400&fit=crop",
       afterImage: "/lovable-uploads/755c41d5-3b97-4a56-bdeb-ac8a77718919.png",
       review: "Soft pastels create such a calming atmosphere.",
-      verifiedPurchase: true,
-      size: "small"
+      verifiedPurchase: true
     },
     {
       id: 5,
@@ -62,8 +58,7 @@ const Testimonials = () => {
       beforeImage: "https://images.unsplash.com/photo-1466721591366-2d5fba72006d?w=400&h=400&fit=crop",
       afterImage: "/lovable-uploads/7787f528-8bd9-4638-9919-ce34a4594672.png",
       review: "Perfect for our modern living room aesthetic!",
-      verifiedPurchase: true,
-      size: "large"
+      verifiedPurchase: true
     },
     {
       id: 6,
@@ -74,21 +69,9 @@ const Testimonials = () => {
       beforeImage: "https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=400&h=400&fit=crop",
       afterImage: "/lovable-uploads/f12521ab-3c25-4353-831c-59f97d5dcd43.png",
       review: "Print quality and framing exceeded expectations.",
-      verifiedPurchase: true,
-      size: "medium"
+      verifiedPurchase: true
     }
   ];
-
-  const getGridItemClass = (size: string) => {
-    switch (size) {
-      case 'large':
-        return 'md:col-span-2 md:row-span-2';
-      case 'medium':
-        return 'md:col-span-1 md:row-span-2';
-      default:
-        return 'md:col-span-1 md:row-span-1';
-    }
-  };
 
   return (
     <section id="testimonials" className="py-20 bg-gray-50">
@@ -132,65 +115,74 @@ const Testimonials = () => {
           </div>
         </div>
 
-        {/* Photo Grid Reviews */}
-        <div className="grid grid-cols-1 md:grid-cols-3 auto-rows-[280px] gap-4 mb-16">
-          {photoReviews.map((review) => (
-            <Card key={review.id} className={`group cursor-pointer overflow-hidden hover:shadow-lg transition-all duration-300 bg-white ${getGridItemClass(review.size)}`}>
-              <CardContent className="p-0 relative h-full">
-                {/* Main Image */}
-                <div className="relative h-3/4 overflow-hidden">
-                  <img
-                    src={review.afterImage}
-                    alt="Customer transformation"
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                  
-                  {/* Before Image - Small Overlay */}
-                  <div className="absolute top-3 left-3 w-16 h-16 rounded-lg overflow-hidden border-2 border-white shadow-lg">
+        {/* Staggered Photo Grid */}
+        <div className="columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-4 mb-16">
+          {photoReviews.map((review, index) => (
+            <div 
+              key={review.id} 
+              className={`break-inside-avoid mb-4 ${index % 2 === 1 ? 'mt-8' : ''}`}
+            >
+              <Card className="group cursor-pointer overflow-hidden hover:shadow-xl transition-all duration-300 bg-white">
+                <CardContent className="p-0">
+                  {/* Main Image with Hover Effect */}
+                  <div className="relative aspect-[3/4] overflow-hidden">
+                    {/* After Image (Default) */}
+                    <img
+                      src={review.afterImage}
+                      alt="Customer transformation"
+                      className="w-full h-full object-cover transition-opacity duration-300 group-hover:opacity-0"
+                    />
+                    
+                    {/* Before Image (On Hover) */}
                     <img
                       src={review.beforeImage}
-                      alt="Before"
-                      className="w-full h-full object-cover"
+                      alt="Original photo"
+                      className="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100"
                     />
-                  </div>
 
-                  {/* Art Style Badge */}
-                  <div className="absolute top-3 right-3">
-                    <Badge className="bg-white/90 text-gray-800 text-xs font-medium">
-                      {review.artStyle}
-                    </Badge>
-                  </div>
-
-                  {/* Rating */}
-                  <div className="absolute bottom-3 left-3 flex items-center bg-white/90 rounded-full px-2 py-1">
-                    {[...Array(review.rating)].map((_, i) => (
-                      <Star key={i} className="w-3 h-3 text-yellow-400 fill-current" />
-                    ))}
-                  </div>
-
-                  {/* Verified Badge */}
-                  {review.verifiedPurchase && (
-                    <div className="absolute bottom-3 right-3 bg-green-500 rounded-full p-1.5">
-                      <Verified className="w-3 h-3 text-white" />
+                    {/* Art Style Badge */}
+                    <div className="absolute top-3 right-3">
+                      <Badge className="bg-white/90 text-gray-800 text-xs font-medium">
+                        {review.artStyle}
+                      </Badge>
                     </div>
-                  )}
-                </div>
 
-                {/* Customer Info */}
-                <div className="p-4 h-1/4 flex flex-col justify-center">
-                  <p className="text-sm text-gray-700 mb-2 line-clamp-2 font-medium">
-                    "{review.review}"
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-semibold text-gray-900 text-sm">{review.customerName}</div>
-                      <div className="text-gray-500 text-xs">{review.location}</div>
+                    {/* Rating */}
+                    <div className="absolute bottom-3 left-3 flex items-center bg-white/90 rounded-full px-2 py-1">
+                      {[...Array(review.rating)].map((_, i) => (
+                        <Star key={i} className="w-3 h-3 text-yellow-400 fill-current" />
+                      ))}
                     </div>
-                    <Heart className="w-4 h-4 text-pink-500 fill-current" />
+
+                    {/* Verified Badge */}
+                    {review.verifiedPurchase && (
+                      <div className="absolute bottom-3 right-3 bg-green-500 rounded-full p-1.5">
+                        <Verified className="w-3 h-3 text-white" />
+                      </div>
+                    )}
+
+                    {/* Hover Overlay Text */}
+                    <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                      <span className="text-white text-sm font-medium">Original Photo</span>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+
+                  {/* Customer Info */}
+                  <div className="p-4">
+                    <p className="text-sm text-gray-700 mb-3 font-medium line-clamp-2">
+                      "{review.review}"
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="font-semibold text-gray-900 text-sm">{review.customerName}</div>
+                        <div className="text-gray-500 text-xs">{review.location}</div>
+                      </div>
+                      <Heart className="w-4 h-4 text-pink-500 fill-current" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           ))}
         </div>
 
