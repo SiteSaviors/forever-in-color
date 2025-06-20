@@ -1,4 +1,3 @@
-
 import { Sparkles, Camera } from "lucide-react";
 import HeroContent from "./HeroContent";
 import PhotoFrames from "./PhotoFrames";
@@ -26,12 +25,11 @@ const Hero = () => {
             </div>
 
             {/* Main Headline */}
-            <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight px-2">
-              Your Memories{" "}
-              <br />
-              <span className="bg-gradient-to-r from-pink-500 via-purple-600 to-blue-600 bg-clip-text text-transparent">
+            <h1 className="text-4xl sm:text-5xl font-bold leading-[0.9] px-2">
+              <div className="text-gray-900">Your Memories</div>
+              <div className="bg-gradient-to-r from-pink-500 via-purple-600 to-blue-600 bg-clip-text text-transparent">
                 REIMAGINED
-              </span>
+              </div>
             </h1>
           </div>
 

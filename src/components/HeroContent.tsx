@@ -1,4 +1,3 @@
-
 import { ArrowRight, Heart, Sparkles, Camera } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
@@ -20,12 +19,11 @@ const HeroContent = ({ hideBadgeAndHeadline = false }: HeroContentProps) => {
 
           {/* Main Headline */}
           <div className="space-y-4">
-            <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
-              Your Memories{" "}
-              <br />
-              <span className="bg-gradient-to-r from-pink-500 via-purple-600 to-blue-600 bg-clip-text text-transparent">
+            <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 leading-[0.9] text-center lg:text-left">
+              <div className="text-white">Your Memories</div>
+              <div className="bg-gradient-to-r from-pink-500 via-purple-600 to-blue-600 bg-clip-text text-transparent">
                 REIMAGINED
-              </span>
+              </div>
             </h1>
             <p className="text-xl text-gray-600 leading-relaxed max-w-lg">
               Transform your most precious photos into stunning, modern artwork. From beloved pets to lost loved ones, 
