@@ -1,124 +1,160 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProductHeader from "@/components/product/ProductHeader";
 import ProductStep from "@/components/product/ProductStep";
-import StepContent from "@/components/product/StepContent";
-import { Accordion } from "@/components/ui/accordion";
-import { Upload, Palette, Settings, Gift } from "lucide-react";
+import StylePreview from "@/components/product/StylePreview";
+import PhotoUpload from "@/components/product/PhotoUpload";
+import SizeSelector from "@/components/product/SizeSelector";
+import OrientationSelector from "@/components/product/OrientationSelector";
+import PricingSection from "@/components/product/PricingSection";
+import TrustElements from "@/components/product/TrustElements";
 
 const Product = () => {
+  const location = useLocation();
+  const [currentStep, setCurrentStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
-  const [activeStep, setActiveStep] = useState("step-1");
+  const [selectedStyle, setSelectedStyle] = useState<{id: number, name: string} | null>(null);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
-  const [selectedStyle, setSelectedStyle] = useState<{ id: number; name: string } | null>(null);
+  const [selectedSize, setSelectedSize] = useState<string>("");
+  const [selectedOrientation, setSelectedOrientation] = useState<string>("landscape");
 
-  const handleStepComplete = (stepNumber: number) => {
-    if (!completedSteps.includes(stepNumber)) {
-      setCompletedSteps([...completedSteps, stepNumber]);
-      // Auto-advance to next step
-      if (stepNumber < 4) {
-        setActiveStep(`step-${stepNumber + 1}`);
-      }
+  // Handle pre-selected style from style landing pages
+  useEffect(() => {
+    if (location.state?.preSelectedStyle && location.state?.styleName) {
+      setSelectedStyle({
+        id: location.state.preSelectedStyle,
+        name: location.state.styleName
+      });
+      setCompletedSteps([1]);
+      setCurrentStep(2);
     }
-  };
+  }, [location.state]);
 
   const handleStyleSelect = (styleId: number, styleName: string) => {
     setSelectedStyle({ id: styleId, name: styleName });
-    handleStepComplete(1);
+    if (!completedSteps.includes(1)) {
+      setCompletedSteps([...completedSteps, 1]);
+    }
   };
 
-  const handlePhotoUpload = (imageUrl: string) => {
+  const handleImageUpload = (imageUrl: string) => {
     setUploadedImage(imageUrl);
-    handleStepComplete(2);
+    if (!completedSteps.includes(2)) {
+      setCompletedSteps([...completedSteps, 2]);
+    }
   };
 
-  const totalSteps = 4;
+  const handleSizeSelect = (size: string) => {
+    setSelectedSize(size);
+    if (!completedSteps.includes(3)) {
+      setCompletedSteps([...completedSteps, 3]);
+    }
+  };
+
+  const handleOrientationSelect = (orientation: string) => {
+    setSelectedOrientation(orientation);
+  };
+
+  const canProceedToStep = (step: number) => {
+    if (step === 1) return true;
+    if (step === 2) return completedSteps.includes(1);
+    if (step === 3) return completedSteps.includes(1) && completedSteps.includes(2);
+    if (step === 4) return completedSteps.includes(1) && completedSteps.includes(2) && completedSteps.includes(3);
+    return false;
+  };
 
   const steps = [
     {
-      id: "step-1",
       number: 1,
       title: "Choose Your Style",
-      icon: Palette,
-      description: "Select from 15 unique artistic styles",
-      required: true,
-      estimatedTime: "1-2 minutes"
+      description: "Browse our collection of 15 unique artistic styles",
+      isCompleted: completedSteps.includes(1),
+      content: (
+        <StylePreview
+          uploadedImage={uploadedImage}
+          onStyleSelect={handleStyleSelect}
+          onComplete={() => setCurrentStep(2)}
+          preSelectedStyle={selectedStyle}
+        />
+      )
     },
     {
-      id: "step-2", 
       number: 2,
       title: "Upload Your Photo",
-      icon: Upload,
-      description: "Choose a clear photo with good lighting",
-      required: true,
-      estimatedTime: "30 seconds"
+      description: "Share the memory you'd like to transform into art",
+      isCompleted: completedSteps.includes(2),
+      content: (
+        <PhotoUpload
+          onImageUpload={handleImageUpload}
+          onComplete={() => setCurrentStep(3)}
+          selectedStyle={selectedStyle?.name}
+        />
+      )
     },
     {
-      id: "step-3",
-      number: 3, 
+      number: 3,
       title: "Add Customizations & AR",
-      icon: Settings,
-      description: "Size, frame, AR experience, and more",
-      required: false,
-      estimatedTime: "2-3 minutes"
+      description: "Choose your canvas size and optional AR features",
+      isCompleted: completedSteps.includes(3),
+      content: (
+        <div className="space-y-8">
+          <SizeSelector
+            selectedSize={selectedSize}
+            onSizeSelect={handleSizeSelect}
+          />
+          <OrientationSelector
+            selectedOrientation={selectedOrientation}
+            onOrientationSelect={handleOrientationSelect}
+          />
+        </div>
+      )
     },
     {
-      id: "step-4",
       number: 4,
-      title: "Receive Your Art", 
-      icon: Gift,
-      description: "Review and complete your order",
-      required: true,
-      estimatedTime: "1 minute"
+      title: "Receive Your Art",
+      description: "Review your order and complete your purchase",
+      isCompleted: false,
+      content: (
+        <PricingSection
+          selectedStyle={selectedStyle?.name}
+          selectedSize={selectedSize}
+          selectedOrientation={selectedOrientation}
+          uploadedImage={uploadedImage}
+        />
+      )
     }
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
+    <div className="min-h-screen bg-gray-50">
       <Header />
       
-      <ProductHeader completedSteps={completedSteps} totalSteps={totalSteps} />
-
-      {/* Enhanced Product Configuration */}
-      <section className="pb-20">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Accordion 
-            type="single" 
-            value={activeStep} 
-            onValueChange={setActiveStep}
-            className="space-y-6"
-          >
-            {steps.map((step, index) => {
-              const isCompleted = completedSteps.includes(step.number);
-              const isActive = activeStep === step.id;
-              const isNextStep = !isCompleted && !isActive && (index === 0 || completedSteps.includes(index));
-              
-              return (
-                <ProductStep
-                  key={step.id}
-                  step={step}
-                  isCompleted={isCompleted}
-                  isActive={isActive}
-                  isNextStep={isNextStep}
-                  selectedStyle={selectedStyle}
-                >
-                  <StepContent
-                    stepNumber={step.number}
-                    uploadedImage={uploadedImage}
-                    selectedStyle={selectedStyle}
-                    onPhotoUpload={handlePhotoUpload}
-                    onStyleSelect={handleStyleSelect}
-                    onStepComplete={handleStepComplete}
-                  />
-                </ProductStep>
-              );
-            })}
-          </Accordion>
+      <div className="pt-20">
+        <ProductHeader />
+        
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="space-y-8">
+            {steps.map((step) => (
+              <ProductStep
+                key={step.number}
+                step={step}
+                isActive={currentStep === step.number}
+                canProceed={canProceedToStep(step.number)}
+                onStepClick={() => {
+                  if (canProceedToStep(step.number)) {
+                    setCurrentStep(step.number);
+                  }
+                }}
+              />
+            ))}
+          </div>
         </div>
-      </section>
-      
+
+        <TrustElements />
+      </div>
+
       <Footer />
     </div>
   );

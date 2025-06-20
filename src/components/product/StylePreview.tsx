@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ interface StylePreviewProps {
   uploadedImage: string | null;
   onStyleSelect: (styleId: number, styleName: string) => void;
   onComplete: () => void;
+  preSelectedStyle?: {id: number, name: string} | null;
 }
 
 interface ArtStyle {
@@ -19,8 +20,15 @@ interface ArtStyle {
   category: string;
 }
 
-const StylePreview = ({ uploadedImage, onStyleSelect, onComplete }: StylePreviewProps) => {
+const StylePreview = ({ uploadedImage, onStyleSelect, onComplete, preSelectedStyle }: StylePreviewProps) => {
   const [selectedStyle, setSelectedStyle] = useState<number | null>(null);
+
+  // Set pre-selected style if provided
+  useEffect(() => {
+    if (preSelectedStyle) {
+      setSelectedStyle(preSelectedStyle.id);
+    }
+  }, [preSelectedStyle]);
 
   const artStyles: ArtStyle[] = [
     {
@@ -170,6 +178,13 @@ const StylePreview = ({ uploadedImage, onStyleSelect, onComplete }: StylePreview
         <p className="text-gray-600 max-w-2xl mx-auto">
           Browse our collection of 15 unique artistic styles. Select the one that speaks to you, then upload your photo to see the magic happen!
         </p>
+        {preSelectedStyle && (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 max-w-md mx-auto">
+            <p className="text-amber-800 font-medium">
+              {preSelectedStyle.name} is already selected for you! You can change it below or continue to the next step.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Style Grid */}
