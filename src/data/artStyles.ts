@@ -1,12 +1,10 @@
-
-
 import { ArtStyle } from "@/types/artStyle";
 
 export const artStyles: ArtStyle[] = [
   {
     id: 1,
     name: "Original Image",
-    image: "/lovable-uploads/e85ab2ba-a085-4aad-b951-b3d964c3980a.png",
+    image: "/lovable-uploads/7c213c30-aab4-4e71-a805-9cfdbec2a5dd.png",
     description: "Your photo exactly as it is—printed in stunning clarity"
   },
   {
@@ -94,4 +92,3 @@ export const artStyles: ArtStyle[] = [
     description: "Timeless tones and aged charm, like a classic from another era"
   }
 ];
-
