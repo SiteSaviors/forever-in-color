@@ -1,4 +1,5 @@
 
+
 import { Sparkles, Camera } from "lucide-react";
 import HeroContent from "./HeroContent";
 import PhotoFrames from "./PhotoFrames";
@@ -64,8 +65,8 @@ const Hero = () => {
           {/* Left Column - Content */}
           <HeroContent />
 
-          {/* Right Column - Visual Showcase */}
-          <div className="relative h-[700px] px-0">
+          {/* Right Column - Visual Showcase - Reduced height for smaller elements */}
+          <div className="relative h-[580px] px-0">
             <PhotoFrames />
             <PhoneMockup />
 
@@ -84,3 +85,4 @@ const Hero = () => {
 };
 
 export default Hero;
+
