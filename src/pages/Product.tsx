@@ -1,5 +1,8 @@
+
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { Upload, Image as ImageIcon, Palette, Gift } from "lucide-react";
+import { Accordion } from "@/components/ui/accordion";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProductHeader from "@/components/product/ProductHeader";
@@ -18,7 +21,7 @@ const Product = () => {
   const [selectedStyle, setSelectedStyle] = useState<{id: number, name: string} | null>(null);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [selectedSize, setSelectedSize] = useState<string>("");
-  const [selectedOrientation, setSelectedOrientation] = useState<string>("landscape");
+  const [selectedOrientation, setSelectedOrientation] = useState<string>("horizontal");
 
   // Handle pre-selected style from style landing pages
   useEffect(() => {
@@ -67,9 +70,13 @@ const Product = () => {
 
   const steps = [
     {
+      id: "style",
       number: 1,
       title: "Choose Your Style",
+      icon: Palette,
       description: "Browse our collection of 15 unique artistic styles",
+      required: true,
+      estimatedTime: "2 min",
       isCompleted: completedSteps.includes(1),
       content: (
         <StylePreview
@@ -81,48 +88,49 @@ const Product = () => {
       )
     },
     {
+      id: "photo",
       number: 2,
       title: "Upload Your Photo",
+      icon: Upload,
       description: "Share the memory you'd like to transform into art",
+      required: true,
+      estimatedTime: "1 min",
       isCompleted: completedSteps.includes(2),
       content: (
         <PhotoUpload
-          onImageUpload={handleImageUpload}
-          onComplete={() => setCurrentStep(3)}
-          selectedStyle={selectedStyle?.name}
+          onUploadComplete={handleImageUpload}
         />
       )
     },
     {
+      id: "customize",
       number: 3,
       title: "Add Customizations & AR",
+      icon: ImageIcon,
       description: "Choose your canvas size and optional AR features",
+      required: true,
+      estimatedTime: "3 min",
       isCompleted: completedSteps.includes(3),
       content: (
         <div className="space-y-8">
-          <SizeSelector
-            selectedSize={selectedSize}
-            onSizeSelect={handleSizeSelect}
-          />
           <OrientationSelector
             selectedOrientation={selectedOrientation}
-            onOrientationSelect={handleOrientationSelect}
+            onOrientationChange={handleOrientationSelect}
           />
         </div>
       )
     },
     {
+      id: "order",
       number: 4,
       title: "Receive Your Art",
+      icon: Gift,
       description: "Review your order and complete your purchase",
+      required: true,
+      estimatedTime: "2 min",
       isCompleted: false,
       content: (
-        <PricingSection
-          selectedStyle={selectedStyle?.name}
-          selectedSize={selectedSize}
-          selectedOrientation={selectedOrientation}
-          uploadedImage={uploadedImage}
-        />
+        <PricingSection />
       )
     }
   ];
@@ -132,24 +140,26 @@ const Product = () => {
       <Header />
       
       <div className="pt-20">
-        <ProductHeader />
+        <ProductHeader 
+          completedSteps={completedSteps}
+          totalSteps={steps.length}
+        />
         
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="space-y-8">
+          <Accordion type="single" value={`step-${currentStep}`} className="space-y-8">
             {steps.map((step) => (
               <ProductStep
-                key={step.number}
+                key={step.id}
                 step={step}
+                isCompleted={step.isCompleted}
                 isActive={currentStep === step.number}
-                canProceed={canProceedToStep(step.number)}
-                onStepClick={() => {
-                  if (canProceedToStep(step.number)) {
-                    setCurrentStep(step.number);
-                  }
-                }}
-              />
+                isNextStep={currentStep + 1 === step.number}
+                selectedStyle={selectedStyle}
+              >
+                {step.content}
+              </ProductStep>
             ))}
-          </div>
+          </Accordion>
         </div>
 
         <TrustElements />
