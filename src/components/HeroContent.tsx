@@ -1,14 +1,16 @@
 import { ArrowRight, Heart, Sparkles, Camera } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+
 interface HeroContentProps {
   hideBadgeAndHeadline?: boolean;
 }
-const HeroContent = ({
-  hideBadgeAndHeadline = false
-}: HeroContentProps) => {
-  return <div className="space-y-8">
+
+const HeroContent = ({ hideBadgeAndHeadline = false }: HeroContentProps) => {
+  return (
+    <div className="space-y-8">
       {/* Badge and Headline - Only show if not hidden */}
-      {!hideBadgeAndHeadline && <>
+      {!hideBadgeAndHeadline && (
+        <>
           {/* Badge */}
           <div className="inline-flex items-center space-x-2 bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 border border-purple-100">
             <Sparkles className="w-4 h-4 text-purple-500" />
@@ -17,26 +19,29 @@ const HeroContent = ({
 
           {/* Main Headline */}
           <div className="space-y-4">
-            <h1 className="text-5xl lg:text-6xl font-bold leading-[0.9] text-center lg:text-left">
-              <div className="text-white font-montserrat font-bold tracking-tight">Your Memories</div>
-              <div className="text-7xl bg-gradient-to-r from-pink-500 via-purple-600 to-blue-600 bg-clip-text text-transparent font-oswald font-bold text-left">
+            <h1 className="text-5xl lg:text-8xl font-bold text-gray-900 leading-[0.9] text-center lg:text-left">
+              <div className="text-white">Your Memories</div>
+              <div className="bg-gradient-to-r from-pink-500 via-purple-600 to-blue-600 bg-clip-text text-transparent">
                 REIMAGINED
               </div>
             </h1>
-            <p className="text-xl leading-relaxed max-w-lg my-0 text-slate-50">
+            <p className="text-xl text-gray-600 leading-relaxed max-w-lg">
               Transform your most precious photos into stunning, modern artwork. From beloved pets to lost loved ones, 
               we create personalized pieces that preserve what matters most.
             </p>
           </div>
-        </>}
+        </>
+      )}
 
       {/* Description - Show on mobile when badge/headline are hidden */}
-      {hideBadgeAndHeadline && <div className="space-y-6 text-center lg:text-left">
+      {hideBadgeAndHeadline && (
+        <div className="space-y-6 text-center lg:text-left">
           <p className="text-lg sm:text-xl text-gray-600 leading-relaxed max-w-lg mx-auto lg:mx-0">
             Transform your most precious photos into stunning, modern artwork. From beloved pets to lost loved ones, 
             we create personalized pieces that preserve what matters most.
           </p>
-        </div>}
+        </div>
+      )}
 
       {/* Key Features */}
       <div className="space-y-4">
@@ -44,19 +49,19 @@ const HeroContent = ({
           <div className="w-6 h-6 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
             <Heart className="w-3 h-3 text-white fill-white" />
           </div>
-          <span className="font-medium text-sm sm:text-base text-slate-50">15 unique artistic styles to choose from</span>
+          <span className="text-gray-700 font-medium text-sm sm:text-base">6 unique artistic styles to choose from</span>
         </div>
         <div className="flex items-center space-x-3 justify-center lg:justify-start">
           <div className="w-6 h-6 bg-gradient-to-r from-purple-500 to-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
             <Camera className="w-3 h-3 text-white" />
           </div>
-          <span className="font-medium text-sm sm:text-base text-slate-50">Optional AR experience brings your art to life</span>
+          <span className="text-gray-700 font-medium text-sm sm:text-base">Optional AR experience brings your art to life</span>
         </div>
         <div className="flex items-center space-x-3 justify-center lg:justify-start">
           <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-pink-600 rounded-full flex items-center justify-center flex-shrink-0">
             <Sparkles className="w-3 h-3 text-white" />
           </div>
-          <span className="font-medium text-sm sm:text-base text-slate-50">Perfect for gifting or keeping forever</span>
+          <span className="text-gray-700 font-medium text-sm sm:text-base">Perfect for gifting or keeping forever</span>
         </div>
       </div>
 
@@ -90,6 +95,8 @@ const HeroContent = ({
           </div>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default HeroContent;
