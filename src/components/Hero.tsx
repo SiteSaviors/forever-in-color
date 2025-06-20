@@ -20,20 +20,20 @@ const Hero = () => {
       </div>
 
       <div className="relative max-w-7xl mx-auto px-6 lg:px-8 pt-24 pb-16">
-        {/* Mobile Layout - Consistent 8px grid spacing */}
+        {/* Mobile Layout - Updated to match desktop colors */}
         <div className="lg:hidden">
-          {/* Mobile Badge and Headline - Standardized spacing */}
+          {/* Mobile Badge and Headline - Updated colors */}
           <div className="text-center mb-16">
             {/* Badge */}
-            <div className="inline-flex items-center space-x-2 bg-white/90 backdrop-blur-sm rounded-full px-6 py-3 border border-purple-100/60 shadow-sm mb-8">
-              <Sparkles className="w-4 h-4 text-purple-500" />
+            <div className="inline-flex items-center space-x-2 bg-white/90 backdrop-blur-sm rounded-full px-6 py-3 border border-purple-200 shadow-sm mb-8">
+              <Sparkles className="w-4 h-4 text-purple-600" />
               <span className="text-sm font-medium text-purple-700">Modern Heirlooms, Made Just for You</span>
             </div>
 
-            {/* Main Headline - Consistent typography */}
+            {/* Main Headline - Updated colors to match desktop */}
             <h1 className="text-4xl sm:text-5xl font-bold leading-tight mb-4 font-montserrat">
-              <div className="text-gray-900 mb-2">Your Memories</div>
-              <div className="bg-gradient-to-r from-pink-500 via-purple-600 to-blue-600 bg-clip-text text-transparent font-oswald">
+              <div className="text-white mb-2">Your Memories</div>
+              <div className="text-5xl bg-gradient-to-r from-pink-500 via-purple-600 to-blue-600 bg-clip-text text-transparent font-oswald">
                 REIMAGINED
               </div>
             </h1>
