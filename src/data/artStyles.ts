@@ -1,4 +1,5 @@
 
+
 import { ArtStyle } from "@/types/artStyle";
 
 export const artStyles: ArtStyle[] = [
@@ -11,7 +12,7 @@ export const artStyles: ArtStyle[] = [
   {
     id: 2,
     name: "Classic Oil Painting",
-    image: "/lovable-uploads/90d532fa-1b26-42c4-a4e2-5ac701b04c05.png",
+    image: "/lovable-uploads/623707ee-39fd-4a88-9362-3db250f9bfcb.png",
     description: "Rich, textured brushstrokes reminiscent of traditional oil paintings"
   },
   {
@@ -65,7 +66,7 @@ export const artStyles: ArtStyle[] = [
   {
     id: 11,
     name: "Artistic Mashup",
-    image: "/lovable-uploads/623707ee-39fd-4a88-9362-3db250f9bfcb.png",
+    image: "/lovable-uploads/90d532fa-1b26-42c4-a4e2-5ac701b04c05.png",
     description: "A creative collision of styles—bold, expressive, and one of a kind"
   },
   {
@@ -93,3 +94,4 @@ export const artStyles: ArtStyle[] = [
     description: "Timeless tones and aged charm, like a classic from another era"
   }
 ];
+
