@@ -20,6 +20,7 @@ export default {
 		extend: {
 			fontFamily: {
 				'oswald': ['Oswald', 'sans-serif'],
+				'montserrat': ['Montserrat', 'sans-serif'],
 			},
 			colors: {
 				border: 'hsl(var(--border))',
