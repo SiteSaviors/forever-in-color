@@ -2,6 +2,7 @@
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import LogoMarquee from "@/components/LogoMarquee";
+import EmotionalJourney from "@/components/EmotionalJourney";
 import HowItWorks from "@/components/HowItWorks";
 import ArtStylesCarousel from "@/components/ArtStylesCarousel";
 import ArtStylesGallery from "@/components/ArtStylesGallery";
@@ -16,6 +17,7 @@ const Index = () => {
       <Header />
       <Hero />
       <LogoMarquee />
+      <EmotionalJourney />
       <HowItWorks />
       <ArtStylesCarousel />
       <ArtStylesGallery />
