@@ -1,29 +1,28 @@
-
 import { ArtStyle } from "@/types/artStyle";
 
 export const artStyles: ArtStyle[] = [
   {
     id: 1,
     name: "Original Image",
-    image: "/lovable-uploads/36461b16-9b90-461a-b26c-f483c4cadc20.png",
+    image: "/lovable-uploads/f12521ab-3c25-4353-831c-59f97d5dcd43.png",
     description: "Your photo exactly as it is—printed in stunning clarity"
   },
   {
     id: 2,
     name: "Classic Oil Painting",
-    image: "/lovable-uploads/722e9b7c-c3b0-4810-9b8b-317b1f9dc5df.png",
+    image: "/lovable-uploads/8c321d4c-0a53-4b43-8f4f-e718d2320392.png",
     description: "Rich, textured brushstrokes reminiscent of traditional oil paintings"
   },
   {
     id: 3,
     name: "Watercolor Dreams",
-    image: "/lovable-uploads/c7a9f734-bbdc-45b0-9c18-4a3e57dfe51d.png",
+    image: "/lovable-uploads/d53ba462-1fad-4ba8-8ac5-273c9a81b396.png",
     description: "Soft, flowing watercolor effects with gentle color bleeds"
   },
   {
     id: 4,
     name: "Pastel Bliss",
-    image: "/lovable-uploads/22357932-6c11-49ff-8dd7-fce9f6c2ea0e.png",
+    image: "/lovable-uploads/755c41d5-3b97-4a56-bdeb-ac8a77718919.png",
     description: "Gentle pastel hues with soft blends for a dreamy, calming feel"
   },
   {
