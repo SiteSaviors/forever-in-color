@@ -1,4 +1,3 @@
-
 import { ArtStyle } from "@/types/artStyle";
 
 export const artStyles: ArtStyle[] = [
@@ -70,9 +69,9 @@ export const artStyles: ArtStyle[] = [
   },
   {
     id: 12,
-    name: "Modern Abstract",
-    image: "/lovable-uploads/538dcdf0-4fce-48ea-be55-314d68926919.png",
-    description: "Retro poster design style"
+    name: "Abstract Fusion",
+    image: "/lovable-uploads/917203b5-e096-43e3-a992-115124cf0e42.png",
+    description: "Dynamic swirls and vibrant colors blend in perfect harmony"
   },
   {
     id: 13,
