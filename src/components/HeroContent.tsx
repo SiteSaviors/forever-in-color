@@ -1,4 +1,5 @@
 
+
 import { ArrowRight, Heart, Sparkles, Camera } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 interface HeroContentProps {
@@ -20,7 +21,7 @@ const HeroContent = ({
           <div className="space-y-4">
             <h1 className="text-5xl lg:text-6xl font-bold leading-[0.9] text-center lg:text-left">
               <div className="text-white font-montserrat font-bold tracking-tight">Your Memories</div>
-              <div className="text-8xl lg:text-9xl bg-gradient-to-r from-pink-500 via-purple-600 to-blue-600 bg-clip-text text-transparent font-oswald font-bold text-left">
+              <div className="text-6xl lg:text-7xl bg-gradient-to-r from-pink-500 via-purple-600 to-blue-600 bg-clip-text text-transparent font-oswald font-bold text-left">
                 REIMAGINED
               </div>
             </h1>
