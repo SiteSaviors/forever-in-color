@@ -47,7 +47,7 @@ export const artStyles: ArtStyle[] = [
   {
     id: 8,
     name: "Pop Art Burst",
-    image: "/lovable-uploads/538dcdf0-4fce-48ea-be55-314d68926919.png",
+    image: "/lovable-uploads/723f2a1a-0e03-4c36-a8d3-a930c81a7d08.png",
     description: "Bold, vibrant colors inspired by the classic pop art movement"
   },
   {
@@ -59,13 +59,13 @@ export const artStyles: ArtStyle[] = [
   {
     id: 10,
     name: "Electric Bloom",
-    image: "/lovable-uploads/7787f528-8bd9-4638-9919-ce34a4594672.png",
+    image: "/lovable-uploads/f9e1b137-663e-403f-8117-56679fe2de93.png",
     description: "Futuristic cyberpunk aesthetic"
   },
   {
     id: 11,
     name: "Artistic Mashup",
-    image: "/lovable-uploads/538dcdf0-4fce-48ea-be55-314d68926919.png",
+    image: "/lovable-uploads/623707ee-39fd-4a88-9362-3db250f9bfcb.png",
     description: "A creative collision of styles—bold, expressive, and one of a kind"
   },
   {
