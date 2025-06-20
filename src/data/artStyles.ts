@@ -1,3 +1,4 @@
+
 import { ArtStyle } from "@/types/artStyle";
 
 export const artStyles: ArtStyle[] = [
@@ -28,19 +29,19 @@ export const artStyles: ArtStyle[] = [
   {
     id: 5,
     name: "Crystalized Charm",
-    image: "/lovable-uploads/d883b2be-71cd-48d2-9bc8-0ea339cd52ef.png",
+    image: "/lovable-uploads/933dd4e5-58bc-404d-8c89-a93dcce93079.png",
     description: "Faceted, gem-like texture with a modern, artistic twist"
   },
   {
     id: 6,
     name: "3D Storybook",
-    image: "/lovable-uploads/d9eba048-5139-431c-b278-1c1b32a78602.png",
+    image: "/lovable-uploads/163d0898-810c-431b-a6c9-04c7e8423791.png",
     description: "Bold, fun, and full of personality—like a scene from your favorite animated movie"
   },
   {
     id: 7,
     name: "Artisan Charcoal",
-    image: "/lovable-uploads/538dcdf0-4fce-48ea-be55-314d68926919.png",
+    image: "/lovable-uploads/8512e20f-df1b-4848-a638-a3f6f930e600.png",
     description: "Soft, hand-drawn black-and-white sketch that looks like it came straight out of an artist's notebook"
   },
   {
@@ -52,7 +53,7 @@ export const artStyles: ArtStyle[] = [
   {
     id: 9,
     name: "Neon Splash",
-    image: "/lovable-uploads/e235cbba-357a-429f-a7f3-43e8b187823b.png",
+    image: "/lovable-uploads/58ce8c1f-4fcb-4135-a850-600a0915b141.png",
     description: "High-voltage color and explosive energy in every brushstroke"
   },
   {
