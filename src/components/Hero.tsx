@@ -15,24 +15,42 @@ const Hero = () => {
       </div>
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
-        <div className="grid lg:grid-cols-2 gap-12 items-center min-h-[80vh]">
+        {/* Mobile Layout - Visual First, Content Second */}
+        <div className="lg:hidden">
+          {/* Mobile Visual Showcase - Above Content */}
+          <div className="relative h-[400px] mb-12">
+            <PhotoFrames />
+            <PhoneMockup />
+            
+            {/* Floating Elements */}
+            <div className="absolute top-4 right-4 bg-white shadow-lg rounded-full p-2 z-40">
+              <Sparkles className="w-3 h-3 text-purple-500" />
+            </div>
+            <div className="absolute bottom-4 left-4 bg-white shadow-lg rounded-full p-2 z-40">
+              <Camera className="w-3 h-3 text-pink-500" />
+            </div>
+          </div>
+
+          {/* Mobile Content - Below Visual */}
+          <HeroContent />
+        </div>
+
+        {/* Desktop Layout - Side by Side */}
+        <div className="hidden lg:grid lg:grid-cols-2 gap-12 items-center min-h-[80vh]">
           {/* Left Column - Content */}
           <HeroContent />
 
           {/* Right Column - Visual Showcase */}
-          <div className="relative h-[400px] sm:h-[600px] lg:h-[700px] px-4 sm:px-0">
-            {/* Rainbow Photo Frames Container */}
+          <div className="relative h-[700px] px-0">
             <PhotoFrames />
-
-            {/* Phone Mockup with AR Video */}
             <PhoneMockup />
 
             {/* Floating Elements */}
-            <div className="absolute top-4 right-4 bg-white shadow-lg rounded-full p-2 sm:p-3 z-40">
-              <Sparkles className="w-3 h-3 sm:w-6 sm:h-6 text-purple-500" />
+            <div className="absolute top-4 right-4 bg-white shadow-lg rounded-full p-3 z-40">
+              <Sparkles className="w-6 h-6 text-purple-500" />
             </div>
-            <div className="absolute bottom-4 left-4 bg-white shadow-lg rounded-full p-2 sm:p-3 z-40">
-              <Camera className="w-3 h-3 sm:w-6 sm:h-6 text-pink-500" />
+            <div className="absolute bottom-4 left-4 bg-white shadow-lg rounded-full p-3 z-40">
+              <Camera className="w-6 h-6 text-pink-500" />
             </div>
           </div>
         </div>
