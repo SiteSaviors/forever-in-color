@@ -1,3 +1,4 @@
+
 import { Sparkles, Camera } from "lucide-react";
 import HeroContent from "./HeroContent";
 import PhotoFrames from "./PhotoFrames";
@@ -5,7 +6,12 @@ import PhoneMockup from "./PhoneMockup";
 
 const Hero = () => {
   return (
-    <section className="relative min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 overflow-hidden">
+    <section className="relative min-h-screen overflow-hidden" style={{
+      backgroundImage: `url('/lovable-uploads/3e752087-b61d-463b-87ca-313d878c43c1.png')`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat'
+    }}>
       {/* Background Elements */}
       <div className="absolute inset-0">
         <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-br from-pink-300/20 to-purple-400/20 rounded-full blur-xl"></div>
