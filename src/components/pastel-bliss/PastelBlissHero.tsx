@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Brush, DollarSign } from "lucide-react";
@@ -18,10 +17,9 @@ const PastelBlissHero = ({ onStartCreating }: PastelBlissHeroProps) => {
               <Badge className="mb-4 bg-pink-100 text-pink-800 border-pink-200">
                 Realistic Detail
               </Badge>
-              <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6">
-                Pastel 
-                <span className="block bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 bg-clip-text text-transparent">
-                  Bliss
+              <h1 className="text-8xl lg:text-12xl font-bold text-gray-900 mb-6">
+                <span className="bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 bg-clip-text text-transparent">
+                  Pastel Bliss
                 </span>
               </h1>
               <p className="text-xl text-gray-600 mb-8 leading-relaxed">
