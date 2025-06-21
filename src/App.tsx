@@ -17,6 +17,7 @@ import PopArtBurst from "./pages/PopArtBurst";
 import ElectricBloom from "./pages/ElectricBloom";
 import ThreeDStorybook from "./pages/ThreeDStorybook";
 import DecoLuxe from "./pages/DecoLuxe";
+import ARExperience from "./pages/ARExperience";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/product" element={<Product />} />
+          <Route path="/ar-experience" element={<ARExperience />} />
           <Route path="/art-styles/original-style" element={<OriginalStyle />} />
           <Route path="/art-styles/classic-oil-painting" element={<ClassicOilPainting />} />
           <Route path="/art-styles/calm-watercolor" element={<CalmWatercolor />} />
