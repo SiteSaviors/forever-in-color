@@ -61,7 +61,7 @@ const WatercolorDreams = () => {
         <div className="fixed bottom-6 right-6 z-50">
           <Button 
             onClick={handleStartCreating}
-            className="bg-gradient-to-r from-sky-400 to-white text-gray-900 px-6 py-3 rounded-full font-semibold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
+            className="bg-gradient-to-r from-pink-600 via-purple-700 to-orange-800 text-white px-6 py-3 rounded-full font-semibold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
           >
             Start Creating in This Style
           </Button>
