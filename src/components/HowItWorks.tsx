@@ -31,7 +31,7 @@ const HowItWorks = () => {
     image: "/lovable-uploads/6ac56455-7d7e-4734-a024-eaecc752e908.png"
   }];
   return <section id="how-it-works" className="py-20 relative overflow-hidden" style={{
-      backgroundImage: `url('/lovable-uploads/c09e9595-6fb8-4dc7-818a-d5a39279b6b8.png')`,
+      backgroundImage: `url('/lovable-uploads/65f33955-8c22-40d9-90c7-afac85fb27dc.png')`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat'
