@@ -20,15 +20,15 @@ const HeroContent = ({
             <span className="text-sm font-medium text-purple-700">Modern Heirlooms, Made Just for You</span>
           </div>
 
-          {/* Main Headline - Larger and more prominent */}
+          {/* Main Headline - Consistent typography hierarchy */}
           <div>
-            <h1 className="text-5xl lg:text-7xl font-bold leading-tight text-center lg:text-left mb-6">
-              <div className="text-white font-montserrat mb-3">Your Memories</div>
-              <div className="text-6xl lg:text-8xl bg-gradient-to-r from-pink-500 via-purple-600 to-blue-600 bg-clip-text text-transparent font-oswald">
+            <h1 className="text-4xl lg:text-5xl font-bold leading-tight text-center lg:text-left mb-4">
+              <div className="text-white font-montserrat mb-2">Your Memories</div>
+              <div className="text-5xl lg:text-6xl bg-gradient-to-r from-pink-500 via-purple-600 to-blue-600 bg-clip-text text-transparent font-oswald">
                 REIMAGINED
               </div>
             </h1>
-            <p className="text-xl leading-relaxed max-w-2xl text-slate-100/90 text-center lg:text-left">
+            <p className="text-lg leading-relaxed max-w-lg text-slate-100/90 text-center lg:text-left">
               Transform your most precious photos into stunning, modern artwork. From beloved pets to lost loved ones, 
               we create personalized pieces that preserve what matters most.
             </p>
