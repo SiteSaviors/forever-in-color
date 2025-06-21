@@ -14,39 +14,39 @@ const CarouselCard = ({ style, position, onClick }: CarouselCardProps) => {
     const absPosition = Math.abs(position);
     
     if (position === 0) {
-      // Center card - fully visible and prominent
+      // Center card - fully visible and prominent with soft glow
       return {
         transform: 'translateX(0) translateZ(0) scale(1) rotateY(0deg)',
         zIndex: 20,
         opacity: 1,
-        filter: 'brightness(1) blur(0px)',
+        filter: 'brightness(1) blur(0px) drop-shadow(0 20px 40px rgba(0,0,0,0.15))',
       };
     } else if (absPosition === 1) {
-      // Adjacent cards - slightly smaller and angled
+      // Adjacent cards - slightly smaller and angled with 3D rotation
       const side = position > 0 ? 1 : -1;
       return {
-        transform: `translateX(${side * 280}px) translateZ(-100px) scale(0.85) rotateY(${-side * 35}deg)`,
+        transform: `translateX(${side * 280}px) translateZ(-100px) scale(0.85) rotateY(${-side * 25}deg)`,
         zIndex: 15,
         opacity: 0.8,
-        filter: 'brightness(0.8) blur(0.5px)',
+        filter: 'brightness(0.85) blur(0.5px) drop-shadow(0 15px 30px rgba(0,0,0,0.1))',
       };
     } else if (absPosition === 2) {
-      // Second-level cards - smaller and more angled
+      // Second-level cards - more pronounced 3D effect
       const side = position > 0 ? 1 : -1;
       return {
-        transform: `translateX(${side * 480}px) translateZ(-200px) scale(0.7) rotateY(${-side * 50}deg)`,
+        transform: `translateX(${side * 480}px) translateZ(-200px) scale(0.7) rotateY(${-side * 40}deg)`,
         zIndex: 10,
         opacity: 0.6,
-        filter: 'brightness(0.65) blur(1px)',
+        filter: 'brightness(0.7) blur(1px) drop-shadow(0 10px 20px rgba(0,0,0,0.08))',
       };
     } else if (absPosition === 3) {
-      // Third-level cards - very subtle background presence
+      // Third-level cards - deep 3D perspective with atmospheric fade
       const side = position > 0 ? 1 : -1;
       return {
-        transform: `translateX(${side * 650}px) translateZ(-300px) scale(0.55) rotateY(${-side * 65}deg)`,
+        transform: `translateX(${side * 650}px) translateZ(-300px) scale(0.55) rotateY(${-side * 55}deg)`,
         zIndex: 5,
-        opacity: 0.4,
-        filter: 'brightness(0.5) blur(2px)',
+        opacity: 0.3,
+        filter: 'brightness(0.55) blur(2px) drop-shadow(0 5px 15px rgba(0,0,0,0.05))',
       };
     } else {
       // Cards beyond visible range - completely hidden
@@ -67,24 +67,27 @@ const CarouselCard = ({ style, position, onClick }: CarouselCardProps) => {
 
   return (
     <div
-      className="absolute left-1/2 top-1/2 w-80 h-[480px] cursor-pointer transition-all duration-700 ease-out transform-gpu"
+      className="absolute w-80 h-[480px] cursor-pointer transition-all duration-700 ease-out transform-gpu"
       style={{
         ...cardStyle,
+        transformStyle: 'preserve-3d',
+        transformOrigin: 'center center',
+        left: '50%',
+        top: '50%',
         marginLeft: '-160px',
         marginTop: '-240px',
-        transformStyle: 'preserve-3d',
       }}
       onClick={() => onClick(style)}
     >
-      <div className={`w-full h-full bg-white rounded-2xl shadow-2xl overflow-hidden group transition-all duration-300 ${
-        isCenter ? 'hover:shadow-3xl hover:scale-[1.02]' : ''
+      <div className={`w-full h-full bg-white rounded-2xl shadow-2xl overflow-hidden group transition-all duration-500 ${
+        isCenter ? 'hover:shadow-3xl hover:scale-[1.02] ring-2 ring-purple-100/50' : ''
       }`}>
         {/* Image */}
         <div className="relative h-72 overflow-hidden">
           <img
             src={style.image}
             alt={style.name}
-            className={`w-full h-full object-cover transition-transform duration-300 ${
+            className={`w-full h-full object-cover transition-transform duration-500 ${
               isCenter ? 'group-hover:scale-110' : ''
             }`}
           />
@@ -95,7 +98,7 @@ const CarouselCard = ({ style, position, onClick }: CarouselCardProps) => {
           {/* Hover overlay - only show on center card */}
           {isCenter && (
             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
-              <div className="bg-white/90 backdrop-blur-sm rounded-full px-6 py-3 text-gray-900 font-medium text-sm shadow-lg">
+              <div className="bg-white/90 backdrop-blur-sm rounded-full px-6 py-3 text-gray-900 font-medium text-sm shadow-lg transform translate-y-2 group-hover:translate-y-0">
                 Imagine your photo in this style
               </div>
             </div>
@@ -105,14 +108,18 @@ const CarouselCard = ({ style, position, onClick }: CarouselCardProps) => {
         {/* Content */}
         <div className="p-6 h-48 flex flex-col justify-between">
           <div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">{style.name}</h3>
-            <p className="text-gray-600 text-sm mb-4">{style.description}</p>
+            <h3 className={`font-bold text-gray-900 mb-2 transition-all duration-300 ${
+              isCenter ? 'text-xl' : 'text-lg opacity-80'
+            }`}>{style.name}</h3>
+            <p className={`text-gray-600 text-sm mb-4 transition-all duration-300 ${
+              isCenter ? 'opacity-100' : 'opacity-60'
+            }`}>{style.description}</p>
           </div>
           
           {/* Only show button on center card */}
           {isCenter && (
             <Button 
-              className="w-full relative overflow-hidden bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-0 transition-all duration-300 group/btn"
+              className="w-full relative overflow-hidden bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-0 transition-all duration-300 group/btn transform hover:scale-105"
               onClick={(e) => {
                 e.stopPropagation();
                 onClick(style);
