@@ -1,3 +1,4 @@
+
 import { Sparkles, Camera } from "lucide-react";
 const PhotoFrames = () => {
   return <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-full max-w-sm sm:max-w-none">
@@ -18,8 +19,8 @@ const PhotoFrames = () => {
         </div>
       </div>
 
-      {/* Frame 2 - Center Top Arc Position */}
-      <div className="absolute left-1/2 transform -translate-x-1/2 -top-6 sm:-top-4 rotate-3 z-20">
+      {/* Frame 2 - Center Top Arc Position - Moved up for text visibility */}
+      <div className="absolute left-1/2 transform -translate-x-1/2 -top-12 sm:-top-8 rotate-3 z-20">
         <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl p-2 sm:p-6 w-24 h-32 sm:w-64 sm:h-72">
           <div className="aspect-square bg-gradient-to-br from-pink-200 via-purple-200 to-blue-200 rounded-xl sm:rounded-2xl mb-1 sm:mb-4 overflow-hidden">
             <img src="/lovable-uploads/f0fb638f-ed49-4e86-aeac-0b87e27de424.png" alt="Watercolor art example" className="w-full h-full object-cover rounded-xl sm:rounded-2xl" />
@@ -44,7 +45,7 @@ const PhotoFrames = () => {
             <img src="/lovable-uploads/a26ed917-b49a-4495-a156-102b083bafd4.png" alt="Vibrant pop art style couple" className="w-full h-full object-cover rounded-xl sm:rounded-2xl" />
           </div>
           <div className="flex justify-between items-center">
-            <div className="text-[8px] sm:text-sm font-medium text-gray-600">        Neon Splash</div>
+            <div className="text-[8px] sm:text-sm font-medium text-gray-600">        Neon Splash</div>
             <div className="flex space-x-0.5 sm:space-x-1">
               <div className="w-1 h-1 sm:w-3 sm:h-3 bg-cyan-400 rounded-full"></div>
               <div className="w-1 h-1 sm:w-3 sm:h-3 bg-blue-400 rounded-full"></div>
