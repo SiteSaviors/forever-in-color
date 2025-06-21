@@ -39,8 +39,8 @@ const Hero = () => {
             </h1>
           </div>
 
-          {/* Mobile Visual Showcase - Grid-aligned positioning */}
-          <div className="relative h-96 mb-16">
+          {/* Mobile Visual Showcase - Reduced size */}
+          <div className="relative h-72 mb-16">
             <PhotoFrames />
             <PhoneMockup />
             
@@ -59,13 +59,15 @@ const Hero = () => {
           </div>
         </div>
 
-        {/* Desktop Layout - Grid-based alignment */}
-        <div className="hidden lg:grid lg:grid-cols-2 gap-16 items-center min-h-[80vh]">
-          {/* Left Column - Content */}
-          <HeroContent />
+        {/* Desktop Layout - Grid-based alignment with more focus on text */}
+        <div className="hidden lg:grid lg:grid-cols-5 gap-12 items-center min-h-[80vh]">
+          {/* Left Column - Content (takes more space) */}
+          <div className="col-span-3">
+            <HeroContent />
+          </div>
 
-          {/* Right Column - Visual Showcase - Consistent dimensions */}
-          <div className="relative h-[600px]">
+          {/* Right Column - Visual Showcase - Reduced size */}
+          <div className="relative h-[400px] col-span-2">
             <PhotoFrames />
             <PhoneMockup />
 
