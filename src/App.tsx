@@ -12,6 +12,7 @@ import WatercolorDreams from "./pages/WatercolorDreams";
 import PastelBliss from "./pages/PastelBliss";
 import ArtisanCharcoal from "./pages/ArtisanCharcoal";
 import NeonSplash from "./pages/NeonSplash";
+import PopArtBurst from "./pages/PopArtBurst";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +32,7 @@ const App = () => (
           <Route path="/art-styles/pastel-bliss" element={<PastelBliss />} />
           <Route path="/art-styles/artisan-charcoal" element={<ArtisanCharcoal />} />
           <Route path="/art-styles/neon-splash" element={<NeonSplash />} />
+          <Route path="/art-styles/pop-art-burst" element={<PopArtBurst />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
