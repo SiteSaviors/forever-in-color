@@ -20,6 +20,7 @@ import DecoLuxe from "./pages/DecoLuxe";
 import AbstractFusion from "./pages/AbstractFusion";
 import ArtisticMashup from "./pages/ArtisticMashup";
 import EmbroideredMoments from "./pages/EmbroideredMoments";
+import GemstonePoly from "./pages/GemstonePoly";
 import ARExperience from "./pages/ARExperience";
 import NotFound from "./pages/NotFound";
 
@@ -49,6 +50,7 @@ const App = () => (
           <Route path="/art-styles/abstract-fusion" element={<AbstractFusion />} />
           <Route path="/art-styles/artistic-mashup" element={<ArtisticMashup />} />
           <Route path="/art-styles/embroidered-moments" element={<EmbroideredMoments />} />
+          <Route path="/art-styles/gemstone-poly" element={<GemstonePoly />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
