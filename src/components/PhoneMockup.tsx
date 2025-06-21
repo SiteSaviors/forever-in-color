@@ -1,13 +1,14 @@
 
+
 import { Play } from "lucide-react";
 
 const PhoneMockup = () => {
   return (
     <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 z-30">
       <div className="relative">
-        {/* Phone Frame - Even larger proportions */}
+        {/* Phone Frame - Better proportions on mobile and smaller on desktop */}
         <div className="bg-gray-900 rounded-2xl sm:rounded-[3rem] p-1.5 sm:p-3 lg:p-2 shadow-2xl">
-          <div className="bg-black rounded-xl sm:rounded-[2.5rem] w-36 h-68 sm:w-72 sm:h-[540px] lg:w-64 lg:h-[480px] relative overflow-hidden">
+          <div className="bg-black rounded-xl sm:rounded-[2.5rem] w-32 h-60 sm:w-64 sm:h-[520px] lg:w-52 lg:h-[420px] relative overflow-hidden">
             {/* Screen Content */}
             <div className="absolute inset-1 bg-gradient-to-br from-purple-900 via-pink-900 to-blue-900 rounded-lg sm:rounded-[2rem] flex items-center justify-center">
               {/* Video Container */}
@@ -30,13 +31,13 @@ const PhoneMockup = () => {
             </div>
             
             {/* Phone Details */}
-            <div className="absolute top-2 sm:top-6 lg:top-5 left-1/2 transform -translate-x-1/2 w-6 sm:w-16 lg:w-14 h-1 sm:h-1.5 lg:h-1 bg-gray-600 rounded-full"></div>
-            <div className="absolute bottom-1 sm:bottom-5 lg:bottom-3 left-1/2 transform -translate-x-1/2 w-14 sm:w-32 lg:w-28 h-1 sm:h-1.5 lg:h-1 bg-gray-600 rounded-full"></div>
+            <div className="absolute top-2 sm:top-8 lg:top-6 left-1/2 transform -translate-x-1/2 w-8 sm:w-20 lg:w-16 h-1 sm:h-1.5 lg:h-1 bg-gray-600 rounded-full"></div>
+            <div className="absolute bottom-1 sm:bottom-6 lg:bottom-4 left-1/2 transform -translate-x-1/2 w-16 sm:w-40 lg:w-32 h-1 sm:h-1.5 lg:h-1 bg-gray-600 rounded-full"></div>
           </div>
         </div>
         
         {/* Floating AR Badge */}
-        <div className="absolute -top-2 sm:-top-6 lg:-top-5 -right-1 sm:-right-5 lg:-right-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-2 py-1 sm:px-3 sm:py-1.5 lg:px-2.5 lg:py-1 rounded-full text-[10px] sm:text-sm lg:text-xs font-semibold shadow-lg animate-pulse">
+        <div className="absolute -top-2 sm:-top-8 lg:-top-6 -right-1 sm:-right-6 lg:-right-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-2 py-1 sm:px-4 sm:py-2 lg:px-3 lg:py-1.5 rounded-full text-[10px] sm:text-base lg:text-sm font-semibold shadow-lg animate-pulse">
           Live AR Demo
         </div>
       </div>
@@ -45,3 +46,4 @@ const PhoneMockup = () => {
 };
 
 export default PhoneMockup;
+

@@ -1,8 +1,6 @@
 
 import { ArrowRight, Heart, Sparkles, Camera } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { Slider } from "@/components/ui/slider";
-import { useState } from "react";
 
 interface HeroContentProps {
   hideBadgeAndHeadline?: boolean;
@@ -11,20 +9,6 @@ interface HeroContentProps {
 const HeroContent = ({
   hideBadgeAndHeadline = false
 }: HeroContentProps) => {
-  const [textSize, setTextSize] = useState([8]); // Default to text-8xl
-
-  const getTextSizeClass = (size: number) => {
-    const sizeMap: { [key: number]: string } = {
-      4: "text-4xl lg:text-5xl",
-      5: "text-5xl lg:text-6xl", 
-      6: "text-6xl lg:text-7xl",
-      7: "text-7xl lg:text-8xl",
-      8: "text-8xl lg:text-9xl",
-      9: "text-9xl lg:text-9xl",
-    };
-    return sizeMap[size] || "text-8xl lg:text-9xl";
-  };
-
   return (
     <div className="space-y-8">
       {/* Badge and Headline - Only show if not hidden */}
@@ -36,11 +20,11 @@ const HeroContent = ({
             <span className="text-sm font-medium text-purple-700">Modern Heirlooms, Made Just for You</span>
           </div>
 
-          {/* Main Headline - Removed all margin between text elements */}
+          {/* Main Headline - Updated to match carousel header styling */}
           <div>
-            <h1 className="text-6xl lg:text-7xl font-bold leading-tight text-center lg:text-left mb-4">
-              <div className="text-white font-poppins tracking-tighter leading-none">Your Memories</div>
-              <div className={`${getTextSizeClass(textSize[0])} bg-gradient-to-r from-pink-500 via-purple-600 to-blue-600 bg-clip-text text-transparent font-oswald leading-none`}>
+            <h1 className="text-5xl lg:text-6xl font-bold leading-tight text-center lg:text-left mb-4">
+              <div className="text-white font-poppins mb-2 tracking-tighter">Your Memories</div>
+              <div className="text-4xl lg:text-5xl bg-gradient-to-r from-pink-500 via-purple-600 to-blue-600 bg-clip-text text-transparent font-oswald">
                 REIMAGINED
               </div>
             </h1>
