@@ -20,7 +20,7 @@ const WatercolorDreamsHero = ({ onStartCreating }: WatercolorDreamsHeroProps) =>
               </Badge>
               <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6">
                 Watercolor 
-                <span className="block bg-gradient-to-r from-pink-600 via-purple-700 to-orange-800 bg-clip-text text-transparent">
+                <span className="block bg-gradient-to-r from-sky-400 to-white bg-clip-text text-transparent">
                   Dreams
                 </span>
               </h1>
@@ -31,7 +31,7 @@ const WatercolorDreamsHero = ({ onStartCreating }: WatercolorDreamsHeroProps) =>
             
             <Button 
               onClick={onStartCreating}
-              className="bg-gradient-to-r from-pink-600 via-purple-700 to-orange-800 text-white px-12 py-6 rounded-full text-xl font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+              className="bg-gradient-to-r from-sky-400 to-white text-gray-900 px-12 py-6 rounded-full text-xl font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300"
             >
               Start Creating in This Style
               <ArrowRight className="w-6 h-6 ml-3" />
