@@ -25,7 +25,7 @@ const CarouselCard = ({ style, position, onClick }: CarouselCardProps) => {
       // Adjacent cards - slightly smaller and angled with 3D rotation
       const side = position > 0 ? 1 : -1;
       return {
-        transform: `translateX(${side * 240}px) translateZ(-100px) scale(0.85) rotateY(${-side * 25}deg)`,
+        transform: `translateX(${side * 180}px) translateZ(-80px) scale(0.85) rotateY(${-side * 25}deg)`,
         zIndex: 15,
         opacity: 0.8,
         filter: 'brightness(0.85) blur(0.5px) drop-shadow(0 15px 30px rgba(0,0,0,0.1))',
@@ -34,7 +34,7 @@ const CarouselCard = ({ style, position, onClick }: CarouselCardProps) => {
       // Second-level cards - more pronounced 3D effect
       const side = position > 0 ? 1 : -1;
       return {
-        transform: `translateX(${side * 420}px) translateZ(-200px) scale(0.7) rotateY(${-side * 40}deg)`,
+        transform: `translateX(${side * 320}px) translateZ(-160px) scale(0.7) rotateY(${-side * 40}deg)`,
         zIndex: 10,
         opacity: 0.6,
         filter: 'brightness(0.7) blur(1px) drop-shadow(0 10px 20px rgba(0,0,0,0.08))',
@@ -43,7 +43,7 @@ const CarouselCard = ({ style, position, onClick }: CarouselCardProps) => {
       // Third-level cards - deep 3D perspective with atmospheric fade
       const side = position > 0 ? 1 : -1;
       return {
-        transform: `translateX(${side * 570}px) translateZ(-300px) scale(0.55) rotateY(${-side * 55}deg)`,
+        transform: `translateX(${side * 430}px) translateZ(-240px) scale(0.55) rotateY(${-side * 55}deg)`,
         zIndex: 5,
         opacity: 0.3,
         filter: 'brightness(0.55) blur(2px) drop-shadow(0 5px 15px rgba(0,0,0,0.05))',
@@ -67,23 +67,23 @@ const CarouselCard = ({ style, position, onClick }: CarouselCardProps) => {
 
   return (
     <div
-      className="absolute w-64 h-[400px] cursor-pointer transition-all duration-700 ease-out transform-gpu"
+      className="absolute w-48 h-[300px] cursor-pointer transition-all duration-700 ease-out transform-gpu"
       style={{
         ...cardStyle,
         transformStyle: 'preserve-3d',
         transformOrigin: 'center center',
         left: '50%',
         top: '50%',
-        marginLeft: '-128px',
-        marginTop: '-200px',
+        marginLeft: '-96px',
+        marginTop: '-150px',
       }}
       onClick={() => onClick(style)}
     >
-      <div className={`w-full h-full bg-white rounded-2xl shadow-2xl overflow-hidden group transition-all duration-500 ${
+      <div className={`w-full h-full bg-white rounded-xl shadow-2xl overflow-hidden group transition-all duration-500 ${
         isCenter ? 'hover:shadow-3xl hover:scale-[1.02] ring-2 ring-purple-100/50' : ''
       }`}>
         {/* Image */}
-        <div className="relative h-56 overflow-hidden">
+        <div className="relative h-40 overflow-hidden">
           <img
             src={style.image}
             alt={style.name}
@@ -98,7 +98,7 @@ const CarouselCard = ({ style, position, onClick }: CarouselCardProps) => {
           {/* Hover overlay - only show on center card */}
           {isCenter && (
             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
-              <div className="bg-white/95 backdrop-blur-sm rounded-full px-6 py-3 text-gray-900 font-semibold text-sm shadow-lg transform translate-y-2 group-hover:translate-y-0">
+              <div className="bg-white/95 backdrop-blur-sm rounded-full px-4 py-2 text-gray-900 font-semibold text-xs shadow-lg transform translate-y-2 group-hover:translate-y-0">
                 Imagine your photo in this style
               </div>
             </div>
@@ -106,10 +106,10 @@ const CarouselCard = ({ style, position, onClick }: CarouselCardProps) => {
         </div>
 
         {/* Content */}
-        <div className="p-5 h-36 flex flex-col justify-between">
+        <div className="p-4 h-32 flex flex-col justify-between">
           <div>
             <h3 className={`font-bold text-gray-900 mb-2 transition-all duration-300 leading-tight ${
-              isCenter ? 'text-lg' : 'text-base opacity-80'
+              isCenter ? 'text-base' : 'text-sm opacity-80'
             }`}>{style.name}</h3>
             <p className={`text-gray-600 text-xs mb-3 transition-all duration-300 leading-relaxed ${
               isCenter ? 'opacity-100 font-medium' : 'opacity-60'
@@ -119,7 +119,7 @@ const CarouselCard = ({ style, position, onClick }: CarouselCardProps) => {
           {/* Only show button on center card */}
           {isCenter && (
             <Button 
-              className="w-full relative overflow-hidden bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-0 transition-all duration-300 group/btn transform hover:scale-105 rounded-full font-semibold text-sm py-2"
+              className="w-full relative overflow-hidden bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-0 transition-all duration-300 group/btn transform hover:scale-105 rounded-full font-semibold text-xs py-2"
               onClick={(e) => {
                 e.stopPropagation();
                 onClick(style);
