@@ -6,14 +6,18 @@ interface CarouselBackgroundProps {
 const CarouselBackground = ({ parallaxOffset }: CarouselBackgroundProps) => {
   return (
     <div 
-      className="absolute inset-0 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50"
+      className="absolute inset-0"
       style={{
+        backgroundImage: `url('/lovable-uploads/1271a8b1-a7be-42d5-b738-402ab0134c8f.png')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
         transform: `translateY(${parallaxOffset.background}px)`,
         transition: 'transform 0.1s ease-out'
       }}
     >
       {/* Radial gradient overlay for depth */}
-      <div className="absolute inset-0 bg-gradient-radial from-white/40 via-purple-50/60 to-pink-100/80"></div>
+      <div className="absolute inset-0 bg-gradient-radial from-white/20 via-transparent to-black/10"></div>
       
       {/* Subtle cloud-like patterns with individual parallax speeds */}
       <div 
