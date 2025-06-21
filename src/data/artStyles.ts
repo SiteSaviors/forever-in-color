@@ -41,7 +41,7 @@ export const artStyles: ArtStyle[] = [
   {
     id: 15,
     name: "Deco Luxe",
-    image: "/lovable-uploads/538dcdf0-4fce-48ea-be55-314d68926919.png",
+    image: "/lovable-uploads/66954ae0-a880-40e9-9ca0-2892f4396b82.png",
     description: "Sophisticated Art Deco elegance with geometric patterns and luxurious metallic accents"
   },
   {
