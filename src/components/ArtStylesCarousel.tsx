@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { artStyles } from "@/data/artStyles";
 import { ArtStyle } from "@/types/artStyle";
@@ -9,11 +10,15 @@ import CarouselCTA from "@/components/carousel/CarouselCTA";
 import { useScrollParallax } from "@/hooks/useScrollParallax";
 
 const ArtStylesCarousel = () => {
-  const [currentIndex, setCurrentIndex] = useState(0); // Start with "Original Style" (index 0)
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [hasInitialRotated, setHasInitialRotated] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
   const scrollY = useScrollParallax();
+
+  // Create infinite loop by tripling the array
+  const infiniteStyles = [...artStyles, ...artStyles, ...artStyles];
+  const centerOffset = artStyles.length; // Start at middle set
 
   // Calculate parallax offsets based on scroll position
   const getParallaxOffset = () => {
@@ -33,9 +38,9 @@ const ArtStylesCarousel = () => {
     const clampedProgress = Math.max(0, Math.min(1, scrollProgress));
     
     return {
-      background: (clampedProgress - 0.5) * 50, // Background moves slower
-      cards: (clampedProgress - 0.5) * 25, // Cards move at medium speed
-      header: (clampedProgress - 0.5) * 15, // Header moves slowest
+      background: (clampedProgress - 0.5) * 50,
+      cards: (clampedProgress - 0.5) * 25,
+      header: (clampedProgress - 0.5) * 15,
     };
   };
 
@@ -47,7 +52,7 @@ const ArtStylesCarousel = () => {
       const initialRotateTimeout = setTimeout(() => {
         setCurrentIndex((prev) => (prev + 1) % artStyles.length);
         setHasInitialRotated(true);
-      }, 4000); // Increased delay to 4 seconds so users can see "Original Style" first
+      }, 4000);
 
       return () => clearTimeout(initialRotateTimeout);
     }
@@ -82,6 +87,25 @@ const ArtStylesCarousel = () => {
   const handleIndicatorClick = (index: number) => {
     setCurrentIndex(index);
     setIsAutoPlaying(false);
+  };
+
+  // Calculate which cards to render for infinite effect
+  const getVisibleCards = () => {
+    const visibleCards = [];
+    const totalCards = 7; // Show 7 cards for seamless loop
+    const startIndex = centerOffset + currentIndex - Math.floor(totalCards / 2);
+    
+    for (let i = 0; i < totalCards; i++) {
+      const cardIndex = (startIndex + i) % infiniteStyles.length;
+      const relativePosition = i - Math.floor(totalCards / 2); // -3 to 3
+      visibleCards.push({
+        style: infiniteStyles[cardIndex],
+        position: relativePosition,
+        key: `${cardIndex}-${i}` // Unique key for React
+      });
+    }
+    
+    return visibleCards;
   };
 
   return (
@@ -139,24 +163,23 @@ const ArtStylesCarousel = () => {
           <CarouselHeader />
         </div>
 
-        {/* 3D Carousel with enhanced container shadow and parallax */}
+        {/* Infinite 3D Carousel with enhanced container shadow and parallax */}
         <div 
-          className="relative h-[700px] flex items-center justify-center perspective-1000 -mt-12"
+          className="relative h-[700px] flex items-center justify-center perspective-[2000px] -mt-12"
           style={{
             transform: `translateY(${parallax.cards}px)`,
             transition: 'transform 0.1s ease-out'
           }}
         >
-          {/* Subtle container shadow for grounding effect */}
+          {/* Enhanced container shadow for grounding effect */}
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/5 to-black/10 rounded-3xl blur-2xl transform translate-y-8 scale-110"></div>
           
-          <div className="relative w-full h-full">
-            {artStyles.map((style, index) => (
+          <div className="relative w-full h-full transform-style-preserve-3d">
+            {getVisibleCards().map(({ style, position, key }) => (
               <CarouselCard
-                key={style.id}
+                key={key}
                 style={style}
-                index={index}
-                currentIndex={currentIndex}
+                position={position}
                 onClick={handleStyleClick}
               />
             ))}
