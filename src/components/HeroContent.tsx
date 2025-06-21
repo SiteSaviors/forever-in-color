@@ -1,4 +1,3 @@
-
 import { ArrowRight, Heart, Sparkles, Camera } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
@@ -53,11 +52,11 @@ const HeroContent = ({
             <span className="text-sm font-medium text-purple-700">Modern Heirlooms, Made Just for You</span>
           </div>
 
-          {/* Main Headline - Removed margin between text elements */}
+          {/* Main Headline - Removed all margin between text elements */}
           <div>
             <h1 className="text-6xl lg:text-7xl font-bold leading-tight text-center lg:text-left mb-4">
-              <div className="text-white font-poppins tracking-tighter">Your Memories</div>
-              <div className={`${getTextSizeClass(textSize[0])} bg-gradient-to-r from-pink-500 via-purple-600 to-blue-600 bg-clip-text text-transparent font-oswald`}>
+              <div className="text-white font-poppins tracking-tighter leading-none">Your Memories</div>
+              <div className={`${getTextSizeClass(textSize[0])} bg-gradient-to-r from-pink-500 via-purple-600 to-blue-600 bg-clip-text text-transparent font-oswald leading-none`}>
                 REIMAGINED
               </div>
             </h1>
