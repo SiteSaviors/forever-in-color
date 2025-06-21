@@ -1,3 +1,4 @@
+
 import { ArtStyle } from "@/types/artStyle";
 
 export const artStyles: ArtStyle[] = [
@@ -87,8 +88,8 @@ export const artStyles: ArtStyle[] = [
   },
   {
     id: 14,
-    name: "Intricate Ink",
-    image: "/lovable-uploads/538dcdf0-4fce-48ea-be55-314d68926919.png",
-    description: "Detailed ink drawing with fine lines and flourishes of elegance"
+    name: "Embroidered Moments",
+    image: "/lovable-uploads/6371ab02-6a24-43ef-98b7-42de878f265a.png",
+    description: "Rich, textured embroidery style with intricate stitching details and warm, handcrafted charm"
   }
 ];
