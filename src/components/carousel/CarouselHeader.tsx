@@ -3,7 +3,7 @@ import { Palette } from "lucide-react";
 
 const CarouselHeader = () => {
   return (
-    <div className="text-center mb-4">
+    <div className="text-center mb-4 pt-12">
       <div className="flex items-center justify-center mb-3">
         <Palette className="w-12 h-12 text-purple-600 mr-4" />
         <h2 className="font-poppins lg:text-7xl font-bold text-gray-900 tracking-tighter text-5xl">
