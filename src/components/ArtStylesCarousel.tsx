@@ -1,162 +1,33 @@
 
-import { useState, useEffect, useRef } from "react";
 import { artStyles } from "@/data/artStyles";
 import { ArtStyle } from "@/types/artStyle";
 import CarouselHeader from "@/components/carousel/CarouselHeader";
-import CarouselCard from "@/components/carousel/CarouselCard";
 import CarouselNavigation from "@/components/carousel/CarouselNavigation";
 import StyleIndicators from "@/components/carousel/StyleIndicators";
 import CarouselCTA from "@/components/carousel/CarouselCTA";
-import { useScrollParallax } from "@/hooks/useScrollParallax";
+import CarouselBackground from "@/components/carousel/CarouselBackground";
+import InfiniteCarouselContainer from "@/components/carousel/InfiniteCarouselContainer";
+import { useCarouselParallax } from "@/hooks/useCarouselParallax";
+import { useCarouselAutoplay } from "@/hooks/useCarouselAutoplay";
 
 const ArtStylesCarousel = () => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-  const [hasInitialRotated, setHasInitialRotated] = useState(false);
-  const sectionRef = useRef<HTMLElement>(null);
-  const scrollY = useScrollParallax();
-
-  // Create infinite loop by tripling the array
-  const infiniteStyles = [...artStyles, ...artStyles, ...artStyles];
-  const centerOffset = artStyles.length; // Start at middle set
-
-  // Calculate parallax offsets based on scroll position
-  const getParallaxOffset = () => {
-    if (!sectionRef.current) return { background: 0, cards: 0, header: 0 };
-    
-    const rect = sectionRef.current.getBoundingClientRect();
-    const elementTop = rect.top + window.scrollY;
-    const elementHeight = rect.height;
-    const windowHeight = window.innerHeight;
-    
-    // Only apply parallax when element is in viewport
-    if (rect.bottom < 0 || rect.top > windowHeight) {
-      return { background: 0, cards: 0, header: 0 };
-    }
-    
-    const scrollProgress = (scrollY - elementTop + windowHeight) / (elementHeight + windowHeight);
-    const clampedProgress = Math.max(0, Math.min(1, scrollProgress));
-    
-    return {
-      background: (clampedProgress - 0.5) * 50,
-      cards: (clampedProgress - 0.5) * 25,
-      header: (clampedProgress - 0.5) * 15,
-    };
-  };
-
-  const parallax = getParallaxOffset();
-
-  // Initial auto-rotate on load to showcase interaction
-  useEffect(() => {
-    if (!hasInitialRotated) {
-      const initialRotateTimeout = setTimeout(() => {
-        setCurrentIndex((prev) => (prev + 1) % artStyles.length);
-        setHasInitialRotated(true);
-      }, 4000);
-
-      return () => clearTimeout(initialRotateTimeout);
-    }
-  }, [hasInitialRotated]);
-
-  // Auto-play functionality
-  useEffect(() => {
-    if (!isAutoPlaying || !hasInitialRotated) return;
-
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % artStyles.length);
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [isAutoPlaying, hasInitialRotated]);
-
-  const handlePrevious = () => {
-    setIsAutoPlaying(false);
-    setCurrentIndex((prev) => (prev - 1 + artStyles.length) % artStyles.length);
-  };
-
-  const handleNext = () => {
-    setIsAutoPlaying(false);
-    setCurrentIndex((prev) => (prev + 1) % artStyles.length);
-  };
+  const { sectionRef, parallaxOffset } = useCarouselParallax();
+  const { currentIndex, handlePrevious, handleNext, handleIndicatorClick } = useCarouselAutoplay();
 
   const handleStyleClick = (style: ArtStyle) => {
     // Navigate to product configurator
     window.location.href = '/product';
   };
 
-  const handleIndicatorClick = (index: number) => {
-    setCurrentIndex(index);
-    setIsAutoPlaying(false);
-  };
-
-  // Calculate which cards to render for infinite effect
-  const getVisibleCards = () => {
-    const visibleCards = [];
-    const totalCards = 7; // Show 7 cards for seamless loop
-    const startIndex = centerOffset + currentIndex - Math.floor(totalCards / 2);
-    
-    for (let i = 0; i < totalCards; i++) {
-      const cardIndex = (startIndex + i) % infiniteStyles.length;
-      const relativePosition = i - Math.floor(totalCards / 2); // -3 to 3
-      visibleCards.push({
-        style: infiniteStyles[cardIndex],
-        position: relativePosition,
-        key: `${cardIndex}-${i}` // Unique key for React
-      });
-    }
-    
-    return visibleCards;
-  };
-
   return (
     <section ref={sectionRef} className="relative py-12 overflow-hidden">
-      {/* Enhanced Background with Parallax and Radial Gradient */}
-      <div 
-        className="absolute inset-0 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50"
-        style={{
-          transform: `translateY(${parallax.background}px)`,
-          transition: 'transform 0.1s ease-out'
-        }}
-      >
-        {/* Radial gradient overlay for depth */}
-        <div className="absolute inset-0 bg-gradient-radial from-white/40 via-purple-50/60 to-pink-100/80"></div>
-        
-        {/* Subtle cloud-like patterns with individual parallax speeds */}
-        <div 
-          className="absolute top-10 left-10 w-96 h-96 bg-gradient-to-br from-purple-100/30 to-transparent rounded-full blur-3xl"
-          style={{
-            transform: `translate(${parallax.background * 0.3}px, ${parallax.background * 0.5}px)`,
-            transition: 'transform 0.1s ease-out'
-          }}
-        ></div>
-        <div 
-          className="absolute top-32 right-20 w-80 h-80 bg-gradient-to-bl from-pink-100/40 to-transparent rounded-full blur-3xl"
-          style={{
-            transform: `translate(${-parallax.background * 0.4}px, ${parallax.background * 0.3}px)`,
-            transition: 'transform 0.1s ease-out'
-          }}
-        ></div>
-        <div 
-          className="absolute bottom-20 left-1/4 w-72 h-72 bg-gradient-to-tr from-blue-100/30 to-transparent rounded-full blur-3xl"
-          style={{
-            transform: `translate(${parallax.background * 0.2}px, ${-parallax.background * 0.4}px)`,
-            transition: 'transform 0.1s ease-out'
-          }}
-        ></div>
-        <div 
-          className="absolute bottom-32 right-1/3 w-64 h-64 bg-gradient-to-tl from-purple-100/25 to-transparent rounded-full blur-3xl"
-          style={{
-            transform: `translate(${-parallax.background * 0.3}px, ${-parallax.background * 0.2}px)`,
-            transition: 'transform 0.1s ease-out'
-          }}
-        ></div>
-      </div>
+      <CarouselBackground parallaxOffset={parallaxOffset} />
 
       {/* Content with enhanced backdrop and parallax */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div
           style={{
-            transform: `translateY(${parallax.header}px)`,
+            transform: `translateY(${parallaxOffset.header}px)`,
             transition: 'transform 0.1s ease-out'
           }}
         >
@@ -164,37 +35,21 @@ const ArtStylesCarousel = () => {
         </div>
 
         {/* Infinite 3D Carousel with enhanced container shadow and parallax */}
-        <div 
-          className="relative h-[700px] flex items-center justify-center perspective-[2000px] -mt-12"
-          style={{
-            transform: `translateY(${parallax.cards}px)`,
-            transition: 'transform 0.1s ease-out'
-          }}
-        >
-          {/* Enhanced container shadow for grounding effect */}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/5 to-black/10 rounded-3xl blur-2xl transform translate-y-8 scale-110"></div>
-          
-          <div className="relative w-full h-full transform-style-preserve-3d">
-            {getVisibleCards().map(({ style, position, key }) => (
-              <CarouselCard
-                key={key}
-                style={style}
-                position={position}
-                onClick={handleStyleClick}
-              />
-            ))}
-          </div>
+        <InfiniteCarouselContainer 
+          currentIndex={currentIndex}
+          parallaxOffset={parallaxOffset}
+          onStyleClick={handleStyleClick}
+        />
 
-          <CarouselNavigation 
-            onPrevious={handlePrevious}
-            onNext={handleNext}
-          />
-        </div>
+        <CarouselNavigation 
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+        />
 
         <div
           className="-mt-4"
           style={{
-            transform: `translateY(${parallax.header * 0.5}px)`,
+            transform: `translateY(${parallaxOffset.header * 0.5}px)`,
             transition: 'transform 0.1s ease-out'
           }}
         >
