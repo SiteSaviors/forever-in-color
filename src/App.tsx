@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Product from "./pages/Product";
+import OriginalStyle from "./pages/OriginalStyle";
 import ClassicOilPainting from "./pages/ClassicOilPainting";
 import CalmWatercolor from "./pages/CalmWatercolor";
 import WatercolorDreams from "./pages/WatercolorDreams";
@@ -29,6 +30,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/product" element={<Product />} />
+          <Route path="/art-styles/original-style" element={<OriginalStyle />} />
           <Route path="/art-styles/classic-oil-painting" element={<ClassicOilPainting />} />
           <Route path="/art-styles/calm-watercolor" element={<CalmWatercolor />} />
           <Route path="/art-styles/watercolor-dreams" element={<WatercolorDreams />} />
