@@ -39,16 +39,20 @@ const InfiniteCarouselContainer = ({
 
   return (
     <div 
-      className="relative h-[620px] flex items-center justify-center overflow-hidden"
+      className="relative h-[620px] flex items-center justify-center"
       style={{
-        perspective: '1800px',
+        perspective: '1200px',
+        perspectiveOrigin: 'center center',
         transform: `translateY(${parallaxOffset.cards}px)`,
         transition: 'transform 0.1s ease-out'
       }}
     >
       <div 
         className="relative w-full h-full flex items-center justify-center"
-        style={{ transformStyle: 'preserve-3d' }}
+        style={{ 
+          transformStyle: 'preserve-3d',
+          transformOrigin: 'center center'
+        }}
       >
         {getVisibleCards().map(({ style, position, key }) => (
           <CarouselCard
