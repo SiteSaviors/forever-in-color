@@ -5,75 +5,55 @@ import { Sparkles } from "lucide-react";
 
 interface CarouselCardProps {
   style: ArtStyle;
-  position: number; // -4 to 4, where 0 is center
+  position: number; // -2 to 2, where 0 is center
   onClick: (style: ArtStyle) => void;
 }
 
 const CarouselCard = ({ style, position, onClick }: CarouselCardProps) => {
   const getCardStyle = (position: number) => {
-    const absPosition = Math.abs(position);
+    // Calculate circular positioning like in the reference image
+    const angle = position * 35; // 35 degrees between each card
+    const radius = 350; // Distance from center
+    const depth = Math.abs(position) * 80; // Depth based on distance from center
     
     if (position === 0) {
-      // Center card - fully visible and prominent
+      // Center card - prominent and straight
       return {
-        transform: 'translateX(0) translateZ(100px) scale(1) rotateY(0deg)',
+        transform: 'translateX(0) translateZ(150px) scale(1) rotateY(0deg)',
         zIndex: 30,
         opacity: 1,
         filter: 'brightness(1) blur(0px)',
       };
-    } else if (absPosition === 1) {
-      // Adjacent cards - slightly smaller and angled with depth
+    } else if (Math.abs(position) === 1) {
+      // Adjacent cards - angled with proper circular positioning
       const side = position > 0 ? 1 : -1;
+      const x = Math.sin((angle * Math.PI) / 180) * radius;
+      const z = Math.cos((angle * Math.PI) / 180) * radius;
+      
       return {
-        transform: `translateX(${side * 220}px) translateZ(50px) scale(0.85) rotateY(${-side * 25}deg)`,
+        transform: `translateX(${x}px) translateZ(${z}px) scale(0.8) rotateY(${-angle}deg)`,
         zIndex: 25,
-        opacity: 0.85,
-        filter: 'brightness(0.9) blur(0.5px)',
-      };
-    } else if (absPosition === 2) {
-      // Second-level cards - more angled with deeper positioning
-      const side = position > 0 ? 1 : -1;
-      return {
-        transform: `translateX(${side * 380}px) translateZ(0px) scale(0.7) rotateY(${-side * 40}deg)`,
-        zIndex: 20,
-        opacity: 0.7,
-        filter: 'brightness(0.8) blur(1px)',
-      };
-    } else if (absPosition === 3) {
-      // Third-level cards - significant depth and angle
-      const side = position > 0 ? 1 : -1;
-      return {
-        transform: `translateX(${side * 520}px) translateZ(-50px) scale(0.55) rotateY(${-side * 55}deg)`,
-        zIndex: 15,
-        opacity: 0.5,
-        filter: 'brightness(0.7) blur(1.5px)',
-      };
-    } else if (absPosition === 4) {
-      // Fourth-level cards - deep background with circular perspective
-      const side = position > 0 ? 1 : -1;
-      return {
-        transform: `translateX(${side * 640}px) translateZ(-100px) scale(0.4) rotateY(${-side * 70}deg)`,
-        zIndex: 10,
-        opacity: 0.3,
-        filter: 'brightness(0.6) blur(2px)',
+        opacity: 0.9,
+        filter: 'brightness(0.95) blur(0px)',
       };
     } else {
-      // Cards beyond visible range - very subtle background presence
+      // Outer cards - more angled with deeper circular positioning
       const side = position > 0 ? 1 : -1;
+      const x = Math.sin((angle * Math.PI) / 180) * radius;
+      const z = Math.cos((angle * Math.PI) / 180) * radius;
+      
       return {
-        transform: `translateX(${side * 750}px) translateZ(-150px) scale(0.25) rotateY(${-side * 80}deg)`,
-        zIndex: 5,
-        opacity: 0.15,
-        filter: 'brightness(0.5) blur(3px)',
+        transform: `translateX(${x}px) translateZ(${z}px) scale(0.65) rotateY(${-angle}deg)`,
+        zIndex: 20,
+        opacity: 0.8,
+        filter: 'brightness(0.9) blur(0.5px)',
       };
     }
   };
 
   const cardStyle = getCardStyle(position);
   const isCenter = position === 0;
-  const isVisible = Math.abs(position) <= 4;
 
-  // Always render cards for infinite loop illusion, even far ones
   return (
     <div
       className="absolute left-1/2 top-1/2 w-80 h-[480px] cursor-pointer transition-all duration-700 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] transform-gpu"
@@ -87,7 +67,7 @@ const CarouselCard = ({ style, position, onClick }: CarouselCardProps) => {
     >
       <div className={`w-full h-full bg-white rounded-2xl shadow-2xl overflow-hidden group transition-all duration-500 ${
         isCenter ? 'hover:shadow-3xl hover:scale-[1.02]' : ''
-      } ${Math.abs(position) > 2 ? 'pointer-events-none' : ''}`}>
+      }`}>
         {/* Image */}
         <div className="relative h-72 overflow-hidden">
           <img

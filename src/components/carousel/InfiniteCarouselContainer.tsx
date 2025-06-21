@@ -18,15 +18,15 @@ const InfiniteCarouselContainer = ({
   const infiniteStyles = [...artStyles, ...artStyles, ...artStyles];
   const centerOffset = artStyles.length; // Start at middle set
 
-  // Calculate which cards to render for premium infinite effect
+  // Calculate which cards to render for the 3D circular layout
   const getVisibleCards = () => {
     const visibleCards = [];
-    const totalCards = 9; // Show 9 cards for more premium feel
+    const totalCards = 5; // Show 5 cards like in the reference image
     const startIndex = centerOffset + currentIndex - Math.floor(totalCards / 2);
     
     for (let i = 0; i < totalCards; i++) {
       const cardIndex = (startIndex + i) % infiniteStyles.length;
-      const relativePosition = i - Math.floor(totalCards / 2); // -4 to 4
+      const relativePosition = i - Math.floor(totalCards / 2); // -2 to 2
       visibleCards.push({
         style: infiniteStyles[cardIndex],
         position: relativePosition,
@@ -39,19 +39,19 @@ const InfiniteCarouselContainer = ({
 
   return (
     <div 
-      className="relative h-[700px] flex items-center justify-center perspective-[1500px] -mt-12"
+      className="relative h-[700px] flex items-center justify-center perspective-[2000px]"
       style={{
         transform: `translateY(${parallaxOffset.cards}px)`,
         transition: 'transform 0.1s ease-out'
       }}
     >
-      {/* Enhanced container with circular depth illusion */}
-      <div className="absolute inset-0 bg-gradient-radial from-white/20 via-purple-50/30 to-pink-100/40 rounded-full blur-3xl transform scale-150 opacity-60"></div>
+      {/* Enhanced 3D stage with circular depth */}
+      <div className="absolute inset-0 bg-gradient-radial from-white/30 via-purple-50/20 to-pink-100/30 rounded-full blur-3xl transform scale-150 opacity-40"></div>
       
-      {/* Circular track indicator */}
-      <div className="absolute inset-0 border border-white/20 rounded-full transform scale-110 opacity-30"></div>
-      <div className="absolute inset-0 border border-white/10 rounded-full transform scale-125 opacity-20"></div>
+      {/* Reflective floor effect */}
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-gray-100/20 via-transparent to-transparent"></div>
       
+      {/* 3D container with proper circular arrangement */}
       <div className="relative w-full h-full transform-style-preserve-3d">
         {getVisibleCards().map(({ style, position, key }) => (
           <CarouselCard
