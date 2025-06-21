@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -21,6 +22,7 @@ export default {
 			fontFamily: {
 				'oswald': ['Oswald', 'sans-serif'],
 				'montserrat': ['Montserrat', 'sans-serif'],
+				'poppins': ['Poppins', 'sans-serif'],
 			},
 			colors: {
 				border: 'hsl(var(--border))',
