@@ -49,7 +49,7 @@ const ArtStylesCarousel = () => {
         />
 
         <div
-          className="mt-2"
+          className="-mt-4"
           style={{
             transform: `translateY(${parallaxOffset.header * 0.5}px)`,
             transition: 'transform 0.1s ease-out'
@@ -61,7 +61,7 @@ const ArtStylesCarousel = () => {
             onIndicatorClick={handleIndicatorClick}
           />
 
-          <div className="mt-3">
+          <div className="mt-1">
             <CarouselCTA />
           </div>
         </div>
