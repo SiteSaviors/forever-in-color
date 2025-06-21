@@ -18,6 +18,7 @@ import ElectricBloom from "./pages/ElectricBloom";
 import ThreeDStorybook from "./pages/ThreeDStorybook";
 import DecoLuxe from "./pages/DecoLuxe";
 import AbstractFusion from "./pages/AbstractFusion";
+import ArtisticMashup from "./pages/ArtisticMashup";
 import ARExperience from "./pages/ARExperience";
 import NotFound from "./pages/NotFound";
 
@@ -45,6 +46,7 @@ const App = () => (
           <Route path="/art-styles/3d-storybook" element={<ThreeDStorybook />} />
           <Route path="/art-styles/deco-luxe" element={<DecoLuxe />} />
           <Route path="/art-styles/abstract-fusion" element={<AbstractFusion />} />
+          <Route path="/art-styles/artistic-mashup" element={<ArtisticMashup />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
