@@ -35,7 +35,7 @@ const ArtStylesCarousel = () => {
         </div>
 
         {/* Infinite 3D Carousel with enhanced container shadow and parallax */}
-        <div className="mt-6">
+        <div className="mt-16">
           <InfiniteCarouselContainer 
             currentIndex={currentIndex}
             parallaxOffset={parallaxOffset}
