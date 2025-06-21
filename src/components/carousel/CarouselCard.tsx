@@ -14,47 +14,52 @@ const CarouselCard = ({ style, position, onClick }: CarouselCardProps) => {
     const absPosition = Math.abs(position);
     
     if (position === 0) {
-      // Center card - full size and prominence
+      // Center card - full size, focus, and prominence with soft glow
       return {
-        transform: 'translateX(0) translateZ(100px) scale(1.05) rotateY(0deg)',
+        transform: 'translateX(0) translateZ(0) scale(1)',
         zIndex: 30,
         opacity: 1,
-        filter: 'brightness(1.1) blur(0px) drop-shadow(0 25px 50px rgba(147,51,234,0.3))',
+        filter: 'blur(0px) drop-shadow(0 25px 50px rgba(147,51,234,0.3))',
+        transition: 'all 0.7s cubic-bezier(0.25, 0.8, 0.25, 1)'
       };
     } else if (absPosition === 1) {
-      // Adjacent cards - rotated and scaled down
+      // Adjacent cards - rotated and scaled with depth
       const side = position > 0 ? 1 : -1;
       return {
-        transform: `translateX(${side * 280}px) translateZ(-50px) scale(0.85) rotateY(${-side * 25}deg)`,
+        transform: `translateX(${side * 280}px) rotateY(${-side * 25}deg) scale(0.85) translateZ(-100px)`,
         zIndex: 25,
         opacity: 0.8,
-        filter: 'brightness(0.9) blur(0.5px) drop-shadow(0 20px 40px rgba(0,0,0,0.2))',
+        filter: 'blur(0.5px) drop-shadow(0 20px 40px rgba(0,0,0,0.2))',
+        transition: 'all 0.7s cubic-bezier(0.25, 0.8, 0.25, 1)'
       };
     } else if (absPosition === 2) {
-      // Second-level cards - more rotation and smaller
+      // Second-level cards - more rotation and depth
       const side = position > 0 ? 1 : -1;
       return {
-        transform: `translateX(${side * 450}px) translateZ(-150px) scale(0.65) rotateY(${-side * 45}deg)`,
+        transform: `translateX(${side * 420}px) rotateY(${-side * 45}deg) scale(0.65) translateZ(-250px)`,
         zIndex: 20,
-        opacity: 0.6,
-        filter: 'brightness(0.75) blur(1px) drop-shadow(0 15px 30px rgba(0,0,0,0.15))',
+        opacity: 0.5,
+        filter: 'blur(1px) drop-shadow(0 15px 30px rgba(0,0,0,0.15))',
+        transition: 'all 0.7s cubic-bezier(0.25, 0.8, 0.25, 1)'
       };
     } else if (absPosition === 3) {
-      // Third-level cards - dramatic depth
+      // Far cards - dramatic depth and atmospheric perspective
       const side = position > 0 ? 1 : -1;
       return {
-        transform: `translateX(${side * 580}px) translateZ(-250px) scale(0.5) rotateY(${-side * 60}deg)`,
+        transform: `translateX(${side * 520}px) rotateY(${-side * 60}deg) scale(0.5) translateZ(-400px)`,
         zIndex: 15,
-        opacity: 0.35,
-        filter: 'brightness(0.6) blur(2px) drop-shadow(0 10px 20px rgba(0,0,0,0.1))',
+        opacity: 0.25,
+        filter: 'blur(2px) drop-shadow(0 10px 20px rgba(0,0,0,0.1))',
+        transition: 'all 0.7s cubic-bezier(0.25, 0.8, 0.25, 1)'
       };
     } else {
       // Cards beyond visible range
       return {
-        transform: 'translateX(0) translateZ(-400px) scale(0.3)',
+        transform: 'translateX(0) translateZ(-600px) scale(0.2)',
         zIndex: 1,
         opacity: 0,
-        filter: 'brightness(0.3) blur(3px)',
+        filter: 'blur(3px)',
+        transition: 'all 0.7s cubic-bezier(0.25, 0.8, 0.25, 1)'
       };
     }
   };
@@ -67,7 +72,7 @@ const CarouselCard = ({ style, position, onClick }: CarouselCardProps) => {
 
   return (
     <div
-      className="absolute w-64 h-[380px] cursor-pointer transition-all duration-700 ease-out"
+      className="absolute w-64 h-[380px] cursor-pointer"
       style={{
         ...cardStyle,
         transformStyle: 'preserve-3d',
@@ -76,12 +81,14 @@ const CarouselCard = ({ style, position, onClick }: CarouselCardProps) => {
         top: '50%',
         marginLeft: '-128px',
         marginTop: '-190px',
-        willChange: 'transform',
+        willChange: 'transform, opacity, filter',
       }}
       onClick={() => onClick(style)}
     >
-      <div className={`w-full h-full bg-white rounded-2xl shadow-2xl overflow-hidden group transition-all duration-500 ${
-        isCenter ? 'hover:shadow-[0_0_80px_rgba(147,51,234,0.4)] hover:scale-[1.02] ring-4 ring-purple-200/30' : ''
+      <div className={`w-full h-full bg-white rounded-2xl shadow-2xl overflow-hidden group ${
+        isCenter 
+          ? 'hover:shadow-[0_0_80px_rgba(147,51,234,0.4)] hover:scale-[1.02] ring-4 ring-purple-200/30' 
+          : 'hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)]'
       }`}>
         {/* Image */}
         <div className="relative h-60 overflow-hidden">
