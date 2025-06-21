@@ -28,7 +28,7 @@ const HeroContent = ({
                 REIMAGINED
               </div>
             </h1>
-            <p className="text-xl leading-relaxed max-w-2xl text-slate-100/90 pt-4">
+            <p className="text-xl leading-relaxed max-w-xl text-slate-100/90 pt-4">
               Transform your most precious photos into stunning, modern artwork. From beloved pets to lost loved ones, 
               we create personalized pieces that preserve what matters most.
             </p>
@@ -39,7 +39,7 @@ const HeroContent = ({
       {/* Description - Show on mobile when badge/headline are hidden */}
       {hideBadgeAndHeadline && (
         <div className="text-center lg:text-left">
-          <p className="text-lg text-slate-100/90 leading-relaxed max-w-lg mx-auto lg:mx-0">
+          <p className="text-lg text-slate-100/90 leading-relaxed max-w-md mx-auto lg:mx-0">
             Transform your most precious photos into stunning, modern artwork. From beloved pets to lost loved ones, 
             we create personalized pieces that preserve what matters most.
           </p>

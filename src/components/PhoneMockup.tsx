@@ -3,11 +3,11 @@ import { Play } from "lucide-react";
 
 const PhoneMockup = () => {
   return (
-    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 z-30 scale-75">
+    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 z-30 scale-90">
       <div className="relative">
-        {/* Phone Frame - Scaled down proportionally */}
+        {/* Phone Frame - Made larger */}
         <div className="bg-gray-900 rounded-2xl sm:rounded-[3rem] p-1.5 sm:p-2.5 lg:p-2 shadow-2xl">
-          <div className="bg-black rounded-xl sm:rounded-[2.5rem] w-28 h-52 sm:w-52 sm:h-[420px] lg:w-44 lg:h-[360px] relative overflow-hidden">
+          <div className="bg-black rounded-xl sm:rounded-[2.5rem] w-32 h-56 sm:w-60 sm:h-[480px] lg:w-52 lg:h-[420px] relative overflow-hidden">
             {/* Screen Content */}
             <div className="absolute inset-1 bg-gradient-to-br from-purple-900 via-pink-900 to-blue-900 rounded-lg sm:rounded-[2rem] flex items-center justify-center">
               {/* Video Container */}
@@ -35,7 +35,7 @@ const PhoneMockup = () => {
           </div>
         </div>
         
-        {/* Floating AR Badge - Smaller and more subtle */}
+        {/* Floating AR Badge */}
         <div className="absolute -top-2 sm:-top-6 lg:-top-5 -right-1 sm:-right-4 lg:-right-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-2 py-1 sm:px-3 sm:py-1.5 lg:px-2.5 lg:py-1 rounded-full text-[10px] sm:text-sm lg:text-xs font-semibold shadow-lg animate-pulse">
           Live AR Demo
         </div>
