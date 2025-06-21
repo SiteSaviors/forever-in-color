@@ -61,7 +61,7 @@ const ElectricBloom = () => {
         <div className="fixed bottom-6 right-6 z-50">
           <Button 
             onClick={handleStartCreating}
-            className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 py-3 rounded-full shadow-2xl shadow-blue-500/25 transform hover:scale-105 transition-all duration-300"
+            className="bg-gradient-to-r from-lime-500 to-orange-600 hover:from-lime-600 hover:to-orange-700 text-white font-bold px-6 py-3 rounded-full shadow-2xl shadow-lime-500/25 transform hover:scale-105 transition-all duration-300"
           >
             Start Creating in This Style
           </Button>

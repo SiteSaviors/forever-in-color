@@ -20,7 +20,7 @@ const ElectricBloomHero = ({ onStartCreating }: ElectricBloomHeroProps) => {
                 Cinematic Energy
               </Badge>
               <h1 className="text-8xl lg:text-12xl font-bold mb-6">
-                <span className="bg-gradient-to-r from-blue-400 via-cyan-300 to-purple-400 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-lime-400 via-orange-500 to-orange-600 bg-clip-text text-transparent">
                   Electric Bloom
                 </span>
               </h1>
@@ -31,7 +31,7 @@ const ElectricBloomHero = ({ onStartCreating }: ElectricBloomHeroProps) => {
             
             <Button 
               onClick={onStartCreating}
-              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-12 py-6 rounded-full text-xl shadow-2xl shadow-blue-500/25 transform hover:scale-105 transition-all duration-300"
+              className="bg-gradient-to-r from-lime-500 to-orange-600 hover:from-lime-600 hover:to-orange-700 text-white font-bold px-12 py-6 rounded-full text-xl shadow-2xl shadow-lime-500/25 transform hover:scale-105 transition-all duration-300"
             >
               Start Creating in This Style
               <ArrowRight className="w-6 h-6 ml-3" />
