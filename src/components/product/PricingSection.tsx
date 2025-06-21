@@ -41,6 +41,10 @@ const PricingSection = () => {
     setSelectedSize(""); // Reset size when orientation changes
   };
 
+  const handleSizeChange = (size: string) => {
+    setSelectedSize(size);
+  };
+
   return (
     <div className="w-full space-y-8">
       {/* Frame/Unframe Toggle */}
@@ -74,7 +78,9 @@ const PricingSection = () => {
       {/* Orientation Selection */}
       <OrientationSelector 
         selectedOrientation={selectedOrientation}
+        selectedSize={selectedSize}
         onOrientationChange={handleOrientationChange}
+        onSizeChange={handleSizeChange}
       />
 
       {/* Size & Price Selection */}
