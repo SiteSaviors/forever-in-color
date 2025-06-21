@@ -18,12 +18,12 @@ const ElectricBloomGallery = () => {
   ];
 
   return (
-    <section className="py-16 bg-black">
+    <section className="py-16 bg-slate-900">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2 className="text-3xl font-bold text-center text-white mb-12">Style Gallery</h2>
         <div className="grid md:grid-cols-3 gap-8">
           {galleryImages.map((image, index) => (
-            <Card key={index} className="overflow-hidden bg-gray-900 border-gray-700 hover:border-cyan-500/30 transition-colors">
+            <Card key={index} className="overflow-hidden bg-slate-800 border-slate-600 hover:border-blue-500/30 transition-colors">
               <CardContent className="p-0">
                 <img 
                   src={image.src}

@@ -29,16 +29,16 @@ const ElectricBloom = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-slate-900">
       <Header />
       
       <ElectricBloomHero onStartCreating={handleStartCreating} />
 
       {/* Emotional Description */}
-      <section className="py-16 bg-black">
+      <section className="py-16 bg-slate-900">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-xl text-gray-300 leading-relaxed">
-            This style surrounds your subject in a luminous neon aura — with glowing edges, pulsing highlights, and intense contrast. Think late-night city lights or futuristic poster vibes. Every detail is electrified with bold color and radiant lighting, turning your image into a glowing, high-impact visual experience.
+          <p className="text-xl text-slate-300 leading-relaxed">
+            This style surrounds your subject in a luminous electric aura — with glowing edges, pulsing highlights, and intense contrast. Think late-night city lights or futuristic poster vibes. Every detail is electrified with bold color and radiant lighting, turning your image into a glowing, high-impact visual experience.
           </p>
         </div>
       </section>
@@ -52,7 +52,7 @@ const ElectricBloom = () => {
       {/* SEO Copy Block */}
       <div className="sr-only">
         <p>
-          Custom electric bloom art from photo, AI-generated neon aura style, futuristic cyberpunk art, cinematic glow effect, Forever in Color Electric Bloom style. Transform your memories into electrifying artwork with luminous neon edges, radiant lighting, and high-voltage energy perfect for modern spaces, dramatic gifts, and futuristic displays.
+          Custom electric bloom art from photo, AI-generated electric aura style, futuristic cyberpunk art, cinematic glow effect, Forever in Color Electric Bloom style. Transform your memories into electrifying artwork with luminous electric edges, radiant lighting, and high-voltage energy perfect for modern spaces, dramatic gifts, and futuristic displays.
         </p>
       </div>
 
@@ -61,7 +61,7 @@ const ElectricBloom = () => {
         <div className="fixed bottom-6 right-6 z-50">
           <Button 
             onClick={handleStartCreating}
-            className="bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 text-black font-bold px-6 py-3 rounded-full shadow-2xl hover:shadow-cyan-500/25 transform hover:scale-105 transition-all duration-300 animate-pulse"
+            className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 py-3 rounded-full shadow-2xl shadow-blue-500/25 transform hover:scale-105 transition-all duration-300"
           >
             Start Creating in This Style
           </Button>
