@@ -7,7 +7,7 @@ import PhoneMockup from "./PhoneMockup";
 const Hero = () => {
   return (
     <section className="relative min-h-screen overflow-hidden" style={{
-      backgroundImage: `url('/lovable-uploads/3e752087-b61d-463b-87ca-313d878c43c1.png')`,
+      backgroundImage: `url('/lovable-uploads/185e26e8-09a7-4f89-9224-738320a610c7.png')`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat'
