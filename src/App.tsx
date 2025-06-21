@@ -15,6 +15,7 @@ import NeonSplash from "./pages/NeonSplash";
 import PopArtBurst from "./pages/PopArtBurst";
 import ElectricBloom from "./pages/ElectricBloom";
 import ThreeDStorybook from "./pages/ThreeDStorybook";
+import DecoLuxe from "./pages/DecoLuxe";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +38,7 @@ const App = () => (
           <Route path="/art-styles/pop-art-burst" element={<PopArtBurst />} />
           <Route path="/art-styles/electric-bloom" element={<ElectricBloom />} />
           <Route path="/art-styles/3d-storybook" element={<ThreeDStorybook />} />
+          <Route path="/art-styles/deco-luxe" element={<DecoLuxe />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
