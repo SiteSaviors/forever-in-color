@@ -3,8 +3,8 @@ import { Palette } from "lucide-react";
 
 const CarouselHeader = () => {
   return (
-    <div className="text-center mb-8">
-      <div className="flex items-center justify-center mb-6">
+    <div className="text-center mb-12">
+      <div className="flex items-center justify-center mb-8">
         <Palette className="w-8 h-8 text-purple-600 mr-3" />
         <h2 className="text-4xl lg:text-5xl font-bold text-gray-900">
           Discover Your{" "}
@@ -13,7 +13,10 @@ const CarouselHeader = () => {
           </span>
         </h2>
       </div>
-      <p className="text-gray-700 max-w-2xl mx-auto mb-6 text-lg leading-relaxed font-medium">
+      <p className="text-white max-w-4xl mx-auto mb-8 text-xl leading-relaxed font-serif italic tracking-wide"
+         style={{
+           textShadow: '0 2px 8px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.2)'
+         }}>
         Transform your photos into stunning canvas artwork with our curated collection of artistic styles. Each style is carefully crafted to bring out the unique beauty in your memories.
       </p>
     </div>
