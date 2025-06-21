@@ -19,13 +19,13 @@ export const useCarouselAutoplay = () => {
     }
   }, [hasInitialRotated]);
 
-  // Auto-play functionality with smoother timing
+  // Auto-play functionality
   useEffect(() => {
     if (!isAutoPlaying || !hasInitialRotated) return;
 
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % artStyles.length);
-    }, 4000); // Slightly longer for premium feel
+    }, 3000);
 
     return () => clearInterval(interval);
   }, [isAutoPlaying, hasInitialRotated]);
