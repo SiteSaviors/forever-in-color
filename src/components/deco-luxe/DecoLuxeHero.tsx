@@ -1,20 +1,12 @@
 
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
 import { Sparkles } from "lucide-react";
 
-const DecoLuxeHero = () => {
-  const navigate = useNavigate();
+interface DecoLuxeHeroProps {
+  onStartCreating: () => void;
+}
 
-  const handleGetStarted = () => {
-    navigate("/product", { 
-      state: { 
-        preSelectedStyle: 15,
-        styleName: "Deco Luxe"
-      } 
-    });
-  };
-
+const DecoLuxeHero = ({ onStartCreating }: DecoLuxeHeroProps) => {
   return (
     <section className="pt-20 pb-16 bg-gradient-to-br from-amber-50 via-white to-emerald-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -43,7 +35,7 @@ const DecoLuxeHero = () => {
             
             <div className="flex flex-col sm:flex-row gap-4">
               <Button 
-                onClick={handleGetStarted}
+                onClick={onStartCreating}
                 className="bg-gradient-to-r from-amber-600 to-emerald-600 text-white px-8 py-6 text-lg rounded-full hover:shadow-xl transform hover:scale-105 transition-all duration-300"
               >
                 Create Your Deco Luxe Art
