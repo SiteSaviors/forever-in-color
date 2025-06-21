@@ -22,7 +22,7 @@ const HeroContent = ({
 
           {/* Main Headline - Updated to match carousel header styling */}
           <div>
-            <h1 className="text-4xl lg:text-5xl font-bold leading-tight text-center lg:text-left mb-4">
+            <h1 className="text-6xl lg:text-7xl font-bold leading-tight text-center lg:text-left mb-4">
               <div className="text-white font-poppins mb-2 tracking-tighter">Your Memories</div>
               <div className="text-5xl lg:text-6xl bg-gradient-to-r from-pink-500 via-purple-600 to-blue-600 bg-clip-text text-transparent font-oswald">
                 REIMAGINED
