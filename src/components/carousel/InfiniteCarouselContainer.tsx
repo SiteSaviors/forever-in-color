@@ -39,9 +39,9 @@ const InfiniteCarouselContainer = ({
 
   return (
     <div 
-      className="relative h-[480px] flex items-center justify-center overflow-hidden -mt-8"
+      className="relative h-[600px] flex items-center justify-center overflow-hidden -mt-8"
       style={{
-        perspective: '1200px',
+        perspective: '1400px',
         transform: `translateY(${parallaxOffset.cards}px)`,
         transition: 'transform 0.1s ease-out'
       }}
