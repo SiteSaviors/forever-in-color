@@ -33,28 +33,22 @@ export const artStyles: ArtStyle[] = [
     description: "Gentle pastel hues with soft blends for a dreamy, calming feel"
   },
   {
-    id: 6,
-    name: "Crystalized Charm",
-    image: "/lovable-uploads/933dd4e5-58bc-404d-8c89-a93dcce93079.png",
-    description: "Faceted, gem-like texture with a modern, artistic twist"
-  },
-  {
-    id: 7,
-    name: "3D Storybook",
-    image: "/lovable-uploads/163d0898-810c-431b-a6c9-04c7e8423791.png",
-    description: "Bold, fun, and full of personality—like a scene from your favorite animated movie"
-  },
-  {
     id: 8,
     name: "Artisan Charcoal",
     image: "/lovable-uploads/8512e20f-df1b-4848-a638-a3f6f930e600.png",
     description: "Soft, hand-drawn black-and-white sketch that looks like it came straight out of an artist's notebook"
   },
   {
-    id: 9,
-    name: "Pop Art Burst",
-    image: "/lovable-uploads/723f2a1a-0e03-4c36-a8d3-a930c81a7d08.png",
-    description: "Bold, vibrant colors inspired by the classic pop art movement"
+    id: 15,
+    name: "Deco Luxe",
+    image: "/lovable-uploads/538dcdf0-4fce-48ea-be55-314d68926919.png",
+    description: "Sophisticated Art Deco elegance with geometric patterns and luxurious metallic accents"
+  },
+  {
+    id: 7,
+    name: "3D Storybook",
+    image: "/lovable-uploads/163d0898-810c-431b-a6c9-04c7e8423791.png",
+    description: "Bold, fun, and full of personality—like a scene from your favorite animated movie"
   },
   {
     id: 10,
@@ -69,10 +63,10 @@ export const artStyles: ArtStyle[] = [
     description: "Futuristic cyberpunk aesthetic"
   },
   {
-    id: 12,
-    name: "Artistic Mashup",
-    image: "/lovable-uploads/60a93ae3-c149-4515-aa89-356396b7ff33.png",
-    description: "A creative collision of styles—bold, expressive, and one of a kind"
+    id: 9,
+    name: "Pop Art Burst",
+    image: "/lovable-uploads/723f2a1a-0e03-4c36-a8d3-a930c81a7d08.png",
+    description: "Bold, vibrant colors inspired by the classic pop art movement"
   },
   {
     id: 13,
@@ -81,15 +75,21 @@ export const artStyles: ArtStyle[] = [
     description: "Dynamic swirls and vibrant colors blend in perfect harmony"
   },
   {
+    id: 6,
+    name: "Crystalized Charm",
+    image: "/lovable-uploads/933dd4e5-58bc-404d-8c89-a93dcce93079.png",
+    description: "Faceted, gem-like texture with a modern, artistic twist"
+  },
+  {
+    id: 12,
+    name: "Artistic Mashup",
+    image: "/lovable-uploads/60a93ae3-c149-4515-aa89-356396b7ff33.png",
+    description: "A creative collision of styles—bold, expressive, and one of a kind"
+  },
+  {
     id: 14,
     name: "Intricate Ink",
     image: "/lovable-uploads/538dcdf0-4fce-48ea-be55-314d68926919.png",
     description: "Detailed ink drawing with fine lines and flourishes of elegance"
-  },
-  {
-    id: 15,
-    name: "Deco Luxe",
-    image: "/lovable-uploads/538dcdf0-4fce-48ea-be55-314d68926919.png",
-    description: "Sophisticated Art Deco elegance with geometric patterns and luxurious metallic accents"
   }
 ];
