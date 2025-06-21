@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, PenTool, DollarSign } from "lucide-react";
@@ -18,10 +17,9 @@ const ArtisanCharcoalHero = ({ onStartCreating }: ArtisanCharcoalHeroProps) => {
               <Badge className="mb-4 bg-gray-100 text-gray-800 border-gray-200">
                 Hand-Drawn Elegance
               </Badge>
-              <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6">
-                Artisan 
-                <span className="block bg-gradient-to-r from-gray-800 via-slate-700 to-gray-900 bg-clip-text text-transparent">
-                  Charcoal
+              <h1 className="text-8xl lg:text-12xl font-bold text-gray-900 mb-6">
+                <span className="bg-gradient-to-r from-gray-800 via-slate-700 to-gray-900 bg-clip-text text-transparent">
+                  Artisan Charcoal
                 </span>
               </h1>
               <p className="text-xl text-gray-600 mb-8 leading-relaxed">

@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Paintbrush, DollarSign } from "lucide-react";
@@ -18,10 +17,9 @@ const WatercolorDreamsHero = ({ onStartCreating }: WatercolorDreamsHeroProps) =>
               <Badge className="mb-4 bg-pink-100 text-pink-800 border-pink-200">
                 Expressive Art Style
               </Badge>
-              <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6">
-                Watercolor 
-                <span className="block bg-gradient-to-r from-pink-600 via-purple-700 to-orange-800 bg-clip-text text-transparent">
-                  Dreams
+              <h1 className="text-8xl lg:text-12xl font-bold text-gray-900 mb-6">
+                <span className="bg-gradient-to-r from-pink-600 via-purple-700 to-orange-800 bg-clip-text text-transparent">
+                  Watercolor Dreams
                 </span>
               </h1>
               <p className="text-xl text-gray-600 mb-8 leading-relaxed">

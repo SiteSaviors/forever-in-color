@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Palette, DollarSign } from "lucide-react";
@@ -18,10 +17,9 @@ const ClassicOilHero = ({ onStartCreating }: ClassicOilHeroProps) => {
               <Badge className="mb-4 bg-amber-100 text-amber-800 border-amber-200">
                 Classic Art Style
               </Badge>
-              <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6">
-                Classic Oil 
-                <span className="block bg-gradient-to-r from-amber-600 via-orange-700 to-red-800 bg-clip-text text-transparent">
-                  Painting
+              <h1 className="text-8xl lg:text-12xl font-bold text-gray-900 mb-6">
+                <span className="bg-gradient-to-r from-amber-600 via-orange-700 to-red-800 bg-clip-text text-transparent">
+                  Classic Oil Painting
                 </span>
               </h1>
               <p className="text-xl text-gray-600 mb-8 leading-relaxed">

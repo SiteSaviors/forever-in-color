@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Droplets, DollarSign } from "lucide-react";
@@ -18,10 +17,9 @@ const CalmWatercolorHero = ({ onStartCreating }: CalmWatercolorHeroProps) => {
               <Badge className="mb-4 bg-blue-100 text-blue-800 border-blue-200">
                 Serene Art Style
               </Badge>
-              <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6">
-                Calm 
-                <span className="block bg-gradient-to-r from-blue-600 via-teal-700 to-green-800 bg-clip-text text-transparent">
-                  Watercolor
+              <h1 className="text-8xl lg:text-12xl font-bold text-gray-900 mb-6">
+                <span className="bg-gradient-to-r from-blue-600 via-teal-700 to-green-800 bg-clip-text text-transparent">
+                  Calm Watercolor
                 </span>
               </h1>
               <p className="text-xl text-gray-600 mb-8 leading-relaxed">
