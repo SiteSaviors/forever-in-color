@@ -32,7 +32,7 @@ const ProductStep = ({
 
   return (
     <AccordionItem 
-      value={step.id}
+      value={`step-${step.number}`}
       className={`
         relative bg-white rounded-2xl shadow-lg border-0 overflow-hidden transition-all duration-500
         ${isActive ? 'ring-2 ring-purple-200 shadow-xl transform scale-[1.02]' : ''}

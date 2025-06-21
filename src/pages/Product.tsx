@@ -146,7 +146,17 @@ const Product = () => {
         />
         
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <Accordion type="single" value={`step-${currentStep}`} className="space-y-8">
+          <Accordion 
+            type="single" 
+            value={`step-${currentStep}`} 
+            onValueChange={(value) => {
+              if (value) {
+                const stepNumber = parseInt(value.replace('step-', ''));
+                setCurrentStep(stepNumber);
+              }
+            }}
+            className="space-y-8"
+          >
             {steps.map((step) => (
               <ProductStep
                 key={step.id}
