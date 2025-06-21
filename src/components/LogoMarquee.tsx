@@ -1,4 +1,3 @@
-
 const LogoMarquee = () => {
   const logos = [
     {
@@ -20,6 +19,14 @@ const LogoMarquee = () => {
     {
       name: "Inc.",
       logo: "/lovable-uploads/5f25233c-019d-49a0-845d-3cbfb34eb465.png"
+    },
+    {
+      name: "Good Housekeeping",
+      logo: "/lovable-uploads/bb906930-1aa5-45a9-b6d6-0cb4624bab37.png"
+    },
+    {
+      name: "GQ",
+      logo: "/lovable-uploads/2b8bfa3f-a6f2-4ead-a72d-d1a6d8b7bb87.png"
     }
   ];
 
