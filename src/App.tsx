@@ -10,6 +10,7 @@ import ClassicOilPainting from "./pages/ClassicOilPainting";
 import CalmWatercolor from "./pages/CalmWatercolor";
 import WatercolorDreams from "./pages/WatercolorDreams";
 import PastelBliss from "./pages/PastelBliss";
+import ArtisanCharcoal from "./pages/ArtisanCharcoal";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/art-styles/calm-watercolor" element={<CalmWatercolor />} />
           <Route path="/art-styles/watercolor-dreams" element={<WatercolorDreams />} />
           <Route path="/art-styles/pastel-bliss" element={<PastelBliss />} />
+          <Route path="/art-styles/artisan-charcoal" element={<ArtisanCharcoal />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
