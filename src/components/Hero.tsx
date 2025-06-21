@@ -19,7 +19,7 @@ const Hero = () => {
         <div className="absolute top-1/2 left-1/3 w-24 h-24 bg-gradient-to-br from-purple-300/20 to-pink-400/20 rounded-full blur-xl"></div>
       </div>
 
-      <div className="relative max-w-7xl mx-auto px-6 lg:px-8 pt-24 pb-16">
+      <div className="relative max-w-7xl mx-auto px-6 lg:px-8 pt-32 pb-16">
         {/* Mobile Layout - Updated to match desktop colors */}
         <div className="lg:hidden">
           {/* Mobile Badge and Headline - Updated colors */}
