@@ -90,6 +90,45 @@ const OrientationSelector = ({
     }
   };
 
+  const getCanvasPreview = (orientation: string, size: string) => {
+    const baseClasses = "bg-gray-200 rounded mb-3 flex items-center justify-center";
+    
+    switch (orientation) {
+      case 'horizontal':
+        return (
+          <div className={`${baseClasses} h-12 w-20`}>
+            <span className="text-gray-600 font-medium text-xs">
+              {size.replace('"', '').replace('"', '')}
+            </span>
+          </div>
+        );
+      case 'vertical':
+        return (
+          <div className={`${baseClasses} h-20 w-12`}>
+            <span className="text-gray-600 font-medium text-xs transform -rotate-90 whitespace-nowrap">
+              {size.replace('"', '').replace('"', '')}
+            </span>
+          </div>
+        );
+      case 'square':
+        return (
+          <div className={`${baseClasses} h-16 w-16`}>
+            <span className="text-gray-600 font-medium text-xs">
+              {size.replace('"', '').replace('"', '')}
+            </span>
+          </div>
+        );
+      default:
+        return (
+          <div className={`${baseClasses} h-16`}>
+            <span className="text-gray-600 font-medium text-sm">
+              {size.replace('"', '').replace('"', '')}
+            </span>
+          </div>
+        );
+    }
+  };
+
   const handleOrientationSelect = (orientation: string) => {
     onOrientationChange(orientation);
     // Reset size when orientation changes
@@ -144,11 +183,7 @@ const OrientationSelector = ({
                 onClick={() => onSizeChange(option.size)}
               >
                 <CardContent className="p-4 text-center">
-                  <div className="bg-gray-200 rounded mb-3 h-16 flex items-center justify-center">
-                    <span className="text-gray-600 font-medium text-sm">
-                      {option.size.replace('"', '').replace('"', '')}
-                    </span>
-                  </div>
+                  {getCanvasPreview(selectedOrientation, option.size)}
                   <div className="flex flex-col items-center gap-2">
                     <span className={`font-bold text-lg ${
                       index === 0 ? 'text-teal-600' : 'text-gray-900'
