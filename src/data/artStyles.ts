@@ -88,8 +88,8 @@ export const artStyles: ArtStyle[] = [
   },
   {
     id: 15,
-    name: "Elegant Vintage",
+    name: "Deco Luxe",
     image: "/lovable-uploads/538dcdf0-4fce-48ea-be55-314d68926919.png",
-    description: "Timeless tones and aged charm, like a classic from another era"
+    description: "Sophisticated Art Deco elegance with geometric patterns and luxurious metallic accents"
   }
 ];

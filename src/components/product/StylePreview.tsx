@@ -145,11 +145,11 @@ const StylePreview = ({ uploadedImage, onStyleSelect, onComplete, preSelectedSty
     },
     {
       id: 15,
-      name: "Elegant Vintage",
-      description: "Timeless tones and aged charm, like a classic from another era",
+      name: "Deco Luxe",
+      description: "Sophisticated Art Deco elegance with geometric patterns and luxurious metallic accents",
       popular: false,
       colors: ["from-amber-500", "via-yellow-600", "to-orange-700"],
-      category: "Retro"
+      category: "Luxury"
     }
   ];
 
