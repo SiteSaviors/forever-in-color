@@ -20,7 +20,7 @@ const ArtStylesCarousel = () => {
   };
 
   return (
-    <section ref={sectionRef} className="relative py-6 overflow-hidden">
+    <section ref={sectionRef} className="relative py-16 overflow-hidden">
       <CarouselBackground parallaxOffset={parallaxOffset} />
 
       {/* Content with enhanced backdrop and parallax */}
@@ -35,13 +35,11 @@ const ArtStylesCarousel = () => {
         </div>
 
         {/* Infinite 3D Carousel with enhanced container shadow and parallax */}
-        <div className="mt-2">
-          <InfiniteCarouselContainer 
-            currentIndex={currentIndex}
-            parallaxOffset={parallaxOffset}
-            onStyleClick={handleStyleClick}
-          />
-        </div>
+        <InfiniteCarouselContainer 
+          currentIndex={currentIndex}
+          parallaxOffset={parallaxOffset}
+          onStyleClick={handleStyleClick}
+        />
 
         <CarouselNavigation 
           onPrevious={handlePrevious}
@@ -49,7 +47,7 @@ const ArtStylesCarousel = () => {
         />
 
         <div
-          className="-mt-4"
+          className="-mt-2"
           style={{
             transform: `translateY(${parallaxOffset.header * 0.5}px)`,
             transition: 'transform 0.1s ease-out'
@@ -61,9 +59,7 @@ const ArtStylesCarousel = () => {
             onIndicatorClick={handleIndicatorClick}
           />
 
-          <div className="mt-1">
-            <CarouselCTA />
-          </div>
+          <CarouselCTA />
         </div>
       </div>
     </section>

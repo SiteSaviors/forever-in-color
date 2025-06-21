@@ -1,25 +1,18 @@
-
 import { Palette } from "lucide-react";
-
 const CarouselHeader = () => {
-  return (
-    <div className="text-center mb-4">
-      <div className="flex items-center justify-center mb-3">
-        <Palette className="w-12 h-12 text-purple-600 mr-4" />
-        <h2 className="font-poppins lg:text-7xl font-bold text-gray-900 tracking-tighter text-5xl">
+  return <div className="text-center mb-16">
+      <div className="flex items-center justify-center mb-12">
+        <Palette className="w-16 h-16 text-purple-600 mr-6" />
+        <h2 className="font-poppins lg:text-10xl font-bold text-gray-900 tracking-tighter text-6xl">
           Discover Your{" "}
           <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
             Signature Style
           </span>
         </h2>
       </div>
-      <div className="max-w-4xl mx-auto px-4">
-        <p className="text-white text-lg lg:text-xl font-medium leading-relaxed tracking-wide font-serif drop-shadow-lg">
-          Transform your photos into stunning canvas artwork with our curated collection of artistic styles. Each style is carefully crafted to bring out the unique beauty in your memories.
-        </p>
-      </div>
-    </div>
-  );
+      <p className="text-gray-700 max-w-2xl mx-auto mb-6 text-lg leading-relaxed font-medium">
+        Transform your photos into stunning canvas artwork with our curated collection of artistic styles. Each style is carefully crafted to bring out the unique beauty in your memories.
+      </p>
+    </div>;
 };
-
 export default CarouselHeader;
