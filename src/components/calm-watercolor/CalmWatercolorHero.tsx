@@ -1,4 +1,5 @@
 
+
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Droplets, DollarSign } from "lucide-react";
@@ -30,7 +31,7 @@ const CalmWatercolorHero = ({ onStartCreating }: CalmWatercolorHeroProps) => {
             
             <Button 
               onClick={onStartCreating}
-              className="bg-gradient-to-r from-blue-600 via-teal-700 to-green-800 text-white px-12 py-6 rounded-full text-xl font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+              className="bg-gradient-to-r from-sky-400 via-blue-500 to-yellow-400 text-white px-12 py-6 rounded-full text-xl font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300"
             >
               Start Creating in This Style
               <ArrowRight className="w-6 h-6 ml-3" />
@@ -65,3 +66,4 @@ const CalmWatercolorHero = ({ onStartCreating }: CalmWatercolorHeroProps) => {
 };
 
 export default CalmWatercolorHero;
+
