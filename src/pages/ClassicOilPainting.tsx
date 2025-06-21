@@ -107,10 +107,10 @@ const ClassicOilPainting = () => {
               
               <Button 
                 onClick={handleStartCreating}
-                className="bg-gradient-to-r from-amber-600 via-orange-700 to-red-800 text-white px-8 py-4 rounded-full text-lg font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                className="bg-gradient-to-r from-amber-600 via-orange-700 to-red-800 text-white px-12 py-6 rounded-full text-xl font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300"
               >
                 Start Creating in This Style
-                <ArrowRight className="w-5 h-5 ml-2" />
+                <ArrowRight className="w-6 h-6 ml-3" />
               </Button>
 
               {/* Pricing Badge - More subtle positioning */}
