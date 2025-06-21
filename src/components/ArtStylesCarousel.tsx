@@ -20,7 +20,7 @@ const ArtStylesCarousel = () => {
   };
 
   return (
-    <section ref={sectionRef} className="relative py-12 overflow-hidden">
+    <section ref={sectionRef} className="relative py-16 overflow-hidden">
       <CarouselBackground parallaxOffset={parallaxOffset} />
 
       {/* Content with enhanced backdrop and parallax */}
@@ -47,7 +47,7 @@ const ArtStylesCarousel = () => {
         />
 
         <div
-          className="-mt-4"
+          className="-mt-2"
           style={{
             transform: `translateY(${parallaxOffset.header * 0.5}px)`,
             transition: 'transform 0.1s ease-out'

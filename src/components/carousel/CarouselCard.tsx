@@ -98,7 +98,7 @@ const CarouselCard = ({ style, position, onClick }: CarouselCardProps) => {
           {/* Hover overlay - only show on center card */}
           {isCenter && (
             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
-              <div className="bg-white/90 backdrop-blur-sm rounded-full px-6 py-3 text-gray-900 font-medium text-sm shadow-lg transform translate-y-2 group-hover:translate-y-0">
+              <div className="bg-white/95 backdrop-blur-sm rounded-full px-6 py-3 text-gray-900 font-semibold text-sm shadow-lg transform translate-y-2 group-hover:translate-y-0">
                 Imagine your photo in this style
               </div>
             </div>
@@ -108,18 +108,18 @@ const CarouselCard = ({ style, position, onClick }: CarouselCardProps) => {
         {/* Content */}
         <div className="p-6 h-48 flex flex-col justify-between">
           <div>
-            <h3 className={`font-bold text-gray-900 mb-2 transition-all duration-300 ${
+            <h3 className={`font-bold text-gray-900 mb-2 transition-all duration-300 leading-tight ${
               isCenter ? 'text-xl' : 'text-lg opacity-80'
             }`}>{style.name}</h3>
-            <p className={`text-gray-600 text-sm mb-4 transition-all duration-300 ${
-              isCenter ? 'opacity-100' : 'opacity-60'
+            <p className={`text-gray-600 text-sm mb-4 transition-all duration-300 leading-relaxed ${
+              isCenter ? 'opacity-100 font-medium' : 'opacity-60'
             }`}>{style.description}</p>
           </div>
           
           {/* Only show button on center card */}
           {isCenter && (
             <Button 
-              className="w-full relative overflow-hidden bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-0 transition-all duration-300 group/btn transform hover:scale-105"
+              className="w-full relative overflow-hidden bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-0 transition-all duration-300 group/btn transform hover:scale-105 rounded-full font-semibold"
               onClick={(e) => {
                 e.stopPropagation();
                 onClick(style);
