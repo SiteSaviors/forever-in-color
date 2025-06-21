@@ -5,9 +5,9 @@ const PhoneMockup = () => {
   return (
     <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 z-30">
       <div className="relative">
-        {/* Phone Frame - Smaller proportions */}
+        {/* Phone Frame - Larger proportions */}
         <div className="bg-gray-900 rounded-2xl sm:rounded-[3rem] p-1.5 sm:p-3 lg:p-2 shadow-2xl">
-          <div className="bg-black rounded-xl sm:rounded-[2.5rem] w-28 h-52 sm:w-52 sm:h-[420px] lg:w-44 lg:h-[360px] relative overflow-hidden">
+          <div className="bg-black rounded-xl sm:rounded-[2.5rem] w-32 h-60 sm:w-60 sm:h-[480px] lg:w-52 lg:h-[420px] relative overflow-hidden">
             {/* Screen Content */}
             <div className="absolute inset-1 bg-gradient-to-br from-purple-900 via-pink-900 to-blue-900 rounded-lg sm:rounded-[2rem] flex items-center justify-center">
               {/* Video Container */}
