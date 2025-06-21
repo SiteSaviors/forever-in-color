@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { Upload, Image as ImageIcon, Palette, Gift } from "lucide-react";
@@ -58,6 +57,12 @@ const Product = () => {
 
   const handleOrientationSelect = (orientation: string) => {
     setSelectedOrientation(orientation);
+    // Reset size when orientation changes
+    setSelectedSize("");
+    // Remove step 3 completion if it was completed, since we're changing orientation
+    if (completedSteps.includes(3)) {
+      setCompletedSteps(completedSteps.filter(step => step !== 3));
+    }
   };
 
   const canProceedToStep = (step: number) => {
@@ -115,7 +120,9 @@ const Product = () => {
         <div className="space-y-8">
           <OrientationSelector
             selectedOrientation={selectedOrientation}
+            selectedSize={selectedSize}
             onOrientationChange={handleOrientationSelect}
+            onSizeChange={handleSizeSelect}
           />
         </div>
       )
