@@ -1,4 +1,3 @@
-
 import { ArtStyle } from "@/types/artStyle";
 
 export const artStyles: ArtStyle[] = [
@@ -17,7 +16,7 @@ export const artStyles: ArtStyle[] = [
   {
     id: 3,
     name: "Calm WaterColor",
-    image: "/lovable-uploads/24492292-d190-4b8b-ab5b-edec02774b0b.png",
+    image: "/lovable-uploads/f3b1dcfb-6c61-4acc-bab4-7467747bbe19.png",
     description: "Soft, gentle watercolor washes with subtle color transitions and peaceful tones"
   },
   {
