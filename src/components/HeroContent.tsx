@@ -1,6 +1,8 @@
 
 import { ArrowRight, Heart, Sparkles, Camera } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { Slider } from "@/components/ui/slider";
+import { useState } from "react";
 
 interface HeroContentProps {
   hideBadgeAndHeadline?: boolean;
@@ -9,8 +11,39 @@ interface HeroContentProps {
 const HeroContent = ({
   hideBadgeAndHeadline = false
 }: HeroContentProps) => {
+  const [textSize, setTextSize] = useState([8]); // Default to text-8xl
+
+  const getTextSizeClass = (size: number) => {
+    const sizeMap: { [key: number]: string } = {
+      4: "text-4xl lg:text-5xl",
+      5: "text-5xl lg:text-6xl", 
+      6: "text-6xl lg:text-7xl",
+      7: "text-7xl lg:text-8xl",
+      8: "text-8xl lg:text-9xl",
+      9: "text-9xl lg:text-9xl",
+    };
+    return sizeMap[size] || "text-8xl lg:text-9xl";
+  };
+
   return (
     <div className="space-y-8">
+      {/* Text Size Controller - Only show when badge/headline are visible */}
+      {!hideBadgeAndHeadline && (
+        <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+          <label className="block text-white text-sm font-medium mb-3">
+            Adjust "REIMAGINED" Text Size: {textSize[0]}
+          </label>
+          <Slider
+            value={textSize}
+            onValueChange={setTextSize}
+            max={9}
+            min={4}
+            step={1}
+            className="w-full"
+          />
+        </div>
+      )}
+
       {/* Badge and Headline - Only show if not hidden */}
       {!hideBadgeAndHeadline && (
         <div className="space-y-6">
@@ -24,7 +57,7 @@ const HeroContent = ({
           <div>
             <h1 className="text-5xl lg:text-6xl font-bold leading-tight text-center lg:text-left mb-4">
               <div className="text-white font-poppins mb-2 tracking-tighter">Your Memories</div>
-              <div className="text-8xl lg:text-9xl bg-gradient-to-r from-pink-500 via-purple-600 to-blue-600 bg-clip-text text-transparent font-oswald">
+              <div className={`${getTextSizeClass(textSize[0])} bg-gradient-to-r from-pink-500 via-purple-600 to-blue-600 bg-clip-text text-transparent font-oswald`}>
                 REIMAGINED
               </div>
             </h1>
