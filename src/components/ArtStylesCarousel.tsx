@@ -35,7 +35,7 @@ const ArtStylesCarousel = () => {
         </div>
 
         {/* Infinite 3D Carousel with enhanced container shadow and parallax */}
-        <div className="mt-6">
+        <div className="mt-2">
           <InfiniteCarouselContainer 
             currentIndex={currentIndex}
             parallaxOffset={parallaxOffset}
@@ -49,7 +49,7 @@ const ArtStylesCarousel = () => {
         />
 
         <div
-          className="mt-4"
+          className="mt-2"
           style={{
             transform: `translateY(${parallaxOffset.header * 0.5}px)`,
             transition: 'transform 0.1s ease-out'
@@ -61,7 +61,7 @@ const ArtStylesCarousel = () => {
             onIndicatorClick={handleIndicatorClick}
           />
 
-          <div className="mt-6">
+          <div className="mt-3">
             <CarouselCTA />
           </div>
         </div>
