@@ -12,6 +12,7 @@ interface OrientationOption {
 interface SizeOption {
   size: string;
   category: string;
+  description: string;
   popular?: boolean;
 }
 
@@ -51,26 +52,26 @@ const OrientationSelector = ({
 
   const sizeOptions: Record<string, SizeOption[]> = {
     horizontal: [
-      { size: '24" x 18"', category: 'SMALL', popular: true },
-      { size: '36" x 24"', category: 'MEDIUM' },
-      { size: '48" x 32"', category: 'LARGE' },
-      { size: '16" x 12"', category: 'SMALL PANO' },
-      { size: '40" x 30"', category: 'MEDIUM PANO' },
-      { size: '60" x 40"', category: 'LARGE PANO' }
+      { size: '16" x 12"', category: 'XS', description: 'Great for desks or shelves', popular: false },
+      { size: '24" x 18"', category: 'S', description: 'Nice fit for entryways or nooks', popular: true },
+      { size: '36" x 24"', category: 'M', description: 'Perfect for bedrooms or offices', popular: false },
+      { size: '40" x 30"', category: 'L', description: 'Bold accent for any room', popular: false },
+      { size: '48" x 32"', category: 'XL', description: 'Ideal for living rooms or large walls', popular: false },
+      { size: '60" x 40"', category: 'XXL', description: 'Gallery-size showstopper', popular: false }
     ],
     vertical: [
-      { size: '18" x 24"', category: 'SMALL', popular: true },
-      { size: '24" x 36"', category: 'MEDIUM' },
-      { size: '32" x 48"', category: 'LARGE' },
-      { size: '12" x 16"', category: 'SMALL PANO' },
-      { size: '30" x 40"', category: 'MEDIUM PANO' },
-      { size: '40" x 60"', category: 'LARGE PANO' }
+      { size: '12" x 16"', category: 'XS', description: 'Great for desks or shelves', popular: false },
+      { size: '18" x 24"', category: 'S', description: 'Nice fit for entryways or nooks', popular: true },
+      { size: '24" x 36"', category: 'M', description: 'Perfect for bedrooms or offices', popular: false },
+      { size: '30" x 40"', category: 'L', description: 'Bold accent for any room', popular: false },
+      { size: '32" x 48"', category: 'XL', description: 'Ideal for living rooms or large walls', popular: false },
+      { size: '40" x 60"', category: 'XXL', description: 'Gallery-size showstopper', popular: false }
     ],
     square: [
-      { size: '24" x 24"', category: 'SMALL', popular: true },
-      { size: '32" x 32"', category: 'MEDIUM' },
-      { size: '36" x 36"', category: 'LARGE' },
-      { size: '16" x 16"', category: 'SMALL SQUARE' }
+      { size: '16" x 16"', category: 'XS', description: 'Great for desks or shelves', popular: false },
+      { size: '24" x 24"', category: 'S', description: 'Nice fit for entryways or nooks', popular: true },
+      { size: '32" x 32"', category: 'M', description: 'Perfect for bedrooms or offices', popular: false },
+      { size: '36" x 36"', category: 'L', description: 'Bold accent for any room', popular: false }
     ]
   };
 
@@ -140,17 +141,20 @@ const OrientationSelector = ({
                 } ${index === 0 ? 'ring-2 ring-teal-500 bg-teal-50' : ''}`}
                 onClick={() => onSizeChange(option.size)}
               >
-                <CardContent className="p-6 text-center">
+                <CardContent className="p-4 text-center">
                   <div className="bg-gray-200 rounded mb-3 h-16 flex items-center justify-center">
                     <span className="text-gray-600 font-medium text-sm">
                       {option.size.replace('"', '').replace('"', '')}
                     </span>
                   </div>
                   <div className="flex flex-col items-center gap-2">
-                    <span className={`font-semibold text-sm ${
+                    <span className={`font-bold text-lg ${
                       index === 0 ? 'text-teal-600' : 'text-gray-900'
                     }`}>
                       {option.category}
+                    </span>
+                    <span className="text-xs text-gray-600 text-center leading-tight">
+                      {option.description}
                     </span>
                     {option.popular && (
                       <Badge className="bg-purple-100 text-purple-700 text-xs">
