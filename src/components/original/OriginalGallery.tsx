@@ -41,7 +41,7 @@ const OriginalGallery = () => {
             <div className="grid md:grid-cols-2 gap-8 items-center max-w-4xl">
               {/* Before Image */}
               <div className="text-center">
-                <h3 className="text-lg font-semibold mb-4 text-gray-600">Digital Photo</h3>
+                <h3 className="text-lg font-semibold mb-1 text-gray-600">Digital Photo</h3>
                 <div className="aspect-square rounded-lg overflow-hidden shadow-lg">
                   <img 
                     src={galleryImages[currentImageIndex].before}
@@ -53,7 +53,7 @@ const OriginalGallery = () => {
               
               {/* After Image */}
               <div className="text-center">
-                <h3 className="text-lg font-semibold mb-4 text-gray-700">Premium Canvas Print</h3>
+                <h3 className="text-lg font-semibold mb-1 text-gray-700">Premium Canvas Print</h3>
                 <div className="aspect-square rounded-lg overflow-hidden shadow-lg">
                   <img 
                     src={galleryImages[currentImageIndex].after}
