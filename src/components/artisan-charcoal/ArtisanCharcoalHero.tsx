@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, PenTool, DollarSign } from "lucide-react";
@@ -18,7 +19,7 @@ const ArtisanCharcoalHero = ({ onStartCreating }: ArtisanCharcoalHeroProps) => {
                 Hand-Drawn Elegance
               </Badge>
               <h1 className="text-8xl lg:text-12xl font-bold text-gray-900 mb-6">
-                <span className="bg-gradient-to-r from-gray-800 via-slate-700 to-gray-900 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-gray-300 via-gray-600 to-gray-900 bg-clip-text text-transparent">
                   Artisan Charcoal
                 </span>
               </h1>
@@ -29,7 +30,7 @@ const ArtisanCharcoalHero = ({ onStartCreating }: ArtisanCharcoalHeroProps) => {
             
             <Button 
               onClick={onStartCreating}
-              className="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-12 py-6 rounded-full text-xl font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+              className="bg-gradient-to-r from-gray-300 via-gray-600 to-gray-900 text-white px-12 py-6 rounded-full text-xl font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300"
             >
               Start Creating in This Style
               <ArrowRight className="w-6 h-6 ml-3" />
