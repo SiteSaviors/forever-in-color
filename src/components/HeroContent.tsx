@@ -1,37 +1,33 @@
-
 import { ArrowRight, Heart, Sparkles, Camera } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
 import { useState } from "react";
-
 interface HeroContentProps {
   hideBadgeAndHeadline?: boolean;
 }
-
 const HeroContent = ({
   hideBadgeAndHeadline = false
 }: HeroContentProps) => {
   const [textSize, setTextSize] = useState([8]); // Default to text-8xl
 
   const getTextSizeClass = (size: number) => {
-    const sizeMap: { [key: number]: string } = {
+    const sizeMap: {
+      [key: number]: string;
+    } = {
       4: "text-4xl lg:text-5xl",
-      5: "text-5xl lg:text-6xl", 
+      5: "text-5xl lg:text-6xl",
       6: "text-6xl lg:text-7xl",
       7: "text-7xl lg:text-8xl",
       8: "text-8xl lg:text-9xl",
-      9: "text-9xl lg:text-9xl",
+      9: "text-9xl lg:text-9xl"
     };
     return sizeMap[size] || "text-8xl lg:text-9xl";
   };
-
-  return (
-    <div className="space-y-8">
+  return <div className="space-y-8">
       {/* Badge and Headline - Only show if not hidden */}
-      {!hideBadgeAndHeadline && (
-        <div className="space-y-6">
+      {!hideBadgeAndHeadline && <div className="space-y-6">
           {/* Badge - Standardized styling */}
-          <div className="inline-flex items-center gap-2 bg-white/90 backdrop-blur-sm rounded-full px-6 py-3 border border-purple-200">
+          <div className="inline-flex items-center gap-2 bg-white/90 backdrop-blur-sm rounded-full px-6 border border-purple-200 py-[7px]">
             <Sparkles className="w-4 h-4 text-purple-600" />
             <span className="text-sm font-medium text-purple-700">Modern Heirlooms, Made Just for You</span>
           </div>
@@ -49,18 +45,15 @@ const HeroContent = ({
               we create personalized pieces that preserve what matters most.
             </p>
           </div>
-        </div>
-      )}
+        </div>}
 
       {/* Description - Show on mobile when badge/headline are hidden */}
-      {hideBadgeAndHeadline && (
-        <div className="text-center lg:text-left">
+      {hideBadgeAndHeadline && <div className="text-center lg:text-left">
           <p className="text-lg text-gray-600 leading-relaxed max-w-lg mx-auto lg:mx-0">
             Transform your most precious photos into stunning, modern artwork. From beloved pets to lost loved ones, 
             we create personalized pieces that preserve what matters most.
           </p>
-        </div>
-      )}
+        </div>}
 
       {/* Key Features - Simplified and consistent spacing */}
       <div className="space-y-4">
@@ -112,8 +105,6 @@ const HeroContent = ({
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default HeroContent;

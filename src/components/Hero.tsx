@@ -1,17 +1,14 @@
-
 import { Sparkles, Camera } from "lucide-react";
 import HeroContent from "./HeroContent";
 import PhotoFrames from "./PhotoFrames";
 import PhoneMockup from "./PhoneMockup";
-
 const Hero = () => {
-  return (
-    <section className="relative min-h-screen overflow-hidden" style={{
-      backgroundImage: `url('/lovable-uploads/3e752087-b61d-463b-87ca-313d878c43c1.png')`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      backgroundRepeat: 'no-repeat'
-    }}>
+  return <section className="relative min-h-screen overflow-hidden" style={{
+    backgroundImage: `url('/lovable-uploads/3e752087-b61d-463b-87ca-313d878c43c1.png')`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat'
+  }}>
       {/* Background Elements - Standardized positioning */}
       <div className="absolute inset-0">
         <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-br from-pink-300/20 to-purple-400/20 rounded-full blur-xl"></div>
@@ -33,9 +30,7 @@ const Hero = () => {
             {/* Main Headline - Updated colors to match desktop */}
             <h1 className="text-4xl sm:text-5xl font-bold leading-tight mb-4 font-montserrat">
               <div className="text-white mb-2">Your Memories</div>
-              <div className="text-5xl bg-gradient-to-r from-pink-500 via-purple-600 to-blue-600 bg-clip-text text-transparent font-oswald">
-                REIMAGINED
-              </div>
+              <div className="text-6xl bg-gradient-to-r from-pink-500 via-purple-600 to-blue-600 bg-clip-text text-transparent font-oswald">REIMAGINED</div>
             </h1>
           </div>
 
@@ -79,8 +74,6 @@ const Hero = () => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default Hero;
