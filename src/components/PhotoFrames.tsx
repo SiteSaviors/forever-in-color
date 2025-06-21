@@ -1,4 +1,3 @@
-
 import { Sparkles, Camera } from "lucide-react";
 const PhotoFrames = () => {
   return <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-full max-w-sm sm:max-w-none">
@@ -20,7 +19,7 @@ const PhotoFrames = () => {
       </div>
 
       {/* Frame 2 - Center Top Arc Position - Slightly smaller cards */}
-      <div className="absolute left-1/2 transform -translate-x-1/2 -top-8 sm:-top-4 rotate-3 z-20">
+      <div className="absolute left-1/2 transform -translate-x-1/2 -top-16 sm:-top-12 rotate-3 z-20">
         <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl p-2 sm:p-3 w-18 h-25 sm:w-44 sm:h-52">
           <div className="aspect-square bg-gradient-to-br from-pink-200 via-purple-200 to-blue-200 rounded-lg sm:rounded-2xl mb-1 sm:mb-2 overflow-hidden">
             <img src="/lovable-uploads/f0fb638f-ed49-4e86-aeac-0b87e27de424.png" alt="Watercolor art example" className="w-full h-full object-cover rounded-lg sm:rounded-2xl" />
