@@ -1,5 +1,4 @@
 
-
 import { Sparkles, Camera } from "lucide-react";
 import HeroContent from "./HeroContent";
 import PhotoFrames from "./PhotoFrames";
@@ -8,7 +7,7 @@ import PhoneMockup from "./PhoneMockup";
 const Hero = () => {
   return (
     <section className="relative min-h-screen overflow-hidden" style={{
-      backgroundImage: `url('/lovable-uploads/a94b3fca-ae76-4ed6-84bc-35f1d2ac50b3.png')`,
+      backgroundImage: `url('/lovable-uploads/3e752087-b61d-463b-87ca-313d878c43c1.png')`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat'
@@ -85,4 +84,3 @@ const Hero = () => {
 };
 
 export default Hero;
-
