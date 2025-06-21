@@ -20,36 +20,36 @@ const Hero = () => {
       </div>
 
       <div className="relative max-w-7xl mx-auto px-6 lg:px-8 pt-24 pb-16">
-        {/* Mobile Layout - Updated to match desktop colors */}
+        {/* Mobile Layout - Refined visual hierarchy */}
         <div className="lg:hidden">
-          {/* Mobile Badge and Headline - Updated colors */}
-          <div className="text-center mb-16">
+          {/* Mobile Badge and Headline - More breathing room */}
+          <div className="text-center mb-20">
             {/* Badge */}
-            <div className="inline-flex items-center space-x-2 bg-white/90 backdrop-blur-sm rounded-full px-6 py-3 border border-purple-200 shadow-sm mb-8">
+            <div className="inline-flex items-center space-x-2 bg-white/90 backdrop-blur-sm rounded-full px-6 py-3 border border-purple-200 shadow-sm mb-12">
               <Sparkles className="w-4 h-4 text-purple-600" />
               <span className="text-sm font-medium text-purple-700">Modern Heirlooms, Made Just for You</span>
             </div>
 
-            {/* Main Headline - Updated colors to match desktop */}
-            <h1 className="text-4xl sm:text-5xl font-bold leading-tight mb-4 font-montserrat">
-              <div className="text-white mb-2">Your Memories</div>
-              <div className="text-5xl bg-gradient-to-r from-pink-500 via-purple-600 to-blue-600 bg-clip-text text-transparent font-oswald">
+            {/* Main Headline - Increased prominence and spacing */}
+            <h1 className="text-5xl sm:text-6xl font-bold leading-tight mb-6 font-montserrat">
+              <div className="text-white mb-3">Your Memories</div>
+              <div className="text-6xl sm:text-7xl bg-gradient-to-r from-pink-500 via-purple-600 to-blue-600 bg-clip-text text-transparent font-oswald">
                 REIMAGINED
               </div>
             </h1>
           </div>
 
-          {/* Mobile Visual Showcase - Grid-aligned positioning */}
-          <div className="relative h-96 mb-16">
+          {/* Mobile Visual Showcase - Scaled down and positioned lower */}
+          <div className="relative h-80 mb-16">
             <PhotoFrames />
             <PhoneMockup />
             
-            {/* Floating Elements - Consistent sizing and positioning */}
-            <div className="absolute top-4 right-4 bg-white/95 shadow-lg rounded-full p-3 z-40 backdrop-blur-sm">
-              <Sparkles className="w-4 h-4 text-purple-500" />
+            {/* Floating Elements - Smaller and more subtle */}
+            <div className="absolute top-6 right-6 bg-white/95 shadow-lg rounded-full p-2.5 z-40 backdrop-blur-sm">
+              <Sparkles className="w-3.5 h-3.5 text-purple-500" />
             </div>
-            <div className="absolute bottom-4 left-4 bg-white/95 shadow-lg rounded-full p-3 z-40 backdrop-blur-sm">
-              <Camera className="w-4 h-4 text-pink-500" />
+            <div className="absolute bottom-6 left-6 bg-white/95 shadow-lg rounded-full p-2.5 z-40 backdrop-blur-sm">
+              <Camera className="w-3.5 h-3.5 text-pink-500" />
             </div>
           </div>
 
@@ -59,22 +59,24 @@ const Hero = () => {
           </div>
         </div>
 
-        {/* Desktop Layout - Grid-based alignment */}
-        <div className="hidden lg:grid lg:grid-cols-2 gap-16 items-center min-h-[80vh]">
-          {/* Left Column - Content */}
-          <HeroContent />
+        {/* Desktop Layout - Rebalanced with better visual hierarchy */}
+        <div className="hidden lg:grid lg:grid-cols-5 gap-16 items-start min-h-[80vh]">
+          {/* Left Column - Content (3/5 width for more prominence) */}
+          <div className="col-span-3 pt-8">
+            <HeroContent />
+          </div>
 
-          {/* Right Column - Visual Showcase - Consistent dimensions */}
-          <div className="relative h-[600px]">
+          {/* Right Column - Visual Showcase (2/5 width, positioned lower) */}
+          <div className="col-span-2 relative h-[480px] mt-24">
             <PhotoFrames />
             <PhoneMockup />
 
-            {/* Floating Elements - Standardized sizing */}
-            <div className="absolute top-6 right-6 bg-white shadow-lg rounded-full p-4 z-40">
-              <Sparkles className="w-5 h-5 text-purple-500" />
+            {/* Floating Elements - Smaller and more subtle */}
+            <div className="absolute top-8 right-8 bg-white shadow-lg rounded-full p-3 z-40">
+              <Sparkles className="w-4 h-4 text-purple-500" />
             </div>
-            <div className="absolute bottom-6 left-6 bg-white shadow-lg rounded-full p-4 z-40">
-              <Camera className="w-5 h-5 text-pink-500" />
+            <div className="absolute bottom-8 left-8 bg-white shadow-lg rounded-full p-3 z-40">
+              <Camera className="w-4 h-4 text-pink-500" />
             </div>
           </div>
         </div>
