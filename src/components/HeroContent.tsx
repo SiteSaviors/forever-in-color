@@ -1,3 +1,4 @@
+
 import { ArrowRight, Heart, Sparkles, Camera } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
@@ -26,23 +27,6 @@ const HeroContent = ({
 
   return (
     <div className="space-y-8">
-      {/* Text Size Controller - Only show when badge/headline are visible */}
-      {!hideBadgeAndHeadline && (
-        <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
-          <label className="block text-white text-sm font-medium mb-3">
-            Adjust "REIMAGINED" Text Size: {textSize[0]}
-          </label>
-          <Slider
-            value={textSize}
-            onValueChange={setTextSize}
-            max={9}
-            min={4}
-            step={1}
-            className="w-full"
-          />
-        </div>
-      )}
-
       {/* Badge and Headline - Only show if not hidden */}
       {!hideBadgeAndHeadline && (
         <div className="space-y-6">
