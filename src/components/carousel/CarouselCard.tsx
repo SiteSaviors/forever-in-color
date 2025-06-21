@@ -109,7 +109,7 @@ const CarouselCard = ({ style, position, onClick }: CarouselCardProps) => {
         {/* Content */}
         <div className="p-5 h-32 flex flex-col justify-between">
           <div>
-            <h3 className={`font-bold text-gray-900 mb-2 transition-all duration-300 leading-tight ${
+            <h3 className={`font-bold text-gray-900 mb-1 transition-all duration-300 leading-tight ${
               isCenter ? 'text-xl' : 'text-lg opacity-80'
             }`}>{style.name}</h3>
             <p className={`text-gray-600 text-sm mb-3 transition-all duration-300 leading-relaxed ${
