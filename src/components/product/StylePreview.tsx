@@ -73,7 +73,7 @@ const StylePreview = ({ uploadedImage, onStyleSelect, onComplete, preSelectedSty
     },
     {
       id: 6,
-      name: "Crystalized Charm",
+      name: "Gemstone Poly",
       description: "Faceted, gem-like texture with a modern, artistic twist",
       popular: false,
       colors: ["from-emerald-400", "via-teal-500", "to-blue-600"],

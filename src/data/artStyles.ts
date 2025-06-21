@@ -76,7 +76,7 @@ export const artStyles: ArtStyle[] = [
   },
   {
     id: 6,
-    name: "Crystalized Charm",
+    name: "Gemstone Poly",
     image: "/lovable-uploads/933dd4e5-58bc-404d-8c89-a93dcce93079.png",
     description: "Faceted, gem-like texture with a modern, artistic twist"
   },
