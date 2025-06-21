@@ -46,10 +46,6 @@ const InfiniteCarouselContainer = ({
         transition: 'transform 0.1s ease-out'
       }}
     >
-      {/* Enhanced atmospheric depth with gradient fog */}
-      <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-transparent to-white/20 pointer-events-none z-10"></div>
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/3 to-black/8 rounded-3xl blur-3xl transform translate-y-12 scale-125"></div>
-      
       <div 
         className="relative w-full h-full flex items-center justify-center"
         style={{ transformStyle: 'preserve-3d' }}
