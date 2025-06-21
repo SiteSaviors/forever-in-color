@@ -18,15 +18,15 @@ const InfiniteCarouselContainer = ({
   const infiniteStyles = [...artStyles, ...artStyles, ...artStyles];
   const centerOffset = artStyles.length; // Start at middle set
 
-  // Calculate which cards to render for infinite effect
+  // Calculate which cards to render for premium infinite effect
   const getVisibleCards = () => {
     const visibleCards = [];
-    const totalCards = 7; // Show 7 cards for seamless loop
+    const totalCards = 9; // Show 9 cards for more premium feel
     const startIndex = centerOffset + currentIndex - Math.floor(totalCards / 2);
     
     for (let i = 0; i < totalCards; i++) {
       const cardIndex = (startIndex + i) % infiniteStyles.length;
-      const relativePosition = i - Math.floor(totalCards / 2); // -3 to 3
+      const relativePosition = i - Math.floor(totalCards / 2); // -4 to 4
       visibleCards.push({
         style: infiniteStyles[cardIndex],
         position: relativePosition,
@@ -39,14 +39,18 @@ const InfiniteCarouselContainer = ({
 
   return (
     <div 
-      className="relative h-[700px] flex items-center justify-center perspective-[2000px] -mt-12"
+      className="relative h-[700px] flex items-center justify-center perspective-[1500px] -mt-12"
       style={{
         transform: `translateY(${parallaxOffset.cards}px)`,
         transition: 'transform 0.1s ease-out'
       }}
     >
-      {/* Enhanced container shadow for grounding effect */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/5 to-black/10 rounded-3xl blur-2xl transform translate-y-8 scale-110"></div>
+      {/* Enhanced container with circular depth illusion */}
+      <div className="absolute inset-0 bg-gradient-radial from-white/20 via-purple-50/30 to-pink-100/40 rounded-full blur-3xl transform scale-150 opacity-60"></div>
+      
+      {/* Circular track indicator */}
+      <div className="absolute inset-0 border border-white/20 rounded-full transform scale-110 opacity-30"></div>
+      <div className="absolute inset-0 border border-white/10 rounded-full transform scale-125 opacity-20"></div>
       
       <div className="relative w-full h-full transform-style-preserve-3d">
         {getVisibleCards().map(({ style, position, key }) => (
