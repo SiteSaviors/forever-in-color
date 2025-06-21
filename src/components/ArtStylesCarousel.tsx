@@ -61,7 +61,9 @@ const ArtStylesCarousel = () => {
             onIndicatorClick={handleIndicatorClick}
           />
 
-          <CarouselCTA />
+          <div className="mt-6">
+            <CarouselCTA />
+          </div>
         </div>
       </div>
     </section>
