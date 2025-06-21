@@ -1,3 +1,4 @@
+
 import { Upload, Palette, Settings, Package, ArrowRight } from "lucide-react";
 const HowItWorks = () => {
   const steps = [{
@@ -29,7 +30,12 @@ const HowItWorks = () => {
     color: "from-gray-400 to-gray-600",
     image: "/lovable-uploads/6ac56455-7d7e-4734-a024-eaecc752e908.png"
   }];
-  return <section id="how-it-works" className="py-20 bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100 relative overflow-hidden">
+  return <section id="how-it-works" className="py-20 relative overflow-hidden" style={{
+      backgroundImage: `url('/lovable-uploads/c09e9595-6fb8-4dc7-818a-d5a39279b6b8.png')`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat'
+    }}>
       {/* Background decoration */}
       <div className="absolute inset-0">
         <div className="absolute top-10 left-10 w-32 h-32 bg-gradient-to-br from-purple-300/20 to-pink-400/20 rounded-full blur-xl"></div>
