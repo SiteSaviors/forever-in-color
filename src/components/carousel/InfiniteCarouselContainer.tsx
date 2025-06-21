@@ -18,20 +18,18 @@ const InfiniteCarouselContainer = ({
   const infiniteStyles = [...artStyles, ...artStyles, ...artStyles];
   const centerOffset = artStyles.length; // Start at middle set
 
-  // Calculate which cards to render for smooth scrolling
+  // Calculate which cards to render for infinite effect
   const getVisibleCards = () => {
     const visibleCards = [];
-    const totalCards = 7; // Show 7 cards for smooth transitions
+    const totalCards = 7; // Show 7 cards for seamless loop
     const startIndex = centerOffset + currentIndex - Math.floor(totalCards / 2);
     
     for (let i = 0; i < totalCards; i++) {
       const cardIndex = (startIndex + i) % infiniteStyles.length;
       const relativePosition = i - Math.floor(totalCards / 2); // -3 to 3
-      const isCenter = relativePosition === 0;
-      
       visibleCards.push({
         style: infiniteStyles[cardIndex],
-        isCenter,
+        position: relativePosition,
         key: `${cardIndex}-${i}` // Unique key for React
       });
     }
@@ -41,23 +39,26 @@ const InfiniteCarouselContainer = ({
 
   return (
     <div 
-      className="relative h-[500px] flex items-center justify-center overflow-hidden"
+      className="relative h-[620px] flex items-center justify-center"
       style={{
+        perspective: '1200px',
+        perspectiveOrigin: 'center center',
         transform: `translateY(${parallaxOffset.cards}px)`,
         transition: 'transform 0.1s ease-out'
       }}
     >
       <div 
-        className="flex items-center justify-center transition-transform duration-700 ease-out"
+        className="relative w-full h-full flex items-center justify-center"
         style={{ 
-          transform: `translateX(-${currentIndex * 320}px)` // 320px = card width + margin
+          transformStyle: 'preserve-3d',
+          transformOrigin: 'center center'
         }}
       >
-        {getVisibleCards().map(({ style, isCenter, key }) => (
+        {getVisibleCards().map(({ style, position, key }) => (
           <CarouselCard
             key={key}
             style={style}
-            isCenter={isCenter}
+            position={position}
             onClick={onStyleClick}
           />
         ))}
