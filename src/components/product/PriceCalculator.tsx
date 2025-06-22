@@ -88,21 +88,84 @@ const PriceCalculator = ({ selectedSize, selectedOrientation, customizations }: 
       <div className="max-w-4xl mx-auto pointer-events-auto">
         <Card className="bg-white/95 backdrop-blur-sm border border-purple-200 shadow-xl">
           <CardContent className="p-3 md:p-4">
-            <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-0 md:justify-between">
+            {/* Mobile Layout */}
+            <div className="flex md:hidden items-center justify-between">
+              {/* Left Side - Canvas Info */}
+              <div className="flex-1 min-w-0 mr-3">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <Sparkles className="w-3 h-3 text-purple-500 flex-shrink-0" />
+                  <span className="text-xs font-medium text-gray-600">Your Canvas</span>
+                  {selectedSize && (
+                    <span className="text-xs bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full whitespace-nowrap">
+                      {selectedSize}
+                    </span>
+                  )}
+                </div>
+                
+                {/* Price Breakdown - Compact horizontal layout */}
+                <div className="flex items-center gap-2 text-xs">
+                  {basePrice > 0 && (
+                    <div className="text-gray-500">
+                      Base: <span className="font-semibold">${basePrice.toFixed(2)}</span>
+                    </div>
+                  )}
+                  
+                  {customizationPrice > 0 && (
+                    <>
+                      <span className="text-gray-300">•</span>
+                      <div className="text-gray-500">
+                        Add-ons: <span className="font-semibold text-purple-600">+${customizationPrice.toFixed(2)}</span>
+                      </div>
+                    </>
+                  )}
+                  
+                  {savings > 0 && (
+                    <>
+                      <span className="text-gray-300">•</span>
+                      <div className="text-green-600 font-medium">
+                        Save ${savings}!
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+              
+              {/* Right Side - Total Price and CTA */}
+              <div className="flex items-center gap-2">
+                <div className="text-right">
+                  <div className="text-xs text-gray-500">Total</div>
+                  <div className="text-lg font-bold text-gray-900 font-poppins tracking-tight">
+                    ${totalPrice > 0 ? (totalPrice - savings).toFixed(2) : '0.00'}
+                  </div>
+                </div>
+                
+                <Button 
+                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:shadow-lg transform hover:scale-105 transition-all duration-300 text-sm px-3 py-2 whitespace-nowrap"
+                  size="default"
+                  disabled={totalPrice === 0}
+                >
+                  <ShoppingCart className="w-3 h-3 mr-1" />
+                  Add to Cart
+                </Button>
+              </div>
+            </div>
+
+            {/* Desktop Layout - Keep existing structure */}
+            <div className="hidden md:flex md:items-center gap-3 md:gap-0 md:justify-between">
               {/* Product Info Section */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <Sparkles className="w-3 h-3 md:w-4 md:h-4 text-purple-500 flex-shrink-0" />
-                  <span className="text-xs md:text-sm font-medium text-gray-600">Your Canvas</span>
+                  <Sparkles className="w-4 h-4 text-purple-500 flex-shrink-0" />
+                  <span className="text-sm font-medium text-gray-600">Your Canvas</span>
                   {selectedSize && (
-                    <span className="text-xs bg-purple-100 text-purple-700 px-1.5 py-0.5 md:px-2 md:py-1 rounded-full whitespace-nowrap">
+                    <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full whitespace-nowrap">
                       {selectedSize}
                     </span>
                   )}
                 </div>
                 
                 {/* Price Breakdown - Stack on mobile, inline on desktop */}
-                <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-4 text-xs md:text-sm">
+                <div className="flex items-center gap-4 text-sm">
                   {basePrice > 0 && (
                     <div className="text-gray-500">
                       Base: <span className="font-semibold">${basePrice.toFixed(2)}</span>
@@ -124,20 +187,20 @@ const PriceCalculator = ({ selectedSize, selectedOrientation, customizations }: 
               </div>
               
               {/* Price and CTA Section */}
-              <div className="flex items-center justify-between md:justify-end gap-3 md:gap-4 border-t md:border-t-0 pt-3 md:pt-0">
-                <div className="text-left md:text-right">
-                  <div className="text-xs md:text-sm text-gray-500">Total</div>
-                  <div className="text-xl md:text-2xl font-bold text-gray-900 font-poppins tracking-tight">
+              <div className="flex items-center justify-end gap-4">
+                <div className="text-right">
+                  <div className="text-sm text-gray-500">Total</div>
+                  <div className="text-2xl font-bold text-gray-900 font-poppins tracking-tight">
                     ${totalPrice > 0 ? (totalPrice - savings).toFixed(2) : '0.00'}
                   </div>
                 </div>
                 
                 <Button 
-                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:shadow-lg transform hover:scale-105 transition-all duration-300 text-sm md:text-base px-3 py-2 md:px-4 md:py-2 whitespace-nowrap"
+                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:shadow-lg transform hover:scale-105 transition-all duration-300 text-base px-4 py-2 whitespace-nowrap"
                   size="default"
                   disabled={totalPrice === 0}
                 >
-                  <ShoppingCart className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+                  <ShoppingCart className="w-4 h-4 mr-2" />
                   Add to Cart
                 </Button>
               </div>
