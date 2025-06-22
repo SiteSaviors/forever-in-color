@@ -53,7 +53,8 @@ const ProductContent = ({
     onPhotoAndStyleComplete,
     onOrientationSelect,
     onSizeSelect,
-    onCustomizationChange
+    onCustomizationChange,
+    onEditStep: onCurrentStepChange
   });
 
   return (

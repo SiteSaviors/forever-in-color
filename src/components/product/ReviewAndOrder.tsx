@@ -17,6 +17,7 @@ interface ReviewAndOrderProps {
     customMessage: string;
     aiUpscale: boolean;
   };
+  onEditStep?: (stepNumber: number) => void;
 }
 
 const ReviewAndOrder = ({ 
@@ -24,7 +25,8 @@ const ReviewAndOrder = ({
   selectedStyle, 
   selectedSize, 
   selectedOrientation, 
-  customizations 
+  customizations,
+  onEditStep 
 }: ReviewAndOrderProps) => {
   if (!uploadedImage || !selectedStyle || !selectedSize) {
     return (
@@ -67,6 +69,7 @@ const ReviewAndOrder = ({
             selectedSize={selectedSize}
             selectedOrientation={selectedOrientation}
             customizations={customizations}
+            onEditStep={onEditStep}
           />
         </div>
       </div>
