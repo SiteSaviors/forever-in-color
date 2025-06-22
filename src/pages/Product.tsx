@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { Upload, Image as ImageIcon, Palette, Gift, Settings } from "lucide-react";
@@ -13,6 +12,7 @@ import CustomizationSelector from "@/components/product/CustomizationSelector";
 import PricingSection from "@/components/product/PricingSection";
 import TrustElements from "@/components/product/TrustElements";
 import PriceCalculator from "@/components/product/PriceCalculator";
+import ReviewAndOrder from "@/components/product/ReviewAndOrder";
 
 interface CustomizationOptions {
   floatingFrame: {
@@ -158,7 +158,13 @@ const Product = () => {
       estimatedTime: "2 min",
       isCompleted: false,
       content: (
-        <PricingSection />
+        <ReviewAndOrder
+          uploadedImage={uploadedImage}
+          selectedStyle={selectedStyle}
+          selectedSize={selectedSize}
+          selectedOrientation={selectedOrientation}
+          customizations={customizations}
+        />
       )
     }
   ];
