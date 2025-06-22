@@ -3,6 +3,7 @@ interface StylePreviewRequest {
   imageData: string;
   styleId: number;
   styleName: string;
+  customPrompt?: string;
 }
 
 interface StylePreviewResponse {
@@ -19,6 +20,8 @@ export const generateStylePreview = async (params: StylePreviewRequest): Promise
     // Use the correct Supabase Edge Function URL
     const supabaseUrl = "https://fvjganetpyyrguuxjtqi.supabase.co";
     const functionUrl = `${supabaseUrl}/functions/v1/generate-style-preview`;
+    
+    console.log('Sending request with custom prompt:', !!params.customPrompt);
     
     const response = await fetch(functionUrl, {
       method: 'POST',

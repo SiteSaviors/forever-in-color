@@ -27,6 +27,20 @@ export const useStylePreview = ({
   const [autoGenerationAttempted, setAutoGenerationAttempted] = useState(false);
   const { toast } = useToast();
 
+  // Get custom prompts from localStorage
+  const getCustomPrompt = (styleId: number): string | undefined => {
+    try {
+      const savedPrompts = localStorage.getItem('stylePrompts');
+      if (savedPrompts) {
+        const prompts = JSON.parse(savedPrompts);
+        return prompts[styleId];
+      }
+    } catch (error) {
+      console.error('Error reading custom prompts:', error);
+    }
+    return undefined;
+  };
+
   // Auto-generate previews for popular styles when image is uploaded
   useEffect(() => {
     const shouldAutoGenerate = croppedImage && 
@@ -52,10 +66,14 @@ export const useStylePreview = ({
     try {
       console.log(`Starting silent preview generation for ${style.name}`);
       
+      const customPrompt = getCustomPrompt(style.id);
+      console.log(`Using custom prompt for ${style.name}:`, customPrompt);
+      
       const response = await generateStylePreview({
         imageData: croppedImage,
         styleId: style.id,
-        styleName: style.name
+        styleName: style.name,
+        customPrompt
       });
 
       console.log(`Silent generation response for ${style.name}:`, response.success);
@@ -89,10 +107,14 @@ export const useStylePreview = ({
     setIsLoading(true);
     
     try {
+      const customPrompt = getCustomPrompt(style.id);
+      console.log(`Using custom prompt for ${style.name}:`, customPrompt);
+      
       const response = await generateStylePreview({
         imageData: croppedImage,
         styleId: style.id,
-        styleName: style.name
+        styleName: style.name,
+        customPrompt
       });
 
       if (response.success) {

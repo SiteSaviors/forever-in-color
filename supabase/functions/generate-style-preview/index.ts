@@ -17,9 +17,11 @@ serve(async (req) => {
   }
 
   try {
-    const { imageData, styleId, styleName }: StylePreviewRequest = await req.json()
+    const requestBody = await req.json()
+    const { imageData, styleId, styleName, customPrompt }: StylePreviewRequest & { customPrompt?: string } = requestBody
 
     console.log('Received request for style:', styleId, styleName)
+    console.log('Custom prompt provided:', !!customPrompt)
 
     if (!imageData || !styleId || !styleName) {
       console.error('Missing parameters:', { imageData: !!imageData, styleId, styleName })
@@ -47,18 +49,38 @@ serve(async (req) => {
     }
 
     const openaiService = new OpenAIService(openaiApiKey)
-    const baseStylePrompt = stylePrompts[styleId] || "Apply artistic transformation to the image"
-    console.log('Using base style prompt for ID', styleId, ':', baseStylePrompt)
-
-    // Use image editing API instead of generation
-    console.log('Starting image transformation with OpenAI image editing...')
     
-    const imageEditResponse = await openaiService.editImage(imageData, baseStylePrompt)
-    console.log('Image edit response status:', imageEditResponse.status)
+    // Use custom prompt if provided, otherwise use default
+    const baseStylePrompt = customPrompt || stylePrompts[styleId] || "Apply artistic transformation to the image"
+    console.log('Using style prompt:', baseStylePrompt)
 
-    if (!imageEditResponse.ok) {
-      const errorData = await imageEditResponse.text()
-      console.error('Image editing API error:', errorData)
+    // Step 1: Analyze the image to create a detailed transformation prompt
+    console.log('Step 1: Analyzing image for transformation...')
+    const analysisResponse = await openaiService.analyzeImageForTransformation(imageData, baseStylePrompt)
+    
+    if (!analysisResponse.ok) {
+      const errorData = await analysisResponse.text()
+      console.error('Image analysis failed:', errorData)
+      return createErrorResponse('Failed to analyze image for transformation', 500)
+    }
+
+    const analysisData = await analysisResponse.json()
+    const detailedPrompt = analysisData.choices[0]?.message?.content
+
+    if (!detailedPrompt) {
+      console.error('No detailed prompt generated from analysis')
+      return createErrorResponse('Failed to generate transformation prompt', 500)
+    }
+
+    console.log('Generated detailed prompt:', detailedPrompt)
+
+    // Step 2: Generate the transformed image using the detailed prompt
+    console.log('Step 2: Generating transformed image...')
+    const imageResponse = await openaiService.generateImageToImage(imageData, detailedPrompt)
+
+    if (!imageResponse.ok) {
+      const errorData = await imageResponse.text()
+      console.error('Image generation failed:', errorData)
       
       // Return original image as fallback with clear messaging
       return createSuccessResponse(
@@ -70,13 +92,13 @@ serve(async (req) => {
       )
     }
 
-    const imageData_result = await imageEditResponse.json()
-    const transformedImage = extractGeneratedImage(imageData_result)
+    const imageResult = await imageResponse.json()
+    const transformedImage = extractGeneratedImage(imageResult)
 
-    console.log('Transformed image available:', !!transformedImage)
+    console.log('Transformed image generated successfully:', !!transformedImage)
 
     if (!transformedImage) {
-      console.error('No transformed image generated')
+      console.error('No transformed image in response')
       // Return original image as fallback
       return createSuccessResponse(
         `${styleName} style preview (using original as fallback)`,
@@ -88,7 +110,7 @@ serve(async (req) => {
     }
 
     console.log('Successfully transformed image with style')
-    return createSuccessResponse(baseStylePrompt, transformedImage, styleId, styleName)
+    return createSuccessResponse(detailedPrompt, transformedImage, styleId, styleName)
 
   } catch (error) {
     console.error('Error in generate-style-preview function:', error)
