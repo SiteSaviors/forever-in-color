@@ -1,9 +1,10 @@
 
+
 export class ReplicateService {
   constructor(private apiKey: string) {}
 
   async generateImageToImage(imageData: string, prompt: string): Promise<Response> {
-    console.log('Using Replicate FLUX-1.1-Pro for image-to-image transformation with prompt:', prompt);
+    console.log('Using Replicate flux-kontext-max for image-to-image transformation with prompt:', prompt);
     
     return await fetch('https://api.replicate.com/v1/predictions', {
       method: 'POST',
@@ -12,16 +13,15 @@ export class ReplicateService {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        version: "fbacf6700e56fc0eeec3d9b6cc8ca17c8536c534b33ee0c3565eb4b91bce65b6", // FLUX-1.1-Pro
+        version: "c5a1b8b9b9c9d2b9b9c9d2b9b9c9d2b9b9c9d2b9", // flux-kontext-max - you'll need to get the actual version ID
         input: {
           image: imageData,
           prompt: prompt,
-          prompt_strength: 0.8, // How much to follow the prompt vs preserve original
+          strength: 0.8, // How much to transform vs preserve original
           num_inference_steps: 28,
-          guidance_scale: 3.5,
+          guidance_scale: 7.5,
           output_format: "webp",
-          output_quality: 90,
-          aspect_ratio: "1:1" // Will maintain original aspect ratio if image provided
+          output_quality: 90
         }
       })
     });
@@ -84,3 +84,4 @@ Format: "Transform this image into [style description], maintaining the same sub
     });
   }
 }
+
