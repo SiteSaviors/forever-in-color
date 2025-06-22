@@ -16,15 +16,15 @@ interface StylePreviewResponse {
 
 export const generateStylePreview = async (params: StylePreviewRequest): Promise<StylePreviewResponse> => {
   try {
-    // Use the correct Supabase Edge Function URL format
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    // Use the correct Supabase Edge Function URL
+    const supabaseUrl = "https://fvjganetpyyrguuxjtqi.supabase.co";
     const functionUrl = `${supabaseUrl}/functions/v1/generate-style-preview`;
     
     const response = await fetch(functionUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2amdhbmV0cHl5cmd1dXhqdHFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA1Nzg3NzUsImV4cCI6MjA2NjE1NDc3NX0.Bl_LdqqBh9FvS6oecP28gBQOxhyj-XE48YFAvT5Y6YM`,
       },
       body: JSON.stringify(params),
     });
