@@ -38,10 +38,19 @@ const CustomizationSelector = ({
   };
 
   const updateCustomization = (key: keyof CustomizationOptions, value: any) => {
-    onCustomizationChange({
+    const newCustomizations = {
       ...customizations,
       [key]: value
-    });
+    };
+
+    // If Living Memory is being disabled, also disable dependent options
+    if (key === 'livingMemory' && !value) {
+      newCustomizations.voiceMatch = false;
+      newCustomizations.customMessage = '';
+      setMessage('');
+    }
+
+    onCustomizationChange(newCustomizations);
   };
 
   const updateFrameOption = (key: keyof CustomizationOptions['floatingFrame'], value: any) => {
@@ -55,7 +64,7 @@ const CustomizationSelector = ({
   };
 
   const handleMessageChange = (value: string) => {
-    if (value.length <= 150) {
+    if (value.length <= 150 && customizations.livingMemory) {
       setMessage(value);
       onCustomizationChange({
         ...customizations,
@@ -141,57 +150,68 @@ const CustomizationSelector = ({
         </Card>
 
         {/* Custom Voice Match */}
-        <Card className="p-6">
+        <Card className={`p-6 ${!customizations.livingMemory ? 'opacity-50' : ''}`}>
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
                 <span className="text-lg">➕</span>
-                <h5 className="font-semibold text-gray-900">Add Custom Voice Match</h5>
-                <Badge variant="outline" className="bg-green-50 text-green-700">
+                <h5 className={`font-semibold ${!customizations.livingMemory ? 'text-gray-400' : 'text-gray-900'}`}>
+                  Add Custom Voice Match
+                </h5>
+                <Badge 
+                  variant="outline" 
+                  className={!customizations.livingMemory ? 'bg-gray-50 text-gray-400' : 'bg-green-50 text-green-700'}
+                >
                   $19.99
                 </Badge>
               </div>
-              <p className="text-sm text-gray-600 mb-2">
+              <p className={`text-sm mb-2 ${!customizations.livingMemory ? 'text-gray-400' : 'text-gray-600'}`}>
                 Personalize your AR experience with the subject's voice
               </p>
-              <p className="text-xs text-amber-600">
+              <p className={`text-xs ${!customizations.livingMemory ? 'text-gray-400' : 'text-amber-600'}`}>
                 Requires minimum 10-sec recording of subject's voice via email
               </p>
             </div>
             <Switch
               checked={customizations.voiceMatch}
               onCheckedChange={(checked) => updateCustomization('voiceMatch', checked)}
+              disabled={!customizations.livingMemory}
             />
           </div>
         </Card>
 
         {/* Custom Message */}
-        <Card className="p-6">
+        <Card className={`p-6 ${!customizations.livingMemory ? 'opacity-50' : ''}`}>
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
                 <span className="text-lg">📝</span>
-                <h5 className="font-semibold text-gray-900">Add Custom Message</h5>
-                <Badge className="bg-teal-100 text-teal-700">
+                <h5 className={`font-semibold ${!customizations.livingMemory ? 'text-gray-400' : 'text-gray-900'}`}>
+                  Add Custom Message
+                </h5>
+                <Badge className={!customizations.livingMemory ? 'bg-gray-100 text-gray-400' : 'bg-teal-100 text-teal-700'}>
                   Free
                 </Badge>
               </div>
-              <p className="text-sm text-gray-600">
+              <p className={`text-sm ${!customizations.livingMemory ? 'text-gray-400' : 'text-gray-600'}`}>
                 Add a personal message that appears with your canvas
               </p>
             </div>
           </div>
           
           <div className="mt-4">
-            <Label className="text-sm font-medium mb-2 block">Your Message:</Label>
+            <Label className={`text-sm font-medium mb-2 block ${!customizations.livingMemory ? 'text-gray-400' : ''}`}>
+              Your Message:
+            </Label>
             <Textarea
               placeholder="Enter your custom message here..."
               value={message}
               onChange={(e) => handleMessageChange(e.target.value)}
               className="resize-none"
               rows={3}
+              disabled={!customizations.livingMemory}
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className={`text-xs mt-1 ${!customizations.livingMemory ? 'text-gray-400' : 'text-gray-500'}`}>
               {message.length}/150 characters
             </p>
           </div>
