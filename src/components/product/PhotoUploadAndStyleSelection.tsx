@@ -1,10 +1,11 @@
 import { useState, useCallback } from "react";
-import { Upload, Check, X, Image as ImageIcon, Sparkles, Wand2, Lock } from "lucide-react";
+import { Upload, Check, X, Image as ImageIcon, Sparkles, Wand2, Lock, Crop } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { artStyles } from "@/data/artStyles";
+import Cropper from 'react-easy-crop';
 
 interface PhotoUploadAndStyleSelectionProps {
   onComplete: (imageUrl: string, styleId: number, styleName: string) => void;
@@ -19,6 +20,14 @@ const PhotoUploadAndStyleSelection = ({ onComplete, preSelectedStyle }: PhotoUpl
   const [selectedStyle, setSelectedStyle] = useState<number | null>(preSelectedStyle?.id || null);
   const [showAllStyles, setShowAllStyles] = useState(false);
   const [loadingStyles, setLoadingStyles] = useState<Set<number>>(new Set());
+  
+  // Crop states
+  const [showCrop, setShowCrop] = useState(false);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+  const [cropAspect, setCropAspect] = useState(1); // 1 = square, 4/3 = horizontal, 3/4 = vertical
+  const [finalCroppedImage, setFinalCroppedImage] = useState<string | null>(null);
 
   // Popular styles that will be auto-generated after upload
   const popularStyleIds = [2, 10, 7]; // Classic Oil Painting, Neon Splash, 3D Storybook
@@ -46,6 +55,7 @@ const PhotoUploadAndStyleSelection = ({ onComplete, preSelectedStyle }: PhotoUpl
       setPreviewUrl(imageUrl);
       setUploadedFile(file);
       setIsUploading(false);
+      setShowCrop(true); // Show crop interface after upload
     };
     reader.readAsDataURL(file);
   }, []);
@@ -77,15 +87,79 @@ const PhotoUploadAndStyleSelection = ({ onComplete, preSelectedStyle }: PhotoUpl
     }
   }, [handleFile]);
 
+  const onCropComplete = useCallback((croppedArea: any, croppedAreaPixels: any) => {
+    setCroppedAreaPixels(croppedAreaPixels);
+  }, []);
+
+  const createImage = (url: string): Promise<HTMLImageElement> =>
+    new Promise((resolve, reject) => {
+      const image = new Image();
+      image.addEventListener('load', () => resolve(image));
+      image.addEventListener('error', (error) => reject(error));
+      image.setAttribute('crossOrigin', 'anonymous');
+      image.src = url;
+    });
+
+  const getCroppedImg = async (imageSrc: string, pixelCrop: any): Promise<string> => {
+    const image = await createImage(imageSrc);
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    if (!ctx) {
+      throw new Error('Could not get canvas context');
+    }
+
+    canvas.width = pixelCrop.width;
+    canvas.height = pixelCrop.height;
+
+    ctx.drawImage(
+      image,
+      pixelCrop.x,
+      pixelCrop.y,
+      pixelCrop.width,
+      pixelCrop.height,
+      0,
+      0,
+      pixelCrop.width,
+      pixelCrop.height
+    );
+
+    return canvas.toDataURL('image/jpeg');
+  };
+
+  const handleCropSave = async () => {
+    if (croppedAreaPixels && previewUrl) {
+      try {
+        const croppedImage = await getCroppedImg(previewUrl, croppedAreaPixels);
+        setFinalCroppedImage(croppedImage);
+        setShowCrop(false);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  };
+
+  const handleSkipCrop = () => {
+    setFinalCroppedImage(previewUrl);
+    setShowCrop(false);
+  };
+
+  const handleAutoCenterCrop = () => {
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+  };
+
   const removeFile = () => {
     setUploadedFile(null);
     setPreviewUrl(null);
+    setFinalCroppedImage(null);
     setSelectedStyle(null);
     setLoadingStyles(new Set());
+    setShowCrop(false);
   };
 
   const handleStyleClick = async (style: typeof artStyles[0]) => {
-    if (!previewUrl) return;
+    if (!finalCroppedImage) return;
 
     // If it's a popular style, it should already be available
     if (popularStyleIds.includes(style.id)) {
@@ -108,10 +182,10 @@ const PhotoUploadAndStyleSelection = ({ onComplete, preSelectedStyle }: PhotoUpl
   };
 
   const handleComplete = () => {
-    if (previewUrl && selectedStyle) {
+    if (finalCroppedImage && selectedStyle) {
       const style = artStyles.find(s => s.id === selectedStyle);
       if (style) {
-        onComplete(previewUrl, selectedStyle, style.name);
+        onComplete(finalCroppedImage, selectedStyle, style.name);
       }
     }
   };
@@ -120,8 +194,8 @@ const PhotoUploadAndStyleSelection = ({ onComplete, preSelectedStyle }: PhotoUpl
     const isSelected = selectedStyle === style.id;
     const isLoading = loadingStyles.has(style.id);
     const isPopular = popularStyleIds.includes(style.id);
-    const canPreview = previewUrl && (isPopular || isLoading || isSelected);
-    const isLocked = !previewUrl && !isPopular;
+    const canPreview = finalCroppedImage && (isPopular || isLoading || isSelected);
+    const isLocked = !finalCroppedImage && !isPopular;
 
     return (
       <Card 
@@ -137,7 +211,7 @@ const PhotoUploadAndStyleSelection = ({ onComplete, preSelectedStyle }: PhotoUpl
             {canPreview ? (
               <div className="absolute inset-0">
                 <img 
-                  src={previewUrl!} 
+                  src={finalCroppedImage!} 
                   alt="Style preview" 
                   className="w-full h-full object-cover"
                 />
@@ -219,6 +293,7 @@ const PhotoUploadAndStyleSelection = ({ onComplete, preSelectedStyle }: PhotoUpl
         <p className="text-gray-600 max-w-2xl mx-auto">
           {!uploadedFile ? 
             "See all our amazing art styles below, then upload your photo to watch the magic happen!" :
+            showCrop ? "Perfect your photo with our cropping tool, then see it transformed!" :
             "Amazing! Now see how your photo looks in different artistic styles."
           }
         </p>
@@ -272,14 +347,95 @@ const PhotoUploadAndStyleSelection = ({ onComplete, preSelectedStyle }: PhotoUpl
             </Button>
           </div>
         </div>
+      ) : showCrop ? (
+        /* Crop Interface */
+        <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6">
+          <div className="space-y-6">
+            <div className="text-center">
+              <h4 className="text-xl font-semibold text-gray-900 mb-2 flex items-center justify-center gap-2">
+                <Crop className="w-5 h-5 text-purple-600" />
+                Perfect Your Photo
+              </h4>
+              <p className="text-gray-600">
+                Adjust the crop to highlight the best part of your image
+              </p>
+            </div>
+
+            {/* Crop Area */}
+            <div className="relative w-full h-80 bg-black rounded-xl overflow-hidden">
+              <Cropper
+                image={previewUrl!}
+                crop={crop}
+                zoom={zoom}
+                aspect={cropAspect}
+                onCropChange={setCrop}
+                onZoomChange={setZoom}
+                onCropComplete={onCropComplete}
+              />
+            </div>
+
+            {/* Aspect Ratio Controls */}
+            <div className="flex justify-center gap-2">
+              <Button
+                variant={cropAspect === 1 ? "default" : "outline"}
+                size="sm"
+                onClick={() => setCropAspect(1)}
+                className="text-xs"
+              >
+                Square
+              </Button>
+              <Button
+                variant={cropAspect === 4/3 ? "default" : "outline"}
+                size="sm"
+                onClick={() => setCropAspect(4/3)}
+                className="text-xs"
+              >
+                Horizontal
+              </Button>
+              <Button
+                variant={cropAspect === 3/4 ? "default" : "outline"}
+                size="sm"
+                onClick={() => setCropAspect(3/4)}
+                className="text-xs"
+              >
+                Vertical
+              </Button>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-center gap-4">
+              <Button
+                variant="outline"
+                onClick={handleAutoCenterCrop}
+                className="text-sm"
+              >
+                Auto-Center
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={handleSkipCrop}
+                className="text-sm text-gray-500"
+              >
+                Skip, I'm Good
+              </Button>
+              <Button
+                onClick={handleCropSave}
+                className="bg-purple-600 hover:bg-purple-700 text-sm"
+              >
+                Apply Crop
+              </Button>
+            </div>
+          </div>
+        </div>
       ) : (
+        /* Upload Success */
         <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6">
           <div className="flex items-start gap-6">
             <div className="relative">
               <AspectRatio ratio={1} className="w-24 rounded-xl overflow-hidden shadow-lg">
                 <img 
-                  src={previewUrl!} 
-                  alt="Uploaded preview" 
+                  src={finalCroppedImage!} 
+                  alt="Cropped preview" 
                   className="w-full h-full object-cover"
                 />
               </AspectRatio>
@@ -296,7 +452,7 @@ const PhotoUploadAndStyleSelection = ({ onComplete, preSelectedStyle }: PhotoUpl
                     {uploadedFile.name}
                   </h4>
                   <p className="text-sm text-gray-500">
-                    {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
+                    {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB • Cropped & Ready
                   </p>
                 </div>
                 
@@ -313,7 +469,7 @@ const PhotoUploadAndStyleSelection = ({ onComplete, preSelectedStyle }: PhotoUpl
               <div className="bg-white rounded-lg p-3 border border-green-200">
                 <div className="flex items-center gap-2 text-green-700">
                   <Check className="w-4 h-4" />
-                  <span className="font-medium text-sm">Photo uploaded! Choose your style below.</span>
+                  <span className="font-medium text-sm">Photo ready! Choose your style below.</span>
                 </div>
               </div>
             </div>
