@@ -47,42 +47,56 @@ serve(async (req) => {
     }
 
     const openaiService = new OpenAIService(openaiApiKey)
-    const stylePrompt = stylePrompts[styleId] || "Apply artistic transformation to the image"
-    console.log('Using style prompt for ID', styleId, ':', stylePrompt)
+    const baseStylePrompt = stylePrompts[styleId] || "Apply artistic transformation to the image"
+    console.log('Using base style prompt for ID', styleId, ':', baseStylePrompt)
 
-    // Create a simple, direct prompt for image-to-image generation
-    const directPrompt = `Apply this artistic style to the image: ${stylePrompt}. Maintain the exact same subject, composition, and scene while only changing the artistic rendering style.`
+    // First, try to analyze the uploaded image to create a detailed prompt
+    console.log('Starting image analysis with OpenAI Vision...')
     
-    console.log('Starting direct image-to-image generation with OpenAI...')
-    
-    // Try image editing with a more direct approach
-    let imageGenerationResponse = await openaiService.editImage(imageData, directPrompt)
-    console.log('Image edit response status:', imageGenerationResponse.status)
-
-    // If image editing fails, try a simpler text-based approach with DALL-E 3
-    if (!imageGenerationResponse.ok) {
-      const editError = await imageGenerationResponse.text()
-      console.log('Image editing failed, trying simplified DALL-E 3 approach:', editError)
-      
-      // Create a simple, generic prompt for the style
-      const simplifiedPrompt = `Create an artistic image in ${styleName.toLowerCase()} style. ${stylePrompt}`
-      
-      console.log('Using simplified prompt:', simplifiedPrompt)
-
-      imageGenerationResponse = await openaiService.generateWithDallE3(simplifiedPrompt)
-      console.log('DALL-E 3 response status:', imageGenerationResponse.status)
+    let analysisResponse
+    try {
+      analysisResponse = await openaiService.analyzeImage(imageData, baseStylePrompt)
+      console.log('Analysis response status:', analysisResponse.status)
+    } catch (error) {
+      console.error('Image analysis failed:', error)
+      analysisResponse = null
     }
+
+    let enhancedPrompt = baseStylePrompt
+    
+    if (analysisResponse && analysisResponse.ok) {
+      try {
+        const analysisData = await analysisResponse.json()
+        const analysisContent = analysisData.choices?.[0]?.message?.content
+        console.log('Analysis content received:', !!analysisContent)
+        
+        if (analysisContent) {
+          enhancedPrompt = analysisContent
+        }
+      } catch (error) {
+        console.error('Error parsing analysis response:', error)
+      }
+    }
+
+    console.log('Using enhanced prompt for generation:', enhancedPrompt.substring(0, 100) + '...')
+
+    // Now generate the styled image using DALL-E 3 with the enhanced prompt
+    console.log('Starting image generation with DALL-E 3...')
+    
+    const imageGenerationResponse = await openaiService.generateWithDallE3(enhancedPrompt)
+    console.log('DALL-E 3 response status:', imageGenerationResponse.status)
 
     if (!imageGenerationResponse.ok) {
       const errorData = await imageGenerationResponse.text()
-      console.error('Final image generation API error:', errorData)
-      // Return original image as fallback
+      console.error('Image generation API error:', errorData)
+      
+      // Return original image as fallback with clear messaging
       return createSuccessResponse(
         `${styleName} style preview (using original as fallback)`,
         imageData,
         styleId,
         styleName,
-        'Style transformation temporarily unavailable - showing original image'
+        'Style transformation temporarily unavailable - showing original image. Please try adjusting the style prompt.'
       )
     }
 
@@ -104,7 +118,7 @@ serve(async (req) => {
     }
 
     console.log('Successfully generated styled image')
-    return createSuccessResponse(directPrompt, generatedImage, styleId, styleName)
+    return createSuccessResponse(enhancedPrompt, generatedImage, styleId, styleName)
 
   } catch (error) {
     console.error('Error in generate-style-preview function:', error)

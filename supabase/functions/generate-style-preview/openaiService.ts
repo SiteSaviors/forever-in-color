@@ -18,16 +18,21 @@ export class OpenAIService {
   }
 
   async analyzeImage(imageData: string, stylePrompt: string): Promise<Response> {
-    // Simplified analysis prompt to avoid content policy issues
-    const analysisPrompt = `Create a detailed description for generating an artistic version of this image with the following style: ${stylePrompt}
+    // Create a focused analysis prompt for better image-to-image transformation
+    const analysisPrompt = `Please analyze this image and create a detailed prompt for DALL-E 3 to generate a stylized version.
 
-Please describe:
-- The main subject and their key visual characteristics
-- The setting and background elements
-- The composition and lighting
-- How to apply the artistic style transformation
+Style to apply: ${stylePrompt}
 
-Keep the description factual and suitable for image generation. Provide only the generation prompt.`;
+Provide a complete generation prompt that includes:
+1. A detailed description of the main subject(s) in the image
+2. The setting, background, and environmental details
+3. Lighting, mood, and atmosphere
+4. How to apply the specific artistic style transformation
+5. Composition and perspective details
+
+Make the prompt detailed and specific for high-quality generation. Focus on preserving the essence and key elements of the original image while applying the artistic transformation.
+
+Return only the generation prompt, nothing else.`;
 
     return await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -54,8 +59,8 @@ Keep the description factual and suitable for image generation. Provide only the
             ]
           }
         ],
-        max_tokens: 300,
-        temperature: 0.3
+        max_tokens: 500,
+        temperature: 0.2
       })
     });
   }
