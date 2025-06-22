@@ -1,5 +1,5 @@
 
-import PhotoUpload from "@/components/product/PhotoUpload";
+import PhotoUploadAndStyleSelection from "@/components/product/PhotoUploadAndStyleSelection";
 import StylePreview from "@/components/product/StylePreview";
 import PricingSection from "@/components/product/PricingSection";
 import { Upload, Gift, Palette } from "lucide-react";
@@ -41,7 +41,17 @@ const StepContent = ({
         </div>
       );
     }
-    return <PhotoUpload onUploadComplete={onPhotoUpload} />;
+    
+    return (
+      <PhotoUploadAndStyleSelection
+        onComplete={(imageUrl: string, styleId: number, styleName: string) => {
+          onPhotoUpload(imageUrl);
+          onStyleSelect(styleId, styleName);
+          onStepComplete(2);
+        }}
+        preSelectedStyle={selectedStyle}
+      />
+    );
   }
 
   if (stepNumber === 3) {
