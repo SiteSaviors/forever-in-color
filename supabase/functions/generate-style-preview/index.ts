@@ -1,5 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { stylePrompts } from "./stylePrompts.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -37,29 +38,10 @@ serve(async (req) => {
       )
     }
 
-    // Define style prompts based on your art styles
-    const stylePrompts: { [key: number]: string } = {
-      1: "Keep the image exactly as is, no artistic transformation",
-      2: "Transform into a rich, textured oil painting with visible brushstrokes and classical painting techniques",
-      3: "Apply soft, gentle watercolor effects with subtle color transitions and peaceful, calming tones",
-      4: "Create flowing watercolor effects with gentle color bleeds and dreamy, soft transitions",
-      5: "Apply gentle pastel hues with soft color blends for a dreamy, calming artistic feel",
-      6: "Transform into a faceted, gem-like texture with modern geometric patterns and crystalline effects",
-      7: "Create a bold, fun 3D animated style reminiscent of popular animated movies with vibrant colors",
-      8: "Convert to a soft, hand-drawn charcoal sketch with artistic shading and black-and-white tones",
-      9: "Apply bold, vibrant pop art effects with high contrast colors and retro comic book aesthetics",
-      10: "Create high-voltage neon effects with explosive energy and electric, glowing colors",
-      11: "Apply futuristic cyberpunk aesthetic with electric blooms and neon lighting effects",
-      12: "Create an artistic mashup with bold, expressive, and unique creative collision of styles",
-      13: "Transform into modern abstract fusion with dynamic swirls and vibrant color harmony",
-      14: "Apply rich, textured embroidery style with intricate stitching details and handcrafted charm",
-      15: "Create sophisticated Art Deco elegance with geometric patterns and luxurious metallic accents"
-    }
-
     const stylePrompt = stylePrompts[styleId] || "Apply artistic transformation to the image"
 
-    // Call OpenAI API for image generation
-    const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+    // Step 1: Analyze and describe the image with style transformation
+    const analysisResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${openaiApiKey}`,
@@ -73,7 +55,16 @@ serve(async (req) => {
             content: [
               {
                 type: 'text',
-                text: `Please analyze this image and create a detailed description for an AI image generator to recreate it in the following artistic style: ${stylePrompt}. The output should maintain the composition and subject matter while applying the specified artistic transformation. Focus on describing the visual elements, lighting, colors, and artistic techniques that should be applied.`
+                text: `Analyze this image and create a detailed description for DALL-E 3 to recreate it in the following artistic style: ${stylePrompt}. 
+
+The description should:
+1. Maintain the composition and subject matter
+2. Apply the specified artistic transformation
+3. Be detailed enough for accurate image generation
+4. Focus on visual elements, lighting, colors, and artistic techniques
+5. Be under 400 characters for DALL-E 3 compatibility
+
+Provide ONLY the image generation prompt, nothing else.`
               },
               {
                 type: 'image_url',
@@ -84,16 +75,16 @@ serve(async (req) => {
             ]
           }
         ],
-        max_tokens: 500,
-        temperature: 0.7
+        max_tokens: 200,
+        temperature: 0.3
       })
     })
 
-    if (!openaiResponse.ok) {
-      const errorData = await openaiResponse.text()
-      console.error('OpenAI API error:', errorData)
+    if (!analysisResponse.ok) {
+      const errorData = await analysisResponse.text()
+      console.error('OpenAI Analysis API error:', errorData)
       return new Response(
-        JSON.stringify({ error: 'Failed to generate style description' }),
+        JSON.stringify({ error: 'Failed to analyze image for style transformation' }),
         { 
           status: 500, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -101,8 +92,8 @@ serve(async (req) => {
       )
     }
 
-    const openaiData = await openaiResponse.json()
-    const styleDescription = openaiData.choices[0]?.message?.content
+    const analysisData = await analysisResponse.json()
+    const styleDescription = analysisData.choices[0]?.message?.content
 
     if (!styleDescription) {
       return new Response(
@@ -114,15 +105,60 @@ serve(async (req) => {
       )
     }
 
-    // For now, we'll return the description and original image
-    // In a full implementation, you might use DALL-E or another image generation API
-    // to create the actual styled image based on this description
-    
+    // Step 2: Generate the styled image using DALL-E 3
+    const imageGenerationResponse = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openaiApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'dall-e-3',
+        prompt: styleDescription,
+        n: 1,
+        size: '1024x1024',
+        quality: 'standard',
+        response_format: 'url'
+      })
+    })
+
+    if (!imageGenerationResponse.ok) {
+      const errorData = await imageGenerationResponse.text()
+      console.error('DALL-E 3 API error:', errorData)
+      // Fallback: return original image with style overlay if generation fails
+      return new Response(
+        JSON.stringify({
+          success: true,
+          styleDescription,
+          previewUrl: imageData, // Fallback to original
+          styleId,
+          styleName,
+          note: 'Style preview generated using overlay (image generation temporarily unavailable)'
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+
+    const imageData_result = await imageGenerationResponse.json()
+    const generatedImageUrl = imageData_result.data[0]?.url
+
+    if (!generatedImageUrl) {
+      return new Response(
+        JSON.stringify({ error: 'No styled image generated' }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
         styleDescription,
-        previewUrl: imageData, // For now, return original image
+        previewUrl: generatedImageUrl, // Now returns actual generated styled image
         styleId,
         styleName
       }),
