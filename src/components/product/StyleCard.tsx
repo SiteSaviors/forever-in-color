@@ -4,6 +4,8 @@ import { Check, Lock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { generateStylePreview } from "@/utils/stylePreviewApi";
+import { useToast } from "@/hooks/use-toast";
 
 interface StyleCardProps {
   style: {
@@ -15,7 +17,7 @@ interface StyleCardProps {
   croppedImage: string | null;
   selectedStyle: number | null;
   isPopular: boolean;
-  cropAspectRatio?: number; // New prop for dynamic aspect ratio
+  cropAspectRatio?: number;
   onStyleClick: (style: { id: number; name: string; description: string; image: string }) => void;
 }
 
@@ -24,32 +26,59 @@ const StyleCard = ({
   croppedImage, 
   selectedStyle, 
   isPopular,
-  cropAspectRatio = 1, // Default to square
+  cropAspectRatio = 1,
   onStyleClick 
 }: StyleCardProps) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [hasGeneratedPreview, setHasGeneratedPreview] = useState(false);
+  const { toast } = useToast();
 
   const isSelected = selectedStyle === style.id;
-  const canPreview = croppedImage && (isPopular || isLoading || isSelected);
+  const canPreview = croppedImage && (isPopular || hasGeneratedPreview || isSelected);
   const isLocked = !croppedImage && !isPopular;
 
   const handleClick = async () => {
     if (!croppedImage) return;
 
-    // If it's a popular style, it should already be available
-    if (isPopular) {
+    // If it's a popular style or already has a preview, select immediately
+    if (isPopular || hasGeneratedPreview) {
       onStyleClick(style);
       return;
     }
 
-    // For other styles, simulate loading
+    // For other styles, generate preview using API
     setIsLoading(true);
     
-    // Simulate API call delay
-    setTimeout(() => {
+    try {
+      const response = await generateStylePreview({
+        imageData: croppedImage,
+        styleId: style.id,
+        styleName: style.name
+      });
+
+      if (response.success) {
+        setPreviewUrl(response.previewUrl);
+        setHasGeneratedPreview(true);
+        onStyleClick(style);
+        
+        toast({
+          title: "Style Preview Generated!",
+          description: `Your photo has been transformed with ${style.name} style.`,
+        });
+      } else {
+        throw new Error(response.error || 'Failed to generate preview');
+      }
+    } catch (error) {
+      console.error('Error generating style preview:', error);
+      toast({
+        title: "Preview Generation Failed",
+        description: "Please try again or select a different style.",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-      onStyleClick(style);
-    }, 1500);
+    }
   };
 
   const getStyleGradient = (styleId: number) => {
@@ -68,6 +97,18 @@ const StyleCard = ({
     return gradients[styleId] || 'linear-gradient(to bottom right, #6b7280, #374151)';
   };
 
+  // Determine which image to show in preview
+  const getPreviewImage = () => {
+    if (canPreview) {
+      // For popular styles or generated previews, show the user's image
+      if (isPopular || hasGeneratedPreview) {
+        return previewUrl || croppedImage;
+      }
+    }
+    // Default to style example image
+    return style.image;
+  };
+
   return (
     <Card 
       className={`group cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 ${
@@ -76,28 +117,29 @@ const StyleCard = ({
       onClick={handleClick}
     >
       <CardContent className="p-0">
-        {/* Dynamic Aspect Ratio Preview with Canvas Mockup Effect */}
         <AspectRatio ratio={cropAspectRatio} className="relative overflow-hidden rounded-t-lg">
-          {/* Canvas Frame Effect */}
           <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 p-2">
             <div className="w-full h-full bg-white rounded-sm shadow-inner relative overflow-hidden">
               {canPreview ? (
                 <div className="absolute inset-0">
                   <img 
-                    src={croppedImage!} 
+                    src={getPreviewImage()!} 
                     alt="Style preview" 
                     className="w-full h-full object-cover"
                   />
-                  <div 
-                    className="absolute inset-0 bg-gradient-to-br opacity-60 mix-blend-overlay" 
-                    style={{ background: getStyleGradient(style.id) }}
-                  />
+                  {/* Apply style overlay only for popular styles without generated preview */}
+                  {isPopular && !hasGeneratedPreview && (
+                    <div 
+                      className="absolute inset-0 bg-gradient-to-br opacity-60 mix-blend-overlay" 
+                      style={{ background: getStyleGradient(style.id) }}
+                    />
+                  )}
                   
                   {isLoading && (
                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                       <div className="text-white text-center space-y-2">
                         <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto"></div>
-                        <p className="text-xs font-medium">Creating preview...</p>
+                        <p className="text-xs font-medium">Generating preview...</p>
                       </div>
                     </div>
                   )}
@@ -139,7 +181,6 @@ const StyleCard = ({
           )}
         </AspectRatio>
 
-        {/* Style Info */}
         <div className="p-3 space-y-2">
           <h5 className="font-semibold text-gray-900 text-sm">{style.name}</h5>
           <p className="text-xs text-gray-600 leading-relaxed">{style.description}</p>
