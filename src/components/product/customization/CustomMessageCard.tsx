@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -26,29 +27,31 @@ const CustomMessageCard = ({ message, livingMemoryEnabled, onMessageChange }: Cu
           ? 'ring-2 ring-green-200 shadow-xl bg-gradient-to-r from-green-50/50 to-emerald-50/50 border-l-4 border-l-green-400' 
           : 'shadow-lg hover:shadow-green-100/50'
     }`}>
-      <CardContent className="p-8">
-        <div className="flex items-start gap-4">
-          <div className={`p-3 rounded-xl transition-all duration-300 ${
+      <CardContent className="p-4 md:p-8">
+        <div className="flex items-start gap-3 md:gap-4">
+          <div className={`p-2 md:p-3 rounded-xl transition-all duration-300 ${
             message.length > 0 && livingMemoryEnabled
               ? 'bg-green-100 text-green-600 animate-slide-in' 
               : 'bg-gray-100 text-gray-500 group-hover:bg-green-50 group-hover:text-green-400'
           }`}>
-            <MessageSquare className="w-6 h-6" />
+            <MessageSquare className="w-5 h-5 md:w-6 md:h-6" />
           </div>
-          <div className="flex-1 space-y-4">
+          <div className="flex-1 space-y-3 md:space-y-4 min-w-0">
             <div>
-              <div className="flex items-center gap-3 mb-3">
-                <h5 className="text-xl font-bold text-gray-900 font-poppins tracking-tight">Add Personal Message</h5>
-                <Badge className="bg-green-100 text-green-700 font-semibold px-3 py-1">
-                  Free
-                </Badge>
-                {!livingMemoryEnabled && (
-                  <Badge variant="outline" className="bg-gray-50 text-gray-500 border-gray-200">
-                    Requires Living Memory
+              <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-3 mb-2 md:mb-3">
+                <h5 className="text-lg md:text-xl font-bold text-gray-900 font-poppins tracking-tight">Add Personal Message</h5>
+                <div className="flex flex-wrap gap-2">
+                  <Badge className="bg-green-100 text-green-700 font-semibold px-2 md:px-3 py-1 text-xs">
+                    Free
                   </Badge>
-                )}
+                  {!livingMemoryEnabled && (
+                    <Badge variant="outline" className="bg-gray-50 text-gray-500 border-gray-200 text-xs">
+                      Requires Living Memory
+                    </Badge>
+                  )}
+                </div>
               </div>
-              <p className="text-gray-600 text-base leading-relaxed mb-2">
+              <p className="text-gray-600 text-sm md:text-base leading-relaxed mb-2">
                 Include a heartfelt message that appears during the AR experience
               </p>
               <p className="text-sm text-green-600 font-medium">
@@ -57,13 +60,13 @@ const CustomMessageCard = ({ message, livingMemoryEnabled, onMessageChange }: Cu
             </div>
 
             {livingMemoryEnabled && (
-              <div className="space-y-3">
+              <div className="space-y-2 md:space-y-3">
                 <div className="relative">
                   <Textarea
                     placeholder="Share your thoughts, wishes, or story behind this memory..."
                     value={message}
                     onChange={(e) => onMessageChange(e.target.value)}
-                    className="min-h-[100px] resize-none border-green-200 focus:ring-green-500 focus:border-green-500"
+                    className="min-h-[80px] md:min-h-[100px] resize-none border-green-200 focus:ring-green-500 focus:border-green-500"
                     maxLength={MAX_MESSAGE_LENGTH}
                   />
                   <div className={`absolute bottom-2 right-2 text-xs ${
@@ -89,9 +92,9 @@ const CustomMessageCard = ({ message, livingMemoryEnabled, onMessageChange }: Cu
                 )}
 
                 {message.length > 0 && (
-                  <div className="bg-green-50 p-3 rounded-lg border border-green-200">
+                  <div className="bg-green-50 p-2 md:p-3 rounded-lg border border-green-200">
                     <p className="text-sm text-green-700 font-medium mb-1">Preview:</p>
-                    <p className="text-green-600 italic">"{message}"</p>
+                    <p className="text-green-600 italic text-sm">"{message}"</p>
                   </div>
                 )}
               </div>

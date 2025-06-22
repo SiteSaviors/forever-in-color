@@ -63,10 +63,10 @@ const CustomizationSelector = ({
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 md:space-y-8">
       <CustomizationHeader />
 
-      <div className="grid gap-8">
+      <div className="grid gap-4 md:gap-8">
         <FloatingFrameCard
           enabled={customizations.floatingFrame.enabled}
           color={customizations.floatingFrame.color}
