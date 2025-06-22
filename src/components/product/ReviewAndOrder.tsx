@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import CanvasMockup from "./CanvasMockup";
 import OrderSummary from "./OrderSummary";
@@ -80,7 +81,7 @@ const ReviewAndOrder = ({
 
   return (
     <>
-      <div className="space-y-8">
+      <div className="space-y-8 pb-20 sm:pb-8">
         {/* Header */}
         <div className="text-center">
           <h3 className="text-2xl font-semibold text-gray-900 mb-2">

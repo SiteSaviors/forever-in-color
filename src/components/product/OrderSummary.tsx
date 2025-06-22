@@ -4,6 +4,10 @@ import { Badge } from "@/components/ui/badge";
 import { Edit3, Image as ImageIcon, Palette, Frame, Video, Zap, ShoppingCart } from "lucide-react";
 import PaymentForm from "./PaymentForm";
 import TrustBadges from "./TrustBadges";
+import DeliveryEstimator from "./DeliveryEstimator";
+import GiftNotes from "./GiftNotes";
+import OrderTestimonials from "./OrderTestimonials";
+import { useState } from "react";
 
 interface OrderSummaryProps {
   uploadedImage: string | null;
@@ -31,6 +35,8 @@ const OrderSummary = ({
   customizations,
   onEditStep 
 }: OrderSummaryProps) => {
+  const [giftMessage, setGiftMessage] = useState('');
+  
   // Calculate pricing
   const getSizePrice = (size: string) => {
     switch (size) {
@@ -252,6 +258,9 @@ const OrderSummary = ({
         </CardContent>
       </Card>
 
+      {/* Delivery Estimator */}
+      <DeliveryEstimator />
+
       {/* Customer Information */}
       <Card>
         <CardHeader>
@@ -278,8 +287,17 @@ const OrderSummary = ({
         </CardContent>
       </Card>
 
+      {/* Gift Notes */}
+      <GiftNotes 
+        giftMessage={giftMessage}
+        onGiftMessageChange={setGiftMessage}
+      />
+
       {/* Payment Form */}
       <PaymentForm />
+
+      {/* Order Testimonials */}
+      <OrderTestimonials />
 
       {/* Trust Badges */}
       <TrustBadges />
