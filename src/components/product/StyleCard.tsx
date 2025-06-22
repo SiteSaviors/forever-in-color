@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Check, Lock } from "lucide-react";
+import { Check, Lock, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -113,7 +113,7 @@ const StyleCard = ({
     <Card 
       className={`group cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 ${
         isSelected ? 'ring-2 ring-purple-500 shadow-lg' : ''
-      } ${isLocked ? 'opacity-75' : ''}`}
+      } ${isLocked ? 'opacity-75' : ''} ${isLoading ? 'pointer-events-none' : ''}`}
       onClick={handleClick}
     >
       <CardContent className="p-0">
@@ -134,15 +134,6 @@ const StyleCard = ({
                       style={{ background: getStyleGradient(style.id) }}
                     />
                   )}
-                  
-                  {isLoading && (
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                      <div className="text-white text-center space-y-2">
-                        <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto"></div>
-                        <p className="text-xs font-medium">Generating preview...</p>
-                      </div>
-                    </div>
-                  )}
                 </div>
               ) : (
                 <div className="absolute inset-0">
@@ -161,10 +152,33 @@ const StyleCard = ({
                   )}
                 </div>
               )}
+
+              {/* Loading Overlay */}
+              {isLoading && (
+                <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-20">
+                  <div className="text-white text-center space-y-3 px-4">
+                    <div className="relative">
+                      <Sparkles className="w-8 h-8 mx-auto animate-pulse text-purple-400" />
+                      <div className="absolute inset-0 animate-spin">
+                        <div className="w-8 h-8 border-2 border-transparent border-t-white/50 rounded-full mx-auto"></div>
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm font-semibold">Creating Your Style...</p>
+                      <p className="text-xs text-gray-300">This may take 10-15 seconds</p>
+                    </div>
+                    <div className="flex justify-center space-x-1">
+                      <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce delay-150"></div>
+                      <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce delay-300"></div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           
-          {isPopular && (
+          {isPopular && !isLoading && (
             <div className="absolute top-2 right-2 z-10">
               <Badge variant="secondary" className="bg-white/90 text-purple-700 font-semibold text-xs">
                 Popular
