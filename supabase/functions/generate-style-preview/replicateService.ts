@@ -1,38 +1,62 @@
-export class ReplicateService {
-  constructor(private apiKey: string) {}
 
-  async generateImageToImage(imageData: string, prompt: string): Promise<Response> {
-    console.log('Using Replicate flux-kontext-max for image-to-image transformation with prompt:', prompt);
-    
-    return await fetch('https://api.replicate.com/v1/predictions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Token ${this.apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        version: "ae580b36d6ce8fc7a4d9c79c36fca78e86c8db3cd2b60b3ff4ed24b3b8a5c6ec", // flux-kontext-max
-        input: {
-          image: imageData,
-          prompt: prompt,
-          strength: 0.8, // How much to transform vs preserve original
-          num_inference_steps: 28,
-          guidance_scale: 7.5,
-          output_format: "webp",
-          output_quality: 90
-        }
-      })
+import Replicate from "https://esm.sh/replicate@0.25.2";
+
+export class ReplicateService {
+  private replicate: Replicate;
+
+  constructor(apiKey: string) {
+    this.replicate = new Replicate({
+      auth: apiKey,
     });
   }
 
-  async getPredictionStatus(predictionId: string): Promise<Response> {
-    return await fetch(`https://api.replicate.com/v1/predictions/${predictionId}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Token ${this.apiKey}`,
-        'Content-Type': 'application/json',
-      }
-    });
+  async generateImageToImage(imageData: string, prompt: string): Promise<any> {
+    console.log('Using Replicate flux-kontext-max for image-to-image transformation with prompt:', prompt);
+    
+    try {
+      const output = await this.replicate.run(
+        "black-forest-labs/flux-kontext-max",
+        {
+          input: {
+            image: imageData,
+            prompt: prompt,
+            strength: 0.8, // How much to transform vs preserve original
+            num_inference_steps: 28,
+            guidance_scale: 7.5,
+            output_format: "webp",
+            output_quality: 90
+          }
+        }
+      );
+
+      console.log('Replicate output:', output);
+      return {
+        ok: true,
+        output: output
+      };
+    } catch (error) {
+      console.error('Replicate error:', error);
+      return {
+        ok: false,
+        error: error.message
+      };
+    }
+  }
+
+  async getPredictionStatus(predictionId: string): Promise<any> {
+    try {
+      const prediction = await this.replicate.predictions.get(predictionId);
+      return {
+        ok: true,
+        ...prediction
+      };
+    } catch (error) {
+      console.error('Error getting prediction status:', error);
+      return {
+        ok: false,
+        error: error.message
+      };
+    }
   }
 
   async analyzeImageForTransformation(imageData: string, stylePrompt: string): Promise<Response> {

@@ -51,7 +51,7 @@ serve(async (req) => {
 
     const replicateService = new ReplicateService(replicateApiKey)
     
-    // Use custom prompt if provided, otherwise use default - FIX: Use let instead of const
+    // Use custom prompt if provided, otherwise use default
     let transformationPrompt = customPrompt || stylePrompts[styleId] || "Apply artistic transformation to the image"
     console.log('Using style prompt:', transformationPrompt)
 
@@ -71,7 +71,7 @@ serve(async (req) => {
         
         if (detailedPrompt) {
           console.log('Generated detailed prompt:', detailedPrompt)
-          // Use the detailed prompt for transformation - FIX: Now using let variable
+          // Use the detailed prompt for transformation
           transformationPrompt = detailedPrompt
         }
       }
@@ -81,11 +81,10 @@ serve(async (req) => {
 
     // Step 2: Generate the transformed image using Replicate
     console.log('Step 2: Starting image transformation with Replicate...')
-    const transformResponse = await replicateService.generateImageToImage(imageData, transformationPrompt)
+    const transformResult = await replicateService.generateImageToImage(imageData, transformationPrompt)
 
-    if (!transformResponse.ok) {
-      const errorData = await transformResponse.text()
-      console.error('Replicate transformation failed:', errorData)
+    if (!transformResult.ok) {
+      console.error('Replicate transformation failed:', transformResult.error)
       
       // Return original image as fallback with clear messaging
       return createSuccessResponse(
@@ -97,74 +96,17 @@ serve(async (req) => {
       )
     }
 
-    const transformData = await transformResponse.json()
-    console.log('Replicate response:', transformData)
+    const transformedImageUrl = transformResult.output;
+    console.log('Replicate transformation successful:', transformedImageUrl);
 
-    // Check if we need to poll for completion
-    if (transformData.status === 'starting' || transformData.status === 'processing') {
-      console.log('Transformation in progress, polling for completion...')
-      
-      // Poll for completion (max 30 seconds)
-      let pollAttempts = 0
-      const maxPolls = 15
-      
-      while (pollAttempts < maxPolls) {
-        await new Promise(resolve => setTimeout(resolve, 2000)) // Wait 2 seconds
-        
-        const statusResponse = await replicateService.getPredictionStatus(transformData.id)
-        if (!statusResponse.ok) {
-          console.error('Failed to check prediction status')
-          break
-        }
-        
-        const statusData = await statusResponse.json()
-        console.log(`Poll ${pollAttempts + 1}: Status = ${statusData.status}`)
-        
-        if (statusData.status === 'succeeded') {
-          const transformedImageUrl = statusData.output?.[0] || statusData.output
-          
-          if (transformedImageUrl) {
-            console.log('Transformation completed successfully')
-            return createSuccessResponse(
-              `${styleName} style applied successfully`,
-              transformedImageUrl,
-              styleId,
-              styleName
-            )
-          }
-          break
-        } else if (statusData.status === 'failed' || statusData.status === 'canceled') {
-          console.error('Transformation failed:', statusData.error)
-          break
-        }
-        
-        pollAttempts++
-      }
-      
-      // If we get here, polling timed out or failed
-      console.warn('Transformation polling timed out or failed')
+    if (transformedImageUrl) {
+      console.log('Transformation completed successfully')
       return createSuccessResponse(
-        `${styleName} style preview (using original as fallback)`,
-        imageData,
+        `${styleName} style applied successfully`,
+        transformedImageUrl,
         styleId,
-        styleName,
-        'Style transformation is taking longer than expected - showing original image'
+        styleName
       )
-    }
-
-    // Handle immediate success case
-    if (transformData.status === 'succeeded') {
-      const transformedImageUrl = transformData.output?.[0] || transformData.output
-      
-      if (transformedImageUrl) {
-        console.log('Transformation completed immediately')
-        return createSuccessResponse(
-          `${styleName} style applied successfully`,
-          transformedImageUrl,
-          styleId,
-          styleName
-        )
-      }
     }
 
     // Fallback if no valid output
