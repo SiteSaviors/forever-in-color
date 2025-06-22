@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { Upload, Image as ImageIcon, Palette, Gift, Settings } from "lucide-react";
@@ -147,7 +148,7 @@ const Product = () => {
       estimatedTime: "2 min",
       isCompleted: completedSteps.includes(3),
       content: (
-        <div className="space-y-8">
+        <div className="space-y-4 md:space-y-8">
           <OrientationSelector
             selectedOrientation={selectedOrientation}
             selectedSize={selectedSize}
@@ -199,7 +200,7 @@ const Product = () => {
           totalSteps={steps.length}
         />
         
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-32">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12 pb-24 md:pb-32">
           <Accordion 
             type="single" 
             value={`step-${currentStep}`} 
@@ -209,7 +210,7 @@ const Product = () => {
                 setCurrentStep(stepNumber);
               }
             }}
-            className="space-y-8"
+            className="space-y-4 md:space-y-8"
           >
             {steps.map((step) => (
               <ProductStep
