@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Check, Lock, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -37,6 +37,48 @@ const StyleCard = ({
   const isSelected = selectedStyle === style.id;
   const canPreview = croppedImage && (isPopular || hasGeneratedPreview || isSelected);
   const isLocked = !croppedImage && !isPopular;
+
+  // Auto-generate previews for popular styles (except Original Image) when image is uploaded
+  useEffect(() => {
+    const shouldAutoGenerate = croppedImage && 
+                              isPopular && 
+                              style.id !== 1 && // Skip Original Image
+                              !hasGeneratedPreview && 
+                              !previewUrl;
+
+    if (shouldAutoGenerate) {
+      console.log(`Auto-generating preview for ${style.name} (ID: ${style.id})`);
+      generatePreview();
+    }
+  }, [croppedImage, isPopular, style.id, hasGeneratedPreview, previewUrl]);
+
+  const generatePreview = async () => {
+    if (!croppedImage) return;
+
+    setIsLoading(true);
+    
+    try {
+      const response = await generateStylePreview({
+        imageData: croppedImage,
+        styleId: style.id,
+        styleName: style.name
+      });
+
+      if (response.success) {
+        setPreviewUrl(response.previewUrl);
+        setHasGeneratedPreview(true);
+        
+        console.log(`Preview generated successfully for ${style.name}`);
+      } else {
+        throw new Error(response.error || 'Failed to generate preview');
+      }
+    } catch (error) {
+      console.error('Error generating style preview:', error);
+      // For auto-generation, don't show error toast to avoid spam
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleClick = async () => {
     if (!croppedImage) return;
