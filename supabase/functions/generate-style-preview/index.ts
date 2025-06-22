@@ -26,6 +26,22 @@ serve(async (req) => {
       )
     }
 
+    // Special case for Original Image - no AI transformation needed
+    if (styleId === 1) {
+      return new Response(
+        JSON.stringify({
+          success: true,
+          styleDescription: "Original image preserved exactly as uploaded",
+          previewUrl: imageData, // Return the original image
+          styleId,
+          styleName
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+
     // Get OpenAI API key from Supabase secrets
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY')
     if (!openaiApiKey) {
