@@ -91,7 +91,7 @@ const OrientationSelector = ({
   };
 
   const getCanvasPreview = (orientation: string, size: string) => {
-    const baseClasses = "bg-gray-200 rounded mb-3 flex items-center justify-center";
+    const baseClasses = "bg-gray-200 rounded flex items-center justify-center mx-auto";
     
     switch (orientation) {
       case 'horizontal':
@@ -183,7 +183,9 @@ const OrientationSelector = ({
                 onClick={() => onSizeChange(option.size)}
               >
                 <CardContent className="p-4 text-center">
-                  {getCanvasPreview(selectedOrientation, option.size)}
+                  <div className="mb-4">
+                    {getCanvasPreview(selectedOrientation, option.size)}
+                  </div>
                   <div className="flex flex-col items-center gap-2">
                     <span className={`font-bold text-lg ${
                       index === 0 ? 'text-teal-600' : 'text-gray-900'
