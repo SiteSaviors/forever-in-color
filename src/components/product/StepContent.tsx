@@ -2,24 +2,42 @@
 import PhotoUpload from "@/components/product/PhotoUpload";
 import StylePreview from "@/components/product/StylePreview";
 import PricingSection from "@/components/product/PricingSection";
+import ReviewAndOrder from "@/components/product/ReviewAndOrder";
 import { Upload, Gift, Palette } from "lucide-react";
 
 interface StepContentProps {
   stepNumber: number;
   uploadedImage: string | null;
   selectedStyle: { id: number; name: string } | null;
+  selectedSize: string;
+  selectedOrientation: string;
+  customizations: {
+    floatingFrame: {
+      enabled: boolean;
+      color: 'white' | 'black' | 'espresso';
+    };
+    livingMemory: boolean;
+    voiceMatch: boolean;
+    customMessage: string;
+    aiUpscale: boolean;
+  };
   onPhotoUpload: (imageUrl: string) => void;
   onStyleSelect: (styleId: number, styleName: string) => void;
   onStepComplete: (stepNumber: number) => void;
+  onEditStep: (stepNumber: number) => void;
 }
 
 const StepContent = ({ 
   stepNumber, 
   uploadedImage,
   selectedStyle,
+  selectedSize,
+  selectedOrientation,
+  customizations,
   onPhotoUpload, 
   onStyleSelect, 
-  onStepComplete 
+  onStepComplete,
+  onEditStep
 }: StepContentProps) => {
   if (stepNumber === 1) {
     return (
@@ -41,7 +59,14 @@ const StepContent = ({
         </div>
       );
     }
-    return <PhotoUpload onUploadComplete={onPhotoUpload} />;
+    return (
+      <PhotoUpload 
+        onFileSelect={(file: File, previewUrl: string) => {
+          // Convert file to URL for the callback
+          onPhotoUpload(previewUrl);
+        }}
+      />
+    );
   }
 
   if (stepNumber === 3) {
@@ -58,11 +83,14 @@ const StepContent = ({
 
   if (stepNumber === 4) {
     return (
-      <div className="text-center py-12">
-        <Gift className="w-12 h-12 text-purple-400 mx-auto mb-4" />
-        <p className="text-gray-500 text-lg mb-2">Almost there!</p>
-        <p className="text-gray-400 text-sm">Order summary and checkout coming next...</p>
-      </div>
+      <ReviewAndOrder
+        uploadedImage={uploadedImage}
+        selectedStyle={selectedStyle}
+        selectedSize={selectedSize}
+        selectedOrientation={selectedOrientation}
+        customizations={customizations}
+        onEditStep={onEditStep}
+      />
     );
   }
 
