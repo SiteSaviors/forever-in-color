@@ -81,22 +81,6 @@ const StyleCard = ({
     }
   };
 
-  const getStyleGradient = (styleId: number) => {
-    const gradients: { [key: number]: string } = {
-      1: 'linear-gradient(to bottom right, #6b7280, #374151, #111827)',
-      4: 'linear-gradient(to bottom right, #93c5fd, #c4b5fd, #f9a8d4)',
-      5: 'linear-gradient(to bottom right, #fbbf24, #f59e0b, #f97316)',
-      2: 'linear-gradient(to bottom right, #d97706, #ea580c, #dc2626)',
-      10: 'linear-gradient(to bottom right, #a3e635, #ec4899, #a855f7)',
-      7: 'linear-gradient(to bottom right, #a855f7, #ec4899, #ef4444)',
-      9: 'linear-gradient(to bottom right, #ef4444, #fbbf24, #3b82f6)',
-      11: 'linear-gradient(to bottom right, #ec4899, #a855f7, #06b6d4)',
-      8: 'linear-gradient(to bottom right, #6b7280, #374151, #000000)',
-      15: 'linear-gradient(to bottom right, #f59e0b, #d97706, #ea580c)'
-    };
-    return gradients[styleId] || 'linear-gradient(to bottom right, #6b7280, #374151)';
-  };
-
   // Determine which image to show in preview
   const getPreviewImage = () => {
     if (canPreview) {
@@ -109,11 +93,15 @@ const StyleCard = ({
     return style.image;
   };
 
+  const showGeneratedIndicator = hasGeneratedPreview && !isSelected;
+
   return (
     <Card 
       className={`group cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 ${
         isSelected ? 'ring-2 ring-purple-500 shadow-lg' : ''
-      } ${isLocked ? 'opacity-75' : ''} ${isLoading ? 'pointer-events-none' : ''}`}
+      } ${showGeneratedIndicator ? 'ring-2 ring-green-500' : ''} ${
+        isLocked ? 'opacity-75' : ''
+      } ${isLoading ? 'pointer-events-none' : ''}`}
       onClick={handleClick}
     >
       <CardContent className="p-0">
@@ -127,13 +115,6 @@ const StyleCard = ({
                     alt="Style preview" 
                     className="w-full h-full object-cover"
                   />
-                  {/* Apply style overlay only for popular styles without generated preview */}
-                  {isPopular && !hasGeneratedPreview && (
-                    <div 
-                      className="absolute inset-0 bg-gradient-to-br opacity-60 mix-blend-overlay" 
-                      style={{ background: getStyleGradient(style.id) }}
-                    />
-                  )}
                 </div>
               ) : (
                 <div className="absolute inset-0">
@@ -186,6 +167,16 @@ const StyleCard = ({
             </div>
           )}
           
+          {/* Generated Preview Indicator */}
+          {showGeneratedIndicator && (
+            <div className="absolute bottom-2 right-2 z-10">
+              <div className="bg-green-600 text-white rounded-full p-1.5 shadow-lg">
+                <Check className="w-3 h-3" />
+              </div>
+            </div>
+          )}
+          
+          {/* Selected Indicator */}
           {isSelected && !isLoading && (
             <div className="absolute inset-0 bg-purple-500/20 flex items-center justify-center z-10">
               <div className="bg-purple-600 text-white rounded-full p-2">
