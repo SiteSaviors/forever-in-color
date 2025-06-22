@@ -179,7 +179,7 @@ const OrientationSelector = ({
                   selectedSize === option.size 
                     ? 'ring-2 ring-teal-500 bg-teal-50' 
                     : 'hover:shadow-md border-gray-200'
-                } ${index === 0 ? 'ring-2 ring-teal-500 bg-teal-50' : ''}`}
+                }`}
                 onClick={() => onSizeChange(option.size)}
               >
                 <CardContent className="p-4 text-center">
@@ -188,7 +188,7 @@ const OrientationSelector = ({
                   </div>
                   <div className="flex flex-col items-center gap-2">
                     <span className={`font-bold text-lg ${
-                      index === 0 ? 'text-teal-600' : 'text-gray-900'
+                      selectedSize === option.size ? 'text-teal-600' : 'text-gray-900'
                     }`}>
                       {option.category}
                     </span>
