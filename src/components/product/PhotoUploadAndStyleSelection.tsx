@@ -1,9 +1,9 @@
-
 import { useState, useCallback } from "react";
 import { Upload, Check, X, Image as ImageIcon, Sparkles, Wand2, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { artStyles } from "@/data/artStyles";
 
 interface PhotoUploadAndStyleSelectionProps {
@@ -132,8 +132,8 @@ const PhotoUploadAndStyleSelection = ({ onComplete, preSelectedStyle }: PhotoUpl
         onClick={() => handleStyleClick(style)}
       >
         <CardContent className="p-0">
-          {/* Preview */}
-          <div className="relative h-32 md:h-40 overflow-hidden rounded-t-lg">
+          {/* Square Preview */}
+          <AspectRatio ratio={1} className="relative overflow-hidden rounded-t-lg">
             {canPreview ? (
               <div className="absolute inset-0">
                 <img 
@@ -196,7 +196,7 @@ const PhotoUploadAndStyleSelection = ({ onComplete, preSelectedStyle }: PhotoUpl
                 </div>
               </div>
             )}
-          </div>
+          </AspectRatio>
 
           {/* Style Info */}
           <div className="p-3 space-y-2">
@@ -276,13 +276,13 @@ const PhotoUploadAndStyleSelection = ({ onComplete, preSelectedStyle }: PhotoUpl
         <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6">
           <div className="flex items-start gap-6">
             <div className="relative">
-              <div className="w-24 h-24 rounded-xl overflow-hidden shadow-lg">
+              <AspectRatio ratio={1} className="w-24 rounded-xl overflow-hidden shadow-lg">
                 <img 
                   src={previewUrl!} 
                   alt="Uploaded preview" 
                   className="w-full h-full object-cover"
                 />
-              </div>
+              </AspectRatio>
               <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
                 <Check className="w-4 h-4 text-white" />
               </div>
