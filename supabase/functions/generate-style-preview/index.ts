@@ -48,56 +48,41 @@ serve(async (req) => {
 
     const openaiService = new OpenAIService(openaiApiKey)
     const stylePrompt = stylePrompts[styleId] || "Apply artistic transformation to the image"
-    console.log('Using style prompt for ID', styleId, ':', stylePrompt.substring(0, 50) + '...')
+    console.log('Using style prompt for ID', styleId, ':', stylePrompt)
 
-    // Create enhanced prompt for image-to-image generation
-    const enhancedPrompt = `Transform this exact image while preserving every detail of the subject: ${stylePrompt}. CRITICAL: Keep the exact same subject, pose, facial features, eye color, fur patterns, and composition. Only change the artistic style, not the subject itself.`
+    // Create a simple, direct prompt for image-to-image generation
+    const directPrompt = `Apply this artistic style to the image: ${stylePrompt}. Maintain the exact same subject, composition, and scene while only changing the artistic rendering style.`
     
-    console.log('Starting image-to-image generation with OpenAI...')
+    console.log('Starting direct image-to-image generation with OpenAI...')
     
-    // Try image editing with OpenAI first
-    let imageGenerationResponse = await openaiService.editImage(imageData, enhancedPrompt)
+    // Try image editing with a more direct approach
+    let imageGenerationResponse = await openaiService.editImage(imageData, directPrompt)
     console.log('Image edit response status:', imageGenerationResponse.status)
 
-    // If image editing fails, fall back to DALL-E 3 with detailed description
+    // If image editing fails, try a simpler text-based approach with DALL-E 3
     if (!imageGenerationResponse.ok) {
       const editError = await imageGenerationResponse.text()
-      console.log('Image editing failed, falling back to advanced text-to-image:', editError)
+      console.log('Image editing failed, trying simplified DALL-E 3 approach:', editError)
       
-      // First, analyze the image in extreme detail
-      const analysisResponse = await openaiService.analyzeImage(imageData, stylePrompt)
+      // Create a simple, generic prompt for the style
+      const simplifiedPrompt = `Create an artistic image in ${styleName.toLowerCase()} style. ${stylePrompt}`
+      
+      console.log('Using simplified prompt:', simplifiedPrompt)
 
-      if (!analysisResponse.ok) {
-        const errorData = await analysisResponse.text()
-        console.error('OpenAI Analysis API error:', errorData)
-        return createErrorResponse('Failed to analyze image for style transformation', 500, errorData)
-      }
-
-      const analysisData = await analysisResponse.json()
-      const detailedDescription = analysisData.choices[0]?.message?.content
-
-      console.log('Generated detailed description:', detailedDescription)
-
-      if (!detailedDescription) {
-        console.error('No detailed description generated from OpenAI')
-        return createErrorResponse('No detailed description generated', 500)
-      }
-
-      // Generate with DALL-E 3 using the detailed description
-      imageGenerationResponse = await openaiService.generateWithDallE3(detailedDescription)
-      console.log('DALL-E 3 fallback response status:', imageGenerationResponse.status)
+      imageGenerationResponse = await openaiService.generateWithDallE3(simplifiedPrompt)
+      console.log('DALL-E 3 response status:', imageGenerationResponse.status)
     }
 
     if (!imageGenerationResponse.ok) {
       const errorData = await imageGenerationResponse.text()
       console.error('Final image generation API error:', errorData)
-      // Return original image with style overlay as final fallback
+      // Return original image as fallback
       return createSuccessResponse(
-        enhancedPrompt,
+        `${styleName} style preview (using original as fallback)`,
         imageData,
         styleId,
         styleName,
-        'Style preview generated using overlay (image generation temporarily unavailable)'
+        'Style transformation temporarily unavailable - showing original image'
       )
     }
 
@@ -108,11 +93,18 @@ serve(async (req) => {
 
     if (!generatedImage) {
       console.error('No styled image generated')
-      return createErrorResponse('No styled image generated', 500)
+      // Return original image as fallback
+      return createSuccessResponse(
+        `${styleName} style preview (using original as fallback)`,
+        imageData,
+        styleId,
+        styleName,
+        'Style transformation temporarily unavailable - showing original image'
+      )
     }
 
-    console.log('Successfully generated styled image using image-to-image approach')
-    return createSuccessResponse(enhancedPrompt, generatedImage, styleId, styleName)
+    console.log('Successfully generated styled image')
+    return createSuccessResponse(directPrompt, generatedImage, styleId, styleName)
 
   } catch (error) {
     console.error('Error in generate-style-preview function:', error)

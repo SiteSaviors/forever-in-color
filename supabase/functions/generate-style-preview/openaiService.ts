@@ -18,18 +18,16 @@ export class OpenAIService {
   }
 
   async analyzeImage(imageData: string, stylePrompt: string): Promise<Response> {
-    const analysisPrompt = `Analyze this image in EXTREME detail and create a comprehensive description for DALL-E 3 to recreate it with this transformation: ${stylePrompt}. 
+    // Simplified analysis prompt to avoid content policy issues
+    const analysisPrompt = `Create a detailed description for generating an artistic version of this image with the following style: ${stylePrompt}
 
-CRITICAL REQUIREMENTS:
-1. Describe EVERY visible detail of the subject: exact breed, size, age, facial features, eye color and shape, ear position, fur color patterns, markings, pose, expression
-2. Describe the exact composition: subject position, angle, background elements, lighting direction
-3. Include precise spatial relationships and proportions
-4. Apply the artistic transformation while keeping everything else identical
-5. Start with "Recreate this exact scene with perfect accuracy:"
-6. Be extremely specific about preserving the original subject's unique characteristics
-7. Keep under 1000 characters for DALL-E 3
+Please describe:
+- The main subject and their key visual characteristics
+- The setting and background elements
+- The composition and lighting
+- How to apply the artistic style transformation
 
-Provide ONLY the detailed generation prompt.`;
+Keep the description factual and suitable for image generation. Provide only the generation prompt.`;
 
     return await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -38,7 +36,7 @@ Provide ONLY the detailed generation prompt.`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'user',
@@ -57,7 +55,7 @@ Provide ONLY the detailed generation prompt.`;
           }
         ],
         max_tokens: 300,
-        temperature: 0.1
+        temperature: 0.3
       })
     });
   }
