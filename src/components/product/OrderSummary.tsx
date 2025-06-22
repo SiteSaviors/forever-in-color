@@ -1,8 +1,9 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Edit3, Image as ImageIcon, Palette, Frame, Video, Zap, ShoppingCart } from "lucide-react";
+import PaymentForm from "./PaymentForm";
+import TrustBadges from "./TrustBadges";
 
 interface OrderSummaryProps {
   uploadedImage: string | null;
@@ -276,6 +277,12 @@ const OrderSummary = ({
           </div>
         </CardContent>
       </Card>
+
+      {/* Payment Form */}
+      <PaymentForm />
+
+      {/* Trust Badges */}
+      <TrustBadges />
 
       {/* Order Actions */}
       <div className="space-y-3">
