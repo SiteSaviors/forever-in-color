@@ -39,7 +39,6 @@ interface ProductStepsConfigProps {
   onOrientationSelect: (orientation: string) => void;
   onSizeSelect: (size: string) => void;
   onCustomizationChange: (customizations: CustomizationOptions) => void;
-  onEditStep: (step: number) => void;
 }
 
 export const useProductStepsConfig = ({
@@ -52,8 +51,7 @@ export const useProductStepsConfig = ({
   onPhotoAndStyleComplete,
   onOrientationSelect,
   onSizeSelect,
-  onCustomizationChange,
-  onEditStep
+  onCustomizationChange
 }: ProductStepsConfigProps): StepConfig[] => {
   return [
     {
@@ -125,7 +123,6 @@ export const useProductStepsConfig = ({
           selectedSize={selectedSize}
           selectedOrientation={selectedOrientation}
           customizations={customizations}
-          onEditStep={onEditStep}
         />
       )
     }

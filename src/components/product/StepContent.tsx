@@ -1,43 +1,25 @@
 
-import PhotoUploadAndStyleSelection from "@/components/product/PhotoUploadAndStyleSelection";
+import PhotoUpload from "@/components/product/PhotoUpload";
 import StylePreview from "@/components/product/StylePreview";
 import PricingSection from "@/components/product/PricingSection";
-import ReviewAndOrder from "@/components/product/ReviewAndOrder";
 import { Upload, Gift, Palette } from "lucide-react";
 
 interface StepContentProps {
   stepNumber: number;
   uploadedImage: string | null;
   selectedStyle: { id: number; name: string } | null;
-  selectedSize: string;
-  selectedOrientation: string;
-  customizations: {
-    floatingFrame: {
-      enabled: boolean;
-      color: 'white' | 'black' | 'espresso';
-    };
-    livingMemory: boolean;
-    voiceMatch: boolean;
-    customMessage: string;
-    aiUpscale: boolean;
-  };
   onPhotoUpload: (imageUrl: string) => void;
   onStyleSelect: (styleId: number, styleName: string) => void;
   onStepComplete: (stepNumber: number) => void;
-  onEditStep: (step: number) => void;
 }
 
 const StepContent = ({ 
   stepNumber, 
   uploadedImage,
   selectedStyle,
-  selectedSize,
-  selectedOrientation,
-  customizations,
   onPhotoUpload, 
   onStyleSelect, 
-  onStepComplete,
-  onEditStep
+  onStepComplete 
 }: StepContentProps) => {
   if (stepNumber === 1) {
     return (
@@ -59,17 +41,7 @@ const StepContent = ({
         </div>
       );
     }
-    
-    return (
-      <PhotoUploadAndStyleSelection
-        onComplete={(imageUrl: string, styleId: number, styleName: string) => {
-          onPhotoUpload(imageUrl);
-          onStyleSelect(styleId, styleName);
-          onStepComplete(2);
-        }}
-        preSelectedStyle={selectedStyle}
-      />
-    );
+    return <PhotoUpload onUploadComplete={onPhotoUpload} />;
   }
 
   if (stepNumber === 3) {
@@ -86,14 +58,11 @@ const StepContent = ({
 
   if (stepNumber === 4) {
     return (
-      <ReviewAndOrder
-        uploadedImage={uploadedImage}
-        selectedStyle={selectedStyle}
-        selectedSize={selectedSize}
-        selectedOrientation={selectedOrientation}
-        customizations={customizations}
-        onEditStep={onEditStep}
-      />
+      <div className="text-center py-12">
+        <Gift className="w-12 h-12 text-purple-400 mx-auto mb-4" />
+        <p className="text-gray-500 text-lg mb-2">Almost there!</p>
+        <p className="text-gray-400 text-sm">Order summary and checkout coming next...</p>
+      </div>
     );
   }
 
