@@ -28,7 +28,7 @@ const AIUpscaleCard = ({ enabled, onEnabledChange }: AIUpscaleCardProps) => {
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-3">
-                <h5 className="text-xl font-bold text-gray-900 font-playfair">AI Image Enhancement</h5>
+                <h5 className="text-xl font-bold text-gray-900 font-poppins tracking-tight">AI Image Enhancement</h5>
                 <Badge className="bg-orange-100 text-orange-700 font-semibold px-3 py-1">
                   $9.99
                 </Badge>

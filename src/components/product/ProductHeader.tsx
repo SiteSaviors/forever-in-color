@@ -19,7 +19,7 @@ const ProductHeader = ({ completedSteps, totalSteps }: ProductHeaderProps) => {
             AI-Powered Art Creation
           </span>
         </div>
-        <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent mb-6">
+        <h1 className="text-4xl md:text-6xl font-bold font-poppins tracking-tight bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent mb-6">
           Create Your Masterpiece
         </h1>
         <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">

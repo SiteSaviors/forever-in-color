@@ -140,7 +140,7 @@ const OrientationSelector = ({
     <div className="space-y-10">
       {/* Enhanced Step 2 Header */}
       <div className="text-center mb-8 p-8 bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-50 rounded-2xl border border-teal-100">
-        <h4 className="text-2xl font-bold text-gray-900 mb-3 font-playfair">
+        <h4 className="text-2xl font-bold text-gray-900 mb-3 font-poppins tracking-tight">
           ✨ Step 2: Choose Layout
         </h4>
         <p className="text-gray-600 text-lg">Select the perfect orientation for your masterpiece</p>
@@ -166,7 +166,7 @@ const OrientationSelector = ({
               }`}>
                 {getOrientationIcon(orientation.id)}
               </div>
-              <h5 className="font-bold text-xl text-gray-900 mb-3 font-playfair">{orientation.name}</h5>
+              <h5 className="font-bold text-xl text-gray-900 mb-3 font-poppins tracking-tight">{orientation.name}</h5>
               <p className="text-gray-600 text-base leading-relaxed">{orientation.description}</p>
             </CardContent>
           </Card>
@@ -176,7 +176,7 @@ const OrientationSelector = ({
       {/* Enhanced Step 3 Header */}
       {selectedOrientation && (
         <div className="text-center mb-8 p-8 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 rounded-2xl border border-indigo-100">
-          <h4 className="text-2xl font-bold text-gray-900 mb-3 font-playfair">
+          <h4 className="text-2xl font-bold text-gray-900 mb-3 font-poppins tracking-tight">
             ✨ Step 3: Choose Size
           </h4>
           <p className="text-gray-600 text-lg">Find the perfect size to showcase your art</p>
@@ -202,7 +202,7 @@ const OrientationSelector = ({
                 </div>
                 <div className="text-center space-y-3">
                   <div className="flex items-center justify-center gap-2">
-                    <span className={`font-bold text-xl font-playfair ${
+                    <span className={`font-bold text-xl font-poppins tracking-tight ${
                       selectedSize === option.size ? 'text-indigo-600' : 'text-gray-900'
                     }`}>
                       {option.category}
@@ -221,7 +221,7 @@ const OrientationSelector = ({
                     <div className="text-sm text-gray-500 line-through">
                       ${option.originalPrice}
                     </div>
-                    <div className="text-2xl font-bold text-gray-900 font-playfair">
+                    <div className="text-2xl font-bold text-gray-900 font-poppins tracking-tight">
                       ${option.salePrice}
                     </div>
                   </div>

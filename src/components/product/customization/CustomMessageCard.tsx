@@ -1,10 +1,8 @@
-
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { MessageSquare } from "lucide-react";
-import { useState } from "react";
+import { MessageSquare, AlertCircle } from "lucide-react";
 
 interface CustomMessageCardProps {
   message: string;
@@ -12,84 +10,91 @@ interface CustomMessageCardProps {
   onMessageChange: (message: string) => void;
 }
 
-const CustomMessageCard = ({ message, livingMemoryEnabled, onMessageChange }: CustomMessageCardProps) => {
-  const [localMessage, setLocalMessage] = useState(message);
+const MAX_MESSAGE_LENGTH = 200;
+const WARNING_THRESHOLD = 160;
 
-  const handleMessageChange = (value: string) => {
-    if (value.length <= 150 && livingMemoryEnabled) {
-      setLocalMessage(value);
-      onMessageChange(value);
-    }
+const CustomMessageCard = ({ message, livingMemoryEnabled, onMessageChange }: CustomMessageCardProps) => {
+  const isValidMessage = (text: string) => {
+    return text.length <= MAX_MESSAGE_LENGTH;
   };
 
   return (
-    <Card className={`group transition-all duration-500 hover:shadow-xl hover:-translate-y-1 ${
-      !livingMemoryEnabled ? 'opacity-50 grayscale' : ''
-    } ${
-      localMessage && livingMemoryEnabled
-        ? 'ring-2 ring-teal-200 shadow-xl bg-gradient-to-r from-teal-50/50 to-cyan-50/50 border-l-4 border-l-teal-400'
-        : 'shadow-md'
+    <Card className={`group transition-all duration-500 hover:shadow-2xl hover:-translate-y-1 ${
+      !livingMemoryEnabled 
+        ? 'opacity-50 cursor-not-allowed' 
+        : message.length > 0 
+          ? 'ring-2 ring-green-200 shadow-xl bg-gradient-to-r from-green-50/50 to-emerald-50/50 border-l-4 border-l-green-400' 
+          : 'shadow-lg hover:shadow-green-100/50'
     }`}>
       <CardContent className="p-8">
-        <div className="flex items-start justify-between mb-6">
-          <div className="flex items-start gap-4 flex-1">
-            <div className={`p-3 rounded-xl transition-all duration-300 ${
-              localMessage && livingMemoryEnabled
-                ? 'bg-teal-100 text-teal-600 animate-slide-in' 
-                : !livingMemoryEnabled 
-                ? 'bg-gray-100 text-gray-400'
-                : 'bg-gray-100 text-gray-500 group-hover:bg-teal-50 group-hover:text-teal-400'
-            }`}>
-              <MessageSquare className="w-6 h-6" />
-            </div>
-            <div className="flex-1">
+        <div className="flex items-start gap-4">
+          <div className={`p-3 rounded-xl transition-all duration-300 ${
+            message.length > 0 && livingMemoryEnabled
+              ? 'bg-green-100 text-green-600 animate-slide-in' 
+              : 'bg-gray-100 text-gray-500 group-hover:bg-green-50 group-hover:text-green-400'
+          }`}>
+            <MessageSquare className="w-6 h-6" />
+          </div>
+          <div className="flex-1 space-y-4">
+            <div>
               <div className="flex items-center gap-3 mb-3">
-                <h5 className={`text-xl font-bold font-playfair ${
-                  !livingMemoryEnabled ? 'text-gray-400' : 'text-gray-900'
-                }`}>
-                  Personal Message
-                </h5>
-                <Badge className={`font-semibold px-3 py-1 ${
-                  !livingMemoryEnabled 
-                    ? 'bg-gray-100 text-gray-400' 
-                    : 'bg-teal-100 text-teal-700'
-                }`}>
+                <h5 className="text-xl font-bold text-gray-900 font-poppins tracking-tight">Add Personal Message</h5>
+                <Badge className="bg-green-100 text-green-700 font-semibold px-3 py-1">
                   Free
                 </Badge>
+                {!livingMemoryEnabled && (
+                  <Badge variant="outline" className="bg-gray-50 text-gray-500 border-gray-200">
+                    Requires Living Memory
+                  </Badge>
+                )}
               </div>
-              <p className={`text-base leading-relaxed ${
-                !livingMemoryEnabled ? 'text-gray-400' : 'text-gray-600'
-              }`}>
-                Add a heartfelt message that appears with your AR experience
+              <p className="text-gray-600 text-base leading-relaxed mb-2">
+                Include a heartfelt message that appears during the AR experience
+              </p>
+              <p className="text-sm text-green-600 font-medium">
+                💌 Perfect for gifts • Appears with elegant typography
               </p>
             </div>
-          </div>
-        </div>
-        
-        <div className="space-y-3">
-          <Label className={`text-base font-semibold font-playfair ${
-            !livingMemoryEnabled ? 'text-gray-400' : 'text-gray-900'
-          }`}>
-            Your Personal Message:
-          </Label>
-          <Textarea
-            placeholder="Share what makes this memory special..."
-            value={localMessage}
-            onChange={(e) => handleMessageChange(e.target.value)}
-            className={`resize-none text-base ${
-              !livingMemoryEnabled ? 'bg-gray-50' : 'focus:ring-teal-200 focus:border-teal-300'
-            }`}
-            rows={3}
-            disabled={!livingMemoryEnabled}
-          />
-          <div className="flex justify-between items-center">
-            <p className={`text-sm ${
-              !livingMemoryEnabled ? 'text-gray-400' : 'text-gray-500'
-            }`}>
-              {localMessage.length}/150 characters
-            </p>
-            {localMessage.length > 140 && livingMemoryEnabled && (
-              <p className="text-sm text-amber-600">Almost at the limit!</p>
+
+            {livingMemoryEnabled && (
+              <div className="space-y-3">
+                <div className="relative">
+                  <Textarea
+                    placeholder="Share your thoughts, wishes, or story behind this memory..."
+                    value={message}
+                    onChange={(e) => onMessageChange(e.target.value)}
+                    className="min-h-[100px] resize-none border-green-200 focus:ring-green-500 focus:border-green-500"
+                    maxLength={MAX_MESSAGE_LENGTH}
+                  />
+                  <div className={`absolute bottom-2 right-2 text-xs ${
+                    message.length > WARNING_THRESHOLD 
+                      ? 'text-amber-600 font-medium' 
+                      : message.length === MAX_MESSAGE_LENGTH 
+                        ? 'text-red-600 font-semibold' 
+                        : 'text-gray-400'
+                  }`}>
+                    {message.length}/{MAX_MESSAGE_LENGTH}
+                  </div>
+                </div>
+                
+                {message.length > WARNING_THRESHOLD && (
+                  <div className="flex items-center gap-2 text-sm text-amber-600 bg-amber-50 p-2 rounded border border-amber-200">
+                    <AlertCircle className="w-4 h-4" />
+                    <span>
+                      {message.length === MAX_MESSAGE_LENGTH 
+                        ? 'Character limit reached!' 
+                        : `${MAX_MESSAGE_LENGTH - message.length} characters remaining`}
+                    </span>
+                  </div>
+                )}
+
+                {message.length > 0 && (
+                  <div className="bg-green-50 p-3 rounded-lg border border-green-200">
+                    <p className="text-sm text-green-700 font-medium mb-1">Preview:</p>
+                    <p className="text-green-600 italic">"{message}"</p>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>

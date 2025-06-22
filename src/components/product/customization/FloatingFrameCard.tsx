@@ -1,9 +1,6 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Frame } from "lucide-react";
 
 interface FloatingFrameCardProps {
@@ -14,6 +11,27 @@ interface FloatingFrameCardProps {
   onColorChange: (color: 'white' | 'black' | 'espresso') => void;
 }
 
+const frameOptions = {
+  white: {
+    name: 'White',
+    bgColor: 'bg-white',
+    description: 'Clean, minimalist look',
+    price: '+ $79.99'
+  },
+  black: {
+    name: 'Black',
+    bgColor: 'bg-black',
+    description: 'Bold, modern contrast',
+    price: '+ $79.99'
+  },
+  espresso: {
+    name: 'Espresso',
+    bgColor: 'bg-gradient-to-br from-amber-800 to-amber-600',
+    description: 'Warm, sophisticated tone',
+    price: '+ $89.99'
+  }
+};
+
 const FloatingFrameCard = ({ 
   enabled, 
   color, 
@@ -21,74 +39,125 @@ const FloatingFrameCard = ({
   onEnabledChange, 
   onColorChange 
 }: FloatingFrameCardProps) => {
-  const getFramePrice = () => {
-    const largeSizes = ['48" x 32"', '60" x 40"', '32" x 48"', '40" x 60"'];
-    return largeSizes.includes(selectedSize) ? 99 : 49;
+  const getFramePreview = (frameColor: string) => {
+    const baseClasses = "rounded-md shadow-md flex items-center justify-center";
+    const textClasses = "text-gray-700 font-medium text-xs";
+  
+    switch (frameColor) {
+      case 'white':
+        return (
+          <div className="bg-white p-1">
+            <div className={`${baseClasses} bg-gray-50 h-16 w-24`}>
+              <span className={textClasses}>
+                {selectedSize.replace(/"/g, '')}
+              </span>
+            </div>
+          </div>
+        );
+      case 'black':
+        return (
+          <div className="bg-black p-1">
+            <div className={`${baseClasses} bg-gray-50 h-16 w-24`}>
+              <span className={textClasses}>
+                {selectedSize.replace(/"/g, '')}
+              </span>
+            </div>
+          </div>
+        );
+      case 'espresso':
+        return (
+          <div className="bg-gradient-to-br from-amber-800 to-amber-600 p-1">
+            <div className={`${baseClasses} bg-gray-50 h-16 w-24`}>
+              <span className={textClasses}>
+                {selectedSize.replace(/"/g, '')}
+              </span>
+            </div>
+          </div>
+        );
+      default:
+        return (
+          <div className="bg-white p-1">
+            <div className={`${baseClasses} bg-gray-50 h-16 w-24`}>
+              <span className={textClasses}>
+                {selectedSize.replace(/"/g, '')}
+              </span>
+            </div>
+          </div>
+        );
+    }
   };
 
   return (
     <Card className={`group transition-all duration-500 hover:shadow-2xl hover:-translate-y-1 ${
       enabled 
-        ? 'ring-2 ring-purple-200 shadow-xl bg-gradient-to-r from-purple-50/50 to-pink-50/50 border-l-4 border-l-purple-400' 
-        : 'shadow-lg hover:shadow-purple-100/50'
+        ? 'ring-2 ring-teal-200 shadow-xl bg-gradient-to-r from-teal-50/50 to-cyan-50/50 border-l-4 border-l-teal-400' 
+        : 'shadow-lg hover:shadow-teal-100/50'
     }`}>
       <CardContent className="p-8">
-        <div className="flex items-start justify-between mb-6">
+        <div className="flex items-start justify-between">
           <div className="flex items-start gap-4 flex-1">
             <div className={`p-3 rounded-xl transition-all duration-300 ${
               enabled 
-                ? 'bg-purple-100 text-purple-600 animate-slide-in' 
-                : 'bg-gray-100 text-gray-500 group-hover:bg-purple-50 group-hover:text-purple-400'
+                ? 'bg-teal-100 text-teal-600 animate-slide-in' 
+                : 'bg-gray-100 text-gray-500 group-hover:bg-teal-50 group-hover:text-teal-400'
             }`}>
               <Frame className="w-6 h-6" />
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-3">
-                <h5 className="text-xl font-bold text-gray-900 font-playfair">Premium Floating Frame</h5>
-                <Badge className="bg-blue-100 text-blue-700 font-semibold px-3 py-1">
-                  ${getFramePrice()}
+                <h5 className="text-xl font-bold text-gray-900 font-poppins tracking-tight">Add Floating Frame</h5>
+                <Badge className="bg-teal-100 text-teal-700 font-semibold px-3 py-1">
+                  {frameOptions[color].price}
                 </Badge>
-                <Badge variant="outline" className="bg-orange-50 text-orange-600 border-orange-200">
+                <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">
                   Most Popular
                 </Badge>
               </div>
               <p className="text-gray-600 text-base leading-relaxed mb-2">
-                Elevate your artwork with our signature floating frame that adds depth, elegance, and gallery-quality presentation
+                Give your canvas a sophisticated floating appearance with a premium handcrafted frame
               </p>
-              <p className="text-sm text-purple-600 font-medium">
-                ✨ Museum-grade materials • Ready to hang • Lifetime warranty
+              <p className="text-sm text-teal-600 font-medium">
+                🖼️ Museum-quality mounting • Ready to hang
               </p>
             </div>
           </div>
           <Switch
             checked={enabled}
             onCheckedChange={onEnabledChange}
-            className="data-[state=checked]:bg-purple-500"
+            className="data-[state=checked]:bg-teal-500"
           />
         </div>
-        
+
+        {/* Frame Color Options */}
         {enabled && (
-          <div className="mt-6 pt-6 border-t border-purple-100 animate-slide-in">
-            <Label className="text-base font-semibold mb-4 block font-playfair">Choose Your Frame Finish:</Label>
-            <RadioGroup
-              value={color}
-              onValueChange={onColorChange}
-              className="grid grid-cols-3 gap-4"
-            >
-              {[
-                { value: 'white', label: 'Pure White', desc: 'Clean & Modern' },
-                { value: 'black', label: 'Midnight Black', desc: 'Bold & Dramatic' },
-                { value: 'espresso', label: 'Rich Espresso', desc: 'Warm & Classic' }
-              ].map((option) => (
-                <div key={option.value} className="flex items-center space-x-3 p-4 rounded-lg border-2 border-gray-200 hover:border-purple-300 transition-colors">
-                  <RadioGroupItem value={option.value} id={option.value} />
-                  <div>
-                    <Label htmlFor={option.value} className="font-medium">{option.label}</Label>
-                    <p className="text-xs text-gray-500">{option.desc}</p>
+          <div className="mt-6 p-4 bg-gray-50 rounded-lg border-l-4 border-l-teal-300 animate-slide-in">
+            <h6 className="text-sm font-semibold text-gray-700 mb-3 font-poppins tracking-tight">Choose Frame Color:</h6>
+            <div className="grid grid-cols-3 gap-3">
+              {Object.entries(frameOptions).map(([frameColor, option]) => (
+                <div
+                  key={frameColor}
+                  className={`p-3 rounded-lg border-2 cursor-pointer transition-all duration-300 ${
+                    color === frameColor
+                      ? 'border-teal-400 bg-teal-50 shadow-md'
+                      : 'border-gray-200 hover:border-teal-200 hover:bg-gray-50'
+                  }`}
+                  onClick={() => onColorChange(frameColor as 'white' | 'black' | 'espresso')}
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className={`w-4 h-4 rounded border ${option.bgColor}`} />
+                    <span className="text-sm font-medium font-poppins tracking-tight">{option.name}</span>
                   </div>
+                  <div className="text-xs text-gray-500">{option.description}</div>
+                  <div className="text-sm font-semibold text-teal-600 mt-1">{option.price}</div>
                 </div>
               ))}
-            </RadioGroup>
+            </div>
+
+            {/* Frame Preview */}
+            <div className="mt-4 p-3 bg-white rounded-lg border">
+              <p className="text-sm text-gray-600 mb-2 font-poppins tracking-tight">Preview with your {selectedSize}:</p>
+              {getFramePreview(color)}
+            </div>
           </div>
         )}
       </CardContent>
