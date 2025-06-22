@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from "react";
 import { Upload, Check, X, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -84,14 +83,11 @@ const PhotoUpload = ({ onFileSelect, uploadedFile, previewUrl, onRemoveFile }: P
           
           <div className="flex-1 space-y-2">
             <div className="flex items-center justify-between">
-              <div>
-                <h4 className="font-semibold text-gray-900 flex items-center gap-2">
-                  <ImageIcon className="w-4 h-4 text-purple-600" />
-                  {uploadedFile.name}
-                </h4>
-                <p className="text-sm text-gray-500">
-                  {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB • Ready for cropping
-                </p>
+              <div className="bg-white rounded-lg p-3 border border-green-200">
+                <div className="flex items-center gap-2 text-green-700">
+                  <Check className="w-4 h-4" />
+                  <span className="font-medium text-sm">Photo uploaded successfully!</span>
+                </div>
               </div>
               
               <Button
@@ -102,13 +98,6 @@ const PhotoUpload = ({ onFileSelect, uploadedFile, previewUrl, onRemoveFile }: P
               >
                 <X className="w-4 h-4" />
               </Button>
-            </div>
-            
-            <div className="bg-white rounded-lg p-3 border border-green-200">
-              <div className="flex items-center gap-2 text-green-700">
-                <Check className="w-4 h-4" />
-                <span className="font-medium text-sm">Photo uploaded successfully!</span>
-              </div>
             </div>
           </div>
         </div>
