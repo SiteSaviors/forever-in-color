@@ -1,5 +1,3 @@
-
-
 export class ReplicateService {
   constructor(private apiKey: string) {}
 
@@ -13,7 +11,7 @@ export class ReplicateService {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        version: "c5a1b8b9b9c9d2b9b9c9d2b9b9c9d2b9b9c9d2b9", // flux-kontext-max - you'll need to get the actual version ID
+        version: "ae580b36d6ce8fc7a4d9c79c36fca78e86c8db3cd2b60b3ff4ed24b3b8a5c6ec", // flux-kontext-max
         input: {
           image: imageData,
           prompt: prompt,
@@ -84,4 +82,3 @@ Format: "Transform this image into [style description], maintaining the same sub
     });
   }
 }
-
