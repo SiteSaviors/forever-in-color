@@ -50,45 +50,15 @@ serve(async (req) => {
     const baseStylePrompt = stylePrompts[styleId] || "Apply artistic transformation to the image"
     console.log('Using base style prompt for ID', styleId, ':', baseStylePrompt)
 
-    // First, try to analyze the uploaded image to create a detailed prompt
-    console.log('Starting image analysis with OpenAI Vision...')
+    // Use image editing API instead of generation
+    console.log('Starting image transformation with OpenAI image editing...')
     
-    let analysisResponse
-    try {
-      analysisResponse = await openaiService.analyzeImage(imageData, baseStylePrompt)
-      console.log('Analysis response status:', analysisResponse.status)
-    } catch (error) {
-      console.error('Image analysis failed:', error)
-      analysisResponse = null
-    }
+    const imageEditResponse = await openaiService.editImage(imageData, baseStylePrompt)
+    console.log('Image edit response status:', imageEditResponse.status)
 
-    let enhancedPrompt = baseStylePrompt
-    
-    if (analysisResponse && analysisResponse.ok) {
-      try {
-        const analysisData = await analysisResponse.json()
-        const analysisContent = analysisData.choices?.[0]?.message?.content
-        console.log('Analysis content received:', !!analysisContent)
-        
-        if (analysisContent) {
-          enhancedPrompt = analysisContent
-        }
-      } catch (error) {
-        console.error('Error parsing analysis response:', error)
-      }
-    }
-
-    console.log('Using enhanced prompt for generation:', enhancedPrompt.substring(0, 100) + '...')
-
-    // Now generate the styled image using DALL-E 3 with the enhanced prompt
-    console.log('Starting image generation with DALL-E 3...')
-    
-    const imageGenerationResponse = await openaiService.generateWithDallE3(enhancedPrompt)
-    console.log('DALL-E 3 response status:', imageGenerationResponse.status)
-
-    if (!imageGenerationResponse.ok) {
-      const errorData = await imageGenerationResponse.text()
-      console.error('Image generation API error:', errorData)
+    if (!imageEditResponse.ok) {
+      const errorData = await imageEditResponse.text()
+      console.error('Image editing API error:', errorData)
       
       // Return original image as fallback with clear messaging
       return createSuccessResponse(
@@ -100,13 +70,13 @@ serve(async (req) => {
       )
     }
 
-    const imageData_result = await imageGenerationResponse.json()
-    const generatedImage = extractGeneratedImage(imageData_result)
+    const imageData_result = await imageEditResponse.json()
+    const transformedImage = extractGeneratedImage(imageData_result)
 
-    console.log('Generated image available:', !!generatedImage)
+    console.log('Transformed image available:', !!transformedImage)
 
-    if (!generatedImage) {
-      console.error('No styled image generated')
+    if (!transformedImage) {
+      console.error('No transformed image generated')
       // Return original image as fallback
       return createSuccessResponse(
         `${styleName} style preview (using original as fallback)`,
@@ -117,8 +87,8 @@ serve(async (req) => {
       )
     }
 
-    console.log('Successfully generated styled image')
-    return createSuccessResponse(enhancedPrompt, generatedImage, styleId, styleName)
+    console.log('Successfully transformed image with style')
+    return createSuccessResponse(baseStylePrompt, transformedImage, styleId, styleName)
 
   } catch (error) {
     console.error('Error in generate-style-preview function:', error)
