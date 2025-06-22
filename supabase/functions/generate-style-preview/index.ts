@@ -51,14 +51,14 @@ serve(async (req) => {
 
     const replicateService = new ReplicateService(replicateApiKey)
     
-    // Use custom prompt if provided, otherwise use default
-    const baseStylePrompt = customPrompt || stylePrompts[styleId] || "Apply artistic transformation to the image"
-    console.log('Using style prompt:', baseStylePrompt)
+    // Use custom prompt if provided, otherwise use default - FIX: Use let instead of const
+    let transformationPrompt = customPrompt || stylePrompts[styleId] || "Apply artistic transformation to the image"
+    console.log('Using style prompt:', transformationPrompt)
 
     // Step 1: Analyze the image to create a detailed transformation prompt (using OpenAI)
     console.log('Step 1: Analyzing image for transformation...')
     try {
-      const analysisResponse = await replicateService.analyzeImageForTransformation(imageData, baseStylePrompt)
+      const analysisResponse = await replicateService.analyzeImageForTransformation(imageData, transformationPrompt)
       
       if (!analysisResponse.ok) {
         const errorData = await analysisResponse.text()
@@ -71,8 +71,8 @@ serve(async (req) => {
         
         if (detailedPrompt) {
           console.log('Generated detailed prompt:', detailedPrompt)
-          // Use the detailed prompt for transformation
-          baseStylePrompt = detailedPrompt
+          // Use the detailed prompt for transformation - FIX: Now using let variable
+          transformationPrompt = detailedPrompt
         }
       }
     } catch (error) {
@@ -81,7 +81,7 @@ serve(async (req) => {
 
     // Step 2: Generate the transformed image using Replicate
     console.log('Step 2: Starting image transformation with Replicate...')
-    const transformResponse = await replicateService.generateImageToImage(imageData, baseStylePrompt)
+    const transformResponse = await replicateService.generateImageToImage(imageData, transformationPrompt)
 
     if (!transformResponse.ok) {
       const errorData = await transformResponse.text()
