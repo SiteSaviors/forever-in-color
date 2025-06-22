@@ -12,6 +12,7 @@ import OrientationSelector from "@/components/product/OrientationSelector";
 import CustomizationSelector from "@/components/product/CustomizationSelector";
 import PricingSection from "@/components/product/PricingSection";
 import TrustElements from "@/components/product/TrustElements";
+import PriceCalculator from "@/components/product/PriceCalculator";
 
 interface CustomizationOptions {
   floatingFrame: {
@@ -198,7 +199,7 @@ const Product = () => {
           totalSteps={steps.length}
         />
         
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-32">
           <Accordion 
             type="single" 
             value={`step-${currentStep}`} 
@@ -227,6 +228,12 @@ const Product = () => {
 
         <TrustElements />
       </div>
+
+      <PriceCalculator
+        selectedSize={selectedSize}
+        selectedOrientation={selectedOrientation}
+        customizations={customizations}
+      />
 
       <Footer />
     </div>
