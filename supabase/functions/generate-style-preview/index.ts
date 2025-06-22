@@ -80,14 +80,14 @@ serve(async (req) => {
             content: [
               {
                 type: 'text',
-                text: `Analyze this image and create a detailed description for GPT-Image-1 to recreate it with the following transformation: ${stylePrompt}. 
+                text: `Analyze this image and create a detailed description for DALL-E 3 to recreate it with the following transformation: ${stylePrompt}. 
 
 The description should:
 1. MAINTAIN THE EXACT SAME composition, subjects, poses, and scene layout
 2. Apply the specified artistic transformation while keeping everything else identical
 3. Be detailed enough for accurate image generation that preserves the original scene
 4. Focus on visual elements, lighting, colors, and artistic techniques
-5. Be under 500 characters for GPT-Image-1 compatibility
+5. Be under 1000 characters for DALL-E 3 compatibility
 6. Start with "Transform this exact scene:" to emphasize preservation of the original
 
 Provide ONLY the image generation prompt, nothing else.`
@@ -101,7 +101,7 @@ Provide ONLY the image generation prompt, nothing else.`
             ]
           }
         ],
-        max_tokens: 200,
+        max_tokens: 300,
         temperature: 0.3
       })
     })
@@ -136,9 +136,9 @@ Provide ONLY the image generation prompt, nothing else.`
       )
     }
 
-    // Step 2: Generate the styled image using GPT-Image-1 (more powerful than DALL-E 3)
-    console.log('Starting image generation with GPT-Image-1...')
-    const imageGenerationResponse = await fetch('https://api.openai.com/v1/images/generations', {
+    // Step 2: Try GPT-Image-1 first, then fallback to DALL-E 3
+    console.log('Attempting image generation with GPT-Image-1...')
+    let imageGenerationResponse = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${openaiApiKey}`,
@@ -154,12 +154,36 @@ Provide ONLY the image generation prompt, nothing else.`
       })
     })
 
-    console.log('Image generation response status:', imageGenerationResponse.status)
+    console.log('GPT-Image-1 response status:', imageGenerationResponse.status)
+
+    // If GPT-Image-1 fails (likely due to verification), fallback to DALL-E 3
+    if (!imageGenerationResponse.ok) {
+      const gptImageError = await imageGenerationResponse.text()
+      console.log('GPT-Image-1 failed, falling back to DALL-E 3:', gptImageError)
+      
+      imageGenerationResponse = await fetch('https://api.openai.com/v1/images/generations', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openaiApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'dall-e-3',
+          prompt: styleDescription,
+          n: 1,
+          size: '1024x1024',
+          quality: 'hd',
+          response_format: 'b64_json'
+        })
+      })
+
+      console.log('DALL-E 3 response status:', imageGenerationResponse.status)
+    }
 
     if (!imageGenerationResponse.ok) {
       const errorData = await imageGenerationResponse.text()
-      console.error('GPT-Image-1 API error:', errorData)
-      // Fallback: return original image with style overlay if generation fails
+      console.error('Image generation API error:', errorData)
+      // Return original image with style overlay as final fallback
       return new Response(
         JSON.stringify({
           success: true,
@@ -176,12 +200,20 @@ Provide ONLY the image generation prompt, nothing else.`
     }
 
     const imageData_result = await imageGenerationResponse.json()
-    // GPT-Image-1 returns base64 data directly
-    const generatedImageData = imageData_result.data[0]?.b64_json
+    
+    // Handle different response formats
+    let generatedImage = null
+    if (imageData_result.data[0]?.b64_json) {
+      // DALL-E 3 or GPT-Image-1 base64 response
+      generatedImage = `data:image/png;base64,${imageData_result.data[0].b64_json}`
+    } else if (imageData_result.data[0]?.url) {
+      // DALL-E 3 URL response
+      generatedImage = imageData_result.data[0].url
+    }
 
-    console.log('Generated image data available:', !!generatedImageData)
+    console.log('Generated image available:', !!generatedImage)
 
-    if (!generatedImageData) {
+    if (!generatedImage) {
       console.error('No styled image generated')
       return new Response(
         JSON.stringify({ error: 'No styled image generated' }),
@@ -192,15 +224,12 @@ Provide ONLY the image generation prompt, nothing else.`
       )
     }
 
-    // Convert base64 to data URL for frontend display
-    const generatedImageUrl = `data:image/png;base64,${generatedImageData}`
-
-    console.log('Successfully generated styled image with GPT-Image-1')
+    console.log('Successfully generated styled image')
     return new Response(
       JSON.stringify({
         success: true,
         styleDescription,
-        previewUrl: generatedImageUrl,
+        previewUrl: generatedImage,
         styleId,
         styleName
       }),
