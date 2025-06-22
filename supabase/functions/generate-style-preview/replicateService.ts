@@ -3,7 +3,7 @@ export class ReplicateService {
   constructor(private apiKey: string) {}
 
   async generateImageToImage(imageData: string, prompt: string): Promise<Response> {
-    console.log('Using Replicate SDXL for image-to-image transformation with prompt:', prompt);
+    console.log('Using Replicate FLUX-1.1-Pro for image-to-image transformation with prompt:', prompt);
     
     return await fetch('https://api.replicate.com/v1/predictions', {
       method: 'POST',
@@ -12,15 +12,16 @@ export class ReplicateService {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        version: "39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b", // SDXL img2img
+        version: "fbacf6700e56fc0eeec3d9b6cc8ca17c8536c534b33ee0c3565eb4b91bce65b6", // FLUX-1.1-Pro
         input: {
           image: imageData,
           prompt: prompt,
-          negative_prompt: "blurry, low quality, distorted, deformed",
-          num_inference_steps: 20,
-          guidance_scale: 7.5,
-          strength: 0.8, // How much to transform the original image
-          scheduler: "K_EULER"
+          prompt_strength: 0.8, // How much to follow the prompt vs preserve original
+          num_inference_steps: 28,
+          guidance_scale: 3.5,
+          output_format: "webp",
+          output_quality: 90,
+          aspect_ratio: "1:1" // Will maintain original aspect ratio if image provided
         }
       })
     });
