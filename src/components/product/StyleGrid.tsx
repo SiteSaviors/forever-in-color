@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Card, CardContent } from "@/components/ui/card";
 import StyleCard from "./StyleCard";
 import { artStyles } from "@/data/artStyles";
 
@@ -46,11 +47,11 @@ const StyleGrid = ({ croppedImage, selectedStyle, onStyleSelect }: StyleGridProp
         
         {/* Mobile "See All Styles" Card - Only show on mobile when not showing all styles */}
         {!showAllStyles && (
-          <div 
-            className="md:hidden cursor-pointer transition-all duration-300 hover:scale-105"
+          <Card 
+            className="md:hidden group cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105"
             onClick={handleSeeAllClick}
           >
-            <div className="group">
+            <CardContent className="p-0">
               {/* Square Preview matching other cards */}
               <AspectRatio ratio={1} className="relative overflow-hidden rounded-t-lg">
                 {/* Glossy glass background */}
@@ -73,11 +74,11 @@ const StyleGrid = ({ croppedImage, selectedStyle, onStyleSelect }: StyleGridProp
 
               {/* Style Info matching other cards */}
               <div className="p-3 space-y-2">
-                <h5 className="font-semibold text-gray-900 text-sm">See All Styles</h5>
+                <h5 className="font-semibold text-gray-900 text-sm">More Styles</h5>
                 <p className="text-xs text-gray-600 leading-relaxed">Explore all {otherStyles.length + popularStyles.length} art styles available</p>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         )}
       </div>
 
