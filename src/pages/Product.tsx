@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { Upload, Image as ImageIcon, Palette, Gift } from "lucide-react";
+import { Upload, Image as ImageIcon, Palette, Gift, Settings } from "lucide-react";
 import { Accordion } from "@/components/ui/accordion";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -8,10 +8,21 @@ import ProductHeader from "@/components/product/ProductHeader";
 import ProductStep from "@/components/product/ProductStep";
 import StylePreview from "@/components/product/StylePreview";
 import PhotoUpload from "@/components/product/PhotoUpload";
-import SizeSelector from "@/components/product/SizeSelector";
 import OrientationSelector from "@/components/product/OrientationSelector";
+import CustomizationSelector from "@/components/product/CustomizationSelector";
 import PricingSection from "@/components/product/PricingSection";
 import TrustElements from "@/components/product/TrustElements";
+
+interface CustomizationOptions {
+  floatingFrame: {
+    enabled: boolean;
+    color: 'white' | 'black' | 'espresso';
+  };
+  livingMemory: boolean;
+  voiceMatch: boolean;
+  customMessage: string;
+  aiUpscale: boolean;
+}
 
 const Product = () => {
   const location = useLocation();
@@ -21,6 +32,16 @@ const Product = () => {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [selectedOrientation, setSelectedOrientation] = useState<string>("horizontal");
+  const [customizations, setCustomizations] = useState<CustomizationOptions>({
+    floatingFrame: {
+      enabled: false,
+      color: 'white'
+    },
+    livingMemory: false,
+    voiceMatch: false,
+    customMessage: '',
+    aiUpscale: false
+  });
 
   // Handle pre-selected style from style landing pages
   useEffect(() => {
@@ -65,11 +86,19 @@ const Product = () => {
     }
   };
 
+  const handleCustomizationChange = (newCustomizations: CustomizationOptions) => {
+    setCustomizations(newCustomizations);
+    if (!completedSteps.includes(4)) {
+      setCompletedSteps([...completedSteps, 4]);
+    }
+  };
+
   const canProceedToStep = (step: number) => {
     if (step === 1) return true;
     if (step === 2) return completedSteps.includes(1);
     if (step === 3) return completedSteps.includes(1) && completedSteps.includes(2);
     if (step === 4) return completedSteps.includes(1) && completedSteps.includes(2) && completedSteps.includes(3);
+    if (step === 5) return completedSteps.includes(1) && completedSteps.includes(2) && completedSteps.includes(3) && completedSteps.includes(4);
     return false;
   };
 
@@ -110,11 +139,11 @@ const Product = () => {
     {
       id: "customize",
       number: 3,
-      title: "Add Customizations & AR",
+      title: "Choose Size & Layout",
       icon: ImageIcon,
-      description: "Choose your canvas size and optional AR features",
+      description: "Select your canvas orientation and size",
       required: true,
-      estimatedTime: "3 min",
+      estimatedTime: "2 min",
       isCompleted: completedSteps.includes(3),
       content: (
         <div className="space-y-8">
@@ -128,9 +157,26 @@ const Product = () => {
       )
     },
     {
-      id: "order",
+      id: "customizations",
       number: 4,
-      title: "Receive Your Art",
+      title: "Add Customizations & AR",
+      icon: Settings,
+      description: "Choose optional add-ons and personalization features",
+      required: false,
+      estimatedTime: "3 min",
+      isCompleted: completedSteps.includes(4),
+      content: (
+        <CustomizationSelector
+          selectedSize={selectedSize}
+          customizations={customizations}
+          onCustomizationChange={handleCustomizationChange}
+        />
+      )
+    },
+    {
+      id: "order",
+      number: 5,
+      title: "Review & Order",
       icon: Gift,
       description: "Review your order and complete your purchase",
       required: true,
