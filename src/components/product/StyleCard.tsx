@@ -32,49 +32,57 @@ const StyleCard = ({
   const [isLoading, setIsLoading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [hasGeneratedPreview, setHasGeneratedPreview] = useState(false);
+  const [autoGenerationAttempted, setAutoGenerationAttempted] = useState(false);
   const { toast } = useToast();
 
   const isSelected = selectedStyle === style.id;
   const canPreview = croppedImage && (isPopular || hasGeneratedPreview || isSelected);
   const isLocked = !croppedImage && !isPopular;
 
-  // Auto-generate previews for popular styles (except Original Image) when image is uploaded
+  // Auto-generate previews for popular styles when image is uploaded
   useEffect(() => {
     const shouldAutoGenerate = croppedImage && 
                               isPopular && 
                               style.id !== 1 && // Skip Original Image
                               !hasGeneratedPreview && 
-                              !previewUrl;
+                              !previewUrl &&
+                              !autoGenerationAttempted &&
+                              !isLoading;
 
     if (shouldAutoGenerate) {
       console.log(`Auto-generating preview for ${style.name} (ID: ${style.id})`);
-      generatePreview();
+      setAutoGenerationAttempted(true);
+      generatePreviewSilently();
     }
-  }, [croppedImage, isPopular, style.id, hasGeneratedPreview, previewUrl]);
+  }, [croppedImage, isPopular, style.id, hasGeneratedPreview, previewUrl, autoGenerationAttempted, isLoading]);
 
-  const generatePreview = async () => {
+  const generatePreviewSilently = async () => {
     if (!croppedImage) return;
 
     setIsLoading(true);
     
     try {
+      console.log(`Starting silent preview generation for ${style.name}`);
+      
       const response = await generateStylePreview({
         imageData: croppedImage,
         styleId: style.id,
         styleName: style.name
       });
 
+      console.log(`Silent generation response for ${style.name}:`, response.success);
+
       if (response.success) {
         setPreviewUrl(response.previewUrl);
         setHasGeneratedPreview(true);
-        
         console.log(`Preview generated successfully for ${style.name}`);
       } else {
-        throw new Error(response.error || 'Failed to generate preview');
+        console.warn(`Silent preview generation failed for ${style.name}:`, response.error);
+        // Don't throw error for silent generation - just log it
       }
     } catch (error) {
-      console.error('Error generating style preview:', error);
-      // For auto-generation, don't show error toast to avoid spam
+      console.error(`Error in silent preview generation for ${style.name}:`, error);
+      // Silent failure for auto-generation
     } finally {
       setIsLoading(false);
     }
