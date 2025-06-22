@@ -23,10 +23,17 @@ export const createImageEditFormData = (imageData: string, prompt: string): Form
 };
 
 export const extractGeneratedImage = (imageData_result: any): string | null => {
+  // Handle different response formats
   if (imageData_result.data && imageData_result.data[0]?.b64_json) {
     return `data:image/png;base64,${imageData_result.data[0].b64_json}`;
   } else if (imageData_result.data && imageData_result.data[0]?.url) {
     return imageData_result.data[0].url;
+  } else if (typeof imageData_result === 'string' && imageData_result.startsWith('http')) {
+    // Direct URL from Replicate
+    return imageData_result;
+  } else if (Array.isArray(imageData_result) && imageData_result[0]) {
+    // Array of URLs from Replicate
+    return imageData_result[0];
   }
   return null;
 };
