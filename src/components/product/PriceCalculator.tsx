@@ -79,8 +79,8 @@ const PriceCalculator = ({ selectedSize, selectedOrientation, customizations }: 
   const totalPrice = basePrice + customizationPrice;
   const savings = customizationPrice > 50 ? 25 : 0; // Example savings logic
 
-  // Don't show if no selections made yet
-  if (!selectedSize && !selectedOrientation && customizationPrice === 0) {
+  // Only show if user has selected a size
+  if (!selectedSize) {
     return null;
   }
 
