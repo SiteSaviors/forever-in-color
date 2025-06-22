@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { Upload, Image as ImageIcon, Palette, Gift, Settings } from "lucide-react";
@@ -234,6 +233,8 @@ const Product = () => {
         selectedSize={selectedSize}
         selectedOrientation={selectedOrientation}
         customizations={customizations}
+        completedSteps={completedSteps}
+        totalSteps={steps.length}
       />
 
       <Footer />

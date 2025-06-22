@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { ShoppingCart, Sparkles } from "lucide-react";
 
 interface CustomizationOptions {
@@ -17,9 +18,13 @@ interface PriceCalculatorProps {
   selectedSize: string;
   selectedOrientation: string;
   customizations: CustomizationOptions;
+  completedSteps: number[];
+  totalSteps: number;
 }
 
-const PriceCalculator = ({ selectedSize, selectedOrientation, customizations }: PriceCalculatorProps) => {
+const PriceCalculator = ({ selectedSize, selectedOrientation, customizations, completedSteps, totalSteps }: PriceCalculatorProps) => {
+  const progressPercentage = (completedSteps.length / totalSteps) * 100;
+
   const calculateBasePrice = () => {
     if (!selectedSize || !selectedOrientation) return 0;
 
@@ -88,6 +93,22 @@ const PriceCalculator = ({ selectedSize, selectedOrientation, customizations }: 
       <div className="max-w-4xl mx-auto pointer-events-auto">
         <Card className="bg-white/95 backdrop-blur-sm border border-purple-200 shadow-xl">
           <CardContent className="p-3 md:p-4">
+            {/* Progress Bar - Always at the top */}
+            <div className="mb-3 md:mb-4">
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs font-medium text-gray-600">Your Progress</span>
+                <div className="flex items-center gap-1">
+                  <span className="text-xs font-semibold text-purple-600">{Math.round(progressPercentage)}%</span>
+                  <span className="text-xs text-gray-500 hidden md:inline">Complete</span>
+                </div>
+              </div>
+              <div className="relative">
+                <Progress value={progressPercentage} className="h-2 bg-gray-200" />
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full opacity-20 animate-pulse" 
+                     style={{ width: `${progressPercentage}%` }} />
+              </div>
+            </div>
+
             {/* Mobile Layout */}
             <div className="flex md:hidden items-center justify-between">
               {/* Left Side - Canvas Info */}
