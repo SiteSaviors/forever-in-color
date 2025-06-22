@@ -60,12 +60,11 @@ const StepContent = ({
       );
     }
     return (
-      <PhotoUpload 
-        onFileSelect={(file: File, previewUrl: string) => {
-          // Convert file to URL for the callback
-          onPhotoUpload(previewUrl);
-        }}
-      />
+      <div className="text-center py-12">
+        <Upload className="w-12 h-12 text-purple-400 mx-auto mb-4" />
+        <p className="text-gray-500 text-lg mb-2">Photo upload coming soon!</p>
+        <p className="text-gray-400 text-sm">Upload functionality will be implemented next</p>
+      </div>
     );
   }
 
@@ -89,7 +88,6 @@ const StepContent = ({
         selectedSize={selectedSize}
         selectedOrientation={selectedOrientation}
         customizations={customizations}
-        onEditStep={onEditStep}
       />
     );
   }
