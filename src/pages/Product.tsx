@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { Upload, Image as ImageIcon, Palette, Gift, Settings } from "lucide-react";
@@ -6,8 +7,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProductHeader from "@/components/product/ProductHeader";
 import ProductStep from "@/components/product/ProductStep";
-import StylePreview from "@/components/product/StylePreview";
-import PhotoUpload from "@/components/product/PhotoUpload";
+import PhotoUploadAndStyleSelection from "@/components/product/PhotoUploadAndStyleSelection";
 import OrientationSelector from "@/components/product/OrientationSelector";
 import CustomizationSelector from "@/components/product/CustomizationSelector";
 import PricingSection from "@/components/product/PricingSection";
@@ -51,29 +51,21 @@ const Product = () => {
         id: location.state.preSelectedStyle,
         name: location.state.styleName
       });
-      setCompletedSteps([1]);
-      setCurrentStep(2);
     }
   }, [location.state]);
 
-  const handleStyleSelect = (styleId: number, styleName: string) => {
+  const handlePhotoAndStyleComplete = (imageUrl: string, styleId: number, styleName: string) => {
+    setUploadedImage(imageUrl);
     setSelectedStyle({ id: styleId, name: styleName });
     if (!completedSteps.includes(1)) {
       setCompletedSteps([...completedSteps, 1]);
     }
   };
 
-  const handleImageUpload = (imageUrl: string) => {
-    setUploadedImage(imageUrl);
-    if (!completedSteps.includes(2)) {
-      setCompletedSteps([...completedSteps, 2]);
-    }
-  };
-
   const handleSizeSelect = (size: string) => {
     setSelectedSize(size);
-    if (!completedSteps.includes(3)) {
-      setCompletedSteps([...completedSteps, 3]);
+    if (!completedSteps.includes(2)) {
+      setCompletedSteps([...completedSteps, 2]);
     }
   };
 
@@ -81,16 +73,16 @@ const Product = () => {
     setSelectedOrientation(orientation);
     // Reset size when orientation changes
     setSelectedSize("");
-    // Remove step 3 completion if it was completed, since we're changing orientation
-    if (completedSteps.includes(3)) {
-      setCompletedSteps(completedSteps.filter(step => step !== 3));
+    // Remove step 2 completion if it was completed, since we're changing orientation
+    if (completedSteps.includes(2)) {
+      setCompletedSteps(completedSteps.filter(step => step !== 2));
     }
   };
 
   const handleCustomizationChange = (newCustomizations: CustomizationOptions) => {
     setCustomizations(newCustomizations);
-    if (!completedSteps.includes(4)) {
-      setCompletedSteps([...completedSteps, 4]);
+    if (!completedSteps.includes(3)) {
+      setCompletedSteps([...completedSteps, 3]);
     }
   };
 
@@ -99,53 +91,35 @@ const Product = () => {
     if (step === 2) return completedSteps.includes(1);
     if (step === 3) return completedSteps.includes(1) && completedSteps.includes(2);
     if (step === 4) return completedSteps.includes(1) && completedSteps.includes(2) && completedSteps.includes(3);
-    if (step === 5) return completedSteps.includes(1) && completedSteps.includes(2) && completedSteps.includes(3) && completedSteps.includes(4);
     return false;
   };
 
   const steps = [
     {
-      id: "style",
+      id: "upload-and-style",
       number: 1,
-      title: "Choose Your Style",
+      title: "Upload Photo & Choose Style",
       icon: Palette,
-      description: "Browse our collection of 15 unique artistic styles",
+      description: "Upload your photo and see it transformed in different artistic styles",
       required: true,
-      estimatedTime: "2 min",
+      estimatedTime: "3 min",
       isCompleted: completedSteps.includes(1),
       content: (
-        <StylePreview
-          uploadedImage={uploadedImage}
-          onStyleSelect={handleStyleSelect}
-          onComplete={() => setCurrentStep(2)}
+        <PhotoUploadAndStyleSelection
+          onComplete={handlePhotoAndStyleComplete}
           preSelectedStyle={selectedStyle}
         />
       )
     },
     {
-      id: "photo",
-      number: 2,
-      title: "Upload Your Photo",
-      icon: Upload,
-      description: "Share the memory you'd like to transform into art",
-      required: true,
-      estimatedTime: "1 min",
-      isCompleted: completedSteps.includes(2),
-      content: (
-        <PhotoUpload
-          onUploadComplete={handleImageUpload}
-        />
-      )
-    },
-    {
       id: "customize",
-      number: 3,
+      number: 2,
       title: "Choose Size & Layout",
       icon: ImageIcon,
       description: "Select your canvas orientation and size",
       required: true,
       estimatedTime: "2 min",
-      isCompleted: completedSteps.includes(3),
+      isCompleted: completedSteps.includes(2),
       content: (
         <div className="space-y-4 md:space-y-8">
           <OrientationSelector
@@ -159,13 +133,13 @@ const Product = () => {
     },
     {
       id: "customizations",
-      number: 4,
+      number: 3,
       title: "Add Customizations & AR",
       icon: Settings,
       description: "Choose optional add-ons and personalization features",
       required: false,
       estimatedTime: "3 min",
-      isCompleted: completedSteps.includes(4),
+      isCompleted: completedSteps.includes(3),
       content: (
         <CustomizationSelector
           selectedSize={selectedSize}
@@ -176,7 +150,7 @@ const Product = () => {
     },
     {
       id: "order",
-      number: 5,
+      number: 4,
       title: "Review & Order",
       icon: Gift,
       description: "Review your order and complete your purchase",
