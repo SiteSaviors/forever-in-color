@@ -15,6 +15,7 @@ interface StyleCardProps {
   croppedImage: string | null;
   selectedStyle: number | null;
   isPopular: boolean;
+  cropAspectRatio?: number; // New prop for dynamic aspect ratio
   onStyleClick: (style: { id: number; name: string; description: string; image: string }) => void;
 }
 
@@ -22,7 +23,8 @@ const StyleCard = ({
   style, 
   croppedImage, 
   selectedStyle, 
-  isPopular, 
+  isPopular,
+  cropAspectRatio = 1, // Default to square
   onStyleClick 
 }: StyleCardProps) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -74,49 +76,54 @@ const StyleCard = ({
       onClick={handleClick}
     >
       <CardContent className="p-0">
-        {/* Square Preview */}
-        <AspectRatio ratio={1} className="relative overflow-hidden rounded-t-lg">
-          {canPreview ? (
-            <div className="absolute inset-0">
-              <img 
-                src={croppedImage!} 
-                alt="Style preview" 
-                className="w-full h-full object-cover"
-              />
-              <div 
-                className="absolute inset-0 bg-gradient-to-br opacity-60 mix-blend-overlay" 
-                style={{ background: getStyleGradient(style.id) }}
-              />
-              
-              {isLoading && (
-                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                  <div className="text-white text-center space-y-2">
-                    <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto"></div>
-                    <p className="text-xs font-medium">Creating preview...</p>
-                  </div>
+        {/* Dynamic Aspect Ratio Preview with Canvas Mockup Effect */}
+        <AspectRatio ratio={cropAspectRatio} className="relative overflow-hidden rounded-t-lg">
+          {/* Canvas Frame Effect */}
+          <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 p-2">
+            <div className="w-full h-full bg-white rounded-sm shadow-inner relative overflow-hidden">
+              {canPreview ? (
+                <div className="absolute inset-0">
+                  <img 
+                    src={croppedImage!} 
+                    alt="Style preview" 
+                    className="w-full h-full object-cover"
+                  />
+                  <div 
+                    className="absolute inset-0 bg-gradient-to-br opacity-60 mix-blend-overlay" 
+                    style={{ background: getStyleGradient(style.id) }}
+                  />
+                  
+                  {isLoading && (
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                      <div className="text-white text-center space-y-2">
+                        <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto"></div>
+                        <p className="text-xs font-medium">Creating preview...</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="absolute inset-0">
+                  <img 
+                    src={style.image} 
+                    alt={style.name} 
+                    className="w-full h-full object-cover"
+                  />
+                  {isLocked && (
+                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                      <div className="text-white text-center space-y-2 px-4">
+                        <Lock className="w-6 h-6 mx-auto" />
+                        <p className="text-xs font-medium leading-tight">Upload Your Photo to preview this style</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
-          ) : (
-            <div className="absolute inset-0">
-              <img 
-                src={style.image} 
-                alt={style.name} 
-                className="w-full h-full object-cover"
-              />
-              {isLocked && (
-                <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                  <div className="text-white text-center space-y-2 px-4">
-                    <Lock className="w-6 h-6 mx-auto" />
-                    <p className="text-xs font-medium leading-tight">Upload Your Photo to preview this style</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
+          </div>
           
           {isPopular && (
-            <div className="absolute top-2 right-2">
+            <div className="absolute top-2 right-2 z-10">
               <Badge variant="secondary" className="bg-white/90 text-purple-700 font-semibold text-xs">
                 Popular
               </Badge>
@@ -124,7 +131,7 @@ const StyleCard = ({
           )}
           
           {isSelected && !isLoading && (
-            <div className="absolute inset-0 bg-purple-500/20 flex items-center justify-center">
+            <div className="absolute inset-0 bg-purple-500/20 flex items-center justify-center z-10">
               <div className="bg-purple-600 text-white rounded-full p-2">
                 <Check className="w-4 h-4" />
               </div>

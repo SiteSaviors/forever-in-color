@@ -7,6 +7,7 @@ interface StyleSelectorProps {
   croppedImage: string | null;
   selectedStyle: number | null;
   preSelectedStyle?: {id: number, name: string} | null;
+  cropAspectRatio?: number; // New prop for dynamic aspect ratio
   onStyleSelect: (styleId: number, styleName: string) => void;
   onComplete: (imageUrl: string, styleId: number, styleName: string) => void;
 }
@@ -14,7 +15,8 @@ interface StyleSelectorProps {
 const StyleSelector = ({ 
   croppedImage, 
   selectedStyle, 
-  preSelectedStyle, 
+  preSelectedStyle,
+  cropAspectRatio = 1, // Default to square
   onStyleSelect, 
   onComplete 
 }: StyleSelectorProps) => {
@@ -52,6 +54,7 @@ const StyleSelector = ({
       <StyleGrid
         croppedImage={croppedImage}
         selectedStyle={selectedStyle}
+        cropAspectRatio={cropAspectRatio}
         onStyleSelect={onStyleSelect}
       />
 

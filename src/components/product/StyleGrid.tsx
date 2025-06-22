@@ -10,10 +10,16 @@ import { artStyles } from "@/data/artStyles";
 interface StyleGridProps {
   croppedImage: string | null;
   selectedStyle: number | null;
+  cropAspectRatio?: number; // New prop for dynamic aspect ratio
   onStyleSelect: (styleId: number, styleName: string) => void;
 }
 
-const StyleGrid = ({ croppedImage, selectedStyle, onStyleSelect }: StyleGridProps) => {
+const StyleGrid = ({ 
+  croppedImage, 
+  selectedStyle, 
+  cropAspectRatio = 1, // Default to square
+  onStyleSelect 
+}: StyleGridProps) => {
   const [showAllStyles, setShowAllStyles] = useState(false);
 
   // Updated popular styles: Original Image, Watercolor Dreams, Pastel Bliss
@@ -41,6 +47,7 @@ const StyleGrid = ({ croppedImage, selectedStyle, onStyleSelect }: StyleGridProp
             croppedImage={croppedImage}
             selectedStyle={selectedStyle}
             isPopular={popularStyleIds.includes(style.id)}
+            cropAspectRatio={cropAspectRatio}
             onStyleClick={handleStyleClick}
           />
         ))}
@@ -52,20 +59,19 @@ const StyleGrid = ({ croppedImage, selectedStyle, onStyleSelect }: StyleGridProp
             onClick={handleSeeAllClick}
           >
             <CardContent className="p-0">
-              {/* Square Preview matching other cards */}
-              <AspectRatio ratio={1} className="relative overflow-hidden rounded-t-lg">
-                {/* Glossy glass background */}
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-100/80 via-pink-50/60 to-blue-50/40 backdrop-blur-sm border border-white/20 shadow-lg">
-                  <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-pink-600/10"></div>
-                </div>
-                
-                {/* Content */}
-                <div className="relative z-10 h-full flex flex-col items-center justify-center p-4 text-center">
-                  <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full p-3 mb-3 group-hover:scale-110 transition-transform duration-300">
-                    <Wand2 className="w-6 h-6" />
+              {/* Use same aspect ratio as other cards */}
+              <AspectRatio ratio={cropAspectRatio} className="relative overflow-hidden rounded-t-lg">
+                {/* Canvas Frame Effect matching other cards */}
+                <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 p-2">
+                  <div className="w-full h-full bg-gradient-to-br from-purple-100/80 via-pink-50/60 to-blue-50/40 backdrop-blur-sm border border-white/20 shadow-lg rounded-sm flex items-center justify-center">
+                    <div className="text-center p-4">
+                      <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full p-3 mb-3 group-hover:scale-110 transition-transform duration-300 mx-auto w-fit">
+                        <Wand2 className="w-6 h-6" />
+                      </div>
+                      <h3 className="font-bold text-gray-900 text-sm mb-1">See All Styles</h3>
+                      <p className="text-xs text-gray-600 leading-tight">Discover {otherStyles.length + popularStyles.length} amazing art styles</p>
+                    </div>
                   </div>
-                  <h3 className="font-bold text-gray-900 text-sm mb-1">See All Styles</h3>
-                  <p className="text-xs text-gray-600 leading-tight">Discover {otherStyles.length + popularStyles.length} amazing art styles</p>
                 </div>
                 
                 {/* Shine effect */}

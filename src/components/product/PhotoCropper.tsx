@@ -6,7 +6,7 @@ import Cropper from 'react-easy-crop';
 
 interface PhotoCropperProps {
   imageUrl: string;
-  onCropComplete: (croppedImage: string) => void;
+  onCropComplete: (croppedImage: string, aspectRatio: number) => void;
   onSkip: () => void;
 }
 
@@ -60,7 +60,7 @@ const PhotoCropper = ({ imageUrl, onCropComplete, onSkip }: PhotoCropperProps) =
     if (croppedAreaPixels && imageUrl) {
       try {
         const croppedImage = await getCroppedImg(imageUrl, croppedAreaPixels);
-        onCropComplete(croppedImage);
+        onCropComplete(croppedImage, cropAspect);
       } catch (e) {
         console.error(e);
       }
@@ -68,6 +68,13 @@ const PhotoCropper = ({ imageUrl, onCropComplete, onSkip }: PhotoCropperProps) =
   };
 
   const handleAutoCenterCrop = () => {
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+  };
+
+  const handleAspectChange = (newAspect: number) => {
+    setCropAspect(newAspect);
+    // Reset crop position when aspect ratio changes
     setCrop({ x: 0, y: 0 });
     setZoom(1);
   };
@@ -103,7 +110,7 @@ const PhotoCropper = ({ imageUrl, onCropComplete, onSkip }: PhotoCropperProps) =
           <Button
             variant={cropAspect === 1 ? "default" : "outline"}
             size="sm"
-            onClick={() => setCropAspect(1)}
+            onClick={() => handleAspectChange(1)}
             className="text-xs"
           >
             Square
@@ -111,7 +118,7 @@ const PhotoCropper = ({ imageUrl, onCropComplete, onSkip }: PhotoCropperProps) =
           <Button
             variant={cropAspect === 4/3 ? "default" : "outline"}
             size="sm"
-            onClick={() => setCropAspect(4/3)}
+            onClick={() => handleAspectChange(4/3)}
             className="text-xs"
           >
             Horizontal
@@ -119,7 +126,7 @@ const PhotoCropper = ({ imageUrl, onCropComplete, onSkip }: PhotoCropperProps) =
           <Button
             variant={cropAspect === 3/4 ? "default" : "outline"}
             size="sm"
-            onClick={() => setCropAspect(3/4)}
+            onClick={() => handleAspectChange(3/4)}
             className="text-xs"
           >
             Vertical

@@ -21,6 +21,7 @@ const PhotoUploadAndStyleSelection = ({
   const [selectedStyle, setSelectedStyle] = useState<number | null>(
     preSelectedStyle?.id || null
   );
+  const [cropAspectRatio, setCropAspectRatio] = useState<number>(1); // Track crop aspect ratio
 
   const handleFileSelect = (file: File, imageUrl: string) => {
     console.log('File selected:', file.name, imageUrl);
@@ -36,17 +37,20 @@ const PhotoUploadAndStyleSelection = ({
     setPreviewUrl(null);
     setCroppedImage(null);
     setShowCropper(false);
+    setCropAspectRatio(1); // Reset aspect ratio
   };
 
-  const handleCropComplete = (croppedImageUrl: string) => {
-    console.log('Crop completed:', croppedImageUrl);
+  const handleCropComplete = (croppedImageUrl: string, aspectRatio: number) => {
+    console.log('Crop completed:', croppedImageUrl, 'Aspect ratio:', aspectRatio);
     setCroppedImage(croppedImageUrl);
+    setCropAspectRatio(aspectRatio);
     setShowCropper(false);
   };
 
   const handleSkipCrop = () => {
     console.log('Skipping crop, using original image');
     setCroppedImage(previewUrl);
+    setCropAspectRatio(1); // Default to square for original image
     setShowCropper(false);
   };
 
@@ -98,6 +102,7 @@ const PhotoUploadAndStyleSelection = ({
             croppedImage={croppedImage || previewUrl}
             selectedStyle={selectedStyle}
             preSelectedStyle={preSelectedStyle}
+            cropAspectRatio={cropAspectRatio}
             onStyleSelect={handleStyleSelect}
             onComplete={handleComplete}
           />
