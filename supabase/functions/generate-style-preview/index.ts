@@ -16,7 +16,10 @@ serve(async (req) => {
   try {
     const { imageData, styleId, styleName } = await req.json()
 
+    console.log('Received request for style:', styleId, styleName)
+
     if (!imageData || !styleId || !styleName) {
+      console.error('Missing parameters:', { imageData: !!imageData, styleId, styleName })
       return new Response(
         JSON.stringify({ error: 'Missing required parameters: imageData, styleId, styleName' }),
         { 
@@ -28,6 +31,7 @@ serve(async (req) => {
 
     // Special case for Original Image - no AI transformation needed
     if (styleId === 1) {
+      console.log('Returning original image for style ID 1')
       return new Response(
         JSON.stringify({
           success: true,
@@ -42,11 +46,14 @@ serve(async (req) => {
       )
     }
 
-    // Get OpenAI API key from Supabase secrets
-    const openaiApiKey = Deno.env.get('OPENAI_API_KEY')
+    // Get OpenAI API key from Supabase secrets - try both possible names
+    const openaiApiKey = Deno.env.get('OPENAI_API_KEY') || Deno.env.get('OPEN_AI_KEY')
+    console.log('OpenAI API Key available:', !!openaiApiKey)
+    
     if (!openaiApiKey) {
+      console.error('OpenAI API key not found in environment variables')
       return new Response(
-        JSON.stringify({ error: 'OpenAI API key not configured' }),
+        JSON.stringify({ error: 'OpenAI API key not configured. Please check your Supabase secrets.' }),
         { 
           status: 500, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -55,8 +62,10 @@ serve(async (req) => {
     }
 
     const stylePrompt = stylePrompts[styleId] || "Apply artistic transformation to the image"
+    console.log('Using style prompt for ID', styleId, ':', stylePrompt.substring(0, 50) + '...')
 
     // Step 1: Analyze and describe the image with style transformation
+    console.log('Starting image analysis with OpenAI...')
     const analysisResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -96,11 +105,13 @@ Provide ONLY the image generation prompt, nothing else.`
       })
     })
 
+    console.log('Analysis response status:', analysisResponse.status)
+
     if (!analysisResponse.ok) {
       const errorData = await analysisResponse.text()
       console.error('OpenAI Analysis API error:', errorData)
       return new Response(
-        JSON.stringify({ error: 'Failed to analyze image for style transformation' }),
+        JSON.stringify({ error: 'Failed to analyze image for style transformation', details: errorData }),
         { 
           status: 500, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -111,7 +122,10 @@ Provide ONLY the image generation prompt, nothing else.`
     const analysisData = await analysisResponse.json()
     const styleDescription = analysisData.choices[0]?.message?.content
 
+    console.log('Generated style description:', styleDescription)
+
     if (!styleDescription) {
+      console.error('No style description generated from OpenAI')
       return new Response(
         JSON.stringify({ error: 'No style description generated' }),
         { 
@@ -122,6 +136,7 @@ Provide ONLY the image generation prompt, nothing else.`
     }
 
     // Step 2: Generate the styled image using DALL-E 3
+    console.log('Starting image generation with DALL-E 3...')
     const imageGenerationResponse = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: {
@@ -137,6 +152,8 @@ Provide ONLY the image generation prompt, nothing else.`
         response_format: 'url'
       })
     })
+
+    console.log('Image generation response status:', imageGenerationResponse.status)
 
     if (!imageGenerationResponse.ok) {
       const errorData = await imageGenerationResponse.text()
@@ -160,7 +177,10 @@ Provide ONLY the image generation prompt, nothing else.`
     const imageData_result = await imageGenerationResponse.json()
     const generatedImageUrl = imageData_result.data[0]?.url
 
+    console.log('Generated image URL available:', !!generatedImageUrl)
+
     if (!generatedImageUrl) {
+      console.error('No styled image generated')
       return new Response(
         JSON.stringify({ error: 'No styled image generated' }),
         { 
@@ -170,6 +190,7 @@ Provide ONLY the image generation prompt, nothing else.`
       )
     }
 
+    console.log('Successfully generated styled image')
     return new Response(
       JSON.stringify({
         success: true,
@@ -186,7 +207,7 @@ Provide ONLY the image generation prompt, nothing else.`
   } catch (error) {
     console.error('Error in generate-style-preview function:', error)
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
+      JSON.stringify({ error: 'Internal server error', details: error.message }),
       { 
         status: 500, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
