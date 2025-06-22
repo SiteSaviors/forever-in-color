@@ -1,6 +1,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Monitor, Smartphone, Square, Sparkles } from "lucide-react";
 
 interface OrientationOption {
   id: string;
@@ -77,52 +78,52 @@ const OrientationSelector = ({
     ]
   };
 
-  const getCanvasIcon = (orientation: string) => {
+  const getOrientationIcon = (orientation: string) => {
     switch (orientation) {
       case 'horizontal':
-        return <div className="w-8 h-5 bg-gradient-to-r from-purple-200 to-pink-200 rounded border border-purple-300 flex items-center justify-center text-xs">📷</div>;
+        return <Monitor className="w-8 h-8" />;
       case 'vertical':
-        return <div className="w-5 h-8 bg-gradient-to-b from-purple-200 to-pink-200 rounded border border-purple-300 flex items-center justify-center text-xs">🎨</div>;
+        return <Smartphone className="w-8 h-8" />;
       case 'square':
-        return <div className="w-6 h-6 bg-gradient-to-br from-purple-200 to-pink-200 rounded border border-purple-300 flex items-center justify-center text-xs">⬜</div>;
+        return <Square className="w-8 h-8" />;
       default:
-        return null;
+        return <Monitor className="w-8 h-8" />;
     }
   };
 
   const getCanvasPreview = (orientation: string, size: string) => {
-    const baseClasses = "bg-gray-200 rounded flex items-center justify-center mx-auto";
+    const baseClasses = "bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg flex items-center justify-center mx-auto border border-purple-200 shadow-sm";
     
     switch (orientation) {
       case 'horizontal':
         return (
-          <div className={`${baseClasses} h-12 w-20`}>
-            <span className="text-gray-600 font-medium text-xs">
-              {size.replace('"', '').replace('"', '')}
+          <div className={`${baseClasses} h-16 w-24`}>
+            <span className="text-purple-700 font-medium text-xs">
+              {size.replace(/"/g, '')}
             </span>
           </div>
         );
       case 'vertical':
         return (
-          <div className={`${baseClasses} h-20 w-12`}>
-            <span className="text-gray-600 font-medium text-xs transform -rotate-90 whitespace-nowrap">
-              {size.replace('"', '').replace('"', '')}
+          <div className={`${baseClasses} h-24 w-16`}>
+            <span className="text-purple-700 font-medium text-xs transform -rotate-90 whitespace-nowrap">
+              {size.replace(/"/g, '')}
             </span>
           </div>
         );
       case 'square':
         return (
-          <div className={`${baseClasses} h-16 w-16`}>
-            <span className="text-gray-600 font-medium text-xs">
-              {size.replace('"', '').replace('"', '')}
+          <div className={`${baseClasses} h-20 w-20`}>
+            <span className="text-purple-700 font-medium text-xs">
+              {size.replace(/"/g, '')}
             </span>
           </div>
         );
       default:
         return (
-          <div className={`${baseClasses} h-16`}>
-            <span className="text-gray-600 font-medium text-sm">
-              {size.replace('"', '').replace('"', '')}
+          <div className={`${baseClasses} h-20 w-24`}>
+            <span className="text-purple-700 font-medium text-sm">
+              {size.replace(/"/g, '')}
             </span>
           </div>
         );
@@ -136,83 +137,98 @@ const OrientationSelector = ({
   };
 
   return (
-    <div className="space-y-8">
-      {/* Step 2: Choose Layout */}
-      <div className="space-y-4">
-        <h4 className="text-lg font-semibold text-gray-900">Step 2: Choose Layout</h4>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {orientationOptions.map((orientation) => (
-            <Card 
-              key={orientation.id}
-              className={`cursor-pointer transition-all duration-300 hover:shadow-lg ${
-                selectedOrientation === orientation.id 
-                  ? 'ring-2 ring-teal-500 bg-teal-50' 
-                  : 'hover:shadow-md'
-              }`}
-              onClick={() => handleOrientationSelect(orientation.id)}
-            >
-              <CardContent className="p-6 text-center">
-                <div className="flex justify-center mb-3">
-                  {getCanvasIcon(orientation.id)}
-                </div>
-                <h5 className="font-semibold text-gray-900 mb-2">{orientation.name}</h5>
-                <p className="text-sm text-gray-600">{orientation.description}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+    <div className="space-y-10">
+      {/* Enhanced Step 2 Header */}
+      <div className="text-center mb-8 p-8 bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-50 rounded-2xl border border-teal-100">
+        <h4 className="text-2xl font-bold text-gray-900 mb-3 font-playfair">
+          ✨ Step 2: Choose Layout
+        </h4>
+        <p className="text-gray-600 text-lg">Select the perfect orientation for your masterpiece</p>
       </div>
 
-      {/* Step 3: Choose Size */}
+      {/* Premium Orientation Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {orientationOptions.map((orientation) => (
+          <Card 
+            key={orientation.id}
+            className={`group cursor-pointer transition-all duration-500 hover:shadow-2xl hover:-translate-y-1 ${
+              selectedOrientation === orientation.id 
+                ? 'ring-2 ring-teal-200 shadow-xl bg-gradient-to-r from-teal-50/50 to-cyan-50/50 border-l-4 border-l-teal-400' 
+                : 'shadow-lg hover:shadow-teal-100/50'
+            }`}
+            onClick={() => handleOrientationSelect(orientation.id)}
+          >
+            <CardContent className="p-8 text-center">
+              <div className={`mb-6 p-4 rounded-xl transition-all duration-300 ${
+                selectedOrientation === orientation.id
+                  ? 'bg-teal-100 text-teal-600 animate-slide-in'
+                  : 'bg-gray-100 text-gray-500 group-hover:bg-teal-50 group-hover:text-teal-400'
+              }`}>
+                {getOrientationIcon(orientation.id)}
+              </div>
+              <h5 className="font-bold text-xl text-gray-900 mb-3 font-playfair">{orientation.name}</h5>
+              <p className="text-gray-600 text-base leading-relaxed">{orientation.description}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Enhanced Step 3 Header */}
       {selectedOrientation && (
-        <div className="space-y-6">
-          <div className="flex justify-between items-center">
-            <h4 className="text-lg font-semibold text-gray-900">Step 3: Choose Size</h4>
-            <span className="text-teal-500 text-sm">What size should I buy?</span>
-          </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {sizeOptions[selectedOrientation]?.map((option, index) => (
-              <Card 
-                key={option.size}
-                className={`cursor-pointer transition-all duration-300 hover:shadow-lg ${
-                  selectedSize === option.size 
-                    ? 'ring-2 ring-teal-500 bg-teal-50' 
-                    : 'hover:shadow-md border-gray-200'
-                }`}
-                onClick={() => onSizeChange(option.size)}
-              >
-                <CardContent className="p-4 text-center">
-                  <div className="mb-4">
-                    {getCanvasPreview(selectedOrientation, option.size)}
-                  </div>
-                  <div className="flex flex-col items-center gap-2">
-                    <span className={`font-bold text-lg ${
-                      selectedSize === option.size ? 'text-teal-600' : 'text-gray-900'
+        <div className="text-center mb-8 p-8 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 rounded-2xl border border-indigo-100">
+          <h4 className="text-2xl font-bold text-gray-900 mb-3 font-playfair">
+            ✨ Step 3: Choose Size
+          </h4>
+          <p className="text-gray-600 text-lg">Find the perfect size to showcase your art</p>
+        </div>
+      )}
+      
+      {/* Premium Size Cards */}
+      {selectedOrientation && (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+          {sizeOptions[selectedOrientation]?.map((option, index) => (
+            <Card 
+              key={option.size}
+              className={`group cursor-pointer transition-all duration-500 hover:shadow-2xl hover:-translate-y-1 ${
+                selectedSize === option.size 
+                  ? 'ring-2 ring-indigo-200 shadow-xl bg-gradient-to-r from-indigo-50/50 to-purple-50/50 border-l-4 border-l-indigo-400' 
+                  : 'shadow-lg hover:shadow-indigo-100/50'
+              }`}
+              onClick={() => onSizeChange(option.size)}
+            >
+              <CardContent className="p-6">
+                <div className="mb-6">
+                  {getCanvasPreview(selectedOrientation, option.size)}
+                </div>
+                <div className="text-center space-y-3">
+                  <div className="flex items-center justify-center gap-2">
+                    <span className={`font-bold text-xl font-playfair ${
+                      selectedSize === option.size ? 'text-indigo-600' : 'text-gray-900'
                     }`}>
                       {option.category}
                     </span>
-                    <span className="text-xs text-gray-600 text-center leading-tight">
-                      {option.description}
-                    </span>
-                    <div className="flex flex-col items-center gap-1">
-                      <span className="text-red-500 text-sm line-through">
-                        ${option.originalPrice}
-                      </span>
-                      <span className="text-black font-bold text-lg">
-                        ${option.salePrice}
-                      </span>
-                    </div>
                     {option.popular && (
-                      <Badge className="bg-purple-100 text-purple-700 text-xs">
+                      <Badge className="bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 border-purple-200 font-semibold">
+                        <Sparkles className="w-3 h-3 mr-1" />
                         Popular
                       </Badge>
                     )}
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                  <p className="text-sm text-gray-600 leading-tight">
+                    {option.description}
+                  </p>
+                  <div className="space-y-2">
+                    <div className="text-sm text-gray-500 line-through">
+                      ${option.originalPrice}
+                    </div>
+                    <div className="text-2xl font-bold text-gray-900 font-playfair">
+                      ${option.salePrice}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
     </div>
