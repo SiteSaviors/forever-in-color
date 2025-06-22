@@ -13,14 +13,22 @@ const PhotoUploadAndStyleSelection = ({
   onComplete, 
   preSelectedStyle 
 }: PhotoUploadAndStyleSelectionProps) => {
-  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [selectedStyle, setSelectedStyle] = useState<number | null>(
     preSelectedStyle?.id || null
   );
 
-  const handlePhotoUpload = (imageUrl: string) => {
-    console.log('Photo uploaded:', imageUrl);
-    setUploadedImage(imageUrl);
+  const handleFileSelect = (file: File, imageUrl: string) => {
+    console.log('File selected:', file.name, imageUrl);
+    setUploadedFile(file);
+    setPreviewUrl(imageUrl);
+  };
+
+  const handleRemoveFile = () => {
+    console.log('File removed');
+    setUploadedFile(null);
+    setPreviewUrl(null);
   };
 
   const handleStyleSelect = (styleId: number, styleName: string) => {
@@ -38,15 +46,17 @@ const PhotoUploadAndStyleSelection = ({
       {/* Photo Upload Section */}
       <div>
         <PhotoUpload 
-          onUpload={handlePhotoUpload}
-          uploadedImage={uploadedImage}
+          onFileSelect={handleFileSelect}
+          uploadedFile={uploadedFile}
+          previewUrl={previewUrl}
+          onRemoveFile={handleRemoveFile}
         />
       </div>
 
       {/* Style Selection Section */}
       <div>
         <StyleSelector
-          croppedImage={uploadedImage}
+          croppedImage={previewUrl}
           selectedStyle={selectedStyle}
           preSelectedStyle={preSelectedStyle}
           onStyleSelect={handleStyleSelect}
