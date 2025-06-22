@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Wand2, Check, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -55,11 +54,18 @@ const StyleSelector = ({
   };
 
   const handleComplete = () => {
+    console.log('StyleSelector handleComplete called', { croppedImage, selectedStyle });
+    
     if (croppedImage && selectedStyle) {
       const style = artStyles.find(s => s.id === selectedStyle);
       if (style) {
+        console.log('Calling onComplete with:', croppedImage, selectedStyle, style.name);
         onComplete(croppedImage, selectedStyle, style.name);
+      } else {
+        console.error('Style not found for selectedStyle:', selectedStyle);
       }
+    } else {
+      console.error('Missing required data for completion:', { croppedImage, selectedStyle });
     }
   };
 

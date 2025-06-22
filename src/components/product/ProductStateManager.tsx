@@ -62,11 +62,19 @@ export const useProductState = (): ProductState & ProductStateActions => {
   }, [location.state]);
 
   const handlePhotoAndStyleComplete = (imageUrl: string, styleId: number, styleName: string) => {
+    console.log('ProductStateManager handlePhotoAndStyleComplete called with:', { imageUrl, styleId, styleName });
+    
     setUploadedImage(imageUrl);
     setSelectedStyle({ id: styleId, name: styleName });
+    
+    // Mark step 1 as completed
     if (!completedSteps.includes(1)) {
-      setCompletedSteps([...completedSteps, 1]);
+      setCompletedSteps(prev => [...prev, 1]);
     }
+    
+    // Advance to step 2
+    console.log('Advancing to step 2');
+    setCurrentStep(2);
   };
 
   const handleSizeSelect = (size: string) => {
