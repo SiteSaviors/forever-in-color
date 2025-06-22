@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import PhotoUpload from "./PhotoUpload";
+import PhotoCropper from "./PhotoCropper";
 import StyleSelector from "./StyleSelector";
 import { artStyles } from "@/data/artStyles";
 
@@ -15,6 +16,8 @@ const PhotoUploadAndStyleSelection = ({
 }: PhotoUploadAndStyleSelectionProps) => {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [croppedImage, setCroppedImage] = useState<string | null>(null);
+  const [showCropper, setShowCropper] = useState(false);
   const [selectedStyle, setSelectedStyle] = useState<number | null>(
     preSelectedStyle?.id || null
   );
@@ -23,12 +26,28 @@ const PhotoUploadAndStyleSelection = ({
     console.log('File selected:', file.name, imageUrl);
     setUploadedFile(file);
     setPreviewUrl(imageUrl);
+    setShowCropper(true); // Show cropper after file upload
+    setCroppedImage(null); // Reset cropped image
   };
 
   const handleRemoveFile = () => {
     console.log('File removed');
     setUploadedFile(null);
     setPreviewUrl(null);
+    setCroppedImage(null);
+    setShowCropper(false);
+  };
+
+  const handleCropComplete = (croppedImageUrl: string) => {
+    console.log('Crop completed:', croppedImageUrl);
+    setCroppedImage(croppedImageUrl);
+    setShowCropper(false);
+  };
+
+  const handleSkipCrop = () => {
+    console.log('Skipping crop, using original image');
+    setCroppedImage(previewUrl);
+    setShowCropper(false);
   };
 
   const handleStyleSelect = (styleId: number, styleName: string) => {
@@ -53,16 +72,37 @@ const PhotoUploadAndStyleSelection = ({
         />
       </div>
 
-      {/* Style Selection Section */}
-      <div>
-        <StyleSelector
-          croppedImage={previewUrl}
-          selectedStyle={selectedStyle}
-          preSelectedStyle={preSelectedStyle}
-          onStyleSelect={handleStyleSelect}
-          onComplete={handleComplete}
-        />
-      </div>
+      {/* Photo Cropper Section - Show when image is uploaded but not yet cropped */}
+      {showCropper && previewUrl && (
+        <div>
+          <div className="text-center mb-4">
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              Perfect Your Photo (Optional but Recommended)
+            </h3>
+            <p className="text-gray-600">
+              Crop your photo to highlight the most important parts. This step is optional - you can skip if you're happy with the full image.
+            </p>
+          </div>
+          <PhotoCropper
+            imageUrl={previewUrl}
+            onCropComplete={handleCropComplete}
+            onSkip={handleSkipCrop}
+          />
+        </div>
+      )}
+
+      {/* Style Selection Section - Show when we have a cropped image (or skipped cropping) */}
+      {(croppedImage || (uploadedFile && !showCropper)) && (
+        <div>
+          <StyleSelector
+            croppedImage={croppedImage || previewUrl}
+            selectedStyle={selectedStyle}
+            preSelectedStyle={preSelectedStyle}
+            onStyleSelect={handleStyleSelect}
+            onComplete={handleComplete}
+          />
+        </div>
+      )}
     </div>
   );
 };

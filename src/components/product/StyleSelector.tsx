@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Wand2, Check, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -24,8 +25,8 @@ const StyleSelector = ({
   const [showAllStyles, setShowAllStyles] = useState(false);
   const [loadingStyles, setLoadingStyles] = useState<Set<number>>(new Set());
 
-  // Popular styles that will be auto-generated after upload
-  const popularStyleIds = [2, 10, 7]; // Classic Oil Painting, Neon Splash, 3D Storybook
+  // Updated popular styles: Original Image, Watercolor Dreams, Pastel Bliss
+  const popularStyleIds = [1, 4, 5]; // Original Image, Watercolor Dreams, Pastel Bliss
   const popularStyles = artStyles.filter(style => popularStyleIds.includes(style.id));
   const otherStyles = artStyles.filter(style => !popularStyleIds.includes(style.id));
   const displayedStyles = showAllStyles ? artStyles : popularStyles;
@@ -96,10 +97,12 @@ const StyleSelector = ({
                 />
                 <div className={`absolute inset-0 bg-gradient-to-br opacity-60 mix-blend-overlay`} 
                      style={{
-                       background: style.id === 2 ? 'linear-gradient(to bottom right, #d97706, #ea580c, #dc2626)' :
+                       background: style.id === 1 ? 'linear-gradient(to bottom right, #6b7280, #374151, #111827)' :
+                                  style.id === 4 ? 'linear-gradient(to bottom right, #93c5fd, #c4b5fd, #f9a8d4)' :
+                                  style.id === 5 ? 'linear-gradient(to bottom right, #fbbf24, #f59e0b, #f97316)' :
+                                  style.id === 2 ? 'linear-gradient(to bottom right, #d97706, #ea580c, #dc2626)' :
                                   style.id === 10 ? 'linear-gradient(to bottom right, #a3e635, #ec4899, #a855f7)' :
                                   style.id === 7 ? 'linear-gradient(to bottom right, #a855f7, #ec4899, #ef4444)' :
-                                  style.id === 4 ? 'linear-gradient(to bottom right, #93c5fd, #c4b5fd, #f9a8d4)' :
                                   style.id === 9 ? 'linear-gradient(to bottom right, #ef4444, #fbbf24, #3b82f6)' :
                                   style.id === 11 ? 'linear-gradient(to bottom right, #ec4899, #a855f7, #06b6d4)' :
                                   style.id === 8 ? 'linear-gradient(to bottom right, #6b7280, #374151, #000000)' :
