@@ -1,4 +1,5 @@
 
+
 import { OpenAIImageResponse, OpenAIAnalysisResponse } from './types.ts';
 
 export class OpenAIService {
@@ -45,8 +46,8 @@ export class OpenAIService {
           n: 1,
           size: '1024x1024',
           quality: 'high',
-          output_format: 'png',
-          response_format: 'b64_json' // GPT-IMG-1 always returns base64
+          output_format: 'png'
+          // Removed response_format as it's not supported by gpt-image-1
         })
       });
 
@@ -180,3 +181,4 @@ Format your response as a single, detailed prompt for image generation.`;
     return styleNameToId[styleName] || 1;
   }
 }
+
