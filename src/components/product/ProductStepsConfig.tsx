@@ -1,5 +1,4 @@
-
-import { Palette, Image as ImageIcon, Settings, Gift } from "lucide-react";
+import { ReactNode } from "react";
 import PhotoUploadAndStyleSelection from "./PhotoUploadAndStyleSelection";
 import OrientationSelector from "./OrientationSelector";
 import CustomizationSelector from "./CustomizationSelector";
@@ -16,19 +15,17 @@ interface CustomizationOptions {
   aiUpscale: boolean;
 }
 
-interface StepConfig {
+interface ProductStep {
   id: string;
   number: number;
   title: string;
-  icon: any;
   description: string;
-  required: boolean;
-  estimatedTime: string;
+  content: ReactNode;
   isCompleted: boolean;
-  content: React.ReactNode;
+  isEnabled: boolean;
 }
 
-interface ProductStepsConfigProps {
+interface UseProductStepsConfigProps {
   completedSteps: number[];
   selectedStyle: {id: number, name: string} | null;
   selectedSize: string;
@@ -39,7 +36,8 @@ interface ProductStepsConfigProps {
   onOrientationSelect: (orientation: string) => void;
   onSizeSelect: (size: string) => void;
   onCustomizationChange: (customizations: CustomizationOptions) => void;
-  onEditStep: (stepNumber: number) => void;
+  onEditStep: (step: number) => void;
+  onContinue?: () => void;
 }
 
 export const useProductStepsConfig = ({
@@ -53,18 +51,17 @@ export const useProductStepsConfig = ({
   onOrientationSelect,
   onSizeSelect,
   onCustomizationChange,
-  onEditStep
-}: ProductStepsConfigProps): StepConfig[] => {
+  onEditStep,
+  onContinue
+}: UseProductStepsConfigProps): ProductStep[] => {
   return [
     {
-      id: "upload-and-style",
+      id: "step-1",
       number: 1,
       title: "Upload Photo & Choose Style",
-      icon: Palette,
-      description: "Upload your photo and see it transformed in different artistic styles",
-      required: true,
-      estimatedTime: "3 min",
+      description: "Upload your photo and select an artistic style",
       isCompleted: completedSteps.includes(1),
+      isEnabled: true,
       content: (
         <PhotoUploadAndStyleSelection
           onComplete={onPhotoAndStyleComplete}
@@ -73,59 +70,50 @@ export const useProductStepsConfig = ({
       )
     },
     {
-      id: "customize",
+      id: "step-2",
       number: 2,
-      title: "Choose Size & Layout",
-      icon: ImageIcon,
-      description: "Select your canvas orientation and size",
-      required: true,
-      estimatedTime: "2 min",
+      title: "Choose Size & Orientation",
+      description: "Select the perfect size and orientation for your canvas",
       isCompleted: completedSteps.includes(2),
+      isEnabled: completedSteps.includes(1),
       content: (
-        <div className="space-y-4 md:space-y-8">
-          <OrientationSelector
-            selectedOrientation={selectedOrientation}
-            selectedSize={selectedSize}
-            onOrientationChange={onOrientationSelect}
-            onSizeChange={onSizeSelect}
-          />
-        </div>
+        <OrientationSelector
+          selectedOrientation={selectedOrientation}
+          selectedSize={selectedSize}
+          onOrientationChange={onOrientationSelect}
+          onSizeChange={onSizeSelect}
+          onContinue={onContinue}
+        />
       )
     },
     {
-      id: "customizations",
+      id: "step-3",
       number: 3,
-      title: "Add Customizations & AR",
-      icon: Settings,
-      description: "Choose optional add-ons and personalization features",
-      required: false,
-      estimatedTime: "3 min",
+      title: "Customize Your Order",
+      description: "Add premium features and personalization options",
       isCompleted: completedSteps.includes(3),
+      isEnabled: completedSteps.includes(2),
       content: (
         <CustomizationSelector
-          selectedSize={selectedSize}
           customizations={customizations}
           onCustomizationChange={onCustomizationChange}
         />
       )
     },
     {
-      id: "order",
+      id: "step-4",
       number: 4,
       title: "Review & Order",
-      icon: Gift,
-      description: "Review your order and complete your purchase",
-      required: true,
-      estimatedTime: "2 min",
-      isCompleted: false,
+      description: "Review your custom canvas and complete your order",
+      isCompleted: completedSteps.includes(4),
+      isEnabled: completedSteps.includes(3),
       content: (
         <ReviewAndOrder
-          uploadedImage={uploadedImage}
           selectedStyle={selectedStyle}
           selectedSize={selectedSize}
           selectedOrientation={selectedOrientation}
           customizations={customizations}
-          onEditStep={onEditStep}
+          uploadedImage={uploadedImage}
         />
       )
     }

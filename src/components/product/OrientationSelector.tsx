@@ -1,6 +1,6 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Monitor, Smartphone, Square, Sparkles } from "lucide-react";
 
 interface OrientationOption {
@@ -24,13 +24,15 @@ interface OrientationSelectorProps {
   selectedSize: string;
   onOrientationChange: (orientation: string) => void;
   onSizeChange: (size: string) => void;
+  onContinue?: () => void;
 }
 
 const OrientationSelector = ({ 
   selectedOrientation, 
   selectedSize,
   onOrientationChange, 
-  onSizeChange 
+  onSizeChange,
+  onContinue
 }: OrientationSelectorProps) => {
   const orientationOptions: OrientationOption[] = [
     { 
@@ -136,6 +138,18 @@ const OrientationSelector = ({
     onSizeChange("");
   };
 
+  const handleSizeSelect = (size: string) => {
+    onSizeChange(size);
+  };
+
+  const handleContinueWithSize = (size: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    onSizeChange(size);
+    if (onContinue) {
+      onContinue();
+    }
+  };
+
   return (
     <div className="space-y-10">
       {/* Enhanced Step 2 Header */}
@@ -183,7 +197,7 @@ const OrientationSelector = ({
         </div>
       )}
       
-      {/* Premium Size Cards */}
+      {/* Premium Size Cards with Continue Buttons */}
       {selectedOrientation && (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
           {sizeOptions[selectedOrientation]?.map((option, index) => (
@@ -194,7 +208,7 @@ const OrientationSelector = ({
                   ? 'ring-2 ring-indigo-200 shadow-xl bg-gradient-to-r from-indigo-50/50 to-purple-50/50 border-l-4 border-l-indigo-400' 
                   : 'shadow-lg hover:shadow-indigo-100/50'
               }`}
-              onClick={() => onSizeChange(option.size)}
+              onClick={() => handleSizeSelect(option.size)}
             >
               <CardContent className="p-6">
                 <div className="mb-6">
@@ -224,6 +238,16 @@ const OrientationSelector = ({
                     <div className="text-2xl font-bold text-gray-900 font-poppins tracking-tight">
                       ${option.salePrice}
                     </div>
+                  </div>
+                  
+                  {/* Continue Button */}
+                  <div className="pt-3">
+                    <Button 
+                      onClick={(e) => handleContinueWithSize(option.size, e)}
+                      className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-sm py-2 h-auto font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                    >
+                      Continue with {option.category}
+                    </Button>
                   </div>
                 </div>
               </CardContent>

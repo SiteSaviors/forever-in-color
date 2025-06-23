@@ -1,4 +1,3 @@
-
 import { Accordion } from "@/components/ui/accordion";
 import ProductStep from "./ProductStep";
 import { useProductStepsConfig } from "./ProductStepsConfig";
@@ -43,6 +42,10 @@ const ProductContent = ({
   onSizeSelect,
   onCustomizationChange
 }: ProductContentProps) => {
+  const handleAdvanceToNextStep = () => {
+    onCurrentStepChange(currentStep + 1);
+  };
+
   const steps = useProductStepsConfig({
     completedSteps,
     selectedStyle,
@@ -54,7 +57,8 @@ const ProductContent = ({
     onOrientationSelect,
     onSizeSelect,
     onCustomizationChange,
-    onEditStep: onCurrentStepChange
+    onEditStep: onCurrentStepChange,
+    onContinue: handleAdvanceToNextStep
   });
 
   return (
