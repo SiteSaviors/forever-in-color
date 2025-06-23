@@ -8,31 +8,13 @@ export class OpenAIService {
     console.log('Using GPT-IMG-1 for image transformation with style:', styleName);
     
     try {
-      // First, analyze the image to create a detailed transformation prompt
-      const analysisResult = await this.analyzeImageForTransformation(imageData, styleName);
+      // Get the style prompt directly from Supabase without analysis
+      const stylePrompt = await this.getStylePromptFromSupabase(styleName);
+      const transformationPrompt = stylePrompt || `Transform this image in ${styleName} style while preserving the subject, composition and pose exactly.`;
       
-      if (!analysisResult.ok) {
-        const analysisData = await analysisResult.json();
-        console.error('Image analysis failed:', analysisData);
-        // Use fallback prompt if analysis fails
-      }
+      console.log('Using prompt for style:', styleName, '- Prompt:', transformationPrompt.substring(0, 100) + '...');
 
-      let transformationPrompt = '';
-      
-      if (analysisResult.ok) {
-        const analysisData = await analysisResult.json();
-        transformationPrompt = analysisData.choices[0]?.message?.content || '';
-        console.log('Generated transformation prompt:', transformationPrompt);
-      }
-
-      // If analysis failed or returned empty, use style-specific fallback from Supabase
-      if (!transformationPrompt) {
-        const stylePrompt = await this.getStylePromptFromSupabase(styleName);
-        transformationPrompt = stylePrompt || `Transform this image in ${styleName} style while preserving the subject, composition and pose exactly.`;
-        console.log('Using Supabase prompt for style:', styleName, '- Prompt:', transformationPrompt);
-      }
-
-      // Generate image using GPT-IMG-1
+      // Generate image using GPT-IMG-1 with Leonardo-matching settings
       const response = await fetch('https://api.openai.com/v1/images/generations', {
         method: 'POST',
         headers: {
@@ -44,9 +26,9 @@ export class OpenAIService {
           prompt: transformationPrompt,
           n: 1,
           size: '1024x1024',
-          quality: 'high',
+          quality: 'medium', // Changed from 'high' to match Leonardo
+          style: 'dynamic',   // Added to match Leonardo's "Dynamic" setting
           output_format: 'png'
-          // Removed response_format as it's not supported by gpt-image-1
         })
       });
 
@@ -64,7 +46,7 @@ export class OpenAIService {
       if (data.data && data.data[0] && data.data[0].b64_json) {
         // Convert base64 to data URL
         const base64Image = `data:image/png;base64,${data.data[0].b64_json}`;
-        console.log('GPT-IMG-1 generation successful');
+        console.log('GPT-IMG-1 generation successful with Leonardo-matched settings');
         
         return {
           ok: true,
@@ -86,57 +68,7 @@ export class OpenAIService {
     }
   }
 
-  async analyzeImageForTransformation(imageData: string, styleName: string): Promise<Response> {
-    // Get style-specific transformation instructions from Supabase
-    const baseStylePrompt = await this.getStylePromptFromSupabase(styleName) || `${styleName} artistic style`;
-    
-    const analysisPrompt = `Analyze this image in detail and create a comprehensive prompt for GPT-IMG-1 image generation.
-
-Your task:
-1. Describe the main subject, their pose, expression, clothing, and any key features
-2. Describe the background, lighting, and composition
-3. Apply this artistic transformation: "${baseStylePrompt}"
-
-CRITICAL REQUIREMENTS:
-- Keep the EXACT same subject, face, expression, pose, and composition
-- Only change the artistic style and rendering technique
-- Preserve all identifying features and anatomical proportions
-- Maintain the same background elements and lighting setup
-
-Create a detailed prompt that will generate the same image but rendered in the specified artistic style.
-
-Format your response as a single, detailed prompt for image generation.`;
-
-    return await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${this.apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: analysisPrompt
-              },
-              {
-                type: 'image_url',
-                image_url: {
-                  url: imageData
-                }
-              }
-            ]
-          }
-        ],
-        max_tokens: 300,
-        temperature: 0.3
-      })
-    });
-  }
+  // Removed the analyzeImageForTransformation method since Leonardo doesn't use prompt enhancement
 
   private async getStylePromptFromSupabase(styleName: string): Promise<string | null> {
     try {
