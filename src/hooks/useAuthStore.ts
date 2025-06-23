@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { logSessionTimeout } from "@/utils/securityLogger";
 
 interface AuthState {
   user: User | null;
@@ -20,6 +21,7 @@ export const useAuthStore = () => {
   });
 
   const [sessionTimeoutWarning, setSessionTimeoutWarning] = useState(false);
+  const [sessionStartTime] = useState(Date.now());
 
   const checkSessionExpiry = useCallback(async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -78,8 +80,10 @@ export const useAuthStore = () => {
             setSessionTimeoutWarning(false);
           }
 
-          // Clear warning if user signs out
-          if (event === 'SIGNED_OUT') {
+          // Log session timeout when user signs out due to expiry
+          if (event === 'SIGNED_OUT' && session?.user) {
+            const sessionDuration = Date.now() - sessionStartTime;
+            logSessionTimeout(session.user.id, sessionDuration);
             setSessionTimeoutWarning(false);
           }
         }
@@ -122,7 +126,7 @@ export const useAuthStore = () => {
         clearInterval(sessionCheckInterval);
       }
     };
-  }, [checkSessionExpiry]);
+  }, [checkSessionExpiry, sessionStartTime]);
 
   // Start/stop session monitoring based on auth state
   useEffect(() => {
@@ -142,6 +146,13 @@ export const useAuthStore = () => {
   const signOut = async () => {
     try {
       setSessionTimeoutWarning(false);
+      
+      // Log session duration before signing out
+      if (authState.user) {
+        const sessionDuration = Date.now() - sessionStartTime;
+        logSessionTimeout(authState.user.id, sessionDuration);
+      }
+      
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error('Error signing out:', error);

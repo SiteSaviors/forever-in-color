@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { validateImageFile } from "@/utils/fileValidation";
+import { logSuspiciousUpload, logMaliciousContent } from "@/utils/securityLogger";
+import { useAuthStore } from "@/hooks/useAuthStore";
 
 interface PhotoUploadProps {
   onFileSelect: (file: File, previewUrl: string) => void;
@@ -18,6 +20,7 @@ const PhotoUpload = ({ onFileSelect, uploadedFile, previewUrl, onRemoveFile }: P
   const [isUploading, setIsUploading] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [validationWarnings, setValidationWarnings] = useState<string[]>([]);
+  const { user } = useAuthStore();
 
   const handleFile = useCallback(async (file: File) => {
     console.log('Processing file:', file.name, 'Type:', file.type, 'Size:', file.size);
@@ -31,6 +34,11 @@ const PhotoUpload = ({ onFileSelect, uploadedFile, previewUrl, onRemoveFile }: P
       const validationResult = await validateImageFile(file);
       
       if (!validationResult.isValid) {
+        // Log suspicious upload attempt
+        if (user) {
+          logSuspiciousUpload(user.id, file.name, validationResult.error || 'Validation failed');
+        }
+        
         setValidationError(validationResult.error || 'File validation failed');
         setIsUploading(false);
         return;
@@ -40,6 +48,39 @@ const PhotoUpload = ({ onFileSelect, uploadedFile, previewUrl, onRemoveFile }: P
       if (validationResult.warnings && validationResult.warnings.length > 0) {
         setValidationWarnings(validationResult.warnings);
         console.warn('File validation warnings:', validationResult.warnings);
+        
+        // Log security warnings
+        if (user) {
+          validationResult.warnings.forEach(warning => {
+            logSuspiciousUpload(user.id, file.name, warning);
+          });
+        }
+      }
+
+      // Additional security checks
+      if (file.size > 8 * 1024 * 1024) { // 8MB threshold for monitoring
+        if (user) {
+          logSuspiciousUpload(user.id, file.name, `Large file upload: ${Math.round(file.size / 1024 / 1024)}MB`);
+        }
+      }
+
+      // Check for unusual file names that might indicate malicious intent
+      const suspiciousNamePatterns = [
+        /\.(php|asp|jsp|exe|bat|cmd|scr|vbs|js)$/i,
+        /script/i,
+        /eval/i,
+        /<%|%>|<\?|\?>/,
+      ];
+
+      for (const pattern of suspiciousNamePatterns) {
+        if (pattern.test(file.name)) {
+          if (user) {
+            logMaliciousContent(user.id, 'filename', `Suspicious filename pattern: ${file.name}`);
+          }
+          setValidationError('File name contains potentially dangerous patterns');
+          setIsUploading(false);
+          return;
+        }
       }
 
       // Create preview
@@ -50,26 +91,36 @@ const PhotoUpload = ({ onFileSelect, uploadedFile, previewUrl, onRemoveFile }: P
         setIsUploading(false);
       };
       reader.onerror = () => {
+        if (user) {
+          logSuspiciousUpload(user.id, file.name, 'FileReader error - file may be corrupted');
+        }
         setValidationError('Failed to read file. The file may be corrupted.');
         setIsUploading(false);
       };
       reader.readAsDataURL(file);
     } catch (error) {
       console.error('File validation error:', error);
+      if (user) {
+        logSuspiciousUpload(user.id, file.name, `Validation exception: ${error}`);
+      }
       setValidationError('An error occurred while validating the file. Please try again.');
       setIsUploading(false);
     }
-  }, [onFileSelect]);
+  }, [onFileSelect, user]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
     
     const files = Array.from(e.dataTransfer.files);
+    if (files.length > 1 && user) {
+      logSuspiciousUpload(user.id, 'multiple-files', `Attempted to upload ${files.length} files simultaneously`);
+    }
+    
     if (files.length > 0) {
       handleFile(files[0]);
     }
-  }, [handleFile]);
+  }, [handleFile, user]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();

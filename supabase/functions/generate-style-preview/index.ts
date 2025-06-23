@@ -15,6 +15,44 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
+// Security event logging for server-side monitoring
+interface SecurityEvent {
+  event_type: 'auth_failure' | 'rate_limit_violation' | 'suspicious_upload' | 'invalid_origin' | 'malicious_content_detected' | 'payload_too_large';
+  user_id?: string;
+  ip_address?: string;
+  user_agent?: string;
+  details: Record<string, any>;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  timestamp: string;
+}
+
+const logSecurityEvent = async (event: Omit<SecurityEvent, 'timestamp'>) => {
+  const securityEvent: SecurityEvent = {
+    ...event,
+    timestamp: new Date().toISOString()
+  };
+
+  // Log to console for immediate monitoring
+  console.warn('🚨 SECURITY EVENT:', JSON.stringify(securityEvent, null, 2));
+
+  // In a production environment, you might want to:
+  // 1. Store in a dedicated security_events table
+  // 2. Send to external monitoring service (e.g., Sentry, LogRocket)
+  // 3. Trigger alerts for high/critical severity events
+  
+  try {
+    // Example: Store in Supabase (you'd need to create a security_events table)
+    // await supabase.from('security_events').insert(securityEvent);
+    
+    // For now, we'll just ensure it's logged prominently
+    if (securityEvent.severity === 'high' || securityEvent.severity === 'critical') {
+      console.error('🔥 HIGH SEVERITY SECURITY EVENT:', securityEvent);
+    }
+  } catch (error) {
+    console.error('Failed to log security event:', error);
+  }
+};
+
 // Enhanced input validation with security checks
 const validateInput = (body: any): { isValid: boolean; error?: string } => {
   if (!body) {
@@ -94,8 +132,8 @@ const validateInput = (body: any): { isValid: boolean; error?: string } => {
   return { isValid: true };
 };
 
-// User-based rate limiting with Supabase storage
-const checkUserRateLimit = async (userId: string): Promise<boolean> => {
+// User-based rate limiting with enhanced monitoring
+const checkUserRateLimit = async (userId: string, req: Request): Promise<boolean> => {
   const RATE_LIMIT = 10; // requests per minute
   const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
   const now = Date.now();
@@ -127,6 +165,19 @@ const checkUserRateLimit = async (userId: string): Promise<boolean> => {
     }
 
     if (rateLimitData.request_count >= RATE_LIMIT) {
+      // Log rate limit violation
+      await logSecurityEvent({
+        event_type: 'rate_limit_violation',
+        user_id: userId,
+        ip_address: req.headers.get('x-forwarded-for') || 'unknown',
+        user_agent: req.headers.get('user-agent') || 'unknown',
+        details: { 
+          current_count: rateLimitData.request_count,
+          limit: RATE_LIMIT,
+          window_minutes: RATE_LIMIT_WINDOW / 60000
+        },
+        severity: rateLimitData.request_count > RATE_LIMIT * 2 ? 'high' : 'medium'
+      });
       return false;
     }
 
@@ -145,11 +196,12 @@ const checkUserRateLimit = async (userId: string): Promise<boolean> => {
   }
 };
 
-// Enhanced request origin validation
-const validateRequestOrigin = (req: Request): boolean => {
+// Enhanced request origin validation with logging
+const validateRequestOrigin = async (req: Request): Promise<boolean> => {
   const origin = req.headers.get('origin');
   const referer = req.headers.get('referer');
   const userAgent = req.headers.get('user-agent');
+  const xForwardedFor = req.headers.get('x-forwarded-for');
   
   // Allow requests from Supabase domains and localhost for development
   const allowedOrigins = [
@@ -162,6 +214,13 @@ const validateRequestOrigin = (req: Request): boolean => {
 
   // Block requests without user agent (potential bot/script)
   if (!userAgent || userAgent.length < 10) {
+    await logSecurityEvent({
+      event_type: 'invalid_origin',
+      ip_address: xForwardedFor || 'unknown',
+      user_agent: userAgent || 'none',
+      details: { reason: 'Missing or invalid user agent', origin, referer },
+      severity: 'medium'
+    });
     console.warn('Request blocked: Missing or invalid user agent');
     return false;
   }
@@ -170,19 +229,40 @@ const validateRequestOrigin = (req: Request): boolean => {
   if (origin) {
     const isAllowed = allowedOrigins.some(allowed => origin.startsWith(allowed));
     if (!isAllowed) {
+      await logSecurityEvent({
+        event_type: 'invalid_origin',
+        ip_address: xForwardedFor || 'unknown',
+        user_agent: userAgent || 'unknown',
+        details: { reason: 'Unauthorized origin', origin, allowed_origins: allowedOrigins },
+        severity: 'high'
+      });
       console.warn('Request blocked: Unauthorized origin:', origin);
       return false;
     }
   } else if (referer) {
     const isAllowed = allowedOrigins.some(allowed => referer.startsWith(allowed));
     if (!isAllowed) {
+      await logSecurityEvent({
+        event_type: 'invalid_origin',
+        ip_address: xForwardedFor || 'unknown',
+        user_agent: userAgent || 'unknown',
+        details: { reason: 'Unauthorized referer', referer, allowed_origins: allowedOrigins },
+        severity: 'high'
+      });
       console.warn('Request blocked: Unauthorized referer:', referer);
       return false;
     }
   } else {
     // For requests without origin/referer, be more strict
+    await logSecurityEvent({
+      event_type: 'invalid_origin',
+      ip_address: xForwardedFor || 'unknown',
+      user_agent: userAgent || 'unknown',
+      details: { reason: 'No origin or referer header' },
+      severity: 'medium'
+    });
     console.warn('Request blocked: No origin or referer header');
-    return false;  // Changed from true to false for better security
+    return false;
   }
 
   return true;
@@ -200,14 +280,21 @@ serve(async (req) => {
   }
 
   try {
-    // Validate request origin
-    if (!validateRequestOrigin(req)) {
+    // Validate request origin with enhanced logging
+    if (!await validateRequestOrigin(req)) {
       return createErrorResponse('Unauthorized origin', 403);
     }
 
     // Extract and verify JWT token
     const authHeader = req.headers.get('Authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      await logSecurityEvent({
+        event_type: 'auth_failure',
+        ip_address: req.headers.get('x-forwarded-for') || 'unknown',
+        user_agent: req.headers.get('user-agent') || 'unknown',
+        details: { reason: 'Missing or invalid authorization header' },
+        severity: 'medium'
+      });
       return createErrorResponse('Missing or invalid authorization header', 401);
     }
 
@@ -217,14 +304,21 @@ serve(async (req) => {
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
     
     if (authError || !user) {
+      await logSecurityEvent({
+        event_type: 'auth_failure',
+        ip_address: req.headers.get('x-forwarded-for') || 'unknown',
+        user_agent: req.headers.get('user-agent') || 'unknown',
+        details: { reason: 'Invalid or expired token', auth_error: authError?.message },
+        severity: 'medium'
+      });
       console.error('Authentication error:', authError);
       return createErrorResponse('Invalid or expired token', 401);
     }
 
     console.log('Authenticated user:', user.id);
 
-    // User-based rate limiting
-    const rateLimitPassed = await checkUserRateLimit(user.id);
+    // User-based rate limiting with enhanced monitoring
+    const rateLimitPassed = await checkUserRateLimit(user.id, req);
     if (!rateLimitPassed) {
       return createErrorResponse('Rate limit exceeded. Please try again later.', 429);
     }
@@ -239,21 +333,79 @@ serve(async (req) => {
 
       // Check for excessively large payloads
       if (bodyText.length > 15 * 1024 * 1024) { // 15MB limit for entire request
+        await logSecurityEvent({
+          event_type: 'payload_too_large',
+          user_id: user.id,
+          ip_address: req.headers.get('x-forwarded-for') || 'unknown',
+          user_agent: req.headers.get('user-agent') || 'unknown',
+          details: { payload_size_mb: Math.round(bodyText.length / 1024 / 1024) },
+          severity: 'medium'
+        });
         return createErrorResponse('Request payload too large', 413);
       }
 
       requestBody = JSON.parse(bodyText);
     } catch (parseError) {
+      await logSecurityEvent({
+        event_type: 'suspicious_upload',
+        user_id: user.id,
+        ip_address: req.headers.get('x-forwarded-for') || 'unknown',
+        user_agent: req.headers.get('user-agent') || 'unknown',
+        details: { reason: 'Invalid JSON in request body', parse_error: parseError.message },
+        severity: 'low'
+      });
       return createErrorResponse('Invalid JSON in request body', 400);
     }
 
     // Enhanced input validation
     const validation = validateInput(requestBody);
     if (!validation.isValid) {
+      await logSecurityEvent({
+        event_type: 'suspicious_upload',
+        user_id: user.id,
+        ip_address: req.headers.get('x-forwarded-for') || 'unknown',
+        user_agent: req.headers.get('user-agent') || 'unknown',
+        details: { reason: 'Input validation failed', validation_error: validation.error },
+        severity: 'medium'
+      });
       return createErrorResponse(validation.error || 'Invalid input', 400);
     }
 
     const { imageUrl, style, photoId }: { imageUrl: string; style: string; photoId: string } = requestBody;
+
+    // Additional security check for base64 content
+    if (imageUrl.startsWith('data:image/')) {
+      const base64Data = imageUrl.split(',')[1];
+      
+      // Check for potential embedded malicious content
+      const maliciousPatterns = [
+        /\x00/g, // Null bytes
+        /<script/gi,
+        /<iframe/gi,
+        /javascript:/gi,
+        /vbscript:/gi,
+        /onload=/gi,
+        /onerror=/gi,
+      ];
+
+      for (const pattern of maliciousPatterns) {
+        if (pattern.test(base64Data)) {
+          await logSecurityEvent({
+            event_type: 'malicious_content_detected',
+            user_id: user.id,
+            ip_address: req.headers.get('x-forwarded-for') || 'unknown',
+            user_agent: req.headers.get('user-agent') || 'unknown',
+            details: { 
+              reason: 'Malicious pattern detected in image data',
+              pattern: pattern.source,
+              photo_id: photoId
+            },
+            severity: 'critical'
+          });
+          return createErrorResponse('Potentially malicious content detected in image', 400);
+        }
+      }
+    }
 
     console.log('=== STYLE GENERATION DEBUG ===')
     console.log('Received request for style:', style)
@@ -335,6 +487,16 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in generate-style-preview function:', error)
+    
+    // Log unexpected errors as security events
+    await logSecurityEvent({
+      event_type: 'suspicious_upload',
+      ip_address: req.headers.get('x-forwarded-for') || 'unknown',
+      user_agent: req.headers.get('user-agent') || 'unknown',
+      details: { reason: 'Unexpected server error', error: error.message },
+      severity: 'medium'
+    });
+    
     // Don't expose internal error details to client
     return createErrorResponse('Internal server error. Please try again later.', 500)
   }

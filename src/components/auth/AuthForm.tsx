@@ -6,8 +6,15 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, Eye, EyeOff, Check, X } from "lucide-react";
+import { AlertCircle, Eye, EyeOff, Check, X, Shield } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { 
+  logAuthFailure, 
+  incrementFailedAttempts, 
+  clearFailedAttempts, 
+  isAccountLocked, 
+  getFailedAttemptCount 
+} from "@/utils/securityLogger";
 
 interface AuthFormProps {
   onAuthSuccess: () => void;
@@ -63,6 +70,14 @@ const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
     setIsLoading(true);
     setError(null);
 
+    // Check if account is locked
+    if (isAccountLocked(formData.email)) {
+      const attemptCount = getFailedAttemptCount(formData.email);
+      setError(`Account temporarily locked due to ${attemptCount} failed attempts. Please try again in 15 minutes.`);
+      setIsLoading(false);
+      return;
+    }
+
     // Validate password complexity
     const passwordError = validatePassword(formData.password);
     if (passwordError) {
@@ -84,12 +99,22 @@ const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
       });
 
       if (error) {
+        const attemptCount = incrementFailedAttempts(formData.email);
+        
         if (error.message.includes('already registered')) {
+          logAuthFailure(formData.email, 'Email already registered', undefined);
           setError('This email is already registered. Please sign in instead.');
         } else {
+          logAuthFailure(formData.email, error.message, undefined);
           setError(error.message);
         }
+
+        // Show lockout warning
+        if (attemptCount >= 3) {
+          setError(prev => `${prev} (${attemptCount} failed attempts - account will be locked after 5 attempts)`);
+        }
       } else {
+        clearFailedAttempts(formData.email);
         setError(null);
         // Check if email confirmation is required
         const { data: { session } } = await supabase.auth.getSession();
@@ -100,6 +125,7 @@ const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
         }
       }
     } catch (err) {
+      logAuthFailure(formData.email, 'Unexpected signup error', undefined);
       setError('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
@@ -111,6 +137,14 @@ const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
     setIsLoading(true);
     setError(null);
 
+    // Check if account is locked
+    if (isAccountLocked(formData.email)) {
+      const attemptCount = getFailedAttemptCount(formData.email);
+      setError(`Account temporarily locked due to ${attemptCount} failed attempts. Please try again in 15 minutes.`);
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email: formData.email,
@@ -118,20 +152,35 @@ const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
       });
 
       if (error) {
+        const attemptCount = incrementFailedAttempts(formData.email);
+        
         if (error.message.includes('Invalid login credentials')) {
+          logAuthFailure(formData.email, 'Invalid credentials', undefined);
           setError('Invalid email or password. Please check your credentials and try again.');
         } else {
+          logAuthFailure(formData.email, error.message, undefined);
           setError(error.message);
         }
+
+        // Show lockout warning
+        if (attemptCount >= 3) {
+          setError(prev => `${prev} (${attemptCount} failed attempts - account will be locked after 5 attempts)`);
+        }
       } else {
+        clearFailedAttempts(formData.email);
         onAuthSuccess();
       }
     } catch (err) {
+      logAuthFailure(formData.email, 'Unexpected signin error', undefined);
       setError('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Show security info for locked accounts
+  const failedAttempts = getFailedAttemptCount(formData.email);
+  const showSecurityWarning = failedAttempts > 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 flex items-center justify-center p-4">
@@ -148,6 +197,19 @@ const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
               <TabsTrigger value="signin">Sign In</TabsTrigger>
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
             </TabsList>
+
+            {/* Security warning for failed attempts */}
+            {showSecurityWarning && (
+              <Alert className="border-orange-200 bg-orange-50">
+                <Shield className="h-4 w-4 text-orange-600" />
+                <AlertDescription className="text-orange-800">
+                  <div className="flex items-center justify-between">
+                    <span>{failedAttempts} failed attempt{failedAttempts > 1 ? 's' : ''} detected for this email</span>
+                    <span className="text-sm">({5 - failedAttempts} remaining)</span>
+                  </div>
+                </AlertDescription>
+              </Alert>
+            )}
 
             {error && (
               <Alert variant="destructive">
@@ -193,7 +255,7 @@ const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
                     </Button>
                   </div>
                 </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <Button type="submit" className="w-full" disabled={isLoading || isAccountLocked(formData.email)}>
                   {isLoading ? "Signing in..." : "Sign In"}
                 </Button>
               </form>
@@ -273,7 +335,7 @@ const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
                 <Button 
                   type="submit" 
                   className="w-full" 
-                  disabled={isLoading || (formData.password && !isPasswordValid)}
+                  disabled={isLoading || (formData.password && !isPasswordValid) || isAccountLocked(formData.email)}
                 >
                   {isLoading ? "Creating account..." : "Create Account"}
                 </Button>
