@@ -24,15 +24,9 @@ export const useStylePreview = ({
   const [isLoading, setIsLoading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [hasGeneratedPreview, setHasGeneratedPreview] = useState(false);
-  const [isStyleGenerated, setIsStyleGenerated] = useState(false);
 
-  // Check if we already have a generated preview for this style
-  useEffect(() => {
-    const generatedStyles = JSON.parse(localStorage.getItem('generatedStyles') || '[]');
-    if (generatedStyles.includes(style.id)) {
-      setIsStyleGenerated(true);
-    }
-  }, [style.id]);
+  // Only mark as generated if we actually have a preview URL
+  const isStyleGenerated = hasGeneratedPreview && !!previewUrl;
 
   const generatePreview = useCallback(async () => {
     if (!croppedImage || style.id === 1) return;
@@ -64,14 +58,6 @@ export const useStylePreview = ({
         }
         
         setHasGeneratedPreview(true);
-        
-        // Mark this style as generated
-        const generatedStyles = JSON.parse(localStorage.getItem('generatedStyles') || '[]');
-        if (!generatedStyles.includes(style.id)) {
-          generatedStyles.push(style.id);
-          localStorage.setItem('generatedStyles', JSON.stringify(generatedStyles));
-          setIsStyleGenerated(true);
-        }
       } else {
         console.error(`Failed to generate preview for ${style.name}: No preview URL returned`);
       }

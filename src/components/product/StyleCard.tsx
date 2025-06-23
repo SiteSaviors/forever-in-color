@@ -49,6 +49,7 @@ const StyleCard = ({
 
   const isSelected = selectedStyle === style.id;
   const showLoadingState = isLoading;
+  // Only show generated badge if we actually have a preview AND it's not the original image style
   const showGeneratedBadge = isStyleGenerated && style.id !== 1;
   const imageToShow = previewUrl || croppedImage || style.image;
   const showContinueInCard = showContinueButton && isSelected && !!(previewUrl || croppedImage);
@@ -62,6 +63,7 @@ const StyleCard = ({
     showContinueInCard,
     hasGeneratedPreview,
     isStyleGenerated,
+    showGeneratedBadge,
     cropAspectRatio
   });
 
@@ -85,14 +87,14 @@ const StyleCard = ({
       <Card 
         className={`group cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 ${
           isSelected ? 'ring-2 ring-purple-500 shadow-lg' : ''
-        } ${showGeneratedBadge ? 'opacity-75' : ''}`}
+        }`}
         onClick={handleClick}
       >
         <CardContent className="p-0">
           <StyleCardImage
             style={style}
             imageToShow={imageToShow}
-            cropAspectRatio={cropAspectRatio} // Use actual crop aspect ratio
+            cropAspectRatio={cropAspectRatio}
             showLoadingState={showLoadingState}
             isPopular={isPopular}
             showGeneratedBadge={showGeneratedBadge}

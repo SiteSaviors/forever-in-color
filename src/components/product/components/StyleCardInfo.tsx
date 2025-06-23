@@ -27,19 +27,22 @@ const StyleCardInfo = ({
   showContinueInCard,
   onContinueClick
 }: StyleCardInfoProps) => {
+  // Only show one primary badge - prioritize Generated > Popular
+  const showPopularBadge = isPopular && !showGeneratedBadge;
+  
   return (
     <div className="p-2 md:p-3 space-y-1 md:space-y-2">
       {/* Title with badges */}
       <div className="flex items-center justify-between">
         <h5 className="font-semibold text-gray-900 text-sm md:text-base leading-tight">{style.name}</h5>
         <div className="flex items-center gap-1">
-          {isPopular && (
+          {showPopularBadge && (
             <Badge variant="secondary" className="bg-yellow-100 text-yellow-700 text-xs px-1.5 py-0.5 h-auto">
               <Crown className="w-2.5 h-2.5 mr-0.5" />
               <span className="hidden md:inline">Popular</span>
             </Badge>
           )}
-          {showGeneratedBadge && (
+          {showGeneratedBadge && hasGeneratedPreview && (
             <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs px-1.5 py-0.5 h-auto">
               <Sparkles className="w-2.5 h-2.5 mr-0.5" />
               <span className="hidden md:inline">Generated</span>
