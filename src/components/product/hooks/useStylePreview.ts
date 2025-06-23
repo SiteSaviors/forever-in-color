@@ -27,6 +27,18 @@ export const useStylePreview = ({
   const [autoGenerationAttempted, setAutoGenerationAttempted] = useState(false);
   const { toast } = useToast();
 
+  // Clear generated styles when a new image is cropped
+  useEffect(() => {
+    if (croppedImage) {
+      console.log('New cropped image detected, clearing generated styles session');
+      try {
+        sessionStorage.removeItem('generatedStyles');
+      } catch (error) {
+        console.error('Error clearing generated styles:', error);
+      }
+    }
+  }, [croppedImage]);
+
   // Check if style was already generated in this session
   const isStyleGenerated = () => {
     try {
@@ -131,7 +143,7 @@ export const useStylePreview = ({
     if (isStyleGenerated() && style.id !== 1) {
       toast({
         title: "Style Already Generated",
-        description: "You've already generated this style in this session. Refresh the page to generate again.",
+        description: "You've already generated this style in this session. Upload a new image to generate again.",
         variant: "destructive",
       });
       return;
