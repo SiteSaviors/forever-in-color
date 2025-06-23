@@ -47,9 +47,6 @@ serve(async (req) => {
     console.log('- REPLICATE_API_TOKEN exists:', !!Deno.env.get('REPLICATE_API_TOKEN'))
     console.log('- REPLICATE_API_KEY exists:', !!Deno.env.get('REPLICATE_API_KEY'))
     console.log('- Final token exists:', !!replicateApiKey)
-    console.log('- Token value:', replicateApiKey) // Temporary debug - remove after fixing
-    console.log('- Token type:', typeof replicateApiKey)
-    console.log('- Token starts with r8_:', replicateApiKey?.startsWith('r8_'))
     
     if (!replicateApiKey || replicateApiKey === 'undefined' || replicateApiKey.trim() === '') {
       console.error('Replicate API key not found or invalid in environment variables')
@@ -59,9 +56,13 @@ serve(async (req) => {
 
     const replicateService = new ReplicateService(replicateApiKey)
     
-    // Use custom prompt if provided, otherwise use default
-    let transformationPrompt = customPrompt || stylePrompts[styleId] || "Apply artistic transformation to the image"
-    console.log('Using style prompt:', transformationPrompt)
+    // ALWAYS use the default stylePrompts, ignore customPrompt to ensure identity preservation
+    let transformationPrompt = stylePrompts[styleId] || "Apply artistic transformation to the image"
+    console.log('Using default style prompt for identity preservation:', transformationPrompt)
+    
+    if (customPrompt) {
+      console.log('Custom prompt was provided but ignored to preserve facial features:', customPrompt)
+    }
 
     // Skip OpenAI analysis for now to isolate the Replicate issue
     console.log('Skipping OpenAI analysis, going directly to Replicate...')
