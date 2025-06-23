@@ -1,7 +1,5 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { stylePrompts } from "./stylePrompts.ts"
 import { StylePreviewRequest } from './types.ts'
 import { OpenAIService } from './openaiService.ts'
 import { 
@@ -358,7 +356,8 @@ serve(async (req) => {
       return createErrorResponse('Service temporarily unavailable. Please try again later.', 503)
     }
 
-    const openaiService = new OpenAIService(openaiApiKey)
+    // Pass the Supabase client to OpenAI service so it can fetch prompts
+    const openaiService = new OpenAIService(openaiApiKey, supabase)
     
     console.log('Starting GPT-IMG-1 transformation for style:', style)
 

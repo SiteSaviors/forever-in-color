@@ -1,9 +1,8 @@
 
 import { OpenAIImageResponse, OpenAIAnalysisResponse } from './types.ts';
-import { stylePrompts } from './stylePrompts.ts';
 
 export class OpenAIService {
-  constructor(private apiKey: string) {}
+  constructor(private apiKey: string, private supabase: any) {}
 
   async generateImageToImage(imageData: string, styleName: string): Promise<{ ok: boolean; output?: string; error?: string }> {
     console.log('Using GPT-IMG-1 for image transformation with style:', styleName);
@@ -26,12 +25,11 @@ export class OpenAIService {
         console.log('Generated transformation prompt:', transformationPrompt);
       }
 
-      // If analysis failed or returned empty, use style-specific fallback
+      // If analysis failed or returned empty, use style-specific fallback from Supabase
       if (!transformationPrompt) {
-        // Find style ID by name to get the right prompt
-        const styleId = this.getStyleIdByName(styleName);
-        transformationPrompt = stylePrompts[styleId] || `Transform this image in ${styleName} style while preserving the subject, composition and pose exactly.`;
-        console.log('Using fallback prompt for style:', styleName, '- Prompt:', transformationPrompt);
+        const stylePrompt = await this.getStylePromptFromSupabase(styleName);
+        transformationPrompt = stylePrompt || `Transform this image in ${styleName} style while preserving the subject, composition and pose exactly.`;
+        console.log('Using Supabase prompt for style:', styleName, '- Prompt:', transformationPrompt);
       }
 
       // Generate image using GPT-IMG-1
@@ -89,9 +87,8 @@ export class OpenAIService {
   }
 
   async analyzeImageForTransformation(imageData: string, styleName: string): Promise<Response> {
-    // Get style-specific transformation instructions
-    const styleId = this.getStyleIdByName(styleName);
-    const baseStylePrompt = stylePrompts[styleId] || `${styleName} artistic style`;
+    // Get style-specific transformation instructions from Supabase
+    const baseStylePrompt = await this.getStylePromptFromSupabase(styleName) || `${styleName} artistic style`;
     
     const analysisPrompt = `Analyze this image in detail and create a comprehensive prompt for GPT-IMG-1 image generation.
 
@@ -139,6 +136,29 @@ Format your response as a single, detailed prompt for image generation.`;
         temperature: 0.3
       })
     });
+  }
+
+  private async getStylePromptFromSupabase(styleName: string): Promise<string | null> {
+    try {
+      const styleId = this.getStyleIdByName(styleName);
+      
+      // Fetch the prompt from Supabase style_prompts table
+      const { data, error } = await this.supabase
+        .from('style_prompts')
+        .select('prompt')
+        .eq('style_id', styleId)
+        .single();
+
+      if (error) {
+        console.warn('Could not fetch style prompt from Supabase:', error);
+        return null;
+      }
+
+      return data?.prompt || null;
+    } catch (error) {
+      console.warn('Error fetching style prompt from Supabase:', error);
+      return null;
+    }
   }
 
   private getStyleIdByName(styleName: string): number {
