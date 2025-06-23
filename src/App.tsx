@@ -5,6 +5,7 @@ import Index from "@/pages/Index";
 import Product from "@/pages/Product";
 import Auth from "@/pages/Auth";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import SessionTimeoutWarning from "@/components/auth/SessionTimeoutWarning";
 import NotFound from "@/pages/NotFound";
 
 // Style pages
@@ -31,6 +32,7 @@ function App() {
   return (
     <Router>
       <div className="min-h-screen">
+        <SessionTimeoutWarning />
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />

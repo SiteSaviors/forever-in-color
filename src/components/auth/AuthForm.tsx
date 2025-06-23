@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -5,14 +6,19 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, Eye, EyeOff } from "lucide-react";
+import { AlertCircle, Eye, EyeOff, Check, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+
 interface AuthFormProps {
   onAuthSuccess: () => void;
 }
-const AuthForm = ({
-  onAuthSuccess
-}: AuthFormProps) => {
+
+interface PasswordRequirement {
+  text: string;
+  met: boolean;
+}
+
+const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -21,6 +27,19 @@ const AuthForm = ({
     password: '',
     fullName: ''
   });
+
+  // Password complexity validation
+  const getPasswordRequirements = (password: string): PasswordRequirement[] => [
+    { text: "At least 8 characters long", met: password.length >= 8 },
+    { text: "Contains at least one uppercase letter", met: /[A-Z]/.test(password) },
+    { text: "Contains at least one lowercase letter", met: /[a-z]/.test(password) },
+    { text: "Contains at least one number", met: /\d/.test(password) },
+    { text: "Contains at least one special character (!@#$%^&*)", met: /[!@#$%^&*(),.?":{}|<>]/.test(password) }
+  ];
+
+  const passwordRequirements = getPasswordRequirements(formData.password);
+  const isPasswordValid = passwordRequirements.every(req => req.met);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
       ...prev,
@@ -28,14 +47,32 @@ const AuthForm = ({
     }));
     setError(null);
   };
+
+  const validatePassword = (password: string): string | null => {
+    if (password.length < 8) {
+      return "Password must be at least 8 characters long";
+    }
+    if (!isPasswordValid) {
+      return "Password does not meet complexity requirements";
+    }
+    return null;
+  };
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
+
+    // Validate password complexity
+    const passwordError = validatePassword(formData.password);
+    if (passwordError) {
+      setError(passwordError);
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      const {
-        error
-      } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
@@ -45,6 +82,7 @@ const AuthForm = ({
           }
         }
       });
+
       if (error) {
         if (error.message.includes('already registered')) {
           setError('This email is already registered. Please sign in instead.');
@@ -54,11 +92,7 @@ const AuthForm = ({
       } else {
         setError(null);
         // Check if email confirmation is required
-        const {
-          data: {
-            session
-          }
-        } = await supabase.auth.getSession();
+        const { data: { session } } = await supabase.auth.getSession();
         if (session) {
           onAuthSuccess();
         } else {
@@ -71,17 +105,18 @@ const AuthForm = ({
       setIsLoading(false);
     }
   };
+
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
+
     try {
-      const {
-        error
-      } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password
       });
+
       if (error) {
         if (error.message.includes('Invalid login credentials')) {
           setError('Invalid email or password. Please check your credentials and try again.');
@@ -97,7 +132,9 @@ const AuthForm = ({
       setIsLoading(false);
     }
   };
-  return <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 flex items-center justify-center p-4">
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-gray-900">Welcome to Forever In Color</CardTitle>
@@ -112,22 +149,46 @@ const AuthForm = ({
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
             </TabsList>
 
-            {error && <Alert variant="destructive">
+            {error && (
+              <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>{error}</AlertDescription>
-              </Alert>}
+              </Alert>
+            )}
 
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="signin-email">Email</Label>
-                  <Input id="signin-email" name="email" type="email" placeholder="your@email.com" value={formData.email} onChange={handleInputChange} required />
+                  <Input
+                    id="signin-email"
+                    name="email"
+                    type="email"
+                    placeholder="your@email.com"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    required
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signin-password">Password</Label>
                   <div className="relative">
-                    <Input id="signin-password" name="password" type={showPassword ? "text" : "password"} placeholder="Your password" value={formData.password} onChange={handleInputChange} required />
-                    <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent" onClick={() => setShowPassword(!showPassword)}>
+                    <Input
+                      id="signin-password"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Your password"
+                      value={formData.password}
+                      onChange={handleInputChange}
+                      required
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>
                   </div>
@@ -142,25 +203,78 @@ const AuthForm = ({
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="signup-name">Full Name</Label>
-                  <Input id="signup-name" name="fullName" type="text" placeholder="Your full name" value={formData.fullName} onChange={handleInputChange} required />
+                  <Input
+                    id="signup-name"
+                    name="fullName"
+                    type="text"
+                    placeholder="Your full name"
+                    value={formData.fullName}
+                    onChange={handleInputChange}
+                    required
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">Email</Label>
-                  <Input id="signup-email" name="email" type="email" placeholder="your@email.com" value={formData.email} onChange={handleInputChange} required />
+                  <Input
+                    id="signup-email"
+                    name="email"
+                    type="email"
+                    placeholder="your@email.com"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    required
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-password">Password</Label>
                   <div className="relative">
-                    <Input id="signup-password" name="password" type={showPassword ? "text" : "password"} placeholder="Create a password" value={formData.password} onChange={handleInputChange} required minLength={6} />
-                    <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent" onClick={() => setShowPassword(!showPassword)}>
+                    <Input
+                      id="signup-password"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Create a password"
+                      value={formData.password}
+                      onChange={handleInputChange}
+                      required
+                      minLength={8}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>
                   </div>
-                  <p className="text-xs text-gray-500">
-                    Password must be at least 6 characters long
-                  </p>
+
+                  {/* Password Requirements */}
+                  {formData.password && (
+                    <div className="mt-2 p-3 bg-gray-50 rounded-md">
+                      <p className="text-sm font-medium text-gray-700 mb-2">Password Requirements:</p>
+                      <div className="space-y-1">
+                        {passwordRequirements.map((req, index) => (
+                          <div key={index} className="flex items-center space-x-2">
+                            {req.met ? (
+                              <Check className="h-3 w-3 text-green-600" />
+                            ) : (
+                              <X className="h-3 w-3 text-red-600" />
+                            )}
+                            <span className={`text-xs ${req.met ? 'text-green-600' : 'text-red-600'}`}>
+                              {req.text}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  disabled={isLoading || (formData.password && !isPasswordValid)}
+                >
                   {isLoading ? "Creating account..." : "Create Account"}
                 </Button>
               </form>
@@ -168,6 +282,8 @@ const AuthForm = ({
           </Tabs>
         </CardContent>
       </Card>
-    </div>;
+    </div>
+  );
 };
+
 export default AuthForm;
