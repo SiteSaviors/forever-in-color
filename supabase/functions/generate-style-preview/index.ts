@@ -19,9 +19,12 @@ serve(async (req) => {
     const requestBody = await req.json()
     const { imageData, styleId, styleName, customPrompt }: StylePreviewRequest & { customPrompt?: string } = requestBody
 
+    console.log('=== STYLE GENERATION DEBUG ===')
     console.log('Received request for style:', styleId, styleName)
     console.log('Custom prompt provided:', !!customPrompt)
     console.log('Image data length:', imageData?.length || 0)
+    console.log('Style prompt exists:', !!stylePrompts[styleId])
+    console.log('Available style IDs:', Object.keys(stylePrompts).join(', '))
 
     if (!imageData || !styleId || !styleName) {
       console.error('Missing parameters:', { imageData: !!imageData, styleId, styleName })
@@ -37,6 +40,12 @@ serve(async (req) => {
         styleId,
         styleName
       )
+    }
+
+    // Check if style prompt exists
+    if (!stylePrompts[styleId]) {
+      console.error(`No style prompt found for style ID: ${styleId}`)
+      return createErrorResponse(`Style prompt not found for style ID: ${styleId}. Available styles: ${Object.keys(stylePrompts).join(', ')}`, 400)
     }
 
     // Get Replicate API key from Supabase secrets with better debugging
@@ -57,22 +66,22 @@ serve(async (req) => {
     const replicateService = new ReplicateService(replicateApiKey)
     
     // ALWAYS use the default stylePrompts, ignore customPrompt to ensure identity preservation
-    let transformationPrompt = stylePrompts[styleId] || "Apply artistic transformation to the image"
-    console.log('Using default style prompt for identity preservation:', transformationPrompt)
+    let transformationPrompt = stylePrompts[styleId]
+    console.log('Using style prompt for', styleName, ':', transformationPrompt.substring(0, 100) + '...')
     
     if (customPrompt) {
       console.log('Custom prompt was provided but ignored to preserve facial features:', customPrompt)
     }
 
     // Skip OpenAI analysis for now to isolate the Replicate issue
-    console.log('Skipping OpenAI analysis, going directly to Replicate...')
+    console.log('Starting direct Replicate transformation for style:', styleName)
 
     // Generate the transformed image using Replicate
-    console.log('Starting image transformation with Replicate...')
+    console.log('Making Replicate API call for style:', styleId, styleName)
     const transformResult = await replicateService.generateImageToImage(imageData, transformationPrompt)
 
     if (!transformResult.ok) {
-      console.error('Replicate transformation failed:', transformResult.error)
+      console.error(`Replicate transformation failed for ${styleName}:`, transformResult.error)
       
       // Return original image as fallback with clear messaging
       return createSuccessResponse(
@@ -80,7 +89,7 @@ serve(async (req) => {
         imageData,
         styleId,
         styleName,
-        'Style transformation temporarily unavailable - showing original image. Please try again.'
+        `Style transformation failed for ${styleName}: ${transformResult.error}. Showing original image.`
       )
     }
 
@@ -92,10 +101,10 @@ serve(async (req) => {
       transformedImageUrl = transformedImageUrl[0];
     }
 
-    console.log('Replicate transformation successful:', transformedImageUrl);
+    console.log(`Replicate transformation successful for ${styleName}:`, transformedImageUrl);
 
     if (transformedImageUrl) {
-      console.log('Transformation completed successfully')
+      console.log(`Transformation completed successfully for ${styleName}`)
       return createSuccessResponse(
         `${styleName} style applied successfully`,
         transformedImageUrl,
@@ -105,17 +114,18 @@ serve(async (req) => {
     }
 
     // Fallback if no valid output
-    console.warn('No valid transformation output, returning original')
+    console.warn(`No valid transformation output for ${styleName}, returning original`)
     return createSuccessResponse(
       `${styleName} style preview (using original as fallback)`,
       imageData,
       styleId,
       styleName,
-      'Style transformation temporarily unavailable - showing original image'
+      `Style transformation for ${styleName} returned no output - showing original image`
     )
 
   } catch (error) {
     console.error('Error in generate-style-preview function:', error)
+    console.error('Error stack:', error.stack)
     return createErrorResponse('Internal server error', 500, error.message)
   }
 })
