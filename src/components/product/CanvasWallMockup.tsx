@@ -29,9 +29,9 @@ const CanvasWallMockup = ({
       case 'vertical':
         return '/lovable-uploads/79613d9d-74f9-4f65-aec0-50fd2346a131.png';
       case 'square':
-        return '/lovable-uploads/0c7d3c87-930b-4e39-98a8-2e9893b05344.png';
+        return '/lovable-uploads/7db3e997-ea34-4d40-af3e-67b693dc0544.png'; // New Photoshop template
       default:
-        return '/lovable-uploads/0c7d3c87-930b-4e39-98a8-2e9893b05344.png';
+        return '/lovable-uploads/7db3e997-ea34-4d40-af3e-67b693dc0544.png';
     }
   };
 
@@ -55,20 +55,21 @@ const CanvasWallMockup = ({
           transform: 'perspective(1000px) rotateX(5deg) rotateY(-8deg) rotateZ(1deg)'
         };
       case 'square':
+        // Using exact pixel coordinates from Photoshop template
         return {
-          top: '16%',
-          left: '16%',
-          width: '68%',
-          height: '68%',
-          transform: 'perspective(1000px) rotateX(6deg) rotateY(-10deg) rotateZ(1.5deg)'
+          top: '5.2%',     // 40px / 768px = 5.2%
+          left: '4.7%',    // 36px / 768px = 4.7%
+          width: '89.3%',  // 686px / 768px = 89.3%
+          height: '89.3%', // 686px / 768px = 89.3%
+          transform: 'none' // No distortion needed as per specs
         };
       default:
         return {
-          top: '16%',
-          left: '16%',
-          width: '68%',
-          height: '68%',
-          transform: 'perspective(1000px) rotateX(6deg) rotateY(-10deg) rotateZ(1.5deg)'
+          top: '5.2%',
+          left: '4.7%',
+          width: '89.3%',
+          height: '89.3%',
+          transform: 'none'
         };
     }
   };
