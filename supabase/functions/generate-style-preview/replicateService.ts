@@ -1,7 +1,14 @@
 
+import { REPLICATE_CONFIG } from './replicate/config.ts';
+import { PromptEnhancer } from './replicate/promptEnhancer.ts';
+import { PollingService } from './replicate/pollingService.ts';
+import { ReplicateApiClient } from './replicate/apiClient.ts';
+import { ReplicateGenerationResponse } from './replicate/types.ts';
+
 export class ReplicateService {
   private apiToken: string;
-  private baseUrl = "https://api.replicate.com/v1";
+  private apiClient: ReplicateApiClient;
+  private pollingService: PollingService;
 
   constructor(apiToken: string) {
     // Clean the token in case it has extra text
@@ -11,9 +18,12 @@ export class ReplicateService {
     console.log("ReplicateService initialized with token:", this.apiToken);
     console.log("Token starts with 'r8_':", this.apiToken?.startsWith('r8_'));
     console.log("Token length:", this.apiToken?.length);
+
+    this.apiClient = new ReplicateApiClient(this.apiToken);
+    this.pollingService = new PollingService(this.apiToken);
   }
 
-  async generateImageToImage(imageData: string, prompt: string): Promise<any> {
+  async generateImageToImage(imageData: string, prompt: string): Promise<ReplicateGenerationResponse> {
     console.log('Starting Flux Kontext Pro generation with enhanced identity preservation prompt:', prompt);
     
     // Additional debug logging
@@ -31,58 +41,23 @@ export class ReplicateService {
     
     try {
       // Enhanced prompt with stronger identity preservation
-      const enhancedPrompt = `${prompt}
+      const enhancedPrompt = PromptEnhancer.enhanceForIdentityPreservation(prompt);
 
-IMPORTANT IDENTITY PRESERVATION RULES:
-- Keep the EXACT same facial structure and bone structure
-- Maintain IDENTICAL eye color and eye shape
-- Preserve the EXACT same nose, mouth, and jawline
-- Do not change hair color, length, or style
-- Keep the EXACT same skin tone and complexion
-- Maintain identical body posture and positioning
-- Preserve all clothing and accessories exactly as shown
-- Do not add, remove, or modify any person's features
-- This is the SAME PERSON, just in a different artistic style`;
-
-      // Step 1: Create prediction using the flux-kontext-pro format
       const requestBody = {
         input: {
           prompt: enhancedPrompt,
-          input_image: imageData, // flux-kontext-pro uses "input_image" same as flux-kontext-max
-          output_format: "jpg" // flux-kontext-pro supports "jpg" format
+          input_image: imageData,
+          output_format: REPLICATE_CONFIG.defaultOutputFormat
         }
       };
 
       console.log('Making request to flux-kontext-pro model with enhanced identity preservation');
 
-      const response = await fetch(`${this.baseUrl}/models/black-forest-labs/flux-kontext-pro/predictions`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${this.apiToken}`, // Use Bearer for flux-kontext-pro
-          "Content-Type": "application/json",
-          "Prefer": "wait" // This makes it wait for completion instead of polling
-        },
-        body: JSON.stringify(requestBody),
-      });
+      const data = await this.apiClient.createPrediction(requestBody);
 
-      console.log('Replicate API response status:', response.status);
-      
-      if (!response.ok) {
-        const errorData = await response.text();
-        console.error('Replicate API error details:', {
-          status: response.status,
-          statusText: response.statusText,
-          errorData: errorData,
-          headers: Object.fromEntries(response.headers.entries())
-        });
-        return {
-          ok: false,
-          error: `API request failed: ${response.status} - ${errorData}`
-        };
+      if (!data.ok) {
+        return data;
       }
-
-      const data = await response.json();
-      console.log('Generation completed:', data);
 
       // With "Prefer: wait" header, the response should contain the final result
       if (data.status === "succeeded" && data.output) {
@@ -99,7 +74,7 @@ IMPORTANT IDENTITY PRESERVATION RULES:
         };
       } else {
         // Fallback to polling if needed
-        return await this.pollForCompletion(data.id, data.urls?.get);
+        return await this.pollingService.pollForCompletion(data.id!, data.urls?.get!);
       }
     } catch (error) {
       console.error('Replicate error:', error);
@@ -110,100 +85,8 @@ IMPORTANT IDENTITY PRESERVATION RULES:
     }
   }
 
-  async pollForCompletion(predictionId: string, pollUrl: string): Promise<any> {
-    if (!pollUrl) {
-      return {
-        ok: false,
-        error: "No poll URL provided"
-      };
-    }
-
-    console.log('Polling for completion:', predictionId);
-    
-    const maxAttempts = 30; // 1 minute max (2 seconds * 30)
-    let attempts = 0;
-
-    while (attempts < maxAttempts) {
-      try {
-        const response = await fetch(pollUrl, {
-          headers: {
-            "Authorization": `Bearer ${this.apiToken}`,
-          },
-        });
-
-        if (!response.ok) {
-          console.error('Polling failed:', response.status);
-          return {
-            ok: false,
-            error: `Polling failed: ${response.status}`
-          };
-        }
-
-        const result = await response.json();
-        console.log(`Poll attempt ${attempts + 1}, status:`, result.status);
-
-        if (result.status === "succeeded") {
-          console.log('Generation succeeded:', result.output);
-          return {
-            ok: true,
-            output: result.output
-          };
-        } else if (result.status === "failed") {
-          console.error('Generation failed:', result.error);
-          return {
-            ok: false,
-            error: result.error || "Image generation failed"
-          };
-        } else if (result.status === "canceled") {
-          return {
-            ok: false,
-            error: "Generation was canceled"
-          };
-        }
-
-        // Wait 2 seconds before next poll
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        attempts++;
-      } catch (error) {
-        console.error('Polling error:', error);
-        attempts++;
-        await new Promise(resolve => setTimeout(resolve, 2000));
-      }
-    }
-
-    return {
-      ok: false,
-      error: "Generation timed out after 1 minute"
-    };
-  }
-
-  async getPredictionStatus(predictionId: string): Promise<any> {
-    try {
-      const response = await fetch(`${this.baseUrl}/predictions/${predictionId}`, {
-        headers: {
-          "Authorization": `Token ${this.apiToken}`,
-        },
-      });
-
-      if (!response.ok) {
-        return {
-          ok: false,
-          error: `Status check failed: ${response.status}`
-        };
-      }
-
-      const result = await response.json();
-      return {
-        ok: true,
-        ...result
-      };
-    } catch (error) {
-      console.error('Error getting prediction status:', error);
-      return {
-        ok: false,
-        error: error.message
-      };
-    }
+  async getPredictionStatus(predictionId: string): Promise<ReplicateGenerationResponse> {
+    return this.apiClient.getPredictionStatus(predictionId);
   }
 
   async analyzeImageForTransformation(imageData: string, stylePrompt: string): Promise<Response> {
