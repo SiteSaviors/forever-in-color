@@ -1,4 +1,6 @@
+
 import { ReactNode } from "react";
+import { Upload, Palette, Settings, ShoppingCart, LucideIcon } from "lucide-react";
 import PhotoUploadAndStyleSelection from "./PhotoUploadAndStyleSelection";
 import OrientationSelector from "./OrientationSelector";
 import CustomizationSelector from "./CustomizationSelector";
@@ -19,7 +21,10 @@ interface ProductStep {
   id: string;
   number: number;
   title: string;
+  icon: LucideIcon;
   description: string;
+  required: boolean;
+  estimatedTime: string;
   content: ReactNode;
   isCompleted: boolean;
   isEnabled: boolean;
@@ -59,7 +64,10 @@ export const useProductStepsConfig = ({
       id: "step-1",
       number: 1,
       title: "Upload Photo & Choose Style",
+      icon: Upload,
       description: "Upload your photo and select an artistic style",
+      required: true,
+      estimatedTime: "2 mins",
       isCompleted: completedSteps.includes(1),
       isEnabled: true,
       content: (
@@ -73,7 +81,10 @@ export const useProductStepsConfig = ({
       id: "step-2",
       number: 2,
       title: "Choose Size & Orientation",
+      icon: Palette,
       description: "Select the perfect size and orientation for your canvas",
+      required: true,
+      estimatedTime: "1 min",
       isCompleted: completedSteps.includes(2),
       isEnabled: completedSteps.includes(1),
       content: (
@@ -90,11 +101,15 @@ export const useProductStepsConfig = ({
       id: "step-3",
       number: 3,
       title: "Customize Your Order",
+      icon: Settings,
       description: "Add premium features and personalization options",
+      required: false,
+      estimatedTime: "2 mins",
       isCompleted: completedSteps.includes(3),
       isEnabled: completedSteps.includes(2),
       content: (
         <CustomizationSelector
+          selectedSize={selectedSize}
           customizations={customizations}
           onCustomizationChange={onCustomizationChange}
         />
@@ -104,7 +119,10 @@ export const useProductStepsConfig = ({
       id: "step-4",
       number: 4,
       title: "Review & Order",
+      icon: ShoppingCart,
       description: "Review your custom canvas and complete your order",
+      required: true,
+      estimatedTime: "3 mins",
       isCompleted: completedSteps.includes(4),
       isEnabled: completedSteps.includes(3),
       content: (
