@@ -5,7 +5,7 @@ interface MiniCanvasPreviewProps {
   imageUrl: string;
   orientation: string;
   className?: string;
-  onClick?: () => void;
+  onClick?: (e: React.MouseEvent) => void;
 }
 
 const MiniCanvasPreview = ({ imageUrl, orientation, className = "", onClick }: MiniCanvasPreviewProps) => {
@@ -38,10 +38,16 @@ const MiniCanvasPreview = ({ imageUrl, orientation, className = "", onClick }: M
   const canvasFrame = getCanvasFrame();
   const imagePosition = getImagePosition();
 
+  const handleClick = (e: React.MouseEvent) => {
+    if (onClick) {
+      onClick(e);
+    }
+  };
+
   return (
     <div 
       className={`relative w-12 h-12 cursor-pointer hover:scale-110 transition-transform duration-200 ${className}`}
-      onClick={onClick}
+      onClick={handleClick}
       title="Click to view full canvas preview"
     >
       <img 
