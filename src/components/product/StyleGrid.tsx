@@ -33,6 +33,28 @@ const StyleGrid = ({
     }
   };
 
+  // Premium gradient backgrounds for each style
+  const getStyleGradient = (styleId: number) => {
+    const gradients = [
+      'from-purple-500 via-pink-500 to-red-500', // Original
+      'from-blue-600 via-purple-600 to-indigo-800', // Classic Oil
+      'from-cyan-400 via-blue-500 to-purple-600', // Watercolor Dreams
+      'from-pink-400 via-red-400 to-yellow-400', // Calm Watercolor
+      'from-green-400 via-cyan-500 to-blue-500', // Pastel Bliss
+      'from-yellow-400 via-orange-500 to-red-500', // Electric Bloom
+      'from-indigo-500 via-purple-500 to-pink-500', // Neon Splash
+      'from-emerald-400 via-teal-500 to-cyan-600', // Pop Art Burst
+      'from-rose-400 via-pink-500 to-purple-600', // Abstract Fusion
+      'from-amber-400 via-orange-500 to-red-600', // Artisan Charcoal
+      'from-violet-500 via-purple-600 to-indigo-700', // Deco Luxe
+      'from-teal-400 via-green-500 to-emerald-600', // Gemstone Poly
+      'from-fuchsia-500 via-purple-600 to-indigo-600', // Embroidered Moments
+      'from-sky-400 via-blue-500 to-indigo-600', // 3D Storybook
+      'from-lime-400 via-green-500 to-emerald-600', // Artistic Mashup
+    ];
+    return gradients[styleId - 1] || gradients[0];
+  };
+
   // Show placeholder thumbnails when no photo is uploaded
   if (!croppedImage) {
     return (
@@ -41,34 +63,42 @@ const StyleGrid = ({
           {artStyles.map((style) => (
             <div
               key={style.id}
-              className="group relative bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl overflow-hidden border-2 border-gray-200 aspect-square"
+              className="group relative bg-white rounded-xl overflow-hidden border-2 border-gray-200 aspect-square shadow-lg hover:shadow-xl transition-all duration-300"
             >
+              {/* Premium glossy gradient background */}
+              <div className={`absolute inset-0 bg-gradient-to-br ${getStyleGradient(style.id)} opacity-90`}>
+                {/* Glossy overlay effect */}
+                <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-black/20"></div>
+                {/* Shimmer effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 animate-pulse"></div>
+              </div>
+
               {/* Placeholder content */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
-                <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center mb-3">
-                  <ImageIcon className="w-6 h-6 text-gray-500" />
+              <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center z-10">
+                <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-3 border border-white/30">
+                  <ImageIcon className="w-6 h-6 text-white" />
                 </div>
-                <p className="text-xs text-gray-600 font-medium mb-1">
+                <p className="text-xs text-white font-medium mb-1 drop-shadow-sm">
                   Upload Photo to
                 </p>
-                <p className="text-xs text-gray-600 font-medium">
+                <p className="text-xs text-white font-medium drop-shadow-sm">
                   Preview Style
                 </p>
               </div>
 
               {/* Style info overlay */}
-              <div className="absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm p-3 border-t border-gray-200">
-                <h4 className="font-semibold text-sm text-gray-900 truncate">
+              <div className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-sm p-3 border-t border-white/20">
+                <h4 className="font-semibold text-sm text-white truncate">
                   {style.name}
                 </h4>
-                <p className="text-xs text-gray-600 truncate">
+                <p className="text-xs text-white/80 truncate">
                   {style.description}
                 </p>
               </div>
 
               {/* Upload prompt overlay on hover */}
-              <div className="absolute inset-0 bg-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
-                <div className="bg-purple-600 text-white px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+              <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center backdrop-blur-sm">
+                <div className="bg-white/20 text-white px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 border border-white/30 backdrop-blur-sm">
                   <Upload className="w-3 h-3" />
                   Upload First
                 </div>
