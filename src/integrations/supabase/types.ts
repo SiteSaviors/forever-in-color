@@ -98,6 +98,30 @@ export type Database = {
         }
         Relationships: []
       }
+      style_prompts: {
+        Row: {
+          created_at: string
+          id: string
+          prompt: string
+          style_id: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          prompt: string
+          style_id: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          prompt?: string
+          style_id?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
