@@ -57,19 +57,8 @@ const StyleSelector = ({
         selectedStyle={selectedStyle}
         cropAspectRatio={cropAspectRatio}
         onStyleSelect={onStyleSelect}
+        onComplete={handleComplete}
       />
-
-      {/* Continue Button */}
-      {selectedStyle && (
-        <div className="text-center pt-4">
-          <Button 
-            onClick={handleComplete}
-            className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-full text-lg font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-          >
-            Continue with {artStyles.find(s => s.id === selectedStyle)?.name}
-          </Button>
-        </div>
-      )}
     </div>
   );
 };

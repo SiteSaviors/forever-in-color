@@ -8,6 +8,7 @@ import { useStylePreview } from "./hooks/useStylePreview";
 import StyleCardLoadingOverlay from "./components/StyleCardLoadingOverlay";
 import StyleCardIndicators from "./components/StyleCardIndicators";
 import Lightbox from "@/components/ui/lightbox";
+import { Button } from "@/components/ui/button";
 
 interface StyleCardProps {
   style: {
@@ -20,7 +21,9 @@ interface StyleCardProps {
   selectedStyle: number | null;
   isPopular: boolean;
   cropAspectRatio?: number;
+  showContinueButton?: boolean;
   onStyleClick: (style: { id: number; name: string; description: string; image: string }) => void;
+  onContinue?: () => void;
 }
 
 const StyleCard = ({
@@ -29,7 +32,9 @@ const StyleCard = ({
   selectedStyle,
   isPopular,
   cropAspectRatio = 1,
-  onStyleClick
+  showContinueButton = false,
+  onStyleClick,
+  onContinue
 }: StyleCardProps) => {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   
@@ -50,11 +55,19 @@ const StyleCard = ({
   const showLoadingState = isLoading;
   const showGeneratedBadge = isStyleGenerated && style.id !== 1;
   const imageToShow = previewUrl || croppedImage || style.image;
+  const showContinueInCard = showContinueButton && isSelected && previewUrl;
 
   const handleExpandClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (previewUrl || croppedImage) {
       setIsLightboxOpen(true);
+    }
+  };
+
+  const handleContinueClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onContinue) {
+      onContinue();
     }
   };
 
@@ -101,6 +114,18 @@ const StyleCard = ({
               >
                 <Expand className="w-4 h-4" />
               </button>
+            )}
+
+            {/* Continue Button - Show inside card when style is selected and has preview */}
+            {showContinueInCard && (
+              <div className="absolute bottom-2 left-2 right-2">
+                <Button 
+                  onClick={handleContinueClick}
+                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                >
+                  Continue with {style.name}
+                </Button>
+              </div>
             )}
 
             {/* Loading Overlay */}

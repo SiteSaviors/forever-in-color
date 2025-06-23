@@ -10,15 +10,17 @@ import { artStyles } from "@/data/artStyles";
 interface StyleGridProps {
   croppedImage: string | null;
   selectedStyle: number | null;
-  cropAspectRatio?: number; // New prop for dynamic aspect ratio
+  cropAspectRatio?: number;
   onStyleSelect: (styleId: number, styleName: string) => void;
+  onComplete?: () => void;
 }
 
 const StyleGrid = ({ 
   croppedImage, 
   selectedStyle, 
-  cropAspectRatio = 1, // Default to square
-  onStyleSelect 
+  cropAspectRatio = 1,
+  onStyleSelect,
+  onComplete
 }: StyleGridProps) => {
   const [showAllStyles, setShowAllStyles] = useState(false);
 
@@ -48,7 +50,9 @@ const StyleGrid = ({
             selectedStyle={selectedStyle}
             isPopular={popularStyleIds.includes(style.id)}
             cropAspectRatio={cropAspectRatio}
+            showContinueButton={true}
             onStyleClick={handleStyleClick}
+            onContinue={onComplete}
           />
         ))}
         
