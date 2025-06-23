@@ -12,23 +12,23 @@ export const generateStylePreview = async (imageUrl: string, style: string, phot
 
     console.log('User authentication status:', isAuthenticated ? 'authenticated' : 'not authenticated');
 
-    // Prepare headers - include auth if available
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json'
+    // Prepare the request body
+    const requestBody = { 
+      imageUrl, 
+      style,
+      photoId,
+      isAuthenticated
     };
 
-    if (isAuthenticated) {
-      headers.Authorization = `Bearer ${session.access_token}`;
-    }
+    console.log('Sending request with body:', { 
+      style, 
+      photoId, 
+      isAuthenticated, 
+      imageUrlLength: imageUrl.length 
+    });
 
     const { data, error } = await supabase.functions.invoke('generate-style-preview', {
-      body: { 
-        imageUrl, 
-        style,
-        photoId,
-        isAuthenticated
-      },
-      headers
+      body: requestBody
     });
 
     if (error) {
