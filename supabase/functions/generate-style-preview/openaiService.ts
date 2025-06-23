@@ -5,25 +5,23 @@ export class OpenAIService {
   constructor(private apiKey: string, private supabase: any) {}
 
   async generateImageToImage(imageData: string, styleName: string): Promise<{ ok: boolean; output?: string; error?: string }> {
-    console.log('Using GPT-4 Vision + GPT-IMG-1 for image transformation with style:', styleName);
+    console.log('Using GPT-IMG-1 for direct image transformation with style:', styleName);
     
     try {
-      // Step 1: Analyze the input image with GPT-4 Vision to create a detailed description
-      const analysisResult = await this.analyzeImageWithVision(imageData);
-      if (!analysisResult.ok) {
-        console.error('Image analysis failed:', analysisResult.error);
-        return analysisResult;
-      }
-
-      // Step 2: Get the style prompt from Supabase
+      // Get the exact prompt from Supabase
       const stylePrompt = await this.getStylePromptFromSupabase(styleName);
       
-      // Step 3: Combine the image description with the style prompt
-      const combinedPrompt = this.createCombinedPrompt(analysisResult.description!, stylePrompt, styleName);
-      
-      console.log('Using combined prompt for style:', styleName, '- Length:', combinedPrompt.length);
+      if (!stylePrompt) {
+        console.error('No style prompt found for:', styleName);
+        return {
+          ok: false,
+          error: 'Style prompt not found'
+        };
+      }
 
-      // Step 4: Generate image using GPT-IMG-1 with the combined prompt
+      console.log('Using exact prompt for style:', styleName, '- Prompt:', stylePrompt);
+
+      // Use GPT-IMG-1 for direct image-to-image transformation
       const response = await fetch('https://api.openai.com/v1/images/generations', {
         method: 'POST',
         headers: {
@@ -32,7 +30,8 @@ export class OpenAIService {
         },
         body: JSON.stringify({
           model: 'gpt-image-1',
-          prompt: combinedPrompt,
+          prompt: stylePrompt, // Use the exact prompt without modification
+          image: imageData, // Send the uploaded image directly
           n: 1,
           size: '1024x1024',
           quality: 'high',
@@ -54,7 +53,7 @@ export class OpenAIService {
       if (data.data && data.data[0] && data.data[0].b64_json) {
         // Convert base64 to data URL
         const base64Image = `data:image/png;base64,${data.data[0].b64_json}`;
-        console.log('GPT-IMG-1 generation successful with preserved subject');
+        console.log('GPT-IMG-1 generation successful with exact prompt');
         
         return {
           ok: true,
@@ -76,88 +75,11 @@ export class OpenAIService {
     }
   }
 
-  private async analyzeImageWithVision(imageData: string): Promise<{ ok: boolean; description?: string; error?: string }> {
-    try {
-      console.log('Analyzing image with GPT-4 Vision to preserve subject details');
-      
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o',
-          messages: [
-            {
-              role: 'user',
-              content: [
-                {
-                  type: 'text',
-                  text: 'Analyze this image and provide a detailed description focusing on: 1) The main subject (person, animal, object), 2) Their pose and positioning, 3) Physical characteristics and features, 4) Composition and framing, 5) Any important background elements. Be very specific about the subject type and characteristics so they can be preserved in an artistic transformation.'
-                },
-                {
-                  type: 'image_url',
-                  image_url: {
-                    url: imageData
-                  }
-                }
-              ]
-            }
-          ],
-          max_tokens: 500
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('GPT-4 Vision analysis error:', errorData);
-        return {
-          ok: false,
-          error: errorData.error?.message || 'Image analysis failed'
-        };
-      }
-
-      const data = await response.json();
-      const description = data.choices[0]?.message?.content;
-      
-      if (description) {
-        console.log('Image analysis completed successfully');
-        return {
-          ok: true,
-          description
-        };
-      }
-
-      return {
-        ok: false,
-        error: 'No description returned from image analysis'
-      };
-
-    } catch (error) {
-      console.error('Image analysis error:', error);
-      return {
-        ok: false,
-        error: error.message
-      };
-    }
-  }
-
-  private createCombinedPrompt(imageDescription: string, stylePrompt: string | null, styleName: string): string {
-    const baseStylePrompt = stylePrompt || `Transform this image in ${styleName} style while preserving the subject exactly.`;
-    
-    return `${imageDescription}
-
-Transform this exact scene in the following artistic style: ${baseStylePrompt}
-
-CRITICAL: Preserve the exact subject type, pose, and key characteristics described above. Do not change the subject into a different person, animal, or object. Maintain the same composition and framing while applying the artistic style transformation.`;
-  }
-
   private async getStylePromptFromSupabase(styleName: string): Promise<string | null> {
     try {
       const styleId = this.getStyleIdByName(styleName);
       
-      console.log('Fetching prompt for style:', styleName, 'with ID:', styleId);
+      console.log('Fetching exact prompt for style:', styleName, 'with ID:', styleId);
       
       // Fetch the prompt from Supabase style_prompts table
       const { data, error } = await this.supabase
@@ -171,7 +93,7 @@ CRITICAL: Preserve the exact subject type, pose, and key characteristics describ
         return null;
       }
 
-      console.log('Successfully fetched prompt from Supabase for', styleName);
+      console.log('Successfully fetched exact prompt from Supabase for', styleName);
       return data?.prompt || null;
     } catch (error) {
       console.warn('Error fetching style prompt from Supabase:', error);
