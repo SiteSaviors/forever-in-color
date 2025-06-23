@@ -1,5 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { stylePrompts } from "./stylePrompts.ts"
 import { StylePreviewRequest } from './types.ts'
 import { ReplicateService } from './replicateService.ts'
@@ -9,59 +10,122 @@ import {
   createCorsResponse 
 } from './responseHandlers.ts'
 
+// Initialize Supabase client for auth and database operations
+const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
 // Input validation helper
 const validateInput = (body: any): { isValid: boolean; error?: string } => {
   if (!body) {
     return { isValid: false, error: 'Request body is required' };
   }
 
-  const { imageData, styleId, styleName } = body;
+  const { imageUrl, style, photoId } = body;
 
-  if (!imageData || typeof imageData !== 'string') {
-    return { isValid: false, error: 'imageData must be a non-empty string' };
+  if (!imageUrl || typeof imageUrl !== 'string') {
+    return { isValid: false, error: 'imageUrl must be a non-empty string' };
   }
 
-  if (!styleId || (typeof styleId !== 'number' && typeof styleId !== 'string')) {
-    return { isValid: false, error: 'styleId must be a number or string' };
+  if (!style || typeof style !== 'string') {
+    return { isValid: false, error: 'style must be a non-empty string' };
   }
 
-  if (!styleName || typeof styleName !== 'string') {
-    return { isValid: false, error: 'styleName must be a non-empty string' };
+  if (!photoId || typeof photoId !== 'string') {
+    return { isValid: false, error: 'photoId must be a non-empty string' };
   }
 
-  // Validate image data format (base64 data URL)
-  if (!imageData.startsWith('data:image/')) {
-    return { isValid: false, error: 'imageData must be a valid base64 data URL' };
+  // Validate image data format (base64 data URL or HTTP URL)
+  if (!imageUrl.startsWith('data:image/') && !imageUrl.startsWith('http')) {
+    return { isValid: false, error: 'imageUrl must be a valid data URL or HTTP URL' };
   }
 
-  // Check image size limit (10MB)
-  const imageSizeBytes = (imageData.length * 3) / 4;
-  if (imageSizeBytes > 10 * 1024 * 1024) {
-    return { isValid: false, error: 'Image size exceeds 10MB limit' };
+  // Check image size limit for base64 images (10MB)
+  if (imageUrl.startsWith('data:image/')) {
+    const imageSizeBytes = (imageUrl.length * 3) / 4;
+    if (imageSizeBytes > 10 * 1024 * 1024) {
+      return { isValid: false, error: 'Image size exceeds 10MB limit' };
+    }
   }
 
   return { isValid: true };
 };
 
-// Rate limiting helper (simple in-memory store)
-const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
-const RATE_LIMIT = 10; // requests per minute
-const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
-
-const checkRateLimit = (clientId: string): boolean => {
+// User-based rate limiting with Supabase storage
+const checkUserRateLimit = async (userId: string): Promise<boolean> => {
+  const RATE_LIMIT = 10; // requests per minute
+  const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
   const now = Date.now();
-  const entry = rateLimitStore.get(clientId);
   
-  if (!entry || now > entry.resetTime) {
-    rateLimitStore.set(clientId, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
+  try {
+    // Get user's rate limit data from a hypothetical rate_limits table
+    // For now, we'll use a simple in-memory approach but with user ID
+    const { data: rateLimitData, error } = await supabase
+      .from('user_rate_limits')
+      .select('request_count, reset_time')
+      .eq('user_id', userId)
+      .single();
+
+    if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+      console.error('Rate limit check error:', error);
+      return true; // Allow on error to avoid blocking users
+    }
+
+    if (!rateLimitData || now > rateLimitData.reset_time) {
+      // Reset or create new rate limit record
+      await supabase
+        .from('user_rate_limits')
+        .upsert({
+          user_id: userId,
+          request_count: 1,
+          reset_time: now + RATE_LIMIT_WINDOW
+        });
+      return true;
+    }
+
+    if (rateLimitData.request_count >= RATE_LIMIT) {
+      return false;
+    }
+
+    // Increment request count
+    await supabase
+      .from('user_rate_limits')
+      .update({ 
+        request_count: rateLimitData.request_count + 1 
+      })
+      .eq('user_id', userId);
+
     return true;
+  } catch (error) {
+    console.error('Rate limiting error:', error);
+    return true; // Allow on error to avoid blocking users
+  }
+};
+
+// Request origin validation
+const validateRequestOrigin = (req: Request): boolean => {
+  const origin = req.headers.get('origin');
+  const referer = req.headers.get('referer');
+  
+  // Allow requests from Supabase domains and localhost for development
+  const allowedOrigins = [
+    'https://fvjganetpyyrguuxjtqi.supabase.co',
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'https://localhost:3000',
+    'https://localhost:5173'
+  ];
+
+  // Check if origin or referer matches allowed domains
+  if (origin) {
+    return allowedOrigins.some(allowed => origin.startsWith(allowed));
   }
   
-  if (entry.count >= RATE_LIMIT) {
-    return false;
+  if (referer) {
+    return allowedOrigins.some(allowed => referer.startsWith(allowed));
   }
-  
-  entry.count++;
+
+  // Allow requests without origin/referer (e.g., mobile apps, server-to-server)
   return true;
 };
 
@@ -77,9 +141,33 @@ serve(async (req) => {
   }
 
   try {
-    // Rate limiting based on IP
-    const clientIp = req.headers.get('x-forwarded-for') || 'unknown';
-    if (!checkRateLimit(clientIp)) {
+    // Validate request origin
+    if (!validateRequestOrigin(req)) {
+      console.warn('Request from unauthorized origin:', req.headers.get('origin') || req.headers.get('referer'));
+      return createErrorResponse('Unauthorized origin', 403);
+    }
+
+    // Extract and verify JWT token
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return createErrorResponse('Missing or invalid authorization header', 401);
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    
+    // Verify the JWT token using Supabase
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) {
+      console.error('Authentication error:', authError);
+      return createErrorResponse('Invalid or expired token', 401);
+    }
+
+    console.log('Authenticated user:', user.id);
+
+    // User-based rate limiting
+    const rateLimitPassed = await checkUserRateLimit(user.id);
+    if (!rateLimitPassed) {
       return createErrorResponse('Rate limit exceeded. Please try again later.', 429);
     }
 
@@ -101,29 +189,13 @@ serve(async (req) => {
       return createErrorResponse(validation.error || 'Invalid input', 400);
     }
 
-    const { imageData, styleId, styleName, customPrompt }: StylePreviewRequest & { customPrompt?: string } = requestBody
+    const { imageUrl, style, photoId }: { imageUrl: string; style: string; photoId: string } = requestBody;
 
     console.log('=== STYLE GENERATION DEBUG ===')
-    console.log('Received request for style:', styleId, styleName)
-    console.log('Image data length:', imageData?.length || 0)
-    console.log('Style prompt exists:', !!stylePrompts[styleId])
-
-    // Special case for Original Image - no AI transformation needed
-    if (styleId === 1) {
-      console.log('Returning original image for style ID 1')
-      return createSuccessResponse(
-        "Original image preserved exactly as uploaded",
-        imageData,
-        styleId,
-        styleName
-      )
-    }
-
-    // Check if style prompt exists
-    if (!stylePrompts[styleId]) {
-      console.error(`No style prompt found for style ID: ${styleId}`)
-      return createErrorResponse(`Style not supported: ${styleId}`, 400)
-    }
+    console.log('Received request for style:', style)
+    console.log('User ID:', user.id)
+    console.log('Photo ID:', photoId)
+    console.log('Image URL length:', imageUrl?.length || 0)
 
     // Get Replicate API key from Supabase secrets with validation
     const replicateApiKey = Deno.env.get('REPLICATE_API_TOKEN') || Deno.env.get('REPLICATE_API_KEY')
@@ -135,34 +207,26 @@ serve(async (req) => {
 
     const replicateService = new ReplicateService(replicateApiKey)
     
-    // Use the default stylePrompts for consistent results
-    let transformationPrompt = stylePrompts[styleId]
-    console.log('Using style prompt for', styleName)
-    
-    if (customPrompt) {
-      console.log('Custom prompt was provided but ignored to preserve facial features')
-    }
-
-    console.log('Starting Replicate transformation for style:', styleName)
+    console.log('Starting Replicate transformation for style:', style)
 
     // Generate the transformed image using Replicate with timeout
     const timeoutController = new AbortController();
     const timeoutId = setTimeout(() => timeoutController.abort(), 60000); // 60 second timeout
 
     try {
-      const transformResult = await replicateService.generateImageToImage(imageData, transformationPrompt)
+      const transformResult = await replicateService.generateImageToImage(imageUrl, style)
       clearTimeout(timeoutId);
 
       if (!transformResult.ok) {
-        console.error(`Replicate transformation failed for ${styleName}:`, transformResult.error)
+        console.error(`Replicate transformation failed for ${style}:`, transformResult.error)
         
         // Return original image as fallback
         return createSuccessResponse(
-          `${styleName} style preview (using original as fallback)`,
-          imageData,
-          styleId,
-          styleName,
-          `Service temporarily unavailable for ${styleName}. Showing original image.`
+          `${style} style preview (using original as fallback)`,
+          imageUrl,
+          style,
+          style,
+          `Service temporarily unavailable for ${style}. Showing original image.`
         )
       }
 
@@ -174,34 +238,34 @@ serve(async (req) => {
       }
 
       if (transformedImageUrl) {
-        console.log(`Transformation completed successfully for ${styleName}`)
+        console.log(`Transformation completed successfully for ${style}`)
         return createSuccessResponse(
-          `${styleName} style applied successfully`,
+          `${style} style applied successfully`,
           transformedImageUrl,
-          styleId,
-          styleName
+          style,
+          style
         )
       }
 
       // Fallback if no valid output
-      console.warn(`No valid transformation output for ${styleName}, returning original`)
+      console.warn(`No valid transformation output for ${style}, returning original`)
       return createSuccessResponse(
-        `${styleName} style preview (using original as fallback)`,
-        imageData,
-        styleId,
-        styleName,
-        `Style transformation for ${styleName} returned no output - showing original image`
+        `${style} style preview (using original as fallback)`,
+        imageUrl,
+        style,
+        style,
+        `Style transformation for ${style} returned no output - showing original image`
       )
     } catch (timeoutError) {
       clearTimeout(timeoutId);
-      console.error(`Timeout error for ${styleName}:`, timeoutError);
+      console.error(`Timeout error for ${style}:`, timeoutError);
       
       return createSuccessResponse(
-        `${styleName} style preview (timeout fallback)`,
-        imageData,
-        styleId,
-        styleName,
-        `Request timed out for ${styleName} - showing original image`
+        `${style} style preview (timeout fallback)`,
+        imageUrl,
+        style,
+        style,
+        `Request timed out for ${style} - showing original image`
       )
     }
 

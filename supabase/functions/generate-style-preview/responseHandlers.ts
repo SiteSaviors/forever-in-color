@@ -21,7 +21,7 @@ export const createSuccessResponse = (
   const response = {
     success: true,
     message,
-    previewUrl,
+    preview_url: previewUrl, // Use snake_case to match expected API format
     styleId,
     styleName,
     timestamp: new Date().toISOString(),

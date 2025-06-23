@@ -4,19 +4,24 @@ import { createPreview } from "./previewOperations";
 
 export const generateStylePreview = async (imageUrl: string, style: string, photoId: string) => {
   try {
-    console.log('Generating style preview:', { imageUrl, style, photoId });
+    console.log('Generating style preview:', { imageUrl: imageUrl.substring(0, 50) + '...', style, photoId });
     
-    // Verify user is authenticated
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+    // Verify user is authenticated and get session token
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError || !session) {
       throw new Error('User must be authenticated to generate previews');
     }
+
+    console.log('User authenticated, calling edge function with proper auth');
 
     const { data, error } = await supabase.functions.invoke('generate-style-preview', {
       body: { 
         imageUrl, 
         style,
-        userId: user.id // Include user ID for security
+        photoId
+      },
+      headers: {
+        Authorization: `Bearer ${session.access_token}`
       }
     });
 
