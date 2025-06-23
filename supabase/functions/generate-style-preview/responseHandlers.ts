@@ -1,59 +1,72 @@
 
-import { StylePreviewResponse } from './types.ts';
-
-export const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+export const createCorsResponse = () => {
+  return new Response(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+      'Access-Control-Max-Age': '86400',
+    }
+  })
+}
 
 export const createSuccessResponse = (
-  styleDescription: string,
-  previewUrl: string,
-  styleId: number,
+  message: string, 
+  previewUrl: string, 
+  styleId: number | string, 
   styleName: string,
-  note?: string
-): Response => {
-  const responseData: StylePreviewResponse = {
+  warning?: string
+) => {
+  const response = {
     success: true,
-    styleDescription,
+    message,
     previewUrl,
     styleId,
     styleName,
-    ...(note && { note })
-  };
+    timestamp: new Date().toISOString(),
+    ...(warning && { warning })
+  }
 
-  return new Response(
-    JSON.stringify(responseData),
-    { 
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+  return new Response(JSON.stringify(response), {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+      // Security headers
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'DENY',
+      'X-XSS-Protection': '1; mode=block',
+      'Referrer-Policy': 'strict-origin-when-cross-origin',
+      'Cache-Control': 'no-cache, no-store, must-revalidate'
     }
-  );
-};
+  })
+}
 
-export const createErrorResponse = (
-  error: string,
-  status: number,
-  details?: string
-): Response => {
-  const responseData: StylePreviewResponse = {
+export const createErrorResponse = (error: string, status: number = 400, details?: string) => {
+  const response = {
     success: false,
     error,
-    styleDescription: '',
-    previewUrl: '',
-    styleId: 0,
-    styleName: '',
-    ...(details && { details })
-  };
+    timestamp: new Date().toISOString(),
+    // Only include details in development or for non-sensitive errors
+    ...(details && status < 500 && { details })
+  }
 
-  return new Response(
-    JSON.stringify(responseData),
-    { 
-      status, 
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+  return new Response(JSON.stringify(response), {
+    status,
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+      // Security headers
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'DENY',
+      'X-XSS-Protection': '1; mode=block',
+      'Referrer-Policy': 'strict-origin-when-cross-origin',
+      'Cache-Control': 'no-cache, no-store, must-revalidate'
     }
-  );
-};
-
-export const createCorsResponse = (): Response => {
-  return new Response('ok', { headers: corsHeaders });
-};
+  })
+}

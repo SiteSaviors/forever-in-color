@@ -16,6 +16,7 @@ export type Database = {
           image_url: string | null
           orientation: string | null
           status: string | null
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -23,6 +24,7 @@ export type Database = {
           image_url?: string | null
           orientation?: string | null
           status?: string | null
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -30,6 +32,7 @@ export type Database = {
           image_url?: string | null
           orientation?: string | null
           status?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -40,6 +43,7 @@ export type Database = {
           photo_id: string | null
           preview_url: string | null
           style: string | null
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -47,6 +51,7 @@ export type Database = {
           photo_id?: string | null
           preview_url?: string | null
           style?: string | null
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -54,6 +59,7 @@ export type Database = {
           photo_id?: string | null
           preview_url?: string | null
           style?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -64,6 +70,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
     }
     Views: {

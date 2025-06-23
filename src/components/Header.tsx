@@ -1,112 +1,166 @@
-import { Menu, X, Search, ShoppingCart, User } from "lucide-react";
+
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Menu, X, User, LogOut } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuthStore } from "@/hooks/useAuthStore";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  return <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
-          {/* Logo - Left aligned */}
-          <div className="flex items-center flex-shrink-0">
-            <Link to="/">
-              <img src="/lovable-uploads/c4c5b902-8aa4-467b-9565-a8a53dfe7ff0.png" alt="Forever In Color" className="h-12 w-auto object-contain" />
+  const { user, signOut } = useAuthStore();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
+
+  return (
+    <header className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-b border-gray-200 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo */}
+          <Link to="/" className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">AI</span>
+            </div>
+            <span className="text-xl font-bold text-gray-900">Art Canvas</span>
+          </Link>
+
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center space-x-8">
+            <Link to="/" className="text-gray-600 hover:text-gray-900 transition-colors">
+              Home
             </Link>
-          </div>
-
-          {/* Desktop Navigation - Center */}
-          <nav className="hidden lg:flex items-center justify-center flex-1 mx-12">
-            <div className="flex items-center space-x-8">
-              <a href="#styles" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium">
-                Art Styles
-              </a>
-              <a href="#how-it-works" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium">
-                How It Works
-              </a>
-              <a href="#ar-experience" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium">
-                AR Experience
-              </a>
-              <a href="#testimonials" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium">
-                Reviews
-              </a>
-            </div>
-          </nav>
-
-          {/* Desktop Actions - Right aligned with consistent spacing */}
-          <div className="hidden lg:flex items-center space-x-4 flex-shrink-0">
-            {/* Search */}
-            <div className="relative">
-              {isSearchOpen ? <div className="flex items-center">
-                  <input type="text" placeholder="Search..." className="w-56 px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm" autoFocus onBlur={() => setIsSearchOpen(false)} />
-                </div> : <button onClick={() => setIsSearchOpen(true)} className="p-2.5 text-gray-700 hover:text-purple-600 transition-colors duration-200 hover:bg-gray-50 rounded-lg">
-                  <Search className="w-5 h-5" />
-                </button>}
-            </div>
-
-            {/* Cart */}
-            <button className="relative p-2.5 text-gray-700 hover:text-purple-600 transition-colors duration-200 hover:bg-gray-50 rounded-lg">
-              <ShoppingCart className="w-5 h-5" />
-              <span className="absolute -top-1 -right-1 bg-purple-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
-                0
-              </span>
-            </button>
-
-            {/* Login */}
-            <button className="p-2.5 text-gray-700 hover:text-purple-600 transition-colors duration-200 hover:bg-gray-50 rounded-lg">
-              <User className="w-5 h-5" />
-            </button>
-
-            {/* Create Art Button - Consistent styling */}
-            <Link to="/product" className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 ml-4">
+            <Link to="/product" className="text-gray-600 hover:text-gray-900 transition-colors">
               Create Art
             </Link>
+            <a href="#styles" className="text-gray-600 hover:text-gray-900 transition-colors">
+              Styles
+            </a>
+            <a href="#how-it-works" className="text-gray-600 hover:text-gray-900 transition-colors">
+              How It Works
+            </a>
+          </nav>
+
+          {/* Auth Section */}
+          <div className="hidden md:flex items-center space-x-4">
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="flex items-center space-x-2">
+                    <User className="h-4 w-4" />
+                    <span>{user.email}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem>
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Sign Out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <>
+                <Link to="/auth">
+                  <Button variant="ghost">Sign In</Button>
+                </Link>
+                <Link to="/product">
+                  <Button className="bg-purple-600 hover:bg-purple-700">
+                    Start Creating
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
 
-          {/* Mobile Menu Button */}
-          <button className="lg:hidden p-2.5 hover:bg-gray-50 rounded-lg transition-colors duration-200" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-            {isMenuOpen ? <X className="w-6 h-6 text-gray-700" /> : <Menu className="w-6 h-6 text-gray-700" />}
-          </button>
+          {/* Mobile menu button */}
+          <div className="md:hidden">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
+              {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </Button>
+          </div>
         </div>
 
-        {/* Mobile Navigation - Consistent spacing */}
-        {isMenuOpen && <div className="lg:hidden py-6 border-t border-gray-100">
-            <nav className="flex flex-col space-y-6">
-              {/* Mobile Search */}
-              <div className="relative">
-                <input type="text" placeholder="Search..." className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" />
-              </div>
-
-              <a href="#styles" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium py-2">
-                Art Styles
-              </a>
-              <a href="#how-it-works" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium py-2">
-                How It Works
-              </a>
-              <a href="#ar-experience" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium py-2">
-                AR Experience
-              </a>
-              <a href="#testimonials" className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-medium py-2">
-                Reviews
-              </a>
-
-              {/* Mobile Actions - Grid layout */}
-              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200">
-                <button className="flex items-center justify-center space-x-2 text-gray-700 hover:text-purple-600 transition-colors duration-200 py-3">
-                  <ShoppingCart className="w-5 h-5" />
-                  <span>Cart (0)</span>
-                </button>
-                <button className="flex items-center justify-center space-x-2 text-gray-700 hover:text-purple-600 transition-colors duration-200 py-3">
-                  <User className="w-5 h-5" />
-                  <span>Login</span>
-                </button>
-              </div>
-
-              <Link to="/product" className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-8 py-4 rounded-full font-semibold text-center mt-4">
+        {/* Mobile Navigation */}
+        {isMenuOpen && (
+          <div className="md:hidden py-4 border-t border-gray-200">
+            <nav className="flex flex-col space-y-4">
+              <Link 
+                to="/" 
+                className="text-gray-600 hover:text-gray-900 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Home
+              </Link>
+              <Link 
+                to="/product" 
+                className="text-gray-600 hover:text-gray-900 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
                 Create Art
               </Link>
+              <a 
+                href="#styles" 
+                className="text-gray-600 hover:text-gray-900 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Styles
+              </a>
+              <a 
+                href="#how-it-works" 
+                className="text-gray-600 hover:text-gray-900 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                How It Works
+              </a>
+              
+              {user ? (
+                <div className="pt-4 border-t border-gray-200 space-y-2">
+                  <p className="text-sm text-gray-600">Signed in as {user.email}</p>
+                  <Button 
+                    variant="ghost" 
+                    onClick={handleSignOut}
+                    className="w-full justify-start"
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign Out
+                  </Button>
+                </div>
+              ) : (
+                <div className="pt-4 border-t border-gray-200 space-y-2">
+                  <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
+                    <Button variant="ghost" className="w-full">Sign In</Button>
+                  </Link>
+                  <Link to="/product" onClick={() => setIsMenuOpen(false)}>
+                    <Button className="w-full bg-purple-600 hover:bg-purple-700">
+                      Start Creating
+                    </Button>
+                  </Link>
+                </div>
+              )}
             </nav>
-          </div>}
+          </div>
+        )}
       </div>
-    </header>;
+    </header>
+  );
 };
+
 export default Header;

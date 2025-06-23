@@ -1,61 +1,70 @@
+
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import Product from "./pages/Product";
-import OriginalStyle from "./pages/OriginalStyle";
-import ClassicOilPainting from "./pages/ClassicOilPainting";
-import CalmWatercolor from "./pages/CalmWatercolor";
-import WatercolorDreams from "./pages/WatercolorDreams";
-import PastelBliss from "./pages/PastelBliss";
-import ArtisanCharcoal from "./pages/ArtisanCharcoal";
-import NeonSplash from "./pages/NeonSplash";
-import PopArtBurst from "./pages/PopArtBurst";
-import ElectricBloom from "./pages/ElectricBloom";
-import ThreeDStorybook from "./pages/ThreeDStorybook";
-import DecoLuxe from "./pages/DecoLuxe";
-import AbstractFusion from "./pages/AbstractFusion";
-import ArtisticMashup from "./pages/ArtisticMashup";
-import EmbroideredMoments from "./pages/EmbroideredMoments";
-import ARExperience from "./pages/ARExperience";
-import NotFound from "./pages/NotFound";
-import GemstonePoly from "./pages/GemstonePoly";
+import Index from "@/pages/Index";
+import Product from "@/pages/Product";
+import Auth from "@/pages/Auth";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import NotFound from "@/pages/NotFound";
 
-const queryClient = new QueryClient();
+// Style pages
+import OriginalStyle from "@/pages/OriginalStyle";
+import ClassicOilPainting from "@/pages/ClassicOilPainting";
+import WatercolorDreams from "@/pages/WatercolorDreams";
+import PopArtBurst from "@/pages/PopArtBurst";
+import AbstractFusion from "@/pages/AbstractFusion";
+import CalmWatercolor from "@/pages/CalmWatercolor";
+import NeonSplash from "@/pages/NeonSplash";
+import ArtisanCharcoal from "@/pages/ArtisanCharcoal";
+import ElectricBloom from "@/pages/ElectricBloom";
+import PastelBliss from "@/pages/PastelBliss";
+import DecoLuxe from "@/pages/DecoLuxe";
+import GemstonePoly from "@/pages/GemstonePoly";
+import EmbroideredMoments from "@/pages/EmbroideredMoments";
+import ThreeDStorybook from "@/pages/ThreeDStorybook";
+import ArtisticMashup from "@/pages/ArtisticMashup";
+import ARExperience from "@/pages/ARExperience";
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
+import "./App.css";
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route 
+          path="/product" 
+          element={
+            <ProtectedRoute>
+              <Product />
+            </ProtectedRoute>
+          } 
+        />
+        
+        {/* Style pages - public */}
+        <Route path="/original" element={<OriginalStyle />} />
+        <Route path="/classic-oil-painting" element={<ClassicOilPainting />} />
+        <Route path="/watercolor-dreams" element={<WatercolorDreams />} />
+        <Route path="/pop-art-burst" element={<PopArtBurst />} />
+        <Route path="/abstract-fusion" element={<AbstractFusion />} />
+        <Route path="/calm-watercolor" element={<CalmWatercolor />} />
+        <Route path="/neon-splash" element={<NeonSplash />} />
+        <Route path="/artisan-charcoal" element={<ArtisanCharcoal />} />
+        <Route path="/electric-bloom" element={<ElectricBloom />} />
+        <Route path="/pastel-bliss" element={<PastelBliss />} />
+        <Route path="/deco-luxe" element={<DecoLuxe />} />
+        <Route path="/gemstone-poly" element={<GemstonePoly />} />
+        <Route path="/embroidered-moments" element={<EmbroideredMoments />} />
+        <Route path="/three-d-storybook" element={<ThreeDStorybook />} />
+        <Route path="/artistic-mashup" element={<ArtisticMashup />} />
+        <Route path="/ar-experience" element={<ARExperience />} />
+        
+        <Route path="*" element={<NotFound />} />
+      </Routes>
       <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/product" element={<Product />} />
-          <Route path="/ar-experience" element={<ARExperience />} />
-          <Route path="/art-styles/original-style" element={<OriginalStyle />} />
-          <Route path="/art-styles/classic-oil-painting" element={<ClassicOilPainting />} />
-          <Route path="/art-styles/calm-watercolor" element={<CalmWatercolor />} />
-          <Route path="/art-styles/watercolor-dreams" element={<WatercolorDreams />} />
-          <Route path="/art-styles/pastel-bliss" element={<PastelBliss />} />
-          <Route path="/art-styles/artisan-charcoal" element={<ArtisanCharcoal />} />
-          <Route path="/art-styles/neon-splash" element={<NeonSplash />} />
-          <Route path="/art-styles/pop-art-burst" element={<PopArtBurst />} />
-          <Route path="/art-styles/electric-bloom" element={<ElectricBloom />} />
-          <Route path="/art-styles/3d-storybook" element={<ThreeDStorybook />} />
-          <Route path="/art-styles/deco-luxe" element={<DecoLuxe />} />
-          <Route path="/art-styles/abstract-fusion" element={<AbstractFusion />} />
-          <Route path="/art-styles/artistic-mashup" element={<ArtisticMashup />} />
-          <Route path="/art-styles/embroidered-moments" element={<EmbroideredMoments />} />
-          <Route path="/art-styles/gemstone-poly" element={<GemstonePoly />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+    </Router>
+  );
+}
 
 export default App;
