@@ -1,3 +1,4 @@
+
 export class ReplicateService {
   private apiToken: string;
   private baseUrl = "https://api.replicate.com/v1";
@@ -13,7 +14,7 @@ export class ReplicateService {
   }
 
   async generateImageToImage(imageData: string, prompt: string): Promise<any> {
-    console.log('Starting Flux Kontext Max generation with enhanced identity preservation prompt:', prompt);
+    console.log('Starting Flux Kontext Pro generation with enhanced identity preservation prompt:', prompt);
     
     // Additional debug logging
     if (!this.apiToken || this.apiToken === 'undefined' || this.apiToken.trim() === '') {
@@ -43,21 +44,21 @@ IMPORTANT IDENTITY PRESERVATION RULES:
 - Do not add, remove, or modify any person's features
 - This is the SAME PERSON, just in a different artistic style`;
 
-      // Step 1: Create prediction using the correct flux-kontext-max format
+      // Step 1: Create prediction using the flux-kontext-pro format
       const requestBody = {
         input: {
           prompt: enhancedPrompt,
-          input_image: imageData, // flux-kontext-max uses "input_image" not "image"
-          output_format: "jpg" // Changed from "webp" to "jpg" - flux-kontext-max only supports "jpg" and "png"
+          input_image: imageData, // flux-kontext-pro uses "input_image" same as flux-kontext-max
+          output_format: "jpg" // flux-kontext-pro supports "jpg" format
         }
       };
 
-      console.log('Making request to flux-kontext-max model with enhanced identity preservation');
+      console.log('Making request to flux-kontext-pro model with enhanced identity preservation');
 
-      const response = await fetch(`${this.baseUrl}/models/black-forest-labs/flux-kontext-max/predictions`, {
+      const response = await fetch(`${this.baseUrl}/models/black-forest-labs/flux-kontext-pro/predictions`, {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${this.apiToken}`, // Use Bearer for flux-kontext-max
+          "Authorization": `Bearer ${this.apiToken}`, // Use Bearer for flux-kontext-pro
           "Content-Type": "application/json",
           "Prefer": "wait" // This makes it wait for completion instead of polling
         },
