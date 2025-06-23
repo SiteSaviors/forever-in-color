@@ -101,8 +101,8 @@ const PhotoUploadAndStyleSelection = ({
         </div>
       )}
 
-      {/* Style Selection Section - Show when we have a cropped image */}
-      {croppedImage && !showCropper && (
+      {/* Style Selection Section - Always show, but with different behavior based on whether we have a cropped image */}
+      {!showCropper && (
         <div>
           <StyleSelector
             croppedImage={croppedImage}
@@ -111,7 +111,7 @@ const PhotoUploadAndStyleSelection = ({
             cropAspectRatio={cropAspectRatio}
             onStyleSelect={handleStyleSelect}
             onComplete={handleComplete}
-            onRecropImage={handleRecropImage}
+            onRecropImage={croppedImage ? handleRecropImage : undefined}
           />
         </div>
       )}
