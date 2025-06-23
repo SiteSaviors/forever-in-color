@@ -35,7 +35,7 @@ export class ReplicateService {
         input: {
           prompt: prompt,
           input_image: imageData, // flux-kontext-max uses "input_image" not "image"
-          output_format: "webp"
+          output_format: "jpg" // Changed from "webp" to "jpg" - flux-kontext-max only supports "jpg" and "png"
         }
       };
 
