@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,12 +7,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-
 interface AuthFormProps {
   onAuthSuccess: () => void;
 }
-
-const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
+const AuthForm = ({
+  onAuthSuccess
+}: AuthFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -22,7 +21,6 @@ const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
     password: '',
     fullName: ''
   });
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
       ...prev,
@@ -30,14 +28,14 @@ const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
     }));
     setError(null);
   };
-
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
-
     try {
-      const { error } = await supabase.auth.signUp({
+      const {
+        error
+      } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
@@ -47,7 +45,6 @@ const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
           }
         }
       });
-
       if (error) {
         if (error.message.includes('already registered')) {
           setError('This email is already registered. Please sign in instead.');
@@ -57,7 +54,11 @@ const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
       } else {
         setError(null);
         // Check if email confirmation is required
-        const { data: { session } } = await supabase.auth.getSession();
+        const {
+          data: {
+            session
+          }
+        } = await supabase.auth.getSession();
         if (session) {
           onAuthSuccess();
         } else {
@@ -70,18 +71,17 @@ const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
       setIsLoading(false);
     }
   };
-
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
-
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const {
+        error
+      } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password
       });
-
       if (error) {
         if (error.message.includes('Invalid login credentials')) {
           setError('Invalid email or password. Please check your credentials and try again.');
@@ -97,14 +97,10 @@ const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
       setIsLoading(false);
     }
   };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 flex items-center justify-center p-4">
+  return <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-gray-900">
-            Welcome to AI Art Canvas
-          </CardTitle>
+          <CardTitle className="text-2xl font-bold text-gray-900">Welcome to Forever In Color</CardTitle>
           <CardDescription>
             Sign in to your account or create a new one to get started
           </CardDescription>
@@ -116,51 +112,23 @@ const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
             </TabsList>
 
-            {error && (
-              <Alert variant="destructive">
+            {error && <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
+              </Alert>}
 
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="signin-email">Email</Label>
-                  <Input
-                    id="signin-email"
-                    name="email"
-                    type="email"
-                    placeholder="your@email.com"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    required
-                  />
+                  <Input id="signin-email" name="email" type="email" placeholder="your@email.com" value={formData.email} onChange={handleInputChange} required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signin-password">Password</Label>
                   <div className="relative">
-                    <Input
-                      id="signin-password"
-                      name="password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Your password"
-                      value={formData.password}
-                      onChange={handleInputChange}
-                      required
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
+                    <Input id="signin-password" name="password" type={showPassword ? "text" : "password"} placeholder="Your password" value={formData.password} onChange={handleInputChange} required />
+                    <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent" onClick={() => setShowPassword(!showPassword)}>
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>
                   </div>
                 </div>
@@ -174,53 +142,18 @@ const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="signup-name">Full Name</Label>
-                  <Input
-                    id="signup-name"
-                    name="fullName"
-                    type="text"
-                    placeholder="Your full name"
-                    value={formData.fullName}
-                    onChange={handleInputChange}
-                    required
-                  />
+                  <Input id="signup-name" name="fullName" type="text" placeholder="Your full name" value={formData.fullName} onChange={handleInputChange} required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">Email</Label>
-                  <Input
-                    id="signup-email"
-                    name="email"
-                    type="email"
-                    placeholder="your@email.com"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    required
-                  />
+                  <Input id="signup-email" name="email" type="email" placeholder="your@email.com" value={formData.email} onChange={handleInputChange} required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-password">Password</Label>
                   <div className="relative">
-                    <Input
-                      id="signup-password"
-                      name="password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Create a password"
-                      value={formData.password}
-                      onChange={handleInputChange}
-                      required
-                      minLength={6}
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
+                    <Input id="signup-password" name="password" type={showPassword ? "text" : "password"} placeholder="Create a password" value={formData.password} onChange={handleInputChange} required minLength={6} />
+                    <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent" onClick={() => setShowPassword(!showPassword)}>
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>
                   </div>
                   <p className="text-xs text-gray-500">
@@ -235,8 +168,6 @@ const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
           </Tabs>
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>;
 };
-
 export default AuthForm;
