@@ -118,7 +118,7 @@ export const useProductStepsConfig = ({
     {
       id: "step-4",
       number: 4,
-      title: "Review & Order",
+      title: "Preview Your Art & Complete Order",
       icon: ShoppingCart,
       description: "Review your custom canvas and complete your order",
       required: true,
