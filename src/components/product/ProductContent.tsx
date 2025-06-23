@@ -58,7 +58,7 @@ const ProductContent = ({
   });
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-3 md:py-6 pb-24 md:pb-32">
+    <div className="max-w-4xl md:max-w-6xl lg:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 md:py-6 pb-24 md:pb-32">
       <Accordion 
         type="single" 
         value={`step-${currentStep}`} 
