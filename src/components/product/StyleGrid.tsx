@@ -33,21 +33,21 @@ const StyleGrid = ({
     }
   };
 
-  // Premium gradient backgrounds for each style (updated mapping)
+  // Premium gradient backgrounds for each style (updated with more variety)
   const getStyleGradient = (styleId: number) => {
     const gradients = [
-      'from-purple-500 via-pink-500 to-red-500', // Original (ID: 1)
-      'from-blue-600 via-purple-600 to-indigo-800', // Classic Oil (ID: 2)
-      'from-pink-400 via-red-400 to-yellow-400', // Watercolor Dreams (ID: 4)
-      'from-green-400 via-cyan-500 to-blue-500', // Pastel Bliss (ID: 5)
-      'from-teal-400 via-green-500 to-emerald-600', // Gemstone Poly (ID: 6)
-      'from-sky-400 via-blue-500 to-indigo-600', // 3D Storybook (ID: 7)
-      'from-amber-400 via-orange-500 to-red-600', // Artisan Charcoal (ID: 8)
-      'from-fuchsia-500 via-purple-600 to-indigo-600', // Pop Art Burst (ID: 9)
-      'from-yellow-400 via-orange-500 to-red-500', // Neon Splash (ID: 10)
-      'from-indigo-500 via-purple-500 to-pink-500', // Electric Bloom (ID: 11)
-      'from-rose-400 via-pink-500 to-purple-600', // Abstract Fusion (ID: 13)
-      'from-violet-500 via-purple-600 to-indigo-700', // Deco Luxe (ID: 15)
+      'from-rose-400 via-orange-500 to-amber-500', // Original (ID: 1)
+      'from-emerald-400 via-teal-500 to-cyan-600', // Classic Oil (ID: 2)
+      'from-violet-400 via-purple-500 to-indigo-600', // Watercolor Dreams (ID: 4)
+      'from-pink-300 via-rose-400 to-red-500', // Pastel Bliss (ID: 5)
+      'from-lime-400 via-green-500 to-emerald-600', // Gemstone Poly (ID: 6)
+      'from-sky-300 via-blue-400 to-indigo-500', // 3D Storybook (ID: 7)
+      'from-amber-300 via-yellow-400 to-orange-500', // Artisan Charcoal (ID: 8)
+      'from-fuchsia-400 via-pink-500 to-rose-600', // Pop Art Burst (ID: 9)
+      'from-green-300 via-emerald-400 to-teal-500', // Neon Splash (ID: 10)
+      'from-purple-300 via-violet-400 to-indigo-500', // Electric Bloom (ID: 11)
+      'from-cyan-300 via-blue-400 to-indigo-500', // Abstract Fusion (ID: 13)
+      'from-slate-400 via-gray-500 to-zinc-600', // Deco Luxe (ID: 15)
     ];
     
     // Map style IDs to gradient indices
@@ -76,7 +76,7 @@ const StyleGrid = ({
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 animate-pulse"></div>
               </div>
 
-              {/* Placeholder content */}
+              {/* Placeholder content - centered */}
               <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center z-10">
                 <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-3 border border-white/30">
                   <ImageIcon className="w-6 h-6 text-white" />
