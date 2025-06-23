@@ -1,8 +1,9 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { stylePrompts } from "./stylePrompts.ts"
 import { StylePreviewRequest } from './types.ts'
-import { ReplicateService } from './replicateService.ts'
+import { OpenAIService } from './openaiService.ts'
 import { 
   createSuccessResponse, 
   createErrorResponse, 
@@ -349,28 +350,28 @@ serve(async (req) => {
     console.log('Image URL length:', imageUrl?.length || 0)
     console.log('Authentication status:', isAuthenticated)
 
-    // Get Replicate API key from Supabase secrets with validation
-    const replicateApiKey = Deno.env.get('REPLICATE_API_TOKEN') || Deno.env.get('REPLICATE_API_KEY')
+    // Get OpenAI API key from Supabase secrets with validation
+    const openaiApiKey = Deno.env.get('OPENAI_API_KEY') || Deno.env.get('OPEN_AI_KEY')
     
-    if (!replicateApiKey || replicateApiKey === 'undefined' || replicateApiKey.trim() === '') {
-      console.error('Replicate API key not found or invalid in environment variables')
+    if (!openaiApiKey || openaiApiKey === 'undefined' || openaiApiKey.trim() === '') {
+      console.error('OpenAI API key not found or invalid in environment variables')
       return createErrorResponse('Service temporarily unavailable. Please try again later.', 503)
     }
 
-    const replicateService = new ReplicateService(replicateApiKey)
+    const openaiService = new OpenAIService(openaiApiKey)
     
-    console.log('Starting Replicate transformation for style:', style)
+    console.log('Starting GPT-IMG-1 transformation for style:', style)
 
-    // Generate the transformed image using Replicate with timeout
+    // Generate the transformed image using GPT-IMG-1 with timeout
     const timeoutController = new AbortController();
     const timeoutId = setTimeout(() => timeoutController.abort(), 60000); // 60 second timeout
 
     try {
-      const transformResult = await replicateService.generateImageToImage(imageUrl, style)
+      const transformResult = await openaiService.generateImageToImage(imageUrl, style)
       clearTimeout(timeoutId);
 
       if (!transformResult.ok) {
-        console.error(`Replicate transformation failed for ${style}:`, transformResult.error)
+        console.error(`GPT-IMG-1 transformation failed for ${style}:`, transformResult.error)
         
         // Return original image as fallback
         return createSuccessResponse(
@@ -382,7 +383,7 @@ serve(async (req) => {
         )
       }
 
-      // Handle different output formats from Replicate
+      // Handle different output formats from OpenAI
       let transformedImageUrl = transformResult.output;
       
       if (Array.isArray(transformedImageUrl)) {

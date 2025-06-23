@@ -4,7 +4,7 @@ import { createPreview } from "./previewOperations";
 
 export const generateStylePreview = async (imageUrl: string, style: string, photoId: string) => {
   try {
-    console.log('Generating style preview:', { imageUrl: imageUrl.substring(0, 50) + '...', style, photoId });
+    console.log('Generating style preview with GPT-IMG-1:', { imageUrl: imageUrl.substring(0, 50) + '...', style, photoId });
     
     // Check if user is authenticated (optional now)
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -20,7 +20,7 @@ export const generateStylePreview = async (imageUrl: string, style: string, phot
       isAuthenticated
     };
 
-    console.log('Sending request with body:', { 
+    console.log('Sending request to GPT-IMG-1 service:', { 
       style, 
       photoId, 
       isAuthenticated, 
@@ -37,10 +37,10 @@ export const generateStylePreview = async (imageUrl: string, style: string, phot
     }
 
     if (!data?.preview_url) {
-      throw new Error('No preview URL returned from function');
+      throw new Error('No preview URL returned from GPT-IMG-1 service');
     }
 
-    console.log('Preview generated successfully:', data.preview_url);
+    console.log('GPT-IMG-1 preview generated successfully:', data.preview_url);
     
     // Only store the preview if user is authenticated
     if (isAuthenticated) {
@@ -54,7 +54,7 @@ export const generateStylePreview = async (imageUrl: string, style: string, phot
     
     return data.preview_url;
   } catch (error) {
-    console.error('Error generating style preview:', error);
+    console.error('Error generating GPT-IMG-1 style preview:', error);
     throw error;
   }
 };
