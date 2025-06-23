@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,7 +14,6 @@ interface StylePromptEditorProps {
 const defaultPrompts: { [key: number]: string } = {
   1: "Keep the image exactly as is, no artistic transformation",
   2: "Transform this image into a classical oil painting style with visible brushstrokes and rich textures, maintaining the exact same subject and composition",
-  3: "Apply gentle watercolor effects to this image with soft color transitions and peaceful tones, keeping the original subject intact",
   4: "Transform this image with flowing watercolor effects, gentle color bleeds and dreamy transitions while preserving the original subject and scene",
   5: "Apply gentle pastel techniques to this image with soft color blends for a dreamy, calming feel, maintaining the original composition",
   6: "Transform this image into a faceted, geometric style with gem-like textures and modern patterns, keeping the same subject",
@@ -24,9 +22,7 @@ const defaultPrompts: { [key: number]: string } = {
   9: "Apply pop art style to this image with bold, vibrant colors and high contrast retro aesthetics",
   10: "Add high-voltage neon effects to this image with explosive energy and electric, glowing colors",
   11: "Apply futuristic cyberpunk aesthetic to this image with electric blooms and neon lighting effects",
-  12: "Create an artistic mashup style version of this image with bold, expressive, and unique creative elements",
   13: "Transform this image into modern abstract fusion with dynamic swirls and vibrant color harmony",
-  14: "Apply embroidery style to this image with rich, textured appearance and intricate stitching details",
   15: "Add sophisticated Art Deco elegance to this image with geometric patterns and luxurious metallic accents"
 };
 

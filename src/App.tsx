@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import Index from "@/pages/Index";
@@ -13,16 +14,13 @@ import ClassicOilPainting from "@/pages/ClassicOilPainting";
 import WatercolorDreams from "@/pages/WatercolorDreams";
 import PopArtBurst from "@/pages/PopArtBurst";
 import AbstractFusion from "@/pages/AbstractFusion";
-import CalmWatercolor from "@/pages/CalmWatercolor";
 import NeonSplash from "@/pages/NeonSplash";
 import ArtisanCharcoal from "@/pages/ArtisanCharcoal";
 import ElectricBloom from "@/pages/ElectricBloom";
 import PastelBliss from "@/pages/PastelBliss";
 import DecoLuxe from "@/pages/DecoLuxe";
 import GemstonePoly from "@/pages/GemstonePoly";
-import EmbroideredMoments from "@/pages/EmbroideredMoments";
 import ThreeDStorybook from "@/pages/ThreeDStorybook";
-import ArtisticMashup from "@/pages/ArtisticMashup";
 import ARExperience from "@/pages/ARExperience";
 
 import "./App.css";
@@ -43,16 +41,13 @@ function App() {
           <Route path="/watercolor-dreams" element={<WatercolorDreams />} />
           <Route path="/pop-art-burst" element={<PopArtBurst />} />
           <Route path="/abstract-fusion" element={<AbstractFusion />} />
-          <Route path="/calm-watercolor" element={<CalmWatercolor />} />
           <Route path="/neon-splash" element={<NeonSplash />} />
           <Route path="/artisan-charcoal" element={<ArtisanCharcoal />} />
           <Route path="/electric-bloom" element={<ElectricBloom />} />
           <Route path="/pastel-bliss" element={<PastelBliss />} />
           <Route path="/deco-luxe" element={<DecoLuxe />} />
           <Route path="/gemstone-poly" element={<GemstonePoly />} />
-          <Route path="/embroidered-moments" element={<EmbroideredMoments />} />
           <Route path="/three-d-storybook" element={<ThreeDStorybook />} />
-          <Route path="/artistic-mashup" element={<ArtisticMashup />} />
           <Route path="/ar-experience" element={<ARExperience />} />
           
           <Route path="*" element={<NotFound />} />

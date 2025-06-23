@@ -15,12 +15,6 @@ export const artStyles: ArtStyle[] = [
     description: "Rich, textured brushstrokes reminiscent of traditional oil paintings"
   },
   {
-    id: 3,
-    name: "Calm WaterColor",
-    image: "/lovable-uploads/f3b1dcfb-6c61-4acc-bab4-7467747bbe19.png",
-    description: "Soft, gentle watercolor washes with subtle color transitions and peaceful tones"
-  },
-  {
     id: 4,
     name: "Watercolor Dreams",
     image: "/lovable-uploads/24492292-d190-4b8b-ab5b-edec02774b0b.png",
@@ -79,17 +73,5 @@ export const artStyles: ArtStyle[] = [
     name: "Gemstone Poly",
     image: "/lovable-uploads/933dd4e5-58bc-404d-8c89-a93dcce93079.png",
     description: "Faceted, gem-like texture with a modern, artistic twist"
-  },
-  {
-    id: 12,
-    name: "Artistic Mashup",
-    image: "/lovable-uploads/60a93ae3-c149-4515-aa89-356396b7ff33.png",
-    description: "A creative collision of styles—bold, expressive, and one of a kind"
-  },
-  {
-    id: 14,
-    name: "Embroidered Moments",
-    image: "/lovable-uploads/6371ab02-6a24-43ef-98b7-42de878f265a.png",
-    description: "Rich, textured embroidery style with intricate stitching details and warm, handcrafted charm"
   }
 ];

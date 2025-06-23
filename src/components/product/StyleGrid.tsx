@@ -33,26 +33,29 @@ const StyleGrid = ({
     }
   };
 
-  // Premium gradient backgrounds for each style
+  // Premium gradient backgrounds for each style (updated mapping)
   const getStyleGradient = (styleId: number) => {
     const gradients = [
-      'from-purple-500 via-pink-500 to-red-500', // Original
-      'from-blue-600 via-purple-600 to-indigo-800', // Classic Oil
-      'from-cyan-400 via-blue-500 to-purple-600', // Watercolor Dreams
-      'from-pink-400 via-red-400 to-yellow-400', // Calm Watercolor
-      'from-green-400 via-cyan-500 to-blue-500', // Pastel Bliss
-      'from-yellow-400 via-orange-500 to-red-500', // Electric Bloom
-      'from-indigo-500 via-purple-500 to-pink-500', // Neon Splash
-      'from-emerald-400 via-teal-500 to-cyan-600', // Pop Art Burst
-      'from-rose-400 via-pink-500 to-purple-600', // Abstract Fusion
-      'from-amber-400 via-orange-500 to-red-600', // Artisan Charcoal
-      'from-violet-500 via-purple-600 to-indigo-700', // Deco Luxe
-      'from-teal-400 via-green-500 to-emerald-600', // Gemstone Poly
-      'from-fuchsia-500 via-purple-600 to-indigo-600', // Embroidered Moments
-      'from-sky-400 via-blue-500 to-indigo-600', // 3D Storybook
-      'from-lime-400 via-green-500 to-emerald-600', // Artistic Mashup
+      'from-purple-500 via-pink-500 to-red-500', // Original (ID: 1)
+      'from-blue-600 via-purple-600 to-indigo-800', // Classic Oil (ID: 2)
+      'from-pink-400 via-red-400 to-yellow-400', // Watercolor Dreams (ID: 4)
+      'from-green-400 via-cyan-500 to-blue-500', // Pastel Bliss (ID: 5)
+      'from-teal-400 via-green-500 to-emerald-600', // Gemstone Poly (ID: 6)
+      'from-sky-400 via-blue-500 to-indigo-600', // 3D Storybook (ID: 7)
+      'from-amber-400 via-orange-500 to-red-600', // Artisan Charcoal (ID: 8)
+      'from-fuchsia-500 via-purple-600 to-indigo-600', // Pop Art Burst (ID: 9)
+      'from-yellow-400 via-orange-500 to-red-500', // Neon Splash (ID: 10)
+      'from-indigo-500 via-purple-500 to-pink-500', // Electric Bloom (ID: 11)
+      'from-rose-400 via-pink-500 to-purple-600', // Abstract Fusion (ID: 13)
+      'from-violet-500 via-purple-600 to-indigo-700', // Deco Luxe (ID: 15)
     ];
-    return gradients[styleId - 1] || gradients[0];
+    
+    // Map style IDs to gradient indices
+    const styleIdToIndex: { [key: number]: number } = {
+      1: 0, 2: 1, 4: 2, 5: 3, 6: 4, 7: 5, 8: 6, 9: 7, 10: 8, 11: 9, 13: 10, 15: 11
+    };
+    
+    return gradients[styleIdToIndex[styleId]] || gradients[0];
   };
 
   // Show placeholder thumbnails when no photo is uploaded
