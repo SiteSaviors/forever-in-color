@@ -3,7 +3,6 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { stylePrompts } from "./stylePrompts.ts"
 import { StylePreviewRequest } from './types.ts'
 import { ReplicateService } from './replicateService.ts'
-import { extractGeneratedImage } from './imageUtils.ts'
 import { 
   createSuccessResponse, 
   createErrorResponse, 
@@ -96,7 +95,14 @@ serve(async (req) => {
       )
     }
 
-    const transformedImageUrl = transformResult.output;
+    // Handle different output formats from Replicate
+    let transformedImageUrl = transformResult.output;
+    
+    // If output is an array, take the first item
+    if (Array.isArray(transformedImageUrl)) {
+      transformedImageUrl = transformedImageUrl[0];
+    }
+
     console.log('Replicate transformation successful:', transformedImageUrl);
 
     if (transformedImageUrl) {
