@@ -3,6 +3,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
 import { Check, CheckCircle, Expand } from "lucide-react";
 import StyleCardLoadingOverlay from "./StyleCardLoadingOverlay";
+import MiniCanvasPreview from "./MiniCanvasPreview";
 
 interface StyleCardImageProps {
   style: {
@@ -31,6 +32,15 @@ const StyleCardImage = ({
   hasPreviewOrCropped,
   onExpandClick
 }: StyleCardImageProps) => {
+  // Determine orientation from crop aspect ratio
+  const getOrientation = () => {
+    if (cropAspectRatio === 1) return "square";
+    if (cropAspectRatio > 1) return "horizontal";
+    return "vertical";
+  };
+
+  const orientation = getOrientation();
+
   return (
     <AspectRatio ratio={cropAspectRatio} className="relative overflow-hidden rounded-t-lg">
       {/* Canvas Frame Effect */}
@@ -56,6 +66,17 @@ const StyleCardImage = ({
         </div>
       </div>
 
+      {/* Mini Canvas Preview in corner when there's a generated image */}
+      {showGeneratedBadge && imageToShow && (
+        <div className="absolute top-2 right-2 z-10">
+          <MiniCanvasPreview 
+            imageUrl={imageToShow}
+            orientation={orientation}
+            className="opacity-90 hover:opacity-100 transition-opacity"
+          />
+        </div>
+      )}
+
       {/* Expand Button - Only show when there's a generated or cropped image */}
       {hasPreviewOrCropped && (
         <button
@@ -72,7 +93,7 @@ const StyleCardImage = ({
 
       {/* Already Generated Badge - Only show this badge on images */}
       {showGeneratedBadge && (
-        <div className="absolute top-3 right-3">
+        <div className="absolute top-3 right-3 z-20">
           <Badge variant="secondary" className="bg-gray-100/90 text-gray-600 font-semibold flex items-center gap-1">
             <CheckCircle className="w-3 h-3" />
             Generated
@@ -82,7 +103,7 @@ const StyleCardImage = ({
       
       {/* Selection Indicator */}
       {isSelected && (
-        <div className="absolute top-3 left-3">
+        <div className="absolute top-3 left-3 z-20">
           <div className="bg-purple-600 text-white rounded-full p-1">
             <Check className="w-4 h-4" />
           </div>
