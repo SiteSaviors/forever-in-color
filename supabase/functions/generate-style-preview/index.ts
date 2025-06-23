@@ -106,16 +106,27 @@ const validateInput = (body: any): { isValid: boolean; error?: string } => {
     }
   }
 
-  // Validate style parameter against known styles
+  // Updated style validation to match the actual style names from the frontend
   const allowedStyles = [
-    'Original', 'Classic Oil Painting', 'Watercolor Dreams', 'Pop Art Burst',
-    'Abstract Fusion', 'Calm Watercolor', 'Neon Splash', 'Artisan Charcoal',
-    'Electric Bloom', 'Pastel Bliss', 'Deco Luxe', 'Gemstone Poly',
-    'Embroidered Moments', '3D Storybook', 'Artistic Mashup'
+    'Original Image',
+    'Classic Oil Painting', 
+    'Watercolor Dreams', 
+    'Pop Art Burst',
+    'Abstract Fusion', 
+    'Calm Watercolor',  // Updated from 'Calm WaterColor'
+    'Neon Splash', 
+    'Artisan Charcoal',
+    'Electric Bloom', 
+    'Pastel Bliss', 
+    'Deco Luxe', 
+    'Gemstone Poly',
+    'Embroidered Moments', 
+    '3D Storybook', 
+    'Artistic Mashup'
   ];
 
   if (!allowedStyles.includes(style)) {
-    return { isValid: false, error: `Invalid style: ${style}` };
+    return { isValid: false, error: `Invalid style: ${style}. Allowed styles: ${allowedStyles.join(', ')}` };
   }
 
   return { isValid: true };
