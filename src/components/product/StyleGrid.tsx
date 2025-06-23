@@ -125,23 +125,12 @@ const StyleGrid = ({
             selectedStyle={selectedStyle}
             isPopular={false}
             cropAspectRatio={cropAspectRatio}
-            showContinueButton={false}
+            showContinueButton={true}
             onStyleClick={() => handleStyleSelect(style.id, style.name)}
+            onContinue={onComplete}
           />
         ))}
       </div>
-
-      {selectedStyle && (
-        <div className="flex justify-center pt-6">
-          <Button 
-            onClick={onComplete}
-            size="lg"
-            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
-          >
-            Continue with Selected Style
-          </Button>
-        </div>
-      )}
     </div>
   );
 };

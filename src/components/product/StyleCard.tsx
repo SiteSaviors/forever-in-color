@@ -29,7 +29,7 @@ const StyleCard = ({
   selectedStyle,
   isPopular,
   cropAspectRatio = 1, // Default to square if not provided
-  showContinueButton = false,
+  showContinueButton = true, // Changed default to true
   onStyleClick,
   onContinue
 }: StyleCardProps) => {
