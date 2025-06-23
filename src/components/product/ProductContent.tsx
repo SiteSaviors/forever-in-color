@@ -58,7 +58,7 @@ const ProductContent = ({
   });
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12 pb-24 md:pb-32">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-3 md:py-6 pb-24 md:pb-32">
       <Accordion 
         type="single" 
         value={`step-${currentStep}`} 
@@ -68,7 +68,7 @@ const ProductContent = ({
             onCurrentStepChange(stepNumber);
           }
         }}
-        className="space-y-4 md:space-y-8"
+        className="space-y-3 md:space-y-6"
       >
         {steps.map((step) => (
           <ProductStep
