@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { stylePrompts } from "./stylePrompts.ts"
@@ -136,8 +137,11 @@ const validateRequestOrigin = async (req: Request): Promise<boolean> => {
     'https://localhost:5173'
   ];
 
-  // Allow any Lovable preview domain (they follow the pattern: https://[id].lovableproject.com)
-  const lovablePreviewPattern = /^https:\/\/[a-f0-9-]+\.lovableproject\.com$/;
+  // Allow any Lovable preview domain (they follow multiple patterns)
+  const lovablePreviewPatterns = [
+    /^https:\/\/[a-f0-9-]+\.lovableproject\.com$/,
+    /^https:\/\/[a-zA-Z0-9-]+--[a-f0-9-]+\.lovable\.app$/
+  ];
 
   // Block requests without user agent (potential bot/script)
   if (!userAgent || userAgent.length < 10) {
@@ -152,10 +156,10 @@ const validateRequestOrigin = async (req: Request): Promise<boolean> => {
     return false;
   }
 
-  // Check if origin or referer matches allowed domains or Lovable preview pattern
+  // Check if origin or referer matches allowed domains or Lovable preview patterns
   if (origin) {
     const isAllowed = allowedOrigins.some(allowed => origin.startsWith(allowed)) || 
-                     lovablePreviewPattern.test(origin);
+                     lovablePreviewPatterns.some(pattern => pattern.test(origin));
     if (!isAllowed) {
       await logSecurityEvent({
         event_type: 'invalid_origin',
@@ -169,7 +173,7 @@ const validateRequestOrigin = async (req: Request): Promise<boolean> => {
     }
   } else if (referer) {
     const isAllowed = allowedOrigins.some(allowed => referer.startsWith(allowed)) ||
-                     lovablePreviewPattern.test(referer);
+                     lovablePreviewPatterns.some(pattern => pattern.test(referer));
     if (!isAllowed) {
       await logSecurityEvent({
         event_type: 'invalid_origin',
