@@ -51,7 +51,7 @@ const StyleCard = ({
   const showLoadingState = isLoading;
   const showGeneratedBadge = isStyleGenerated && style.id !== 1;
   const imageToShow = previewUrl || croppedImage || style.image;
-  const showContinueInCard = showContinueButton && isSelected && (previewUrl || croppedImage);
+  const showContinueInCard = showContinueButton && isSelected && !!(previewUrl || croppedImage);
   const hasPreviewOrCropped = !!(previewUrl || croppedImage);
 
   // Debug logging for continue button visibility
@@ -60,7 +60,9 @@ const StyleCard = ({
     isSelected,
     previewUrl: !!previewUrl,
     croppedImage: !!croppedImage,
-    showContinueInCard
+    showContinueInCard,
+    hasGeneratedPreview,
+    isStyleGenerated
   });
 
   const handleExpandClick = (e: React.MouseEvent) => {
