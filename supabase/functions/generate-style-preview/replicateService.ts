@@ -1,4 +1,3 @@
-
 export class ReplicateService {
   private apiToken: string;
   private baseUrl = "https://api.replicate.com/v1";
@@ -14,7 +13,7 @@ export class ReplicateService {
   }
 
   async generateImageToImage(imageData: string, prompt: string): Promise<any> {
-    console.log('Starting Flux Kontext Max generation with prompt:', prompt);
+    console.log('Starting Flux Kontext Max generation with enhanced identity preservation prompt:', prompt);
     
     // Additional debug logging
     if (!this.apiToken || this.apiToken === 'undefined' || this.apiToken.trim() === '') {
@@ -30,16 +29,30 @@ export class ReplicateService {
     }
     
     try {
+      // Enhanced prompt with stronger identity preservation
+      const enhancedPrompt = `${prompt}
+
+IMPORTANT IDENTITY PRESERVATION RULES:
+- Keep the EXACT same facial structure and bone structure
+- Maintain IDENTICAL eye color and eye shape
+- Preserve the EXACT same nose, mouth, and jawline
+- Do not change hair color, length, or style
+- Keep the EXACT same skin tone and complexion
+- Maintain identical body posture and positioning
+- Preserve all clothing and accessories exactly as shown
+- Do not add, remove, or modify any person's features
+- This is the SAME PERSON, just in a different artistic style`;
+
       // Step 1: Create prediction using the correct flux-kontext-max format
       const requestBody = {
         input: {
-          prompt: prompt,
+          prompt: enhancedPrompt,
           input_image: imageData, // flux-kontext-max uses "input_image" not "image"
           output_format: "jpg" // Changed from "webp" to "jpg" - flux-kontext-max only supports "jpg" and "png"
         }
       };
 
-      console.log('Making request to flux-kontext-max model with Authorization header:', `Bearer ${this.apiToken.substring(0, 8)}...`);
+      console.log('Making request to flux-kontext-max model with enhanced identity preservation');
 
       const response = await fetch(`${this.baseUrl}/models/black-forest-labs/flux-kontext-max/predictions`, {
         method: "POST",
