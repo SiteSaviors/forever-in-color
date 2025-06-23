@@ -37,6 +37,7 @@ export const useStylePreview = ({
   const generatePreview = useCallback(async () => {
     if (!croppedImage || style.id === 1) return;
 
+    console.log(`Starting preview generation for style: ${style.name} (ID: ${style.id})`);
     setIsLoading(true);
     
     try {
@@ -49,14 +50,15 @@ export const useStylePreview = ({
       });
 
       if (response.success && response.previewUrl) {
-        console.log(`Preview generated successfully for ${style.name}`);
+        console.log(`Preview generated successfully for ${style.name}, adding watermark...`);
         
         // Add watermark to the generated image
         try {
           const watermarkedUrl = await addWatermarkToImage(response.previewUrl);
+          console.log(`Watermark added successfully for ${style.name}`);
           setPreviewUrl(watermarkedUrl);
         } catch (watermarkError) {
-          console.warn('Failed to add watermark, using original image:', watermarkError);
+          console.warn(`Failed to add watermark for ${style.name}, using original image:`, watermarkError);
           setPreviewUrl(response.previewUrl);
         }
         
@@ -69,6 +71,8 @@ export const useStylePreview = ({
           localStorage.setItem('generatedStyles', JSON.stringify(generatedStyles));
           setIsStyleGenerated(true);
         }
+        
+        console.log(`Preview URL set for ${style.name}:`, watermarkedUrl || response.previewUrl);
       } else {
         console.error(`Failed to generate preview for ${style.name}:`, response.error);
       }
@@ -76,14 +80,17 @@ export const useStylePreview = ({
       console.error(`Error generating preview for ${style.name}:`, error);
     } finally {
       setIsLoading(false);
+      console.log(`Preview generation completed for ${style.name} (ID: ${style.id})`);
     }
   }, [croppedImage, style.id, style.name]);
 
   const handleClick = useCallback(() => {
+    console.log(`Style clicked: ${style.name} (ID: ${style.id})`);
     onStyleClick(style);
     
     // Auto-generate preview for popular styles when clicked (if not already generated and we have a cropped image)
     if (isPopular && croppedImage && !hasGeneratedPreview && !isLoading && style.id !== 1) {
+      console.log(`Auto-generating preview for popular style: ${style.name}`);
       generatePreview();
     }
   }, [style, isPopular, croppedImage, hasGeneratedPreview, isLoading, onStyleClick, generatePreview]);
