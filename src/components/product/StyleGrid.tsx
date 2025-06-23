@@ -87,10 +87,11 @@ const StyleGrid = ({
             key={style.id}
             style={style}
             croppedImage={croppedImage}
+            selectedStyle={selectedStyle}
+            isPopular={false}
             cropAspectRatio={cropAspectRatio}
-            isSelected={selectedStyle === style.id}
-            isLoading={loadingStyle === style.id}
-            onSelect={() => handleStyleSelect(style.id, style.name)}
+            showContinueButton={false}
+            onStyleClick={() => handleStyleSelect(style.id, style.name)}
           />
         ))}
       </div>
