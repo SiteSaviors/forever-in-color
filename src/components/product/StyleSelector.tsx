@@ -1,9 +1,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import StyleGrid from "./StyleGrid";
-import StylePromptEditor from "./StylePromptEditor";
 import { artStyles } from "@/data/artStyles";
 
 interface StyleSelectorProps {
@@ -40,11 +38,6 @@ const StyleSelector = ({
     }
   };
 
-  const handlePromptUpdate = (styleId: number, prompt: string) => {
-    console.log('Updated prompt for style', styleId, ':', prompt);
-    // You could also trigger a re-generation here if needed
-  };
-
   return (
     <div className="space-y-6">
       <div className="text-center">
@@ -59,37 +52,24 @@ const StyleSelector = ({
         </p>
       </div>
 
-      <Tabs defaultValue="styles" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="styles">Style Gallery</TabsTrigger>
-          <TabsTrigger value="prompts">Customize Prompts</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="styles" className="space-y-6">
-          <StyleGrid
-            croppedImage={croppedImage}
-            selectedStyle={selectedStyle}
-            cropAspectRatio={cropAspectRatio}
-            onStyleSelect={onStyleSelect}
-          />
+      <StyleGrid
+        croppedImage={croppedImage}
+        selectedStyle={selectedStyle}
+        cropAspectRatio={cropAspectRatio}
+        onStyleSelect={onStyleSelect}
+      />
 
-          {/* Continue Button */}
-          {selectedStyle && (
-            <div className="text-center pt-4">
-              <Button 
-                onClick={handleComplete}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-full text-lg font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-              >
-                Continue with {artStyles.find(s => s.id === selectedStyle)?.name}
-              </Button>
-            </div>
-          )}
-        </TabsContent>
-        
-        <TabsContent value="prompts">
-          <StylePromptEditor onPromptUpdate={handlePromptUpdate} />
-        </TabsContent>
-      </Tabs>
+      {/* Continue Button */}
+      {selectedStyle && (
+        <div className="text-center pt-4">
+          <Button 
+            onClick={handleComplete}
+            className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-full text-lg font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+          >
+            Continue with {artStyles.find(s => s.id === selectedStyle)?.name}
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
