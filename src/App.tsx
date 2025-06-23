@@ -30,39 +30,41 @@ import "./App.css";
 function App() {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/auth" element={<Auth />} />
-        <Route 
-          path="/product" 
-          element={
-            <ProtectedRoute>
-              <Product />
-            </ProtectedRoute>
-          } 
-        />
-        
-        {/* Style pages - public */}
-        <Route path="/original" element={<OriginalStyle />} />
-        <Route path="/classic-oil-painting" element={<ClassicOilPainting />} />
-        <Route path="/watercolor-dreams" element={<WatercolorDreams />} />
-        <Route path="/pop-art-burst" element={<PopArtBurst />} />
-        <Route path="/abstract-fusion" element={<AbstractFusion />} />
-        <Route path="/calm-watercolor" element={<CalmWatercolor />} />
-        <Route path="/neon-splash" element={<NeonSplash />} />
-        <Route path="/artisan-charcoal" element={<ArtisanCharcoal />} />
-        <Route path="/electric-bloom" element={<ElectricBloom />} />
-        <Route path="/pastel-bliss" element={<PastelBliss />} />
-        <Route path="/deco-luxe" element={<DecoLuxe />} />
-        <Route path="/gemstone-poly" element={<GemstonePoly />} />
-        <Route path="/embroidered-moments" element={<EmbroideredMoments />} />
-        <Route path="/three-d-storybook" element={<ThreeDStorybook />} />
-        <Route path="/artistic-mashup" element={<ArtisticMashup />} />
-        <Route path="/ar-experience" element={<ARExperience />} />
-        
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-      <Toaster />
+      <div className="min-h-screen">
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route 
+            path="/product" 
+            element={
+              <ProtectedRoute>
+                <Product />
+              </ProtectedRoute>
+            } 
+          />
+          
+          {/* Style pages - public */}
+          <Route path="/original" element={<OriginalStyle />} />
+          <Route path="/classic-oil-painting" element={<ClassicOilPainting />} />
+          <Route path="/watercolor-dreams" element={<WatercolorDreams />} />
+          <Route path="/pop-art-burst" element={<PopArtBurst />} />
+          <Route path="/abstract-fusion" element={<AbstractFusion />} />
+          <Route path="/calm-watercolor" element={<CalmWatercolor />} />
+          <Route path="/neon-splash" element={<NeonSplash />} />
+          <Route path="/artisan-charcoal" element={<ArtisanCharcoal />} />
+          <Route path="/electric-bloom" element={<ElectricBloom />} />
+          <Route path="/pastel-bliss" element={<PastelBliss />} />
+          <Route path="/deco-luxe" element={<DecoLuxe />} />
+          <Route path="/gemstone-poly" element={<GemstonePoly />} />
+          <Route path="/embroidered-moments" element={<EmbroideredMoments />} />
+          <Route path="/three-d-storybook" element={<ThreeDStorybook />} />
+          <Route path="/artistic-mashup" element={<ArtisticMashup />} />
+          <Route path="/ar-experience" element={<ARExperience />} />
+          
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+        <Toaster />
+      </div>
     </Router>
   );
 }
