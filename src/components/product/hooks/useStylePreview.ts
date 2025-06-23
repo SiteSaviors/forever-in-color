@@ -43,25 +43,24 @@ export const useStylePreview = ({
     try {
       console.log(`Generating preview for style: ${style.name}`);
       
-      const response = await generateStylePreview({
-        imageData: croppedImage,
-        styleId: style.id,
-        styleName: style.name
-      });
+      // Generate a temporary photo ID for the preview (in a real app, this would come from uploaded photo)
+      const tempPhotoId = `temp_${Date.now()}_${style.id}`;
+      
+      const previewUrl = await generateStylePreview(croppedImage, style.name, tempPhotoId);
 
-      if (response.success && response.previewUrl) {
+      if (previewUrl) {
         console.log(`Preview generated successfully for ${style.name}, adding watermark...`);
         
         // Add watermark to the generated image
         try {
-          const watermarkedUrl = await addWatermarkToImage(response.previewUrl);
+          const watermarkedUrl = await addWatermarkToImage(previewUrl);
           console.log(`Watermark added successfully for ${style.name}`);
           setPreviewUrl(watermarkedUrl);
           console.log(`Preview URL set for ${style.name}:`, watermarkedUrl);
         } catch (watermarkError) {
           console.warn(`Failed to add watermark for ${style.name}, using original image:`, watermarkError);
-          setPreviewUrl(response.previewUrl);
-          console.log(`Preview URL set for ${style.name}:`, response.previewUrl);
+          setPreviewUrl(previewUrl);
+          console.log(`Preview URL set for ${style.name}:`, previewUrl);
         }
         
         setHasGeneratedPreview(true);
@@ -74,7 +73,7 @@ export const useStylePreview = ({
           setIsStyleGenerated(true);
         }
       } else {
-        console.error(`Failed to generate preview for ${style.name}:`, response.error);
+        console.error(`Failed to generate preview for ${style.name}: No preview URL returned`);
       }
     } catch (error) {
       console.error(`Error generating preview for ${style.name}:`, error);
