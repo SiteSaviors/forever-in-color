@@ -27,11 +27,12 @@ const Header = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">AI</span>
-            </div>
-            <span className="text-xl font-bold text-gray-900">Art Canvas</span>
+          <Link to="/" className="flex items-center">
+            <img 
+              src="/lovable-uploads/353d8eff-65bb-4296-ac0d-a23a0c4b5cce.png" 
+              alt="Forever In Color" 
+              className="h-8 w-auto"
+            />
           </Link>
 
           {/* Desktop Navigation */}
@@ -78,7 +79,7 @@ const Header = () => {
                   <Button variant="ghost">Sign In</Button>
                 </Link>
                 <Link to="/product">
-                  <Button className="bg-purple-600 hover:bg-purple-700">
+                  <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white">
                     Start Creating
                   </Button>
                 </Link>
@@ -149,7 +150,7 @@ const Header = () => {
                     <Button variant="ghost" className="w-full">Sign In</Button>
                   </Link>
                   <Link to="/product" onClick={() => setIsMenuOpen(false)}>
-                    <Button className="w-full bg-purple-600 hover:bg-purple-700">
+                    <Button className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white">
                       Start Creating
                     </Button>
                   </Link>
