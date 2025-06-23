@@ -4,7 +4,9 @@ export class ReplicateService {
   private baseUrl = "https://api.replicate.com/v1";
 
   constructor(apiToken: string) {
-    this.apiToken = apiToken;
+    // Clean the token in case it has extra text
+    this.apiToken = apiToken.replace(/^export\s+REPLICATE_API_TOKEN=/, '').trim();
+    
     // Debug logging to see what token we actually have
     console.log("ReplicateService initialized with token:", this.apiToken);
     console.log("Token starts with 'r8_':", this.apiToken?.startsWith('r8_'));
@@ -28,26 +30,23 @@ export class ReplicateService {
     }
     
     try {
-      // Step 1: Create prediction
+      // Step 1: Create prediction using the correct flux-kontext-max format
       const requestBody = {
-        version: "black-forest-labs/flux-kontext-max:latest",
         input: {
-          image: imageData,
           prompt: prompt,
-          num_inference_steps: 28,
-          guidance_scale: 7.5,
-          output_format: "webp",
-          output_quality: 90
+          input_image: imageData, // flux-kontext-max uses "input_image" not "image"
+          output_format: "webp"
         }
       };
 
-      console.log('Making request to Replicate with Authorization header:', `Token ${this.apiToken.substring(0, 8)}...`);
+      console.log('Making request to flux-kontext-max model with Authorization header:', `Bearer ${this.apiToken.substring(0, 8)}...`);
 
-      const response = await fetch(`${this.baseUrl}/predictions`, {
+      const response = await fetch(`${this.baseUrl}/models/black-forest-labs/flux-kontext-max/predictions`, {
         method: "POST",
         headers: {
-          "Authorization": `Token ${this.apiToken}`,
+          "Authorization": `Bearer ${this.apiToken}`, // Use Bearer for flux-kontext-max
           "Content-Type": "application/json",
+          "Prefer": "wait" // This makes it wait for completion instead of polling
         },
         body: JSON.stringify(requestBody),
       });
@@ -69,10 +68,25 @@ export class ReplicateService {
       }
 
       const data = await response.json();
-      console.log('Prediction created successfully:', data.id);
+      console.log('Generation completed:', data);
 
-      // Step 2: Poll for completion
-      return await this.pollForCompletion(data.id, data.urls.get);
+      // With "Prefer: wait" header, the response should contain the final result
+      if (data.status === "succeeded" && data.output) {
+        console.log('Generation succeeded:', data.output);
+        return {
+          ok: true,
+          output: data.output
+        };
+      } else if (data.status === "failed") {
+        console.error('Generation failed:', data.error);
+        return {
+          ok: false,
+          error: data.error || "Image generation failed"
+        };
+      } else {
+        // Fallback to polling if needed
+        return await this.pollForCompletion(data.id, data.urls?.get);
+      }
     } catch (error) {
       console.error('Replicate error:', error);
       return {
@@ -83,6 +97,13 @@ export class ReplicateService {
   }
 
   async pollForCompletion(predictionId: string, pollUrl: string): Promise<any> {
+    if (!pollUrl) {
+      return {
+        ok: false,
+        error: "No poll URL provided"
+      };
+    }
+
     console.log('Polling for completion:', predictionId);
     
     const maxAttempts = 30; // 1 minute max (2 seconds * 30)
@@ -92,7 +113,7 @@ export class ReplicateService {
       try {
         const response = await fetch(pollUrl, {
           headers: {
-            "Authorization": `Token ${this.apiToken}`,
+            "Authorization": `Bearer ${this.apiToken}`,
           },
         });
 
