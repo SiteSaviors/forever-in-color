@@ -1,14 +1,13 @@
 
 import React from 'react';
 
-interface MiniCanvasPreviewProps {
+interface FullCanvasMockupProps {
   imageUrl: string;
   orientation: string;
-  className?: string;
-  onClick?: () => void;
+  styleName: string;
 }
 
-const MiniCanvasPreview = ({ imageUrl, orientation, className = "", onClick }: MiniCanvasPreviewProps) => {
+const FullCanvasMockup = ({ imageUrl, orientation, styleName }: FullCanvasMockupProps) => {
   const getCanvasFrame = () => {
     switch (orientation) {
       case 'horizontal':
@@ -39,15 +38,11 @@ const MiniCanvasPreview = ({ imageUrl, orientation, className = "", onClick }: M
   const imagePosition = getImagePosition();
 
   return (
-    <div 
-      className={`relative w-12 h-12 cursor-pointer hover:scale-110 transition-transform duration-200 ${className}`}
-      onClick={onClick}
-      title="Click to view full canvas preview"
-    >
+    <div className="relative max-w-4xl mx-auto">
       <img 
         src={canvasFrame}
-        alt="Canvas preview"
-        className="w-full h-full object-contain"
+        alt={`${styleName} on ${orientation} canvas`}
+        className="w-full h-auto object-contain"
       />
       <div 
         className="absolute"
@@ -60,19 +55,19 @@ const MiniCanvasPreview = ({ imageUrl, orientation, className = "", onClick }: M
       >
         <img 
           src={imageUrl}
-          alt="Preview"
+          alt={`${styleName} artwork`}
           className="w-full h-full object-cover"
         />
       </div>
       
-      {/* Hover overlay to indicate clickable */}
-      <div className="absolute inset-0 bg-white/20 opacity-0 hover:opacity-100 transition-opacity duration-200 rounded-sm flex items-center justify-center">
-        <div className="bg-black/70 text-white text-xs px-1 py-0.5 rounded">
-          View
+      {/* Style and orientation label */}
+      <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2">
+        <div className="bg-black/80 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-medium">
+          {styleName} • {orientation.charAt(0).toUpperCase() + orientation.slice(1)} Canvas
         </div>
       </div>
     </div>
   );
 };
 
-export default MiniCanvasPreview;
+export default FullCanvasMockup;

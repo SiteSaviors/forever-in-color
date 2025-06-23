@@ -5,6 +5,7 @@ import { useStylePreview } from "./hooks/useStylePreview";
 import Lightbox from "@/components/ui/lightbox";
 import StyleCardImage from "./components/StyleCardImage";
 import StyleCardInfo from "./components/StyleCardInfo";
+import FullCanvasMockup from "./components/FullCanvasMockup";
 
 interface StyleCardProps {
   style: {
@@ -33,6 +34,7 @@ const StyleCard = ({
   onContinue
 }: StyleCardProps) => {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [isCanvasLightboxOpen, setIsCanvasLightboxOpen] = useState(false);
   
   const { 
     isLoading, 
@@ -55,6 +57,13 @@ const StyleCard = ({
   const showContinueInCard = showContinueButton && isSelected && !!(previewUrl || croppedImage);
   const hasPreviewOrCropped = !!(previewUrl || croppedImage);
 
+  // Determine orientation from crop aspect ratio
+  const getOrientation = () => {
+    if (cropAspectRatio === 1) return "square";
+    if (cropAspectRatio > 1) return "horizontal";
+    return "vertical";
+  };
+
   console.log(`StyleCard ${style.name} (ID: ${style.id}):`, {
     showContinueButton,
     isSelected,
@@ -71,6 +80,13 @@ const StyleCard = ({
     e.stopPropagation();
     if (previewUrl || croppedImage) {
       setIsLightboxOpen(true);
+    }
+  };
+
+  const handleCanvasPreviewClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (previewUrl || croppedImage) {
+      setIsCanvasLightboxOpen(true);
     }
   };
 
@@ -101,6 +117,7 @@ const StyleCard = ({
             isSelected={isSelected}
             hasPreviewOrCropped={hasPreviewOrCropped}
             onExpandClick={handleExpandClick}
+            onCanvasPreviewClick={handleCanvasPreviewClick}
           />
 
           <StyleCardInfo
@@ -115,13 +132,29 @@ const StyleCard = ({
         </CardContent>
       </Card>
 
-      {/* Lightbox */}
+      {/* Regular Image Lightbox */}
       <Lightbox
         isOpen={isLightboxOpen}
         onClose={() => setIsLightboxOpen(false)}
         imageSrc={previewUrl || croppedImage || ''}
         imageAlt={`${style.name} preview`}
         title={style.name}
+      />
+
+      {/* Canvas Preview Lightbox */}
+      <Lightbox
+        isOpen={isCanvasLightboxOpen}
+        onClose={() => setIsCanvasLightboxOpen(false)}
+        imageSrc="" // We'll use custom content instead
+        imageAlt={`${style.name} canvas preview`}
+        title={`${style.name} on Canvas`}
+        customContent={
+          <FullCanvasMockup
+            imageUrl={previewUrl || croppedImage || ''}
+            orientation={getOrientation()}
+            styleName={style.name}
+          />
+        }
       />
     </>
   );

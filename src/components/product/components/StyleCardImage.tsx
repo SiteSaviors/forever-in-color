@@ -19,6 +19,7 @@ interface StyleCardImageProps {
   isSelected: boolean;
   hasPreviewOrCropped: boolean;
   onExpandClick: (e: React.MouseEvent) => void;
+  onCanvasPreviewClick?: (e: React.MouseEvent) => void;
 }
 
 const StyleCardImage = ({
@@ -30,7 +31,8 @@ const StyleCardImage = ({
   showGeneratedBadge,
   isSelected,
   hasPreviewOrCropped,
-  onExpandClick
+  onExpandClick,
+  onCanvasPreviewClick
 }: StyleCardImageProps) => {
   // Determine orientation from crop aspect ratio
   const getOrientation = () => {
@@ -40,6 +42,13 @@ const StyleCardImage = ({
   };
 
   const orientation = getOrientation();
+
+  const handleCanvasPreviewClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onCanvasPreviewClick) {
+      onCanvasPreviewClick(e);
+    }
+  };
 
   return (
     <AspectRatio ratio={cropAspectRatio} className="relative overflow-hidden rounded-t-lg">
@@ -73,6 +82,7 @@ const StyleCardImage = ({
             imageUrl={imageToShow}
             orientation={orientation}
             className="opacity-90 hover:opacity-100 transition-opacity"
+            onClick={handleCanvasPreviewClick}
           />
         </div>
       )}

@@ -9,9 +9,10 @@ interface LightboxProps {
   imageSrc: string;
   imageAlt: string;
   title?: string;
+  customContent?: React.ReactNode;
 }
 
-const Lightbox = ({ isOpen, onClose, imageSrc, imageAlt, title }: LightboxProps) => {
+const Lightbox = ({ isOpen, onClose, imageSrc, imageAlt, title, customContent }: LightboxProps) => {
   const [isZoomed, setIsZoomed] = useState(false);
 
   useEffect(() => {
@@ -49,16 +50,18 @@ const Lightbox = ({ isOpen, onClose, imageSrc, imageAlt, title }: LightboxProps)
             <X className="w-6 h-6" />
           </DialogClose>
 
-          {/* Zoom Controls */}
-          <div className="absolute top-4 left-4 z-10 flex gap-2">
-            <button
-              onClick={toggleZoom}
-              className="bg-white/10 hover:bg-white/20 text-white rounded-full p-2 transition-colors"
-              title={isZoomed ? "Zoom Out" : "Zoom In"}
-            >
-              {isZoomed ? <ZoomOut className="w-5 h-5" /> : <ZoomIn className="w-5 h-5" />}
-            </button>
-          </div>
+          {/* Zoom Controls - Only show for regular images */}
+          {!customContent && (
+            <div className="absolute top-4 left-4 z-10 flex gap-2">
+              <button
+                onClick={toggleZoom}
+                className="bg-white/10 hover:bg-white/20 text-white rounded-full p-2 transition-colors"
+                title={isZoomed ? "Zoom Out" : "Zoom In"}
+              >
+                {isZoomed ? <ZoomOut className="w-5 h-5" /> : <ZoomIn className="w-5 h-5" />}
+              </button>
+            </div>
+          )}
 
           {/* Title */}
           {title && (
@@ -69,18 +72,24 @@ const Lightbox = ({ isOpen, onClose, imageSrc, imageAlt, title }: LightboxProps)
             </div>
           )}
 
-          {/* Image */}
-          <div className={`transition-transform duration-300 ${isZoomed ? 'scale-150' : 'scale-100'} overflow-auto max-w-full max-h-full`}>
-            <img
-              src={imageSrc}
-              alt={imageAlt}
-              className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
-              style={{ 
-                cursor: isZoomed ? 'zoom-out' : 'zoom-in'
-              }}
-              onClick={toggleZoom}
-            />
-          </div>
+          {/* Content */}
+          {customContent ? (
+            <div className="w-full max-w-full max-h-full p-8 overflow-auto">
+              {customContent}
+            </div>
+          ) : (
+            <div className={`transition-transform duration-300 ${isZoomed ? 'scale-150' : 'scale-100'} overflow-auto max-w-full max-h-full`}>
+              <img
+                src={imageSrc}
+                alt={imageAlt}
+                className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+                style={{ 
+                  cursor: isZoomed ? 'zoom-out' : 'zoom-in'
+                }}
+                onClick={toggleZoom}
+              />
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
