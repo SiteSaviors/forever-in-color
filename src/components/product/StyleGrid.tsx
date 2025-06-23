@@ -18,7 +18,7 @@ interface StyleGridProps {
 const StyleGrid = ({ 
   croppedImage, 
   selectedStyle, 
-  cropAspectRatio = 1,
+  cropAspectRatio = 1, // Use actual crop aspect ratio
   onStyleSelect,
   onComplete
 }: StyleGridProps) => {
@@ -29,9 +29,6 @@ const StyleGrid = ({
   const popularStyles = artStyles.filter(style => popularStyleIds.includes(style.id));
   const otherStyles = artStyles.filter(style => !popularStyleIds.includes(style.id));
   const displayedStyles = showAllStyles ? artStyles : popularStyles;
-
-  // Use mobile-optimized aspect ratio
-  const mobileAspectRatio = 4/3;
 
   const handleStyleClick = (style: typeof artStyles[0]) => {
     onStyleSelect(style.id, style.name);
@@ -52,7 +49,7 @@ const StyleGrid = ({
             croppedImage={croppedImage}
             selectedStyle={selectedStyle}
             isPopular={popularStyleIds.includes(style.id)}
-            cropAspectRatio={mobileAspectRatio}
+            cropAspectRatio={cropAspectRatio} // Pass actual crop aspect ratio
             showContinueButton={true}
             onStyleClick={handleStyleClick}
             onContinue={onComplete}
@@ -67,7 +64,7 @@ const StyleGrid = ({
           >
             <CardContent className="p-0">
               {/* Use same aspect ratio as other cards */}
-              <AspectRatio ratio={mobileAspectRatio} className="relative overflow-hidden rounded-t-lg">
+              <AspectRatio ratio={cropAspectRatio} className="relative overflow-hidden rounded-t-lg">
                 {/* Canvas Frame Effect matching other cards */}
                 <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 p-2">
                   <div className="w-full h-full bg-gradient-to-br from-purple-100/80 via-pink-50/60 to-blue-50/40 backdrop-blur-sm border border-white/20 shadow-lg rounded-sm flex items-center justify-center">

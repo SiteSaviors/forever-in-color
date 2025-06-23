@@ -27,7 +27,7 @@ const StyleCard = ({
   croppedImage,
   selectedStyle,
   isPopular,
-  cropAspectRatio = 1,
+  cropAspectRatio = 1, // Default to square if not provided
   showContinueButton = false,
   onStyleClick,
   onContinue
@@ -54,9 +54,6 @@ const StyleCard = ({
   const showContinueInCard = showContinueButton && isSelected && !!(previewUrl || croppedImage);
   const hasPreviewOrCropped = !!(previewUrl || croppedImage);
 
-  // Use mobile-optimized aspect ratio (4:3 on mobile, original on desktop)
-  const mobileAspectRatio = 4/3;
-  
   console.log(`StyleCard ${style.name} (ID: ${style.id}):`, {
     showContinueButton,
     isSelected,
@@ -64,7 +61,8 @@ const StyleCard = ({
     croppedImage: !!croppedImage,
     showContinueInCard,
     hasGeneratedPreview,
-    isStyleGenerated
+    isStyleGenerated,
+    cropAspectRatio
   });
 
   const handleExpandClick = (e: React.MouseEvent) => {
@@ -94,7 +92,7 @@ const StyleCard = ({
           <StyleCardImage
             style={style}
             imageToShow={imageToShow}
-            cropAspectRatio={mobileAspectRatio} // Use mobile-optimized ratio
+            cropAspectRatio={cropAspectRatio} // Use actual crop aspect ratio
             showLoadingState={showLoadingState}
             isPopular={isPopular}
             showGeneratedBadge={showGeneratedBadge}

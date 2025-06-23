@@ -19,7 +19,7 @@ const StyleSelector = ({
   croppedImage, 
   selectedStyle, 
   preSelectedStyle,
-  cropAspectRatio = 1,
+  cropAspectRatio = 1, // Use actual crop aspect ratio, default to square
   onStyleSelect, 
   onComplete 
 }: StyleSelectorProps) => {
@@ -67,7 +67,7 @@ const StyleSelector = ({
       <StyleGrid
         croppedImage={croppedImage}
         selectedStyle={selectedStyle}
-        cropAspectRatio={cropAspectRatio}
+        cropAspectRatio={cropAspectRatio} // Pass the actual crop aspect ratio
         onStyleSelect={onStyleSelect}
         onComplete={handleComplete}
       />
