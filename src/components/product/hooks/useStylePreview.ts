@@ -57,9 +57,11 @@ export const useStylePreview = ({
           const watermarkedUrl = await addWatermarkToImage(response.previewUrl);
           console.log(`Watermark added successfully for ${style.name}`);
           setPreviewUrl(watermarkedUrl);
+          console.log(`Preview URL set for ${style.name}:`, watermarkedUrl);
         } catch (watermarkError) {
           console.warn(`Failed to add watermark for ${style.name}, using original image:`, watermarkError);
           setPreviewUrl(response.previewUrl);
+          console.log(`Preview URL set for ${style.name}:`, response.previewUrl);
         }
         
         setHasGeneratedPreview(true);
@@ -71,8 +73,6 @@ export const useStylePreview = ({
           localStorage.setItem('generatedStyles', JSON.stringify(generatedStyles));
           setIsStyleGenerated(true);
         }
-        
-        console.log(`Preview URL set for ${style.name}:`, watermarkedUrl || response.previewUrl);
       } else {
         console.error(`Failed to generate preview for ${style.name}:`, response.error);
       }
