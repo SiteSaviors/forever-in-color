@@ -47,13 +47,6 @@ const PhotoUploadAndStyleSelection = ({
     setShowCropper(false);
   };
 
-  const handleSkipCrop = () => {
-    console.log('Skipping crop, using original image');
-    setCroppedImage(previewUrl);
-    setCropAspectRatio(1); // Default to square for original image
-    setShowCropper(false);
-  };
-
   const handleStyleSelect = (styleId: number, styleName: string) => {
     console.log('Style selected:', styleId, styleName);
     setSelectedStyle(styleId);
@@ -93,27 +86,26 @@ const PhotoUploadAndStyleSelection = ({
         <div>
           <div className="text-center mb-4">
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Perfect Your Photo (Optional but Recommended)
+              Choose Your Canvas Format
             </h3>
             <p className="text-gray-600">
-              Choose your crop orientation and adjust your photo to highlight the most important parts. You can change orientation anytime!
+              Select your preferred orientation and crop your photo to create the perfect canvas composition.
             </p>
           </div>
           <PhotoCropper
             imageUrl={previewUrl}
             initialAspectRatio={cropAspectRatio}
             onCropComplete={handleCropComplete}
-            onSkip={handleSkipCrop}
             onOrientationChange={handleOrientationChange}
           />
         </div>
       )}
 
-      {/* Style Selection Section - Show when we have a cropped image (or skipped cropping) */}
-      {(croppedImage || (uploadedFile && !showCropper)) && (
+      {/* Style Selection Section - Show when we have a cropped image */}
+      {croppedImage && !showCropper && (
         <div>
           <StyleSelector
-            croppedImage={croppedImage || previewUrl}
+            croppedImage={croppedImage}
             selectedStyle={selectedStyle}
             preSelectedStyle={preSelectedStyle}
             cropAspectRatio={cropAspectRatio}

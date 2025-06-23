@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from "react";
 import { Crop, RotateCcw, Monitor, Smartphone, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,15 +9,13 @@ interface PhotoCropperProps {
   imageUrl: string;
   initialAspectRatio?: number;
   onCropComplete: (croppedImage: string, aspectRatio: number) => void;
-  onSkip: () => void;
   onOrientationChange?: (aspectRatio: number) => void;
 }
 
 const PhotoCropper = ({ 
   imageUrl, 
   initialAspectRatio = 1,
-  onCropComplete, 
-  onSkip,
+  onCropComplete,
   onOrientationChange 
 }: PhotoCropperProps) => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -123,10 +122,20 @@ const PhotoCropper = ({
   return (
     <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-4 md:p-6">
       <div className="space-y-4 md:space-y-6">
-        {/* Orientation Selection - Enhanced for better UX */}
+        {/* Header with requirement notice */}
+        <div className="text-center space-y-2">
+          <Badge variant="secondary" className="bg-purple-100 text-purple-700 font-medium">
+            Required Step: Choose Your Canvas Format
+          </Badge>
+          <p className="text-sm text-gray-600">
+            Select your preferred canvas orientation and adjust the crop to highlight the best part of your photo
+          </p>
+        </div>
+
+        {/* Orientation Selection */}
         <div className="space-y-3">
           <div className="text-center">
-            <Badge variant="secondary" className="bg-purple-100 text-purple-700 font-medium">
+            <Badge variant="outline" className="bg-white border-purple-200 text-purple-700 font-medium">
               Current: {getCurrentOrientation().name}
             </Badge>
           </div>
@@ -142,13 +151,13 @@ const PhotoCropper = ({
                   variant={isActive ? "default" : "outline"}
                   size="sm"
                   onClick={() => handleOrientationChange(option.ratio)}
-                  className={`flex flex-col items-center gap-1 h-auto py-2 px-2 md:px-3 text-xs ${
+                  className={`flex flex-col items-center gap-1 h-auto py-3 px-2 md:px-3 text-xs ${
                     isActive 
-                      ? 'bg-purple-600 hover:bg-purple-700 text-white' 
-                      : 'hover:bg-purple-50 hover:border-purple-300'
+                      ? 'bg-purple-600 hover:bg-purple-700 text-white shadow-lg' 
+                      : 'hover:bg-purple-50 hover:border-purple-300 text-gray-700'
                   }`}
                 >
-                  <IconComponent className="w-4 h-4" />
+                  <IconComponent className="w-5 h-5" />
                   <span className="font-medium">{option.name}</span>
                   <span className="text-[10px] opacity-75 hidden md:block">
                     {option.description}
@@ -160,7 +169,7 @@ const PhotoCropper = ({
         </div>
 
         {/* Crop Area */}
-        <div className="relative w-full h-64 md:h-80 bg-black rounded-xl overflow-hidden">
+        <div className="relative w-full h-64 md:h-80 bg-black rounded-xl overflow-hidden shadow-inner">
           <Cropper
             image={imageUrl}
             crop={crop}
@@ -177,23 +186,18 @@ const PhotoCropper = ({
           <Button
             variant="outline"
             onClick={handleAutoCenterCrop}
-            className="text-sm flex items-center gap-2"
+            className="text-sm flex items-center gap-2 border-purple-200 hover:bg-purple-50"
           >
             <RotateCcw className="w-4 h-4" />
-            Auto-Center
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={onSkip}
-            className="text-sm text-gray-500"
-          >
-            Skip, I'm Good
+            Reset Position
           </Button>
           <Button
             onClick={handleCropSave}
-            className="bg-purple-600 hover:bg-purple-700 text-sm"
+            disabled={!croppedAreaPixels}
+            className="bg-purple-600 hover:bg-purple-700 text-sm font-medium px-6 py-2"
           >
-            Apply Crop
+            <Crop className="w-4 h-4 mr-2" />
+            Apply Crop & Continue
           </Button>
         </div>
       </div>
