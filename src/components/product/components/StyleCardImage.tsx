@@ -69,17 +69,8 @@ const StyleCardImage = ({
 
       {/* Loading Overlay */}
       {showLoadingState && <StyleCardLoadingOverlay />}
-      
-      {/* Popular Badge */}
-      {isPopular && !showGeneratedBadge && (
-        <div className="absolute top-3 right-3">
-          <Badge variant="secondary" className="bg-white/90 text-purple-700 font-semibold">
-            Popular
-          </Badge>
-        </div>
-      )}
 
-      {/* Already Generated Badge */}
+      {/* Already Generated Badge - Only show this badge on images */}
       {showGeneratedBadge && (
         <div className="absolute top-3 right-3">
           <Badge variant="secondary" className="bg-gray-100/90 text-gray-600 font-semibold flex items-center gap-1">

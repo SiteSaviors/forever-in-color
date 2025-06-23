@@ -6,6 +6,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Card, CardContent } from "@/components/ui/card";
 import StyleCard from "./StyleCard";
 import { artStyles } from "@/data/artStyles";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface StyleGridProps {
   croppedImage: string | null;
@@ -23,6 +24,7 @@ const StyleGrid = ({
   onComplete
 }: StyleGridProps) => {
   const [displayedBatches, setDisplayedBatches] = useState(1);
+  const isMobile = useIsMobile();
   
   // Start with popular styles: Original Image, Watercolor Dreams, Pastel Bliss
   const popularStyleIds = [1, 4, 5];
@@ -42,9 +44,12 @@ const StyleGrid = ({
     }, [])
   ];
   
-  // Get styles to display based on number of batches shown
-  const displayedStyles = allBatches.slice(0, displayedBatches).flat();
-  const hasMoreStyles = displayedBatches < allBatches.length;
+  // On desktop, show all styles. On mobile, use batching logic
+  const displayedStyles = isMobile 
+    ? allBatches.slice(0, displayedBatches).flat()
+    : artStyles; // Show all styles on desktop
+    
+  const hasMoreStyles = isMobile && displayedBatches < allBatches.length;
   const nextBatchSize = allBatches[displayedBatches]?.length || 0;
 
   const handleStyleClick = (style: typeof artStyles[0]) => {
@@ -73,7 +78,7 @@ const StyleGrid = ({
           />
         ))}
         
-        {/* Show More Styles Card - Only show when there are more styles */}
+        {/* Show More Styles Card - Only show on mobile when there are more styles */}
         {hasMoreStyles && (
           <Card 
             className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105"
@@ -115,9 +120,9 @@ const StyleGrid = ({
         )}
       </div>
 
-      {/* Desktop Show More Styles Button - Alternative option on desktop */}
+      {/* Mobile Show More Styles Button - Alternative option on mobile */}
       {hasMoreStyles && (
-        <div className="text-center hidden md:block">
+        <div className="text-center block md:hidden">
           <Button 
             variant="outline"
             onClick={handleShowMore}
