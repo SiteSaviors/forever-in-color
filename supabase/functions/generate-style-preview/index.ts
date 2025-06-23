@@ -39,13 +39,22 @@ serve(async (req) => {
       )
     }
 
-    // Get Replicate API key from Supabase secrets
+    // Get Replicate API key from Supabase secrets with better debugging
     const replicateApiKey = Deno.env.get('REPLICATE_API_TOKEN') || Deno.env.get('REPLICATE_API_KEY')
-    console.log('Replicate API Key available:', !!replicateApiKey)
     
-    if (!replicateApiKey) {
-      console.error('Replicate API key not found in environment variables')
-      return createErrorResponse('Replicate API key not configured. Please check your Supabase secrets.', 500)
+    // Enhanced logging to debug the token issue
+    console.log('Environment variables check:')
+    console.log('- REPLICATE_API_TOKEN exists:', !!Deno.env.get('REPLICATE_API_TOKEN'))
+    console.log('- REPLICATE_API_KEY exists:', !!Deno.env.get('REPLICATE_API_KEY'))
+    console.log('- Final token exists:', !!replicateApiKey)
+    console.log('- Token value:', replicateApiKey) // Temporary debug - remove after fixing
+    console.log('- Token type:', typeof replicateApiKey)
+    console.log('- Token starts with r8_:', replicateApiKey?.startsWith('r8_'))
+    
+    if (!replicateApiKey || replicateApiKey === 'undefined' || replicateApiKey.trim() === '') {
+      console.error('Replicate API key not found or invalid in environment variables')
+      console.error('Available env vars:', Object.keys(Deno.env.toObject()).filter(key => key.includes('REPLIC')))
+      return createErrorResponse('Replicate API key not configured properly. Please check your Supabase secrets.', 500)
     }
 
     const replicateService = new ReplicateService(replicateApiKey)
@@ -54,32 +63,11 @@ serve(async (req) => {
     let transformationPrompt = customPrompt || stylePrompts[styleId] || "Apply artistic transformation to the image"
     console.log('Using style prompt:', transformationPrompt)
 
-    // Step 1: Analyze the image to create a detailed transformation prompt (using OpenAI)
-    console.log('Step 1: Analyzing image for transformation...')
-    try {
-      const analysisResponse = await replicateService.analyzeImageForTransformation(imageData, transformationPrompt)
-      
-      if (!analysisResponse.ok) {
-        const errorData = await analysisResponse.text()
-        console.error('Image analysis failed:', errorData)
-        // Fallback to using the base style prompt directly
-        console.log('Using base style prompt as fallback')
-      } else {
-        const analysisData = await analysisResponse.json()
-        const detailedPrompt = analysisData.choices[0]?.message?.content
-        
-        if (detailedPrompt) {
-          console.log('Generated detailed prompt:', detailedPrompt)
-          // Use the detailed prompt for transformation
-          transformationPrompt = detailedPrompt
-        }
-      }
-    } catch (error) {
-      console.error('Analysis step failed, using base prompt:', error)
-    }
+    // Skip OpenAI analysis for now to isolate the Replicate issue
+    console.log('Skipping OpenAI analysis, going directly to Replicate...')
 
-    // Step 2: Generate the transformed image using Replicate
-    console.log('Step 2: Starting image transformation with Replicate...')
+    // Generate the transformed image using Replicate
+    console.log('Starting image transformation with Replicate...')
     const transformResult = await replicateService.generateImageToImage(imageData, transformationPrompt)
 
     if (!transformResult.ok) {

@@ -5,35 +5,63 @@ export class ReplicateService {
 
   constructor(apiToken: string) {
     this.apiToken = apiToken;
+    // Debug logging to see what token we actually have
+    console.log("ReplicateService initialized with token:", this.apiToken);
+    console.log("Token starts with 'r8_':", this.apiToken?.startsWith('r8_'));
+    console.log("Token length:", this.apiToken?.length);
   }
 
   async generateImageToImage(imageData: string, prompt: string): Promise<any> {
     console.log('Starting Flux Kontext Max generation with prompt:', prompt);
     
+    // Additional debug logging
+    if (!this.apiToken || this.apiToken === 'undefined' || this.apiToken.trim() === '') {
+      console.error('Invalid API token detected:', { 
+        token: this.apiToken, 
+        type: typeof this.apiToken,
+        isEmpty: !this.apiToken 
+      });
+      return {
+        ok: false,
+        error: 'Invalid or missing Replicate API token'
+      };
+    }
+    
     try {
       // Step 1: Create prediction
+      const requestBody = {
+        version: "black-forest-labs/flux-kontext-max:latest",
+        input: {
+          image: imageData,
+          prompt: prompt,
+          num_inference_steps: 28,
+          guidance_scale: 7.5,
+          output_format: "webp",
+          output_quality: 90
+        }
+      };
+
+      console.log('Making request to Replicate with Authorization header:', `Token ${this.apiToken.substring(0, 8)}...`);
+
       const response = await fetch(`${this.baseUrl}/predictions`, {
         method: "POST",
         headers: {
           "Authorization": `Token ${this.apiToken}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          version: "black-forest-labs/flux-kontext-max:latest", // Using latest version
-          input: {
-            image: imageData, // Base64 or URL
-            prompt: prompt,
-            num_inference_steps: 28,
-            guidance_scale: 7.5,
-            output_format: "webp",
-            output_quality: 90
-          }
-        }),
+        body: JSON.stringify(requestBody),
       });
 
+      console.log('Replicate API response status:', response.status);
+      
       if (!response.ok) {
         const errorData = await response.text();
-        console.error('Replicate API error:', response.status, errorData);
+        console.error('Replicate API error details:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorData: errorData,
+          headers: Object.fromEntries(response.headers.entries())
+        });
         return {
           ok: false,
           error: `API request failed: ${response.status} - ${errorData}`
@@ -41,7 +69,7 @@ export class ReplicateService {
       }
 
       const data = await response.json();
-      console.log('Prediction created:', data.id);
+      console.log('Prediction created successfully:', data.id);
 
       // Step 2: Poll for completion
       return await this.pollForCompletion(data.id, data.urls.get);
