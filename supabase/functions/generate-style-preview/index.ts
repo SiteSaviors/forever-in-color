@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { stylePrompts } from "./stylePrompts.ts"
@@ -106,14 +105,14 @@ const validateInput = (body: any): { isValid: boolean; error?: string } => {
     }
   }
 
-  // Updated style validation to match the actual style names from the frontend
+  // Updated style validation to match the exact style names from the frontend
   const allowedStyles = [
     'Original Image',
     'Classic Oil Painting', 
     'Watercolor Dreams', 
     'Pop Art Burst',
     'Abstract Fusion', 
-    'Calm Watercolor',  // Updated from 'Calm WaterColor'
+    'Calm Watercolor',
     'Neon Splash', 
     'Artisan Charcoal',
     'Electric Bloom', 
@@ -125,8 +124,12 @@ const validateInput = (body: any): { isValid: boolean; error?: string } => {
     'Artistic Mashup'
   ];
 
+  console.log('Style validation - Received style:', style);
+  console.log('Style validation - Allowed styles:', allowedStyles);
+  console.log('Style validation - Is style allowed:', allowedStyles.includes(style));
+
   if (!allowedStyles.includes(style)) {
-    return { isValid: false, error: `Invalid style: ${style}. Allowed styles: ${allowedStyles.join(', ')}` };
+    return { isValid: false, error: `Invalid style: "${style}". Allowed styles: ${allowedStyles.join(', ')}` };
   }
 
   return { isValid: true };
@@ -291,12 +294,13 @@ serve(async (req) => {
     // Enhanced input validation
     const validation = validateInput(requestBody);
     if (!validation.isValid) {
+      console.error('Input validation failed:', validation.error);
       await logSecurityEvent({
         event_type: 'suspicious_upload',
         user_id: user?.id,
         ip_address: req.headers.get('x-forwarded-for') || 'unknown',
         user_agent: req.headers.get('user-agent') || 'unknown',
-        details: { reason: 'Input validation failed', validation_error: validation.error },
+        details: { reason: 'Input validation failed', validation_error: validation.error, received_style: requestBody.style },
         severity: 'medium'
       });
       return createErrorResponse(validation.error || 'Invalid input', 400);
