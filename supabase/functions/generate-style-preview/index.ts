@@ -41,13 +41,13 @@ const logSecurityEvent = async (event: Omit<SecurityEvent, 'timestamp'>) => {
   }
 };
 
-// Enhanced input validation with security checks
+// Enhanced input validation with aspect ratio support
 const validateInput = (body: any): { isValid: boolean; error?: string } => {
   if (!body) {
     return { isValid: false, error: 'Request body is required' };
   }
 
-  const { imageUrl, style, photoId } = body;
+  const { imageUrl, style, photoId, aspectRatio, quality } = body;
 
   if (!imageUrl || typeof imageUrl !== 'string') {
     return { isValid: false, error: 'imageUrl must be a non-empty string' };
@@ -59,6 +59,22 @@ const validateInput = (body: any): { isValid: boolean; error?: string } => {
 
   if (!photoId || typeof photoId !== 'string') {
     return { isValid: false, error: 'photoId must be a non-empty string' };
+  }
+
+  // Validate aspect ratio if provided
+  if (aspectRatio && typeof aspectRatio === 'string') {
+    const validAspectRatios = ['1:1', '3:4', '4:3', '16:9', '9:16', 'portrait', 'landscape', 'square'];
+    if (!validAspectRatios.includes(aspectRatio)) {
+      return { isValid: false, error: `Invalid aspect ratio. Must be one of: ${validAspectRatios.join(', ')}` };
+    }
+  }
+
+  // Validate quality if provided
+  if (quality && typeof quality === 'string') {
+    const validQualities = ['low', 'medium', 'high'];
+    if (!validQualities.includes(quality)) {
+      return { isValid: false, error: `Invalid quality. Must be one of: ${validQualities.join(', ')}` };
+    }
   }
 
   // Enhanced image data validation
@@ -305,7 +321,19 @@ serve(async (req) => {
       return createErrorResponse(validation.error || 'Invalid input', 400);
     }
 
-    const { imageUrl, style, photoId }: { imageUrl: string; style: string; photoId: string } = requestBody;
+    const { 
+      imageUrl, 
+      style, 
+      photoId, 
+      aspectRatio = "1:1", 
+      quality = "medium" 
+    }: { 
+      imageUrl: string; 
+      style: string; 
+      photoId: string; 
+      aspectRatio?: string;
+      quality?: string;
+    } = requestBody;
 
     // Additional security check for base64 content
     if (imageUrl.startsWith('data:image/')) {
@@ -347,30 +375,38 @@ serve(async (req) => {
     console.log('Photo ID:', photoId)
     console.log('Image URL length:', imageUrl?.length || 0)
     console.log('Authentication status:', isAuthenticated)
+    console.log('Aspect Ratio:', aspectRatio)
+    console.log('Quality:', quality)
 
-    // Get OpenAI API key from Supabase secrets with validation
+    // Get API keys from Supabase secrets with validation
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY') || Deno.env.get('OPEN_AI_KEY')
+    const replicateApiToken = Deno.env.get('REPLICATE_API_TOKEN')
     
     if (!openaiApiKey || openaiApiKey === 'undefined' || openaiApiKey.trim() === '') {
       console.error('OpenAI API key not found or invalid in environment variables')
       return createErrorResponse('Service temporarily unavailable. Please try again later.', 503)
     }
 
-    // Pass the Supabase client to OpenAI service so it can fetch prompts
-    const openaiService = new OpenAIService(openaiApiKey, supabase)
-    
-    console.log('Starting GPT-IMG-1 transformation for style:', style)
+    if (!replicateApiToken || replicateApiToken === 'undefined' || replicateApiToken.trim() === '') {
+      console.error('Replicate API token not found or invalid in environment variables')
+      return createErrorResponse('Service temporarily unavailable. Please try again later.', 503)
+    }
 
-    // Generate the transformed image using GPT-IMG-1 with timeout
+    // Pass both API keys to OpenAI service
+    const openaiService = new OpenAIService(openaiApiKey, replicateApiToken, supabase)
+    
+    console.log('Starting GPT-Image-1 transformation via Replicate for style:', style)
+
+    // Generate the transformed image using GPT-Image-1 via Replicate with timeout
     const timeoutController = new AbortController();
-    const timeoutId = setTimeout(() => timeoutController.abort(), 60000); // 60 second timeout
+    const timeoutId = setTimeout(() => timeoutController.abort(), 120000); // 2 minute timeout for Replicate
 
     try {
-      const transformResult = await openaiService.generateImageToImage(imageUrl, style)
+      const transformResult = await openaiService.generateImageToImage(imageUrl, style, aspectRatio, quality)
       clearTimeout(timeoutId);
 
       if (!transformResult.ok) {
-        console.error(`GPT-IMG-1 transformation failed for ${style}:`, transformResult.error)
+        console.error(`GPT-Image-1 transformation failed for ${style}:`, transformResult.error)
         
         // Return original image as fallback
         return createSuccessResponse(
@@ -382,7 +418,7 @@ serve(async (req) => {
         )
       }
 
-      // Handle different output formats from OpenAI
+      // Handle different output formats from Replicate
       let transformedImageUrl = transformResult.output;
       
       if (Array.isArray(transformedImageUrl)) {
@@ -390,7 +426,7 @@ serve(async (req) => {
       }
 
       if (transformedImageUrl) {
-        console.log(`Transformation completed successfully for ${style}`)
+        console.log(`Transformation completed successfully via Replicate for ${style}`)
         return createSuccessResponse(
           `${style} style applied successfully`,
           transformedImageUrl,
