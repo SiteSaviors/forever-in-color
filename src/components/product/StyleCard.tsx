@@ -54,7 +54,9 @@ const StyleCard = ({
   const showContinueInCard = showContinueButton && isSelected && !!(previewUrl || croppedImage);
   const hasPreviewOrCropped = !!(previewUrl || croppedImage);
 
-  // Debug logging for continue button visibility
+  // Use mobile-optimized aspect ratio (4:3 on mobile, original on desktop)
+  const mobileAspectRatio = 4/3;
+  
   console.log(`StyleCard ${style.name} (ID: ${style.id}):`, {
     showContinueButton,
     isSelected,
@@ -92,7 +94,7 @@ const StyleCard = ({
           <StyleCardImage
             style={style}
             imageToShow={imageToShow}
-            cropAspectRatio={cropAspectRatio}
+            cropAspectRatio={mobileAspectRatio} // Use mobile-optimized ratio
             showLoadingState={showLoadingState}
             isPopular={isPopular}
             showGeneratedBadge={showGeneratedBadge}

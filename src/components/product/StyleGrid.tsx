@@ -30,6 +30,9 @@ const StyleGrid = ({
   const otherStyles = artStyles.filter(style => !popularStyleIds.includes(style.id));
   const displayedStyles = showAllStyles ? artStyles : popularStyles;
 
+  // Use mobile-optimized aspect ratio
+  const mobileAspectRatio = 4/3;
+
   const handleStyleClick = (style: typeof artStyles[0]) => {
     onStyleSelect(style.id, style.name);
   };
@@ -40,8 +43,8 @@ const StyleGrid = ({
 
   return (
     <>
-      {/* Style Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      {/* Style Grid - More compact spacing on mobile */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
         {displayedStyles.map(style => (
           <StyleCard
             key={style.id}
@@ -49,7 +52,7 @@ const StyleGrid = ({
             croppedImage={croppedImage}
             selectedStyle={selectedStyle}
             isPopular={popularStyleIds.includes(style.id)}
-            cropAspectRatio={cropAspectRatio}
+            cropAspectRatio={mobileAspectRatio}
             showContinueButton={true}
             onStyleClick={handleStyleClick}
             onContinue={onComplete}
@@ -64,13 +67,13 @@ const StyleGrid = ({
           >
             <CardContent className="p-0">
               {/* Use same aspect ratio as other cards */}
-              <AspectRatio ratio={cropAspectRatio} className="relative overflow-hidden rounded-t-lg">
+              <AspectRatio ratio={mobileAspectRatio} className="relative overflow-hidden rounded-t-lg">
                 {/* Canvas Frame Effect matching other cards */}
                 <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 p-2">
                   <div className="w-full h-full bg-gradient-to-br from-purple-100/80 via-pink-50/60 to-blue-50/40 backdrop-blur-sm border border-white/20 shadow-lg rounded-sm flex items-center justify-center">
-                    <div className="text-center p-4">
-                      <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full p-3 mb-3 group-hover:scale-110 transition-transform duration-300 mx-auto w-fit">
-                        <Wand2 className="w-6 h-6" />
+                    <div className="text-center p-3">
+                      <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full p-2.5 mb-2 group-hover:scale-110 transition-transform duration-300 mx-auto w-fit">
+                        <Wand2 className="w-5 h-5" />
                       </div>
                       <h3 className="font-bold text-gray-900 text-sm mb-1">See All Styles</h3>
                       <p className="text-xs text-gray-600 leading-tight">Discover {otherStyles.length + popularStyles.length} amazing art styles</p>
@@ -83,9 +86,9 @@ const StyleGrid = ({
               </AspectRatio>
 
               {/* Style Info matching other cards */}
-              <div className="p-3 space-y-2">
+              <div className="p-2 md:p-3 space-y-1">
                 <h5 className="font-semibold text-gray-900 text-sm">More Styles</h5>
-                <p className="text-xs text-gray-600 leading-relaxed">Explore all {otherStyles.length + popularStyles.length} art styles available</p>
+                <p className="text-xs text-gray-600 leading-tight">Explore all {otherStyles.length + popularStyles.length} art styles available</p>
               </div>
             </CardContent>
           </Card>
