@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { stylePrompts } from "./stylePrompts.ts"
@@ -128,7 +127,7 @@ const validateRequestOrigin = async (req: Request): Promise<boolean> => {
   const userAgent = req.headers.get('user-agent');
   const xForwardedFor = req.headers.get('x-forwarded-for');
   
-  // Allow requests from Supabase domains and localhost for development
+  // Allow requests from Supabase domains, localhost for development, and Lovable preview domains
   const allowedOrigins = [
     'https://fvjganetpyyrguuxjtqi.supabase.co',
     'http://localhost:3000',
@@ -136,6 +135,9 @@ const validateRequestOrigin = async (req: Request): Promise<boolean> => {
     'https://localhost:3000',  
     'https://localhost:5173'
   ];
+
+  // Allow any Lovable preview domain (they follow the pattern: https://[id].lovableproject.com)
+  const lovablePreviewPattern = /^https:\/\/[a-f0-9-]+\.lovableproject\.com$/;
 
   // Block requests without user agent (potential bot/script)
   if (!userAgent || userAgent.length < 10) {
@@ -150,9 +152,10 @@ const validateRequestOrigin = async (req: Request): Promise<boolean> => {
     return false;
   }
 
-  // Check if origin or referer matches allowed domains
+  // Check if origin or referer matches allowed domains or Lovable preview pattern
   if (origin) {
-    const isAllowed = allowedOrigins.some(allowed => origin.startsWith(allowed));
+    const isAllowed = allowedOrigins.some(allowed => origin.startsWith(allowed)) || 
+                     lovablePreviewPattern.test(origin);
     if (!isAllowed) {
       await logSecurityEvent({
         event_type: 'invalid_origin',
@@ -165,7 +168,8 @@ const validateRequestOrigin = async (req: Request): Promise<boolean> => {
       return false;
     }
   } else if (referer) {
-    const isAllowed = allowedOrigins.some(allowed => referer.startsWith(allowed));
+    const isAllowed = allowedOrigins.some(allowed => referer.startsWith(allowed)) ||
+                     lovablePreviewPattern.test(referer);
     if (!isAllowed) {
       await logSecurityEvent({
         event_type: 'invalid_origin',
