@@ -35,7 +35,7 @@ const CanvasWallMockup = ({
     }
   };
 
-  // Calculate positioning for different orientations
+  // Calculate positioning and perspective transforms for different orientations
   const getImagePosition = () => {
     switch (selectedOrientation) {
       case 'horizontal':
@@ -43,28 +43,32 @@ const CanvasWallMockup = ({
           top: '18%',
           left: '15%',
           width: '70%',
-          height: '64%'
+          height: '64%',
+          transform: 'perspective(1000px) rotateX(8deg) rotateY(-12deg) rotateZ(2deg)'
         };
       case 'vertical':
         return {
           top: '15%',
           left: '20%',
           width: '60%',
-          height: '70%'
+          height: '70%',
+          transform: 'perspective(1000px) rotateX(5deg) rotateY(-8deg) rotateZ(1deg)'
         };
       case 'square':
         return {
           top: '16%',
           left: '16%',
           width: '68%',
-          height: '68%'
+          height: '68%',
+          transform: 'perspective(1000px) rotateX(6deg) rotateY(-10deg) rotateZ(1.5deg)'
         };
       default:
         return {
           top: '16%',
           left: '16%',
           width: '68%',
-          height: '68%'
+          height: '68%',
+          transform: 'perspective(1000px) rotateX(6deg) rotateY(-10deg) rotateZ(1.5deg)'
         };
     }
   };
@@ -82,14 +86,15 @@ const CanvasWallMockup = ({
           className="w-full h-auto object-contain"
         />
         
-        {/* User's Image Overlay */}
+        {/* User's Image Overlay with Perspective Transform */}
         <div 
-          className="absolute"
+          className="absolute overflow-hidden"
           style={{
             top: imagePosition.top,
             left: imagePosition.left,
             width: imagePosition.width,
             height: imagePosition.height,
+            transformStyle: 'preserve-3d',
           }}
         >
           <img 
@@ -97,10 +102,9 @@ const CanvasWallMockup = ({
             alt="User's styled artwork"
             className="w-full h-full object-cover"
             style={{
-              // Apply subtle perspective to match canvas angle
-              transform: selectedOrientation === 'horizontal' ? 'perspective(800px) rotateY(-2deg)' :
-                        selectedOrientation === 'vertical' ? 'perspective(800px) rotateY(-1deg)' :
-                        'perspective(800px) rotateY(-1.5deg)'
+              transform: imagePosition.transform,
+              transformOrigin: 'center center',
+              filter: 'brightness(0.95) contrast(1.05)', // Slight adjustment to match canvas lighting
             }}
           />
         </div>

@@ -25,13 +25,37 @@ const MiniCanvasPreview = ({ imageUrl, orientation, className = "", onClick }: M
   const getImagePosition = () => {
     switch (orientation) {
       case 'horizontal':
-        return { top: '18%', left: '15%', width: '70%', height: '64%' };
+        return { 
+          top: '18%', 
+          left: '15%', 
+          width: '70%', 
+          height: '64%',
+          transform: 'perspective(200px) rotateX(4deg) rotateY(-6deg) rotateZ(1deg)'
+        };
       case 'vertical':
-        return { top: '15%', left: '20%', width: '60%', height: '70%' };
+        return { 
+          top: '15%', 
+          left: '20%', 
+          width: '60%', 
+          height: '70%',
+          transform: 'perspective(200px) rotateX(2.5deg) rotateY(-4deg) rotateZ(0.5deg)'
+        };
       case 'square':
-        return { top: '16%', left: '16%', width: '68%', height: '68%' };
+        return { 
+          top: '16%', 
+          left: '16%', 
+          width: '68%', 
+          height: '68%',
+          transform: 'perspective(200px) rotateX(3deg) rotateY(-5deg) rotateZ(0.75deg)'
+        };
       default:
-        return { top: '16%', left: '16%', width: '68%', height: '68%' };
+        return { 
+          top: '16%', 
+          left: '16%', 
+          width: '68%', 
+          height: '68%',
+          transform: 'perspective(200px) rotateX(3deg) rotateY(-5deg) rotateZ(0.75deg)'
+        };
     }
   };
 
@@ -56,18 +80,24 @@ const MiniCanvasPreview = ({ imageUrl, orientation, className = "", onClick }: M
         className="w-full h-full object-contain"
       />
       <div 
-        className="absolute"
+        className="absolute overflow-hidden"
         style={{
           top: imagePosition.top,
           left: imagePosition.left,
           width: imagePosition.width,
           height: imagePosition.height,
+          transformStyle: 'preserve-3d',
         }}
       >
         <img 
           src={imageUrl}
           alt="Preview"
           className="w-full h-full object-cover"
+          style={{
+            transform: imagePosition.transform,
+            transformOrigin: 'center center',
+            filter: 'brightness(0.95) contrast(1.05)',
+          }}
         />
       </div>
       

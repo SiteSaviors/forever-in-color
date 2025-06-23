@@ -24,13 +24,37 @@ const FullCanvasMockup = ({ imageUrl, orientation, styleName }: FullCanvasMockup
   const getImagePosition = () => {
     switch (orientation) {
       case 'horizontal':
-        return { top: '18%', left: '15%', width: '70%', height: '64%' };
+        return { 
+          top: '18%', 
+          left: '15%', 
+          width: '70%', 
+          height: '64%',
+          transform: 'perspective(1000px) rotateX(8deg) rotateY(-12deg) rotateZ(2deg)'
+        };
       case 'vertical':
-        return { top: '15%', left: '20%', width: '60%', height: '70%' };
+        return { 
+          top: '15%', 
+          left: '20%', 
+          width: '60%', 
+          height: '70%',
+          transform: 'perspective(1000px) rotateX(5deg) rotateY(-8deg) rotateZ(1deg)'
+        };
       case 'square':
-        return { top: '16%', left: '16%', width: '68%', height: '68%' };
+        return { 
+          top: '16%', 
+          left: '16%', 
+          width: '68%', 
+          height: '68%',
+          transform: 'perspective(1000px) rotateX(6deg) rotateY(-10deg) rotateZ(1.5deg)'
+        };
       default:
-        return { top: '16%', left: '16%', width: '68%', height: '68%' };
+        return { 
+          top: '16%', 
+          left: '16%', 
+          width: '68%', 
+          height: '68%',
+          transform: 'perspective(1000px) rotateX(6deg) rotateY(-10deg) rotateZ(1.5deg)'
+        };
     }
   };
 
@@ -45,18 +69,24 @@ const FullCanvasMockup = ({ imageUrl, orientation, styleName }: FullCanvasMockup
         className="w-full h-auto object-contain"
       />
       <div 
-        className="absolute"
+        className="absolute overflow-hidden"
         style={{
           top: imagePosition.top,
           left: imagePosition.left,
           width: imagePosition.width,
           height: imagePosition.height,
+          transformStyle: 'preserve-3d',
         }}
       >
         <img 
           src={imageUrl}
           alt={`${styleName} artwork`}
           className="w-full h-full object-cover"
+          style={{
+            transform: imagePosition.transform,
+            transformOrigin: 'center center',
+            filter: 'brightness(0.95) contrast(1.05)',
+          }}
         />
       </div>
       
