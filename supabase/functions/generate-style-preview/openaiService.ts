@@ -26,7 +26,7 @@ export class OpenAIService {
           prompt: transformationPrompt,
           n: 1,
           size: '1024x1024',
-          quality: 'medium', // Changed from 'high' to match Leonardo
+          quality: 'high',    // Changed back to 'high' as requested
           style: 'dynamic',   // Added to match Leonardo's "Dynamic" setting
           output_format: 'png'
         })
@@ -46,7 +46,7 @@ export class OpenAIService {
       if (data.data && data.data[0] && data.data[0].b64_json) {
         // Convert base64 to data URL
         const base64Image = `data:image/png;base64,${data.data[0].b64_json}`;
-        console.log('GPT-IMG-1 generation successful with Leonardo-matched settings');
+        console.log('GPT-IMG-1 generation successful with high quality and dynamic style');
         
         return {
           ok: true,
