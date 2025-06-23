@@ -1,7 +1,7 @@
 
-import { useState, useEffect } from "react";
-import { generateStylePreview } from "@/utils/stylePreviewApi";
-import { useToast } from "@/hooks/use-toast";
+import { useState, useEffect, useCallback } from 'react';
+import { generateStylePreview } from '@/utils/stylePreviewApi';
+import { addWatermarkToImage } from '@/utils/watermarkUtils';
 
 interface UseStylePreviewProps {
   style: {
@@ -15,190 +15,85 @@ interface UseStylePreviewProps {
   onStyleClick: (style: { id: number; name: string; description: string; image: string }) => void;
 }
 
-export const useStylePreview = ({ 
-  style, 
-  croppedImage, 
-  isPopular, 
-  onStyleClick 
+export const useStylePreview = ({
+  style,
+  croppedImage,
+  isPopular,
+  onStyleClick
 }: UseStylePreviewProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [hasGeneratedPreview, setHasGeneratedPreview] = useState(false);
-  const [autoGenerationAttempted, setAutoGenerationAttempted] = useState(false);
-  const { toast } = useToast();
+  const [isStyleGenerated, setIsStyleGenerated] = useState(false);
 
-  // Clear generated styles when a new image is cropped
+  // Check if we already have a generated preview for this style
   useEffect(() => {
-    if (croppedImage) {
-      console.log('New cropped image detected, clearing generated styles session');
-      try {
-        sessionStorage.removeItem('generatedStyles');
-      } catch (error) {
-        console.error('Error clearing generated styles:', error);
-      }
+    const generatedStyles = JSON.parse(localStorage.getItem('generatedStyles') || '[]');
+    if (generatedStyles.includes(style.id)) {
+      setIsStyleGenerated(true);
     }
-  }, [croppedImage]);
+  }, [style.id]);
 
-  // Check if style was already generated in this session
-  const isStyleGenerated = () => {
-    try {
-      const generatedStyles = sessionStorage.getItem('generatedStyles');
-      if (generatedStyles) {
-        const styles = JSON.parse(generatedStyles);
-        return styles.includes(style.id);
-      }
-    } catch (error) {
-      console.error('Error reading generated styles:', error);
-    }
-    return false;
-  };
-
-  // Mark style as generated in session
-  const markStyleAsGenerated = () => {
-    try {
-      const generatedStyles = sessionStorage.getItem('generatedStyles');
-      let styles = generatedStyles ? JSON.parse(generatedStyles) : [];
-      if (!styles.includes(style.id)) {
-        styles.push(style.id);
-        sessionStorage.setItem('generatedStyles', JSON.stringify(styles));
-      }
-    } catch (error) {
-      console.error('Error saving generated styles:', error);
-    }
-  };
-
-  // Get custom prompts from localStorage
-  const getCustomPrompt = (styleId: number): string | undefined => {
-    try {
-      const savedPrompts = localStorage.getItem('stylePrompts');
-      if (savedPrompts) {
-        const prompts = JSON.parse(savedPrompts);
-        return prompts[styleId];
-      }
-    } catch (error) {
-      console.error('Error reading custom prompts:', error);
-    }
-    return undefined;
-  };
-
-  // Auto-generate previews for popular styles when image is uploaded
-  useEffect(() => {
-    const shouldAutoGenerate = croppedImage && 
-                              isPopular && 
-                              style.id !== 1 && // Skip Original Image
-                              !hasGeneratedPreview && 
-                              !previewUrl &&
-                              !autoGenerationAttempted &&
-                              !isLoading &&
-                              !isStyleGenerated(); // Don't auto-generate if already generated
-
-    if (shouldAutoGenerate) {
-      console.log(`Auto-generating preview for ${style.name} (ID: ${style.id})`);
-      setAutoGenerationAttempted(true);
-      generatePreviewSilently();
-    }
-  }, [croppedImage, isPopular, style.id, hasGeneratedPreview, previewUrl, autoGenerationAttempted, isLoading]);
-
-  const generatePreviewSilently = async () => {
-    if (!croppedImage) return;
+  const generatePreview = useCallback(async () => {
+    if (!croppedImage || style.id === 1) return;
 
     setIsLoading(true);
     
     try {
-      console.log(`Starting silent preview generation for ${style.name}`);
-      
-      const customPrompt = getCustomPrompt(style.id);
-      console.log(`Using custom prompt for ${style.name}:`, customPrompt);
+      console.log(`Generating preview for style: ${style.name}`);
       
       const response = await generateStylePreview({
         imageData: croppedImage,
         styleId: style.id,
-        styleName: style.name,
-        customPrompt
+        styleName: style.name
       });
 
-      console.log(`Silent generation response for ${style.name}:`, response.success);
-
-      if (response.success) {
-        setPreviewUrl(response.previewUrl);
-        setHasGeneratedPreview(true);
-        markStyleAsGenerated(); // Mark as generated
+      if (response.success && response.previewUrl) {
         console.log(`Preview generated successfully for ${style.name}`);
-      } else {
-        console.warn(`Silent preview generation failed for ${style.name}:`, response.error);
-        // Don't throw error for silent generation - just log it
-      }
-    } catch (error) {
-      console.error(`Error in silent preview generation for ${style.name}:`, error);
-      // Silent failure for auto-generation
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleClick = async () => {
-    if (!croppedImage) return;
-
-    // Check if this style was already generated in this session
-    if (isStyleGenerated() && style.id !== 1) {
-      toast({
-        title: "Style Already Generated",
-        description: "You've already generated this style in this session. Upload a new image to generate again.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // If it's a popular style or already has a preview, select immediately
-    if (isPopular || hasGeneratedPreview) {
-      onStyleClick(style);
-      return;
-    }
-
-    // For other styles, generate preview using API
-    setIsLoading(true);
-    
-    try {
-      const customPrompt = getCustomPrompt(style.id);
-      console.log(`Using custom prompt for ${style.name}:`, customPrompt);
-      
-      const response = await generateStylePreview({
-        imageData: croppedImage,
-        styleId: style.id,
-        styleName: style.name,
-        customPrompt
-      });
-
-      if (response.success) {
-        setPreviewUrl(response.previewUrl);
-        setHasGeneratedPreview(true);
-        markStyleAsGenerated(); // Mark as generated
-        onStyleClick(style);
         
-        toast({
-          title: "Style Preview Generated!",
-          description: `Your photo has been transformed with ${style.name} style.`,
-        });
+        // Add watermark to the generated image
+        try {
+          const watermarkedUrl = await addWatermarkToImage(response.previewUrl);
+          setPreviewUrl(watermarkedUrl);
+        } catch (watermarkError) {
+          console.warn('Failed to add watermark, using original image:', watermarkError);
+          setPreviewUrl(response.previewUrl);
+        }
+        
+        setHasGeneratedPreview(true);
+        
+        // Mark this style as generated
+        const generatedStyles = JSON.parse(localStorage.getItem('generatedStyles') || '[]');
+        if (!generatedStyles.includes(style.id)) {
+          generatedStyles.push(style.id);
+          localStorage.setItem('generatedStyles', JSON.stringify(generatedStyles));
+          setIsStyleGenerated(true);
+        }
       } else {
-        throw new Error(response.error || 'Failed to generate preview');
+        console.error(`Failed to generate preview for ${style.name}:`, response.error);
       }
     } catch (error) {
-      console.error('Error generating style preview:', error);
-      toast({
-        title: "Preview Generation Failed",
-        description: "Please try again or select a different style.",
-        variant: "destructive",
-      });
+      console.error(`Error generating preview for ${style.name}:`, error);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [croppedImage, style.id, style.name]);
+
+  const handleClick = useCallback(() => {
+    onStyleClick(style);
+    
+    // Auto-generate preview for popular styles when clicked (if not already generated and we have a cropped image)
+    if (isPopular && croppedImage && !hasGeneratedPreview && !isLoading && style.id !== 1) {
+      generatePreview();
+    }
+  }, [style, isPopular, croppedImage, hasGeneratedPreview, isLoading, onStyleClick, generatePreview]);
 
   return {
     isLoading,
     previewUrl,
     hasGeneratedPreview,
+    isStyleGenerated,
     handleClick,
-    isStyleGenerated: isStyleGenerated()
+    generatePreview
   };
 };
