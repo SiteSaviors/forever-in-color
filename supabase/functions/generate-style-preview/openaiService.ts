@@ -1,5 +1,4 @@
 
-
 import { OpenAIImageResponse, OpenAIAnalysisResponse } from './types.ts';
 
 export class OpenAIService {
@@ -143,6 +142,8 @@ Format your response as a single, detailed prompt for image generation.`;
     try {
       const styleId = this.getStyleIdByName(styleName);
       
+      console.log('Fetching prompt for style:', styleName, 'with ID:', styleId);
+      
       // Fetch the prompt from Supabase style_prompts table
       const { data, error } = await this.supabase
         .from('style_prompts')
@@ -155,6 +156,7 @@ Format your response as a single, detailed prompt for image generation.`;
         return null;
       }
 
+      console.log('Successfully fetched prompt from Supabase for', styleName);
       return data?.prompt || null;
     } catch (error) {
       console.warn('Error fetching style prompt from Supabase:', error);
@@ -163,9 +165,11 @@ Format your response as a single, detailed prompt for image generation.`;
   }
 
   private getStyleIdByName(styleName: string): number {
+    // Updated mapping to match the exact style names used in the frontend
     const styleNameToId: { [key: string]: number } = {
       'Original Image': 1,
       'Classic Oil Painting': 2,
+      'Calm WaterColor': 3,
       'Watercolor Dreams': 4,
       'Pastel Bliss': 5,
       'Gemstone Poly': 6,
@@ -174,11 +178,16 @@ Format your response as a single, detailed prompt for image generation.`;
       'Pop Art Burst': 9,
       'Neon Splash': 10,
       'Electric Bloom': 11,
+      'Artistic Mashup': 12,
       'Abstract Fusion': 13,
+      'Modern Abstract': 13, // Alternative name for Abstract Fusion
+      'Intricate Ink': 14,
       'Deco Luxe': 15
     };
     
-    return styleNameToId[styleName] || 1;
+    const styleId = styleNameToId[styleName];
+    console.log('Style name:', styleName, 'mapped to ID:', styleId);
+    
+    return styleId || 1; // Default to Original Image if not found
   }
 }
-
