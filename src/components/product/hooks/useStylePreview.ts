@@ -27,6 +27,34 @@ export const useStylePreview = ({
   const [autoGenerationAttempted, setAutoGenerationAttempted] = useState(false);
   const { toast } = useToast();
 
+  // Check if style was already generated in this session
+  const isStyleGenerated = () => {
+    try {
+      const generatedStyles = sessionStorage.getItem('generatedStyles');
+      if (generatedStyles) {
+        const styles = JSON.parse(generatedStyles);
+        return styles.includes(style.id);
+      }
+    } catch (error) {
+      console.error('Error reading generated styles:', error);
+    }
+    return false;
+  };
+
+  // Mark style as generated in session
+  const markStyleAsGenerated = () => {
+    try {
+      const generatedStyles = sessionStorage.getItem('generatedStyles');
+      let styles = generatedStyles ? JSON.parse(generatedStyles) : [];
+      if (!styles.includes(style.id)) {
+        styles.push(style.id);
+        sessionStorage.setItem('generatedStyles', JSON.stringify(styles));
+      }
+    } catch (error) {
+      console.error('Error saving generated styles:', error);
+    }
+  };
+
   // Get custom prompts from localStorage
   const getCustomPrompt = (styleId: number): string | undefined => {
     try {
@@ -49,7 +77,8 @@ export const useStylePreview = ({
                               !hasGeneratedPreview && 
                               !previewUrl &&
                               !autoGenerationAttempted &&
-                              !isLoading;
+                              !isLoading &&
+                              !isStyleGenerated(); // Don't auto-generate if already generated
 
     if (shouldAutoGenerate) {
       console.log(`Auto-generating preview for ${style.name} (ID: ${style.id})`);
@@ -81,6 +110,7 @@ export const useStylePreview = ({
       if (response.success) {
         setPreviewUrl(response.previewUrl);
         setHasGeneratedPreview(true);
+        markStyleAsGenerated(); // Mark as generated
         console.log(`Preview generated successfully for ${style.name}`);
       } else {
         console.warn(`Silent preview generation failed for ${style.name}:`, response.error);
@@ -96,6 +126,16 @@ export const useStylePreview = ({
 
   const handleClick = async () => {
     if (!croppedImage) return;
+
+    // Check if this style was already generated in this session
+    if (isStyleGenerated() && style.id !== 1) {
+      toast({
+        title: "Style Already Generated",
+        description: "You've already generated this style in this session. Refresh the page to generate again.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     // If it's a popular style or already has a preview, select immediately
     if (isPopular || hasGeneratedPreview) {
@@ -120,6 +160,7 @@ export const useStylePreview = ({
       if (response.success) {
         setPreviewUrl(response.previewUrl);
         setHasGeneratedPreview(true);
+        markStyleAsGenerated(); // Mark as generated
         onStyleClick(style);
         
         toast({
@@ -145,6 +186,7 @@ export const useStylePreview = ({
     isLoading,
     previewUrl,
     hasGeneratedPreview,
-    handleClick
+    handleClick,
+    isStyleGenerated: isStyleGenerated()
   };
 };
