@@ -1,6 +1,8 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Sparkles } from "lucide-react";
 import StyleGrid from "./StyleGrid";
 import { artStyles } from "@/data/artStyles";
 
@@ -51,6 +53,16 @@ const StyleSelector = ({
           }
         </p>
       </div>
+
+      {/* Helpful notification when user has uploaded an image */}
+      {croppedImage && (
+        <Alert className="border-purple-200 bg-purple-50">
+          <Sparkles className="h-4 w-4 text-purple-600" />
+          <AlertDescription className="text-purple-800">
+            <strong>✨ Click any style</strong> to see your photo transformed with AI! Each style generates a unique preview just for you.
+          </AlertDescription>
+        </Alert>
+      )}
 
       <StyleGrid
         croppedImage={croppedImage}

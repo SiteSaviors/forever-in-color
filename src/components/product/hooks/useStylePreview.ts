@@ -88,12 +88,12 @@ export const useStylePreview = ({
     console.log(`Style clicked: ${style.name} (ID: ${style.id})`);
     onStyleClick(style);
     
-    // Auto-generate preview for popular styles when clicked (if not already generated and we have a cropped image)
-    if (isPopular && croppedImage && !hasGeneratedPreview && !isLoading && style.id !== 1) {
-      console.log(`Auto-generating preview for popular style: ${style.name}`);
+    // Auto-generate preview for ALL styles when clicked (if not already generated and we have a cropped image)
+    if (croppedImage && !hasGeneratedPreview && !isLoading && style.id !== 1) {
+      console.log(`Auto-generating preview for style: ${style.name}`);
       generatePreview();
     }
-  }, [style, isPopular, croppedImage, hasGeneratedPreview, isLoading, onStyleClick, generatePreview]);
+  }, [style, croppedImage, hasGeneratedPreview, isLoading, onStyleClick, generatePreview]);
 
   return {
     isLoading,
