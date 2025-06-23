@@ -18,29 +18,46 @@ interface StyleGridProps {
 const StyleGrid = ({ 
   croppedImage, 
   selectedStyle, 
-  cropAspectRatio = 1, // Use actual crop aspect ratio
+  cropAspectRatio = 1,
   onStyleSelect,
   onComplete
 }: StyleGridProps) => {
-  const [showAllStyles, setShowAllStyles] = useState(false);
-
-  // Updated popular styles: Original Image, Watercolor Dreams, Pastel Bliss
+  const [displayedBatches, setDisplayedBatches] = useState(1);
+  
+  // Start with popular styles: Original Image, Watercolor Dreams, Pastel Bliss
   const popularStyleIds = [1, 4, 5];
   const popularStyles = artStyles.filter(style => popularStyleIds.includes(style.id));
   const otherStyles = artStyles.filter(style => !popularStyleIds.includes(style.id));
-  const displayedStyles = showAllStyles ? artStyles : popularStyles;
+  
+  // Create batches: First batch is popular styles (3), then other styles in groups of 3
+  const allBatches = [
+    popularStyles, // First batch: 3 popular styles
+    ...otherStyles.reduce<typeof artStyles[]>((batches, style, index) => {
+      const batchIndex = Math.floor(index / 3);
+      if (!batches[batchIndex]) {
+        batches[batchIndex] = [];
+      }
+      batches[batchIndex].push(style);
+      return batches;
+    }, [])
+  ];
+  
+  // Get styles to display based on number of batches shown
+  const displayedStyles = allBatches.slice(0, displayedBatches).flat();
+  const hasMoreStyles = displayedBatches < allBatches.length;
+  const nextBatchSize = allBatches[displayedBatches]?.length || 0;
 
   const handleStyleClick = (style: typeof artStyles[0]) => {
     onStyleSelect(style.id, style.name);
   };
 
-  const handleSeeAllClick = () => {
-    setShowAllStyles(true);
+  const handleShowMore = () => {
+    setDisplayedBatches(prev => prev + 1);
   };
 
   return (
     <>
-      {/* Style Grid - More compact spacing on mobile */}
+      {/* Style Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
         {displayedStyles.map(style => (
           <StyleCard
@@ -49,18 +66,18 @@ const StyleGrid = ({
             croppedImage={croppedImage}
             selectedStyle={selectedStyle}
             isPopular={popularStyleIds.includes(style.id)}
-            cropAspectRatio={cropAspectRatio} // Pass actual crop aspect ratio
+            cropAspectRatio={cropAspectRatio}
             showContinueButton={true}
             onStyleClick={handleStyleClick}
             onContinue={onComplete}
           />
         ))}
         
-        {/* Mobile "See All Styles" Card - Only show on mobile when not showing all styles */}
-        {!showAllStyles && (
+        {/* Show More Styles Card - Only show when there are more styles */}
+        {hasMoreStyles && (
           <Card 
-            className="md:hidden group cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105"
-            onClick={handleSeeAllClick}
+            className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105"
+            onClick={handleShowMore}
           >
             <CardContent className="p-0">
               {/* Use same aspect ratio as other cards */}
@@ -72,8 +89,12 @@ const StyleGrid = ({
                       <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full p-2.5 mb-2 group-hover:scale-110 transition-transform duration-300 mx-auto w-fit">
                         <Wand2 className="w-5 h-5" />
                       </div>
-                      <h3 className="font-bold text-gray-900 text-sm mb-1">See All Styles</h3>
-                      <p className="text-xs text-gray-600 leading-tight">Discover {otherStyles.length + popularStyles.length} amazing art styles</p>
+                      <h3 className="font-bold text-gray-900 text-sm mb-1">
+                        {displayedBatches === 1 ? 'More Styles' : 'Even More'}
+                      </h3>
+                      <p className="text-xs text-gray-600 leading-tight">
+                        See {nextBatchSize} more amazing style{nextBatchSize !== 1 ? 's' : ''}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -84,24 +105,26 @@ const StyleGrid = ({
 
               {/* Style Info matching other cards */}
               <div className="p-2 md:p-3 space-y-1">
-                <h5 className="font-semibold text-gray-900 text-sm">More Styles</h5>
-                <p className="text-xs text-gray-600 leading-tight">Explore all {otherStyles.length + popularStyles.length} art styles available</p>
+                <h5 className="font-semibold text-gray-900 text-sm">Discover More</h5>
+                <p className="text-xs text-gray-600 leading-tight">
+                  Unlock {nextBatchSize} additional art styles
+                </p>
               </div>
             </CardContent>
           </Card>
         )}
       </div>
 
-      {/* Desktop Show More Styles Button - Only show on desktop when not showing all styles */}
-      {!showAllStyles && (
+      {/* Desktop Show More Styles Button - Alternative option on desktop */}
+      {hasMoreStyles && (
         <div className="text-center hidden md:block">
           <Button 
             variant="outline"
-            onClick={handleSeeAllClick}
+            onClick={handleShowMore}
             className="bg-white hover:bg-purple-50 border-purple-300 text-purple-700"
           >
             <Wand2 className="w-4 h-4 mr-2" />
-            See All {otherStyles.length} More Styles
+            Show {nextBatchSize} More Style{nextBatchSize !== 1 ? 's' : ''}
           </Button>
         </div>
       )}
