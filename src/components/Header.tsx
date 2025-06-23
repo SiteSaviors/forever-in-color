@@ -78,7 +78,7 @@ const Header = () => {
                   <Button variant="ghost">Sign In</Button>
                 </Link>
                 <Link to="/product">
-                  <Button className="bg-purple-600 hover:bg-purple-700">
+                  <Button className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 hover:from-purple-700 hover:via-pink-700 hover:to-blue-700 text-white border-0">
                     Start Creating
                   </Button>
                 </Link>
@@ -149,7 +149,7 @@ const Header = () => {
                     <Button variant="ghost" className="w-full">Sign In</Button>
                   </Link>
                   <Link to="/product" onClick={() => setIsMenuOpen(false)}>
-                    <Button className="w-full bg-purple-600 hover:bg-purple-700">
+                    <Button className="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 hover:from-purple-700 hover:via-pink-700 hover:to-blue-700 text-white border-0">
                       Start Creating
                     </Button>
                   </Link>
