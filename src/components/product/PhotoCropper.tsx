@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from "react";
 import { Crop, RotateCcw, Monitor, Smartphone, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -124,16 +123,6 @@ const PhotoCropper = ({
   return (
     <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-4 md:p-6">
       <div className="space-y-4 md:space-y-6">
-        <div className="text-center">
-          <h4 className="text-lg md:text-xl font-semibold text-gray-900 mb-2 flex items-center justify-center gap-2">
-            <Crop className="w-4 h-4 md:w-5 md:h-5 text-purple-600" />
-            Perfect Your Photo
-          </h4>
-          <p className="text-sm md:text-base text-gray-600">
-            Choose your crop orientation and adjust to highlight the best part
-          </p>
-        </div>
-
         {/* Orientation Selection - Enhanced for better UX */}
         <div className="space-y-3">
           <div className="text-center">
