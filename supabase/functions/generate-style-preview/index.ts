@@ -15,7 +15,7 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-// Input validation helper
+// Enhanced input validation with security checks
 const validateInput = (body: any): { isValid: boolean; error?: string } => {
   if (!body) {
     return { isValid: false, error: 'Request body is required' };
@@ -35,17 +35,60 @@ const validateInput = (body: any): { isValid: boolean; error?: string } => {
     return { isValid: false, error: 'photoId must be a non-empty string' };
   }
 
-  // Validate image data format (base64 data URL or HTTP URL)
+  // Enhanced image data validation
   if (!imageUrl.startsWith('data:image/') && !imageUrl.startsWith('http')) {
     return { isValid: false, error: 'imageUrl must be a valid data URL or HTTP URL' };
   }
 
-  // Check image size limit for base64 images (10MB)
+  // Validate data URL structure and MIME type for base64 images
   if (imageUrl.startsWith('data:image/')) {
-    const imageSizeBytes = (imageUrl.length * 3) / 4;
+    const mimeTypeMatch = imageUrl.match(/^data:image\/([a-zA-Z0-9+\-]+);base64,/);
+    if (!mimeTypeMatch) {
+      return { isValid: false, error: 'Invalid data URL format' };
+    }
+
+    const mimeType = mimeTypeMatch[1].toLowerCase();
+    const allowedTypes = ['jpeg', 'jpg', 'png', 'gif', 'webp', 'bmp', 'tiff', 'heic', 'heif'];
+    if (!allowedTypes.includes(mimeType)) {
+      return { isValid: false, error: `Unsupported image type: ${mimeType}` };
+    }
+
+    // Check image size limit for base64 images (10MB)
+    const base64Data = imageUrl.split(',')[1];
+    if (!base64Data) {
+      return { isValid: false, error: 'Invalid base64 image data' };
+    }
+
+    const imageSizeBytes = (base64Data.length * 3) / 4;
     if (imageSizeBytes > 10 * 1024 * 1024) {
       return { isValid: false, error: 'Image size exceeds 10MB limit' };
     }
+
+    // Basic content validation - check for suspicious patterns in base64
+    const suspiciousPatterns = [
+      // Look for potential script injections in base64
+      /PHNjcmlwdA==/, // <script base64
+      /amF2YXNjcmlwdA==/, // javascript base64
+      /PD9waHA=/, // <?php base64
+    ];
+
+    for (const pattern of suspiciousPatterns) {
+      if (pattern.test(base64Data)) {
+        return { isValid: false, error: 'Image contains potentially malicious content' };
+      }
+    }
+  }
+
+  // Validate style parameter against known styles
+  const allowedStyles = [
+    'Original', 'Classic Oil Painting', 'Watercolor Dreams', 'Pop Art Burst',
+    'Abstract Fusion', 'Calm Watercolor', 'Neon Splash', 'Artisan Charcoal',
+    'Electric Bloom', 'Pastel Bliss', 'Deco Luxe', 'Gemstone Poly',
+    'Embroidered Moments', '3D Storybook', 'Artistic Mashup'
+  ];
+
+  if (!allowedStyles.includes(style)) {
+    return { isValid: false, error: `Invalid style: ${style}` };
   }
 
   return { isValid: true };
@@ -102,30 +145,46 @@ const checkUserRateLimit = async (userId: string): Promise<boolean> => {
   }
 };
 
-// Request origin validation
+// Enhanced request origin validation
 const validateRequestOrigin = (req: Request): boolean => {
   const origin = req.headers.get('origin');
   const referer = req.headers.get('referer');
+  const userAgent = req.headers.get('user-agent');
   
   // Allow requests from Supabase domains and localhost for development
   const allowedOrigins = [
     'https://fvjganetpyyrguuxjtqi.supabase.co',
     'http://localhost:3000',
     'http://localhost:5173',
-    'https://localhost:3000',
+    'https://localhost:3000',  
     'https://localhost:5173'
   ];
 
-  // Check if origin or referer matches allowed domains
-  if (origin) {
-    return allowedOrigins.some(allowed => origin.startsWith(allowed));
-  }
-  
-  if (referer) {
-    return allowedOrigins.some(allowed => referer.startsWith(allowed));
+  // Block requests without user agent (potential bot/script)
+  if (!userAgent || userAgent.length < 10) {
+    console.warn('Request blocked: Missing or invalid user agent');
+    return false;
   }
 
-  // Allow requests without origin/referer (e.g., mobile apps, server-to-server)
+  // Check if origin or referer matches allowed domains
+  if (origin) {
+    const isAllowed = allowedOrigins.some(allowed => origin.startsWith(allowed));
+    if (!isAllowed) {
+      console.warn('Request blocked: Unauthorized origin:', origin);
+      return false;
+    }
+  } else if (referer) {
+    const isAllowed = allowedOrigins.some(allowed => referer.startsWith(allowed));
+    if (!isAllowed) {
+      console.warn('Request blocked: Unauthorized referer:', referer);
+      return false;
+    }
+  } else {
+    // For requests without origin/referer, be more strict
+    console.warn('Request blocked: No origin or referer header');
+    return false;  // Changed from true to false for better security
+  }
+
   return true;
 };
 
@@ -143,7 +202,6 @@ serve(async (req) => {
   try {
     // Validate request origin
     if (!validateRequestOrigin(req)) {
-      console.warn('Request from unauthorized origin:', req.headers.get('origin') || req.headers.get('referer'));
       return createErrorResponse('Unauthorized origin', 403);
     }
 
@@ -171,19 +229,25 @@ serve(async (req) => {
       return createErrorResponse('Rate limit exceeded. Please try again later.', 429);
     }
 
-    // Parse and validate request body
+    // Parse and validate request body with enhanced security
     let requestBody;
     try {
       const bodyText = await req.text();
       if (!bodyText) {
         return createErrorResponse('Request body is empty', 400);
       }
+
+      // Check for excessively large payloads
+      if (bodyText.length > 15 * 1024 * 1024) { // 15MB limit for entire request
+        return createErrorResponse('Request payload too large', 413);
+      }
+
       requestBody = JSON.parse(bodyText);
     } catch (parseError) {
       return createErrorResponse('Invalid JSON in request body', 400);
     }
 
-    // Validate input
+    // Enhanced input validation
     const validation = validateInput(requestBody);
     if (!validation.isValid) {
       return createErrorResponse(validation.error || 'Invalid input', 400);
