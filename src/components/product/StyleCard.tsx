@@ -116,18 +116,6 @@ const StyleCard = ({
               </button>
             )}
 
-            {/* Continue Button - Show inside card when style is selected and has preview */}
-            {showContinueInCard && (
-              <div className="absolute bottom-2 left-2 right-2">
-                <Button 
-                  onClick={handleContinueClick}
-                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-                >
-                  Continue with {style.name}
-                </Button>
-              </div>
-            )}
-
             {/* Loading Overlay */}
             {showLoadingState && <StyleCardLoadingOverlay />}
             
@@ -181,6 +169,18 @@ const StyleCard = ({
               <p className="text-xs text-gray-500 italic">
                 Refresh page to generate again
               </p>
+            )}
+
+            {/* Continue Button - Show at bottom of card when style is selected and has preview */}
+            {showContinueInCard && (
+              <div className="pt-2">
+                <Button 
+                  onClick={handleContinueClick}
+                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                >
+                  Continue with {style.name}
+                </Button>
+              </div>
             )}
           </div>
         </CardContent>
