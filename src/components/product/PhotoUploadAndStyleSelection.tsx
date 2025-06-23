@@ -64,6 +64,18 @@ const PhotoUploadAndStyleSelection = ({
     onComplete(imageUrl, styleId, styleName);
   };
 
+  // Handle orientation change from cropper
+  const handleOrientationChange = (newAspectRatio: number) => {
+    console.log('Orientation changed to aspect ratio:', newAspectRatio);
+    setCropAspectRatio(newAspectRatio);
+  };
+
+  // Allow users to re-crop their image with a different orientation
+  const handleRecropImage = () => {
+    console.log('Recropping image with current aspect ratio:', cropAspectRatio);
+    setShowCropper(true);
+  };
+
   return (
     <div className="space-y-8">
       {/* Photo Upload Section */}
@@ -76,7 +88,7 @@ const PhotoUploadAndStyleSelection = ({
         />
       </div>
 
-      {/* Photo Cropper Section - Show when image is uploaded but not yet cropped */}
+      {/* Photo Cropper Section - Show when image is uploaded but not yet cropped OR when user wants to recrop */}
       {showCropper && previewUrl && (
         <div>
           <div className="text-center mb-4">
@@ -84,13 +96,15 @@ const PhotoUploadAndStyleSelection = ({
               Perfect Your Photo (Optional but Recommended)
             </h3>
             <p className="text-gray-600">
-              Crop your photo to highlight the most important parts. This step is optional - you can skip if you're happy with the full image.
+              Choose your crop orientation and adjust your photo to highlight the most important parts. You can change orientation anytime!
             </p>
           </div>
           <PhotoCropper
             imageUrl={previewUrl}
+            initialAspectRatio={cropAspectRatio}
             onCropComplete={handleCropComplete}
             onSkip={handleSkipCrop}
+            onOrientationChange={handleOrientationChange}
           />
         </div>
       )}
@@ -105,6 +119,7 @@ const PhotoUploadAndStyleSelection = ({
             cropAspectRatio={cropAspectRatio}
             onStyleSelect={handleStyleSelect}
             onComplete={handleComplete}
+            onRecropImage={handleRecropImage}
           />
         </div>
       )}

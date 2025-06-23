@@ -1,20 +1,53 @@
 
 import { useState, useCallback } from "react";
-import { Crop } from "lucide-react";
+import { Crop, RotateCcw, Monitor, Smartphone, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import Cropper from 'react-easy-crop';
 
 interface PhotoCropperProps {
   imageUrl: string;
+  initialAspectRatio?: number;
   onCropComplete: (croppedImage: string, aspectRatio: number) => void;
   onSkip: () => void;
+  onOrientationChange?: (aspectRatio: number) => void;
 }
 
-const PhotoCropper = ({ imageUrl, onCropComplete, onSkip }: PhotoCropperProps) => {
+const PhotoCropper = ({ 
+  imageUrl, 
+  initialAspectRatio = 1,
+  onCropComplete, 
+  onSkip,
+  onOrientationChange 
+}: PhotoCropperProps) => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
-  const [cropAspect, setCropAspect] = useState(1); // 1 = square, 4/3 = horizontal, 3/4 = vertical
+  const [cropAspect, setCropAspect] = useState(initialAspectRatio);
+
+  const orientationOptions = [
+    { 
+      id: 'square', 
+      name: 'Square', 
+      ratio: 1, 
+      icon: Square,
+      description: 'Perfect for social media'
+    },
+    { 
+      id: 'horizontal', 
+      name: 'Horizontal', 
+      ratio: 4/3, 
+      icon: Monitor,
+      description: 'Great for landscapes'
+    },
+    { 
+      id: 'vertical', 
+      name: 'Vertical', 
+      ratio: 3/4, 
+      icon: Smartphone,
+      description: 'Ideal for portraits'
+    }
+  ];
 
   const onCropCompleteHandler = useCallback((croppedArea: any, croppedAreaPixels: any) => {
     setCroppedAreaPixels(croppedAreaPixels);
@@ -72,28 +105,73 @@ const PhotoCropper = ({ imageUrl, onCropComplete, onSkip }: PhotoCropperProps) =
     setZoom(1);
   };
 
-  const handleAspectChange = (newAspect: number) => {
+  const handleOrientationChange = (newAspect: number) => {
     setCropAspect(newAspect);
     // Reset crop position when aspect ratio changes
     setCrop({ x: 0, y: 0 });
     setZoom(1);
+    
+    // Notify parent component about orientation change
+    if (onOrientationChange) {
+      onOrientationChange(newAspect);
+    }
+  };
+
+  const getCurrentOrientation = () => {
+    return orientationOptions.find(opt => opt.ratio === cropAspect) || orientationOptions[0];
   };
 
   return (
-    <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6">
-      <div className="space-y-6">
+    <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-4 md:p-6">
+      <div className="space-y-4 md:space-y-6">
         <div className="text-center">
-          <h4 className="text-xl font-semibold text-gray-900 mb-2 flex items-center justify-center gap-2">
-            <Crop className="w-5 h-5 text-purple-600" />
+          <h4 className="text-lg md:text-xl font-semibold text-gray-900 mb-2 flex items-center justify-center gap-2">
+            <Crop className="w-4 h-4 md:w-5 md:h-5 text-purple-600" />
             Perfect Your Photo
           </h4>
-          <p className="text-gray-600">
-            Adjust the crop to highlight the best part of your image
+          <p className="text-sm md:text-base text-gray-600">
+            Choose your crop orientation and adjust to highlight the best part
           </p>
         </div>
 
+        {/* Orientation Selection - Enhanced for better UX */}
+        <div className="space-y-3">
+          <div className="text-center">
+            <Badge variant="secondary" className="bg-purple-100 text-purple-700 font-medium">
+              Current: {getCurrentOrientation().name}
+            </Badge>
+          </div>
+          
+          <div className="grid grid-cols-3 gap-2 md:gap-3 max-w-md mx-auto">
+            {orientationOptions.map((option) => {
+              const IconComponent = option.icon;
+              const isActive = cropAspect === option.ratio;
+              
+              return (
+                <Button
+                  key={option.id}
+                  variant={isActive ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handleOrientationChange(option.ratio)}
+                  className={`flex flex-col items-center gap-1 h-auto py-2 px-2 md:px-3 text-xs ${
+                    isActive 
+                      ? 'bg-purple-600 hover:bg-purple-700 text-white' 
+                      : 'hover:bg-purple-50 hover:border-purple-300'
+                  }`}
+                >
+                  <IconComponent className="w-4 h-4" />
+                  <span className="font-medium">{option.name}</span>
+                  <span className="text-[10px] opacity-75 hidden md:block">
+                    {option.description}
+                  </span>
+                </Button>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Crop Area */}
-        <div className="relative w-full h-80 bg-black rounded-xl overflow-hidden">
+        <div className="relative w-full h-64 md:h-80 bg-black rounded-xl overflow-hidden">
           <Cropper
             image={imageUrl}
             crop={crop}
@@ -105,41 +183,14 @@ const PhotoCropper = ({ imageUrl, onCropComplete, onSkip }: PhotoCropperProps) =
           />
         </div>
 
-        {/* Aspect Ratio Controls */}
-        <div className="flex justify-center gap-2">
-          <Button
-            variant={cropAspect === 1 ? "default" : "outline"}
-            size="sm"
-            onClick={() => handleAspectChange(1)}
-            className="text-xs"
-          >
-            Square
-          </Button>
-          <Button
-            variant={cropAspect === 4/3 ? "default" : "outline"}
-            size="sm"
-            onClick={() => handleAspectChange(4/3)}
-            className="text-xs"
-          >
-            Horizontal
-          </Button>
-          <Button
-            variant={cropAspect === 3/4 ? "default" : "outline"}
-            size="sm"
-            onClick={() => handleAspectChange(3/4)}
-            className="text-xs"
-          >
-            Vertical
-          </Button>
-        </div>
-
         {/* Action Buttons */}
-        <div className="flex justify-center gap-4">
+        <div className="flex flex-col md:flex-row justify-center gap-3 md:gap-4">
           <Button
             variant="outline"
             onClick={handleAutoCenterCrop}
-            className="text-sm"
+            className="text-sm flex items-center gap-2"
           >
+            <RotateCcw className="w-4 h-4" />
             Auto-Center
           </Button>
           <Button
