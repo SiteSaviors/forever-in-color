@@ -32,19 +32,9 @@ const logSecurityEvent = async (event: Omit<SecurityEvent, 'timestamp'>) => {
     timestamp: new Date().toISOString()
   };
 
-  // Log to console for immediate monitoring
   console.warn('🚨 SECURITY EVENT:', JSON.stringify(securityEvent, null, 2));
 
-  // In a production environment, you might want to:
-  // 1. Store in a dedicated security_events table
-  // 2. Send to external monitoring service (e.g., Sentry, LogRocket)
-  // 3. Trigger alerts for high/critical severity events
-  
   try {
-    // Example: Store in Supabase (you'd need to create a security_events table)
-    // await supabase.from('security_events').insert(securityEvent);
-    
-    // For now, we'll just ensure it's logged prominently
     if (securityEvent.severity === 'high' || securityEvent.severity === 'critical') {
       console.error('🔥 HIGH SEVERITY SECURITY EVENT:', securityEvent);
     }
@@ -104,7 +94,6 @@ const validateInput = (body: any): { isValid: boolean; error?: string } => {
 
     // Basic content validation - check for suspicious patterns in base64
     const suspiciousPatterns = [
-      // Look for potential script injections in base64
       /PHNjcmlwdA==/, // <script base64
       /amF2YXNjcmlwdA==/, // javascript base64
       /PD9waHA=/, // <?php base64
@@ -130,70 +119,6 @@ const validateInput = (body: any): { isValid: boolean; error?: string } => {
   }
 
   return { isValid: true };
-};
-
-// User-based rate limiting with enhanced monitoring
-const checkUserRateLimit = async (userId: string, req: Request): Promise<boolean> => {
-  const RATE_LIMIT = 10; // requests per minute
-  const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
-  const now = Date.now();
-  
-  try {
-    // Get user's rate limit data from a hypothetical rate_limits table
-    // For now, we'll use a simple in-memory approach but with user ID
-    const { data: rateLimitData, error } = await supabase
-      .from('user_rate_limits')
-      .select('request_count, reset_time')
-      .eq('user_id', userId)
-      .single();
-
-    if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
-      console.error('Rate limit check error:', error);
-      return true; // Allow on error to avoid blocking users
-    }
-
-    if (!rateLimitData || now > rateLimitData.reset_time) {
-      // Reset or create new rate limit record
-      await supabase
-        .from('user_rate_limits')
-        .upsert({
-          user_id: userId,
-          request_count: 1,
-          reset_time: now + RATE_LIMIT_WINDOW
-        });
-      return true;
-    }
-
-    if (rateLimitData.request_count >= RATE_LIMIT) {
-      // Log rate limit violation
-      await logSecurityEvent({
-        event_type: 'rate_limit_violation',
-        user_id: userId,
-        ip_address: req.headers.get('x-forwarded-for') || 'unknown',
-        user_agent: req.headers.get('user-agent') || 'unknown',
-        details: { 
-          current_count: rateLimitData.request_count,
-          limit: RATE_LIMIT,
-          window_minutes: RATE_LIMIT_WINDOW / 60000
-        },
-        severity: rateLimitData.request_count > RATE_LIMIT * 2 ? 'high' : 'medium'
-      });
-      return false;
-    }
-
-    // Increment request count
-    await supabase
-      .from('user_rate_limits')
-      .update({ 
-        request_count: rateLimitData.request_count + 1 
-      })
-      .eq('user_id', userId);
-
-    return true;
-  } catch (error) {
-    console.error('Rate limiting error:', error);
-    return true; // Allow on error to avoid blocking users
-  }
 };
 
 // Enhanced request origin validation with logging
@@ -285,42 +210,29 @@ serve(async (req) => {
       return createErrorResponse('Unauthorized origin', 403);
     }
 
-    // Extract and verify JWT token
+    let user = null;
+    let isAuthenticated = false;
+
+    // Try to extract and verify JWT token (optional now)
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      await logSecurityEvent({
-        event_type: 'auth_failure',
-        ip_address: req.headers.get('x-forwarded-for') || 'unknown',
-        user_agent: req.headers.get('user-agent') || 'unknown',
-        details: { reason: 'Missing or invalid authorization header' },
-        severity: 'medium'
-      });
-      return createErrorResponse('Missing or invalid authorization header', 401);
-    }
-
-    const token = authHeader.replace('Bearer ', '');
-    
-    // Verify the JWT token using Supabase
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    
-    if (authError || !user) {
-      await logSecurityEvent({
-        event_type: 'auth_failure',
-        ip_address: req.headers.get('x-forwarded-for') || 'unknown',
-        user_agent: req.headers.get('user-agent') || 'unknown',
-        details: { reason: 'Invalid or expired token', auth_error: authError?.message },
-        severity: 'medium'
-      });
-      console.error('Authentication error:', authError);
-      return createErrorResponse('Invalid or expired token', 401);
-    }
-
-    console.log('Authenticated user:', user.id);
-
-    // User-based rate limiting with enhanced monitoring
-    const rateLimitPassed = await checkUserRateLimit(user.id, req);
-    if (!rateLimitPassed) {
-      return createErrorResponse('Rate limit exceeded. Please try again later.', 429);
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.replace('Bearer ', '');
+      
+      try {
+        const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(token);
+        
+        if (!authError && authUser) {
+          user = authUser;
+          isAuthenticated = true;
+          console.log('Authenticated user:', user.id);
+        } else {
+          console.log('Token validation failed, proceeding without authentication');
+        }
+      } catch (error) {
+        console.log('Auth check failed, proceeding without authentication:', error);
+      }
+    } else {
+      console.log('No auth header provided, proceeding without authentication');
     }
 
     // Parse and validate request body with enhanced security
@@ -335,7 +247,7 @@ serve(async (req) => {
       if (bodyText.length > 15 * 1024 * 1024) { // 15MB limit for entire request
         await logSecurityEvent({
           event_type: 'payload_too_large',
-          user_id: user.id,
+          user_id: user?.id,
           ip_address: req.headers.get('x-forwarded-for') || 'unknown',
           user_agent: req.headers.get('user-agent') || 'unknown',
           details: { payload_size_mb: Math.round(bodyText.length / 1024 / 1024) },
@@ -348,7 +260,7 @@ serve(async (req) => {
     } catch (parseError) {
       await logSecurityEvent({
         event_type: 'suspicious_upload',
-        user_id: user.id,
+        user_id: user?.id,
         ip_address: req.headers.get('x-forwarded-for') || 'unknown',
         user_agent: req.headers.get('user-agent') || 'unknown',
         details: { reason: 'Invalid JSON in request body', parse_error: parseError.message },
@@ -362,7 +274,7 @@ serve(async (req) => {
     if (!validation.isValid) {
       await logSecurityEvent({
         event_type: 'suspicious_upload',
-        user_id: user.id,
+        user_id: user?.id,
         ip_address: req.headers.get('x-forwarded-for') || 'unknown',
         user_agent: req.headers.get('user-agent') || 'unknown',
         details: { reason: 'Input validation failed', validation_error: validation.error },
@@ -392,7 +304,7 @@ serve(async (req) => {
         if (pattern.test(base64Data)) {
           await logSecurityEvent({
             event_type: 'malicious_content_detected',
-            user_id: user.id,
+            user_id: user?.id,
             ip_address: req.headers.get('x-forwarded-for') || 'unknown',
             user_agent: req.headers.get('user-agent') || 'unknown',
             details: { 
@@ -409,9 +321,10 @@ serve(async (req) => {
 
     console.log('=== STYLE GENERATION DEBUG ===')
     console.log('Received request for style:', style)
-    console.log('User ID:', user.id)
+    console.log('User ID:', user?.id || 'not authenticated')
     console.log('Photo ID:', photoId)
     console.log('Image URL length:', imageUrl?.length || 0)
+    console.log('Authentication status:', isAuthenticated)
 
     // Get Replicate API key from Supabase secrets with validation
     const replicateApiKey = Deno.env.get('REPLICATE_API_TOKEN') || Deno.env.get('REPLICATE_API_KEY')

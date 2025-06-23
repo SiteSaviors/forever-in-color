@@ -6,23 +6,29 @@ export const generateStylePreview = async (imageUrl: string, style: string, phot
   try {
     console.log('Generating style preview:', { imageUrl: imageUrl.substring(0, 50) + '...', style, photoId });
     
-    // Verify user is authenticated and get session token
+    // Check if user is authenticated (optional now)
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-    if (sessionError || !session) {
-      throw new Error('User must be authenticated to generate previews');
-    }
+    const isAuthenticated = session && !sessionError;
 
-    console.log('User authenticated, calling edge function with proper auth');
+    console.log('User authentication status:', isAuthenticated ? 'authenticated' : 'not authenticated');
+
+    // Prepare headers - include auth if available
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json'
+    };
+
+    if (isAuthenticated) {
+      headers.Authorization = `Bearer ${session.access_token}`;
+    }
 
     const { data, error } = await supabase.functions.invoke('generate-style-preview', {
       body: { 
         imageUrl, 
         style,
-        photoId
+        photoId,
+        isAuthenticated
       },
-      headers: {
-        Authorization: `Bearer ${session.access_token}`
-      }
+      headers
     });
 
     if (error) {
@@ -36,8 +42,15 @@ export const generateStylePreview = async (imageUrl: string, style: string, phot
 
     console.log('Preview generated successfully:', data.preview_url);
     
-    // Store the preview with proper user association
-    await createPreview(photoId, style, data.preview_url);
+    // Only store the preview if user is authenticated
+    if (isAuthenticated) {
+      try {
+        await createPreview(photoId, style, data.preview_url);
+      } catch (storeError) {
+        console.warn('Could not store preview (user not authenticated):', storeError);
+        // Continue anyway, just don't store
+      }
+    }
     
     return data.preview_url;
   } catch (error) {
