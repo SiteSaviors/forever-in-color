@@ -80,7 +80,7 @@ const StyleCard = ({
           </div>
 
           {/* Loading Overlay */}
-          {showLoadingState && <StyleCardLoadingOverlay styleName={style.name} />}
+          {showLoadingState && <StyleCardLoadingOverlay />}
           
           {/* Popular Badge */}
           {isPopular && !showGeneratedBadge && (
