@@ -128,19 +128,13 @@ const ProductStep = ({
                   )}
                 </h3>
                 
-                {/* Inline lock indicator for step title */}
+                {/* Only lock indicator next to step title */}
                 {!isAccessible && (
-                  <div className="flex items-center gap-1 text-red-500">
-                    <Lock className="w-3 h-3 md:w-4 md:h-4" />
-                    <span className="text-xs font-medium hidden md:inline">Locked</span>
-                  </div>
+                  <Lock className="w-4 h-4 text-red-500" />
                 )}
                 
                 {wasJustUnlocked && (
-                  <div className="flex items-center gap-1 text-green-600 animate-in slide-in-from-left duration-500">
-                    <Unlock className="w-3 h-3 md:w-4 md:h-4 animate-pulse" />
-                    <span className="text-xs font-medium hidden md:inline">Unlocked!</span>
-                  </div>
+                  <Unlock className="w-4 h-4 text-green-600 animate-pulse" />
                 )}
               </div>
               
@@ -155,7 +149,7 @@ const ProductStep = ({
             </p>
           </div>
           
-          {/* Status Badges and Actions */}
+          {/* Status Badges and Actions - removed duplicate locked indicators */}
           <div className="flex items-center gap-2 md:gap-3">
             {step.required && !isCompleted && isAccessible && (
               <Badge variant="outline" className="bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 border-purple-200 text-xs hidden md:inline-flex">
@@ -174,27 +168,14 @@ const ProductStep = ({
                 Next
               </Badge>
             )}
-
-            {!isAccessible && (
-              <Badge variant="outline" className="bg-gradient-to-r from-red-100 to-red-200 text-red-500 border-red-300 text-xs hidden md:inline-flex">
-                🔒 Locked
-              </Badge>
-            )}
             
-            {/* Enhanced chevron with lock state */}
-            <div className="relative">
-              <ChevronRight className={`
-                w-4 h-4 md:w-5 md:h-5 transition-all duration-300
-                ${isActive && isAccessible ? 'rotate-90 text-purple-500' 
-                  : !isAccessible ? 'text-gray-300'
-                  : 'text-gray-400 group-hover:text-gray-600'}
-              `} />
-              
-              {/* Small lock overlay on chevron for locked steps */}
-              {!isAccessible && (
-                <Lock className="absolute -top-1 -right-1 w-2 h-2 text-red-400" />
-              )}
-            </div>
+            {/* Enhanced chevron */}
+            <ChevronRight className={`
+              w-4 h-4 md:w-5 md:h-5 transition-all duration-300
+              ${isActive && isAccessible ? 'rotate-90 text-purple-500' 
+                : !isAccessible ? 'text-gray-300'
+                : 'text-gray-400 group-hover:text-gray-600'}
+            `} />
           </div>
         </div>
       </AccordionTrigger>
