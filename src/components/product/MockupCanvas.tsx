@@ -32,7 +32,6 @@ export function MockupCanvas({ previewUrl, orientation, className = "" }: Mockup
           className="
             absolute
             object-cover
-            rounded-sm
             shadow-lg
             transition-opacity duration-300
           "
@@ -42,6 +41,7 @@ export function MockupCanvas({ previewUrl, orientation, className = "" }: Mockup
             left: orientation === 'square' ? '8%' : '6%',
             width: orientation === 'square' ? '84%' : '88%',
             height: orientation === 'square' ? '84%' : '88%',
+            borderRadius: '6px', // Added tiny corner rounding
           }}
         />
       )}
@@ -52,7 +52,6 @@ export function MockupCanvas({ previewUrl, orientation, className = "" }: Mockup
           absolute
           flex items-center justify-center
           bg-gradient-to-br from-gray-100 to-gray-200
-          rounded-sm
           border-2 border-dashed border-gray-300
         "
         style={{
@@ -60,6 +59,7 @@ export function MockupCanvas({ previewUrl, orientation, className = "" }: Mockup
           left: orientation === 'square' ? '8%' : '6%',
           width: orientation === 'square' ? '84%' : '88%',
           height: orientation === 'square' ? '84%' : '88%',
+          borderRadius: '6px', // Added tiny corner rounding to match
         }}>
           <div className="text-center text-gray-500">
             <div className="w-8 h-8 mx-auto mb-2 animate-spin rounded-full border-2 border-gray-300 border-t-purple-500"></div>
