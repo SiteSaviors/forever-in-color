@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Edit3, Image as ImageIcon, Palette, Frame, Video, Zap } from "lucide-react";
+import { Edit3, Image as ImageIcon, Palette, Frame, Video, Zap, Mic } from "lucide-react";
 
 interface OrderItem {
   id: string;
@@ -108,7 +108,22 @@ const OrderItemsList = ({
       ),
       title: 'Living Memory',
       description: 'AR video activation',
-      price: 19,
+      price: 59.99,
+      onEdit: () => onEditStep(3)
+    });
+  }
+
+  if (customizations.voiceMatch && customizations.livingMemory) {
+    items.push({
+      id: 'voice-match',
+      icon: (
+        <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+          <Mic className="w-4 h-4 text-blue-600" />
+        </div>
+      ),
+      title: 'Voice Match',
+      description: 'Custom voice narration',
+      price: 19.99,
       onEdit: () => onEditStep(3)
     });
   }

@@ -64,11 +64,11 @@ const PriceCalculator = ({ selectedSize, selectedOrientation, customizations, co
     }
     
     if (customizations.livingMemory) {
-      total += 59.99; // Living Memory AR price
+      total += 59.99; // Living Memory AR price - FIXED
     }
     
-    if (customizations.voiceMatch) {
-      total += 19.99; // Voice Match price
+    if (customizations.voiceMatch && customizations.livingMemory) {
+      total += 19.99; // Voice Match price - only if Living Memory is enabled
     }
     
     if (customizations.aiUpscale) {

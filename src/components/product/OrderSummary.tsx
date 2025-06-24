@@ -53,9 +53,14 @@ const OrderSummary = ({
 
   const basePrice = getSizePrice(selectedSize);
   const framePrice = customizations.floatingFrame.enabled ? 29 : 0;
-  const livingMemoryPrice = customizations.livingMemory ? 19 : 0;
+  const livingMemoryPrice = customizations.livingMemory ? 59.99 : 0;
+  const voiceMatchPrice = customizations.voiceMatch && customizations.livingMemory ? 19.99 : 0;
   const aiUpscalePrice = customizations.aiUpscale ? 9 : 0;
-  const subtotal = basePrice + framePrice + livingMemoryPrice + aiUpscalePrice;
+  
+  // Premium video options pricing (would be stored in state when implemented)
+  const premiumVideoPrice = 0; // Will be calculated based on selected premium options
+  
+  const subtotal = basePrice + framePrice + livingMemoryPrice + voiceMatchPrice + aiUpscalePrice + premiumVideoPrice;
   const shipping = subtotal > 75 ? 0 : 9.99;
   const total = subtotal + shipping;
 
