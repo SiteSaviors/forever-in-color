@@ -45,7 +45,11 @@ export const useProductStateLogic = () => {
     console.log('ProductStateManager handlePhotoAndStyleComplete called with:', { imageUrl, styleId, styleName });
     
     setUploadedImage(imageUrl);
-    setSelectedStyle({ id: styleId, name: styleName });
+    
+    // Only set the style if it's not a temporary style from photo upload
+    if (styleName !== "temp-style") {
+      setSelectedStyle({ id: styleId, name: styleName });
+    }
     
     // 🎯 GENIUS FEATURE: Auto-detect canvas orientation from image dimensions
     try {
@@ -55,14 +59,19 @@ export const useProductStateLogic = () => {
       console.error('Error detecting orientation:', error);
     }
     
-    // Mark step 1 as completed
-    if (!completedSteps.includes(1)) {
-      setCompletedSteps(prev => [...prev, 1]);
+    // Mark step 1 as completed when we have both image and style
+    // For temporary style (just photo upload), don't complete the step yet
+    if (styleName !== "temp-style") {
+      if (!completedSteps.includes(1)) {
+        setCompletedSteps(prev => [...prev, 1]);
+      }
+      // Advance to step 2
+      console.log('Advancing to step 2');
+      setCurrentStep(2);
+    } else {
+      // Just photo uploaded, stay on step 1 to select style
+      console.log('Photo uploaded, staying on step 1 to select style');
     }
-    
-    // Advance to step 2
-    console.log('Advancing to step 2');
-    setCurrentStep(2);
   };
 
   const handleSizeSelect = (size: string) => {

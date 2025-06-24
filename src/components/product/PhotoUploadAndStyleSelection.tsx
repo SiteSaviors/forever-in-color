@@ -28,9 +28,14 @@ const PhotoUploadAndStyleSelection = ({
   const currentImage = uploadedImage || croppedImage;
 
   const handleImageUpload = (imageUrl: string) => {
-    console.log('Image uploaded:', imageUrl);
-    // The parent component should handle setting the uploaded image
-    // This will trigger a re-render with the new uploadedImage prop
+    console.log('Image uploaded and cropped:', imageUrl);
+    // Immediately trigger the photo completion so the parent can update state
+    // This will cause the parent to set uploadedImage and advance to the next step
+    if (onPhotoAndStyleComplete) {
+      // For now, we'll pass a default style ID since we need to complete the photo step
+      // The user can then select their preferred style
+      onPhotoAndStyleComplete(imageUrl, 1, "temp-style");
+    }
   };
 
   const handleStyleSelect = (styleId: number, styleName: string) => {
@@ -44,7 +49,9 @@ const PhotoUploadAndStyleSelection = ({
 
   return (
     <div className="space-y-8">
-      <PhotoUpload onImageUpload={handleImageUpload} />
+      {!currentImage && (
+        <PhotoUpload onImageUpload={handleImageUpload} />
+      )}
       
       {currentImage && (
         <StyleGrid
