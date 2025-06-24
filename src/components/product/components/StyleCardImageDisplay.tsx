@@ -37,7 +37,7 @@ const StyleCardImageDisplay = ({
         <MockupCanvas 
           previewUrl={previewUrl}
           orientation={selectedOrientation as 'square' | 'horizontal' | 'vertical'}
-          className="transition-transform duration-300 group-hover:scale-105"
+          className="transition-transform duration-300 group-hover:scale-105 drop-shadow-2xl"
         />
         {/* Mobile-only expand button - always visible on mobile */}
         {onExpandClick && (
@@ -63,7 +63,9 @@ const StyleCardImageDisplay = ({
         alt={style.name}
         className={`w-full h-full object-cover transition-all duration-300 ${
           showLoadingState ? 'opacity-50 blur-sm' : 'opacity-100'
-        } group-hover:scale-105`}
+        } group-hover:scale-105 ${
+          hasGeneratedPreview && previewUrl ? 'drop-shadow-2xl' : ''
+        }`}
       />
       
       {/* Mobile-only expand button - always visible on mobile */}
