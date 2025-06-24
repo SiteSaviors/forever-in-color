@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Check, Lock, Unlock } from "lucide-react";
 import { Accordion } from "@/components/ui/accordion";
@@ -109,7 +110,7 @@ const ProductContent = ({
   });
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="max-w-6xl mx-auto px-4 py-8">
       {/* Simple progress text - removed the visual progress bar */}
       <div className="mb-8 p-4 bg-white rounded-lg shadow-sm border">
         <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
