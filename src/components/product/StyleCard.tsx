@@ -128,8 +128,8 @@ const StyleCard = ({
             hasPreviewOrCropped={hasPreviewOrCropped}
             shouldBlur={shouldBlur}
             isGenerating={isGenerating}
-            onExpandClick={() => {}} // Will be handled by lightboxes
-            onCanvasPreviewClick={() => {}} // Will be handled by lightboxes
+            onExpandClick={() => {}} // Empty function - Will be handled by lightboxes
+            onCanvasPreviewClick={() => {}} // Empty function - Will be handled by lightboxes
             onGenerateStyle={onGenerateStyle}
           />
         </div>
