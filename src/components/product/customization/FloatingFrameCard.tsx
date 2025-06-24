@@ -159,14 +159,26 @@ const FloatingFrameCard = ({
               ))}
             </div>
 
-            {/* Frame Preview - Simplified */}
+            {/* Canvas Preview with Style */}
             <div className="mt-3 md:mt-4">
               <p className="text-xs md:text-sm text-gray-600 mb-2 font-poppins tracking-tight">Preview with your {selectedSize}:</p>
-              <img 
-                src="/lovable-uploads/floating-frame-preview.jpg" 
-                alt="Floating frame preview" 
-                className="w-full h-auto rounded shadow-sm"
-              />
+              <div className="relative max-w-sm mx-auto">
+                {/* Canvas Background */}
+                <img 
+                  src="/lovable-uploads/1a003955-99e6-4201-957e-81ad7a68b49f.png" 
+                  alt="Canvas mockup" 
+                  className="w-full h-auto"
+                />
+                
+                {/* Style Preview Overlay - positioned on the canvas */}
+                <div className="absolute inset-0 p-6">
+                  <div className="w-full h-full bg-gradient-to-br from-purple-100 via-pink-100 to-blue-100 rounded-sm shadow-inner flex items-center justify-center">
+                    <span className="text-gray-600 text-xs font-medium">
+                      Your Style Preview
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
