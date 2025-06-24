@@ -54,7 +54,28 @@ const StyleCardInfo = ({
     return pillConfigs[styleId] || { pills: [{ text: "Style", gradient: "from-gray-500 to-gray-700" }] };
   };
 
+  // Get style-specific emojis
+  const getStyleEmoji = (styleId: number) => {
+    const emojiMap: { [key: number]: string } = {
+      1: "📸", // Original Image
+      2: "🎨", // Classic Oil Painting
+      4: "🌊", // Watercolor Dreams
+      5: "🌸", // Pastel Bliss
+      6: "💎", // Gemstone Poly
+      7: "📚", // 3D Storybook
+      8: "✏️", // Artisan Charcoal
+      9: "💥", // Pop Art Burst
+      10: "⚡", // Neon Splash
+      11: "🌸", // Electric Bloom
+      13: "🔮", // Abstract Fusion
+      15: "✨", // Deco Luxe
+    };
+    
+    return emojiMap[styleId] || "🎨";
+  };
+
   const styleConfig = getStylePills(style.id);
+  const styleEmoji = getStyleEmoji(style.id);
 
   return (
     <div className="p-4 space-y-3">
@@ -74,7 +95,7 @@ const StyleCardInfo = ({
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <h3 className="font-poppins font-semibold text-gray-900 truncate text-sm md:text-base">
-            {style.name}
+            {styleEmoji} {style.name}
           </h3>
           <p className="text-xs text-gray-600 line-clamp-2 mt-1 font-poppins">
             {style.description}
