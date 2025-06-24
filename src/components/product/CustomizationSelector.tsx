@@ -1,8 +1,9 @@
-
 import { useState } from "react";
 import CustomizationHeader from "./customization/CustomizationHeader";
+import LivingMemoryShowcase from "./customization/LivingMemoryShowcase";
+import PremiumVideoOptions from "./customization/PremiumVideoOptions";
+import SocialProofGallery from "./customization/SocialProofGallery";
 import FloatingFrameCard from "./customization/FloatingFrameCard";
-import LivingMemoryCard from "./customization/LivingMemoryCard";
 import VoiceMatchCard from "./customization/VoiceMatchCard";
 import CustomMessageCard from "./customization/CustomMessageCard";
 import AIUpscaleCard from "./customization/AIUpscaleCard";
@@ -30,6 +31,12 @@ const CustomizationSelector = ({
   onCustomizationChange 
 }: CustomizationSelectorProps) => {
   const [message, setMessage] = useState(customizations.customMessage);
+  const [premiumVideoOptions, setPremiumVideoOptions] = useState({
+    voiceMatching: false,
+    backgroundAudio: 'none',
+    videoLength: 5,
+    voiceEnhancement: false
+  });
 
   const updateCustomization = (key: keyof CustomizationOptions, value: any) => {
     const newCustomizations = {
@@ -63,21 +70,33 @@ const CustomizationSelector = ({
   };
 
   return (
-    <div className="space-y-4 md:space-y-8">
+    <div className="space-y-8">
       <CustomizationHeader />
 
-      <div className="grid gap-4 md:gap-8">
+      {/* Living Memory Showcase - Hero Section */}
+      <LivingMemoryShowcase
+        enabled={customizations.livingMemory}
+        onEnabledChange={(enabled) => updateCustomization('livingMemory', enabled)}
+      />
+
+      {/* Premium Video Options - Only show if Living Memory is enabled */}
+      <PremiumVideoOptions
+        livingMemoryEnabled={customizations.livingMemory}
+        options={premiumVideoOptions}
+        onOptionsChange={setPremiumVideoOptions}
+      />
+
+      {/* Social Proof Gallery */}
+      <SocialProofGallery />
+
+      {/* Other Customizations */}
+      <div className="grid gap-6">
         <FloatingFrameCard
           enabled={customizations.floatingFrame.enabled}
           color={customizations.floatingFrame.color}
           selectedSize={selectedSize}
           onEnabledChange={(enabled) => updateFrameOption('enabled', enabled)}
           onColorChange={(color) => updateFrameOption('color', color)}
-        />
-
-        <LivingMemoryCard
-          enabled={customizations.livingMemory}
-          onEnabledChange={(enabled) => updateCustomization('livingMemory', enabled)}
         />
 
         <VoiceMatchCard
