@@ -59,10 +59,10 @@ const PhotoUploadAndStyleSelection = ({
     onPhotoAndStyleComplete(croppedImage, styleId, styleName);
   };
 
-  // Modified to skip to Step 3 instead of Step 2
+  // Updated to go to Step 2 instead of Step 3
   const handleStyleGridContinue = () => {
-    console.log('🎯 PhotoUploadAndStyleSelection: Continue to Step 3');
-    onContinue(); // This will now go to Step 3
+    console.log('🎯 PhotoUploadAndStyleSelection: Continue to Step 2');
+    onContinue(); // This will now go to Step 2
   };
 
   const canContinue = croppedImage && localSelectedStyle;
@@ -115,7 +115,7 @@ const PhotoUploadAndStyleSelection = ({
                 size="lg"
                 className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
               >
-                Continue to Customization
+                Continue to Layout & Size
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </div>
