@@ -83,16 +83,11 @@ export const StylePreviewProvider = ({
     }
   }, []);
 
-  // Auto-generate previews for popular styles when cropped image is available
+  // TEMPORARILY DISABLED: Auto-generate previews for popular styles when cropped image is available
+  /*
   useEffect(() => {
     if (!croppedImage) {
       dispatch({ type: 'RESET_ALL' });
-      return;
-    }
-
-    // TEMPORARY: Skip auto-generation if user is signed in to save on API costs during testing
-    if (user) {
-      console.log('🚫 Skipping auto-generation - user is signed in (testing mode)');
       return;
     }
 
@@ -156,6 +151,14 @@ export const StylePreviewProvider = ({
 
     autoGeneratePreviews();
   }, [croppedImage, selectedOrientation, getAspectRatio, user]);
+  */
+
+  // Reset previews when cropped image changes
+  useEffect(() => {
+    if (!croppedImage) {
+      dispatch({ type: 'RESET_ALL' });
+    }
+  }, [croppedImage]);
 
   // Manual generation function
   const generatePreview = useCallback(async (styleId: number, styleName: string) => {
