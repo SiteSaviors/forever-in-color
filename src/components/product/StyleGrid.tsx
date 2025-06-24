@@ -1,16 +1,16 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Upload, ImageIcon } from "lucide-react";
 import StyleCard from "./StyleCard";
 import { artStyles } from "@/data/artStyles";
-import { generateStylePreview } from "@/utils/stylePreviewApi";
-import { addWatermarkToImage } from "@/utils/watermarkUtils";
 
 interface StyleGridProps {
   croppedImage: string | null;
   selectedStyle: number | null;
   cropAspectRatio?: number;
+  previewUrls?: { [key: number]: string };
+  autoGenerationComplete?: boolean;
   onStyleSelect: (styleId: number, styleName: string) => void;
   onComplete: () => void;
 }
@@ -19,61 +19,12 @@ const StyleGrid = ({
   croppedImage, 
   selectedStyle, 
   cropAspectRatio = 1,
+  previewUrls = {},
+  autoGenerationComplete = false,
   onStyleSelect, 
   onComplete 
 }: StyleGridProps) => {
   const [loadingStyle, setLoadingStyle] = useState<number | null>(null);
-  const [previewUrls, setPreviewUrls] = useState<{ [key: number]: string }>({});
-  const [autoGenerationComplete, setAutoGenerationComplete] = useState(false);
-
-  // Auto-generate previews for popular styles when cropped image is available
-  useEffect(() => {
-    if (croppedImage && !autoGenerationComplete) {
-      const popularStyleIds = [2, 4, 5]; // Classic Oil Painting, Watercolor Dreams, Pastel Bliss
-      
-      const generatePopularPreviews = async () => {
-        console.log('Auto-generating previews for popular styles:', popularStyleIds);
-        
-        for (const styleId of popularStyleIds) {
-          const style = artStyles.find(s => s.id === styleId);
-          if (!style) continue;
-
-          try {
-            console.log(`Auto-generating preview for ${style.name} (ID: ${styleId})`);
-            
-            const tempPhotoId = `temp_${Date.now()}_${styleId}`;
-            const previewUrl = await generateStylePreview(croppedImage, style.name, tempPhotoId);
-
-            if (previewUrl) {
-              try {
-                const watermarkedUrl = await addWatermarkToImage(previewUrl);
-                setPreviewUrls(prev => ({ ...prev, [styleId]: watermarkedUrl }));
-                console.log(`Auto-generated preview for ${style.name} completed with watermark`);
-              } catch (watermarkError) {
-                console.warn(`Failed to add watermark for ${style.name}, using original:`, watermarkError);
-                setPreviewUrls(prev => ({ ...prev, [styleId]: previewUrl }));
-              }
-            }
-          } catch (error) {
-            console.error(`Error auto-generating preview for ${style.name}:`, error);
-          }
-        }
-        
-        setAutoGenerationComplete(true);
-        console.log('Auto-generation of popular style previews completed');
-      };
-
-      generatePopularPreviews();
-    }
-  }, [croppedImage, autoGenerationComplete]);
-
-  // Reset auto-generation state when cropped image changes
-  useEffect(() => {
-    if (!croppedImage) {
-      setAutoGenerationComplete(false);
-      setPreviewUrls({});
-    }
-  }, [croppedImage]);
 
   const handleStyleSelect = async (styleId: number, styleName: string) => {
     console.log('StyleGrid handleStyleSelect called:', styleId, styleName);

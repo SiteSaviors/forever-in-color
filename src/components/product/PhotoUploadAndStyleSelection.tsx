@@ -2,46 +2,42 @@
 import { useState } from "react";
 import PhotoUpload from "./PhotoUpload";
 import PhotoCropper from "./PhotoCropper";
-import StyleSelector from "./StyleSelector";
-import { artStyles } from "@/data/artStyles";
+import StyleGrid from "./StyleGrid";
+import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
 
 interface PhotoUploadAndStyleSelectionProps {
-  onComplete: (imageUrl: string, styleId: number, styleName: string) => void;
-  preSelectedStyle?: {id: number, name: string} | null;
+  selectedStyle: {id: number, name: string} | null;
+  uploadedImage: string | null;
+  previewUrls: { [key: number]: string };
+  autoGenerationComplete: boolean;
+  onPhotoAndStyleComplete: (imageUrl: string, styleId: number, styleName: string) => void;
+  onContinue: () => void;
 }
 
-const PhotoUploadAndStyleSelection = ({ 
-  onComplete, 
-  preSelectedStyle 
+const PhotoUploadAndStyleSelection = ({
+  selectedStyle,
+  uploadedImage,
+  previewUrls,
+  autoGenerationComplete,
+  onPhotoAndStyleComplete,
+  onContinue
 }: PhotoUploadAndStyleSelectionProps) => {
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [croppedImage, setCroppedImage] = useState<string | null>(null);
+  const [uploadedImageFile, setUploadedImageFile] = useState<string | null>(uploadedImage);
+  const [croppedImage, setCroppedImage] = useState<string | null>(uploadedImage);
+  const [selectedStyleId, setSelectedStyleId] = useState<number | null>(selectedStyle?.id || null);
+  const [cropAspectRatio, setCropAspectRatio] = useState(1);
   const [showCropper, setShowCropper] = useState(false);
-  const [selectedStyle, setSelectedStyle] = useState<number | null>(
-    preSelectedStyle?.id || null
-  );
-  const [cropAspectRatio, setCropAspectRatio] = useState<number>(1); // Track crop aspect ratio
 
-  const handleFileSelect = (file: File, imageUrl: string) => {
-    console.log('File selected:', file.name, imageUrl);
-    setUploadedFile(file);
-    setPreviewUrl(imageUrl);
-    setShowCropper(true); // Show cropper after file upload
-    setCroppedImage(null); // Reset cropped image
-  };
-
-  const handleRemoveFile = () => {
-    console.log('File removed');
-    setUploadedFile(null);
-    setPreviewUrl(null);
+  const handleImageUpload = (imageUrl: string) => {
+    console.log('Image uploaded:', imageUrl);
+    setUploadedImageFile(imageUrl);
     setCroppedImage(null);
-    setShowCropper(false);
-    setCropAspectRatio(1); // Reset aspect ratio
+    setShowCropper(true);
   };
 
   const handleCropComplete = (croppedImageUrl: string, aspectRatio: number) => {
-    console.log('Crop completed:', croppedImageUrl, 'Aspect ratio:', aspectRatio);
+    console.log('Crop completed with aspect ratio:', aspectRatio);
     setCroppedImage(croppedImageUrl);
     setCropAspectRatio(aspectRatio);
     setShowCropper(false);
@@ -49,70 +45,73 @@ const PhotoUploadAndStyleSelection = ({
 
   const handleStyleSelect = (styleId: number, styleName: string) => {
     console.log('Style selected:', styleId, styleName);
-    setSelectedStyle(styleId);
+    setSelectedStyleId(styleId);
+    
+    if (croppedImage) {
+      onPhotoAndStyleComplete(croppedImage, styleId, styleName);
+    }
   };
 
-  const handleComplete = (imageUrl: string, styleId: number, styleName: string) => {
-    console.log('PhotoUploadAndStyleSelection handleComplete called with:', { imageUrl, styleId, styleName });
-    onComplete(imageUrl, styleId, styleName);
+  const handleContinue = () => {
+    onContinue();
   };
 
-  // Handle orientation change from cropper
-  const handleOrientationChange = (newAspectRatio: number) => {
-    console.log('Orientation changed to aspect ratio:', newAspectRatio);
-    setCropAspectRatio(newAspectRatio);
-  };
-
-  // Allow users to re-crop their image with a different orientation
-  const handleRecropImage = () => {
-    console.log('Recropping image with current aspect ratio:', cropAspectRatio);
-    setShowCropper(true);
-  };
+  const canContinue = croppedImage && selectedStyleId;
 
   return (
     <div className="space-y-8">
       {/* Photo Upload Section */}
-      <div>
-        <PhotoUpload 
-          onFileSelect={handleFileSelect}
-          uploadedFile={uploadedFile}
-          previewUrl={previewUrl}
-          onRemoveFile={handleRemoveFile}
-        />
-      </div>
-
-      {/* Photo Cropper Section - Show when image is uploaded but not yet cropped OR when user wants to recrop */}
-      {showCropper && previewUrl && (
+      {!uploadedImageFile && (
         <div>
-          <div className="text-center mb-4">
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Choose Your Canvas Format
-            </h3>
-            <p className="text-gray-600">
-              Select your preferred orientation and crop your photo to create the perfect canvas composition.
-            </p>
-          </div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Upload Your Photo
+          </h3>
+          <PhotoUpload onImageUpload={handleImageUpload} />
+        </div>
+      )}
+
+      {/* Photo Cropper */}
+      {uploadedImageFile && showCropper && (
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Crop Your Photo
+          </h3>
           <PhotoCropper
-            imageUrl={previewUrl}
-            initialAspectRatio={cropAspectRatio}
+            imageUrl={uploadedImageFile}
             onCropComplete={handleCropComplete}
-            onOrientationChange={handleOrientationChange}
           />
         </div>
       )}
 
-      {/* Style Selection Section - Always show, but with different behavior based on whether we have a cropped image */}
-      {!showCropper && (
+      {/* Style Selection */}
+      {croppedImage && !showCropper && (
         <div>
-          <StyleSelector
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Choose Your Art Style
+          </h3>
+          <StyleGrid
             croppedImage={croppedImage}
-            selectedStyle={selectedStyle}
-            preSelectedStyle={preSelectedStyle}
+            selectedStyle={selectedStyleId}
             cropAspectRatio={cropAspectRatio}
+            previewUrls={previewUrls}
+            autoGenerationComplete={autoGenerationComplete}
             onStyleSelect={handleStyleSelect}
-            onComplete={handleComplete}
-            onRecropImage={croppedImage ? handleRecropImage : undefined}
+            onComplete={handleContinue}
           />
+        </div>
+      )}
+
+      {/* Continue Button */}
+      {canContinue && (
+        <div className="flex justify-center pt-6">
+          <Button
+            onClick={handleContinue}
+            size="lg"
+            className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3"
+          >
+            Continue to Canvas Size
+            <ArrowRight className="w-5 h-5 ml-2" />
+          </Button>
         </div>
       )}
     </div>

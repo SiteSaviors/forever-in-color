@@ -1,10 +1,10 @@
 
 import { ReactNode } from "react";
-import { Upload, Palette, Settings, ShoppingCart, LucideIcon } from "lucide-react";
 import PhotoUploadAndStyleSelection from "./PhotoUploadAndStyleSelection";
 import OrientationSelector from "./OrientationSelector";
+import SizeSelector from "./SizeSelector";
 import CustomizationSelector from "./CustomizationSelector";
-import ReviewAndOrder from "./ReviewAndOrder";
+import OrderSummary from "./OrderSummary";
 
 interface CustomizationOptions {
   floatingFrame: {
@@ -21,13 +21,9 @@ interface ProductStep {
   id: string;
   number: number;
   title: string;
-  icon: LucideIcon;
   description: string;
-  required: boolean;
-  estimatedTime: string;
-  content: ReactNode;
   isCompleted: boolean;
-  isEnabled: boolean;
+  content: ReactNode;
 }
 
 interface UseProductStepsConfigProps {
@@ -37,12 +33,14 @@ interface UseProductStepsConfigProps {
   selectedOrientation: string;
   customizations: CustomizationOptions;
   uploadedImage: string | null;
+  previewUrls: { [key: number]: string };
+  autoGenerationComplete: boolean;
   onPhotoAndStyleComplete: (imageUrl: string, styleId: number, styleName: string) => void;
   onOrientationSelect: (orientation: string) => void;
   onSizeSelect: (size: string) => void;
   onCustomizationChange: (customizations: CustomizationOptions) => void;
-  onEditStep: (step: number) => void;
-  onContinue?: () => void;
+  onEditStep: (stepNumber: number) => void;
+  onContinue: () => void;
 }
 
 export const useProductStepsConfig = ({
@@ -52,6 +50,8 @@ export const useProductStepsConfig = ({
   selectedOrientation,
   customizations,
   uploadedImage,
+  previewUrls,
+  autoGenerationComplete,
   onPhotoAndStyleComplete,
   onOrientationSelect,
   onSizeSelect,
@@ -59,57 +59,53 @@ export const useProductStepsConfig = ({
   onEditStep,
   onContinue
 }: UseProductStepsConfigProps): ProductStep[] => {
+  
   return [
     {
       id: "step-1",
       number: 1,
       title: "Upload Photo & Choose Style",
-      icon: Upload,
-      description: "Upload your photo and select an artistic style",
-      required: true,
-      estimatedTime: "2 mins",
+      description: "Upload your image and select an artistic style",
       isCompleted: completedSteps.includes(1),
-      isEnabled: true,
       content: (
         <PhotoUploadAndStyleSelection
-          onComplete={onPhotoAndStyleComplete}
-          preSelectedStyle={selectedStyle}
+          selectedStyle={selectedStyle}
+          uploadedImage={uploadedImage}
+          previewUrls={previewUrls}
+          autoGenerationComplete={autoGenerationComplete}
+          onPhotoAndStyleComplete={onPhotoAndStyleComplete}
+          onContinue={onContinue}
         />
       )
     },
     {
       id: "step-2",
       number: 2,
-      title: "Choose Size & Orientation",
-      icon: Palette,
-      description: "Select the perfect size and orientation for your canvas",
-      required: true,
-      estimatedTime: "1 min",
+      title: "Choose Canvas Size",
+      description: "Select your preferred canvas dimensions",
       isCompleted: completedSteps.includes(2),
-      isEnabled: completedSteps.includes(1),
       content: (
-        <OrientationSelector
-          selectedOrientation={selectedOrientation}
-          selectedSize={selectedSize}
-          onOrientationChange={onOrientationSelect}
-          onSizeChange={onSizeSelect}
-          onContinue={onContinue}
-        />
+        <div className="space-y-6">
+          <OrientationSelector
+            selectedOrientation={selectedOrientation}
+            onOrientationSelect={onOrientationSelect}
+          />
+          <SizeSelector
+            selectedSize={selectedSize}
+            selectedOrientation={selectedOrientation}
+            onSizeSelect={onSizeSelect}
+          />
+        </div>
       )
     },
     {
       id: "step-3",
       number: 3,
       title: "Customize Your Order",
-      icon: Settings,
-      description: "Add premium features and personalization options",
-      required: false,
-      estimatedTime: "2 mins",
+      description: "Add premium features and customizations",
       isCompleted: completedSteps.includes(3),
-      isEnabled: completedSteps.includes(2),
       content: (
         <CustomizationSelector
-          selectedSize={selectedSize}
           customizations={customizations}
           onCustomizationChange={onCustomizationChange}
         />
@@ -118,20 +114,17 @@ export const useProductStepsConfig = ({
     {
       id: "step-4",
       number: 4,
-      title: "Preview Your Art & Complete Order",
-      icon: ShoppingCart,
-      description: "Review your custom canvas and complete your order",
-      required: true,
-      estimatedTime: "3 mins",
+      title: "Review & Order",
+      description: "Review your selections and complete your order",
       isCompleted: completedSteps.includes(4),
-      isEnabled: completedSteps.includes(3),
       content: (
-        <ReviewAndOrder
+        <OrderSummary
+          uploadedImage={uploadedImage}
           selectedStyle={selectedStyle}
           selectedSize={selectedSize}
           selectedOrientation={selectedOrientation}
           customizations={customizations}
-          uploadedImage={uploadedImage}
+          onEditStep={onEditStep}
         />
       )
     }

@@ -1,3 +1,4 @@
+
 import { Accordion } from "@/components/ui/accordion";
 import ProductStep from "./ProductStep";
 import { useProductStepsConfig } from "./ProductStepsConfig";
@@ -21,6 +22,8 @@ interface ProductContentProps {
   selectedOrientation: string;
   customizations: CustomizationOptions;
   uploadedImage: string | null;
+  previewUrls: { [key: number]: string };
+  autoGenerationComplete: boolean;
   onCurrentStepChange: (step: number) => void;
   onPhotoAndStyleComplete: (imageUrl: string, styleId: number, styleName: string) => void;
   onOrientationSelect: (orientation: string) => void;
@@ -36,6 +39,8 @@ const ProductContent = ({
   selectedOrientation,
   customizations,
   uploadedImage,
+  previewUrls,
+  autoGenerationComplete,
   onCurrentStepChange,
   onPhotoAndStyleComplete,
   onOrientationSelect,
@@ -53,6 +58,8 @@ const ProductContent = ({
     selectedOrientation,
     customizations,
     uploadedImage,
+    previewUrls,
+    autoGenerationComplete,
     onPhotoAndStyleComplete,
     onOrientationSelect,
     onSizeSelect,

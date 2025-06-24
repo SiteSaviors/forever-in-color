@@ -1,6 +1,8 @@
 
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { generateStylePreview } from "@/utils/stylePreviewApi";
+import { addWatermarkToImage } from "@/utils/watermarkUtils";
 
 interface CustomizationOptions {
   floatingFrame: {
@@ -21,6 +23,8 @@ interface ProductState {
   selectedSize: string;
   selectedOrientation: string;
   customizations: CustomizationOptions;
+  previewUrls: { [key: number]: string };
+  autoGenerationComplete: boolean;
 }
 
 interface ProductStateActions {
@@ -40,6 +44,8 @@ export const useProductState = (): ProductState & ProductStateActions => {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [selectedOrientation, setSelectedOrientation] = useState<string>("horizontal");
+  const [previewUrls, setPreviewUrls] = useState<{ [key: number]: string }>({});
+  const [autoGenerationComplete, setAutoGenerationComplete] = useState(false);
   const [customizations, setCustomizations] = useState<CustomizationOptions>({
     floatingFrame: {
       enabled: false,
@@ -60,6 +66,60 @@ export const useProductState = (): ProductState & ProductStateActions => {
       });
     }
   }, [location.state]);
+
+  // Auto-generate previews for popular styles when cropped image is available
+  useEffect(() => {
+    if (uploadedImage && !autoGenerationComplete) {
+      const popularStyleIds = [2, 4, 5]; // Classic Oil Painting, Watercolor Dreams, Pastel Bliss
+      const artStyles = [
+        { id: 2, name: "Classic Oil Painting" },
+        { id: 4, name: "Watercolor Dreams" },
+        { id: 5, name: "Pastel Bliss" }
+      ];
+      
+      const generatePopularPreviews = async () => {
+        console.log('Auto-generating previews for popular styles:', popularStyleIds);
+        
+        for (const styleId of popularStyleIds) {
+          const style = artStyles.find(s => s.id === styleId);
+          if (!style) continue;
+
+          try {
+            console.log(`Auto-generating preview for ${style.name} (ID: ${styleId})`);
+            
+            const tempPhotoId = `temp_${Date.now()}_${styleId}`;
+            const previewUrl = await generateStylePreview(uploadedImage, style.name, tempPhotoId);
+
+            if (previewUrl) {
+              try {
+                const watermarkedUrl = await addWatermarkToImage(previewUrl);
+                setPreviewUrls(prev => ({ ...prev, [styleId]: watermarkedUrl }));
+                console.log(`Auto-generated preview for ${style.name} completed with watermark`);
+              } catch (watermarkError) {
+                console.warn(`Failed to add watermark for ${style.name}, using original:`, watermarkError);
+                setPreviewUrls(prev => ({ ...prev, [styleId]: previewUrl }));
+              }
+            }
+          } catch (error) {
+            console.error(`Error auto-generating preview for ${style.name}:`, error);
+          }
+        }
+        
+        setAutoGenerationComplete(true);
+        console.log('Auto-generation of popular style previews completed');
+      };
+
+      generatePopularPreviews();
+    }
+  }, [uploadedImage, autoGenerationComplete]);
+
+  // Reset states when uploaded image changes but preserve previews within session
+  useEffect(() => {
+    if (!uploadedImage) {
+      setAutoGenerationComplete(false);
+      setPreviewUrls({});
+    }
+  }, [uploadedImage]);
 
   const handlePhotoAndStyleComplete = (imageUrl: string, styleId: number, styleName: string) => {
     console.log('ProductStateManager handlePhotoAndStyleComplete called with:', { imageUrl, styleId, styleName });
@@ -117,6 +177,8 @@ export const useProductState = (): ProductState & ProductStateActions => {
     selectedSize,
     selectedOrientation,
     customizations,
+    previewUrls,
+    autoGenerationComplete,
     setCurrentStep,
     handlePhotoAndStyleComplete,
     handleSizeSelect,
