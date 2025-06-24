@@ -26,14 +26,14 @@ const StyleCardContainer = ({
   };
 
   return (
-    <div className="relative p-1 md:p-2">
-      {/* Simplified background */}
-      <div className="absolute inset-0 bg-gray-50 rounded-xl opacity-70"></div>
+    <div className="relative p-0 md:p-2">
+      {/* Simplified background - only on desktop */}
+      <div className="absolute inset-0 bg-gray-50 rounded-xl opacity-70 hidden md:block"></div>
       
       {/* Optimized card with mobile-first responsive design */}
       <Card 
         className={`group cursor-pointer transition-all duration-200 ease-out relative z-10 bg-white/98 border-0 
-          shadow-md hover:shadow-lg md:shadow-lg md:hover:shadow-xl
+          shadow-sm hover:shadow-md md:shadow-lg md:hover:shadow-xl
           ${!shouldBlur && !isMobile ? 'hover:scale-[1.02] hover:-translate-y-1' : ''} 
           h-full flex flex-col
           ${isSelected ? 
