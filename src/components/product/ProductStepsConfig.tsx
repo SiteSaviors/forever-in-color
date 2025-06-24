@@ -113,6 +113,7 @@ export const useProductStepsConfig = ({
           <OrientationSelector
             selectedOrientation={selectedOrientation}
             selectedSize={selectedSize}
+            userImageUrl={uploadedImage}
             onOrientationChange={onOrientationSelect}
             onSizeChange={onSizeSelect}
             onContinue={onContinue}
