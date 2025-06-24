@@ -17,6 +17,7 @@ interface ProductStepProps {
   isActive: boolean;
   isNextStep: boolean;
   isAccessible?: boolean;
+  wasJustUnlocked?: boolean;
   selectedStyle?: { id: number; name: string } | null;
   children: React.ReactNode;
 }
@@ -27,14 +28,11 @@ const ProductStep = ({
   isActive, 
   isNextStep,
   isAccessible = true,
+  wasJustUnlocked = false,
   selectedStyle, 
   children 
 }: ProductStepProps) => {
   const Icon = step.icon;
-
-  // Determine lock state for animation
-  const isLocked = !isAccessible;
-  const wasJustUnlocked = isAccessible && isNextStep;
 
   return (
     <AccordionItem 
@@ -64,18 +62,17 @@ const ProductStep = ({
         disabled={!isAccessible}
       >
         <div className="flex items-center gap-3 md:gap-6 w-full">
-          {/* Step Icon/Number with enhanced lock states */}
+          {/* Step Icon/Number with lock/unlock indicators */}
           <div className="relative">
             <div className={`
               relative w-10 h-10 md:w-14 md:h-14 rounded-lg md:rounded-xl flex items-center justify-center transition-all duration-500 shadow-lg
               ${isCompleted 
                 ? 'bg-gradient-to-r from-green-400 to-emerald-500 text-white shadow-green-200' 
                 : isActive && isAccessible
-                ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-purple-200 animate-pulse'
+                ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-purple-200'
                 : !isAccessible
                 ? 'bg-gradient-to-r from-gray-200 to-gray-300 text-gray-400'
-                : 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-400 group-hover:from-purple-100 group-hover:to-pink-100 group-hover:text-purple-500'
-              }
+                : 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-400 group-hover:from-purple-100 group-hover:to-pink-100 group-hover:text-purple-500'}
             `}>
               {isCompleted ? (
                 <Check className="w-5 h-5 md:w-7 md:h-7 animate-in zoom-in duration-300" />
@@ -97,20 +94,22 @@ const ProductStep = ({
               </div>
             </div>
 
-            {/* Lock/Unlock Animation - positioned next to the main icon */}
-            <div className="absolute -right-2 -bottom-1 md:-right-3 md:-bottom-2">
-              {isLocked && (
-                <div className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-gray-100 border-2 border-gray-300 flex items-center justify-center shadow-sm">
-                  <Lock className="w-3 h-3 md:w-4 md:h-4 text-gray-500" />
+            {/* Lock/Unlock Animation positioned next to the main icon */}
+            {!isAccessible && !isCompleted && (
+              <div className="absolute -right-2 -bottom-1 md:-right-3 md:-bottom-2">
+                <div className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-red-100 border-2 border-red-200 flex items-center justify-center shadow-sm">
+                  <Lock className="w-3 h-3 md:w-4 md:h-4 text-red-500" />
                 </div>
-              )}
-              
-              {wasJustUnlocked && (
-                <div className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-green-100 border-2 border-green-300 flex items-center justify-center shadow-sm animate-in zoom-in duration-500">
+              </div>
+            )}
+            
+            {wasJustUnlocked && (
+              <div className="absolute -right-2 -bottom-1 md:-right-3 md:-bottom-2 animate-in zoom-in duration-700">
+                <div className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-green-100 border-2 border-green-300 flex items-center justify-center shadow-sm">
                   <Unlock className="w-3 h-3 md:w-4 md:h-4 text-green-600 animate-pulse" />
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
           
           {/* Step Content */}
@@ -130,15 +129,15 @@ const ProductStep = ({
                 </h3>
                 
                 {/* Inline lock indicator for step title */}
-                {isLocked && (
-                  <div className="flex items-center gap-1 text-gray-400">
+                {!isAccessible && (
+                  <div className="flex items-center gap-1 text-red-500">
                     <Lock className="w-3 h-3 md:w-4 md:h-4" />
                     <span className="text-xs font-medium hidden md:inline">Locked</span>
                   </div>
                 )}
                 
                 {wasJustUnlocked && (
-                  <div className="flex items-center gap-1 text-green-600 animate-in slide-in duration-500">
+                  <div className="flex items-center gap-1 text-green-600 animate-in slide-in-from-left duration-500">
                     <Unlock className="w-3 h-3 md:w-4 md:h-4 animate-pulse" />
                     <span className="text-xs font-medium hidden md:inline">Unlocked!</span>
                   </div>
@@ -177,8 +176,8 @@ const ProductStep = ({
             )}
 
             {!isAccessible && (
-              <Badge variant="outline" className="bg-gradient-to-r from-gray-100 to-gray-200 text-gray-500 border-gray-300 text-xs hidden md:inline-flex">
-                Locked
+              <Badge variant="outline" className="bg-gradient-to-r from-red-100 to-red-200 text-red-500 border-red-300 text-xs hidden md:inline-flex">
+                🔒 Locked
               </Badge>
             )}
             
@@ -192,8 +191,8 @@ const ProductStep = ({
               `} />
               
               {/* Small lock overlay on chevron for locked steps */}
-              {isLocked && (
-                <Lock className="absolute -top-1 -right-1 w-2 h-2 text-gray-400" />
+              {!isAccessible && (
+                <Lock className="absolute -top-1 -right-1 w-2 h-2 text-red-400" />
               )}
             </div>
           </div>

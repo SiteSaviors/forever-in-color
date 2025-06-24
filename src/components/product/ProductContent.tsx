@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import { Check, Lock } from "lucide-react";
+import { Check, Lock, Unlock } from "lucide-react";
 import { Accordion } from "@/components/ui/accordion";
 import ProductStep from "./ProductStep";
 import { useProductStepsConfig } from "./ProductStepsConfig";
@@ -111,41 +110,11 @@ const ProductContent = ({
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      {/* Progress indicator with lock states */}
+      {/* Simple progress text - removed the visual progress bar */}
       <div className="mb-8 p-4 bg-white rounded-lg shadow-sm border">
         <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
           <span className="font-medium">Your Progress</span>
           <span>{completedSteps.length} of 4 steps completed</span>
-        </div>
-        <div className="flex items-center gap-2">
-          {steps.map((step, index) => {
-            const isAccessible = canAccessStep(step.number);
-            const isCompleted = completedSteps.includes(step.number);
-            const isCurrent = currentStep === step.number;
-            
-            return (
-              <div key={step.id} className="flex items-center">
-                <div className={`
-                  w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300
-                  ${isCompleted 
-                    ? 'bg-green-500 text-white' 
-                    : isCurrent && isAccessible
-                    ? 'bg-purple-500 text-white'
-                    : !isAccessible
-                    ? 'bg-gray-200 text-gray-400'
-                    : 'bg-gray-300 text-gray-600'}
-                `}>
-                  {isCompleted ? <Check className="w-3 h-3" /> : step.number}
-                </div>
-                {index < steps.length - 1 && (
-                  <div className={`
-                    w-8 h-0.5 mx-1 transition-colors duration-300
-                    ${completedSteps.includes(step.number) ? 'bg-green-500' : 'bg-gray-200'}
-                  `} />
-                )}
-              </div>
-            );
-          })}
         </div>
       </div>
 
@@ -160,6 +129,7 @@ const ProductContent = ({
           const isCompleted = completedSteps.includes(step.number);
           const isNextStep = step.number === currentStep + 1;
           const isAccessible = canAccessStep(step.number);
+          const wasJustUnlocked = isAccessible && !isCompleted && step.number > 1 && completedSteps.includes(step.number - 1);
 
           return (
             <div key={step.id} className={!isAccessible ? 'opacity-50 pointer-events-none' : ''}>
@@ -169,6 +139,7 @@ const ProductContent = ({
                 isActive={isActive}
                 isNextStep={isNextStep && isAccessible}
                 isAccessible={isAccessible}
+                wasJustUnlocked={wasJustUnlocked}
                 selectedStyle={selectedStyle}
               >
                 {isAccessible ? step.content : (
