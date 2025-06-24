@@ -17,11 +17,11 @@ export class ReplicateApiClient {
         body: JSON.stringify(requestBody),
       });
 
-      console.log('Replicate API response status:', response.status);
+      console.log('Replicate GPT-Image-1 API response status:', response.status);
       
       if (!response.ok) {
         const errorData = await response.text();
-        console.error('Replicate API error details:', {
+        console.error('Replicate GPT-Image-1 API error details:', {
           status: response.status,
           statusText: response.statusText,
           errorData: errorData,
@@ -29,19 +29,19 @@ export class ReplicateApiClient {
         });
         return {
           ok: false,
-          error: `API request failed: ${response.status} - ${errorData}`
+          error: `GPT-Image-1 API request failed: ${response.status} - ${errorData}`
         };
       }
 
       const data = await response.json();
-      console.log('Generation completed:', data);
+      console.log('GPT-Image-1 generation completed:', data);
 
       return {
         ok: true,
         ...data
       };
     } catch (error) {
-      console.error('API client error:', error);
+      console.error('GPT-Image-1 API client error:', error);
       return {
         ok: false,
         error: error.message
@@ -53,14 +53,14 @@ export class ReplicateApiClient {
     try {
       const response = await fetch(`${REPLICATE_CONFIG.baseUrl}/predictions/${predictionId}`, {
         headers: {
-          "Authorization": `Token ${this.apiToken}`,
+          "Authorization": `Bearer ${this.apiToken}`,
         },
       });
 
       if (!response.ok) {
         return {
           ok: false,
-          error: `Status check failed: ${response.status}`
+          error: `GPT-Image-1 status check failed: ${response.status}`
         };
       }
 
@@ -70,7 +70,7 @@ export class ReplicateApiClient {
         ...result
       };
     } catch (error) {
-      console.error('Error getting prediction status:', error);
+      console.error('Error getting GPT-Image-1 prediction status:', error);
       return {
         ok: false,
         error: error.message

@@ -1,11 +1,11 @@
 
 export const REPLICATE_CONFIG = {
   baseUrl: "https://api.replicate.com/v1",
-  model: "black-forest-labs/flux-kontext-pro",
+  model: "openai/gpt-image-1",
   defaultOutputFormat: "jpg",
   maxPollAttempts: 30,
   pollIntervalMs: 2000,
-  timeoutMinutes: 1
+  timeoutMinutes: 2
 } as const;
 
 export const IDENTITY_PRESERVATION_RULES = `

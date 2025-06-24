@@ -2,8 +2,10 @@
 export interface ReplicateGenerationRequest {
   input: {
     prompt: string;
-    input_image: string;
-    output_format: string;
+    input_images: string[];
+    openai_api_key: string;
+    aspect_ratio?: string;
+    quality?: string;
   };
 }
 

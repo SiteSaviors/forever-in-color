@@ -395,9 +395,9 @@ serve(async (req) => {
     // Pass both API keys to OpenAI service
     const openaiService = new OpenAIService(openaiApiKey, replicateApiToken, supabase)
     
-    console.log('Starting flux-kontext-pro transformation via Replicate for style:', style)
+    console.log('Starting GPT-Image-1 transformation via Replicate for style:', style)
 
-    // Generate the transformed image using flux-kontext-pro via Replicate with timeout
+    // Generate the transformed image using GPT-Image-1 via Replicate with timeout
     const timeoutController = new AbortController();
     const timeoutId = setTimeout(() => timeoutController.abort(), 120000); // 2 minute timeout for Replicate
 
@@ -406,7 +406,7 @@ serve(async (req) => {
       clearTimeout(timeoutId);
 
       if (!transformResult.ok) {
-        console.error(`Flux-kontext-pro transformation failed for ${style}:`, transformResult.error)
+        console.error(`GPT-Image-1 transformation failed for ${style}:`, transformResult.error)
         
         // Return original image as fallback
         return createSuccessResponse(
@@ -426,7 +426,7 @@ serve(async (req) => {
       }
 
       if (transformedImageUrl) {
-        console.log(`Transformation completed successfully via Replicate for ${style}`)
+        console.log(`GPT-Image-1 transformation completed successfully via Replicate for ${style}`)
         return createSuccessResponse(
           `${style} style applied successfully`,
           transformedImageUrl,

@@ -11,7 +11,7 @@ export class OpenAIService {
   constructor(private openaiApiKey: string, private replicateApiToken: string, private supabase: any) {
     this.imageAnalysisService = new ImageAnalysisService(openaiApiKey);
     this.stylePromptService = new StylePromptService(supabase);
-    this.replicateService = new ReplicateService(replicateApiToken);
+    this.replicateService = new ReplicateService(replicateApiToken, openaiApiKey);
   }
 
   async generateImageToImage(imageData: string, styleName: string, aspectRatio: string = "1:1", quality: string = "medium"): Promise<{ ok: boolean; output?: string; error?: string }> {
@@ -29,8 +29,8 @@ export class OpenAIService {
 
       console.log('Using exact prompt for style:', styleName, '- Prompt:', stylePrompt);
 
-      // Generate the image using Replicate's flux-kontext-pro model
-      return await this.replicateService.generateImageToImage(imageData, stylePrompt);
+      // Generate the image using Replicate's GPT-Image-1 model
+      return await this.replicateService.generateImageToImage(imageData, stylePrompt, aspectRatio, quality);
 
     } catch (error) {
       console.error('OpenAI Service error:', error);
