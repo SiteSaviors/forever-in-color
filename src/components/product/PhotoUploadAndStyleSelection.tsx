@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import PhotoUpload from "./PhotoUpload";
 import StyleGrid from "./StyleGrid";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Upload } from "lucide-react";
+import { ArrowRight, Upload, RotateCcw } from "lucide-react";
 
 interface PhotoUploadAndStyleSelectionProps {
   selectedStyle: {id: number, name: string} | null;
@@ -25,7 +25,9 @@ const PhotoUploadAndStyleSelection = ({
   onContinue
 }: PhotoUploadAndStyleSelectionProps) => {
   const [croppedImage, setCroppedImage] = useState<string | null>(uploadedImage);
+  const [originalImage, setOriginalImage] = useState<string | null>(null);
   const [localSelectedStyle, setLocalSelectedStyle] = useState<{id: number, name: string} | null>(selectedStyle);
+  const [showRecrop, setShowRecrop] = useState(false);
 
   // Update local state when props change
   useEffect(() => {
@@ -36,12 +38,18 @@ const PhotoUploadAndStyleSelection = ({
     setLocalSelectedStyle(selectedStyle);
   }, [selectedStyle]);
 
-  const handlePhotoUpload = (imageUrl: string) => {
+  const handlePhotoUpload = (imageUrl: string, originalImageUrl?: string) => {
     console.log('🎯 PhotoUploadAndStyleSelection: Photo uploaded:', imageUrl);
     setCroppedImage(imageUrl);
     
+    // Store the original image for re-cropping
+    if (originalImageUrl) {
+      setOriginalImage(originalImageUrl);
+    }
+    
     // Call onComplete with temp values to update state in ProductStateLogic
     onComplete(imageUrl, 999, "temp-style");
+    setShowRecrop(false);
   };
 
   const handleStyleSelect = async (styleId: number, styleName: string) => {
@@ -57,6 +65,10 @@ const PhotoUploadAndStyleSelection = ({
     
     // Call the completion handler with the image and style
     onPhotoAndStyleComplete(croppedImage, styleId, styleName);
+  };
+
+  const handleRecropClick = () => {
+    setShowRecrop(true);
   };
 
   // Updated to go to Step 2 instead of Step 3
@@ -80,17 +92,59 @@ const PhotoUploadAndStyleSelection = ({
       </div>
 
       {/* Photo Upload Section */}
-      {!croppedImage ? (
+      {(!croppedImage || showRecrop) ? (
         <div className="bg-white rounded-xl shadow-lg p-8">
           <div className="text-center mb-6">
             <Upload className="w-12 h-12 text-purple-500 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Start with Your Photo</h3>
-            <p className="text-gray-600">Upload a high-quality image to transform into art</p>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              {showRecrop ? "Re-crop Your Photo" : "Start with Your Photo"}
+            </h3>
+            <p className="text-gray-600">
+              {showRecrop ? "Adjust your crop to get the perfect composition" : "Upload a high-quality image to transform into art"}
+            </p>
           </div>
-          <PhotoUpload onImageUpload={handlePhotoUpload} />
+          <PhotoUpload 
+            onImageUpload={handlePhotoUpload} 
+            initialImage={showRecrop ? originalImage : undefined}
+          />
+          
+          {showRecrop && (
+            <div className="text-center mt-4">
+              <Button
+                variant="outline"
+                onClick={() => setShowRecrop(false)}
+                className="text-gray-600 border-gray-300"
+              >
+                Cancel
+              </Button>
+            </div>
+          )}
         </div>
       ) : (
         <>
+          {/* Photo Preview with Re-crop Option */}
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Your Photo</h3>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRecropClick}
+                className="text-purple-600 border-purple-200 hover:bg-purple-50"
+              >
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Re-crop Image
+              </Button>
+            </div>
+            <div className="relative w-32 h-32 mx-auto rounded-lg overflow-hidden bg-gray-100">
+              <img 
+                src={croppedImage} 
+                alt="Cropped preview" 
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+
           {/* Style Selection Grid */}
           <div className="bg-white rounded-xl shadow-lg p-6 md:p-8">
             <div className="text-center mb-8">

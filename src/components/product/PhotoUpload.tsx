@@ -1,5 +1,4 @@
-
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Upload, Camera, Image as ImageIcon } from "lucide-react";
@@ -7,15 +6,24 @@ import { validateImageFile } from "@/utils/fileValidation";
 import PhotoCropper from "./PhotoCropper";
 
 interface PhotoUploadProps {
-  onImageUpload: (imageUrl: string) => void;
+  onImageUpload: (imageUrl: string, originalImageUrl?: string) => void;
+  initialImage?: string | null;
 }
 
-const PhotoUpload = ({ onImageUpload }: PhotoUploadProps) => {
+const PhotoUpload = ({ onImageUpload, initialImage }: PhotoUploadProps) => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
-  const [showCropper, setShowCropper] = useState(false);
+  const [uploadedImage, setUploadedImage] = useState<string | null>(initialImage || null);
+  const [showCropper, setShowCropper] = useState(!!initialImage);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Update uploadedImage when initialImage changes
+  useEffect(() => {
+    if (initialImage) {
+      setUploadedImage(initialImage);
+      setShowCropper(true);
+    }
+  }, [initialImage]);
 
   const handleFileSelect = async (file: File) => {
     const validationResult = await validateImageFile(file);
@@ -44,7 +52,7 @@ const PhotoUpload = ({ onImageUpload }: PhotoUploadProps) => {
 
   const handleCropComplete = (croppedImage: string, aspectRatio: number) => {
     console.log('Crop completed:', croppedImage);
-    onImageUpload(croppedImage);
+    onImageUpload(croppedImage, uploadedImage || undefined);
     setShowCropper(false);
   };
 
