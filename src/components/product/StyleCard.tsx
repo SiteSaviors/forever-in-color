@@ -39,15 +39,20 @@ const StyleCard = ({
   
   const { 
     generatePreview, 
+    retryGeneration,
     isLoading, 
     hasPreview, 
-    getPreviewUrl 
+    hasError,
+    getPreviewUrl,
+    getError
   } = useStylePreview();
 
   const isSelected = selectedStyle === style.id;
   const isGenerating = isLoading(style.id);
   const hasGeneratedPreview = hasPreview(style.id);
   const previewUrl = getPreviewUrl(style.id);
+  const error = getError(style.id);
+  const showError = hasError(style.id);
   
   // Determine what image to show
   const imageToShow = previewUrl || croppedImage || style.image;
@@ -60,7 +65,7 @@ const StyleCard = ({
   const showGeneratedBadge = hasGeneratedPreview && style.id !== 1;
 
   // CRITICAL FIX: Determine blur state properly
-  const shouldShowBlur = shouldBlur && !hasGeneratedPreview && !isGenerating && style.id !== 1;
+  const shouldShowBlur = shouldBlur && !hasGeneratedPreview && !isGenerating && !showError && style.id !== 1;
 
   // Enhanced aspect ratio calculation
   const getCropAspectRatio = () => {
@@ -84,6 +89,7 @@ const StyleCard = ({
     showGeneratedBadge,
     shouldBlur,
     shouldShowBlur,
+    showError,
     hasPreview: !!previewUrl,
     croppedImage: !!croppedImage
   });
@@ -93,8 +99,8 @@ const StyleCard = ({
     console.log(`🎯 MAIN CARD CLICK ▶️ ${style.name} (ID: ${style.id}), shouldBlur: ${shouldBlur}, isGenerating: ${isGenerating}`);
     onStyleClick(style);
     
-    // Auto-generate if conditions are met (and not already generating)
-    if (croppedImage && !hasGeneratedPreview && !isGenerating && style.id !== 1) {
+    // Auto-generate if conditions are met (and not already generating or in error state)
+    if (croppedImage && !hasGeneratedPreview && !isGenerating && !showError && style.id !== 1) {
       console.log(`🚀 Auto-generating preview for clicked style: ${style.name}`);
       generatePreview(style.id, style.name);
     }
@@ -109,6 +115,15 @@ const StyleCard = ({
     
     onStyleClick(style);
     await generatePreview(style.id, style.name);
+  };
+
+  // Handle retry button click
+  const handleRetry = async (e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+    }
+    console.log(`🔄 RETRY CLICKED ▶️ ${style.name} (ID: ${style.id})`);
+    await retryGeneration(style.id, style.name);
   };
 
   // Handle preview expansion
@@ -153,12 +168,15 @@ const StyleCard = ({
             hasPreviewOrCropped={hasPreviewOrCropped}
             shouldBlur={shouldShowBlur}
             isGenerating={isGenerating}
+            showError={showError}
+            error={error}
             selectedOrientation={selectedOrientation}
             previewUrl={previewUrl}
             hasGeneratedPreview={hasGeneratedPreview}
             onExpandClick={handleExpandClick}
             onCanvasPreviewClick={() => {}}
             onGenerateStyle={handleGenerateStyle}
+            onRetry={handleRetry}
           />
         </div>
 
@@ -172,8 +190,10 @@ const StyleCard = ({
             showGeneratedBadge={showGeneratedBadge}
             showContinueInCard={showContinueInCard}
             shouldBlur={shouldShowBlur}
+            showError={showError}
             onContinueClick={handleContinueClick}
             onGenerateClick={actions.handleGenerateClick}
+            onRetryClick={handleRetry}
           />
         </div>
       </StyleCardContainer>

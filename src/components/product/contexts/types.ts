@@ -13,15 +13,19 @@ export type StylePreviewAction =
   | { type: 'START_GENERATION'; styleId: number }
   | { type: 'GENERATION_SUCCESS'; styleId: number; url: string }
   | { type: 'GENERATION_ERROR'; styleId: number; error: string }
+  | { type: 'RETRY_GENERATION'; styleId: number }
   | { type: 'RESET_ALL' };
 
 export interface StylePreviewContextType {
   previews: StylePreviewState;
   generatePreview: (styleId: number, styleName: string) => Promise<void>;
+  retryGeneration: (styleId: number, styleName: string) => Promise<void>;
   getPreviewStatus: (styleId: number) => PreviewState;
   isLoading: (styleId: number) => boolean;
   hasPreview: (styleId: number) => boolean;
+  hasError: (styleId: number) => boolean;
   getPreviewUrl: (styleId: number) => string | undefined;
+  getError: (styleId: number) => string | undefined;
 }
 
 export interface StylePreviewProviderProps {

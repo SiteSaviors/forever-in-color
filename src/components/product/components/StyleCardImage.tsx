@@ -4,6 +4,7 @@ import StyleCardIndicators from "./StyleCardIndicators";
 import StyleCardLoadingOverlay from "./StyleCardLoadingOverlay";
 import StyleCardSelectionOverlay from "./StyleCardSelectionOverlay";
 import StyleCardBlurOverlay from "./StyleCardBlurOverlay";
+import StyleCardRetryOverlay from "./StyleCardRetryOverlay";
 
 interface StyleCardImageProps {
   style: {
@@ -21,12 +22,15 @@ interface StyleCardImageProps {
   hasPreviewOrCropped: boolean;
   shouldBlur: boolean;
   isGenerating: boolean;
+  showError: boolean;
+  error?: string;
   selectedOrientation?: string;
   previewUrl?: string | null;
   hasGeneratedPreview?: boolean;
   onExpandClick: () => void;
   onCanvasPreviewClick: () => void;
   onGenerateStyle: (e?: React.MouseEvent) => void;
+  onRetry: (e?: React.MouseEvent) => void;
 }
 
 const StyleCardImage = ({
@@ -40,12 +44,15 @@ const StyleCardImage = ({
   hasPreviewOrCropped,
   shouldBlur,
   isGenerating,
+  showError,
+  error,
   selectedOrientation = "square",
   previewUrl,
   hasGeneratedPreview = false,
   onExpandClick,
   onCanvasPreviewClick,
-  onGenerateStyle
+  onGenerateStyle,
+  onRetry
 }: StyleCardImageProps) => {
   return (
     <div className="relative group/image">
@@ -76,6 +83,13 @@ const StyleCardImage = ({
       <StyleCardLoadingOverlay
         isGenerating={isGenerating}
         styleName={style.name}
+        error={error}
+      />
+
+      <StyleCardRetryOverlay
+        hasError={showError}
+        error={error}
+        onRetry={onRetry}
       />
 
       <StyleCardSelectionOverlay isSelected={isSelected} />

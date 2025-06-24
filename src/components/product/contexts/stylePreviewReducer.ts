@@ -23,6 +23,11 @@ export function stylePreviewReducer(
         ...state,
         [action.styleId]: { status: 'error', error: action.error }
       };
+    case 'RETRY_GENERATION':
+      return {
+        ...state,
+        [action.styleId]: { status: 'loading' }
+      };
     case 'RESET_ALL':
       return initialState;
     default:

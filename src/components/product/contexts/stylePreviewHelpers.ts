@@ -16,14 +16,24 @@ export const useStylePreviewHelpers = (previews: StylePreviewState) => {
     return previews[styleId]?.status === 'success' && !!previews[styleId]?.url;
   }, [previews]);
 
+  const hasError = useCallback((styleId: number): boolean => {
+    return previews[styleId]?.status === 'error';
+  }, [previews]);
+
   const getPreviewUrl = useCallback((styleId: number): string | undefined => {
     return previews[styleId]?.url;
+  }, [previews]);
+
+  const getError = useCallback((styleId: number): string | undefined => {
+    return previews[styleId]?.error;
   }, [previews]);
 
   return {
     getPreviewStatus,
     isLoading,
     hasPreview,
-    getPreviewUrl
+    hasError,
+    getPreviewUrl,
+    getError
   };
 };
