@@ -40,17 +40,17 @@ export const useStylePreview = ({
 
   const isStyleGenerated = hasGeneratedPreview && !!(preGeneratedPreview || previewUrl);
 
-  // Convert selected orientation to generation aspect ratio string - FIXED
+  // Convert selected orientation to GPT-Image-1 supported aspect ratios
   const getGenerationAspectRatio = useCallback(() => {
-    console.log('Converting selected orientation to generation aspect ratio:', selectedOrientation);
+    console.log('Converting selected orientation to GPT-Image-1 aspect ratio:', selectedOrientation);
     
     switch (selectedOrientation) {
       case 'vertical':
-        console.log('Using 3:4 aspect ratio for vertical orientation');
-        return '3:4';
+        console.log('Using 2:3 aspect ratio for vertical orientation (GPT-Image-1 supported)');
+        return '2:3';
       case 'horizontal':
-        console.log('Using 4:3 aspect ratio for horizontal orientation');
-        return '4:3';
+        console.log('Using 3:2 aspect ratio for horizontal orientation (GPT-Image-1 supported)');
+        return '3:2';
       case 'square':
       default:
         console.log('Using 1:1 aspect ratio for square orientation');
@@ -62,12 +62,12 @@ export const useStylePreview = ({
     if (!croppedImage || style.id === 1 || preGeneratedPreview) return;
 
     const aspectRatio = getGenerationAspectRatio();
-    console.log(`Starting GPT-IMG-1 preview generation for style: ${style.name} (ID: ${style.id}) with orientation: ${selectedOrientation} -> aspect ratio: ${aspectRatio}`);
+    console.log(`Starting GPT-Image-1 preview generation for style: ${style.name} (ID: ${style.id}) with orientation: ${selectedOrientation} -> aspect ratio: ${aspectRatio}`);
     
     setIsLoading(true);
     
     try {
-      console.log(`Generating GPT-IMG-1 preview for ${style.name} with CONFIRMED aspect ratio: ${aspectRatio}`);
+      console.log(`Generating GPT-Image-1 preview for ${style.name} with CONFIRMED aspect ratio: ${aspectRatio}`);
       
       const tempPhotoId = `temp_${Date.now()}_${style.id}`;
       
@@ -81,7 +81,7 @@ export const useStylePreview = ({
       const previewUrl = await generateStylePreview(croppedImage, style.name, tempPhotoId, aspectRatio);
 
       if (previewUrl) {
-        console.log(`GPT-IMG-1 preview generated successfully for ${style.name} with aspect ratio ${aspectRatio}, adding watermark...`);
+        console.log(`GPT-Image-1 preview generated successfully for ${style.name} with aspect ratio ${aspectRatio}, adding watermark...`);
         
         try {
           const watermarkedUrl = await addWatermarkToImage(previewUrl);
@@ -96,13 +96,13 @@ export const useStylePreview = ({
         
         setHasGeneratedPreview(true);
       } else {
-        console.error(`Failed to generate GPT-IMG-1 preview for ${style.name}: No preview URL returned`);
+        console.error(`Failed to generate GPT-Image-1 preview for ${style.name}: No preview URL returned`);
       }
     } catch (error) {
-      console.error(`Error generating GPT-IMG-1 preview for ${style.name}:`, error);
+      console.error(`Error generating GPT-Image-1 preview for ${style.name}:`, error);
     } finally {
       setIsLoading(false);
-      console.log(`GPT-IMG-1 preview generation completed for ${style.name} (ID: ${style.id})`);
+      console.log(`GPT-Image-1 preview generation completed for ${style.name} (ID: ${style.id})`);
     }
   }, [croppedImage, style.id, style.name, preGeneratedPreview, getGenerationAspectRatio, selectedOrientation]);
 
@@ -111,7 +111,7 @@ export const useStylePreview = ({
     onStyleClick(style);
     
     if (croppedImage && !hasGeneratedPreview && !isLoading && style.id !== 1 && !preGeneratedPreview) {
-      console.log(`Auto-generating GPT-IMG-1 preview for style: ${style.name} with orientation ${selectedOrientation}`);
+      console.log(`Auto-generating GPT-Image-1 preview for style: ${style.name} with orientation ${selectedOrientation}`);
       generatePreview();
     }
   }, [style, croppedImage, hasGeneratedPreview, isLoading, onStyleClick, generatePreview, preGeneratedPreview, selectedOrientation]);

@@ -81,16 +81,16 @@ export const useProductState = (): ProductState & ProductStateActions => {
         console.log('Auto-generating previews for popular styles:', popularStyleIds);
         console.log('Current selected orientation:', selectedOrientation);
         
-        // Convert orientation to aspect ratio for generation
+        // Convert orientation to GPT-Image-1 supported aspect ratio
         const getAspectRatio = (orientation: string) => {
-          console.log('Converting orientation to aspect ratio:', orientation);
+          console.log('Converting orientation to GPT-Image-1 aspect ratio:', orientation);
           switch (orientation) {
             case 'vertical':
-              console.log('Using 3:4 for vertical orientation');
-              return '3:4';
+              console.log('Using 2:3 for vertical orientation (GPT-Image-1 supported)');
+              return '2:3';
             case 'horizontal':
-              console.log('Using 4:3 for horizontal orientation');
-              return '4:3';
+              console.log('Using 3:2 for horizontal orientation (GPT-Image-1 supported)');
+              return '3:2';
             case 'square':
             default:
               console.log('Using 1:1 for square orientation');
