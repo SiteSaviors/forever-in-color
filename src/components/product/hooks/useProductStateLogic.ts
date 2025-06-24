@@ -59,15 +59,15 @@ export const useProductStateLogic = () => {
       console.error('Error detecting orientation:', error);
     }
     
-    // Mark step 1 as completed when we have both image and style
-    // For temporary style (just photo upload), don't complete the step yet
-    if (styleName !== "temp-style") {
+    // FIXED: Only mark step 1 as completed when user has both image AND style
+    // But DON'T automatically advance to step 2 - let user choose when to continue
+    if (styleName !== "temp-style" && imageUrl) {
       if (!completedSteps.includes(1)) {
         setCompletedSteps(prev => [...prev, 1]);
       }
-      // Advance to step 2
-      console.log('Advancing to step 2');
-      setCurrentStep(2);
+      // REMOVED: Automatic advancement to step 2
+      // Users should stay on step 1 to see their generated preview
+      console.log('Step 1 completed but staying on step 1 for user to see preview');
     } else {
       // Just photo uploaded, stay on step 1 to select style
       console.log('Photo uploaded, staying on step 1 to select style');

@@ -55,6 +55,11 @@ const ProductContent = ({
     return false;
   };
 
+  const handleContinueToStep2 = () => {
+    console.log('User clicked continue to step 2');
+    onCurrentStepChange(2);
+  };
+
   return (
     <StylePreviewProvider 
       croppedImage={uploadedImage} 
@@ -81,6 +86,7 @@ const ProductContent = ({
                 autoGenerationComplete={autoGenerationComplete}
                 onComplete={onPhotoAndStyleComplete}
                 onPhotoAndStyleComplete={onPhotoAndStyleComplete}
+                onContinue={handleContinueToStep2}
               />
             )}
           </ProductStep>
