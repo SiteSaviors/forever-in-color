@@ -1,98 +1,123 @@
 
+import { useState, useEffect } from "react";
 import PhotoUpload from "./PhotoUpload";
 import StyleGrid from "./StyleGrid";
-import { useStylePreview } from "./contexts/StylePreviewContext";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, CheckCircle } from "lucide-react";
+import { ArrowRight, Upload } from "lucide-react";
 
 interface PhotoUploadAndStyleSelectionProps {
   selectedStyle: {id: number, name: string} | null;
-  uploadedImage?: string | null;
+  uploadedImage: string | null;
   selectedOrientation?: string;
   autoGenerationComplete: boolean;
   onComplete: (imageUrl: string, styleId: number, styleName: string) => void;
-  onPhotoAndStyleComplete?: (imageUrl: string, styleId: number, styleName: string) => void;
-  onContinue?: () => void;
+  onPhotoAndStyleComplete: (imageUrl: string, styleId: number, styleName: string) => void;
+  onContinue: () => void;
 }
 
 const PhotoUploadAndStyleSelection = ({
   selectedStyle,
   uploadedImage,
-  selectedOrientation,
+  selectedOrientation = "square",
   autoGenerationComplete,
   onComplete,
   onPhotoAndStyleComplete,
   onContinue
 }: PhotoUploadAndStyleSelectionProps) => {
-  const { croppedImage } = useStylePreview();
+  const [croppedImage, setCroppedImage] = useState<string | null>(uploadedImage);
+  const [localSelectedStyle, setLocalSelectedStyle] = useState<{id: number, name: string} | null>(selectedStyle);
 
-  // Use the uploaded image from props or the cropped image from context
-  const currentImage = uploadedImage || croppedImage;
+  // Update local state when props change
+  useEffect(() => {
+    setCroppedImage(uploadedImage);
+  }, [uploadedImage]);
 
-  const handleImageUpload = (imageUrl: string) => {
-    console.log('Image uploaded and cropped:', imageUrl);
-    // Immediately trigger the photo completion so the parent can update state
-    // This will cause the parent to set uploadedImage and show style selection
-    if (onPhotoAndStyleComplete) {
-      // For now, we'll pass a default style ID since we need to complete the photo step
-      // The user can then select their preferred style
-      onPhotoAndStyleComplete(imageUrl, 1, "temp-style");
-    }
+  useEffect(() => {
+    setLocalSelectedStyle(selectedStyle);
+  }, [selectedStyle]);
+
+  const handlePhotoUpload = (imageUrl: string) => {
+    console.log('🎯 PhotoUploadAndStyleSelection: Photo uploaded:', imageUrl);
+    setCroppedImage(imageUrl);
+    
+    // Call onComplete with temp values to update state in ProductStateLogic
+    onComplete(imageUrl, 999, "temp-style");
   };
 
-  const handleStyleSelect = (styleId: number, styleName: string) => {
-    if (currentImage) {
-      onComplete(currentImage, styleId, styleName);
-      if (onPhotoAndStyleComplete) {
-        onPhotoAndStyleComplete(currentImage, styleId, styleName);
-      }
+  const handleStyleSelect = async (styleId: number, styleName: string) => {
+    console.log('🎯 PhotoUploadAndStyleSelection: Style selected:', styleId, styleName);
+    
+    if (!croppedImage) {
+      console.warn('No cropped image available for style selection');
+      return;
     }
+
+    const newStyle = { id: styleId, name: styleName };
+    setLocalSelectedStyle(newStyle);
+    
+    // Call the completion handler with the image and style
+    onPhotoAndStyleComplete(croppedImage, styleId, styleName);
   };
 
-  const handleContinueToNextStep = () => {
-    if (onContinue) {
-      onContinue();
-    }
+  // Modified to skip to Step 3 instead of Step 2
+  const handleStyleGridContinue = () => {
+    console.log('🎯 PhotoUploadAndStyleSelection: Continue to Step 3');
+    onContinue(); // This will now go to Step 3
   };
 
-  // Show continue button when user has both image and style selected
-  const showContinueButton = currentImage && selectedStyle && selectedStyle.name !== "temp-style";
+  const canContinue = croppedImage && localSelectedStyle;
 
   return (
     <div className="space-y-8">
-      {!currentImage && (
-        <PhotoUpload onImageUpload={handleImageUpload} />
-      )}
-      
-      {currentImage && (
+      {/* Step Title */}
+      <div className="text-center">
+        <h2 className="text-3xl font-bold text-gray-900 mb-4">
+          Upload Your Photo & Choose Style
+        </h2>
+        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          Upload your favorite photo and select an artistic style to transform it into a beautiful canvas print.
+        </p>
+      </div>
+
+      {/* Photo Upload Section */}
+      {!croppedImage ? (
+        <div className="bg-white rounded-xl shadow-lg p-8">
+          <div className="text-center mb-6">
+            <Upload className="w-12 h-12 text-purple-500 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Start with Your Photo</h3>
+            <p className="text-gray-600">Upload a high-quality image to transform into art</p>
+          </div>
+          <PhotoUpload onPhotoUpload={handlePhotoUpload} />
+        </div>
+      ) : (
         <>
-          <StyleGrid
-            croppedImage={currentImage}
-            selectedStyle={selectedStyle?.id || null}
-            onStyleSelect={handleStyleSelect}
-            onComplete={() => {}}
-          />
-          
-          {showContinueButton && (
+          {/* Style Selection Grid */}
+          <div className="bg-white rounded-xl shadow-lg p-6 md:p-8">
+            <div className="text-center mb-8">
+              <h3 className="text-2xl font-semibold text-gray-900 mb-2">Choose Your Artistic Style</h3>
+              <p className="text-gray-600">Select a style to see how your photo will look as a canvas print</p>
+            </div>
+            
+            <StyleGrid
+              croppedImage={croppedImage}
+              selectedStyle={localSelectedStyle?.id || null}
+              selectedOrientation={selectedOrientation}
+              onStyleSelect={handleStyleSelect}
+              onComplete={handleStyleGridContinue}
+            />
+          </div>
+
+          {/* Continue Button - Only show if both photo and style are selected */}
+          {canContinue && (
             <div className="flex justify-center pt-6">
-              <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-200">
-                <div className="text-center space-y-4">
-                  <div className="flex items-center justify-center gap-2 text-green-600">
-                    <CheckCircle className="w-5 h-5" />
-                    <span className="font-medium">Perfect! Your {selectedStyle.name} style is ready</span>
-                  </div>
-                  <p className="text-gray-600 text-sm">
-                    Continue to choose your canvas size and customize your order
-                  </p>
-                  <Button
-                    onClick={handleContinueToNextStep}
-                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2"
-                  >
-                    Continue to Size Selection
-                    <ArrowRight className="w-5 h-5" />
-                  </Button>
-                </div>
-              </div>
+              <Button
+                onClick={handleStyleGridContinue}
+                size="lg"
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                Continue to Customization
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
             </div>
           )}
         </>

@@ -131,11 +131,11 @@ const StyleCard = ({
     setIsExpanded(true);
   };
 
-  // Handle continue click
+  // Handle continue click - MODIFIED TO SKIP TO STEP 3
   const handleContinueClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (onContinue) {
-      console.log(`Continue clicked for ${style.name}`);
+      console.log(`Continue clicked for ${style.name} - skipping to Step 3`);
       onContinue();
     }
   };
