@@ -2,9 +2,19 @@
 import { supabase } from "@/integrations/supabase/client";
 import { createPreview } from "./previewOperations";
 
-export const generateStylePreview = async (imageUrl: string, style: string, photoId: string) => {
+export const generateStylePreview = async (
+  imageUrl: string, 
+  style: string, 
+  photoId: string,
+  quality: 'low' | 'medium' | 'high' = 'medium'
+) => {
   try {
-    console.log('Generating style preview with GPT-Image-1:', { imageUrl: imageUrl.substring(0, 50) + '...', style, photoId });
+    console.log(`Generating style preview with GPT-Image-1 (${quality} quality):`, { 
+      imageUrl: imageUrl.substring(0, 50) + '...', 
+      style, 
+      photoId,
+      quality 
+    });
     
     // Check if user is authenticated (optional now)
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -17,13 +27,15 @@ export const generateStylePreview = async (imageUrl: string, style: string, phot
       imageUrl, 
       style,
       photoId,
-      isAuthenticated
+      isAuthenticated,
+      quality
     };
 
     console.log('Sending request to GPT-Image-1 service:', { 
       style, 
       photoId, 
       isAuthenticated, 
+      quality,
       imageUrlLength: imageUrl.length 
     });
 
@@ -40,10 +52,10 @@ export const generateStylePreview = async (imageUrl: string, style: string, phot
       throw new Error('No preview URL returned from GPT-Image-1 service');
     }
 
-    console.log('GPT-Image-1 preview generated successfully:', data.preview_url);
+    console.log(`GPT-Image-1 ${quality} quality preview generated successfully:`, data.preview_url);
     
-    // Only store the preview if user is authenticated
-    if (isAuthenticated) {
+    // Only store the preview if user is authenticated and it's high quality
+    if (isAuthenticated && quality === 'high') {
       try {
         await createPreview(photoId, style, data.preview_url);
       } catch (storeError) {
@@ -54,7 +66,7 @@ export const generateStylePreview = async (imageUrl: string, style: string, phot
     
     return data.preview_url;
   } catch (error) {
-    console.error('Error generating GPT-Image-1 style preview:', error);
+    console.error(`Error generating GPT-Image-1 ${quality} quality style preview:`, error);
     throw error;
   }
 };

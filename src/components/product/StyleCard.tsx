@@ -1,11 +1,12 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { useState } from "react";
-import { useStylePreview } from "./hooks/useStylePreview";
+import { useProgressiveStylePreview } from "./hooks/useProgressiveStylePreview";
 import Lightbox from "@/components/ui/lightbox";
 import StyleCardImage from "./components/StyleCardImage";
 import StyleCardInfo from "./components/StyleCardInfo";
 import FullCanvasMockup from "./components/FullCanvasMockup";
+import BlurredPreview from "./components/BlurredPreview";
 
 interface StyleCardProps {
   style: {
@@ -28,8 +29,8 @@ const StyleCard = ({
   croppedImage,
   selectedStyle,
   isPopular,
-  cropAspectRatio = 1, // Default to square if not provided
-  showContinueButton = true, // Changed default to true
+  cropAspectRatio = 1,
+  showContinueButton = true,
   onStyleClick,
   onContinue
 }: StyleCardProps) => {
@@ -38,11 +39,15 @@ const StyleCard = ({
   
   const { 
     isLoading, 
-    previewUrl, 
+    previewUrl,
+    lowQualityPreview,
+    highQualityPreview,
     hasGeneratedPreview, 
     handleClick,
-    isStyleGenerated 
-  } = useStylePreview({
+    isStyleGenerated,
+    currentQuality,
+    isUpgrading
+  } = useProgressiveStylePreview({
     style,
     croppedImage,
     isPopular,
@@ -51,7 +56,6 @@ const StyleCard = ({
 
   const isSelected = selectedStyle === style.id;
   const showLoadingState = isLoading;
-  // Only show generated badge if we actually have a preview AND it's not the original image style
   const showGeneratedBadge = isStyleGenerated && style.id !== 1;
   const imageToShow = previewUrl || croppedImage || style.image;
   const showContinueInCard = showContinueButton && isSelected && !!(previewUrl || croppedImage);
@@ -73,7 +77,9 @@ const StyleCard = ({
     hasGeneratedPreview,
     isStyleGenerated,
     showGeneratedBadge,
-    cropAspectRatio
+    cropAspectRatio,
+    currentQuality,
+    isUpgrading
   });
 
   const handleExpandClick = (e: React.MouseEvent) => {
@@ -107,18 +113,43 @@ const StyleCard = ({
         onClick={handleClick}
       >
         <CardContent className="p-0">
-          <StyleCardImage
-            style={style}
-            imageToShow={imageToShow}
-            cropAspectRatio={cropAspectRatio}
-            showLoadingState={showLoadingState}
-            isPopular={isPopular}
-            showGeneratedBadge={showGeneratedBadge}
-            isSelected={isSelected}
-            hasPreviewOrCropped={hasPreviewOrCropped}
-            onExpandClick={handleExpandClick}
-            onCanvasPreviewClick={handleCanvasPreviewClick}
-          />
+          {/* Use BlurredPreview for progressive loading when we have previews */}
+          {previewUrl && croppedImage ? (
+            <div className="relative">
+              <BlurredPreview
+                originalImage={croppedImage}
+                isLoading={isUpgrading}
+                className="aspect-square rounded-t-lg"
+              />
+              
+              {/* Show upgrading indicator */}
+              {isUpgrading && (
+                <div className="absolute top-2 left-2 bg-purple-500/90 text-white text-xs px-2 py-1 rounded-full animate-pulse">
+                  Enhancing...
+                </div>
+              )}
+              
+              {/* Quality indicator */}
+              {currentQuality === 'high' && (
+                <div className="absolute top-2 left-2 bg-green-500/90 text-white text-xs px-2 py-1 rounded-full">
+                  HD Ready
+                </div>
+              )}
+            </div>
+          ) : (
+            <StyleCardImage
+              style={style}
+              imageToShow={imageToShow}
+              cropAspectRatio={cropAspectRatio}
+              showLoadingState={showLoadingState}
+              isPopular={isPopular}
+              showGeneratedBadge={showGeneratedBadge}
+              isSelected={isSelected}
+              hasPreviewOrCropped={hasPreviewOrCropped}
+              onExpandClick={handleExpandClick}
+              onCanvasPreviewClick={handleCanvasPreviewClick}
+            />
+          )}
 
           <StyleCardInfo
             style={style}
@@ -145,7 +176,7 @@ const StyleCard = ({
       <Lightbox
         isOpen={isCanvasLightboxOpen}
         onClose={() => setIsCanvasLightboxOpen(false)}
-        imageSrc="" // We'll use custom content instead
+        imageSrc=""
         imageAlt={`${style.name} canvas preview`}
         title={`${style.name} on Canvas`}
         customContent={
