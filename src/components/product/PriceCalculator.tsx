@@ -1,7 +1,9 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { ShoppingCart, Sparkles } from "lucide-react";
+import { useStripePayment } from "./hooks/useStripePayment";
 
 interface CustomizationOptions {
   floatingFrame: {
@@ -20,10 +22,19 @@ interface PriceCalculatorProps {
   customizations: CustomizationOptions;
   completedSteps: number[];
   totalSteps: number;
+  selectedStyle?: {id: number, name: string} | null;
 }
 
-const PriceCalculator = ({ selectedSize, selectedOrientation, customizations, completedSteps, totalSteps }: PriceCalculatorProps) => {
+const PriceCalculator = ({ 
+  selectedSize, 
+  selectedOrientation, 
+  customizations, 
+  completedSteps, 
+  totalSteps,
+  selectedStyle 
+}: PriceCalculatorProps) => {
   const progressPercentage = (completedSteps.length / totalSteps) * 100;
+  const { processPayment, isProcessing } = useStripePayment();
 
   const calculateBasePrice = () => {
     if (!selectedSize || !selectedOrientation) return 0;
@@ -60,19 +71,19 @@ const PriceCalculator = ({ selectedSize, selectedOrientation, customizations, co
     let total = 0;
     
     if (customizations.floatingFrame.enabled) {
-      total += 29.99; // Floating frame price
+      total += 29.99;
     }
     
     if (customizations.livingMemory) {
-      total += 59.99; // Living Memory AR price - FIXED
+      total += 59.99;
     }
     
     if (customizations.voiceMatch && customizations.livingMemory) {
-      total += 19.99; // Voice Match price - only if Living Memory is enabled
+      total += 19.99;
     }
     
     if (customizations.aiUpscale) {
-      total += 9.99; // AI Upscale price
+      total += 9.99;
     }
     
     return total;
@@ -81,7 +92,81 @@ const PriceCalculator = ({ selectedSize, selectedOrientation, customizations, co
   const basePrice = calculateBasePrice();
   const customizationPrice = calculateCustomizationPrice();
   const totalPrice = basePrice + customizationPrice;
-  const savings = customizationPrice > 50 ? 25 : 0; // Example savings logic
+  const savings = customizationPrice > 50 ? 25 : 0;
+
+  const handleQuickPurchase = async () => {
+    // Create payment items for quick purchase
+    const items = [];
+    
+    const getSizePriceInCents = (size: string) => {
+      const priceMap: Record<string, number> = {
+        '16" x 16"': 9999,
+        '24" x 24"': 14999,
+        '32" x 32"': 19999,
+        '36" x 36"': 26999,
+        '16" x 12"': 9999,
+        '24" x 18"': 14999,
+        '36" x 24"': 19999,
+        '40" x 30"': 26999,
+        '48" x 32"': 34999,
+        '60" x 40"': 49999,
+        '12" x 16"': 9999,
+        '18" x 24"': 14999,
+        '24" x 36"': 19999,
+        '30" x 40"': 26999,
+        '32" x 48"': 34999,
+        '40" x 60"': 49999,
+      };
+      return priceMap[size] || 9999;
+    };
+
+    const basePriceInCents = getSizePriceInCents(selectedSize);
+    items.push({
+      name: `${selectedStyle?.name || 'Custom'} Canvas`,
+      description: `${selectedSize} canvas with ${selectedStyle?.name || 'custom'} style`,
+      amount: basePriceInCents,
+      quantity: 1
+    });
+
+    // Add customizations
+    if (customizations.floatingFrame.enabled) {
+      items.push({
+        name: 'Floating Frame',
+        description: `${customizations.floatingFrame.color} floating frame`,
+        amount: 2999,
+        quantity: 1
+      });
+    }
+
+    if (customizations.livingMemory) {
+      items.push({
+        name: 'Living Memory AR',
+        description: 'Augmented reality video activation',
+        amount: 5999,
+        quantity: 1
+      });
+    }
+
+    if (customizations.voiceMatch && customizations.livingMemory) {
+      items.push({
+        name: 'Voice Match',
+        description: 'Custom voice narration for AR experience',
+        amount: 1999,
+        quantity: 1
+      });
+    }
+
+    if (customizations.aiUpscale) {
+      items.push({
+        name: 'AI Upscale',
+        description: 'Enhanced image resolution',
+        amount: 999,
+        quantity: 1
+      });
+    }
+
+    await processPayment(items);
+  };
 
   // Only show if user has selected a size
   if (!selectedSize) {
@@ -163,10 +248,11 @@ const PriceCalculator = ({ selectedSize, selectedOrientation, customizations, co
                 <Button 
                   className="bg-gradient-to-r from-purple-500 to-pink-500 hover:shadow-lg transform hover:scale-105 transition-all duration-300 text-sm px-3 py-2 whitespace-nowrap"
                   size="default"
-                  disabled={totalPrice === 0}
+                  disabled={totalPrice === 0 || isProcessing}
+                  onClick={handleQuickPurchase}
                 >
                   <ShoppingCart className="w-3 h-3 mr-1" />
-                  Add to Cart
+                  {isProcessing ? 'Processing...' : 'Buy Now'}
                 </Button>
               </div>
             </div>
@@ -219,10 +305,11 @@ const PriceCalculator = ({ selectedSize, selectedOrientation, customizations, co
                 <Button 
                   className="bg-gradient-to-r from-purple-500 to-pink-500 hover:shadow-lg transform hover:scale-105 transition-all duration-300 text-base px-4 py-2 whitespace-nowrap"
                   size="default"
-                  disabled={totalPrice === 0}
+                  disabled={totalPrice === 0 || isProcessing}
+                  onClick={handleQuickPurchase}
                 >
                   <ShoppingCart className="w-4 h-4 mr-2" />
-                  Add to Cart
+                  {isProcessing ? 'Processing...' : 'Buy Now'}
                 </Button>
               </div>
             </div>
