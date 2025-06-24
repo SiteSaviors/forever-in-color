@@ -114,8 +114,13 @@ const OrderSummary = ({
       {/* Trust Badges */}
       <TrustBadges />
 
-      {/* Order Actions */}
-      <OrderActions total={total} />
+      {/* Order Actions - Fixed to pass all required props */}
+      <OrderActions 
+        total={total}
+        selectedSize={selectedSize}
+        selectedStyle={selectedStyle}
+        customizations={customizations}
+      />
     </div>
   );
 };
