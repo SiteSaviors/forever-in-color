@@ -117,9 +117,10 @@ const StyleGridContent = ({
         {artStyles.map((style) => {
           const isPopularStyle = popularStyleIds.includes(style.id);
           const isOriginalImage = style.id === 1;
+          // Only blur non-popular styles (excluding Original Image which should never be blurred)
           const shouldBlur = croppedImage && !isOriginalImage && !isPopularStyle;
           
-          console.log(`🎨 Rendering StyleCard for ${style.name} with orientation: ${selectedOrientation}, shouldBlur: ${shouldBlur}`);
+          console.log(`🎨 Rendering StyleCard for ${style.name} with orientation: ${selectedOrientation}, shouldBlur: ${shouldBlur}, isPopular: ${isPopularStyle}`);
           
           return (
             <StyleCard

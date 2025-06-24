@@ -81,21 +81,29 @@ const StyleCard = ({
     croppedImage: !!croppedImage
   });
 
-  // Handle style click
+  // Handle style click - ALWAYS handle the click, even when blurred
   const handleClick = () => {
     console.log(`🎯 Style clicked: ${style.name} (ID: ${style.id})`);
     onStyleClick(style);
     
-    // Auto-generate if conditions are met
+    // Auto-generate if conditions are met (and not already generating)
     if (croppedImage && !hasGeneratedPreview && !isGenerating && style.id !== 1) {
       console.log(`🚀 Auto-generating preview for clicked style: ${style.name}`);
       generatePreview(style.id, style.name);
     }
   };
 
-  // Handle manual generation button click
-  const handleGenerateStyle = async () => {
+  // Handle manual generation button click (for blurred cards)
+  const handleGenerateStyle = async (e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation(); // Prevent card click when clicking generate button
+    }
     console.log(`🎨 Manual generate button clicked for ${style.name} (ID: ${style.id})`);
+    
+    // First select the style
+    onStyleClick(style);
+    
+    // Then generate the preview
     await generatePreview(style.id, style.name);
   };
 

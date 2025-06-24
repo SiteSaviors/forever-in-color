@@ -23,7 +23,7 @@ interface StyleCardImageProps {
   isGenerating?: boolean;
   onExpandClick: (e: React.MouseEvent) => void;
   onCanvasPreviewClick?: (e: React.MouseEvent) => void;
-  onGenerateStyle?: () => void;
+  onGenerateStyle?: (e?: React.MouseEvent) => void;
 }
 
 const StyleCardImage = ({
@@ -59,8 +59,9 @@ const StyleCardImage = ({
 
   const handleGenerateClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    console.log(`🎨 Generate button clicked for ${style.name}`);
     if (onGenerateStyle) {
-      onGenerateStyle();
+      onGenerateStyle(e);
     }
   };
 
@@ -134,7 +135,7 @@ const StyleCardImage = ({
                   </div>
                 </div>
                 
-                {/* Generate Button - Centered and smaller */}
+                {/* Generate Button - Centered and clickable */}
                 <div className="absolute inset-0 flex items-center justify-center">
                   <Button
                     onClick={handleGenerateClick}
