@@ -97,6 +97,7 @@ const StyleCardImage = ({
       <StyleCardBlurOverlay
         shouldBlur={shouldBlur}
         isGenerating={isGenerating}
+        styleName={style.name}
         onGenerateStyle={onGenerateStyle}
       />
     </div>

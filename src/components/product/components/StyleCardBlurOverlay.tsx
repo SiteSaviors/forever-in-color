@@ -5,10 +5,11 @@ import { Sparkles, Zap } from "lucide-react";
 interface StyleCardBlurOverlayProps {
   shouldBlur: boolean;
   isGenerating: boolean;
+  styleName?: string;
   onGenerateStyle: (e?: React.MouseEvent) => void;
 }
 
-const StyleCardBlurOverlay = ({ shouldBlur, isGenerating, onGenerateStyle }: StyleCardBlurOverlayProps) => {
+const StyleCardBlurOverlay = ({ shouldBlur, isGenerating, styleName, onGenerateStyle }: StyleCardBlurOverlayProps) => {
   // Only show blur overlay if we explicitly should blur and we're not currently generating
   if (!shouldBlur || isGenerating) return null;
 
@@ -26,7 +27,7 @@ const StyleCardBlurOverlay = ({ shouldBlur, isGenerating, onGenerateStyle }: Sty
         
         <div className="space-y-2">
           <h4 className="font-semibold text-gray-900 text-sm">
-            Generate This Style
+            {styleName || "Generate This Style"}
           </h4>
           <p className="text-xs text-gray-600 max-w-32">
             Click to see your photo transformed with AI
