@@ -17,7 +17,6 @@ const Product = () => {
     selectedSize,
     selectedOrientation,
     customizations,
-    previewUrls,
     autoGenerationComplete,
     setCurrentStep,
     handlePhotoAndStyleComplete,
@@ -46,7 +45,6 @@ const Product = () => {
           selectedOrientation={selectedOrientation}
           customizations={customizations}
           uploadedImage={uploadedImage}
-          previewUrls={previewUrls}
           autoGenerationComplete={autoGenerationComplete}
           onCurrentStepChange={setCurrentStep}
           onPhotoAndStyleComplete={handlePhotoAndStyleComplete}

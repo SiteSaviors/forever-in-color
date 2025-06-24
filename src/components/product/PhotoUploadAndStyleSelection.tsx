@@ -5,14 +5,22 @@ import { useStylePreview } from "./contexts/StylePreviewContext";
 
 interface PhotoUploadAndStyleSelectionProps {
   selectedStyle: {id: number, name: string} | null;
+  uploadedImage?: string | null; // Add this missing prop
+  selectedOrientation?: string;
   autoGenerationComplete: boolean;
   onComplete: (imageUrl: string, styleId: number, styleName: string) => void;
+  onPhotoAndStyleComplete?: (imageUrl: string, styleId: number, styleName: string) => void;
+  onContinue?: () => void;
 }
 
 const PhotoUploadAndStyleSelection = ({
   selectedStyle,
+  uploadedImage,
+  selectedOrientation,
   autoGenerationComplete,
-  onComplete
+  onComplete,
+  onPhotoAndStyleComplete,
+  onContinue
 }: PhotoUploadAndStyleSelectionProps) => {
   const { croppedImage } = useStylePreview();
 
@@ -23,6 +31,9 @@ const PhotoUploadAndStyleSelection = ({
   const handleStyleSelect = (styleId: number, styleName: string) => {
     if (croppedImage) {
       onComplete(croppedImage, styleId, styleName);
+      if (onPhotoAndStyleComplete) {
+        onPhotoAndStyleComplete(croppedImage, styleId, styleName);
+      }
     }
   };
 
