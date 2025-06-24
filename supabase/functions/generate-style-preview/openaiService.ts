@@ -28,8 +28,9 @@ export class OpenAIService {
       }
 
       console.log('Using exact prompt for style:', styleName, '- Prompt:', stylePrompt);
+      console.log('Generating with aspect ratio:', aspectRatio);
 
-      // Generate the image using Replicate's GPT-Image-1 model
+      // Generate the image using Replicate's GPT-Image-1 model with specified aspect ratio
       return await this.replicateService.generateImageToImage(imageData, stylePrompt, aspectRatio, quality);
 
     } catch (error) {

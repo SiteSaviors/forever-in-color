@@ -80,15 +80,30 @@ export const useProductState = (): ProductState & ProductStateActions => {
       const generatePopularPreviews = async () => {
         console.log('Auto-generating previews for popular styles:', popularStyleIds);
         
+        // Convert orientation to aspect ratio for generation
+        const getAspectRatio = (orientation: string) => {
+          switch (orientation) {
+            case 'vertical':
+              return '3:4';
+            case 'horizontal':
+              return '4:3';
+            case 'square':
+            default:
+              return '1:1';
+          }
+        };
+
+        const aspectRatio = getAspectRatio(selectedOrientation);
+        
         for (const styleId of popularStyleIds) {
           const style = artStyles.find(s => s.id === styleId);
           if (!style) continue;
 
           try {
-            console.log(`Auto-generating preview for ${style.name} (ID: ${styleId})`);
+            console.log(`Auto-generating preview for ${style.name} (ID: ${styleId}) with aspect ratio: ${aspectRatio}`);
             
             const tempPhotoId = `temp_${Date.now()}_${styleId}`;
-            const previewUrl = await generateStylePreview(uploadedImage, style.name, tempPhotoId);
+            const previewUrl = await generateStylePreview(uploadedImage, style.name, tempPhotoId, aspectRatio);
 
             if (previewUrl) {
               try {
@@ -111,7 +126,7 @@ export const useProductState = (): ProductState & ProductStateActions => {
 
       generatePopularPreviews();
     }
-  }, [uploadedImage, autoGenerationComplete]);
+  }, [uploadedImage, autoGenerationComplete, selectedOrientation]);
 
   // Reset states when uploaded image changes but preserve previews within session
   useEffect(() => {
@@ -152,6 +167,10 @@ export const useProductState = (): ProductState & ProductStateActions => {
     if (completedSteps.includes(2)) {
       setCompletedSteps(completedSteps.filter(step => step !== 2));
     }
+    
+    // Clear existing previews when orientation changes to regenerate with new aspect ratio
+    setPreviewUrls({});
+    setAutoGenerationComplete(false);
   };
 
   const handleCustomizationChange = (newCustomizations: CustomizationOptions) => {

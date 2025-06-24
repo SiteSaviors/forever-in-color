@@ -4,6 +4,7 @@ export class ImageGenerationService {
 
   async generateImageToImage(imageData: string, prompt: string, aspectRatio: string = "1:1", quality: string = "medium"): Promise<{ ok: boolean; output?: string; error?: string }> {
     console.log('Using Replicate GPT-Image-1 for image transformation with prompt:', prompt);
+    console.log('Generating with aspect ratio:', aspectRatio);
     
     try {
       // Use Replicate's GPT-Image-1 endpoint
@@ -45,7 +46,7 @@ export class ImageGenerationService {
           outputUrl = outputUrl[0];
         }
         
-        console.log('GPT-Image-1 generation successful via Replicate');
+        console.log('GPT-Image-1 generation successful via Replicate with aspect ratio:', aspectRatio);
         return {
           ok: true,
           output: outputUrl

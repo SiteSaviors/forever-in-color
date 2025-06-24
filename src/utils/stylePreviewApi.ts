@@ -2,9 +2,9 @@
 import { supabase } from "@/integrations/supabase/client";
 import { createPreview } from "./previewOperations";
 
-export const generateStylePreview = async (imageUrl: string, style: string, photoId: string) => {
+export const generateStylePreview = async (imageUrl: string, style: string, photoId: string, aspectRatio: string = "1:1") => {
   try {
-    console.log('Generating style preview with GPT-Image-1:', { imageUrl: imageUrl.substring(0, 50) + '...', style, photoId });
+    console.log('Generating style preview with GPT-Image-1:', { imageUrl: imageUrl.substring(0, 50) + '...', style, photoId, aspectRatio });
     
     // Check if user is authenticated (optional now)
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -17,13 +17,15 @@ export const generateStylePreview = async (imageUrl: string, style: string, phot
       imageUrl, 
       style,
       photoId,
-      isAuthenticated
+      isAuthenticated,
+      aspectRatio // Pass aspect ratio to backend
     };
 
     console.log('Sending request to GPT-Image-1 service:', { 
       style, 
       photoId, 
       isAuthenticated, 
+      aspectRatio,
       imageUrlLength: imageUrl.length 
     });
 

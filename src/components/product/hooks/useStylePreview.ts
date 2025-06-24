@@ -13,6 +13,7 @@ interface UseStylePreviewProps {
   croppedImage: string | null;
   isPopular: boolean;
   preGeneratedPreview?: string; // New prop for auto-generated previews
+  cropAspectRatio?: number;
   onStyleClick: (style: { id: number; name: string; description: string; image: string }) => void;
 }
 
@@ -21,6 +22,7 @@ export const useStylePreview = ({
   croppedImage,
   isPopular,
   preGeneratedPreview,
+  cropAspectRatio = 1,
   onStyleClick
 }: UseStylePreviewProps) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -39,6 +41,13 @@ export const useStylePreview = ({
   // Only mark as generated if we actually have a preview URL (either pre-generated or hook-generated)
   const isStyleGenerated = hasGeneratedPreview && !!(preGeneratedPreview || previewUrl);
 
+  // Convert crop aspect ratio to generation aspect ratio
+  const getGenerationAspectRatio = useCallback(() => {
+    if (cropAspectRatio === 1) return '1:1';
+    if (cropAspectRatio > 1) return '4:3';
+    return '3:4';
+  }, [cropAspectRatio]);
+
   const generatePreview = useCallback(async () => {
     if (!croppedImage || style.id === 1 || preGeneratedPreview) return;
 
@@ -51,7 +60,11 @@ export const useStylePreview = ({
       // Generate a temporary photo ID for the preview (in a real app, this would come from uploaded photo)
       const tempPhotoId = `temp_${Date.now()}_${style.id}`;
       
-      const previewUrl = await generateStylePreview(croppedImage, style.name, tempPhotoId);
+      // Get the correct aspect ratio based on crop ratio
+      const aspectRatio = getGenerationAspectRatio();
+      console.log(`Using aspect ratio ${aspectRatio} for generation based on crop aspect ratio ${cropAspectRatio}`);
+      
+      const previewUrl = await generateStylePreview(croppedImage, style.name, tempPhotoId, aspectRatio);
 
       if (previewUrl) {
         console.log(`GPT-IMG-1 preview generated successfully for ${style.name}, adding watermark...`);
@@ -78,7 +91,7 @@ export const useStylePreview = ({
       setIsLoading(false);
       console.log(`GPT-IMG-1 preview generation completed for ${style.name} (ID: ${style.id})`);
     }
-  }, [croppedImage, style.id, style.name, preGeneratedPreview]);
+  }, [croppedImage, style.id, style.name, preGeneratedPreview, getGenerationAspectRatio, cropAspectRatio]);
 
   const handleClick = useCallback(() => {
     console.log(`Style clicked: ${style.name} (ID: ${style.id})`);
@@ -86,10 +99,10 @@ export const useStylePreview = ({
     
     // Only auto-generate preview for styles that don't already have a pre-generated one
     if (croppedImage && !hasGeneratedPreview && !isLoading && style.id !== 1 && !preGeneratedPreview) {
-      console.log(`Auto-generating GPT-IMG-1 preview for style: ${style.name}`);
+      console.log(`Auto-generating GPT-IMG-1 preview for style: ${style.name} with aspect ratio based on crop ratio ${cropAspectRatio}`);
       generatePreview();
     }
-  }, [style, croppedImage, hasGeneratedPreview, isLoading, onStyleClick, generatePreview, preGeneratedPreview]);
+  }, [style, croppedImage, hasGeneratedPreview, isLoading, onStyleClick, generatePreview, preGeneratedPreview, cropAspectRatio]);
 
   return {
     isLoading,
