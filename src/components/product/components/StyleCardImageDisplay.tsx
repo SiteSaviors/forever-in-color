@@ -33,20 +33,22 @@ const StyleCardImageDisplay = ({
 
   if (shouldUseMockup) {
     return (
-      <div className="w-full relative group">
+      <div className="w-full h-32 sm:h-40 relative group overflow-hidden rounded-t-xl">
         <MockupCanvas 
           previewUrl={previewUrl}
           orientation={selectedOrientation as 'square' | 'horizontal' | 'vertical'}
-          className="transition-transform duration-300 group-hover:scale-105"
+          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
-        {/* Expand button for mobile */}
+        {/* Expand button - always visible on mobile for better UX */}
         {onExpandClick && (
           <button
             onClick={(e) => {
               e.stopPropagation();
               onExpandClick();
             }}
-            className="absolute top-2 right-2 bg-black/50 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 md:hidden"
+            className="absolute top-2 right-2 bg-black/50 text-white p-1.5 rounded-full 
+                       opacity-100 sm:opacity-0 sm:group-hover:opacity-100 
+                       transition-opacity duration-200"
           >
             <Expand className="w-4 h-4" />
           </button>
@@ -55,9 +57,9 @@ const StyleCardImageDisplay = ({
     );
   }
 
-  // Fallback to regular image display
+  // Fallback to regular image display with fixed height
   return (
-    <AspectRatio ratio={cropAspectRatio} className="relative overflow-hidden rounded-lg group">
+    <div className="w-full h-32 sm:h-40 relative group overflow-hidden rounded-t-xl">
       <img
         src={imageToShow}
         alt={style.name}
@@ -66,14 +68,16 @@ const StyleCardImageDisplay = ({
         } group-hover:scale-105`}
       />
       
-      {/* Expand button for mobile */}
+      {/* Expand button - always visible on mobile for better UX */}
       {onExpandClick && !showLoadingState && (
         <button
           onClick={(e) => {
             e.stopPropagation();
             onExpandClick();
           }}
-          className="absolute top-2 right-2 bg-black/50 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 md:hidden"
+          className="absolute top-2 right-2 bg-black/50 text-white p-1.5 rounded-full 
+                     opacity-100 sm:opacity-0 sm:group-hover:opacity-100 
+                     transition-opacity duration-200"
         >
           <Expand className="w-4 h-4" />
         </button>
@@ -84,7 +88,7 @@ const StyleCardImageDisplay = ({
           <div className="w-8 h-8 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
         </div>
       )}
-    </AspectRatio>
+    </div>
   );
 };
 
