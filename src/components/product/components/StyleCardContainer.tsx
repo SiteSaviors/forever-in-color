@@ -47,7 +47,7 @@ const StyleCardContainer = ({
            }}>
       </div>
       
-      {/* Premium floating card with dramatic selection feedback */}
+      {/* Premium floating card with simplified selection feedback */}
       <Card 
         className={`group cursor-pointer transition-all duration-500 ease-out relative z-10 bg-white/98 backdrop-blur-sm border-0 
           shadow-[0_10px_40px_rgb(0,0,0,0.12)] 
@@ -56,7 +56,7 @@ const StyleCardContainer = ({
           hover:-translate-y-2
           h-full flex flex-col
           ${isSelected ? 
-            `ring-4 ${cardSelectionRing} shadow-[0_25px_70px_rgba(0,0,0,0.2)] scale-[1.02] -translate-y-1 animate-glow-pulse` : 
+            `ring-4 ring-purple-500 shadow-[0_25px_70px_rgba(147,51,234,0.3)] scale-[1.02] -translate-y-1` : 
             ''
           }
         `}

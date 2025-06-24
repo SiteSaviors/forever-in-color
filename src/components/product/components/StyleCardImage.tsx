@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { Check, CheckCircle, Expand } from "lucide-react";
 import StyleCardLoadingOverlay from "./StyleCardLoadingOverlay";
 import MiniCanvasPreview from "./MiniCanvasPreview";
-import StyleFloatingBadge from "./StyleFloatingBadge";
 
 interface StyleCardImageProps {
   style: {
@@ -54,7 +53,7 @@ const StyleCardImage = ({
   // Use a more prominent aspect ratio for better hero image treatment
   const heroAspectRatio = cropAspectRatio > 0 ? cropAspectRatio : 4/3;
 
-  // Get style-specific selection colors
+  // Get style-specific selection colors - simplified without pulsating
   const getSelectionColors = () => {
     const colorMap: { [key: number]: { glow: string; check: string; bg: string } } = {
       1: { glow: "shadow-[0_0_30px_rgba(107,114,128,0.5)]", check: "bg-gray-600", bg: "bg-gray-50/90" },
@@ -117,9 +116,6 @@ const StyleCardImage = ({
           </div>
         </div>
 
-        {/* Floating Style Badge */}
-        <StyleFloatingBadge styleId={style.id} styleName={style.name} />
-
         {/* Mini Canvas Preview - refined positioning */}
         {showGeneratedBadge && imageToShow && (
           <div className="absolute top-3 right-3 z-10">
@@ -156,21 +152,21 @@ const StyleCardImage = ({
           </div>
         )}
         
-        {/* Dramatic Selection Overlay */}
+        {/* Simplified Selection Overlay - just purple glow, no pulsating */}
         {isSelected && (
           <div className="absolute inset-0 pointer-events-none z-30">
-            {/* Glowing border effect */}
-            <div className={`absolute inset-0 rounded-t-xl ring-4 ring-white/50 ${selectionColors.glow} transition-all duration-500 animate-pulse`}></div>
+            {/* Static glowing border effect */}
+            <div className={`absolute inset-0 rounded-t-xl ring-4 ring-purple-500 ${selectionColors.glow} transition-all duration-500`}></div>
             
             {/* Corner selection indicator */}
             <div className="absolute top-4 right-4">
-              <div className={`${selectionColors.check} text-white rounded-full p-2.5 shadow-xl ring-4 ring-white/70 transform scale-110 animate-bounce`}>
+              <div className={`bg-purple-600 text-white rounded-full p-2.5 shadow-xl ring-4 ring-white/70 transform scale-110`}>
                 <Check className="w-5 h-5 stroke-[3]" />
               </div>
             </div>
 
             {/* Subtle selection background overlay */}
-            <div className={`absolute inset-0 ${selectionColors.bg} opacity-20 rounded-t-xl transition-all duration-300`}></div>
+            <div className={`absolute inset-0 bg-purple-50/90 opacity-20 rounded-t-xl transition-all duration-300`}></div>
           </div>
         )}
 
@@ -181,7 +177,7 @@ const StyleCardImage = ({
       {/* Selection confirmation text */}
       {isSelected && (
         <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 z-40">
-          <div className={`${selectionColors.bg} ${selectionColors.check.replace('bg-', 'text-')} px-3 py-1 rounded-full text-xs font-bold shadow-lg border-2 border-white animate-slide-in`}>
+          <div className={`bg-purple-50/90 text-purple-600 px-3 py-1 rounded-full text-xs font-bold shadow-lg border-2 border-white animate-slide-in`}>
             ✓ SELECTED
           </div>
         </div>
