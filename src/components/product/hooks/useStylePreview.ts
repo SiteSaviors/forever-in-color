@@ -13,7 +13,7 @@ interface UseStylePreviewProps {
   croppedImage: string | null;
   isPopular: boolean;
   preGeneratedPreview?: string;
-  cropAspectRatio?: number;
+  selectedOrientation?: string;
   onStyleClick: (style: { id: number; name: string; description: string; image: string }) => void;
 }
 
@@ -22,7 +22,7 @@ export const useStylePreview = ({
   croppedImage,
   isPopular,
   preGeneratedPreview,
-  cropAspectRatio = 1,
+  selectedOrientation = "square",
   onStyleClick
 }: UseStylePreviewProps) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -40,27 +40,28 @@ export const useStylePreview = ({
 
   const isStyleGenerated = hasGeneratedPreview && !!(preGeneratedPreview || previewUrl);
 
-  // Convert crop aspect ratio to generation aspect ratio string
+  // Convert selected orientation to generation aspect ratio string
   const getGenerationAspectRatio = useCallback(() => {
-    console.log('Converting crop aspect ratio to generation aspect ratio:', cropAspectRatio);
+    console.log('Converting selected orientation to generation aspect ratio:', selectedOrientation);
     
-    // Handle specific aspect ratios based on crop ratio
-    if (Math.abs(cropAspectRatio - 1) < 0.1) {
-      console.log('Detected square aspect ratio');
-      return '1:1';
-    } else if (cropAspectRatio > 1) {
-      console.log('Detected horizontal aspect ratio');
-      return '4:3';
-    } else {
-      console.log('Detected vertical aspect ratio');
-      return '3:4';
+    switch (selectedOrientation) {
+      case 'vertical':
+        console.log('Using 3:4 aspect ratio for vertical orientation');
+        return '3:4';
+      case 'horizontal':
+        console.log('Using 4:3 aspect ratio for horizontal orientation');
+        return '4:3';
+      case 'square':
+      default:
+        console.log('Using 1:1 aspect ratio for square orientation');
+        return '1:1';
     }
-  }, [cropAspectRatio]);
+  }, [selectedOrientation]);
 
   const generatePreview = useCallback(async () => {
     if (!croppedImage || style.id === 1 || preGeneratedPreview) return;
 
-    console.log(`Starting GPT-IMG-1 preview generation for style: ${style.name} (ID: ${style.id})`);
+    console.log(`Starting GPT-IMG-1 preview generation for style: ${style.name} (ID: ${style.id}) with orientation: ${selectedOrientation}`);
     setIsLoading(true);
     
     try {
@@ -69,7 +70,7 @@ export const useStylePreview = ({
       const tempPhotoId = `temp_${Date.now()}_${style.id}`;
       const aspectRatio = getGenerationAspectRatio();
       
-      console.log(`Using aspect ratio ${aspectRatio} for generation based on crop aspect ratio ${cropAspectRatio}`);
+      console.log(`Using aspect ratio ${aspectRatio} for generation based on selected orientation ${selectedOrientation}`);
       
       const previewUrl = await generateStylePreview(croppedImage, style.name, tempPhotoId, aspectRatio);
 
@@ -97,17 +98,17 @@ export const useStylePreview = ({
       setIsLoading(false);
       console.log(`GPT-IMG-1 preview generation completed for ${style.name} (ID: ${style.id})`);
     }
-  }, [croppedImage, style.id, style.name, preGeneratedPreview, getGenerationAspectRatio, cropAspectRatio]);
+  }, [croppedImage, style.id, style.name, preGeneratedPreview, getGenerationAspectRatio, selectedOrientation]);
 
   const handleClick = useCallback(() => {
-    console.log(`Style clicked: ${style.name} (ID: ${style.id})`);
+    console.log(`Style clicked: ${style.name} (ID: ${style.id}) with orientation: ${selectedOrientation}`);
     onStyleClick(style);
     
     if (croppedImage && !hasGeneratedPreview && !isLoading && style.id !== 1 && !preGeneratedPreview) {
-      console.log(`Auto-generating GPT-IMG-1 preview for style: ${style.name} with aspect ratio based on crop ratio ${cropAspectRatio}`);
+      console.log(`Auto-generating GPT-IMG-1 preview for style: ${style.name} with orientation ${selectedOrientation}`);
       generatePreview();
     }
-  }, [style, croppedImage, hasGeneratedPreview, isLoading, onStyleClick, generatePreview, preGeneratedPreview, cropAspectRatio]);
+  }, [style, croppedImage, hasGeneratedPreview, isLoading, onStyleClick, generatePreview, preGeneratedPreview, selectedOrientation]);
 
   return {
     isLoading,

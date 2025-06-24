@@ -17,9 +17,9 @@ interface StyleCardProps {
   croppedImage: string | null;
   selectedStyle: number | null;
   isPopular: boolean;
-  cropAspectRatio?: number;
+  selectedOrientation?: string;
   showContinueButton?: boolean;
-  preGeneratedPreview?: string; // New prop for auto-generated previews
+  preGeneratedPreview?: string;
   onStyleClick: (style: { id: number; name: string; description: string; image: string }) => void;
   onContinue?: () => void;
 }
@@ -29,9 +29,9 @@ const StyleCard = ({
   croppedImage,
   selectedStyle,
   isPopular,
-  cropAspectRatio = 1,
+  selectedOrientation = "square",
   showContinueButton = true,
-  preGeneratedPreview, // New prop
+  preGeneratedPreview,
   onStyleClick,
   onContinue
 }: StyleCardProps) => {
@@ -48,8 +48,9 @@ const StyleCard = ({
     style,
     croppedImage,
     isPopular,
-    onStyleClick,
-    preGeneratedPreview // Pass the pre-generated preview to the hook
+    selectedOrientation,
+    preGeneratedPreview,
+    onStyleClick
   });
 
   const isSelected = selectedStyle === style.id;
@@ -66,12 +67,20 @@ const StyleCard = ({
   const showContinueInCard = showContinueButton && isSelected && !!(finalPreviewUrl || croppedImage);
   const hasPreviewOrCropped = !!(finalPreviewUrl || croppedImage);
 
-  // Determine orientation from crop aspect ratio
-  const getOrientation = () => {
-    if (cropAspectRatio === 1) return "square";
-    if (cropAspectRatio > 1) return "horizontal";
-    return "vertical";
+  // Convert orientation to aspect ratio for display
+  const getCropAspectRatio = () => {
+    switch (selectedOrientation) {
+      case 'vertical':
+        return 3/4;
+      case 'horizontal':
+        return 4/3;
+      case 'square':
+      default:
+        return 1;
+    }
   };
+
+  const cropAspectRatio = getCropAspectRatio();
 
   console.log(`StyleCard ${style.name} (ID: ${style.id}):`, {
     showContinueButton,
@@ -82,6 +91,7 @@ const StyleCard = ({
     hasGeneratedPreview: finalHasGeneratedPreview,
     isStyleGenerated: finalIsStyleGenerated,
     showGeneratedBadge,
+    selectedOrientation,
     cropAspectRatio,
     hasPreGeneratedPreview: !!preGeneratedPreview
   });
@@ -161,7 +171,7 @@ const StyleCard = ({
         customContent={
           <FullCanvasMockup
             imageUrl={finalPreviewUrl || croppedImage || ''}
-            orientation={getOrientation()}
+            orientation={selectedOrientation}
             styleName={style.name}
           />
         }

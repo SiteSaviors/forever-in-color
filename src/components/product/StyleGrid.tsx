@@ -63,23 +63,6 @@ const StyleGrid = ({
     return gradients[styleIdToIndex[styleId]] || gradients[0];
   };
 
-  // Convert selected orientation to aspect ratio for generation
-  const getGenerationAspectRatio = () => {
-    console.log('Getting generation aspect ratio for orientation:', selectedOrientation);
-    switch (selectedOrientation) {
-      case 'vertical':
-        console.log('Using 3:4 aspect ratio for vertical');
-        return '3:4';
-      case 'horizontal':
-        console.log('Using 4:3 aspect ratio for horizontal');
-        return '4:3';
-      case 'square':
-      default:
-        console.log('Using 1:1 aspect ratio for square');
-        return '1:1';
-    }
-  };
-
   // Show placeholder thumbnails when no photo is uploaded
   if (!croppedImage) {
     return (
@@ -141,9 +124,8 @@ const StyleGrid = ({
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
         {artStyles.map((style) => {
           const hasAutoPreview = previewUrls[style.id];
-          const aspectRatio = getGenerationAspectRatio();
           
-          console.log(`Rendering StyleCard for ${style.name} with aspect ratio: ${aspectRatio}`);
+          console.log(`Rendering StyleCard for ${style.name} with orientation: ${selectedOrientation}`);
           
           return (
             <StyleCard
@@ -152,7 +134,7 @@ const StyleGrid = ({
               croppedImage={croppedImage}
               selectedStyle={selectedStyle}
               isPopular={[2, 4, 5].includes(style.id)}
-              cropAspectRatio={parseFloat(aspectRatio.split(':')[0]) / parseFloat(aspectRatio.split(':')[1])}
+              selectedOrientation={selectedOrientation}
               showContinueButton={false}
               preGeneratedPreview={hasAutoPreview ? previewUrls[style.id] : undefined}
               onStyleClick={() => handleStyleSelect(style.id, style.name)}
