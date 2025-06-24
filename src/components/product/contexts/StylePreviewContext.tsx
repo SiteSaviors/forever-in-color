@@ -1,66 +1,18 @@
-import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
-import { generateStylePreview } from '@/utils/stylePreviewApi';
-import { addWatermarkToImage } from '@/utils/watermarkUtils';
+
+import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { useAuthStore } from '@/hooks/useAuthStore';
-
-interface PreviewState {
-  status: 'idle' | 'loading' | 'success' | 'error';
-  url?: string;
-  error?: string;
-}
-
-interface StylePreviewState {
-  [styleId: number]: PreviewState;
-}
-
-type StylePreviewAction =
-  | { type: 'START_GENERATION'; styleId: number }
-  | { type: 'GENERATION_SUCCESS'; styleId: number; url: string }
-  | { type: 'GENERATION_ERROR'; styleId: number; error: string }
-  | { type: 'RESET_ALL' };
-
-const initialState: StylePreviewState = {};
-
-function stylePreviewReducer(state: StylePreviewState, action: StylePreviewAction): StylePreviewState {
-  switch (action.type) {
-    case 'START_GENERATION':
-      return {
-        ...state,
-        [action.styleId]: { status: 'loading' }
-      };
-    case 'GENERATION_SUCCESS':
-      return {
-        ...state,
-        [action.styleId]: { status: 'success', url: action.url }
-      };
-    case 'GENERATION_ERROR':
-      return {
-        ...state,
-        [action.styleId]: { status: 'error', error: action.error }
-      };
-    case 'RESET_ALL':
-      return initialState;
-    default:
-      return state;
-  }
-}
-
-interface StylePreviewContextType {
-  previews: StylePreviewState;
-  generatePreview: (styleId: number, styleName: string) => Promise<void>;
-  getPreviewStatus: (styleId: number) => PreviewState;
-  isLoading: (styleId: number) => boolean;
-  hasPreview: (styleId: number) => boolean;
-  getPreviewUrl: (styleId: number) => string | undefined;
-}
+import { 
+  StylePreviewContextType, 
+  StylePreviewProviderProps 
+} from './types';
+import { 
+  stylePreviewReducer, 
+  initialState 
+} from './stylePreviewReducer';
+import { useStylePreviewLogic } from './useStylePreviewLogic';
+import { useStylePreviewHelpers } from './stylePreviewHelpers';
 
 const StylePreviewContext = createContext<StylePreviewContextType | null>(null);
-
-interface StylePreviewProviderProps {
-  children: React.ReactNode;
-  croppedImage: string | null;
-  selectedOrientation: string;
-}
 
 export const StylePreviewProvider = ({ 
   children, 
@@ -70,18 +22,19 @@ export const StylePreviewProvider = ({
   const [previews, dispatch] = useReducer(stylePreviewReducer, initialState);
   const { user } = useAuthStore();
 
-  // Convert orientation to aspect ratio for API
-  const getAspectRatio = useCallback((orientation: string) => {
-    switch (orientation) {
-      case 'vertical':
-        return '2:3';
-      case 'horizontal':
-        return '3:2';
-      case 'square':
-      default:
-        return '1:1';
-    }
-  }, []);
+  // Custom hooks for logic separation
+  const { generatePreview } = useStylePreviewLogic({
+    croppedImage,
+    selectedOrientation,
+    dispatch
+  });
+
+  const {
+    getPreviewStatus,
+    isLoading,
+    hasPreview,
+    getPreviewUrl
+  } = useStylePreviewHelpers(previews);
 
   // TEMPORARILY DISABLED: Auto-generate previews for popular styles when cropped image is available
   /*
@@ -159,84 +112,6 @@ export const StylePreviewProvider = ({
       dispatch({ type: 'RESET_ALL' });
     }
   }, [croppedImage]);
-
-  // Manual generation function
-  const generatePreview = useCallback(async (styleId: number, styleName: string) => {
-    if (!croppedImage) {
-      console.error('❌ Cannot generate preview: no cropped image');
-      return;
-    }
-
-    if (styleId === 1) {
-      console.log('⏭️ Skipping generation for Original Image style');
-      return;
-    }
-
-    try {
-      console.log(`🎨 Starting manual generation for ${styleName} (ID: ${styleId})`);
-      dispatch({ type: 'START_GENERATION', styleId });
-      
-      const aspectRatio = getAspectRatio(selectedOrientation);
-      const tempPhotoId = `temp_${Date.now()}_${styleId}`;
-      
-      console.log(`📋 Generation parameters:`, {
-        styleName,
-        styleId,
-        aspectRatio,
-        selectedOrientation
-      });
-      
-      const previewUrl = await generateStylePreview(
-        croppedImage, 
-        styleName, 
-        tempPhotoId, 
-        aspectRatio
-      );
-
-      if (previewUrl) {
-        try {
-          const watermarkedUrl = await addWatermarkToImage(previewUrl);
-          dispatch({ 
-            type: 'GENERATION_SUCCESS', 
-            styleId, 
-            url: watermarkedUrl 
-          });
-          console.log(`✅ Manual generation completed for ${styleName}`);
-        } catch (watermarkError) {
-          console.warn(`⚠️ Watermark failed for ${styleName}, using original:`, watermarkError);
-          dispatch({ 
-            type: 'GENERATION_SUCCESS', 
-            styleId, 
-            url: previewUrl 
-          });
-        }
-      }
-    } catch (error) {
-      console.error(`❌ Manual generation failed for ${styleName}:`, error);
-      dispatch({ 
-        type: 'GENERATION_ERROR', 
-        styleId, 
-        error: error.message 
-      });
-    }
-  }, [croppedImage, selectedOrientation, getAspectRatio]);
-
-  // Helper functions
-  const getPreviewStatus = useCallback((styleId: number): PreviewState => {
-    return previews[styleId] || { status: 'idle' };
-  }, [previews]);
-
-  const isLoading = useCallback((styleId: number): boolean => {
-    return previews[styleId]?.status === 'loading';
-  }, [previews]);
-
-  const hasPreview = useCallback((styleId: number): boolean => {
-    return previews[styleId]?.status === 'success' && !!previews[styleId]?.url;
-  }, [previews]);
-
-  const getPreviewUrl = useCallback((styleId: number): string | undefined => {
-    return previews[styleId]?.url;
-  }, [previews]);
 
   const contextValue: StylePreviewContextType = {
     previews,
