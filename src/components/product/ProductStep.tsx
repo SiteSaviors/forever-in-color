@@ -1,5 +1,5 @@
 
-import { LucideIcon, Check, ChevronRight, Sparkles, Lock } from "lucide-react";
+import { LucideIcon, Check, ChevronRight, Sparkles, Lock, Unlock } from "lucide-react";
 import { AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 
@@ -32,6 +32,10 @@ const ProductStep = ({
 }: ProductStepProps) => {
   const Icon = step.icon;
 
+  // Determine lock state for animation
+  const isLocked = !isAccessible;
+  const wasJustUnlocked = isAccessible && isNextStep;
+
   return (
     <AccordionItem 
       value={`step-${step.number}`}
@@ -55,64 +59,91 @@ const ProductStep = ({
         </div>
       )}
 
-      {/* Lock icon for inaccessible steps */}
-      {!isAccessible && (
-        <div className="absolute top-3 md:top-4 right-3 md:right-4 text-gray-400">
-          <Lock className="w-4 h-4 md:w-5 md:h-5" />
-        </div>
-      )}
-
       <AccordionTrigger 
         className={`px-4 md:px-8 py-4 md:py-6 hover:no-underline group ${!isAccessible ? 'cursor-not-allowed' : ''}`}
         disabled={!isAccessible}
       >
         <div className="flex items-center gap-3 md:gap-6 w-full">
-          {/* Compact Step Icon/Number for mobile */}
-          <div className={`
-            relative w-10 h-10 md:w-14 md:h-14 rounded-lg md:rounded-xl flex items-center justify-center transition-all duration-500 shadow-lg
-            ${isCompleted 
-              ? 'bg-gradient-to-r from-green-400 to-emerald-500 text-white shadow-green-200' 
-              : isActive && isAccessible
-              ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-purple-200 animate-pulse'
-              : !isAccessible
-              ? 'bg-gradient-to-r from-gray-200 to-gray-300 text-gray-400'
-              : 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-400 group-hover:from-purple-100 group-hover:to-pink-100 group-hover:text-purple-500'
-            }
-          `}>
-            {isCompleted ? (
-              <Check className="w-5 h-5 md:w-7 md:h-7 animate-in zoom-in duration-300" />
-            ) : !isAccessible ? (
-              <Lock className="w-5 h-5 md:w-7 md:h-7" />
-            ) : (
-              <Icon className="w-5 h-5 md:w-7 md:h-7" />
-            )}
-            
-            {/* Step number badge */}
+          {/* Step Icon/Number with enhanced lock states */}
+          <div className="relative">
             <div className={`
-              absolute -top-1 -right-1 md:-top-2 md:-right-2 w-5 h-5 md:w-6 md:h-6 rounded-full text-xs font-bold flex items-center justify-center
-              ${isCompleted ? 'bg-green-600 text-white' 
-                : isActive && isAccessible ? 'bg-white text-purple-600' 
-                : !isAccessible ? 'bg-gray-400 text-gray-600'
-                : 'bg-gray-300 text-gray-600'}
+              relative w-10 h-10 md:w-14 md:h-14 rounded-lg md:rounded-xl flex items-center justify-center transition-all duration-500 shadow-lg
+              ${isCompleted 
+                ? 'bg-gradient-to-r from-green-400 to-emerald-500 text-white shadow-green-200' 
+                : isActive && isAccessible
+                ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-purple-200 animate-pulse'
+                : !isAccessible
+                ? 'bg-gradient-to-r from-gray-200 to-gray-300 text-gray-400'
+                : 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-400 group-hover:from-purple-100 group-hover:to-pink-100 group-hover:text-purple-500'
+              }
             `}>
-              {step.number}
+              {isCompleted ? (
+                <Check className="w-5 h-5 md:w-7 md:h-7 animate-in zoom-in duration-300" />
+              ) : !isAccessible ? (
+                <Icon className="w-5 h-5 md:w-7 md:h-7 opacity-50" />
+              ) : (
+                <Icon className="w-5 h-5 md:w-7 md:h-7" />
+              )}
+              
+              {/* Step number badge */}
+              <div className={`
+                absolute -top-1 -right-1 md:-top-2 md:-right-2 w-5 h-5 md:w-6 md:h-6 rounded-full text-xs font-bold flex items-center justify-center
+                ${isCompleted ? 'bg-green-600 text-white' 
+                  : isActive && isAccessible ? 'bg-white text-purple-600' 
+                  : !isAccessible ? 'bg-gray-400 text-gray-600'
+                  : 'bg-gray-300 text-gray-600'}
+              `}>
+                {step.number}
+              </div>
+            </div>
+
+            {/* Lock/Unlock Animation - positioned next to the main icon */}
+            <div className="absolute -right-2 -bottom-1 md:-right-3 md:-bottom-2">
+              {isLocked && (
+                <div className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-gray-100 border-2 border-gray-300 flex items-center justify-center shadow-sm">
+                  <Lock className="w-3 h-3 md:w-4 md:h-4 text-gray-500" />
+                </div>
+              )}
+              
+              {wasJustUnlocked && (
+                <div className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-green-100 border-2 border-green-300 flex items-center justify-center shadow-sm animate-in zoom-in duration-500">
+                  <Unlock className="w-3 h-3 md:w-4 md:h-4 text-green-600 animate-pulse" />
+                </div>
+              )}
             </div>
           </div>
           
-          {/* Compact Step Content for mobile */}
+          {/* Step Content */}
           <div className="flex-1 text-left">
             <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-3 mb-1">
-              <h3 className={`
-                text-lg md:text-xl font-semibold transition-colors duration-300 font-poppins tracking-tight
-                ${isCompleted || (isActive && isAccessible) ? 'text-gray-900' 
-                  : !isAccessible ? 'text-gray-400'
-                  : 'text-gray-500 group-hover:text-gray-700'}
-              `}>
-                {step.title}
-                {step.number === 1 && selectedStyle && (
-                  <span className="text-purple-600 ml-2 font-normal text-base md:text-lg">- {selectedStyle.name}</span>
+              <div className="flex items-center gap-2">
+                <h3 className={`
+                  text-lg md:text-xl font-semibold transition-colors duration-300 font-poppins tracking-tight
+                  ${isCompleted || (isActive && isAccessible) ? 'text-gray-900' 
+                    : !isAccessible ? 'text-gray-400'
+                    : 'text-gray-500 group-hover:text-gray-700'}
+                `}>
+                  {step.title}
+                  {step.number === 1 && selectedStyle && (
+                    <span className="text-purple-600 ml-2 font-normal text-base md:text-lg">- {selectedStyle.name}</span>
+                  )}
+                </h3>
+                
+                {/* Inline lock indicator for step title */}
+                {isLocked && (
+                  <div className="flex items-center gap-1 text-gray-400">
+                    <Lock className="w-3 h-3 md:w-4 md:h-4" />
+                    <span className="text-xs font-medium hidden md:inline">Locked</span>
+                  </div>
                 )}
-              </h3>
+                
+                {wasJustUnlocked && (
+                  <div className="flex items-center gap-1 text-green-600 animate-in slide-in duration-500">
+                    <Unlock className="w-3 h-3 md:w-4 md:h-4 animate-pulse" />
+                    <span className="text-xs font-medium hidden md:inline">Unlocked!</span>
+                  </div>
+                )}
+              </div>
               
               {/* Time estimate - hidden on mobile to save space */}
               <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-full hidden md:inline">
@@ -125,7 +156,7 @@ const ProductStep = ({
             </p>
           </div>
           
-          {/* Compact Status Badges */}
+          {/* Status Badges and Actions */}
           <div className="flex items-center gap-2 md:gap-3">
             {step.required && !isCompleted && isAccessible && (
               <Badge variant="outline" className="bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 border-purple-200 text-xs hidden md:inline-flex">
@@ -140,7 +171,7 @@ const ProductStep = ({
             )}
             
             {isNextStep && isAccessible && !isActive && (
-              <Badge variant="outline" className="bg-gradient-to-r from-amber-100 to-orange-100 text-amber-700 border-amber-200 text-xs hidden md:inline-flex">
+              <Badge variant="outline" className="bg-gradient-to-r from-amber-100 to-orange-100 text-amber-700 border-amber-200 text-xs hidden md:inline-flex animate-pulse">
                 Next
               </Badge>
             )}
@@ -151,13 +182,20 @@ const ProductStep = ({
               </Badge>
             )}
             
-            {/* Subtle chevron */}
-            <ChevronRight className={`
-              w-4 h-4 md:w-5 md:h-5 transition-all duration-300
-              ${isActive && isAccessible ? 'rotate-90 text-purple-500' 
-                : !isAccessible ? 'text-gray-300'
-                : 'text-gray-400 group-hover:text-gray-600'}
-            `} />
+            {/* Enhanced chevron with lock state */}
+            <div className="relative">
+              <ChevronRight className={`
+                w-4 h-4 md:w-5 md:h-5 transition-all duration-300
+                ${isActive && isAccessible ? 'rotate-90 text-purple-500' 
+                  : !isAccessible ? 'text-gray-300'
+                  : 'text-gray-400 group-hover:text-gray-600'}
+              `} />
+              
+              {/* Small lock overlay on chevron for locked steps */}
+              {isLocked && (
+                <Lock className="absolute -top-1 -right-1 w-2 h-2 text-gray-400" />
+              )}
+            </div>
           </div>
         </div>
       </AccordionTrigger>

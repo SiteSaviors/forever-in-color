@@ -75,7 +75,7 @@ const ProductContent = ({
     return true;
   };
 
-  // Handle accordion value change with access control
+  // Handle accordion value change with access control and visual feedback
   const handleAccordionChange = (value: string) => {
     const stepNumber = parseInt(value.replace('step-', ''));
     
@@ -83,8 +83,9 @@ const ProductContent = ({
       setAccordionValue(value);
       onCurrentStepChange(stepNumber);
     } else {
-      // Don't allow opening steps that aren't accessible
-      // Keep the current accordion value
+      // Provide visual feedback for locked steps (could add toast notification here)
+      console.log(`Step ${stepNumber} is locked. Complete previous steps first.`);
+      // Keep the current accordion value - don't change it
       return;
     }
   };
@@ -108,6 +109,44 @@ const ProductContent = ({
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
+      {/* Progress indicator with lock states */}
+      <div className="mb-8 p-4 bg-white rounded-lg shadow-sm border">
+        <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
+          <span className="font-medium">Your Progress</span>
+          <span>{completedSteps.length} of 4 steps completed</span>
+        </div>
+        <div className="flex items-center gap-2">
+          {steps.map((step, index) => {
+            const isAccessible = canAccessStep(step.number);
+            const isCompleted = completedSteps.includes(step.number);
+            const isCurrent = currentStep === step.number;
+            
+            return (
+              <div key={step.id} className="flex items-center">
+                <div className={`
+                  w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300
+                  ${isCompleted 
+                    ? 'bg-green-500 text-white' 
+                    : isCurrent && isAccessible
+                    ? 'bg-purple-500 text-white'
+                    : !isAccessible
+                    ? 'bg-gray-200 text-gray-400'
+                    : 'bg-gray-300 text-gray-600'}
+                `}>
+                  {isCompleted ? <Check className="w-3 h-3" /> : step.number}
+                </div>
+                {index < steps.length - 1 && (
+                  <div className={`
+                    w-8 h-0.5 mx-1 transition-colors duration-300
+                    ${completedSteps.includes(step.number) ? 'bg-green-500' : 'bg-gray-200'}
+                  `} />
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       <Accordion 
         type="single" 
         value={accordionValue} 
@@ -127,12 +166,19 @@ const ProductContent = ({
                 isCompleted={isCompleted}
                 isActive={isActive}
                 isNextStep={isNextStep && isAccessible}
+                isAccessible={isAccessible}
                 selectedStyle={selectedStyle}
               >
                 {isAccessible ? step.content : (
                   <div className="text-center py-8 text-gray-500">
+                    <div className="mb-4">
+                      <Lock className="w-12 h-12 mx-auto text-gray-300" />
+                    </div>
                     <p className="text-lg font-medium">Complete previous steps to unlock this section</p>
                     <p className="text-sm mt-2">Please finish step {step.number - 1} before proceeding</p>
+                    <div className="mt-4 text-xs text-gray-400">
+                      Steps must be completed in order to ensure the best experience
+                    </div>
                   </div>
                 )}
               </ProductStep>
