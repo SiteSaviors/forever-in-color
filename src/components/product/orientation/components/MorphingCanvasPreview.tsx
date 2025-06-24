@@ -24,16 +24,21 @@ const MorphingCanvasPreview = ({
 }: MorphingCanvasPreviewProps) => {
   const [morphing, setMorphing] = useState(false);
   const [prevOrientation, setPrevOrientation] = useState(orientation);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
     if (prevOrientation !== orientation) {
       setMorphing(true);
+      setImageLoaded(false);
       setTimeout(() => {
         setPrevOrientation(orientation);
         setMorphing(false);
+        setImageLoaded(true);
       }, 300);
+    } else if (userImageUrl) {
+      setImageLoaded(true);
     }
-  }, [orientation, prevOrientation]);
+  }, [orientation, prevOrientation, userImageUrl]);
 
   const getCanvasFrame = () => {
     switch (orientation) {
@@ -116,7 +121,9 @@ const MorphingCanvasPreview = ({
           {/* User's Image with Enhanced Effects */}
           {userImageUrl && (
             <div 
-              className="absolute overflow-hidden transition-all duration-500 group-hover:brightness-110 z-15"
+              className={`absolute overflow-hidden transition-all duration-500 group-hover:brightness-110 z-15 ${
+                imageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+              }`}
               style={{
                 top: imagePosition.top,
                 left: imagePosition.left,
@@ -126,15 +133,21 @@ const MorphingCanvasPreview = ({
             >
               <img 
                 src={userImageUrl}
-                alt="Preview"
+                alt="Your photo preview"
                 className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
                 style={{
                   filter: 'brightness(0.95) contrast(1.05) saturate(1.1)',
                 }}
+                onLoad={() => setImageLoaded(true)}
               />
               
               {/* Image Glass Overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/5 via-transparent to-white/10 pointer-events-none" />
+              
+              {/* "Your Photo" indicator */}
+              <div className="absolute top-1 left-1 bg-green-500/90 text-white text-xs px-2 py-1 rounded backdrop-blur-sm">
+                Your Photo
+              </div>
             </div>
           )}
 

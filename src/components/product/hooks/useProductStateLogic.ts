@@ -87,11 +87,9 @@ export const useProductStateLogic = () => {
     setPreviewUrls({});
     setAutoGenerationComplete(false);
     
-    // Go back to step 1 to allow re-cropping if needed
-    setCurrentStep(1);
-    
-    // Clear completed step 1 so user can recrop if needed
-    setCompletedSteps(prev => prev.filter(step => step !== 1));
+    // IMPROVED: Stay in Step 2 instead of going back to Step 1
+    // Users can still manually go back to Step 1 if they want to recrop
+    console.log('Staying in Step 2 after orientation change');
   };
 
   const handleCustomizationChange = (newCustomizations: CustomizationOptions) => {

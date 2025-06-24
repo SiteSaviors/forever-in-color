@@ -7,6 +7,8 @@ import SmartRecommendations from "./orientation/components/SmartRecommendations"
 import { orientationOptions } from "./orientation/data/orientationOptions";
 import { sizeOptions } from "./orientation/data/sizeOptions";
 import { OrientationSelectorProps } from "./orientation/types";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Eye, ArrowDown } from "lucide-react";
 
 interface ExtendedOrientationSelectorProps extends OrientationSelectorProps {
   userImageUrl?: string | null;
@@ -63,6 +65,16 @@ const OrientationSelector = ({
     <div className="space-y-10">
       <OrientationHeader selectedOrientation={selectedOrientation} />
 
+      {/* Visual Connection Helper */}
+      {userImageUrl && (
+        <Alert className="border-blue-200 bg-blue-50">
+          <Eye className="h-4 w-4 text-blue-600" />
+          <AlertDescription className="text-blue-800">
+            <strong>✨ Live Preview:</strong> The canvases below show exactly how your photo will look in each orientation. This is your actual image positioned on the final product!
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Smart Recommendations Panel with Glass Effect */}
       {userImageUrl && (
         <div className="relative">
@@ -91,6 +103,17 @@ const OrientationSelector = ({
           </div>
         ))}
       </div>
+
+      {/* Smooth transition indicator */}
+      {selectedOrientation && (
+        <div className="flex justify-center">
+          <div className="flex items-center gap-2 text-purple-600 animate-bounce">
+            <ArrowDown className="w-4 h-4" />
+            <span className="text-sm font-medium">Now choose your size</span>
+            <ArrowDown className="w-4 h-4" />
+          </div>
+        </div>
+      )}
 
       {/* Premium Size Selection with Glass Morphism */}
       {selectedOrientation && (

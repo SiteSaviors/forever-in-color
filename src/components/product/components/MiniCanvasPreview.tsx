@@ -16,7 +16,7 @@ const MiniCanvasPreview = ({ imageUrl, orientation, className = "", onClick }: M
       case 'vertical':
         return '/lovable-uploads/79613d9d-74f9-4f65-aec0-50fd2346a131.png';
       case 'square':
-        return '/lovable-uploads/7db3e997-ea34-4d40-af3e-67b693dc0544.png'; // New Photoshop template
+        return '/lovable-uploads/7db3e997-ea34-4d40-af3e-67b693dc0544.png';
       default:
         return '/lovable-uploads/7db3e997-ea34-4d40-af3e-67b693dc0544.png';
     }
@@ -41,13 +41,12 @@ const MiniCanvasPreview = ({ imageUrl, orientation, className = "", onClick }: M
           transform: 'perspective(200px) rotateX(2.5deg) rotateY(-4deg) rotateZ(0.5deg)'
         };
       case 'square':
-        // Using exact pixel coordinates from Photoshop template (scaled for mini version)
         return { 
-          top: '5.2%',     // 40px / 768px = 5.2%
-          left: '4.7%',    // 36px / 768px = 4.7%
-          width: '89.3%',  // 686px / 768px = 89.3%
-          height: '89.3%', // 686px / 768px = 89.3%
-          transform: 'none' // No distortion needed as per specs
+          top: '5.2%',
+          left: '4.7%',
+          width: '89.3%',
+          height: '89.3%',
+          transform: 'none'
         };
       default:
         return { 
@@ -71,9 +70,9 @@ const MiniCanvasPreview = ({ imageUrl, orientation, className = "", onClick }: M
 
   return (
     <div 
-      className={`relative w-12 h-12 cursor-pointer hover:scale-110 transition-transform duration-200 ${className}`}
+      className={`relative w-12 h-12 cursor-pointer hover:scale-110 transition-transform duration-200 group ${className}`}
       onClick={handleClick}
-      title="Click to view full canvas preview"
+      title="Click to view full canvas preview - This is your actual photo on the final product"
     >
       <img 
         src={canvasFrame}
@@ -92,7 +91,7 @@ const MiniCanvasPreview = ({ imageUrl, orientation, className = "", onClick }: M
       >
         <img 
           src={imageUrl}
-          alt="Preview"
+          alt="Your photo preview"
           className="w-full h-full object-cover"
           style={{
             transform: imagePosition.transform,
@@ -102,10 +101,15 @@ const MiniCanvasPreview = ({ imageUrl, orientation, className = "", onClick }: M
         />
       </div>
       
+      {/* Visual connection indicator */}
+      <div className="absolute -top-1 -right-1 bg-green-500 text-white rounded-full w-3 h-3 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        ✓
+      </div>
+      
       {/* Hover overlay to indicate clickable */}
       <div className="absolute inset-0 bg-white/20 opacity-0 hover:opacity-100 transition-opacity duration-200 rounded-sm flex items-center justify-center">
         <div className="bg-black/70 text-white text-xs px-1 py-0.5 rounded">
-          View
+          Your Final Product
         </div>
       </div>
     </div>
