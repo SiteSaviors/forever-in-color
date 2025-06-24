@@ -81,9 +81,9 @@ const StyleCard = ({
     croppedImage: !!croppedImage
   });
 
-  // Handle style click - ALWAYS handle the click, even when blurred
+  // MAIN CARD CLICK HANDLER - Enhanced debugging
   const handleClick = () => {
-    console.log(`🎯 Style clicked: ${style.name} (ID: ${style.id})`);
+    console.log(`🎯 MAIN CARD CLICK ▶️ ${style.name} (ID: ${style.id}), shouldBlur: ${shouldBlur}, isGenerating: ${isGenerating}`);
     onStyleClick(style);
     
     // Auto-generate if conditions are met (and not already generating)
@@ -98,12 +98,14 @@ const StyleCard = ({
     if (e) {
       e.stopPropagation(); // Prevent card click when clicking generate button
     }
-    console.log(`🎨 Manual generate button clicked for ${style.name} (ID: ${style.id})`);
+    console.log(`🎨 MANUAL GENERATE CLICKED ▶️ ${style.name} (ID: ${style.id})`);
     
     // First select the style
+    console.log(`🎯 Selecting style via generate button: ${style.name}`);
     onStyleClick(style);
     
     // Then generate the preview
+    console.log(`🖼️ Starting generation for: ${style.name}`);
     await generatePreview(style.id, style.name);
   };
 

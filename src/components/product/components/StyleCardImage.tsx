@@ -59,7 +59,7 @@ const StyleCardImage = ({
 
   const handleGenerateClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    console.log(`🎨 Generate button clicked for ${style.name}`);
+    console.log(`🎨 GENERATE CLICKED ▶️ ${style.name} (ID: ${style.id})`);
     if (onGenerateStyle) {
       onGenerateStyle(e);
     }
@@ -121,11 +121,14 @@ const StyleCardImage = ({
               </div>
             )}
 
-            {/* Premium Blur Overlay with Generate Button - ONLY on image area with rounded corners */}
+            {/* FIXED: Premium Blur Overlay with Generate Button - Always clickable */}
             {shouldBlur && (
-              <div className="absolute inset-0 rounded-lg overflow-hidden">
-                {/* Sophisticated blur backdrop */}
-                <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/60 backdrop-blur-md rounded-lg">
+              <div 
+                className="absolute inset-0 rounded-lg overflow-hidden z-20 pointer-events-auto cursor-pointer"
+                onClick={handleGenerateClick}
+              >
+                {/* Sophisticated blur backdrop - always visible with opacity */}
+                <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/60 backdrop-blur-md rounded-lg opacity-90">
                   {/* Subtle pattern overlay */}
                   <div className="absolute inset-0 opacity-10"
                        style={{
@@ -136,11 +139,11 @@ const StyleCardImage = ({
                 </div>
                 
                 {/* Generate Button - Centered and clickable */}
-                <div className="absolute inset-0 flex items-center justify-center">
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <Button
                     onClick={handleGenerateClick}
                     disabled={isGenerating}
-                    className="bg-white text-gray-900 hover:bg-gray-50 font-medium px-3 py-1.5 rounded-md shadow-xl border border-white/20 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-2xl text-xs"
+                    className="bg-white text-gray-900 hover:bg-gray-50 font-medium px-3 py-1.5 rounded-md shadow-xl border border-white/20 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-2xl text-xs pointer-events-auto"
                   >
                     {isGenerating ? (
                       <div className="flex items-center gap-1.5">
@@ -157,7 +160,7 @@ const StyleCardImage = ({
                 </div>
                 
                 {/* Premium corner indicator - smaller */}
-                <div className="absolute top-2 right-2">
+                <div className="absolute top-2 right-2 pointer-events-none">
                   <div className="bg-white/90 backdrop-blur-sm px-1.5 py-0.5 rounded-full text-xs font-medium text-gray-700 shadow-lg border border-white/50">
                     Click to Generate
                   </div>

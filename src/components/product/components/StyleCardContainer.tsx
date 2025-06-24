@@ -39,6 +39,12 @@ const StyleCardContainer = ({
 
   const cardSelectionRing = getCardSelectionColors();
 
+  // Debug click handler
+  const handleCardClick = () => {
+    console.log(`🎯 CARD CONTAINER CLICKED ▶️ Style ID: ${styleId}, shouldBlur: ${shouldBlur}`);
+    onClick();
+  };
+
   return (
     <div className="relative p-2">
       {/* Canvas texture background wrapper */}
@@ -49,7 +55,7 @@ const StyleCardContainer = ({
            }}>
       </div>
       
-      {/* Premium floating card with simplified selection feedback */}
+      {/* Premium floating card with simplified selection feedback - ALWAYS CLICKABLE */}
       <Card 
         className={`group cursor-pointer transition-all duration-500 ease-out relative z-10 bg-white/98 backdrop-blur-sm border-0 
           shadow-[0_10px_40px_rgb(0,0,0,0.12)] 
@@ -60,9 +66,8 @@ const StyleCardContainer = ({
             `ring-4 ring-purple-500 shadow-[0_25px_70px_rgba(147,51,234,0.3)] scale-[1.02] -translate-y-1` : 
             ''
           }
-          ${shouldBlur ? 'pointer-events-none' : ''}
         `}
-        onClick={!shouldBlur ? onClick : undefined}
+        onClick={handleCardClick}
       >
         <CardContent className="p-0 overflow-hidden rounded-xl h-full flex flex-col">
           {children}
