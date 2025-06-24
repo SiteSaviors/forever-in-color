@@ -14,10 +14,10 @@ const PhotoUpload = ({ onImageUpload, initialImage }: PhotoUploadProps) => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedImage, setUploadedImage] = useState<string | null>(initialImage || null);
-  const [showCropper, setShowCropper] = useState(!!initialImage);
+  const [showCropper, setShowCropper] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Update uploadedImage when initialImage changes
+  // Update uploadedImage and showCropper when initialImage changes
   useEffect(() => {
     if (initialImage) {
       setUploadedImage(initialImage);
@@ -87,7 +87,7 @@ const PhotoUpload = ({ onImageUpload, initialImage }: PhotoUploadProps) => {
     }
   };
 
-  // Show cropper if image is uploaded
+  // Show cropper if image is uploaded OR if we're re-cropping
   if (showCropper && uploadedImage) {
     return (
       <Card className="w-full">
