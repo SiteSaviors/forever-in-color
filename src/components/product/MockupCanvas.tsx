@@ -15,8 +15,6 @@ export function MockupCanvas({ previewUrl, orientation, className = "" }: Mockup
     vertical: '/lovable-uploads/79613d9d-74f9-4f65-aec0-50fd2346a131.png', // Existing vertical canvas
   }[orientation];
 
-  console.log('MockupCanvas rendering:', { previewUrl, orientation, blankSrc });
-
   return (
     <div className={`relative w-full max-w-md mx-auto ${className}`}>
       {/* Base canvas mockup */}
@@ -26,7 +24,7 @@ export function MockupCanvas({ previewUrl, orientation, className = "" }: Mockup
         className="block w-full h-auto"
       />
 
-      {/* Overlay preview when ready */}
+      {/* Overlay preview when ready - moved up and left */}
       {previewUrl && (
         <img
           src={previewUrl}
@@ -38,15 +36,13 @@ export function MockupCanvas({ previewUrl, orientation, className = "" }: Mockup
             transition-opacity duration-300
           "
           style={{
-            // Positioning to sit properly in canvas frame
-            top: orientation === 'square' ? '6%' : '4%',
-            left: orientation === 'square' ? '6%' : '4%',
-            width: orientation === 'square' ? '88%' : '92%',
-            height: orientation === 'square' ? '88%' : '92%',
-            borderRadius: '4px',
+            // Adjusted positioning - moved up and left to sit properly in canvas frame
+            top: orientation === 'square' ? '8%' : '6%',
+            left: orientation === 'square' ? '8%' : '6%',
+            width: orientation === 'square' ? '84%' : '88%',
+            height: orientation === 'square' ? '84%' : '88%',
+            borderRadius: '6px', // Added tiny corner rounding
           }}
-          onLoad={() => console.log('Preview image loaded successfully')}
-          onError={(e) => console.error('Preview image failed to load:', e)}
         />
       )}
 
@@ -59,11 +55,11 @@ export function MockupCanvas({ previewUrl, orientation, className = "" }: Mockup
           border-2 border-dashed border-gray-300
         "
         style={{
-          top: orientation === 'square' ? '6%' : '4%',
-          left: orientation === 'square' ? '6%' : '4%',
-          width: orientation === 'square' ? '88%' : '92%',
-          height: orientation === 'square' ? '88%' : '92%',
-          borderRadius: '4px',
+          top: orientation === 'square' ? '8%' : '6%',
+          left: orientation === 'square' ? '8%' : '6%',
+          width: orientation === 'square' ? '84%' : '88%',
+          height: orientation === 'square' ? '84%' : '88%',
+          borderRadius: '6px', // Added tiny corner rounding to match
         }}>
           <div className="text-center text-gray-500">
             <div className="w-8 h-8 mx-auto mb-2 animate-spin rounded-full border-2 border-gray-300 border-t-purple-500"></div>
