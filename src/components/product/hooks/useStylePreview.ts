@@ -59,7 +59,10 @@ export const useStylePreview = ({
   }, [selectedOrientation]);
 
   const generatePreview = useCallback(async () => {
-    if (!croppedImage || style.id === 1 || preGeneratedPreview) return;
+    if (!croppedImage || style.id === 1 || preGeneratedPreview) {
+      console.log(`Cannot generate preview for ${style.name}: croppedImage=${!!croppedImage}, styleId=${style.id}, preGenerated=${!!preGeneratedPreview}`);
+      return;
+    }
 
     const aspectRatio = getGenerationAspectRatio();
     console.log(`Starting GPT-Image-1 preview generation for style: ${style.name} (ID: ${style.id}) with orientation: ${selectedOrientation} -> aspect ratio: ${aspectRatio}`);

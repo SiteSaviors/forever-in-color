@@ -45,7 +45,8 @@ const StyleCard = ({
     previewUrl, 
     hasGeneratedPreview, 
     handleClick,
-    isStyleGenerated 
+    isStyleGenerated,
+    generatePreview
   } = useStylePreview({
     style,
     croppedImage,
@@ -100,6 +101,21 @@ const StyleCard = ({
     isGenerating
   });
 
+  // Handle generate style button click
+  const handleGenerateStyle = async () => {
+    console.log(`StyleCard handleGenerateStyle called for ${style.name}`);
+    
+    if (onGenerateStyle) {
+      // Call the parent's generate handler first
+      onGenerateStyle();
+    }
+    
+    // Also trigger the preview generation from the hook
+    if (generatePreview) {
+      await generatePreview();
+    }
+  };
+
   // Get action handlers
   const actions = StyleCardActions({
     style,
@@ -130,7 +146,7 @@ const StyleCard = ({
             isGenerating={isGenerating}
             onExpandClick={() => {}} // Will be handled by lightboxes
             onCanvasPreviewClick={() => {}} // Will be handled by lightboxes
-            onGenerateStyle={onGenerateStyle}
+            onGenerateStyle={handleGenerateStyle}
           />
         </div>
 

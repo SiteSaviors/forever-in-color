@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Upload, ImageIcon, Sparkles } from "lucide-react";
@@ -44,12 +43,12 @@ const StyleGrid = ({
   };
 
   const handleGenerateStyle = async (styleId: number, styleName: string) => {
-    console.log('Generating style:', styleId, styleName);
+    console.log('Generating style for blurred card:', styleId, styleName);
     setGeneratingStyles(prev => new Set(prev).add(styleId));
     
     try {
-      // Trigger style generation through the existing flow
-      await handleStyleSelect(styleId, styleName);
+      // Trigger style generation and selection
+      onStyleSelect(styleId, styleName);
     } finally {
       setGeneratingStyles(prev => {
         const newSet = new Set(prev);
@@ -149,7 +148,7 @@ const StyleGrid = ({
           const shouldBlur = croppedImage && !isOriginalImage && !isPopularStyle && !hasAutoPreview;
           const isGenerating = generatingStyles.has(style.id);
           
-          console.log(`Rendering StyleCard for ${style.name} with orientation: ${selectedOrientation}`);
+          console.log(`Rendering StyleCard for ${style.name} with orientation: ${selectedOrientation}, shouldBlur: ${shouldBlur}`);
           
           return (
             <StyleCard
