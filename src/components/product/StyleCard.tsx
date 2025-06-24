@@ -19,6 +19,7 @@ interface StyleCardProps {
   isPopular: boolean;
   cropAspectRatio?: number;
   showContinueButton?: boolean;
+  preGeneratedPreview?: string; // New prop for auto-generated previews
   onStyleClick: (style: { id: number; name: string; description: string; image: string }) => void;
   onContinue?: () => void;
 }
@@ -28,8 +29,9 @@ const StyleCard = ({
   croppedImage,
   selectedStyle,
   isPopular,
-  cropAspectRatio = 1, // Default to square if not provided
-  showContinueButton = true, // Changed default to true
+  cropAspectRatio = 1,
+  showContinueButton = true,
+  preGeneratedPreview, // New prop
   onStyleClick,
   onContinue
 }: StyleCardProps) => {
@@ -46,16 +48,23 @@ const StyleCard = ({
     style,
     croppedImage,
     isPopular,
-    onStyleClick
+    onStyleClick,
+    preGeneratedPreview // Pass the pre-generated preview to the hook
   });
 
   const isSelected = selectedStyle === style.id;
   const showLoadingState = isLoading;
+  
+  // Use pre-generated preview if available, otherwise use hook-generated preview
+  const finalPreviewUrl = preGeneratedPreview || previewUrl;
+  const finalHasGeneratedPreview = !!preGeneratedPreview || hasGeneratedPreview;
+  const finalIsStyleGenerated = !!preGeneratedPreview || isStyleGenerated;
+  
   // Only show generated badge if we actually have a preview AND it's not the original image style
-  const showGeneratedBadge = isStyleGenerated && style.id !== 1;
-  const imageToShow = previewUrl || croppedImage || style.image;
-  const showContinueInCard = showContinueButton && isSelected && !!(previewUrl || croppedImage);
-  const hasPreviewOrCropped = !!(previewUrl || croppedImage);
+  const showGeneratedBadge = finalIsStyleGenerated && style.id !== 1;
+  const imageToShow = finalPreviewUrl || croppedImage || style.image;
+  const showContinueInCard = showContinueButton && isSelected && !!(finalPreviewUrl || croppedImage);
+  const hasPreviewOrCropped = !!(finalPreviewUrl || croppedImage);
 
   // Determine orientation from crop aspect ratio
   const getOrientation = () => {
@@ -67,25 +76,26 @@ const StyleCard = ({
   console.log(`StyleCard ${style.name} (ID: ${style.id}):`, {
     showContinueButton,
     isSelected,
-    previewUrl: !!previewUrl,
+    previewUrl: !!finalPreviewUrl,
     croppedImage: !!croppedImage,
     showContinueInCard,
-    hasGeneratedPreview,
-    isStyleGenerated,
+    hasGeneratedPreview: finalHasGeneratedPreview,
+    isStyleGenerated: finalIsStyleGenerated,
     showGeneratedBadge,
-    cropAspectRatio
+    cropAspectRatio,
+    hasPreGeneratedPreview: !!preGeneratedPreview
   });
 
   const handleExpandClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (previewUrl || croppedImage) {
+    if (finalPreviewUrl || croppedImage) {
       setIsLightboxOpen(true);
     }
   };
 
   const handleCanvasPreviewClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (previewUrl || croppedImage) {
+    if (finalPreviewUrl || croppedImage) {
       setIsCanvasLightboxOpen(true);
     }
   };
@@ -122,7 +132,7 @@ const StyleCard = ({
 
           <StyleCardInfo
             style={style}
-            hasGeneratedPreview={hasGeneratedPreview}
+            hasGeneratedPreview={finalHasGeneratedPreview}
             isPopular={isPopular}
             isSelected={isSelected}
             showGeneratedBadge={showGeneratedBadge}
@@ -136,7 +146,7 @@ const StyleCard = ({
       <Lightbox
         isOpen={isLightboxOpen}
         onClose={() => setIsLightboxOpen(false)}
-        imageSrc={previewUrl || croppedImage || ''}
+        imageSrc={finalPreviewUrl || croppedImage || ''}
         imageAlt={`${style.name} preview`}
         title={style.name}
       />
@@ -150,7 +160,7 @@ const StyleCard = ({
         title={`${style.name} on Canvas`}
         customContent={
           <FullCanvasMockup
-            imageUrl={previewUrl || croppedImage || ''}
+            imageUrl={finalPreviewUrl || croppedImage || ''}
             orientation={getOrientation()}
             styleName={style.name}
           />

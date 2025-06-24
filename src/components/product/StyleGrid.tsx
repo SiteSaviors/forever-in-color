@@ -1,9 +1,11 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Upload, ImageIcon } from "lucide-react";
 import StyleCard from "./StyleCard";
 import { artStyles } from "@/data/artStyles";
+import { generateStylePreview } from "@/utils/stylePreviewApi";
+import { addWatermarkToImage } from "@/utils/watermarkUtils";
 
 interface StyleGridProps {
   croppedImage: string | null;
@@ -21,6 +23,57 @@ const StyleGrid = ({
   onComplete 
 }: StyleGridProps) => {
   const [loadingStyle, setLoadingStyle] = useState<number | null>(null);
+  const [previewUrls, setPreviewUrls] = useState<{ [key: number]: string }>({});
+  const [autoGenerationComplete, setAutoGenerationComplete] = useState(false);
+
+  // Auto-generate previews for popular styles when cropped image is available
+  useEffect(() => {
+    if (croppedImage && !autoGenerationComplete) {
+      const popularStyleIds = [2, 4, 5]; // Classic Oil Painting, Watercolor Dreams, Pastel Bliss
+      
+      const generatePopularPreviews = async () => {
+        console.log('Auto-generating previews for popular styles:', popularStyleIds);
+        
+        for (const styleId of popularStyleIds) {
+          const style = artStyles.find(s => s.id === styleId);
+          if (!style) continue;
+
+          try {
+            console.log(`Auto-generating preview for ${style.name} (ID: ${styleId})`);
+            
+            const tempPhotoId = `temp_${Date.now()}_${styleId}`;
+            const previewUrl = await generateStylePreview(croppedImage, style.name, tempPhotoId);
+
+            if (previewUrl) {
+              try {
+                const watermarkedUrl = await addWatermarkToImage(previewUrl);
+                setPreviewUrls(prev => ({ ...prev, [styleId]: watermarkedUrl }));
+                console.log(`Auto-generated preview for ${style.name} completed with watermark`);
+              } catch (watermarkError) {
+                console.warn(`Failed to add watermark for ${style.name}, using original:`, watermarkError);
+                setPreviewUrls(prev => ({ ...prev, [styleId]: previewUrl }));
+              }
+            }
+          } catch (error) {
+            console.error(`Error auto-generating preview for ${style.name}:`, error);
+          }
+        }
+        
+        setAutoGenerationComplete(true);
+        console.log('Auto-generation of popular style previews completed');
+      };
+
+      generatePopularPreviews();
+    }
+  }, [croppedImage, autoGenerationComplete]);
+
+  // Reset auto-generation state when cropped image changes
+  useEffect(() => {
+    if (!croppedImage) {
+      setAutoGenerationComplete(false);
+      setPreviewUrls({});
+    }
+  }, [croppedImage]);
 
   const handleStyleSelect = async (styleId: number, styleName: string) => {
     console.log('StyleGrid handleStyleSelect called:', styleId, styleName);
@@ -117,19 +170,25 @@ const StyleGrid = ({
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-        {artStyles.map((style) => (
-          <StyleCard
-            key={style.id}
-            style={style}
-            croppedImage={croppedImage}
-            selectedStyle={selectedStyle}
-            isPopular={false}
-            cropAspectRatio={cropAspectRatio}
-            showContinueButton={true}
-            onStyleClick={() => handleStyleSelect(style.id, style.name)}
-            onContinue={onComplete}
-          />
-        ))}
+        {artStyles.map((style) => {
+          // Check if this style has an auto-generated preview
+          const hasAutoPreview = previewUrls[style.id];
+          
+          return (
+            <StyleCard
+              key={style.id}
+              style={style}
+              croppedImage={croppedImage}
+              selectedStyle={selectedStyle}
+              isPopular={[2, 4, 5].includes(style.id)} // Mark popular styles
+              cropAspectRatio={cropAspectRatio}
+              showContinueButton={true}
+              preGeneratedPreview={hasAutoPreview ? previewUrls[style.id] : undefined}
+              onStyleClick={() => handleStyleSelect(style.id, style.name)}
+              onContinue={onComplete}
+            />
+          );
+        })}
       </div>
     </div>
   );

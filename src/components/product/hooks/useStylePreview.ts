@@ -12,6 +12,7 @@ interface UseStylePreviewProps {
   };
   croppedImage: string | null;
   isPopular: boolean;
+  preGeneratedPreview?: string; // New prop for auto-generated previews
   onStyleClick: (style: { id: number; name: string; description: string; image: string }) => void;
 }
 
@@ -19,17 +20,27 @@ export const useStylePreview = ({
   style,
   croppedImage,
   isPopular,
+  preGeneratedPreview,
   onStyleClick
 }: UseStylePreviewProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [hasGeneratedPreview, setHasGeneratedPreview] = useState(false);
 
-  // Only mark as generated if we actually have a preview URL
-  const isStyleGenerated = hasGeneratedPreview && !!previewUrl;
+  // Initialize with pre-generated preview if available
+  useEffect(() => {
+    if (preGeneratedPreview) {
+      setPreviewUrl(preGeneratedPreview);
+      setHasGeneratedPreview(true);
+      console.log(`Using pre-generated preview for ${style.name}:`, preGeneratedPreview);
+    }
+  }, [preGeneratedPreview, style.name]);
+
+  // Only mark as generated if we actually have a preview URL (either pre-generated or hook-generated)
+  const isStyleGenerated = hasGeneratedPreview && !!(preGeneratedPreview || previewUrl);
 
   const generatePreview = useCallback(async () => {
-    if (!croppedImage || style.id === 1) return;
+    if (!croppedImage || style.id === 1 || preGeneratedPreview) return;
 
     console.log(`Starting GPT-IMG-1 preview generation for style: ${style.name} (ID: ${style.id})`);
     setIsLoading(true);
@@ -67,18 +78,18 @@ export const useStylePreview = ({
       setIsLoading(false);
       console.log(`GPT-IMG-1 preview generation completed for ${style.name} (ID: ${style.id})`);
     }
-  }, [croppedImage, style.id, style.name]);
+  }, [croppedImage, style.id, style.name, preGeneratedPreview]);
 
   const handleClick = useCallback(() => {
     console.log(`Style clicked: ${style.name} (ID: ${style.id})`);
     onStyleClick(style);
     
-    // Auto-generate preview for ALL styles when clicked (if not already generated and we have a cropped image)
-    if (croppedImage && !hasGeneratedPreview && !isLoading && style.id !== 1) {
+    // Only auto-generate preview for styles that don't already have a pre-generated one
+    if (croppedImage && !hasGeneratedPreview && !isLoading && style.id !== 1 && !preGeneratedPreview) {
       console.log(`Auto-generating GPT-IMG-1 preview for style: ${style.name}`);
       generatePreview();
     }
-  }, [style, croppedImage, hasGeneratedPreview, isLoading, onStyleClick, generatePreview]);
+  }, [style, croppedImage, hasGeneratedPreview, isLoading, onStyleClick, generatePreview, preGeneratedPreview]);
 
   return {
     isLoading,
