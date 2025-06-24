@@ -12,6 +12,7 @@ interface PhotoUploadProps {
 const PhotoUpload = ({ onImageUpload }: PhotoUploadProps) => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = async (file: File) => {
@@ -29,7 +30,9 @@ const PhotoUpload = ({ onImageUpload }: PhotoUploadProps) => {
     try {
       // Create object URL for the uploaded file
       const imageUrl = URL.createObjectURL(file);
+      setUploadedImage(imageUrl);
       onImageUpload(imageUrl);
+      console.log('Photo upload completed successfully:', imageUrl);
     } catch (error) {
       console.error('Error uploading file:', error);
     } finally {
@@ -67,6 +70,53 @@ const PhotoUpload = ({ onImageUpload }: PhotoUploadProps) => {
       handleFileSelect(files[0]);
     }
   };
+
+  // Show success state if image is uploaded
+  if (uploadedImage) {
+    return (
+      <Card className="w-full">
+        <CardContent className="p-8">
+          <div className="text-center space-y-6">
+            <div className="flex justify-center">
+              <div className="p-4 bg-green-100 rounded-full">
+                <ImageIcon className="w-12 h-12 text-green-600" />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <h3 className="text-xl font-semibold text-gray-900">
+                Photo Uploaded Successfully!
+              </h3>
+              <p className="text-gray-600">
+                Your image is ready. Choose an art style below to see the magic happen.
+              </p>
+            </div>
+
+            <div className="mt-6">
+              <img 
+                src={uploadedImage} 
+                alt="Uploaded photo" 
+                className="max-w-xs max-h-48 mx-auto rounded-lg shadow-md object-cover"
+              />
+            </div>
+            
+            <Button
+              onClick={() => {
+                setUploadedImage(null);
+                if (fileInputRef.current) {
+                  fileInputRef.current.value = '';
+                }
+              }}
+              variant="outline"
+              className="mt-4"
+            >
+              Upload Different Photo
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="w-full">

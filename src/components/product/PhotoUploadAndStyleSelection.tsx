@@ -5,7 +5,7 @@ import { useStylePreview } from "./contexts/StylePreviewContext";
 
 interface PhotoUploadAndStyleSelectionProps {
   selectedStyle: {id: number, name: string} | null;
-  uploadedImage?: string | null; // Add this missing prop
+  uploadedImage?: string | null;
   selectedOrientation?: string;
   autoGenerationComplete: boolean;
   onComplete: (imageUrl: string, styleId: number, styleName: string) => void;
@@ -24,15 +24,20 @@ const PhotoUploadAndStyleSelection = ({
 }: PhotoUploadAndStyleSelectionProps) => {
   const { croppedImage } = useStylePreview();
 
+  // Use the uploaded image from props or the cropped image from context
+  const currentImage = uploadedImage || croppedImage;
+
   const handleImageUpload = (imageUrl: string) => {
     console.log('Image uploaded:', imageUrl);
+    // The parent component should handle setting the uploaded image
+    // This will trigger a re-render with the new uploadedImage prop
   };
 
   const handleStyleSelect = (styleId: number, styleName: string) => {
-    if (croppedImage) {
-      onComplete(croppedImage, styleId, styleName);
+    if (currentImage) {
+      onComplete(currentImage, styleId, styleName);
       if (onPhotoAndStyleComplete) {
-        onPhotoAndStyleComplete(croppedImage, styleId, styleName);
+        onPhotoAndStyleComplete(currentImage, styleId, styleName);
       }
     }
   };
@@ -41,9 +46,9 @@ const PhotoUploadAndStyleSelection = ({
     <div className="space-y-8">
       <PhotoUpload onImageUpload={handleImageUpload} />
       
-      {croppedImage && (
+      {currentImage && (
         <StyleGrid
-          croppedImage={croppedImage}
+          croppedImage={currentImage}
           selectedStyle={selectedStyle?.id || null}
           onStyleSelect={handleStyleSelect}
           onComplete={() => {}}
