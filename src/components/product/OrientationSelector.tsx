@@ -1,6 +1,6 @@
 
 import OrientationCard from "./orientation/components/OrientationCard";
-import PremiumSizeCard from "./orientation/components/PremiumSizeCard";
+import GlassMorphismSizeCard from "./orientation/components/GlassMorphismSizeCard";
 import OrientationHeader from "./orientation/components/OrientationHeader";
 import SizeHeader from "./orientation/components/SizeHeader";
 import SmartRecommendations from "./orientation/components/SmartRecommendations";
@@ -63,44 +63,55 @@ const OrientationSelector = ({
     <div className="space-y-10">
       <OrientationHeader selectedOrientation={selectedOrientation} />
 
-      {/* Smart Recommendations Panel */}
+      {/* Smart Recommendations Panel with Glass Effect */}
       {userImageUrl && (
-        <SmartRecommendations 
-          selectedOrientation={selectedOrientation}
-          userImageUrl={userImageUrl}
-        />
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-xl backdrop-blur-sm" />
+          <SmartRecommendations 
+            selectedOrientation={selectedOrientation}
+            userImageUrl={userImageUrl}
+          />
+        </div>
       )}
 
-      {/* Premium Orientation Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Premium Orientation Cards with Enhanced Spacing */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {orientationOptions.map((orientation) => (
-          <OrientationCard
+          <div 
             key={orientation.id}
-            orientation={orientation}
-            isSelected={selectedOrientation === orientation.id}
-            isRecommended={orientation.id === recommendedOrientation}
-            userImageUrl={userImageUrl}
-            onClick={() => handleOrientationSelect(orientation.id)}
-          />
+            className="transform transition-all duration-500 hover:-translate-y-2"
+          >
+            <OrientationCard
+              orientation={orientation}
+              isSelected={selectedOrientation === orientation.id}
+              isRecommended={orientation.id === recommendedOrientation}
+              userImageUrl={userImageUrl}
+              onClick={() => handleOrientationSelect(orientation.id)}
+            />
+          </div>
         ))}
       </div>
 
-      {/* Premium Size Selection */}
+      {/* Premium Size Selection with Glass Morphism */}
       {selectedOrientation && (
         <>
           <SizeHeader />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {sizeOptions[selectedOrientation]?.map((option) => (
-              <PremiumSizeCard
+              <div 
                 key={option.size}
-                option={option}
-                orientation={selectedOrientation}
-                isSelected={selectedSize === option.size}
-                isRecommended={option.size === recommendedSize}
-                userImageUrl={userImageUrl}
-                onClick={() => handleSizeSelect(option.size)}
-                onContinue={(e) => handleContinueWithSize(option.size, e)}
-              />
+                className="transform transition-all duration-500 hover:-translate-y-2"
+              >
+                <GlassMorphismSizeCard
+                  option={option}
+                  orientation={selectedOrientation}
+                  isSelected={selectedSize === option.size}
+                  isRecommended={option.size === recommendedSize}
+                  userImageUrl={userImageUrl}
+                  onClick={() => handleSizeSelect(option.size)}
+                  onContinue={(e) => handleContinueWithSize(option.size, e)}
+                />
+              </div>
             ))}
           </div>
         </>

@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -127,6 +128,67 @@ export default {
 						transform: 'scale(1.02) translateY(-4px)',
 						boxShadow: '0 20px 60px rgb(0,0,0,0.15)'
 					}
+				},
+				// New premium animations for Phase 2
+				'glass-shimmer': {
+					'0%': {
+						transform: 'translateX(-100%) skewX(-12deg)',
+						opacity: '0'
+					},
+					'50%': {
+						opacity: '1'
+					},
+					'100%': {
+						transform: 'translateX(200%) skewX(-12deg)',
+						opacity: '0'
+					}
+				},
+				'morph-scale': {
+					'0%': {
+						transform: 'scale(1)',
+						filter: 'blur(0px)'
+					},
+					'50%': {
+						transform: 'scale(0.95)',
+						filter: 'blur(1px)'
+					},
+					'100%': {
+						transform: 'scale(1)',
+						filter: 'blur(0px)'
+					}
+				},
+				'holographic-border': {
+					'0%': {
+						background: 'linear-gradient(45deg, #8b5cf6, #ec4899, #8b5cf6)'
+					},
+					'50%': {
+						background: 'linear-gradient(45deg, #ec4899, #8b5cf6, #ec4899)'
+					},
+					'100%': {
+						background: 'linear-gradient(45deg, #8b5cf6, #ec4899, #8b5cf6)'
+					}
+				},
+				'floating-particles': {
+					'0%': {
+						transform: 'translateY(0px) rotate(0deg)',
+						opacity: '0'
+					},
+					'50%': {
+						transform: 'translateY(-20px) rotate(180deg)',
+						opacity: '1'
+					},
+					'100%': {
+						transform: 'translateY(-40px) rotate(360deg)',
+						opacity: '0'
+					}
+				},
+				'texture-flow': {
+					'0%': {
+						backgroundPosition: '0% 0%'
+					},
+					'100%': {
+						backgroundPosition: '100% 100%'
+					}
 				}
 			},
 			animation: {
@@ -135,12 +197,25 @@ export default {
 				'glow-pulse': 'glow-pulse 2s ease-in-out infinite',
 				'slide-in': 'slide-in 0.3s ease-out',
 				'float': 'float 3s ease-in-out infinite',
-				'premium-hover': 'premium-hover 0.3s ease-out forwards'
+				'premium-hover': 'premium-hover 0.3s ease-out forwards',
+				// New premium animations for Phase 2
+				'glass-shimmer': 'glass-shimmer 2s ease-in-out infinite',
+				'morph-scale': 'morph-scale 0.3s ease-in-out',
+				'holographic-border': 'holographic-border 3s ease-in-out infinite',
+				'floating-particles': 'floating-particles 4s ease-in-out infinite',
+				'texture-flow': 'texture-flow 8s linear infinite'
 			},
 			boxShadow: {
 				'premium': '0 8px 30px rgb(0,0,0,0.12)',
 				'premium-hover': '0 20px 60px rgb(0,0,0,0.15)',
-				'premium-selected': '0 20px 60px rgb(147,51,234,0.25)'
+				'premium-selected': '0 20px 60px rgb(147,51,234,0.25)',
+				// New glass-morphism shadows
+				'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+				'glass-hover': '0 8px 32px 0 rgba(31, 38, 135, 0.5)',
+				'holographic': '0 0 20px rgba(139, 92, 246, 0.3), 0 0 40px rgba(236, 72, 153, 0.2)'
+			},
+			backdropBlur: {
+				'xs': '2px',
 			}
 		}
 	},
