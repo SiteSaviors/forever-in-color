@@ -1,3 +1,4 @@
+
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -152,6 +153,13 @@ const StyleCardImage = ({
                       </div>
                     )}
                   </Button>
+                </div>
+                
+                {/* Premium corner indicator - smaller */}
+                <div className="absolute top-2 right-2">
+                  <div className="bg-white/90 backdrop-blur-sm px-1.5 py-0.5 rounded-full text-xs font-medium text-gray-700 shadow-lg border border-white/50">
+                    Click to Generate
+                  </div>
                 </div>
               </div>
             )}
