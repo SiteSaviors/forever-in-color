@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { createPreview } from "./previewOperations";
+import { resizeImageForProcessing } from "./imageResizer";
 
 export const generateStylePreview = async (
   imageUrl: string, 
@@ -16,15 +17,20 @@ export const generateStylePreview = async (
       quality 
     });
     
+    // Resize image before sending to reduce processing time
+    console.log('Resizing image for faster GPT-Image-1 processing...');
+    const resizedImageUrl = await resizeImageForProcessing(imageUrl, 768, 768, 0.8);
+    console.log('Image resized successfully for GPT-Image-1 processing');
+    
     // Check if user is authenticated (optional now)
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
     const isAuthenticated = session && !sessionError;
 
     console.log('User authentication status:', isAuthenticated ? 'authenticated' : 'not authenticated');
 
-    // Prepare the request body
+    // Prepare the request body with resized image
     const requestBody = { 
-      imageUrl, 
+      imageUrl: resizedImageUrl, // Use resized image instead of original
       style,
       photoId,
       isAuthenticated,
@@ -36,7 +42,7 @@ export const generateStylePreview = async (
       photoId, 
       isAuthenticated, 
       quality,
-      imageUrlLength: imageUrl.length 
+      imageUrlLength: resizedImageUrl.length 
     });
 
     const { data, error } = await supabase.functions.invoke('generate-style-preview', {
