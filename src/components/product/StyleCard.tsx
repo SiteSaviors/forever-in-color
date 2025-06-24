@@ -1,10 +1,10 @@
 
-import { useStylePreview } from "./hooks/useStylePreview";
 import StyleCardImage from "./components/StyleCardImage";
 import StyleCardInfo from "./components/StyleCardInfo";
 import StyleCardContainer from "./components/StyleCardContainer";
 import StyleCardActions from "./components/StyleCardActions";
 import StyleCardLightboxes from "./components/StyleCardLightboxes";
+import { useStylePreview } from "./contexts/StylePreviewContext";
 
 interface StyleCardProps {
   style: {
@@ -18,12 +18,9 @@ interface StyleCardProps {
   isPopular: boolean;
   selectedOrientation?: string;
   showContinueButton?: boolean;
-  preGeneratedPreview?: string;
   shouldBlur?: boolean;
-  isGenerating?: boolean;
   onStyleClick: (style: { id: number; name: string; description: string; image: string }) => void;
   onContinue?: () => void;
-  onGenerateStyle?: () => void;
 }
 
 const StyleCard = ({
@@ -33,44 +30,33 @@ const StyleCard = ({
   isPopular,
   selectedOrientation = "square",
   showContinueButton = true,
-  preGeneratedPreview,
   shouldBlur = false,
-  isGenerating = false,
   onStyleClick,
-  onContinue,
-  onGenerateStyle
+  onContinue
 }: StyleCardProps) => {
   const { 
+    generatePreview, 
     isLoading, 
-    previewUrl, 
-    hasGeneratedPreview, 
-    handleClick,
-    isStyleGenerated,
-    generatePreview
-  } = useStylePreview({
-    style,
-    croppedImage,
-    isPopular,
-    selectedOrientation,
-    preGeneratedPreview,
-    onStyleClick
-  });
+    hasPreview, 
+    getPreviewUrl 
+  } = useStylePreview();
 
   const isSelected = selectedStyle === style.id;
-  const showLoadingState = isLoading || isGenerating;
+  const isGenerating = isLoading(style.id);
+  const hasGeneratedPreview = hasPreview(style.id);
+  const previewUrl = getPreviewUrl(style.id);
   
-  // Use pre-generated preview if available, otherwise use hook-generated preview
-  const finalPreviewUrl = preGeneratedPreview || previewUrl;
-  const finalHasGeneratedPreview = !!preGeneratedPreview || hasGeneratedPreview;
-  const finalIsStyleGenerated = !!preGeneratedPreview || isStyleGenerated;
+  // Determine what image to show
+  const imageToShow = previewUrl || croppedImage || style.image;
   
-  // Only show generated badge if we actually have a preview AND it's not the original image style
-  const showGeneratedBadge = finalIsStyleGenerated && style.id !== 1;
-  const imageToShow = finalPreviewUrl || croppedImage || style.image;
-  const showContinueInCard = showContinueButton && isSelected && !!(finalPreviewUrl || croppedImage);
-  const hasPreviewOrCropped = !!(finalPreviewUrl || croppedImage);
+  // Show continue button logic
+  const showContinueInCard = showContinueButton && isSelected && !!(previewUrl || croppedImage);
+  const hasPreviewOrCropped = !!(previewUrl || croppedImage);
+  
+  // Show generated badge for styles that have previews (but not Original Image)
+  const showGeneratedBadge = hasGeneratedPreview && style.id !== 1;
 
-  // Enhanced aspect ratio calculation for hero treatment
+  // Enhanced aspect ratio calculation
   const getCropAspectRatio = () => {
     switch (selectedOrientation) {
       case 'vertical':
@@ -86,34 +72,31 @@ const StyleCard = ({
   const cropAspectRatio = getCropAspectRatio();
 
   console.log(`StyleCard ${style.name} (ID: ${style.id}):`, {
-    showContinueButton,
     isSelected,
-    previewUrl: !!finalPreviewUrl,
-    croppedImage: !!croppedImage,
-    showContinueInCard,
-    hasGeneratedPreview: finalHasGeneratedPreview,
-    isStyleGenerated: finalIsStyleGenerated,
+    isGenerating,
+    hasGeneratedPreview,
     showGeneratedBadge,
-    selectedOrientation,
-    cropAspectRatio,
-    hasPreGeneratedPreview: !!preGeneratedPreview,
     shouldBlur,
-    isGenerating
+    hasPreview: !!previewUrl,
+    croppedImage: !!croppedImage
   });
 
-  // Handle generate style button click
+  // Handle style click
+  const handleClick = () => {
+    console.log(`🎯 Style clicked: ${style.name} (ID: ${style.id})`);
+    onStyleClick(style);
+    
+    // Auto-generate if conditions are met
+    if (croppedImage && !hasGeneratedPreview && !isGenerating && style.id !== 1) {
+      console.log(`🚀 Auto-generating preview for clicked style: ${style.name}`);
+      generatePreview(style.id, style.name);
+    }
+  };
+
+  // Handle manual generation button click
   const handleGenerateStyle = async () => {
-    console.log(`StyleCard handleGenerateStyle called for ${style.name}`);
-    
-    if (onGenerateStyle) {
-      // Call the parent's generate handler first
-      onGenerateStyle();
-    }
-    
-    // Also trigger the preview generation from the hook
-    if (generatePreview) {
-      await generatePreview();
-    }
+    console.log(`🎨 Manual generate button clicked for ${style.name} (ID: ${style.id})`);
+    await generatePreview(style.id, style.name);
   };
 
   // Get action handlers
@@ -137,7 +120,7 @@ const StyleCard = ({
             style={style}
             imageToShow={imageToShow}
             cropAspectRatio={cropAspectRatio}
-            showLoadingState={showLoadingState}
+            showLoadingState={isGenerating}
             isPopular={isPopular}
             showGeneratedBadge={showGeneratedBadge}
             isSelected={isSelected}
@@ -154,7 +137,7 @@ const StyleCard = ({
         <div className="flex-1 flex flex-col">
           <StyleCardInfo
             style={style}
-            hasGeneratedPreview={finalHasGeneratedPreview}
+            hasGeneratedPreview={hasGeneratedPreview}
             isPopular={isPopular}
             isSelected={isSelected}
             showGeneratedBadge={showGeneratedBadge}
@@ -168,7 +151,7 @@ const StyleCard = ({
 
       <StyleCardLightboxes
         style={style}
-        finalPreviewUrl={finalPreviewUrl}
+        finalPreviewUrl={previewUrl}
         croppedImage={croppedImage}
         selectedOrientation={selectedOrientation}
       />

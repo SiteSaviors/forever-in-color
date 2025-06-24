@@ -1,7 +1,8 @@
-import { useState } from "react";
+
 import { Button } from "@/components/ui/button";
-import { Upload, ImageIcon, Sparkles } from "lucide-react";
+import { Upload, ImageIcon } from "lucide-react";
 import StyleCard from "./StyleCard";
+import { StylePreviewProvider } from "./contexts/StylePreviewContext";
 import { artStyles } from "@/data/artStyles";
 
 interface StyleGridProps {
@@ -15,47 +16,19 @@ interface StyleGridProps {
   onComplete: () => void;
 }
 
-const StyleGrid = ({ 
+const StyleGridContent = ({ 
   croppedImage, 
   selectedStyle, 
-  cropAspectRatio = 1,
   selectedOrientation = "square",
-  previewUrls = {},
-  autoGenerationComplete = false,
   onStyleSelect, 
   onComplete 
-}: StyleGridProps) => {
-  const [loadingStyle, setLoadingStyle] = useState<number | null>(null);
-  const [generatingStyles, setGeneratingStyles] = useState<Set<number>>(new Set());
-
+}: Omit<StyleGridProps, 'previewUrls' | 'autoGenerationComplete' | 'cropAspectRatio'>) => {
   // Popular styles that auto-generate: Classic Oil (2), Watercolor Dreams (4), Pastel Bliss (5)
   const popularStyleIds = [2, 4, 5];
 
   const handleStyleSelect = async (styleId: number, styleName: string) => {
-    console.log('StyleGrid handleStyleSelect called:', styleId, styleName, 'with orientation:', selectedOrientation);
-    setLoadingStyle(styleId);
-    
-    try {
-      onStyleSelect(styleId, styleName);
-    } finally {
-      setLoadingStyle(null);
-    }
-  };
-
-  const handleGenerateStyle = async (styleId: number, styleName: string) => {
-    console.log('Generating style for blurred card:', styleId, styleName);
-    setGeneratingStyles(prev => new Set(prev).add(styleId));
-    
-    try {
-      // Trigger style generation and selection
-      onStyleSelect(styleId, styleName);
-    } finally {
-      setGeneratingStyles(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(styleId);
-        return newSet;
-      });
-    }
+    console.log('🎯 StyleGrid handleStyleSelect called:', styleId, styleName, 'with orientation:', selectedOrientation);
+    onStyleSelect(styleId, styleName);
   };
 
   // Premium gradient backgrounds for each style
@@ -142,13 +115,11 @@ const StyleGrid = ({
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
         {artStyles.map((style) => {
-          const hasAutoPreview = previewUrls[style.id];
           const isPopularStyle = popularStyleIds.includes(style.id);
           const isOriginalImage = style.id === 1;
-          const shouldBlur = croppedImage && !isOriginalImage && !isPopularStyle && !hasAutoPreview;
-          const isGenerating = generatingStyles.has(style.id);
+          const shouldBlur = croppedImage && !isOriginalImage && !isPopularStyle;
           
-          console.log(`Rendering StyleCard for ${style.name} with orientation: ${selectedOrientation}, shouldBlur: ${shouldBlur}`);
+          console.log(`🎨 Rendering StyleCard for ${style.name} with orientation: ${selectedOrientation}, shouldBlur: ${shouldBlur}`);
           
           return (
             <StyleCard
@@ -159,17 +130,25 @@ const StyleGrid = ({
               isPopular={isPopularStyle}
               selectedOrientation={selectedOrientation}
               showContinueButton={false}
-              preGeneratedPreview={hasAutoPreview ? previewUrls[style.id] : undefined}
               onStyleClick={() => handleStyleSelect(style.id, style.name)}
               onContinue={onComplete}
               shouldBlur={shouldBlur}
-              isGenerating={isGenerating}
-              onGenerateStyle={() => handleGenerateStyle(style.id, style.name)}
             />
           );
         })}
       </div>
     </div>
+  );
+};
+
+const StyleGrid = (props: StyleGridProps) => {
+  return (
+    <StylePreviewProvider 
+      croppedImage={props.croppedImage}
+      selectedOrientation={props.selectedOrientation || "square"}
+    >
+      <StyleGridContent {...props} />
+    </StylePreviewProvider>
   );
 };
 

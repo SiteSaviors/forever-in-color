@@ -20,8 +20,6 @@ const PhotoUploadAndStyleSelection = ({
   selectedStyle,
   uploadedImage,
   selectedOrientation,
-  previewUrls,
-  autoGenerationComplete,
   onPhotoAndStyleComplete,
   onContinue
 }: PhotoUploadAndStyleSelectionProps) => {
@@ -34,21 +32,21 @@ const PhotoUploadAndStyleSelection = ({
   const [currentOrientation, setCurrentOrientation] = useState<string>(selectedOrientation);
 
   const handleImageUpload = (imageUrl: string) => {
-    console.log('Image uploaded:', imageUrl);
+    console.log('📷 Image uploaded:', imageUrl);
     setUploadedImageFile(imageUrl);
     setCroppedImage(null);
     setShowCropper(true);
   };
 
   const handleCropComplete = (croppedImageUrl: string, aspectRatio: number) => {
-    console.log('Crop completed with aspect ratio:', aspectRatio, 'and orientation:', currentOrientation);
+    console.log('✂️ Crop completed with aspect ratio:', aspectRatio, 'and orientation:', currentOrientation);
     setCroppedImage(croppedImageUrl);
     setCropAspectRatio(aspectRatio);
     setShowCropper(false);
   };
 
   const handleOrientationChangeInCropper = (newOrientation: string) => {
-    console.log('PhotoUploadAndStyleSelection: Orientation changed in cropper to:', newOrientation);
+    console.log('🔄 Orientation changed in cropper to:', newOrientation);
     setCurrentOrientation(newOrientation);
     // Clear existing style selections since orientation changed
     setSelectedStyleId(null);
@@ -56,14 +54,14 @@ const PhotoUploadAndStyleSelection = ({
   };
 
   const handleStyleSelect = (styleId: number, styleName: string) => {
-    console.log('Style selected:', styleId, styleName, 'with orientation:', currentOrientation);
+    console.log('🎨 Style selected:', styleId, styleName, 'with orientation:', currentOrientation);
     setSelectedStyleId(styleId);
     setSelectedStyleName(styleName);
   };
 
   const handleContinue = () => {
     if (croppedImage && selectedStyleId && selectedStyleName) {
-      console.log('Completing photo and style selection with orientation:', currentOrientation);
+      console.log('✅ Completing photo and style selection with orientation:', currentOrientation);
       onPhotoAndStyleComplete(croppedImage, selectedStyleId, selectedStyleName);
     }
     onContinue();
@@ -136,7 +134,7 @@ const PhotoUploadAndStyleSelection = ({
         </div>
       )}
 
-      {/* Style Selection */}
+      {/* Style Selection - Now using centralized context */}
       {croppedImage && !showCropper && (
         <div>
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
@@ -145,10 +143,7 @@ const PhotoUploadAndStyleSelection = ({
           <StyleGrid
             croppedImage={croppedImage}
             selectedStyle={selectedStyleId}
-            cropAspectRatio={cropAspectRatio}
             selectedOrientation={currentOrientation}
-            previewUrls={previewUrls}
-            autoGenerationComplete={autoGenerationComplete}
             onStyleSelect={handleStyleSelect}
             onComplete={handleContinue}
           />
