@@ -40,7 +40,7 @@ export const useStylePreview = ({
 
   const isStyleGenerated = hasGeneratedPreview && !!(preGeneratedPreview || previewUrl);
 
-  // Convert selected orientation to generation aspect ratio string
+  // Convert selected orientation to generation aspect ratio string - FIXED
   const getGenerationAspectRatio = useCallback(() => {
     console.log('Converting selected orientation to generation aspect ratio:', selectedOrientation);
     
@@ -61,21 +61,27 @@ export const useStylePreview = ({
   const generatePreview = useCallback(async () => {
     if (!croppedImage || style.id === 1 || preGeneratedPreview) return;
 
-    console.log(`Starting GPT-IMG-1 preview generation for style: ${style.name} (ID: ${style.id}) with orientation: ${selectedOrientation}`);
+    const aspectRatio = getGenerationAspectRatio();
+    console.log(`Starting GPT-IMG-1 preview generation for style: ${style.name} (ID: ${style.id}) with orientation: ${selectedOrientation} -> aspect ratio: ${aspectRatio}`);
+    
     setIsLoading(true);
     
     try {
-      console.log(`Generating GPT-IMG-1 preview for style: ${style.name}`);
+      console.log(`Generating GPT-IMG-1 preview for ${style.name} with CONFIRMED aspect ratio: ${aspectRatio}`);
       
       const tempPhotoId = `temp_${Date.now()}_${style.id}`;
-      const aspectRatio = getGenerationAspectRatio();
       
-      console.log(`Using aspect ratio ${aspectRatio} for generation based on selected orientation ${selectedOrientation}`);
+      console.log(`API call parameters:`, {
+        styleName: style.name,
+        tempPhotoId,
+        aspectRatio,
+        selectedOrientation
+      });
       
       const previewUrl = await generateStylePreview(croppedImage, style.name, tempPhotoId, aspectRatio);
 
       if (previewUrl) {
-        console.log(`GPT-IMG-1 preview generated successfully for ${style.name}, adding watermark...`);
+        console.log(`GPT-IMG-1 preview generated successfully for ${style.name} with aspect ratio ${aspectRatio}, adding watermark...`);
         
         try {
           const watermarkedUrl = await addWatermarkToImage(previewUrl);

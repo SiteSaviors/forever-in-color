@@ -7,6 +7,10 @@ export class ReplicateApiClient {
 
   async createPrediction(requestBody: ReplicateGenerationRequest): Promise<ReplicateGenerationResponse> {
     try {
+      console.log('=== REPLICATE API CLIENT ===');
+      console.log('Creating prediction with request body:', JSON.stringify(requestBody, null, 2));
+      console.log('ASPECT RATIO IN API CLIENT:', requestBody.input?.aspect_ratio);
+      
       const response = await fetch(`${REPLICATE_CONFIG.baseUrl}/models/${REPLICATE_CONFIG.model}/predictions`, {
         method: "POST",
         headers: {
@@ -34,7 +38,11 @@ export class ReplicateApiClient {
       }
 
       const data = await response.json();
-      console.log('GPT-Image-1 generation completed:', data);
+      console.log('GPT-Image-1 generation completed with data:', data);
+      console.log('Response status:', data.status);
+      if (data.output) {
+        console.log('Generated image URL:', data.output);
+      }
 
       return {
         ok: true,

@@ -4,7 +4,14 @@ import { createPreview } from "./previewOperations";
 
 export const generateStylePreview = async (imageUrl: string, style: string, photoId: string, aspectRatio: string = "1:1") => {
   try {
-    console.log('Generating style preview with GPT-Image-1:', { imageUrl: imageUrl.substring(0, 50) + '...', style, photoId, aspectRatio });
+    console.log('=== STYLE PREVIEW API CALL ===');
+    console.log('Generating style preview with GPT-Image-1:', { 
+      imageUrl: imageUrl.substring(0, 50) + '...', 
+      style, 
+      photoId, 
+      aspectRatio: aspectRatio 
+    });
+    console.log('ASPECT RATIO BEING SENT TO BACKEND:', aspectRatio);
     
     // Check if user is authenticated (optional now)
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -12,22 +19,16 @@ export const generateStylePreview = async (imageUrl: string, style: string, phot
 
     console.log('User authentication status:', isAuthenticated ? 'authenticated' : 'not authenticated');
 
-    // Prepare the request body
+    // Prepare the request body - ENSURE aspectRatio is included
     const requestBody = { 
       imageUrl, 
       style,
       photoId,
       isAuthenticated,
-      aspectRatio // Pass aspect ratio to backend
+      aspectRatio // CRITICAL: This must reach the backend
     };
 
-    console.log('Sending request to GPT-Image-1 service:', { 
-      style, 
-      photoId, 
-      isAuthenticated, 
-      aspectRatio,
-      imageUrlLength: imageUrl.length 
-    });
+    console.log('FULL REQUEST BODY TO SUPABASE FUNCTION:', JSON.stringify(requestBody, null, 2));
 
     const { data, error } = await supabase.functions.invoke('generate-style-preview', {
       body: requestBody
@@ -42,7 +43,7 @@ export const generateStylePreview = async (imageUrl: string, style: string, phot
       throw new Error('No preview URL returned from GPT-Image-1 service');
     }
 
-    console.log('GPT-Image-1 preview generated successfully:', data.preview_url);
+    console.log('GPT-Image-1 preview generated successfully with aspect ratio:', aspectRatio, 'URL:', data.preview_url);
     
     // Only store the preview if user is authenticated
     if (isAuthenticated) {

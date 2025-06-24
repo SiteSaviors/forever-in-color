@@ -26,7 +26,9 @@ export class ReplicateService {
   }
 
   async generateImageToImage(imageData: string, prompt: string, aspectRatio: string = "1:1", quality: string = "medium"): Promise<ReplicateGenerationResponse> {
+    console.log('=== REPLICATE SERVICE GENERATION ===');
     console.log('Starting GPT-Image-1 generation via Replicate with prompt:', prompt);
+    console.log('ASPECT RATIO RECEIVED IN REPLICATE SERVICE:', aspectRatio);
     
     // Additional debug logging
     if (!this.apiToken || this.apiToken === 'undefined' || this.apiToken.trim() === '') {
@@ -55,12 +57,13 @@ export class ReplicateService {
           prompt: prompt,
           input_images: [imageData],
           openai_api_key: this.openaiApiKey,
-          ...(aspectRatio && { aspect_ratio: aspectRatio }),
-          ...(quality && { quality: quality })
+          aspect_ratio: aspectRatio, // CRITICAL: Ensure this is set
+          quality: quality
         }
       };
 
-      console.log('Making request to GPT-Image-1 model via Replicate');
+      console.log('REPLICATE REQUEST BODY INPUT:', JSON.stringify(requestBody.input, null, 2));
+      console.log('ASPECT RATIO IN REQUEST BODY:', requestBody.input.aspect_ratio);
 
       const data = await this.apiClient.createPrediction(requestBody);
 
@@ -70,7 +73,7 @@ export class ReplicateService {
 
       // With "Prefer: wait" header, the response should contain the final result
       if (data.status === "succeeded" && data.output) {
-        console.log('GPT-Image-1 generation succeeded:', data.output);
+        console.log('GPT-Image-1 generation succeeded with aspect ratio:', aspectRatio, 'Output:', data.output);
         return {
           ok: true,
           output: data.output

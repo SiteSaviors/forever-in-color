@@ -3,11 +3,25 @@ export class ImageGenerationService {
   constructor(private openaiApiKey: string, private replicateApiToken: string) {}
 
   async generateImageToImage(imageData: string, prompt: string, aspectRatio: string = "1:1", quality: string = "medium"): Promise<{ ok: boolean; output?: string; error?: string }> {
+    console.log('=== IMAGE GENERATION SERVICE ===');
     console.log('Using Replicate GPT-Image-1 for image transformation with prompt:', prompt);
-    console.log('Generating with aspect ratio:', aspectRatio);
+    console.log('ASPECT RATIO PARAMETER:', aspectRatio);
     
     try {
       // Use Replicate's GPT-Image-1 endpoint
+      const requestBody = {
+        input: {
+          prompt: prompt,
+          input_images: [imageData],
+          openai_api_key: this.openaiApiKey,
+          aspect_ratio: aspectRatio, // CRITICAL: This must be passed correctly
+          quality: quality
+        }
+      };
+
+      console.log('SENDING TO REPLICATE API:', JSON.stringify(requestBody, null, 2));
+      console.log('ASPECT RATIO IN API CALL:', requestBody.input.aspect_ratio);
+
       const response = await fetch('https://api.replicate.com/v1/models/openai/gpt-image-1/predictions', {
         method: 'POST',
         headers: {
@@ -15,15 +29,7 @@ export class ImageGenerationService {
           'Content-Type': 'application/json',
           'Prefer': 'wait'
         },
-        body: JSON.stringify({
-          input: {
-            prompt: prompt,
-            input_images: [imageData],
-            openai_api_key: this.openaiApiKey,
-            aspect_ratio: aspectRatio,
-            quality: quality
-          }
-        })
+        body: JSON.stringify(requestBody)
       });
 
       if (!response.ok) {
@@ -46,7 +52,7 @@ export class ImageGenerationService {
           outputUrl = outputUrl[0];
         }
         
-        console.log('GPT-Image-1 generation successful via Replicate with aspect ratio:', aspectRatio);
+        console.log('GPT-Image-1 generation successful via Replicate with aspect ratio:', aspectRatio, 'Output URL:', outputUrl);
         return {
           ok: true,
           output: outputUrl
