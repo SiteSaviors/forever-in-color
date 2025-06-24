@@ -1,7 +1,8 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Monitor, Smartphone, Square, Sparkles } from "lucide-react";
+import { Monitor, Smartphone, Square, Sparkles, CheckCircle } from "lucide-react";
 
 interface OrientationOption {
   id: string;
@@ -152,12 +153,16 @@ const OrientationSelector = ({
 
   return (
     <div className="space-y-10">
-      {/* Enhanced Step 2 Header */}
+      {/* Enhanced Step 2 Header with Auto-Detection Notice */}
       <div className="text-center mb-8 p-8 bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-50 rounded-2xl border border-teal-100">
         <h4 className="text-2xl font-bold text-gray-900 mb-3 font-poppins tracking-tight">
           ✨ Step 2: Choose Layout
         </h4>
-        <p className="text-gray-600 text-lg">Select the perfect orientation for your masterpiece</p>
+        <p className="text-gray-600 text-lg mb-3">We've auto-selected the perfect orientation based on your photo crop</p>
+        <div className="flex items-center justify-center gap-2 text-teal-600">
+          <CheckCircle className="w-5 h-5" />
+          <span className="font-medium">Auto-detected: {selectedOrientation.charAt(0).toUpperCase() + selectedOrientation.slice(1)}</span>
+        </div>
       </div>
 
       {/* Premium Orientation Cards */}
@@ -173,15 +178,26 @@ const OrientationSelector = ({
             onClick={() => handleOrientationSelect(orientation.id)}
           >
             <CardContent className="p-8 text-center">
-              <div className={`mb-6 p-4 rounded-xl transition-all duration-300 ${
+              <div className={`mb-6 p-4 rounded-xl transition-all duration-300 relative ${
                 selectedOrientation === orientation.id
                   ? 'bg-teal-100 text-teal-600 animate-slide-in'
                   : 'bg-gray-100 text-gray-500 group-hover:bg-teal-50 group-hover:text-teal-400'
               }`}>
                 {getOrientationIcon(orientation.id)}
+                {selectedOrientation === orientation.id && (
+                  <div className="absolute -top-2 -right-2">
+                    <Badge className="bg-teal-500 text-white">
+                      <CheckCircle className="w-3 h-3 mr-1" />
+                      Auto-Selected
+                    </Badge>
+                  </div>
+                )}
               </div>
               <h5 className="font-bold text-xl text-gray-900 mb-3 font-poppins tracking-tight">{orientation.name}</h5>
               <p className="text-gray-600 text-base leading-relaxed">{orientation.description}</p>
+              {selectedOrientation === orientation.id && (
+                <p className="text-sm text-teal-600 mt-2 font-medium">Based on your photo crop</p>
+              )}
             </CardContent>
           </Card>
         ))}

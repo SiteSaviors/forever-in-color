@@ -148,6 +148,25 @@ export const useProductState = (): ProductState & ProductStateActions => {
     setUploadedImage(imageUrl);
     setSelectedStyle({ id: styleId, name: styleName });
     
+    // 🎯 GENIUS FEATURE: Auto-detect canvas orientation from image dimensions
+    const img = new Image();
+    img.onload = () => {
+      const aspectRatio = img.width / img.height;
+      let detectedOrientation = 'square';
+      
+      if (aspectRatio > 1.2) {
+        detectedOrientation = 'horizontal';
+      } else if (aspectRatio < 0.8) {
+        detectedOrientation = 'vertical';
+      } else {
+        detectedOrientation = 'square';
+      }
+      
+      console.log(`🎯 Auto-detected canvas orientation: ${detectedOrientation} (aspect ratio: ${aspectRatio.toFixed(2)})`);
+      setSelectedOrientation(detectedOrientation);
+    };
+    img.src = imageUrl;
+    
     // Mark step 1 as completed
     if (!completedSteps.includes(1)) {
       setCompletedSteps(prev => [...prev, 1]);
@@ -166,7 +185,7 @@ export const useProductState = (): ProductState & ProductStateActions => {
   };
 
   const handleOrientationSelect = (orientation: string) => {
-    console.log('Orientation selected:', orientation);
+    console.log('Orientation manually changed to:', orientation);
     setSelectedOrientation(orientation);
     // Reset size when orientation changes
     setSelectedSize("");
