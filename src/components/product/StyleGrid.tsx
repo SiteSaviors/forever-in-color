@@ -8,10 +8,7 @@ import { artStyles } from "@/data/artStyles";
 interface StyleGridProps {
   croppedImage: string | null;
   selectedStyle: number | null;
-  cropAspectRatio?: number;
   selectedOrientation?: string;
-  previewUrls?: { [key: number]: string };
-  autoGenerationComplete?: boolean;
   onStyleSelect: (styleId: number, styleName: string) => void;
   onComplete: () => void;
 }

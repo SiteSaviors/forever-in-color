@@ -1,5 +1,4 @@
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Sparkles, Crop, RotateCcw } from "lucide-react";
@@ -19,8 +18,7 @@ interface StyleSelectorProps {
 const StyleSelector = ({ 
   croppedImage, 
   selectedStyle, 
-  preSelectedStyle,
-  cropAspectRatio = 1, // Use actual crop aspect ratio, default to square
+  cropAspectRatio = 1,
   onStyleSelect, 
   onComplete,
   onRecropImage
@@ -104,7 +102,6 @@ const StyleSelector = ({
       <StyleGrid
         croppedImage={croppedImage}
         selectedStyle={selectedStyle}
-        cropAspectRatio={cropAspectRatio} // Pass the actual crop aspect ratio
         onStyleSelect={onStyleSelect}
         onComplete={handleComplete}
       />

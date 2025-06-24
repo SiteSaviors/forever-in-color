@@ -10,8 +10,6 @@ interface PhotoUploadAndStyleSelectionProps {
   selectedStyle: {id: number, name: string} | null;
   uploadedImage: string | null;
   selectedOrientation: string;
-  previewUrls: { [key: number]: string };
-  autoGenerationComplete: boolean;
   onPhotoAndStyleComplete: (imageUrl: string, styleId: number, styleName: string) => void;
   onContinue: () => void;
 }

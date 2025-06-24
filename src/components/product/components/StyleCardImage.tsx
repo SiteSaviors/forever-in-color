@@ -1,10 +1,8 @@
 
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Check, CheckCircle, Expand, Sparkles } from "lucide-react";
+import { Expand, Sparkles } from "lucide-react";
 import StyleCardLoadingOverlay from "./StyleCardLoadingOverlay";
-import MiniCanvasPreview from "./MiniCanvasPreview";
 
 interface StyleCardImageProps {
   style: {
@@ -41,15 +39,6 @@ const StyleCardImage = ({
   onCanvasPreviewClick,
   onGenerateStyle
 }: StyleCardImageProps) => {
-  // Determine orientation from crop aspect ratio
-  const getOrientation = () => {
-    if (cropAspectRatio === 1) return "square";
-    if (cropAspectRatio > 1) return "horizontal";
-    return "vertical";
-  };
-
-  const orientation = getOrientation();
-
   const handleCanvasPreviewClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (onCanvasPreviewClick) {
@@ -67,28 +56,6 @@ const StyleCardImage = ({
 
   // Use a more prominent aspect ratio for better hero image treatment
   const heroAspectRatio = cropAspectRatio > 0 ? cropAspectRatio : 4/3;
-
-  // Get style-specific selection colors - simplified without pulsating
-  const getSelectionColors = () => {
-    const colorMap: { [key: number]: { glow: string; check: string; bg: string } } = {
-      1: { glow: "shadow-[0_0_30px_rgba(107,114,128,0.5)]", check: "bg-gray-600", bg: "bg-gray-50/90" },
-      2: { glow: "shadow-[0_0_30px_rgba(245,158,11,0.5)]", check: "bg-amber-600", bg: "bg-amber-50/90" },
-      4: { glow: "shadow-[0_0_30px_rgba(59,130,246,0.5)]", check: "bg-blue-600", bg: "bg-blue-50/90" },
-      5: { glow: "shadow-[0_0_30px_rgba(236,72,153,0.5)]", check: "bg-pink-600", bg: "bg-pink-50/90" },
-      6: { glow: "shadow-[0_0_30px_rgba(168,85,247,0.5)]", check: "bg-purple-600", bg: "bg-purple-50/90" },
-      7: { glow: "shadow-[0_0_30px_rgba(6,182,212,0.5)]", check: "bg-cyan-600", bg: "bg-cyan-50/90" },
-      8: { glow: "shadow-[0_0_30px_rgba(100,116,139,0.5)]", check: "bg-slate-600", bg: "bg-slate-50/90" },
-      9: { glow: "shadow-[0_0_30px_rgba(244,63,94,0.5)]", check: "bg-rose-600", bg: "bg-rose-50/90" },
-      10: { glow: "shadow-[0_0_30px_rgba(34,197,94,0.5)]", check: "bg-emerald-600", bg: "bg-emerald-50/90" },
-      11: { glow: "shadow-[0_0_30px_rgba(139,69,193,0.5)]", check: "bg-violet-600", bg: "bg-violet-50/90" },
-      13: { glow: "shadow-[0_0_30px_rgba(99,102,241,0.5)]", check: "bg-indigo-600", bg: "bg-indigo-50/90" },
-      15: { glow: "shadow-[0_0_30px_rgba(234,179,8,0.5)]", check: "bg-yellow-600", bg: "bg-yellow-50/90" },
-    };
-    
-    return colorMap[style.id] || colorMap[1];
-  };
-
-  const selectionColors = getSelectionColors();
 
   // CRITICAL FIX: Hide blur overlay when generating or when we have content
   const showBlurOverlay = shouldBlur && !isGenerating && !hasPreviewOrCropped;
