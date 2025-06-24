@@ -1,4 +1,3 @@
-
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,8 +20,8 @@ interface StyleCardImageProps {
   hasPreviewOrCropped: boolean;
   shouldBlur?: boolean;
   isGenerating?: boolean;
-  onExpandClick: (e?: React.MouseEvent) => void;
-  onCanvasPreviewClick?: (e?: React.MouseEvent) => void;
+  onExpandClick: (e: React.MouseEvent) => void;
+  onCanvasPreviewClick?: (e: React.MouseEvent) => void;
   onGenerateStyle?: () => void;
 }
 
@@ -143,12 +142,12 @@ const StyleCardImage = ({
                   >
                     {isGenerating ? (
                       <div className="flex items-center gap-1.5">
-                        <div className="w-3 h-3 border-2 border-gray-400 border-t-gray-900 rounded-full animate-spin"></div>
+                        <div className="w-2.5 h-2.5 border-2 border-gray-400 border-t-gray-900 rounded-full animate-spin"></div>
                         <span>Generating...</span>
                       </div>
                     ) : (
                       <div className="flex items-center gap-1.5">
-                        <Sparkles className="w-3 h-3" />
+                        <Sparkles className="w-2.5 h-2.5" />
                         <span>Generate This Style</span>
                       </div>
                     )}
