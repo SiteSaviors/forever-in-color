@@ -152,65 +152,21 @@ const StyleGrid = ({
           console.log(`Rendering StyleCard for ${style.name} with orientation: ${selectedOrientation}`);
           
           return (
-            <div key={style.id} className="relative">
-              <StyleCard
-                style={style}
-                croppedImage={croppedImage}
-                selectedStyle={selectedStyle}
-                isPopular={isPopularStyle}
-                selectedOrientation={selectedOrientation}
-                showContinueButton={false}
-                preGeneratedPreview={hasAutoPreview ? previewUrls[style.id] : undefined}
-                onStyleClick={() => handleStyleSelect(style.id, style.name)}
-                onContinue={onComplete}
-                shouldBlur={shouldBlur}
-                isGenerating={isGenerating}
-              />
-              
-              {/* Premium Blur Overlay with Generate Button */}
-              {shouldBlur && (
-                <div className="absolute inset-0 z-40 rounded-xl overflow-hidden">
-                  {/* Sophisticated blur backdrop */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/60 backdrop-blur-md">
-                    {/* Subtle pattern overlay */}
-                    <div className="absolute inset-0 opacity-10"
-                         style={{
-                           backgroundImage: `radial-gradient(circle at 2px 2px, rgba(255,255,255,0.3) 1px, transparent 0)`,
-                           backgroundSize: '20px 20px'
-                         }}>
-                    </div>
-                  </div>
-                  
-                  {/* Generate Button - Centered */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Button
-                      onClick={() => handleGenerateStyle(style.id, style.name)}
-                      disabled={isGenerating}
-                      className="bg-white text-gray-900 hover:bg-gray-50 font-semibold px-6 py-3 rounded-xl shadow-2xl border-2 border-white/20 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-3xl"
-                    >
-                      {isGenerating ? (
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 border-2 border-gray-400 border-t-gray-900 rounded-full animate-spin"></div>
-                          <span>Generating...</span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2">
-                          <Sparkles className="w-4 h-4" />
-                          <span>Generate This Style</span>
-                        </div>
-                      )}
-                    </Button>
-                  </div>
-                  
-                  {/* Premium corner indicator */}
-                  <div className="absolute top-3 right-3">
-                    <div className="bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium text-gray-700 shadow-lg border border-white/50">
-                      Click to Generate
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+            <StyleCard
+              key={style.id}
+              style={style}
+              croppedImage={croppedImage}
+              selectedStyle={selectedStyle}
+              isPopular={isPopularStyle}
+              selectedOrientation={selectedOrientation}
+              showContinueButton={false}
+              preGeneratedPreview={hasAutoPreview ? previewUrls[style.id] : undefined}
+              onStyleClick={() => handleStyleSelect(style.id, style.name)}
+              onContinue={onComplete}
+              shouldBlur={shouldBlur}
+              isGenerating={isGenerating}
+              onGenerateStyle={() => handleGenerateStyle(style.id, style.name)}
+            />
           );
         })}
       </div>

@@ -23,6 +23,7 @@ interface StyleCardProps {
   isGenerating?: boolean;
   onStyleClick: (style: { id: number; name: string; description: string; image: string }) => void;
   onContinue?: () => void;
+  onGenerateStyle?: () => void;
 }
 
 const StyleCard = ({
@@ -36,7 +37,8 @@ const StyleCard = ({
   shouldBlur = false,
   isGenerating = false,
   onStyleClick,
-  onContinue
+  onContinue,
+  onGenerateStyle
 }: StyleCardProps) => {
   const { 
     isLoading, 
@@ -125,8 +127,10 @@ const StyleCard = ({
             isSelected={isSelected}
             hasPreviewOrCropped={hasPreviewOrCropped}
             shouldBlur={shouldBlur}
+            isGenerating={isGenerating}
             onExpandClick={() => {}} // Will be handled by lightboxes
             onCanvasPreviewClick={() => {}} // Will be handled by lightboxes
+            onGenerateStyle={onGenerateStyle}
           />
         </div>
 
