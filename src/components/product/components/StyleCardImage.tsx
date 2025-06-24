@@ -1,4 +1,3 @@
-
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,8 +20,8 @@ interface StyleCardImageProps {
   hasPreviewOrCropped: boolean;
   shouldBlur?: boolean;
   isGenerating?: boolean;
-  onExpandClick: () => void;
-  onCanvasPreviewClick?: () => void;
+  onExpandClick: (e: React.MouseEvent) => void;
+  onCanvasPreviewClick?: (e: React.MouseEvent) => void;
   onGenerateStyle?: () => void;
 }
 
