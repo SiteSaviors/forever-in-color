@@ -60,7 +60,7 @@ const StyleCardInfo = ({
   const styleInfo = getStyleInfo();
   
   return (
-    <div className={`p-3 md:p-5 space-y-2 md:space-y-4 min-h-[120px] md:min-h-[140px] flex flex-col relative ${shouldBlur ? 'opacity-50' : ''}`}>
+    <div className={`p-3 sm:p-3 md:p-5 space-y-2 sm:space-y-3 md:space-y-4 min-h-[140px] sm:min-h-[160px] md:min-h-[140px] flex flex-col relative ${shouldBlur ? 'opacity-50' : ''}`}>
       {/* Generated badge - absolute positioned */}
       {showGeneratedBadge && hasGeneratedPreview && isPopular && (
         <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs px-2 py-1 h-auto absolute top-2 md:top-3 right-2 md:right-3 z-10">
@@ -69,38 +69,36 @@ const StyleCardInfo = ({
         </Badge>
       )}
 
-      {/* Style badges - smaller and more refined, responsive */}
+      {/* Style badges - mobile: show only one main badge, desktop: show both */}
       <div className="flex gap-1 md:gap-1.5 justify-center flex-wrap">
-        {styleInfo.badges.map((badge, index) => (
-          <div
-            key={badge}
-            className={`${styleInfo.badgeColors[index]} text-white px-2 md:px-3 py-1 md:py-1.5 rounded-full text-xs font-semibold shadow-md`}
-          >
-            {badge}
-          </div>
-        ))}
+        <div className={`${styleInfo.badgeColors[0]} text-white px-2 md:px-3 py-1 md:py-1.5 rounded-full text-xs font-semibold shadow-md`}>
+          {styleInfo.badges[0]}
+        </div>
+        <div className={`hidden sm:block ${styleInfo.badgeColors[1]} text-white px-2 md:px-3 py-1 md:py-1.5 rounded-full text-xs font-semibold shadow-md`}>
+          {styleInfo.badges[1]}
+        </div>
       </div>
 
-      {/* Title with emoji - better spacing, responsive */}
+      {/* Title with emoji - mobile optimized */}
       <div className="text-center px-1 md:px-2">
-        <h5 className="font-poppins font-bold text-gray-900 text-base md:text-lg leading-tight tracking-tight">
+        <h5 className="font-poppins font-bold text-gray-900 text-base sm:text-lg md:text-lg leading-tight tracking-tight truncate sm:truncate">
           <span className="text-sm md:text-base">{styleInfo.emoji}</span> {style.name}
         </h5>
       </div>
 
-      {/* Description in rounded container - improved spacing, responsive */}
+      {/* Description - mobile: single line with ellipsis, desktop: full */}
       <div className="bg-gray-50 rounded-lg md:rounded-xl p-2 md:p-3 text-center flex-1 flex items-center">
-        <p className="font-inter font-medium text-gray-700 text-xs md:text-sm leading-relaxed w-full">
+        <p className="font-inter font-medium text-gray-700 text-xs sm:text-sm md:text-sm leading-relaxed w-full line-clamp-2 sm:line-clamp-none">
           {style.description}
         </p>
       </div>
       
-      {/* Action buttons - consistent spacing, responsive */}
+      {/* Action buttons - mobile optimized */}
       {showContinueButton && (
         <div className="pt-1">
           <Button 
             onClick={onContinueClick}
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-xs md:text-sm py-2 md:py-2.5 h-auto font-medium rounded-lg"
+            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-xs sm:text-sm md:text-sm py-2 sm:py-2.5 md:py-2.5 h-auto font-medium rounded-lg"
           >
             Continue with Style
           </Button>

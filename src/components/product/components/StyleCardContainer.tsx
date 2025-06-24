@@ -35,9 +35,9 @@ const StyleCardContainer = ({
         className={`group cursor-pointer transition-all duration-200 ease-out relative z-10 bg-white/98 border-0 
           shadow-md hover:shadow-lg md:shadow-lg md:hover:shadow-xl
           ${!shouldBlur && !isMobile ? 'hover:scale-[1.02] hover:-translate-y-1' : ''} 
-          h-full flex flex-col
+          min-h-[320px] sm:min-h-[400px] md:min-h-0 md:h-full flex flex-col overflow-hidden
           ${isSelected ? 
-            'ring-2 md:ring-4 ring-purple-500 shadow-purple-200 scale-[1.01] -translate-y-0.5' : 
+            'ring-2 ring-inset sm:ring-4 sm:ring-offset-2 ring-purple-500 shadow-purple-200 scale-[1.01] -translate-y-0.5' : 
             ''
           }
         `}

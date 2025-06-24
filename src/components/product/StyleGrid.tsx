@@ -56,7 +56,7 @@ const StyleGridContent = ({
   if (!croppedImage) {
     return (
       <div className="space-y-6">
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
           {artStyles.map((style) => (
             <div
               key={style.id}
@@ -110,7 +110,7 @@ const StyleGridContent = ({
   // Show actual style cards when photo is uploaded
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
         {artStyles.map((style) => {
           const isPopularStyle = popularStyleIds.includes(style.id);
           const isOriginalImage = style.id === 1;
