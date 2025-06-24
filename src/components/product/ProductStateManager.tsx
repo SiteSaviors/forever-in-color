@@ -43,7 +43,7 @@ export const useProductState = (): ProductState & ProductStateActions => {
   const [selectedStyle, setSelectedStyle] = useState<{id: number, name: string} | null>(null);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [selectedSize, setSelectedSize] = useState<string>("");
-  const [selectedOrientation, setSelectedOrientation] = useState<string>("horizontal");
+  const [selectedOrientation, setSelectedOrientation] = useState<string>("square");
   const [previewUrls, setPreviewUrls] = useState<{ [key: number]: string }>({});
   const [autoGenerationComplete, setAutoGenerationComplete] = useState(false);
   const [customizations, setCustomizations] = useState<CustomizationOptions>({
@@ -79,6 +79,7 @@ export const useProductState = (): ProductState & ProductStateActions => {
       
       const generatePopularPreviews = async () => {
         console.log('Auto-generating previews for popular styles:', popularStyleIds);
+        console.log('Current selected orientation:', selectedOrientation);
         
         // Convert orientation to aspect ratio for generation
         const getAspectRatio = (orientation: string) => {
@@ -94,6 +95,7 @@ export const useProductState = (): ProductState & ProductStateActions => {
         };
 
         const aspectRatio = getAspectRatio(selectedOrientation);
+        console.log(`Using aspect ratio ${aspectRatio} for auto-generation based on orientation ${selectedOrientation}`);
         
         for (const styleId of popularStyleIds) {
           const style = artStyles.find(s => s.id === styleId);
@@ -109,7 +111,7 @@ export const useProductState = (): ProductState & ProductStateActions => {
               try {
                 const watermarkedUrl = await addWatermarkToImage(previewUrl);
                 setPreviewUrls(prev => ({ ...prev, [styleId]: watermarkedUrl }));
-                console.log(`Auto-generated preview for ${style.name} completed with watermark`);
+                console.log(`Auto-generated preview for ${style.name} completed with watermark and aspect ratio ${aspectRatio}`);
               } catch (watermarkError) {
                 console.warn(`Failed to add watermark for ${style.name}, using original:`, watermarkError);
                 setPreviewUrls(prev => ({ ...prev, [styleId]: previewUrl }));
@@ -160,6 +162,7 @@ export const useProductState = (): ProductState & ProductStateActions => {
   };
 
   const handleOrientationSelect = (orientation: string) => {
+    console.log('Orientation selected:', orientation);
     setSelectedOrientation(orientation);
     // Reset size when orientation changes
     setSelectedSize("");
@@ -169,6 +172,7 @@ export const useProductState = (): ProductState & ProductStateActions => {
     }
     
     // Clear existing previews when orientation changes to regenerate with new aspect ratio
+    console.log('Clearing existing previews due to orientation change');
     setPreviewUrls({});
     setAutoGenerationComplete(false);
   };

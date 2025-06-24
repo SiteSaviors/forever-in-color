@@ -9,6 +9,7 @@ interface StyleGridProps {
   croppedImage: string | null;
   selectedStyle: number | null;
   cropAspectRatio?: number;
+  selectedOrientation?: string; // Add orientation prop
   previewUrls?: { [key: number]: string };
   autoGenerationComplete?: boolean;
   onStyleSelect: (styleId: number, styleName: string) => void;
@@ -19,6 +20,7 @@ const StyleGrid = ({
   croppedImage, 
   selectedStyle, 
   cropAspectRatio = 1,
+  selectedOrientation = "square", // Default to square
   previewUrls = {},
   autoGenerationComplete = false,
   onStyleSelect, 
@@ -27,7 +29,7 @@ const StyleGrid = ({
   const [loadingStyle, setLoadingStyle] = useState<number | null>(null);
 
   const handleStyleSelect = async (styleId: number, styleName: string) => {
-    console.log('StyleGrid handleStyleSelect called:', styleId, styleName);
+    console.log('StyleGrid handleStyleSelect called:', styleId, styleName, 'with orientation:', selectedOrientation);
     setLoadingStyle(styleId);
     
     try {
@@ -61,6 +63,19 @@ const StyleGrid = ({
     };
     
     return gradients[styleIdToIndex[styleId]] || gradients[0];
+  };
+
+  // Convert selected orientation to crop aspect ratio for generation
+  const getGenerationAspectRatio = () => {
+    switch (selectedOrientation) {
+      case 'vertical':
+        return 0.75; // 3:4 ratio
+      case 'horizontal':
+        return 1.33; // 4:3 ratio
+      case 'square':
+      default:
+        return 1; // 1:1 ratio
+    }
   };
 
   // Show placeholder thumbnails when no photo is uploaded
@@ -133,7 +148,7 @@ const StyleGrid = ({
               croppedImage={croppedImage}
               selectedStyle={selectedStyle}
               isPopular={[2, 4, 5].includes(style.id)} // Mark popular styles
-              cropAspectRatio={cropAspectRatio}
+              cropAspectRatio={getGenerationAspectRatio()} // Use orientation-based aspect ratio
               showContinueButton={false} // Don't show continue button on individual cards
               preGeneratedPreview={hasAutoPreview ? previewUrls[style.id] : undefined}
               onStyleClick={() => handleStyleSelect(style.id, style.name)}

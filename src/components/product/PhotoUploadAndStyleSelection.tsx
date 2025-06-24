@@ -9,6 +9,7 @@ import { ArrowRight } from "lucide-react";
 interface PhotoUploadAndStyleSelectionProps {
   selectedStyle: {id: number, name: string} | null;
   uploadedImage: string | null;
+  selectedOrientation: string; // Add orientation prop
   previewUrls: { [key: number]: string };
   autoGenerationComplete: boolean;
   onPhotoAndStyleComplete: (imageUrl: string, styleId: number, styleName: string) => void;
@@ -18,6 +19,7 @@ interface PhotoUploadAndStyleSelectionProps {
 const PhotoUploadAndStyleSelection = ({
   selectedStyle,
   uploadedImage,
+  selectedOrientation, // Use orientation prop
   previewUrls,
   autoGenerationComplete,
   onPhotoAndStyleComplete,
@@ -45,7 +47,7 @@ const PhotoUploadAndStyleSelection = ({
   };
 
   const handleStyleSelect = (styleId: number, styleName: string) => {
-    console.log('Style selected:', styleId, styleName);
+    console.log('Style selected:', styleId, styleName, 'with orientation:', selectedOrientation);
     setSelectedStyleId(styleId);
     setSelectedStyleName(styleName);
     
@@ -97,6 +99,7 @@ const PhotoUploadAndStyleSelection = ({
             croppedImage={croppedImage}
             selectedStyle={selectedStyleId}
             cropAspectRatio={cropAspectRatio}
+            selectedOrientation={selectedOrientation} // Pass orientation to StyleGrid
             previewUrls={previewUrls}
             autoGenerationComplete={autoGenerationComplete}
             onStyleSelect={handleStyleSelect}

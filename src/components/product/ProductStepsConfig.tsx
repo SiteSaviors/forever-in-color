@@ -1,4 +1,3 @@
-
 import { ReactNode } from "react";
 import { LucideIcon, Upload, Palette, Settings, ShoppingCart } from "lucide-react";
 import PhotoUploadAndStyleSelection from "./PhotoUploadAndStyleSelection";
@@ -78,6 +77,7 @@ export const useProductStepsConfig = ({
         <PhotoUploadAndStyleSelection
           selectedStyle={selectedStyle}
           uploadedImage={uploadedImage}
+          selectedOrientation={selectedOrientation} // Pass orientation to component
           previewUrls={previewUrls}
           autoGenerationComplete={autoGenerationComplete}
           onPhotoAndStyleComplete={onPhotoAndStyleComplete}
