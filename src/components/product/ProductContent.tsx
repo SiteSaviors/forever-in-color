@@ -64,32 +64,26 @@ const ProductContent = ({
     }
   };
 
-  // Function to check if a step can be accessed
+  // TESTING MODE: Allow access to all steps for easier testing
   const canAccessStep = (stepNumber: number) => {
-    if (stepNumber === 1) return true; // First step is always accessible
-    
-    // For steps 2-4, all previous steps must be completed
-    for (let i = 1; i < stepNumber; i++) {
-      if (!completedSteps.includes(i)) {
-        return false;
-      }
-    }
+    // Always return true during testing to unlock all steps
     return true;
+    
+    // Original logic (commented out for testing):
+    // if (stepNumber === 1) return true;
+    // for (let i = 1; i < stepNumber; i++) {
+    //   if (!completedSteps.includes(i)) {
+    //     return false;
+    //   }
+    // }
+    // return true;
   };
 
-  // Handle accordion value change with access control and visual feedback
+  // Handle accordion value change - now allows all steps
   const handleAccordionChange = (value: string) => {
     const stepNumber = parseInt(value.replace('step-', ''));
-    
-    if (canAccessStep(stepNumber)) {
-      setAccordionValue(value);
-      onCurrentStepChange(stepNumber);
-    } else {
-      // Provide visual feedback for locked steps (could add toast notification here)
-      console.log(`Step ${stepNumber} is locked. Complete previous steps first.`);
-      // Keep the current accordion value - don't change it
-      return;
-    }
+    setAccordionValue(value);
+    onCurrentStepChange(stepNumber);
   };
 
   const steps = useProductStepsConfig({
@@ -117,6 +111,10 @@ const ProductContent = ({
           <span className="font-medium">Your Progress</span>
           <span>{completedSteps.length} of 4 steps completed</span>
         </div>
+        {/* Testing indicator */}
+        <div className="text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded">
+          🧪 Testing Mode: All steps unlocked
+        </div>
       </div>
 
       <Accordion 
@@ -130,7 +128,7 @@ const ProductContent = ({
           const isCompleted = completedSteps.includes(step.number);
           const isNextStep = step.number === currentStep + 1;
           const isAccessible = canAccessStep(step.number);
-          const wasJustUnlocked = isAccessible && !isCompleted && step.number > 1 && completedSteps.includes(step.number - 1);
+          const wasJustUnlocked = false; // Not needed in testing mode
 
           return (
             <ProductStep
@@ -143,18 +141,7 @@ const ProductContent = ({
               wasJustUnlocked={wasJustUnlocked}
               selectedStyle={selectedStyle}
             >
-              {isAccessible ? step.content : (
-                <div className="text-center py-8 text-gray-500">
-                  <div className="mb-4">
-                    <Lock className="w-12 h-12 mx-auto text-gray-300" />
-                  </div>
-                  <p className="text-lg font-medium">Complete previous steps to unlock this section</p>
-                  <p className="text-sm mt-2">Please finish step {step.number - 1} before proceeding</p>
-                  <div className="mt-4 text-xs text-gray-400">
-                    Steps must be completed in order to ensure the best experience
-                  </div>
-                </div>
-              )}
+              {step.content}
             </ProductStep>
           );
         })}
