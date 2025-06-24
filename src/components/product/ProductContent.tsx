@@ -1,10 +1,10 @@
-
 import PhotoUploadAndStyleSelection from "./PhotoUploadAndStyleSelection";
 import OrientationSelector from "./OrientationSelector";
 import CustomizationSelector from "./CustomizationSelector";
 import ReviewAndOrder from "./ReviewAndOrder";
 import ProductStep from "./ProductStep";
 import { StylePreviewProvider } from "./contexts/StylePreviewContext";
+import { Accordion } from "@/components/ui/accordion";
 
 interface ProductContentProps {
   currentStep: number;
@@ -56,7 +56,7 @@ const ProductContent = ({
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="space-y-8">
+      <Accordion type="single" value={`step-${currentStep}`} className="space-y-8">
         {/* Step 1: Photo Upload & Style Selection - Only wrap this step with StylePreviewProvider */}
         <ProductStep
           stepNumber={1}
@@ -75,8 +75,11 @@ const ProductContent = ({
             >
               <PhotoUploadAndStyleSelection
                 selectedStyle={selectedStyle}
+                uploadedImage={uploadedImage}
+                selectedOrientation={selectedOrientation}
                 autoGenerationComplete={autoGenerationComplete}
                 onComplete={onPhotoAndStyleComplete}
+                onPhotoAndStyleComplete={onPhotoAndStyleComplete}
               />
             </StylePreviewProvider>
           )}
@@ -143,7 +146,7 @@ const ProductContent = ({
             />
           )}
         </ProductStep>
-      </div>
+      </Accordion>
     </div>
   );
 };

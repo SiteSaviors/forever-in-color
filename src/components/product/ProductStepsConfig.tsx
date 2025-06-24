@@ -93,6 +93,8 @@ export const useProductStepsConfig = ({
           selectedStyle={selectedStyle}
           uploadedImage={uploadedImage}
           selectedOrientation={selectedOrientation}
+          autoGenerationComplete={autoGenerationComplete}
+          onComplete={onPhotoAndStyleComplete}
           onPhotoAndStyleComplete={onPhotoAndStyleComplete}
           onContinue={onContinue}
         />
