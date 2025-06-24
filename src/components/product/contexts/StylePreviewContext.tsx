@@ -1,7 +1,7 @@
-
 import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 import { generateStylePreview } from '@/utils/stylePreviewApi';
 import { addWatermarkToImage } from '@/utils/watermarkUtils';
+import { useAuthStore } from '@/hooks/useAuthStore';
 
 interface PreviewState {
   status: 'idle' | 'loading' | 'success' | 'error';
@@ -68,6 +68,7 @@ export const StylePreviewProvider = ({
   selectedOrientation 
 }: StylePreviewProviderProps) => {
   const [previews, dispatch] = useReducer(stylePreviewReducer, initialState);
+  const { user } = useAuthStore();
 
   // Convert orientation to aspect ratio for API
   const getAspectRatio = useCallback((orientation: string) => {
@@ -86,6 +87,12 @@ export const StylePreviewProvider = ({
   useEffect(() => {
     if (!croppedImage) {
       dispatch({ type: 'RESET_ALL' });
+      return;
+    }
+
+    // TEMPORARY: Skip auto-generation if user is signed in to save on API costs during testing
+    if (user) {
+      console.log('🚫 Skipping auto-generation - user is signed in (testing mode)');
       return;
     }
 
@@ -148,7 +155,7 @@ export const StylePreviewProvider = ({
     };
 
     autoGeneratePreviews();
-  }, [croppedImage, selectedOrientation, getAspectRatio]);
+  }, [croppedImage, selectedOrientation, getAspectRatio, user]);
 
   // Manual generation function
   const generatePreview = useCallback(async (styleId: number, styleName: string) => {
