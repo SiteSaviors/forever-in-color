@@ -31,6 +31,7 @@ const PhotoUploadAndStyleSelection = ({
   const [selectedStyleName, setSelectedStyleName] = useState<string | null>(selectedStyle?.name || null);
   const [cropAspectRatio, setCropAspectRatio] = useState(1);
   const [showCropper, setShowCropper] = useState(false);
+  const [currentOrientation, setCurrentOrientation] = useState<string>(selectedOrientation);
 
   const handleImageUpload = (imageUrl: string) => {
     console.log('Image uploaded:', imageUrl);
@@ -40,21 +41,29 @@ const PhotoUploadAndStyleSelection = ({
   };
 
   const handleCropComplete = (croppedImageUrl: string, aspectRatio: number) => {
-    console.log('Crop completed with aspect ratio:', aspectRatio);
+    console.log('Crop completed with aspect ratio:', aspectRatio, 'and orientation:', currentOrientation);
     setCroppedImage(croppedImageUrl);
     setCropAspectRatio(aspectRatio);
     setShowCropper(false);
   };
 
+  const handleOrientationChangeInCropper = (newOrientation: string) => {
+    console.log('PhotoUploadAndStyleSelection: Orientation changed in cropper to:', newOrientation);
+    setCurrentOrientation(newOrientation);
+    // Clear existing style selections since orientation changed
+    setSelectedStyleId(null);
+    setSelectedStyleName(null);
+  };
+
   const handleStyleSelect = (styleId: number, styleName: string) => {
-    console.log('Style selected:', styleId, styleName, 'with orientation:', selectedOrientation);
+    console.log('Style selected:', styleId, styleName, 'with orientation:', currentOrientation);
     setSelectedStyleId(styleId);
     setSelectedStyleName(styleName);
   };
 
   const handleContinue = () => {
     if (croppedImage && selectedStyleId && selectedStyleName) {
-      console.log('Completing photo and style selection:', croppedImage, selectedStyleId, selectedStyleName);
+      console.log('Completing photo and style selection with orientation:', currentOrientation);
       onPhotoAndStyleComplete(croppedImage, selectedStyleId, selectedStyleName);
     }
     onContinue();
@@ -89,7 +98,9 @@ const PhotoUploadAndStyleSelection = ({
           </h3>
           <PhotoCropper
             imageUrl={uploadedImageFile}
+            selectedOrientation={currentOrientation}
             onCropComplete={handleCropComplete}
+            onOrientationChange={handleOrientationChangeInCropper}
           />
         </div>
       )}
@@ -100,12 +111,12 @@ const PhotoUploadAndStyleSelection = ({
           <div className="flex items-center gap-3">
             <div className="bg-blue-100 p-2 rounded-lg">
               <span className="text-blue-600 font-medium">
-                {selectedOrientation === 'vertical' ? '📱' : selectedOrientation === 'horizontal' ? '🖼️' : '⬜'}
+                {currentOrientation === 'vertical' ? '📱' : currentOrientation === 'horizontal' ? '🖼️' : '⬜'}
               </span>
             </div>
             <div>
               <p className="text-sm font-medium text-gray-900">
-                Current orientation: {selectedOrientation.charAt(0).toUpperCase() + selectedOrientation.slice(1)}
+                Current orientation: {currentOrientation.charAt(0).toUpperCase() + currentOrientation.slice(1)}
               </p>
               <p className="text-xs text-gray-600">
                 Your photo is cropped and ready for styling
@@ -135,7 +146,7 @@ const PhotoUploadAndStyleSelection = ({
             croppedImage={croppedImage}
             selectedStyle={selectedStyleId}
             cropAspectRatio={cropAspectRatio}
-            selectedOrientation={selectedOrientation}
+            selectedOrientation={currentOrientation}
             previewUrls={previewUrls}
             autoGenerationComplete={autoGenerationComplete}
             onStyleSelect={handleStyleSelect}

@@ -8,20 +8,36 @@ import Cropper from 'react-easy-crop';
 interface PhotoCropperProps {
   imageUrl: string;
   initialAspectRatio?: number;
+  selectedOrientation?: string;
   onCropComplete: (croppedImage: string, aspectRatio: number) => void;
-  onOrientationChange?: (aspectRatio: number) => void;
+  onOrientationChange?: (orientation: string) => void;
 }
 
 const PhotoCropper = ({ 
   imageUrl, 
   initialAspectRatio = 1,
+  selectedOrientation = "square",
   onCropComplete,
   onOrientationChange 
 }: PhotoCropperProps) => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
-  const [cropAspect, setCropAspect] = useState(initialAspectRatio);
+  
+  // Convert selectedOrientation to aspect ratio
+  const getAspectRatioFromOrientation = (orientation: string) => {
+    switch (orientation) {
+      case 'vertical':
+        return 3/4;
+      case 'horizontal':
+        return 4/3;
+      case 'square':
+      default:
+        return 1;
+    }
+  };
+
+  const [cropAspect, setCropAspect] = useState(getAspectRatioFromOrientation(selectedOrientation));
 
   const orientationOptions = [
     { 
@@ -103,7 +119,8 @@ const PhotoCropper = ({
     setZoom(1);
   };
 
-  const handleOrientationChange = (newAspect: number) => {
+  const handleOrientationChange = (newAspect: number, orientationId: string) => {
+    console.log('PhotoCropper: Orientation changed to:', orientationId, 'with aspect ratio:', newAspect);
     setCropAspect(newAspect);
     // Reset crop position when aspect ratio changes
     setCrop({ x: 0, y: 0 });
@@ -111,7 +128,8 @@ const PhotoCropper = ({
     
     // Notify parent component about orientation change
     if (onOrientationChange) {
-      onOrientationChange(newAspect);
+      console.log('PhotoCropper: Notifying parent of orientation change:', orientationId);
+      onOrientationChange(orientationId);
     }
   };
 
@@ -150,7 +168,7 @@ const PhotoCropper = ({
                   key={option.id}
                   variant={isActive ? "default" : "outline"}
                   size="sm"
-                  onClick={() => handleOrientationChange(option.ratio)}
+                  onClick={() => handleOrientationChange(option.ratio, option.id)}
                   className={`flex flex-col items-center gap-1 h-auto py-3 px-2 md:px-3 text-xs ${
                     isActive 
                       ? 'bg-purple-600 hover:bg-purple-700 text-white shadow-lg' 
