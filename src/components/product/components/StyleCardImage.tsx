@@ -116,8 +116,8 @@ const StyleCardImage = ({
           </div>
         </div>
 
-        {/* Mini Canvas Preview - refined positioning */}
-        {showGeneratedBadge && imageToShow && (
+        {/* Mini Canvas Preview - only show when NOT selected to avoid clutter */}
+        {showGeneratedBadge && imageToShow && !isSelected && (
           <div className="absolute top-3 right-3 z-10">
             <MiniCanvasPreview 
               imageUrl={imageToShow}
@@ -142,8 +142,8 @@ const StyleCardImage = ({
         {/* Loading Overlay */}
         {showLoadingState && <StyleCardLoadingOverlay />}
 
-        {/* Refined Generated Badge - moved to top-right */}
-        {showGeneratedBadge && (
+        {/* Generated Badge - only show when NOT selected to avoid clutter */}
+        {showGeneratedBadge && !isSelected && (
           <div className="absolute top-3 right-3 z-20">
             <Badge variant="secondary" className="bg-white/95 text-gray-700 font-semibold flex items-center gap-1.5 shadow-md backdrop-blur-sm border border-white/30">
               <CheckCircle className="w-3 h-3 text-green-600" />
@@ -152,19 +152,12 @@ const StyleCardImage = ({
           </div>
         )}
         
-        {/* Simplified Selection Overlay - just purple glow, no pulsating */}
+        {/* Simplified Selection Overlay - clean purple glow without top-right clutter */}
         {isSelected && (
           <div className="absolute inset-0 pointer-events-none z-30">
             {/* Static glowing border effect */}
             <div className={`absolute inset-0 rounded-t-xl ring-4 ring-purple-500 ${selectionColors.glow} transition-all duration-500`}></div>
             
-            {/* Corner selection indicator */}
-            <div className="absolute top-4 right-4">
-              <div className={`bg-purple-600 text-white rounded-full p-2.5 shadow-xl ring-4 ring-white/70 transform scale-110`}>
-                <Check className="w-5 h-5 stroke-[3]" />
-              </div>
-            </div>
-
             {/* Subtle selection background overlay */}
             <div className={`absolute inset-0 bg-purple-50/90 opacity-20 rounded-t-xl transition-all duration-300`}></div>
           </div>
