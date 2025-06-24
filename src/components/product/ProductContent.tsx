@@ -132,30 +132,29 @@ const ProductContent = ({
           const wasJustUnlocked = isAccessible && !isCompleted && step.number > 1 && completedSteps.includes(step.number - 1);
 
           return (
-            <div key={step.id} className={!isAccessible ? 'opacity-50 pointer-events-none' : ''}>
-              <ProductStep
-                step={step}
-                isCompleted={isCompleted}
-                isActive={isActive}
-                isNextStep={isNextStep && isAccessible}
-                isAccessible={isAccessible}
-                wasJustUnlocked={wasJustUnlocked}
-                selectedStyle={selectedStyle}
-              >
-                {isAccessible ? step.content : (
-                  <div className="text-center py-8 text-gray-500">
-                    <div className="mb-4">
-                      <Lock className="w-12 h-12 mx-auto text-gray-300" />
-                    </div>
-                    <p className="text-lg font-medium">Complete previous steps to unlock this section</p>
-                    <p className="text-sm mt-2">Please finish step {step.number - 1} before proceeding</p>
-                    <div className="mt-4 text-xs text-gray-400">
-                      Steps must be completed in order to ensure the best experience
-                    </div>
+            <ProductStep
+              key={step.id}
+              step={step}
+              isCompleted={isCompleted}
+              isActive={isActive}
+              isNextStep={isNextStep && isAccessible}
+              isAccessible={isAccessible}
+              wasJustUnlocked={wasJustUnlocked}
+              selectedStyle={selectedStyle}
+            >
+              {isAccessible ? step.content : (
+                <div className="text-center py-8 text-gray-500">
+                  <div className="mb-4">
+                    <Lock className="w-12 h-12 mx-auto text-gray-300" />
                   </div>
-                )}
-              </ProductStep>
-            </div>
+                  <p className="text-lg font-medium">Complete previous steps to unlock this section</p>
+                  <p className="text-sm mt-2">Please finish step {step.number - 1} before proceeding</p>
+                  <div className="mt-4 text-xs text-gray-400">
+                    Steps must be completed in order to ensure the best experience
+                  </div>
+                </div>
+              )}
+            </ProductStep>
           );
         })}
       </Accordion>
