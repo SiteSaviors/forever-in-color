@@ -1,58 +1,40 @@
 
 import { Button } from "@/components/ui/button";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Zap } from "lucide-react";
 
 interface StyleCardBlurOverlayProps {
-  style: {
-    id: number;
-    name: string;
-  };
-  isGenerating?: boolean;
-  onGenerateClick: (e: React.MouseEvent) => void;
+  shouldBlur: boolean;
+  isGenerating: boolean;
+  onGenerateStyle: (e?: React.MouseEvent) => void;
 }
 
-const StyleCardBlurOverlay = ({
-  style,
-  isGenerating = false,
-  onGenerateClick
-}: StyleCardBlurOverlayProps) => {
-  const handleGenerateClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    console.log(`🎨 GENERATE BUTTON CLICKED ▶️ ${style.name} (ID: ${style.id})`);
-    onGenerateClick(e);
-  };
+const StyleCardBlurOverlay = ({ shouldBlur, isGenerating, onGenerateStyle }: StyleCardBlurOverlayProps) => {
+  if (!shouldBlur || isGenerating) return null;
 
   return (
-    <div 
-      className="absolute inset-0 rounded-lg overflow-hidden z-20 cursor-pointer bg-black/50"
-      onClick={handleGenerateClick}
-    >
-      {/* Generate Button */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        <Button
-          onClick={handleGenerateClick}
-          disabled={isGenerating}
-          className="bg-white text-gray-900 hover:bg-gray-50 font-medium px-3 py-1.5 rounded-md shadow-lg transition-all duration-150 hover:scale-105 text-xs"
-        >
-          {isGenerating ? (
-            <div className="flex items-center gap-1.5">
-              <div className="w-2.5 h-2.5 border-2 border-gray-400 border-t-gray-900 rounded-full animate-spin"></div>
-              <span>Generating...</span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-1.5">
-              <Sparkles className="w-2.5 h-2.5" />
-              <span>Generate This Style</span>
-            </div>
-          )}
-        </Button>
-      </div>
-      
-      {/* Corner indicator */}
-      <div className="absolute top-2 right-2">
-        <div className="bg-white/90 px-1.5 py-0.5 rounded-full text-xs font-medium text-gray-700 shadow-sm">
-          Click to Generate
+    <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-15">
+      <div className="text-center space-y-4 p-4">
+        <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-full p-3 w-16 h-16 mx-auto flex items-center justify-center">
+          <Zap className="w-8 h-8 text-purple-600" />
         </div>
+        
+        <div className="space-y-2">
+          <h4 className="font-semibold text-gray-900 text-sm">
+            Generate This Style
+          </h4>
+          <p className="text-xs text-gray-600 max-w-32">
+            Click to see your photo transformed with AI
+          </p>
+        </div>
+        
+        <Button
+          onClick={onGenerateStyle}
+          size="sm"
+          className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200"
+        >
+          <Sparkles className="w-3 h-3 mr-1" />
+          Generate
+        </Button>
       </div>
     </div>
   );

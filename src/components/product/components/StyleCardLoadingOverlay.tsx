@@ -1,7 +1,14 @@
 
 import { Sparkles } from "lucide-react";
 
-const StyleCardLoadingOverlay = () => {
+interface StyleCardLoadingOverlayProps {
+  isGenerating: boolean;
+  styleName: string;
+}
+
+const StyleCardLoadingOverlay = ({ isGenerating, styleName }: StyleCardLoadingOverlayProps) => {
+  if (!isGenerating) return null;
+
   return (
     <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-20">
       <div className="text-white text-center space-y-3 px-4">
@@ -12,7 +19,7 @@ const StyleCardLoadingOverlay = () => {
           </div>
         </div>
         <div className="space-y-1">
-          <p className="text-sm font-semibold">Creating Your Style...</p>
+          <p className="text-sm font-semibold">Creating {styleName}...</p>
           <p className="text-xs text-gray-300">This may take 10-15 seconds</p>
         </div>
         <div className="flex justify-center space-x-1">
