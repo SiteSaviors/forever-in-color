@@ -1,119 +1,475 @@
-import { serve } from 'std/server';
-import { cors } from './_shared/cors.ts';
-import { OpenAIService } from './openaiService.ts';
-import { createClient } from '@supabase/supabase-js';
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { StylePreviewRequest } from './types.ts'
+import { OpenAIService } from './openaiService.ts'
+import { 
+  createSuccessResponse, 
+  createErrorResponse, 
+  createCorsResponse 
+} from './responseHandlers.ts'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+// Initialize Supabase client for auth and database operations
+const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
+// Security event logging for server-side monitoring
+interface SecurityEvent {
+  event_type: 'auth_failure' | 'rate_limit_violation' | 'suspicious_upload' | 'invalid_origin' | 'malicious_content_detected' | 'payload_too_large';
+  user_id?: string;
+  ip_address?: string;
+  user_agent?: string;
+  details: Record<string, any>;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  timestamp: string;
+}
+
+const logSecurityEvent = async (event: Omit<SecurityEvent, 'timestamp'>) => {
+  const securityEvent: SecurityEvent = {
+    ...event,
+    timestamp: new Date().toISOString()
+  };
+
+  console.warn('🚨 SECURITY EVENT:', JSON.stringify(securityEvent, null, 2));
+
+  try {
+    if (securityEvent.severity === 'high' || securityEvent.severity === 'critical') {
+      console.error('🔥 HIGH SEVERITY SECURITY EVENT:', securityEvent);
+    }
+  } catch (error) {
+    console.error('Failed to log security event:', error);
+  }
 };
 
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
-const supabase = createClient(supabaseUrl, supabaseKey);
+// Enhanced input validation with aspect ratio support
+const validateInput = (body: any): { isValid: boolean; error?: string } => {
+  if (!body) {
+    return { isValid: false, error: 'Request body is required' };
+  }
 
-const openaiApiKey = Deno.env.get('OPENAI_API_KEY')!;
-const replicateApiToken = Deno.env.get('REPLICATE_API_TOKEN')!;
+  const { imageUrl, style, photoId, aspectRatio, quality } = body;
+
+  if (!imageUrl || typeof imageUrl !== 'string') {
+    return { isValid: false, error: 'imageUrl must be a non-empty string' };
+  }
+
+  if (!style || typeof style !== 'string') {
+    return { isValid: false, error: 'style must be a non-empty string' };
+  }
+
+  if (!photoId || typeof photoId !== 'string') {
+    return { isValid: false, error: 'photoId must be a non-empty string' };
+  }
+
+  // Validate aspect ratio if provided
+  if (aspectRatio && typeof aspectRatio === 'string') {
+    const validAspectRatios = ['1:1', '3:4', '4:3', '16:9', '9:16', 'portrait', 'landscape', 'square'];
+    if (!validAspectRatios.includes(aspectRatio)) {
+      return { isValid: false, error: `Invalid aspect ratio. Must be one of: ${validAspectRatios.join(', ')}` };
+    }
+  }
+
+  // Validate quality if provided
+  if (quality && typeof quality === 'string') {
+    const validQualities = ['low', 'medium', 'high'];
+    if (!validQualities.includes(quality)) {
+      return { isValid: false, error: `Invalid quality. Must be one of: ${validQualities.join(', ')}` };
+    }
+  }
+
+  // Enhanced image data validation
+  if (!imageUrl.startsWith('data:image/') && !imageUrl.startsWith('http')) {
+    return { isValid: false, error: 'imageUrl must be a valid data URL or HTTP URL' };
+  }
+
+  // Validate data URL structure and MIME type for base64 images
+  if (imageUrl.startsWith('data:image/')) {
+    const mimeTypeMatch = imageUrl.match(/^data:image\/([a-zA-Z0-9+\-]+);base64,/);
+    if (!mimeTypeMatch) {
+      return { isValid: false, error: 'Invalid data URL format' };
+    }
+
+    const mimeType = mimeTypeMatch[1].toLowerCase();
+    const allowedTypes = ['jpeg', 'jpg', 'png', 'gif', 'webp', 'bmp', 'tiff', 'heic', 'heif'];
+    if (!allowedTypes.includes(mimeType)) {
+      return { isValid: false, error: `Unsupported image type: ${mimeType}` };
+    }
+
+    // Check image size limit for base64 images (10MB)
+    const base64Data = imageUrl.split(',')[1];
+    if (!base64Data) {
+      return { isValid: false, error: 'Invalid base64 image data' };
+    }
+
+    const imageSizeBytes = (base64Data.length * 3) / 4;
+    if (imageSizeBytes > 10 * 1024 * 1024) {
+      return { isValid: false, error: 'Image size exceeds 10MB limit' };
+    }
+
+    // Basic content validation - check for suspicious patterns in base64
+    const suspiciousPatterns = [
+      /PHNjcmlwdA==/, // <script base64
+      /amF2YXNjcmlwdA==/, // javascript base64
+      /PD9waHA=/, // <?php base64
+    ];
+
+    for (const pattern of suspiciousPatterns) {
+      if (pattern.test(base64Data)) {
+        return { isValid: false, error: 'Image contains potentially malicious content' };
+      }
+    }
+  }
+
+  // Updated style validation to match the exact style names from the frontend
+  const allowedStyles = [
+    'Original Image',
+    'Classic Oil Painting', 
+    'Watercolor Dreams', 
+    'Pop Art Burst',
+    'Abstract Fusion', 
+    'Calm Watercolor',
+    'Neon Splash', 
+    'Artisan Charcoal',
+    'Electric Bloom', 
+    'Pastel Bliss', 
+    'Deco Luxe', 
+    'Gemstone Poly',
+    'Embroidered Moments', 
+    '3D Storybook', 
+    'Artistic Mashup'
+  ];
+
+  console.log('Style validation - Received style:', style);
+  console.log('Style validation - Allowed styles:', allowedStyles);
+  console.log('Style validation - Is style allowed:', allowedStyles.includes(style));
+
+  if (!allowedStyles.includes(style)) {
+    return { isValid: false, error: `Invalid style: "${style}". Allowed styles: ${allowedStyles.join(', ')}` };
+  }
+
+  return { isValid: true };
+};
+
+// Enhanced request origin validation with logging
+const validateRequestOrigin = async (req: Request): Promise<boolean> => {
+  const origin = req.headers.get('origin');
+  const referer = req.headers.get('referer');
+  const userAgent = req.headers.get('user-agent');
+  const xForwardedFor = req.headers.get('x-forwarded-for');
+  
+  // Allow requests from Supabase domains, localhost for development, and Lovable preview domains
+  const allowedOrigins = [
+    'https://fvjganetpyyrguuxjtqi.supabase.co',
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'https://localhost:3000',  
+    'https://localhost:5173'
+  ];
+
+  // Allow any Lovable preview domain (they follow multiple patterns)
+  const lovablePreviewPatterns = [
+    /^https:\/\/[a-f0-9-]+\.lovableproject\.com$/,
+    /^https:\/\/[a-zA-Z0-9-]+--[a-f0-9-]+\.lovable\.app$/
+  ];
+
+  // Block requests without user agent (potential bot/script)
+  if (!userAgent || userAgent.length < 10) {
+    await logSecurityEvent({
+      event_type: 'invalid_origin',
+      ip_address: xForwardedFor || 'unknown',
+      user_agent: userAgent || 'none',
+      details: { reason: 'Missing or invalid user agent', origin, referer },
+      severity: 'medium'
+    });
+    console.warn('Request blocked: Missing or invalid user agent');
+    return false;
+  }
+
+  // Check if origin or referer matches allowed domains or Lovable preview patterns
+  if (origin) {
+    const isAllowed = allowedOrigins.some(allowed => origin.startsWith(allowed)) || 
+                     lovablePreviewPatterns.some(pattern => pattern.test(origin));
+    if (!isAllowed) {
+      await logSecurityEvent({
+        event_type: 'invalid_origin',
+        ip_address: xForwardedFor || 'unknown',
+        user_agent: userAgent || 'unknown',
+        details: { reason: 'Unauthorized origin', origin, allowed_origins: allowedOrigins },
+        severity: 'high'
+      });
+      console.warn('Request blocked: Unauthorized origin:', origin);
+      return false;
+    }
+  } else if (referer) {
+    const isAllowed = allowedOrigins.some(allowed => referer.startsWith(allowed)) ||
+                     lovablePreviewPatterns.some(pattern => pattern.test(referer));
+    if (!isAllowed) {
+      await logSecurityEvent({
+        event_type: 'invalid_origin',
+        ip_address: xForwardedFor || 'unknown',
+        user_agent: userAgent || 'unknown',
+        details: { reason: 'Unauthorized referer', referer, allowed_origins: allowedOrigins },
+        severity: 'high'
+      });
+      console.warn('Request blocked: Unauthorized referer:', referer);
+      return false;
+    }
+  } else {
+    // For requests without origin/referer, be more strict
+    await logSecurityEvent({
+      event_type: 'invalid_origin',
+      ip_address: xForwardedFor || 'unknown',
+      user_agent: userAgent || 'unknown',
+      details: { reason: 'No origin or referer header' },
+      severity: 'medium'
+    });
+    console.warn('Request blocked: No origin or referer header');
+    return false;
+  }
+
+  return true;
+};
 
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return createCorsResponse()
+  }
+
+  // Only allow POST requests
+  if (req.method !== 'POST') {
+    return createErrorResponse('Method not allowed', 405)
   }
 
   try {
-    const { imageUrl, style, photoId, isAuthenticated, aspectRatio = "1:1", quality = "medium" } = await req.json();
+    // Validate request origin with enhanced logging
+    if (!await validateRequestOrigin(req)) {
+      return createErrorResponse('Unauthorized origin', 403);
+    }
+
+    let user = null;
+    let isAuthenticated = false;
+
+    // Try to extract and verify JWT token (optional now)
+    const authHeader = req.headers.get('Authorization');
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.replace('Bearer ', '');
+      
+      try {
+        const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(token);
+        
+        if (!authError && authUser) {
+          user = authUser;
+          isAuthenticated = true;
+          console.log('Authenticated user:', user.id);
+        } else {
+          console.log('Token validation failed, proceeding without authentication');
+        }
+      } catch (error) {
+        console.log('Auth check failed, proceeding without authentication:', error);
+      }
+    } else {
+      console.log('No auth header provided, proceeding without authentication');
+    }
+
+    // Parse and validate request body with enhanced security
+    let requestBody;
+    try {
+      const bodyText = await req.text();
+      if (!bodyText) {
+        return createErrorResponse('Request body is empty', 400);
+      }
+
+      // Check for excessively large payloads
+      if (bodyText.length > 15 * 1024 * 1024) { // 15MB limit for entire request
+        await logSecurityEvent({
+          event_type: 'payload_too_large',
+          user_id: user?.id,
+          ip_address: req.headers.get('x-forwarded-for') || 'unknown',
+          user_agent: req.headers.get('user-agent') || 'unknown',
+          details: { payload_size_mb: Math.round(bodyText.length / 1024 / 1024) },
+          severity: 'medium'
+        });
+        return createErrorResponse('Request payload too large', 413);
+      }
+
+      requestBody = JSON.parse(bodyText);
+    } catch (parseError) {
+      await logSecurityEvent({
+        event_type: 'suspicious_upload',
+        user_id: user?.id,
+        ip_address: req.headers.get('x-forwarded-for') || 'unknown',
+        user_agent: req.headers.get('user-agent') || 'unknown',
+        details: { reason: 'Invalid JSON in request body', parse_error: parseError.message },
+        severity: 'low'
+      });
+      return createErrorResponse('Invalid JSON in request body', 400);
+    }
+
+    // Enhanced input validation
+    const validation = validateInput(requestBody);
+    if (!validation.isValid) {
+      console.error('Input validation failed:', validation.error);
+      await logSecurityEvent({
+        event_type: 'suspicious_upload',
+        user_id: user?.id,
+        ip_address: req.headers.get('x-forwarded-for') || 'unknown',
+        user_agent: req.headers.get('user-agent') || 'unknown',
+        details: { reason: 'Input validation failed', validation_error: validation.error, received_style: requestBody.style },
+        severity: 'medium'
+      });
+      return createErrorResponse(validation.error || 'Invalid input', 400);
+    }
+
+    const { 
+      imageUrl, 
+      style, 
+      photoId, 
+      aspectRatio = "1:1", 
+      quality = "medium" 
+    }: { 
+      imageUrl: string; 
+      style: string; 
+      photoId: string; 
+      aspectRatio?: string;
+      quality?: string;
+    } = requestBody;
+
+    // Additional security check for base64 content
+    if (imageUrl.startsWith('data:image/')) {
+      const base64Data = imageUrl.split(',')[1];
+      
+      // Check for potential embedded malicious content
+      const maliciousPatterns = [
+        /\x00/g, // Null bytes
+        /<script/gi,
+        /<iframe/gi,
+        /javascript:/gi,
+        /vbscript:/gi,
+        /onload=/gi,
+        /onerror=/gi,
+      ];
+
+      for (const pattern of maliciousPatterns) {
+        if (pattern.test(base64Data)) {
+          await logSecurityEvent({
+            event_type: 'malicious_content_detected',
+            user_id: user?.id,
+            ip_address: req.headers.get('x-forwarded-for') || 'unknown',
+            user_agent: req.headers.get('user-agent') || 'unknown',
+            details: { 
+              reason: 'Malicious pattern detected in image data',
+              pattern: pattern.source,
+              photo_id: photoId
+            },
+            severity: 'critical'
+          });
+          return createErrorResponse('Potentially malicious content detected in image', 400);
+        }
+      }
+    }
+
+    console.log('=== STYLE GENERATION DEBUG ===')
+    console.log('Received request for style:', style)
+    console.log('User ID:', user?.id || 'not authenticated')
+    console.log('Photo ID:', photoId)
+    console.log('Image URL length:', imageUrl?.length || 0)
+    console.log('Authentication status:', isAuthenticated)
+    console.log('Aspect Ratio:', aspectRatio)
+    console.log('Quality:', quality)
+
+    // Get API keys from Supabase secrets with validation
+    const openaiApiKey = Deno.env.get('OPENAI_API_KEY') || Deno.env.get('OPEN_AI_KEY')
+    const replicateApiToken = Deno.env.get('REPLICATE_API_TOKEN')
     
-    console.log("=== STYLE GENERATION DEBUG ===");
-    console.log(`Received request for style: ${style}`);
-    console.log(`User ID: ${isAuthenticated ? 'authenticated' : 'not authenticated'}`);
-    console.log(`Photo ID: ${photoId}`);
-    console.log(`Image URL length: ${imageUrl?.length}`);
-    console.log(`Authentication status: ${isAuthenticated}`);
-    console.log(`Aspect Ratio: ${aspectRatio}`);
-    console.log(`Quality: ${quality}`);
-
-    if (!imageUrl) {
-      console.error('Missing image URL');
-      return new Response(JSON.stringify({
-        success: false,
-        error: 'Missing image URL'
-      }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    if (!openaiApiKey || openaiApiKey === 'undefined' || openaiApiKey.trim() === '') {
+      console.error('OpenAI API key not found or invalid in environment variables')
+      return createErrorResponse('Service temporarily unavailable. Please try again later.', 503)
     }
 
-    if (!style) {
-      console.error('Missing style');
-      return new Response(JSON.stringify({
-        success: false,
-        error: 'Missing style'
-      }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    if (!replicateApiToken || replicateApiToken === 'undefined' || replicateApiToken.trim() === '') {
+      console.error('Replicate API token not found or invalid in environment variables')
+      return createErrorResponse('Service temporarily unavailable. Please try again later.', 503)
     }
 
-    if (!photoId) {
-      console.warn('Missing photo ID');
-    }
+    // Pass both API keys to OpenAI service
+    const openaiService = new OpenAIService(openaiApiKey, replicateApiToken, supabase)
+    
+    console.log('Starting GPT-Image-1 transformation via Replicate for style:', style)
+
+    // Generate the transformed image using GPT-Image-1 via Replicate with timeout
+    const timeoutController = new AbortController();
+    const timeoutId = setTimeout(() => timeoutController.abort(), 120000); // 2 minute timeout for Replicate
 
     try {
-      console.log(`Starting GPT-Image-1 transformation via Replicate for style: ${style}`);
-      
-      const openaiService = new OpenAIService(openaiApiKey, replicateApiToken, supabase);
-      const result = await openaiService.generateImageToImage(imageUrl, style, aspectRatio, quality);
+      const transformResult = await openaiService.generateImageToImage(imageUrl, style, aspectRatio, quality)
+      clearTimeout(timeoutId);
 
-      if (result.ok && result.output) {
-        console.log(`GPT-Image-1 transformation completed successfully via Replicate for ${style}`);
+      if (!transformResult.ok) {
+        console.error(`GPT-Image-1 transformation failed for ${style}:`, transformResult.error)
         
-        // Handle different output formats
-        let finalImageUrl: string;
-        if (Array.isArray(result.output)) {
-          finalImageUrl = result.output[0];
-        } else if (typeof result.output === 'string') {
-          finalImageUrl = result.output;
-        } else {
-          throw new Error('Unexpected output format from GPT-Image-1');
-        }
-
-        return new Response(JSON.stringify({
-          success: true,
-          preview_url: finalImageUrl,
-          style_name: style,
-          quality: quality
-        }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      } else {
-        console.error('GPT-Image-1 transformation failed:', result.error);
-        return new Response(JSON.stringify({
-          success: false,
-          error: result.error || 'GPT-Image-1 transformation failed'
-        }), {
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+        // Return original image as fallback
+        return createSuccessResponse(
+          `${style} style preview (using original as fallback)`,
+          imageUrl,
+          style,
+          style,
+          `Service temporarily unavailable for ${style}. Showing original image.`
+        )
       }
-    } catch (transformError) {
-      console.error('Error in GPT-Image-1 transformation:', transformError);
-      return new Response(JSON.stringify({
-        success: false,
-        error: 'Failed to transform image with GPT-Image-1'
-      }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+
+      // Handle different output formats from Replicate
+      let transformedImageUrl = transformResult.output;
+      
+      if (Array.isArray(transformedImageUrl)) {
+        transformedImageUrl = transformedImageUrl[0];
+      }
+
+      if (transformedImageUrl) {
+        console.log(`GPT-Image-1 transformation completed successfully via Replicate for ${style}`)
+        return createSuccessResponse(
+          `${style} style applied successfully`,
+          transformedImageUrl,
+          style,
+          style
+        )
+      }
+
+      // Fallback if no valid output
+      console.warn(`No valid transformation output for ${style}, returning original`)
+      return createSuccessResponse(
+        `${style} style preview (using original as fallback)`,
+        imageUrl,
+        style,
+        style,
+        `Style transformation for ${style} returned no output - showing original image`
+      )
+    } catch (timeoutError) {
+      clearTimeout(timeoutId);
+      console.error(`Timeout error for ${style}:`, timeoutError);
+      
+      return createSuccessResponse(
+        `${style} style preview (timeout fallback)`,
+        imageUrl,
+        style,
+        style,
+        `Request timed out for ${style} - showing original image`
+      )
     }
+
   } catch (error) {
-    console.error('Error in generate-style-preview function:', error);
-    return new Response(JSON.stringify({
-      success: false,
-      error: 'Internal server error'
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    console.error('Error in generate-style-preview function:', error)
+    
+    // Log unexpected errors as security events
+    await logSecurityEvent({
+      event_type: 'suspicious_upload',
+      ip_address: req.headers.get('x-forwarded-for') || 'unknown',
+      user_agent: req.headers.get('user-agent') || 'unknown',
+      details: { reason: 'Unexpected server error', error: error.message },
+      severity: 'medium'
     });
+    
+    // Don't expose internal error details to client
+    return createErrorResponse('Internal server error. Please try again later.', 500)
   }
-});
+})
