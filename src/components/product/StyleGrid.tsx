@@ -56,12 +56,11 @@ const StyleGridContent = ({
   if (!croppedImage) {
     return (
       <div className="space-y-6">
-        {/* Mobile-first responsive grid: single column on mobile, 2 on tablet, 3 on desktop */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 px-4 sm:px-2 md:px-0">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
           {artStyles.map((style) => (
             <div
               key={style.id}
-              className="group relative bg-white rounded-xl overflow-hidden border-2 border-gray-200 min-h-[280px] shadow-lg hover:shadow-xl transition-all duration-300"
+              className="group relative bg-white rounded-xl overflow-hidden border-2 border-gray-200 aspect-square shadow-lg hover:shadow-xl transition-all duration-300"
             >
               {/* Premium glossy gradient background */}
               <div className={`absolute inset-0 bg-gradient-to-br ${getStyleGradient(style.id)} opacity-90`}>
@@ -111,8 +110,7 @@ const StyleGridContent = ({
   // Show actual style cards when photo is uploaded
   return (
     <div className="space-y-6">
-      {/* Mobile-first responsive grid: single column on mobile, 2 on tablet, 3 on desktop */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 px-4 sm:px-2 md:px-0">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
         {artStyles.map((style) => {
           const isPopularStyle = popularStyleIds.includes(style.id);
           const isOriginalImage = style.id === 1;

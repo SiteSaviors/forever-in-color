@@ -26,22 +26,24 @@ const StyleCardContainer = ({
   };
 
   return (
-    <div className="relative w-full">
-      {/* Mobile-first card with consistent height and inner ring for selection */}
+    <div className="relative p-1 md:p-2">
+      {/* Simplified background */}
+      <div className="absolute inset-0 bg-gray-50 rounded-xl opacity-70"></div>
+      
+      {/* Optimized card with mobile-first responsive design */}
       <Card 
-        className={`group cursor-pointer transition-all duration-200 ease-out bg-white border-0 
-          shadow-sm hover:shadow-md 
-          ${!shouldBlur && !isMobile ? 'hover:scale-[1.01] hover:-translate-y-0.5' : ''} 
-          min-h-[280px] overflow-hidden rounded-xl
-          ring-offset-2 ring-offset-white
+        className={`group cursor-pointer transition-all duration-200 ease-out relative z-10 bg-white/98 border-0 
+          shadow-md hover:shadow-lg md:shadow-lg md:hover:shadow-xl
+          ${!shouldBlur && !isMobile ? 'hover:scale-[1.02] hover:-translate-y-1' : ''} 
+          h-full flex flex-col
           ${isSelected ? 
-            'ring-4 ring-purple-500 shadow-lg' : 
-            'ring-0'
+            'ring-2 md:ring-4 ring-purple-500 shadow-purple-200 scale-[1.01] -translate-y-0.5' : 
+            ''
           }
         `}
         onClick={handleCardClick}
       >
-        <CardContent className="p-0 h-full flex flex-col">
+        <CardContent className="p-0 overflow-hidden rounded-xl h-full flex flex-col">
           {children}
         </CardContent>
       </Card>
