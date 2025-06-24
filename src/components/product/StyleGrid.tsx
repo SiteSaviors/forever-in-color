@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Upload, ImageIcon } from "lucide-react";
 import StyleCard from "./StyleCard";
