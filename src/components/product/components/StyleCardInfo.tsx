@@ -57,47 +57,47 @@ const StyleCardInfo = ({
   const styleInfo = getStyleInfo();
   
   return (
-    <div className={`p-4 space-y-4 min-h-[120px] flex flex-col justify-between relative ${shouldBlur ? 'opacity-50' : ''}`}>
+    <div className={`p-5 space-y-4 min-h-[140px] flex flex-col relative ${shouldBlur ? 'opacity-50' : ''}`}>
       {/* Generated badge - absolute positioned */}
       {showGeneratedBadge && hasGeneratedPreview && isPopular && (
-        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs px-2 py-0.5 h-auto absolute top-2 right-2 z-10">
+        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs px-2 py-1 h-auto absolute top-3 right-3 z-10">
           <Sparkles className="w-3 h-3 mr-1" />
           <span className="hidden sm:inline">Generated</span>
         </Badge>
       )}
 
-      {/* Style badges */}
-      <div className="flex gap-2 justify-center">
+      {/* Style badges - smaller and more refined */}
+      <div className="flex gap-1.5 justify-center">
         {styleInfo.badges.map((badge, index) => (
           <div
             key={badge}
-            className={`${styleInfo.badgeColors[index]} text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg`}
+            className={`${styleInfo.badgeColors[index]} text-white px-3 py-1.5 rounded-full text-xs font-semibold shadow-md`}
           >
             {badge}
           </div>
         ))}
       </div>
 
-      {/* Title with emoji - Updated typography */}
-      <div className="text-center">
-        <h5 className="font-poppins font-bold text-gray-900 text-xl leading-tight tracking-tighter">
+      {/* Title with emoji - better spacing */}
+      <div className="text-center px-2">
+        <h5 className="font-poppins font-bold text-gray-900 text-lg leading-tight tracking-tight">
           {styleInfo.emoji} {style.name}
         </h5>
       </div>
 
-      {/* Description in rounded container - Updated typography */}
-      <div className="bg-gray-100 rounded-2xl p-4 text-center">
-        <p className="font-inter font-bold text-gray-800 text-sm leading-relaxed">
+      {/* Description in rounded container - improved spacing */}
+      <div className="bg-gray-50 rounded-xl p-3 text-center flex-1 flex items-center">
+        <p className="font-inter font-medium text-gray-700 text-sm leading-relaxed w-full">
           {style.description}
         </p>
       </div>
       
-      {/* Action buttons - only show for generated styles and when not blurred */}
+      {/* Action buttons - consistent spacing */}
       {showGenerateButton && hasGeneratedPreview && (
-        <div className="pt-2">
+        <div className="pt-1">
           <Button 
             onClick={onContinueClick}
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-sm py-2 h-auto font-medium"
+            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-sm py-2.5 h-auto font-medium rounded-lg"
           >
             Continue with Style
           </Button>
