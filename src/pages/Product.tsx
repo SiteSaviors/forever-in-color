@@ -53,6 +53,9 @@ const Product = () => {
           onSizeSelect={handleSizeSelect}
           onCustomizationChange={handleCustomizationChange}
         />
+        
+        {/* Add Testimonials Section */}
+        <ProductTestimonials />
       </div>
 
       <PriceCalculator
