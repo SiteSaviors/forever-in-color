@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -140,10 +141,10 @@ const PhotoUpload = ({ onImageUpload, initialImage }: PhotoUploadProps) => {
             
             <div className="space-y-2">
               <h3 className="text-xl font-semibold text-gray-900">
-                {isUploading ? 'Uploading...' : 'Upload Your Photo'}
+                {isUploading ? 'Uploading...' : 'Start with Your Photo'}
               </h3>
               <p className="text-gray-600">
-                Drag and drop your image here, or click to browse
+                Upload a high-quality image to transform into art
               </p>
             </div>
             
