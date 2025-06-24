@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Mic, Music, Clock, Waveform } from "lucide-react";
+import { Mic, Music, Clock, AudioWaveform } from "lucide-react";
 
 interface PremiumVideoOptionsProps {
   livingMemoryEnabled: boolean;
@@ -32,7 +32,7 @@ const PremiumVideoOptions = ({
     <Card className="border-purple-200 bg-gradient-to-r from-purple-50/30 to-pink-50/30">
       <CardHeader>
         <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-          <Waveform className="w-5 h-5 text-purple-600" />
+          <AudioWaveform className="w-5 h-5 text-purple-600" />
           Premium Video Enhancements
         </CardTitle>
       </CardHeader>
@@ -105,7 +105,7 @@ const PremiumVideoOptions = ({
         {/* Voice Enhancement */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Waveform className="w-5 h-5 text-purple-600" />
+            <AudioWaveform className="w-5 h-5 text-purple-600" />
             <div>
               <h5 className="font-medium text-gray-900">AI Voice Enhancement</h5>
               <p className="text-sm text-gray-600">Improve audio clarity and reduce noise</p>
