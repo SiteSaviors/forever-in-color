@@ -1,3 +1,4 @@
+
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -119,11 +120,11 @@ const StyleCardImage = ({
               </div>
             )}
 
-            {/* Premium Blur Overlay with Generate Button - ONLY on image area with rounded corners */}
+            {/* Premium Blur Overlay with Generate Button - ONLY on image area */}
             {shouldBlur && (
               <div className="absolute inset-0 rounded-lg overflow-hidden">
                 {/* Sophisticated blur backdrop */}
-                <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/60 backdrop-blur-md rounded-lg">
+                <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/60 backdrop-blur-md">
                   {/* Subtle pattern overlay */}
                   <div className="absolute inset-0 opacity-10"
                        style={{
@@ -133,25 +134,32 @@ const StyleCardImage = ({
                   </div>
                 </div>
                 
-                {/* Generate Button - Centered and smaller */}
+                {/* Generate Button - Centered */}
                 <div className="absolute inset-0 flex items-center justify-center">
                   <Button
                     onClick={handleGenerateClick}
                     disabled={isGenerating}
-                    className="bg-white text-gray-900 hover:bg-gray-50 font-medium px-3 py-1.5 rounded-md shadow-xl border border-white/20 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-2xl text-xs"
+                    className="bg-white text-gray-900 hover:bg-gray-50 font-semibold px-4 py-2 rounded-lg shadow-2xl border-2 border-white/20 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-3xl text-sm"
                   >
                     {isGenerating ? (
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-2.5 h-2.5 border-2 border-gray-400 border-t-gray-900 rounded-full animate-spin"></div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 border-2 border-gray-400 border-t-gray-900 rounded-full animate-spin"></div>
                         <span>Generating...</span>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-1.5">
-                        <Sparkles className="w-2.5 h-2.5" />
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-3 h-3" />
                         <span>Generate This Style</span>
                       </div>
                     )}
                   </Button>
+                </div>
+                
+                {/* Premium corner indicator */}
+                <div className="absolute top-2 right-2">
+                  <div className="bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium text-gray-700 shadow-lg border border-white/50">
+                    Click to Generate
+                  </div>
                 </div>
               </div>
             )}
