@@ -34,6 +34,9 @@ const StyleCardInfo = ({
   // Don't show generate button for Original Image (ID: 1) or when blurred
   const showGenerateButton = style.id !== 1 && !shouldBlur;
   
+  // Show continue button for Original Image (ID: 1) always, or for other styles when they have generated previews
+  const showContinueButton = style.id === 1 || showContinueInCard;
+  
   // Get style-specific badges and emoji
   const getStyleInfo = () => {
     const styleConfigs: { [key: number]: { badges: string[], emoji: string, badgeColors: string[] } } = {
@@ -93,7 +96,7 @@ const StyleCardInfo = ({
       </div>
       
       {/* Action buttons - consistent spacing */}
-      {showGenerateButton && hasGeneratedPreview && (
+      {showContinueButton && (
         <div className="pt-1">
           <Button 
             onClick={onContinueClick}
