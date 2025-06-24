@@ -1,3 +1,4 @@
+
 import { ReactNode } from "react";
 import { LucideIcon, Upload, Palette, Settings, ShoppingCart } from "lucide-react";
 import PhotoUploadAndStyleSelection from "./PhotoUploadAndStyleSelection";
@@ -26,6 +27,7 @@ interface ProductStep {
   required: boolean;
   estimatedTime: string;
   isCompleted: boolean;
+  isAccessible: boolean;
   content: ReactNode;
 }
 
@@ -63,6 +65,19 @@ export const useProductStepsConfig = ({
   onContinue
 }: UseProductStepsConfigProps): ProductStep[] => {
   
+  // Function to check if a step is accessible
+  const canAccessStep = (stepNumber: number) => {
+    if (stepNumber === 1) return true; // First step is always accessible
+    
+    // For steps 2-4, all previous steps must be completed
+    for (let i = 1; i < stepNumber; i++) {
+      if (!completedSteps.includes(i)) {
+        return false;
+      }
+    }
+    return true;
+  };
+
   return [
     {
       id: "step-1",
@@ -73,11 +88,12 @@ export const useProductStepsConfig = ({
       required: true,
       estimatedTime: "2-3 min",
       isCompleted: completedSteps.includes(1),
+      isAccessible: true,
       content: (
         <PhotoUploadAndStyleSelection
           selectedStyle={selectedStyle}
           uploadedImage={uploadedImage}
-          selectedOrientation={selectedOrientation} // Pass orientation to component
+          selectedOrientation={selectedOrientation}
           previewUrls={previewUrls}
           autoGenerationComplete={autoGenerationComplete}
           onPhotoAndStyleComplete={onPhotoAndStyleComplete}
@@ -94,6 +110,7 @@ export const useProductStepsConfig = ({
       required: true,
       estimatedTime: "1-2 min",
       isCompleted: completedSteps.includes(2),
+      isAccessible: canAccessStep(2),
       content: (
         <div className="space-y-6">
           <OrientationSelector
@@ -115,6 +132,7 @@ export const useProductStepsConfig = ({
       required: false,
       estimatedTime: "1-2 min",
       isCompleted: completedSteps.includes(3),
+      isAccessible: canAccessStep(3),
       content: (
         <CustomizationSelector
           selectedSize={selectedSize}
@@ -132,6 +150,7 @@ export const useProductStepsConfig = ({
       required: true,
       estimatedTime: "2-3 min",
       isCompleted: completedSteps.includes(4),
+      isAccessible: canAccessStep(4),
       content: (
         <OrderSummary
           uploadedImage={uploadedImage}
