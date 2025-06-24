@@ -78,16 +78,16 @@ const StyleCardInfo = ({
         ))}
       </div>
 
-      {/* Title with emoji */}
+      {/* Title with emoji - Updated typography */}
       <div className="text-center">
-        <h5 className="font-bold text-gray-900 text-xl leading-tight tracking-wide">
+        <h5 className="font-poppins font-bold text-gray-900 text-xl leading-tight tracking-tighter">
           {styleInfo.emoji} {style.name}
         </h5>
       </div>
 
-      {/* Description in rounded container */}
+      {/* Description in rounded container - Updated typography */}
       <div className="bg-gray-100 rounded-2xl p-4 text-center">
-        <p className="font-medium text-gray-800 text-sm leading-relaxed">
+        <p className="font-inter font-bold text-gray-800 text-sm leading-relaxed">
           {style.description}
         </p>
       </div>
