@@ -1,7 +1,7 @@
 
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { CheckCircle, Sparkles, Crown } from "lucide-react";
 
 interface StyleCardInfoProps {
   style: {
@@ -16,8 +16,8 @@ interface StyleCardInfoProps {
   showGeneratedBadge: boolean;
   showContinueInCard: boolean;
   shouldBlur?: boolean;
-  onContinueClick: (e: React.MouseEvent) => void;
-  onGenerateClick?: (e: React.MouseEvent) => void;
+  onContinueClick: () => void;
+  onGenerateClick: () => void;
 }
 
 const StyleCardInfo = ({
@@ -31,40 +31,51 @@ const StyleCardInfo = ({
   onContinueClick,
   onGenerateClick
 }: StyleCardInfoProps) => {
-  // Don't show generate button for Original Image (ID: 1) or when blurred
-  const showGenerateButton = style.id !== 1 && !shouldBlur;
-  
   return (
-    <div className={`p-4 space-y-3 min-h-[90px] flex flex-col justify-between relative ${shouldBlur ? 'opacity-50' : ''}`}>
-      {/* Clean title and description */}
-      <div className="space-y-2">
-        <div className="flex items-start justify-between gap-2">
-          <h5 className="font-playfair font-bold text-gray-900 text-lg leading-tight tracking-wide flex-1">
+    <div className="p-4 flex flex-col flex-1">
+      {/* Header with badges */}
+      <div className="flex items-start justify-between mb-2">
+        <div className="flex-1 min-w-0">
+          <h3 className="font-bold text-sm text-black leading-tight mb-1 truncate">
             {style.name}
-          </h5>
-          {/* Only show Generated badge for auto-generated popular styles */}
-          {showGeneratedBadge && hasGeneratedPreview && isPopular && (
-            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs px-2 py-0.5 h-auto">
-              <Sparkles className="w-3 h-3 mr-1" />
-              <span className="hidden sm:inline">Generated</span>
+          </h3>
+          <p className="text-xs text-black/70 leading-relaxed">
+            {style.description}
+          </p>
+        </div>
+        
+        {/* Badges container */}
+        <div className="flex flex-col gap-1 ml-2 flex-shrink-0">
+          {isPopular && (
+            <Badge 
+              variant="secondary" 
+              className="bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border-amber-200 text-xs px-2 py-0.5 font-medium flex items-center gap-1"
+            >
+              <Crown className="w-2.5 h-2.5" />
+              Popular
+            </Badge>
+          )}
+          
+          {showGeneratedBadge && (
+            <Badge 
+              variant="secondary" 
+              className="bg-gradient-to-r from-emerald-100 to-green-100 text-emerald-800 border-emerald-200 text-xs px-2 py-0.5 font-medium flex items-center gap-1"
+            >
+              <CheckCircle className="w-2.5 h-2.5" />
+              Generated
             </Badge>
           )}
         </div>
-
-        {/* Clean description */}
-        <p className="font-inter text-sm text-gray-600 leading-relaxed line-clamp-2">
-          {style.description}
-        </p>
       </div>
-      
-      {/* Action buttons - only show for generated styles and when not blurred */}
-      {showGenerateButton && hasGeneratedPreview && (
-        <div className="pt-1">
-          <Button 
+
+      {/* Continue button - appears at bottom after generation */}
+      {showContinueInCard && (
+        <div className="mt-auto pt-3">
+          <Button
             onClick={onContinueClick}
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-sm py-2 h-auto font-medium"
+            className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold py-2.5 px-4 rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02] text-sm"
           >
-            Continue with Style
+            Continue with {style.name}
           </Button>
         </div>
       )}
