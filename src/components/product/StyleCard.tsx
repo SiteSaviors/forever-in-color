@@ -19,6 +19,8 @@ interface StyleCardProps {
   selectedOrientation?: string;
   showContinueButton?: boolean;
   preGeneratedPreview?: string;
+  shouldBlur?: boolean;
+  isGenerating?: boolean;
   onStyleClick: (style: { id: number; name: string; description: string; image: string }) => void;
   onContinue?: () => void;
 }
@@ -31,6 +33,8 @@ const StyleCard = ({
   selectedOrientation = "square",
   showContinueButton = true,
   preGeneratedPreview,
+  shouldBlur = false,
+  isGenerating = false,
   onStyleClick,
   onContinue
 }: StyleCardProps) => {
@@ -50,7 +54,7 @@ const StyleCard = ({
   });
 
   const isSelected = selectedStyle === style.id;
-  const showLoadingState = isLoading;
+  const showLoadingState = isLoading || isGenerating;
   
   // Use pre-generated preview if available, otherwise use hook-generated preview
   const finalPreviewUrl = preGeneratedPreview || previewUrl;
@@ -89,7 +93,9 @@ const StyleCard = ({
     showGeneratedBadge,
     selectedOrientation,
     cropAspectRatio,
-    hasPreGeneratedPreview: !!preGeneratedPreview
+    hasPreGeneratedPreview: !!preGeneratedPreview,
+    shouldBlur,
+    isGenerating
   });
 
   // Get action handlers
@@ -105,6 +111,7 @@ const StyleCard = ({
         isSelected={isSelected}
         styleId={style.id}
         onClick={handleClick}
+        shouldBlur={shouldBlur}
       >
         {/* Hero Image Section */}
         <div className="flex-shrink-0">
@@ -117,6 +124,7 @@ const StyleCard = ({
             showGeneratedBadge={showGeneratedBadge}
             isSelected={isSelected}
             hasPreviewOrCropped={hasPreviewOrCropped}
+            shouldBlur={shouldBlur}
             onExpandClick={() => {}} // Will be handled by lightboxes
             onCanvasPreviewClick={() => {}} // Will be handled by lightboxes
           />
@@ -131,6 +139,7 @@ const StyleCard = ({
             isSelected={isSelected}
             showGeneratedBadge={showGeneratedBadge}
             showContinueInCard={showContinueInCard}
+            shouldBlur={shouldBlur}
             onContinueClick={actions.handleContinueClick}
             onGenerateClick={actions.handleGenerateClick}
           />

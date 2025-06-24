@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Upload, ImageIcon } from "lucide-react";
+import { Upload, ImageIcon, Sparkles } from "lucide-react";
 import StyleCard from "./StyleCard";
 import { artStyles } from "@/data/artStyles";
 
@@ -27,6 +27,10 @@ const StyleGrid = ({
   onComplete 
 }: StyleGridProps) => {
   const [loadingStyle, setLoadingStyle] = useState<number | null>(null);
+  const [generatingStyles, setGeneratingStyles] = useState<Set<number>>(new Set());
+
+  // Popular styles that auto-generate: Classic Oil (2), Watercolor Dreams (4), Pastel Bliss (5)
+  const popularStyleIds = [2, 4, 5];
 
   const handleStyleSelect = async (styleId: number, styleName: string) => {
     console.log('StyleGrid handleStyleSelect called:', styleId, styleName, 'with orientation:', selectedOrientation);
@@ -36,6 +40,22 @@ const StyleGrid = ({
       onStyleSelect(styleId, styleName);
     } finally {
       setLoadingStyle(null);
+    }
+  };
+
+  const handleGenerateStyle = async (styleId: number, styleName: string) => {
+    console.log('Generating style:', styleId, styleName);
+    setGeneratingStyles(prev => new Set(prev).add(styleId));
+    
+    try {
+      // Trigger style generation through the existing flow
+      await handleStyleSelect(styleId, styleName);
+    } finally {
+      setGeneratingStyles(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(styleId);
+        return newSet;
+      });
     }
   };
 
@@ -124,22 +144,73 @@ const StyleGrid = ({
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
         {artStyles.map((style) => {
           const hasAutoPreview = previewUrls[style.id];
+          const isPopularStyle = popularStyleIds.includes(style.id);
+          const isOriginalImage = style.id === 1;
+          const shouldBlur = croppedImage && !isOriginalImage && !isPopularStyle && !hasAutoPreview;
+          const isGenerating = generatingStyles.has(style.id);
           
           console.log(`Rendering StyleCard for ${style.name} with orientation: ${selectedOrientation}`);
           
           return (
-            <StyleCard
-              key={style.id}
-              style={style}
-              croppedImage={croppedImage}
-              selectedStyle={selectedStyle}
-              isPopular={[2, 4, 5].includes(style.id)}
-              selectedOrientation={selectedOrientation}
-              showContinueButton={false}
-              preGeneratedPreview={hasAutoPreview ? previewUrls[style.id] : undefined}
-              onStyleClick={() => handleStyleSelect(style.id, style.name)}
-              onContinue={onComplete}
-            />
+            <div key={style.id} className="relative">
+              <StyleCard
+                style={style}
+                croppedImage={croppedImage}
+                selectedStyle={selectedStyle}
+                isPopular={isPopularStyle}
+                selectedOrientation={selectedOrientation}
+                showContinueButton={false}
+                preGeneratedPreview={hasAutoPreview ? previewUrls[style.id] : undefined}
+                onStyleClick={() => handleStyleSelect(style.id, style.name)}
+                onContinue={onComplete}
+                shouldBlur={shouldBlur}
+                isGenerating={isGenerating}
+              />
+              
+              {/* Premium Blur Overlay with Generate Button */}
+              {shouldBlur && (
+                <div className="absolute inset-0 z-40 rounded-xl overflow-hidden">
+                  {/* Sophisticated blur backdrop */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/60 backdrop-blur-md">
+                    {/* Subtle pattern overlay */}
+                    <div className="absolute inset-0 opacity-10"
+                         style={{
+                           backgroundImage: `radial-gradient(circle at 2px 2px, rgba(255,255,255,0.3) 1px, transparent 0)`,
+                           backgroundSize: '20px 20px'
+                         }}>
+                    </div>
+                  </div>
+                  
+                  {/* Generate Button - Centered */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Button
+                      onClick={() => handleGenerateStyle(style.id, style.name)}
+                      disabled={isGenerating}
+                      className="bg-white text-gray-900 hover:bg-gray-50 font-semibold px-6 py-3 rounded-xl shadow-2xl border-2 border-white/20 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-3xl"
+                    >
+                      {isGenerating ? (
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 border-2 border-gray-400 border-t-gray-900 rounded-full animate-spin"></div>
+                          <span>Generating...</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <Sparkles className="w-4 h-4" />
+                          <span>Generate This Style</span>
+                        </div>
+                      )}
+                    </Button>
+                  </div>
+                  
+                  {/* Premium corner indicator */}
+                  <div className="absolute top-3 right-3">
+                    <div className="bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium text-gray-700 shadow-lg border border-white/50">
+                      Click to Generate
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           );
         })}
       </div>

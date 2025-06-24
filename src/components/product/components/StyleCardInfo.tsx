@@ -15,6 +15,7 @@ interface StyleCardInfoProps {
   isSelected: boolean;
   showGeneratedBadge: boolean;
   showContinueInCard: boolean;
+  shouldBlur?: boolean;
   onContinueClick: (e: React.MouseEvent) => void;
   onGenerateClick?: (e: React.MouseEvent) => void;
 }
@@ -26,22 +27,23 @@ const StyleCardInfo = ({
   isSelected,
   showGeneratedBadge,
   showContinueInCard,
+  shouldBlur = false,
   onContinueClick,
   onGenerateClick
 }: StyleCardInfoProps) => {
-  // Don't show generate button for Original Image (ID: 1)
-  const showGenerateButton = style.id !== 1;
+  // Don't show generate button for Original Image (ID: 1) or when blurred
+  const showGenerateButton = style.id !== 1 && !shouldBlur;
   
   return (
-    <div className="p-4 space-y-3 min-h-[90px] flex flex-col justify-between relative">
-      {/* Clean title and description - no badges here */}
+    <div className={`p-4 space-y-3 min-h-[90px] flex flex-col justify-between relative ${shouldBlur ? 'opacity-50' : ''}`}>
+      {/* Clean title and description */}
       <div className="space-y-2">
         <div className="flex items-start justify-between gap-2">
           <h5 className="font-playfair font-bold text-gray-900 text-lg leading-tight tracking-wide flex-1">
             {style.name}
           </h5>
-          {/* Only show Generated badge in top-right if needed */}
-          {showGeneratedBadge && hasGeneratedPreview && (
+          {/* Only show Generated badge for auto-generated popular styles */}
+          {showGeneratedBadge && hasGeneratedPreview && isPopular && (
             <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs px-2 py-0.5 h-auto">
               <Sparkles className="w-3 h-3 mr-1" />
               <span className="hidden sm:inline">Generated</span>
@@ -55,24 +57,15 @@ const StyleCardInfo = ({
         </p>
       </div>
       
-      {/* Generate/Continue button for all styles except Original */}
-      {showGenerateButton && (
+      {/* Action buttons - only show for generated styles and when not blurred */}
+      {showGenerateButton && hasGeneratedPreview && (
         <div className="pt-1">
-          {hasGeneratedPreview ? (
-            <Button 
-              onClick={onContinueClick}
-              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-sm py-2 h-auto font-medium"
-            >
-              Continue with Style
-            </Button>
-          ) : (
-            <Button 
-              onClick={onGenerateClick}
-              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-sm py-2 h-auto font-medium"
-            >
-              Generate This Style
-            </Button>
-          )}
+          <Button 
+            onClick={onContinueClick}
+            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-sm py-2 h-auto font-medium"
+          >
+            Continue with Style
+          </Button>
         </div>
       )}
     </div>

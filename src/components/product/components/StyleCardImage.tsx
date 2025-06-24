@@ -18,6 +18,7 @@ interface StyleCardImageProps {
   showGeneratedBadge: boolean;
   isSelected: boolean;
   hasPreviewOrCropped: boolean;
+  shouldBlur?: boolean;
   onExpandClick: (e: React.MouseEvent) => void;
   onCanvasPreviewClick?: (e: React.MouseEvent) => void;
 }
@@ -31,6 +32,7 @@ const StyleCardImage = ({
   showGeneratedBadge,
   isSelected,
   hasPreviewOrCropped,
+  shouldBlur = false,
   onExpandClick,
   onCanvasPreviewClick
 }: StyleCardImageProps) => {
@@ -83,7 +85,7 @@ const StyleCardImage = ({
           <div className="w-full h-full bg-white rounded-lg shadow-inner border border-gray-200/50 overflow-hidden relative">
             {/* Hero Image Content - Now the star */}
             {imageToShow ? (
-              <div className="relative w-full h-full group-hover:scale-105 transition-transform duration-700 ease-out">
+              <div className={`relative w-full h-full group-hover:scale-105 transition-transform duration-700 ease-out ${shouldBlur ? 'blur-sm scale-105' : ''}`}>
                 <img 
                   src={imageToShow} 
                   alt={style.name}
@@ -116,20 +118,8 @@ const StyleCardImage = ({
           </div>
         </div>
 
-        {/* Mini Canvas Preview - only show when NOT selected to avoid clutter */}
-        {showGeneratedBadge && imageToShow && !isSelected && (
-          <div className="absolute top-3 right-3 z-10">
-            <MiniCanvasPreview 
-              imageUrl={imageToShow}
-              orientation={orientation}
-              className="opacity-90 hover:opacity-100 transition-all duration-200 shadow-lg"
-              onClick={handleCanvasPreviewClick}
-            />
-          </div>
-        )}
-
-        {/* Enhanced Expand Button */}
-        {hasPreviewOrCropped && (
+        {/* Enhanced Expand Button - only show when image is clear and has content */}
+        {hasPreviewOrCropped && !shouldBlur && (
           <button
             onClick={onExpandClick}
             className="absolute bottom-3 left-3 bg-white/90 hover:bg-white text-gray-700 rounded-full p-2.5 opacity-0 group-hover:opacity-100 transition-all duration-300 z-10 shadow-lg backdrop-blur-sm border border-white/20"
@@ -141,16 +131,6 @@ const StyleCardImage = ({
 
         {/* Loading Overlay */}
         {showLoadingState && <StyleCardLoadingOverlay />}
-
-        {/* Generated Badge - only show when NOT selected to avoid clutter */}
-        {showGeneratedBadge && !isSelected && (
-          <div className="absolute top-3 right-3 z-20">
-            <Badge variant="secondary" className="bg-white/95 text-gray-700 font-semibold flex items-center gap-1.5 shadow-md backdrop-blur-sm border border-white/30">
-              <CheckCircle className="w-3 h-3 text-green-600" />
-              <span className="text-xs">Generated</span>
-            </Badge>
-          </div>
-        )}
         
         {/* Simplified Selection Overlay - clean purple glow without top-right clutter */}
         {isSelected && (
@@ -163,8 +143,10 @@ const StyleCardImage = ({
           </div>
         )}
 
-        {/* Refined canvas shine effect for premium feel */}
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-x-[-100%] group-hover:translate-x-[100%]"></div>
+        {/* Refined canvas shine effect for premium feel - only when not blurred */}
+        {!shouldBlur && (
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-x-[-100%] group-hover:translate-x-[100%]"></div>
+        )}
       </AspectRatio>
 
       {/* Selection confirmation text */}

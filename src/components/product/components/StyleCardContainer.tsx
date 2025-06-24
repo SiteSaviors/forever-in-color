@@ -5,6 +5,7 @@ import { ReactNode } from "react";
 interface StyleCardContainerProps {
   isSelected: boolean;
   styleId: number;
+  shouldBlur?: boolean;
   children: ReactNode;
   onClick: () => void;
 }
@@ -12,6 +13,7 @@ interface StyleCardContainerProps {
 const StyleCardContainer = ({
   isSelected,
   styleId,
+  shouldBlur = false,
   children,
   onClick
 }: StyleCardContainerProps) => {
@@ -52,15 +54,15 @@ const StyleCardContainer = ({
         className={`group cursor-pointer transition-all duration-500 ease-out relative z-10 bg-white/98 backdrop-blur-sm border-0 
           shadow-[0_10px_40px_rgb(0,0,0,0.12)] 
           hover:shadow-[0_25px_70px_rgb(0,0,0,0.15)] 
-          hover:scale-[1.03] 
-          hover:-translate-y-2
+          ${!shouldBlur ? 'hover:scale-[1.03] hover:-translate-y-2' : ''} 
           h-full flex flex-col
           ${isSelected ? 
             `ring-4 ring-purple-500 shadow-[0_25px_70px_rgba(147,51,234,0.3)] scale-[1.02] -translate-y-1` : 
             ''
           }
+          ${shouldBlur ? 'pointer-events-none' : ''}
         `}
-        onClick={onClick}
+        onClick={!shouldBlur ? onClick : undefined}
       >
         <CardContent className="p-0 overflow-hidden rounded-xl h-full flex flex-col">
           {children}
