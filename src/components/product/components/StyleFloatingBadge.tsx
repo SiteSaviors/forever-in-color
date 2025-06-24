@@ -34,7 +34,7 @@ const StyleFloatingBadge = ({ styleId, styleName }: StyleFloatingBadgeProps) => 
       <Badge 
         className={`
           ${config.bgColor} ${config.color} ${config.borderColor}
-          font-semibold text-sm px-4 py-2
+          font-poppins font-semibold text-sm px-4 py-2
           backdrop-blur-sm border
           shadow-lg hover:shadow-xl
           transition-all duration-300
