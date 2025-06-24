@@ -24,26 +24,24 @@ export function MockupCanvas({ previewUrl, orientation, className = "" }: Mockup
         className="block w-full h-auto"
       />
 
-      {/* Overlay preview when ready */}
+      {/* Overlay preview when ready - moved up and left */}
       {previewUrl && (
         <img
           src={previewUrl}
           alt="Generated art preview"
           className="
-            absolute top-0 left-0
-            w-[calc(100%-2rem)] h-[calc(100%-2rem)]
-            m-4
+            absolute
             object-cover
             rounded-sm
             shadow-lg
             transition-opacity duration-300
           "
           style={{
-            // Fine-tune positioning based on canvas frame
-            top: orientation === 'square' ? '4%' : '3%',
-            left: orientation === 'square' ? '4%' : '3%',
-            width: orientation === 'square' ? '92%' : '94%',
-            height: orientation === 'square' ? '92%' : '94%',
+            // Adjusted positioning - moved up and left to sit properly in canvas frame
+            top: orientation === 'square' ? '8%' : '6%',
+            left: orientation === 'square' ? '8%' : '6%',
+            width: orientation === 'square' ? '84%' : '88%',
+            height: orientation === 'square' ? '84%' : '88%',
           }}
         />
       )}
@@ -51,19 +49,17 @@ export function MockupCanvas({ previewUrl, orientation, className = "" }: Mockup
       {/* Loading state overlay */}
       {!previewUrl && (
         <div className="
-          absolute top-0 left-0
-          w-[calc(100%-2rem)] h-[calc(100%-2rem)]
-          m-4
+          absolute
           flex items-center justify-center
           bg-gradient-to-br from-gray-100 to-gray-200
           rounded-sm
           border-2 border-dashed border-gray-300
         "
         style={{
-          top: orientation === 'square' ? '4%' : '3%',
-          left: orientation === 'square' ? '4%' : '3%',
-          width: orientation === 'square' ? '92%' : '94%',
-          height: orientation === 'square' ? '92%' : '94%',
+          top: orientation === 'square' ? '8%' : '6%',
+          left: orientation === 'square' ? '8%' : '6%',
+          width: orientation === 'square' ? '84%' : '88%',
+          height: orientation === 'square' ? '84%' : '88%',
         }}>
           <div className="text-center text-gray-500">
             <div className="w-8 h-8 mx-auto mb-2 animate-spin rounded-full border-2 border-gray-300 border-t-purple-500"></div>
