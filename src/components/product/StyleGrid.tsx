@@ -9,7 +9,7 @@ interface StyleGridProps {
   croppedImage: string | null;
   selectedStyle: number | null;
   cropAspectRatio?: number;
-  selectedOrientation?: string; // Add orientation prop
+  selectedOrientation?: string;
   previewUrls?: { [key: number]: string };
   autoGenerationComplete?: boolean;
   onStyleSelect: (styleId: number, styleName: string) => void;
@@ -20,7 +20,7 @@ const StyleGrid = ({
   croppedImage, 
   selectedStyle, 
   cropAspectRatio = 1,
-  selectedOrientation = "square", // Default to square
+  selectedOrientation = "square",
   previewUrls = {},
   autoGenerationComplete = false,
   onStyleSelect, 
@@ -33,14 +33,13 @@ const StyleGrid = ({
     setLoadingStyle(styleId);
     
     try {
-      // Just notify parent component about style selection, don't auto-complete
       onStyleSelect(styleId, styleName);
     } finally {
       setLoadingStyle(null);
     }
   };
 
-  // Premium gradient backgrounds for each style (updated with more variety)
+  // Premium gradient backgrounds for each style
   const getStyleGradient = (styleId: number) => {
     const gradients = [
       'from-rose-400 via-orange-500 to-amber-500', // Original (ID: 1)
@@ -57,7 +56,6 @@ const StyleGrid = ({
       'from-slate-400 via-gray-500 to-zinc-600', // Deco Luxe (ID: 15)
     ];
     
-    // Map style IDs to gradient indices
     const styleIdToIndex: { [key: number]: number } = {
       1: 0, 2: 1, 4: 2, 5: 3, 6: 4, 7: 5, 8: 6, 9: 7, 10: 8, 11: 9, 13: 10, 15: 11
     };
@@ -65,16 +63,20 @@ const StyleGrid = ({
     return gradients[styleIdToIndex[styleId]] || gradients[0];
   };
 
-  // Convert selected orientation to crop aspect ratio for generation
+  // Convert selected orientation to aspect ratio for generation
   const getGenerationAspectRatio = () => {
+    console.log('Getting generation aspect ratio for orientation:', selectedOrientation);
     switch (selectedOrientation) {
       case 'vertical':
-        return 0.75; // 3:4 ratio
+        console.log('Using 3:4 aspect ratio for vertical');
+        return '3:4';
       case 'horizontal':
-        return 1.33; // 4:3 ratio
+        console.log('Using 4:3 aspect ratio for horizontal');
+        return '4:3';
       case 'square':
       default:
-        return 1; // 1:1 ratio
+        console.log('Using 1:1 aspect ratio for square');
+        return '1:1';
     }
   };
 
@@ -138,8 +140,10 @@ const StyleGrid = ({
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
         {artStyles.map((style) => {
-          // Check if this style has an auto-generated preview
           const hasAutoPreview = previewUrls[style.id];
+          const aspectRatio = getGenerationAspectRatio();
+          
+          console.log(`Rendering StyleCard for ${style.name} with aspect ratio: ${aspectRatio}`);
           
           return (
             <StyleCard
@@ -147,9 +151,9 @@ const StyleGrid = ({
               style={style}
               croppedImage={croppedImage}
               selectedStyle={selectedStyle}
-              isPopular={[2, 4, 5].includes(style.id)} // Mark popular styles
-              cropAspectRatio={getGenerationAspectRatio()} // Use orientation-based aspect ratio
-              showContinueButton={false} // Don't show continue button on individual cards
+              isPopular={[2, 4, 5].includes(style.id)}
+              cropAspectRatio={parseFloat(aspectRatio.split(':')[0]) / parseFloat(aspectRatio.split(':')[1])}
+              showContinueButton={false}
               preGeneratedPreview={hasAutoPreview ? previewUrls[style.id] : undefined}
               onStyleClick={() => handleStyleSelect(style.id, style.name)}
               onContinue={onComplete}

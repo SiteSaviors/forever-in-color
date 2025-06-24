@@ -4,12 +4,12 @@ import PhotoUpload from "./PhotoUpload";
 import PhotoCropper from "./PhotoCropper";
 import StyleGrid from "./StyleGrid";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, RotateCcw } from "lucide-react";
 
 interface PhotoUploadAndStyleSelectionProps {
   selectedStyle: {id: number, name: string} | null;
   uploadedImage: string | null;
-  selectedOrientation: string; // Add orientation prop
+  selectedOrientation: string;
   previewUrls: { [key: number]: string };
   autoGenerationComplete: boolean;
   onPhotoAndStyleComplete: (imageUrl: string, styleId: number, styleName: string) => void;
@@ -19,7 +19,7 @@ interface PhotoUploadAndStyleSelectionProps {
 const PhotoUploadAndStyleSelection = ({
   selectedStyle,
   uploadedImage,
-  selectedOrientation, // Use orientation prop
+  selectedOrientation,
   previewUrls,
   autoGenerationComplete,
   onPhotoAndStyleComplete,
@@ -50,8 +50,6 @@ const PhotoUploadAndStyleSelection = ({
     console.log('Style selected:', styleId, styleName, 'with orientation:', selectedOrientation);
     setSelectedStyleId(styleId);
     setSelectedStyleName(styleName);
-    
-    // Don't automatically complete here - wait for user to click continue
   };
 
   const handleContinue = () => {
@@ -60,6 +58,13 @@ const PhotoUploadAndStyleSelection = ({
       onPhotoAndStyleComplete(croppedImage, selectedStyleId, selectedStyleName);
     }
     onContinue();
+  };
+
+  const handleRecrop = () => {
+    setShowCropper(true);
+    setCroppedImage(null);
+    setSelectedStyleId(null);
+    setSelectedStyleName(null);
   };
 
   const canContinue = croppedImage && selectedStyleId;
@@ -89,6 +94,37 @@ const PhotoUploadAndStyleSelection = ({
         </div>
       )}
 
+      {/* Orientation & Recrop Options */}
+      {croppedImage && !showCropper && (
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-200">
+          <div className="flex items-center gap-3">
+            <div className="bg-blue-100 p-2 rounded-lg">
+              <span className="text-blue-600 font-medium">
+                {selectedOrientation === 'vertical' ? '📱' : selectedOrientation === 'horizontal' ? '🖼️' : '⬜'}
+              </span>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-900">
+                Current orientation: {selectedOrientation.charAt(0).toUpperCase() + selectedOrientation.slice(1)}
+              </p>
+              <p className="text-xs text-gray-600">
+                Your photo is cropped and ready for styling
+              </p>
+            </div>
+          </div>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRecrop}
+            className="bg-white hover:bg-blue-50 border-blue-300 text-blue-700 flex items-center gap-2"
+          >
+            <RotateCcw className="w-4 h-4" />
+            Change Crop
+          </Button>
+        </div>
+      )}
+
       {/* Style Selection */}
       {croppedImage && !showCropper && (
         <div>
@@ -99,7 +135,7 @@ const PhotoUploadAndStyleSelection = ({
             croppedImage={croppedImage}
             selectedStyle={selectedStyleId}
             cropAspectRatio={cropAspectRatio}
-            selectedOrientation={selectedOrientation} // Pass orientation to StyleGrid
+            selectedOrientation={selectedOrientation}
             previewUrls={previewUrls}
             autoGenerationComplete={autoGenerationComplete}
             onStyleSelect={handleStyleSelect}

@@ -12,7 +12,7 @@ interface UseStylePreviewProps {
   };
   croppedImage: string | null;
   isPopular: boolean;
-  preGeneratedPreview?: string; // New prop for auto-generated previews
+  preGeneratedPreview?: string;
   cropAspectRatio?: number;
   onStyleClick: (style: { id: number; name: string; description: string; image: string }) => void;
 }
@@ -38,14 +38,23 @@ export const useStylePreview = ({
     }
   }, [preGeneratedPreview, style.name]);
 
-  // Only mark as generated if we actually have a preview URL (either pre-generated or hook-generated)
   const isStyleGenerated = hasGeneratedPreview && !!(preGeneratedPreview || previewUrl);
 
-  // Convert crop aspect ratio to generation aspect ratio
+  // Convert crop aspect ratio to generation aspect ratio string
   const getGenerationAspectRatio = useCallback(() => {
-    if (cropAspectRatio === 1) return '1:1';
-    if (cropAspectRatio > 1) return '4:3';
-    return '3:4';
+    console.log('Converting crop aspect ratio to generation aspect ratio:', cropAspectRatio);
+    
+    // Handle specific aspect ratios based on crop ratio
+    if (Math.abs(cropAspectRatio - 1) < 0.1) {
+      console.log('Detected square aspect ratio');
+      return '1:1';
+    } else if (cropAspectRatio > 1) {
+      console.log('Detected horizontal aspect ratio');
+      return '4:3';
+    } else {
+      console.log('Detected vertical aspect ratio');
+      return '3:4';
+    }
   }, [cropAspectRatio]);
 
   const generatePreview = useCallback(async () => {
@@ -57,11 +66,9 @@ export const useStylePreview = ({
     try {
       console.log(`Generating GPT-IMG-1 preview for style: ${style.name}`);
       
-      // Generate a temporary photo ID for the preview (in a real app, this would come from uploaded photo)
       const tempPhotoId = `temp_${Date.now()}_${style.id}`;
-      
-      // Get the correct aspect ratio based on crop ratio
       const aspectRatio = getGenerationAspectRatio();
+      
       console.log(`Using aspect ratio ${aspectRatio} for generation based on crop aspect ratio ${cropAspectRatio}`);
       
       const previewUrl = await generateStylePreview(croppedImage, style.name, tempPhotoId, aspectRatio);
@@ -69,7 +76,6 @@ export const useStylePreview = ({
       if (previewUrl) {
         console.log(`GPT-IMG-1 preview generated successfully for ${style.name}, adding watermark...`);
         
-        // Add watermark to the generated image
         try {
           const watermarkedUrl = await addWatermarkToImage(previewUrl);
           console.log(`Watermark added successfully for ${style.name}`);
@@ -97,7 +103,6 @@ export const useStylePreview = ({
     console.log(`Style clicked: ${style.name} (ID: ${style.id})`);
     onStyleClick(style);
     
-    // Only auto-generate preview for styles that don't already have a pre-generated one
     if (croppedImage && !hasGeneratedPreview && !isLoading && style.id !== 1 && !preGeneratedPreview) {
       console.log(`Auto-generating GPT-IMG-1 preview for style: ${style.name} with aspect ratio based on crop ratio ${cropAspectRatio}`);
       generatePreview();

@@ -83,13 +83,17 @@ export const useProductState = (): ProductState & ProductStateActions => {
         
         // Convert orientation to aspect ratio for generation
         const getAspectRatio = (orientation: string) => {
+          console.log('Converting orientation to aspect ratio:', orientation);
           switch (orientation) {
             case 'vertical':
+              console.log('Using 3:4 for vertical orientation');
               return '3:4';
             case 'horizontal':
+              console.log('Using 4:3 for horizontal orientation');
               return '4:3';
             case 'square':
             default:
+              console.log('Using 1:1 for square orientation');
               return '1:1';
           }
         };
@@ -175,6 +179,12 @@ export const useProductState = (): ProductState & ProductStateActions => {
     console.log('Clearing existing previews due to orientation change');
     setPreviewUrls({});
     setAutoGenerationComplete(false);
+    
+    // Go back to step 1 to allow re-cropping if needed
+    setCurrentStep(1);
+    
+    // Clear completed step 1 so user can recrop if needed
+    setCompletedSteps(prev => prev.filter(step => step !== 1));
   };
 
   const handleCustomizationChange = (newCustomizations: CustomizationOptions) => {
