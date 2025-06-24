@@ -1,6 +1,5 @@
 
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { MockupCanvas } from "../MockupCanvas";
 
 interface StyleCardImageDisplayProps {
   style: {
@@ -25,22 +24,7 @@ const StyleCardImageDisplay = ({
   previewUrl,
   hasGeneratedPreview
 }: StyleCardImageDisplayProps) => {
-  // Use MockupCanvas for generated previews, regular image for others
-  const shouldUseMockup = hasGeneratedPreview && previewUrl && style.id !== 1;
-
-  if (shouldUseMockup) {
-    return (
-      <div className="w-full">
-        <MockupCanvas 
-          previewUrl={previewUrl}
-          orientation={selectedOrientation as 'square' | 'horizontal' | 'vertical'}
-          className="transition-transform duration-300 group-hover:scale-105"
-        />
-      </div>
-    );
-  }
-
-  // Fallback to regular image display
+  // Always use regular image display for style cards - no canvas mockup
   return (
     <AspectRatio ratio={cropAspectRatio} className="relative overflow-hidden rounded-lg">
       <img
