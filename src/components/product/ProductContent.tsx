@@ -23,7 +23,6 @@ interface ProductContentProps {
     aiUpscale: boolean;
   };
   uploadedImage: string | null;
-  previewUrls: { [key: number]: string };
   autoGenerationComplete: boolean;
   onCurrentStepChange: (step: number) => void;
   onPhotoAndStyleComplete: (imageUrl: string, styleId: number, styleName: string) => void;
@@ -120,7 +119,6 @@ const ProductContent = ({
               customizations={customizations}
               selectedSize={selectedSize}
               onCustomizationChange={onCustomizationChange}
-              onContinue={() => onCurrentStepChange(4)}
             />
           )}
         </ProductStep>

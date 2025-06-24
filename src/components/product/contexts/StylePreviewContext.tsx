@@ -53,6 +53,8 @@ export const StylePreviewProvider = ({
 
   const contextValue: StylePreviewContextType = {
     previews,
+    croppedImage,
+    selectedOrientation,
     generatePreview,
     retryGeneration,
     getPreviewStatus,

@@ -18,6 +18,8 @@ export type StylePreviewAction =
 
 export interface StylePreviewContextType {
   previews: StylePreviewState;
+  croppedImage: string | null;
+  selectedOrientation: string;
   generatePreview: (styleId: number, styleName: string) => Promise<void>;
   retryGeneration: (styleId: number, styleName: string) => Promise<void>;
   getPreviewStatus: (styleId: number) => PreviewState;

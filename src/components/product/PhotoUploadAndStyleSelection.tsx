@@ -32,9 +32,10 @@ const PhotoUploadAndStyleSelection = ({
       
       {croppedImage && (
         <StyleGrid
-          selectedStyle={selectedStyle}
-          autoGenerationComplete={autoGenerationComplete}
+          croppedImage={croppedImage}
+          selectedStyle={selectedStyle?.id || null}
           onStyleSelect={handleStyleSelect}
+          onComplete={() => {}}
         />
       )}
     </div>
