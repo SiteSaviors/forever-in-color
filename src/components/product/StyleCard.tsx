@@ -130,18 +130,19 @@ const StyleCard = ({
              }}>
         </div>
         
-        {/* Premium floating card */}
+        {/* Premium floating card with consistent height */}
         <Card 
           className={`group cursor-pointer transition-all duration-300 ease-out relative z-10 bg-white/95 backdrop-blur-sm border-0 
             shadow-[0_8px_30px_rgb(0,0,0,0.12)] 
             hover:shadow-[0_20px_60px_rgb(0,0,0,0.15)] 
             hover:scale-[1.02] 
             hover:-translate-y-1
+            h-full flex flex-col
             ${isSelected ? 'ring-2 ring-purple-500 shadow-[0_20px_60px_rgb(147,51,234,0.25)]' : ''}
           `}
           onClick={handleClick}
         >
-          <CardContent className="p-0 overflow-hidden rounded-xl">
+          <CardContent className="p-0 overflow-hidden rounded-xl h-full flex flex-col">
             <StyleCardImage
               style={style}
               imageToShow={imageToShow}
@@ -155,15 +156,17 @@ const StyleCard = ({
               onCanvasPreviewClick={handleCanvasPreviewClick}
             />
 
-            <StyleCardInfo
-              style={style}
-              hasGeneratedPreview={finalHasGeneratedPreview}
-              isPopular={isPopular}
-              isSelected={isSelected}
-              showGeneratedBadge={showGeneratedBadge}
-              showContinueInCard={showContinueInCard}
-              onContinueClick={handleContinueClick}
-            />
+            <div className="flex-1">
+              <StyleCardInfo
+                style={style}
+                hasGeneratedPreview={finalHasGeneratedPreview}
+                isPopular={isPopular}
+                isSelected={isSelected}
+                showGeneratedBadge={showGeneratedBadge}
+                showContinueInCard={showContinueInCard}
+                onContinueClick={handleContinueClick}
+              />
+            </div>
           </CardContent>
         </Card>
       </div>

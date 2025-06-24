@@ -31,37 +31,41 @@ const StyleCardInfo = ({
   const showPopularBadge = isPopular && !showGeneratedBadge;
   
   return (
-    <div className="p-2 md:p-3 space-y-1 md:space-y-2">
+    <div className="p-3 md:p-4 space-y-2 min-h-[100px] flex flex-col justify-between">
       {/* Title with badges */}
-      <div className="flex items-center justify-between">
-        <h5 className="font-semibold text-gray-900 text-sm md:text-base leading-tight">{style.name}</h5>
-        <div className="flex items-center gap-1">
-          {showPopularBadge && (
-            <Badge variant="secondary" className="bg-yellow-100 text-yellow-700 text-xs px-1.5 py-0.5 h-auto">
-              <Crown className="w-2.5 h-2.5 mr-0.5" />
-              <span className="hidden md:inline">Popular</span>
-            </Badge>
-          )}
-          {showGeneratedBadge && hasGeneratedPreview && (
-            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs px-1.5 py-0.5 h-auto">
-              <Sparkles className="w-2.5 h-2.5 mr-0.5" />
-              <span className="hidden md:inline">Generated</span>
-            </Badge>
-          )}
+      <div className="space-y-2">
+        <div className="flex items-start justify-between gap-2">
+          <h5 className="font-playfair font-bold text-gray-900 text-lg md:text-xl leading-tight tracking-wide">
+            {style.name}
+          </h5>
+          <div className="flex items-center gap-1 flex-shrink-0">
+            {showPopularBadge && (
+              <Badge variant="secondary" className="bg-yellow-100 text-yellow-700 text-xs px-2 py-1 h-auto">
+                <Crown className="w-3 h-3 mr-1" />
+                <span className="hidden sm:inline">Popular</span>
+              </Badge>
+            )}
+            {showGeneratedBadge && hasGeneratedPreview && (
+              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs px-2 py-1 h-auto">
+                <Sparkles className="w-3 h-3 mr-1" />
+                <span className="hidden sm:inline">Generated</span>
+              </Badge>
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* Description - more compact on mobile */}
-      <p className="text-xs md:text-sm text-gray-600 leading-tight md:leading-relaxed line-clamp-2 md:line-clamp-none">
-        {style.description}
-      </p>
+        {/* Description with refined typography */}
+        <p className="font-inter text-sm md:text-base text-gray-600 leading-relaxed line-clamp-2">
+          {style.description}
+        </p>
+      </div>
       
       {/* Continue button */}
       {showContinueInCard && (
-        <div className="pt-1 md:pt-2">
+        <div className="pt-2">
           <Button 
             onClick={onContinueClick}
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-xs md:text-sm py-1.5 md:py-2 h-auto"
+            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-sm py-2.5 h-auto font-medium"
           >
             Continue with {style.name}
           </Button>
