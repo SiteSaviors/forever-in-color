@@ -159,8 +159,8 @@ const FloatingFrameCard = ({
               ))}
             </div>
 
-            {/* Frame Preview */}
-            <div className="mt-3 md:mt-4 p-2 md:p-3 bg-white rounded-lg border">
+            {/* Frame Preview - Simplified */}
+            <div className="mt-3 md:mt-4">
               <p className="text-xs md:text-sm text-gray-600 mb-2 font-poppins tracking-tight">Preview with your {selectedSize}:</p>
               <img 
                 src="/lovable-uploads/floating-frame-preview.jpg" 
