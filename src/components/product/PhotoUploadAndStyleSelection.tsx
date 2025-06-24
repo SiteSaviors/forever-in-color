@@ -87,7 +87,7 @@ const PhotoUploadAndStyleSelection = ({
             <h3 className="text-xl font-semibold text-gray-900 mb-2">Start with Your Photo</h3>
             <p className="text-gray-600">Upload a high-quality image to transform into art</p>
           </div>
-          <PhotoUpload onPhotoUpload={handlePhotoUpload} />
+          <PhotoUpload onImageUpload={handlePhotoUpload} />
         </div>
       ) : (
         <>
