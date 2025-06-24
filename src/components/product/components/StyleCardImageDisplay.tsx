@@ -30,9 +30,9 @@ const StyleCardImageDisplay = ({
   if (shouldUseMockup) {
     return (
       <AspectRatio ratio={cropAspectRatio} className="relative overflow-hidden rounded-lg">
-        {/* Base canvas background */}
+        {/* Base canvas background - using the exact uploaded image */}
         <img
-          src="/lovable-uploads/49a21cb0-066f-41d1-8814-77c3db03ab1c.png"
+          src="/lovable-uploads/0364521e-a976-4c0d-b76e-abaec881f7f7.png"
           alt="Canvas background"
           className="w-full h-full object-cover"
         />
