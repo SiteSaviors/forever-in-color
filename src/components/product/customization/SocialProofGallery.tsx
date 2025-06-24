@@ -4,9 +4,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Play, Heart, Share2, Star, TrendingUp } from "lucide-react";
+import VideoTestimonialModal from "./VideoTestimonialModal";
+import LiveActivityFeed from "./LiveActivityFeed";
 
 const SocialProofGallery = () => {
-  const [currentVideo, setCurrentVideo] = useState(0);
+  const [selectedVideo, setSelectedVideo] = useState<number | null>(null);
 
   const testimonialVideos = [
     {
@@ -15,7 +17,9 @@ const SocialProofGallery = () => {
       author: "Sarah M.",
       emotion: "❤️",
       views: "2.3k",
-      thumbnail: "bg-gradient-to-br from-blue-100 to-purple-100"
+      thumbnail: "bg-gradient-to-br from-blue-100 to-purple-100",
+      duration: "2:15",
+      transcript: "When I lost my grandfather last year, I thought I'd never hear his stories again. But with the Living Memory feature, I can scan his portrait and hear him telling me about his adventures in the war. It's like he's still here with us, sharing his wisdom and love. My kids now get to hear their great-grandfather's voice, and it brings our family so much comfort."
     },
     {
       id: 2,
@@ -23,7 +27,9 @@ const SocialProofGallery = () => {
       author: "Mike & Lisa",
       emotion: "💕",
       views: "1.8k",
-      thumbnail: "bg-gradient-to-br from-pink-100 to-rose-100"
+      thumbnail: "bg-gradient-to-br from-pink-100 to-rose-100",
+      duration: "1:45",
+      transcript: "Our wedding canvas hangs in our bedroom, and every morning we scan it to hear our vows again. Three years later, it still gives us chills. The artist perfectly captured the joy in our faces, and hearing our promises to each other never gets old. It's not just a photo — it's our love story alive on our wall."
     },
     {
       id: 3,
@@ -31,7 +37,9 @@ const SocialProofGallery = () => {
       author: "Jennifer K.",
       emotion: "😊",
       views: "3.1k",
-      thumbnail: "bg-gradient-to-br from-yellow-100 to-orange-100"
+      thumbnail: "bg-gradient-to-br from-yellow-100 to-orange-100",
+      duration: "1:30",
+      transcript: "I recorded my baby's first real belly laugh when she was 6 months old. Now, two years later, we can still hear that pure joy whenever we look at her canvas. The Pastel Bliss style made her look like an angel, and the Living Memory feature lets us relive that perfect moment whenever we want. It's magical!"
     },
     {
       id: 4,
@@ -39,9 +47,17 @@ const SocialProofGallery = () => {
       author: "The Johnson Family",
       emotion: "🇺🇸",
       views: "4.2k",
-      thumbnail: "bg-gradient-to-br from-red-100 to-blue-100"
+      thumbnail: "bg-gradient-to-br from-red-100 to-blue-100",
+      duration: "2:45",
+      transcript: "When Dad came home from deployment, we created a canvas with his voice saying 'I'm home, and I love you all.' The Classic Oil Painting style made it look so dignified and timeless. Now whenever he's away for work, the kids can scan it and hear daddy telling them he loves them. It keeps our family connected no matter the distance."
     }
   ];
+
+  const handleVideoClick = (videoIndex: number) => {
+    setSelectedVideo(videoIndex);
+  };
+
+  const selectedVideoData = selectedVideo !== null ? testimonialVideos[selectedVideo] : null;
 
   return (
     <Card className="bg-gradient-to-br from-gray-50 to-white border-gray-200">
@@ -79,6 +95,9 @@ const SocialProofGallery = () => {
             </div>
           </div>
 
+          {/* Live Activity Feed */}
+          <LiveActivityFeed />
+
           {/* Customer Video Gallery */}
           <div className="space-y-4">
             <h4 className="text-lg font-semibold text-gray-900 text-center">
@@ -90,7 +109,7 @@ const SocialProofGallery = () => {
                 <div 
                   key={video.id}
                   className="group cursor-pointer"
-                  onClick={() => setCurrentVideo(index)}
+                  onClick={() => handleVideoClick(index)}
                 >
                   <div className={`relative ${video.thumbnail} rounded-lg p-4 h-32 flex flex-col justify-between transition-transform duration-300 group-hover:scale-105 group-hover:shadow-lg`}>
                     {/* Play Button */}
@@ -104,7 +123,7 @@ const SocialProofGallery = () => {
                     <div className="relative z-10">
                       <div className="text-2xl mb-1">{video.emotion}</div>
                       <div className="text-xs text-gray-600 font-medium">
-                        {video.views} views
+                        {video.views} views • {video.duration}
                       </div>
                     </div>
                     
@@ -137,26 +156,17 @@ const SocialProofGallery = () => {
               </Button>
             </div>
           </div>
-
-          {/* Recent Activity Feed */}
-          <div className="border-t pt-4">
-            <div className="text-sm text-gray-600 space-y-2">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                <span>Maria just created a Living Memory • 2 minutes ago</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse delay-500"></div>
-                <span>David shared his wedding canvas • 5 minutes ago</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse delay-1000"></div>
-                <span>Emma ordered with voice matching • 8 minutes ago</span>
-              </div>
-            </div>
-          </div>
         </div>
       </CardContent>
+
+      {/* Video Modal */}
+      {selectedVideoData && (
+        <VideoTestimonialModal
+          isOpen={selectedVideo !== null}
+          onClose={() => setSelectedVideo(null)}
+          testimonial={selectedVideoData}
+        />
+      )}
     </Card>
   );
 };
