@@ -35,7 +35,7 @@ const StyleCardInfo = ({
   const showGenerateButton = style.id !== 1 && !shouldBlur;
   
   // Show continue button for Original Image (ID: 1) always, or for other styles when they have generated previews
-  const showContinueButton = style.id === 1 || showContinueInCard;
+  const showContinueButton = style.id === 1 || hasGeneratedPreview;
   
   // Get style-specific badges and emoji
   const getStyleInfo = () => {
@@ -100,7 +100,7 @@ const StyleCardInfo = ({
             onClick={onContinueClick}
             className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-xs sm:text-sm md:text-sm py-2 sm:py-2.5 md:py-2.5 h-auto font-medium rounded-lg"
           >
-            Continue with Style
+            Continue with this style
           </Button>
         </div>
       )}

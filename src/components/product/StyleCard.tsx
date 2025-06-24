@@ -52,8 +52,8 @@ const StyleCard = ({
   // Determine what image to show
   const imageToShow = previewUrl || croppedImage || style.image;
   
-  // Show continue button logic
-  const showContinueInCard = showContinueButton && isSelected && !!(previewUrl || croppedImage);
+  // Show continue button logic - show for Original Image OR when style has generated preview
+  const showContinueInCard = style.id === 1 || hasGeneratedPreview;
   const hasPreviewOrCropped = !!(previewUrl || croppedImage);
   
   // Show generated badge for styles that have previews (but not Original Image)
@@ -116,6 +116,15 @@ const StyleCard = ({
     setIsExpanded(true);
   };
 
+  // Handle continue click
+  const handleContinueClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onContinue) {
+      console.log(`Continue clicked for ${style.name}`);
+      onContinue();
+    }
+  };
+
   // Get action handlers
   const actions = StyleCardActions({
     style,
@@ -163,7 +172,7 @@ const StyleCard = ({
             showGeneratedBadge={showGeneratedBadge}
             showContinueInCard={showContinueInCard}
             shouldBlur={shouldShowBlur}
-            onContinueClick={actions.handleContinueClick}
+            onContinueClick={handleContinueClick}
             onGenerateClick={actions.handleGenerateClick}
           />
         </div>
