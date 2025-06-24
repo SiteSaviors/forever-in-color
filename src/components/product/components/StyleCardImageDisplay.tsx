@@ -31,14 +31,31 @@ const StyleCardImageDisplay = ({
   // Use MockupCanvas for generated previews, regular image for others
   const shouldUseMockup = hasGeneratedPreview && previewUrl && style.id !== 1;
 
+  // Calculate aspect ratio based on selected orientation
+  const getOrientationAspectRatio = () => {
+    switch (selectedOrientation) {
+      case 'vertical':
+        return 3/4; // Portrait aspect ratio
+      case 'horizontal':
+        return 4/3; // Landscape aspect ratio
+      case 'square':
+      default:
+        return 1; // Square aspect ratio
+    }
+  };
+
+  const orientationAspectRatio = getOrientationAspectRatio();
+
   if (shouldUseMockup) {
     return (
-      <div className="w-full relative group">
-        <MockupCanvas 
-          previewUrl={previewUrl}
-          orientation={selectedOrientation as 'square' | 'horizontal' | 'vertical'}
-          className="transition-transform duration-300 group-hover:scale-105 drop-shadow-2xl"
-        />
+      <AspectRatio ratio={orientationAspectRatio} className="relative overflow-hidden rounded-lg group">
+        <div className="w-full h-full">
+          <MockupCanvas 
+            previewUrl={previewUrl}
+            orientation={selectedOrientation as 'square' | 'horizontal' | 'vertical'}
+            className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105 drop-shadow-2xl"
+          />
+        </div>
         {/* Mobile-only expand button - always visible on mobile */}
         {onExpandClick && (
           <button
@@ -51,13 +68,13 @@ const StyleCardImageDisplay = ({
             <Expand className="w-4 h-4" />
           </button>
         )}
-      </div>
+      </AspectRatio>
     );
   }
 
   // Fallback to regular image display
   return (
-    <AspectRatio ratio={cropAspectRatio} className="relative overflow-hidden rounded-lg group">
+    <AspectRatio ratio={orientationAspectRatio} className="relative overflow-hidden rounded-lg group">
       <img
         src={imageToShow}
         alt={style.name}
