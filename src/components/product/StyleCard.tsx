@@ -120,37 +120,53 @@ const StyleCard = ({
 
   return (
     <>
-      <Card 
-        className={`group cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 ${
-          isSelected ? 'ring-2 ring-purple-500 shadow-lg' : ''
-        }`}
-        onClick={handleClick}
-      >
-        <CardContent className="p-0">
-          <StyleCardImage
-            style={style}
-            imageToShow={imageToShow}
-            cropAspectRatio={cropAspectRatio}
-            showLoadingState={showLoadingState}
-            isPopular={isPopular}
-            showGeneratedBadge={showGeneratedBadge}
-            isSelected={isSelected}
-            hasPreviewOrCropped={hasPreviewOrCropped}
-            onExpandClick={handleExpandClick}
-            onCanvasPreviewClick={handleCanvasPreviewClick}
-          />
+      {/* Canvas texture background wrapper */}
+      <div className="relative p-2">
+        {/* Subtle canvas texture background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-gray-100 rounded-xl opacity-60" 
+             style={{
+               backgroundImage: `radial-gradient(circle at 1px 1px, rgba(0,0,0,0.15) 1px, transparent 0)`,
+               backgroundSize: '20px 20px'
+             }}>
+        </div>
+        
+        {/* Premium floating card */}
+        <Card 
+          className={`group cursor-pointer transition-all duration-300 ease-out relative z-10 bg-white/95 backdrop-blur-sm border-0 
+            shadow-[0_8px_30px_rgb(0,0,0,0.12)] 
+            hover:shadow-[0_20px_60px_rgb(0,0,0,0.15)] 
+            hover:scale-[1.02] 
+            hover:-translate-y-1
+            ${isSelected ? 'ring-2 ring-purple-500 shadow-[0_20px_60px_rgb(147,51,234,0.25)]' : ''}
+          `}
+          onClick={handleClick}
+        >
+          <CardContent className="p-0 overflow-hidden rounded-xl">
+            <StyleCardImage
+              style={style}
+              imageToShow={imageToShow}
+              cropAspectRatio={cropAspectRatio}
+              showLoadingState={showLoadingState}
+              isPopular={isPopular}
+              showGeneratedBadge={showGeneratedBadge}
+              isSelected={isSelected}
+              hasPreviewOrCropped={hasPreviewOrCropped}
+              onExpandClick={handleExpandClick}
+              onCanvasPreviewClick={handleCanvasPreviewClick}
+            />
 
-          <StyleCardInfo
-            style={style}
-            hasGeneratedPreview={finalHasGeneratedPreview}
-            isPopular={isPopular}
-            isSelected={isSelected}
-            showGeneratedBadge={showGeneratedBadge}
-            showContinueInCard={showContinueInCard}
-            onContinueClick={handleContinueClick}
-          />
-        </CardContent>
-      </Card>
+            <StyleCardInfo
+              style={style}
+              hasGeneratedPreview={finalHasGeneratedPreview}
+              isPopular={isPopular}
+              isSelected={isSelected}
+              showGeneratedBadge={showGeneratedBadge}
+              showContinueInCard={showContinueInCard}
+              onContinueClick={handleContinueClick}
+            />
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Regular Image Lightbox */}
       <Lightbox
