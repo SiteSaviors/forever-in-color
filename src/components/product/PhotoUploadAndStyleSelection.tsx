@@ -94,15 +94,17 @@ const PhotoUploadAndStyleSelection = ({
       {/* Photo Upload Section */}
       {(!croppedImage || showRecrop) ? (
         <div className="bg-white rounded-xl shadow-lg p-8">
-          <div className="text-center mb-6">
-            <Upload className="w-12 h-12 text-purple-500 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              {showRecrop ? "Re-crop Your Photo" : "Start with Your Photo"}
-            </h3>
-            <p className="text-gray-600">
-              {showRecrop ? "Adjust your crop to get the perfect composition" : "Upload a high-quality image to transform into art"}
-            </p>
-          </div>
+          {showRecrop && (
+            <div className="text-center mb-6">
+              <Upload className="w-12 h-12 text-purple-500 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                Re-crop Your Photo
+              </h3>
+              <p className="text-gray-600">
+                Adjust your crop to get the perfect composition
+              </p>
+            </div>
+          )}
           <PhotoUpload 
             onImageUpload={handlePhotoUpload} 
             initialImage={showRecrop ? originalImage : undefined}
