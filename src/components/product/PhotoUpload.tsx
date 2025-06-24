@@ -3,7 +3,7 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Upload, Camera, Image as ImageIcon } from "lucide-react";
-import { validateFile } from "@/utils/fileValidation";
+import { validateImageFile } from "@/utils/fileValidation";
 
 interface PhotoUploadProps {
   onImageUpload: (imageUrl: string) => void;
@@ -15,7 +15,15 @@ const PhotoUpload = ({ onImageUpload }: PhotoUploadProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = async (file: File) => {
-    if (!validateFile(file)) return;
+    const validationResult = await validateImageFile(file);
+    if (!validationResult.isValid) {
+      console.error('File validation failed:', validationResult.error);
+      return;
+    }
+
+    if (validationResult.warnings) {
+      console.warn('File validation warnings:', validationResult.warnings);
+    }
 
     setIsUploading(true);
     try {
