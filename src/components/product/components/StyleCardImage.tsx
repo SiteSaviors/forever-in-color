@@ -1,3 +1,4 @@
+
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,8 +21,8 @@ interface StyleCardImageProps {
   hasPreviewOrCropped: boolean;
   shouldBlur?: boolean;
   isGenerating?: boolean;
-  onExpandClick: (e: React.MouseEvent) => void;
-  onCanvasPreviewClick?: (e: React.MouseEvent) => void;
+  onExpandClick: (e?: React.MouseEvent) => void;
+  onCanvasPreviewClick?: (e?: React.MouseEvent) => void;
   onGenerateStyle?: () => void;
 }
 
@@ -52,7 +53,7 @@ const StyleCardImage = ({
   const handleCanvasPreviewClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (onCanvasPreviewClick) {
-      onCanvasPreviewClick();
+      onCanvasPreviewClick(e);
     }
   };
 
@@ -138,16 +139,16 @@ const StyleCardImage = ({
                   <Button
                     onClick={handleGenerateClick}
                     disabled={isGenerating}
-                    className="bg-white text-gray-900 hover:bg-gray-50 font-medium px-2 py-1 rounded-md shadow-xl border border-white/20 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-2xl text-xs"
+                    className="bg-white text-gray-900 hover:bg-gray-50 font-medium px-3 py-1.5 rounded-md shadow-xl border border-white/20 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-2xl text-xs"
                   >
                     {isGenerating ? (
-                      <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 border-2 border-gray-400 border-t-gray-900 rounded-full animate-spin"></div>
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-3 h-3 border-2 border-gray-400 border-t-gray-900 rounded-full animate-spin"></div>
                         <span>Generating...</span>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-1">
-                        <Sparkles className="w-2 h-2" />
+                      <div className="flex items-center gap-1.5">
+                        <Sparkles className="w-3 h-3" />
                         <span>Generate This Style</span>
                       </div>
                     )}
