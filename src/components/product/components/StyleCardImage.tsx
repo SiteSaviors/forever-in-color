@@ -1,13 +1,15 @@
 
 import StyleCardImageDisplay from "./StyleCardImageDisplay";
-import StyleCardBlurOverlay from "./StyleCardBlurOverlay";
-import StyleCardSelectionOverlay from "./StyleCardSelectionOverlay";
+import StyleCardIndicators from "./StyleCardIndicators";
 import StyleCardLoadingOverlay from "./StyleCardLoadingOverlay";
+import StyleCardSelectionOverlay from "./StyleCardSelectionOverlay";
+import StyleCardBlurOverlay from "./StyleCardBlurOverlay";
 
 interface StyleCardImageProps {
   style: {
     id: number;
     name: string;
+    description: string;
     image: string;
   };
   imageToShow: string;
@@ -17,11 +19,14 @@ interface StyleCardImageProps {
   showGeneratedBadge: boolean;
   isSelected: boolean;
   hasPreviewOrCropped: boolean;
-  shouldBlur?: boolean;
-  isGenerating?: boolean;
-  onExpandClick: (e: React.MouseEvent) => void;
-  onCanvasPreviewClick?: (e: React.MouseEvent) => void;
-  onGenerateStyle?: (e?: React.MouseEvent) => void;
+  shouldBlur: boolean;
+  isGenerating: boolean;
+  selectedOrientation?: string;
+  previewUrl?: string | null;
+  hasGeneratedPreview?: boolean;
+  onExpandClick: () => void;
+  onCanvasPreviewClick: () => void;
+  onGenerateStyle: (e?: React.MouseEvent) => void;
 }
 
 const StyleCardImage = ({
@@ -29,54 +34,54 @@ const StyleCardImage = ({
   imageToShow,
   cropAspectRatio,
   showLoadingState,
+  isPopular,
+  showGeneratedBadge,
   isSelected,
   hasPreviewOrCropped,
-  shouldBlur = false,
-  isGenerating = false,
+  shouldBlur,
+  isGenerating,
+  selectedOrientation = "square",
+  previewUrl,
+  hasGeneratedPreview = false,
   onExpandClick,
+  onCanvasPreviewClick,
   onGenerateStyle
 }: StyleCardImageProps) => {
-  // CRITICAL: Only show blur overlay if shouldBlur is true AND we're not generating AND we don't have preview
-  const showBlurOverlay = shouldBlur && !isGenerating;
-
-  console.log(`StyleCardImage ${style.name}:`, {
-    shouldBlur,
-    isGenerating,
-    showBlurOverlay,
-    hasPreviewOrCropped
-  });
-
-  const handleGenerateStyle = (e: React.MouseEvent) => {
-    if (onGenerateStyle) {
-      onGenerateStyle(e);
-    }
-  };
-
   return (
-    <div className="relative">
+    <div className="relative group/image">
+      {/* Main Image Display */}
       <StyleCardImageDisplay
         style={style}
         imageToShow={imageToShow}
         cropAspectRatio={cropAspectRatio}
-        hasPreviewOrCropped={hasPreviewOrCropped}
-        shouldBlur={shouldBlur}
-        onExpandClick={onExpandClick}
+        showLoadingState={showLoadingState}
+        selectedOrientation={selectedOrientation}
+        previewUrl={previewUrl}
+        hasGeneratedPreview={hasGeneratedPreview}
       />
 
-      {/* Blur Overlay - only show when needed */}
-      {showBlurOverlay && (
-        <StyleCardBlurOverlay
-          style={style}
-          isGenerating={isGenerating}
-          onGenerateClick={handleGenerateStyle}
-        />
-      )}
+      {/* Overlays and Indicators */}
+      <StyleCardIndicators
+        isPopular={isPopular}
+        showGeneratedBadge={showGeneratedBadge}
+        isSelected={isSelected}
+        hasPreviewOrCropped={hasPreviewOrCropped}
+        onExpandClick={onExpandClick}
+        onCanvasPreviewClick={onCanvasPreviewClick}
+      />
 
-      {/* Loading Overlay */}
-      {showLoadingState && <StyleCardLoadingOverlay />}
-      
-      {/* Selection Overlay */}
+      <StyleCardLoadingOverlay
+        isGenerating={isGenerating}
+        styleName={style.name}
+      />
+
       <StyleCardSelectionOverlay isSelected={isSelected} />
+
+      <StyleCardBlurOverlay
+        shouldBlur={shouldBlur}
+        isGenerating={isGenerating}
+        onGenerateStyle={onGenerateStyle}
+      />
     </div>
   );
 };

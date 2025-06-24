@@ -57,11 +57,6 @@ const StyleCard = ({
   const showGeneratedBadge = hasGeneratedPreview && style.id !== 1;
 
   // CRITICAL FIX: Determine blur state properly
-  // Only blur if:
-  // 1. shouldBlur is true (non-popular style) AND
-  // 2. we don't have a generated preview AND
-  // 3. we're not currently generating AND
-  // 4. it's not the Original Image style
   const shouldShowBlur = shouldBlur && !hasGeneratedPreview && !isGenerating && style.id !== 1;
 
   // Enhanced aspect ratio calculation
@@ -90,7 +85,7 @@ const StyleCard = ({
     croppedImage: !!croppedImage
   });
 
-  // MAIN CARD CLICK HANDLER - Enhanced debugging
+  // MAIN CARD CLICK HANDLER
   const handleClick = () => {
     console.log(`🎯 MAIN CARD CLICK ▶️ ${style.name} (ID: ${style.id}), shouldBlur: ${shouldBlur}, isGenerating: ${isGenerating}`);
     onStyleClick(style);
@@ -105,16 +100,11 @@ const StyleCard = ({
   // Handle manual generation button click (for blurred cards)
   const handleGenerateStyle = async (e?: React.MouseEvent) => {
     if (e) {
-      e.stopPropagation(); // Prevent card click when clicking generate button
+      e.stopPropagation();
     }
     console.log(`🎨 MANUAL GENERATE CLICKED ▶️ ${style.name} (ID: ${style.id})`);
     
-    // First select the style
-    console.log(`🎯 Selecting style via generate button: ${style.name}`);
     onStyleClick(style);
-    
-    // Then generate the preview
-    console.log(`🖼️ Starting generation for: ${style.name}`);
     await generatePreview(style.id, style.name);
   };
 
@@ -146,8 +136,11 @@ const StyleCard = ({
             hasPreviewOrCropped={hasPreviewOrCropped}
             shouldBlur={shouldShowBlur}
             isGenerating={isGenerating}
-            onExpandClick={() => {}} // Will be handled by lightboxes
-            onCanvasPreviewClick={() => {}} // Will be handled by lightboxes
+            selectedOrientation={selectedOrientation}
+            previewUrl={previewUrl}
+            hasGeneratedPreview={hasGeneratedPreview}
+            onExpandClick={() => {}}
+            onCanvasPreviewClick={() => {}}
             onGenerateStyle={handleGenerateStyle}
           />
         </div>
