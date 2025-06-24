@@ -25,7 +25,6 @@ const StyleCardImageDisplay = ({
   onExpandClick
 }: StyleCardImageDisplayProps) => {
   const heroAspectRatio = cropAspectRatio > 0 ? cropAspectRatio : 4/3;
-  const showBlurOverlay = shouldBlur;
 
   return (
     <AspectRatio ratio={heroAspectRatio} className="relative overflow-hidden rounded-t-xl">
@@ -34,7 +33,7 @@ const StyleCardImageDisplay = ({
         <div className="w-full h-full bg-white rounded-lg shadow-sm border border-gray-200/50 overflow-hidden relative">
           {/* Hero Image Content */}
           {imageToShow ? (
-            <div className={`relative w-full h-full transition-transform duration-200 ease-out group-hover:scale-[1.02] ${showBlurOverlay ? 'blur-sm' : ''}`}>
+            <div className={`relative w-full h-full transition-transform duration-200 ease-out group-hover:scale-[1.02] ${shouldBlur ? 'blur-sm' : ''}`}>
               <img 
                 src={imageToShow} 
                 alt={style.name}
@@ -54,8 +53,8 @@ const StyleCardImageDisplay = ({
             </div>
           )}
 
-          {/* Expand Button */}
-          {hasPreviewOrCropped && !showBlurOverlay && (
+          {/* Expand Button - only show when we have content and not blurred */}
+          {hasPreviewOrCropped && !shouldBlur && (
             <button
               onClick={onExpandClick}
               className="absolute bottom-3 left-3 bg-white/90 hover:bg-white text-gray-700 rounded-full p-2.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 shadow-lg"

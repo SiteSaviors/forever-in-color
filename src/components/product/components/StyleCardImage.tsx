@@ -36,7 +36,15 @@ const StyleCardImage = ({
   onExpandClick,
   onGenerateStyle
 }: StyleCardImageProps) => {
-  const showBlurOverlay = shouldBlur && !isGenerating && !hasPreviewOrCropped;
+  // CRITICAL: Only show blur overlay if shouldBlur is true AND we're not generating AND we don't have preview
+  const showBlurOverlay = shouldBlur && !isGenerating;
+
+  console.log(`StyleCardImage ${style.name}:`, {
+    shouldBlur,
+    isGenerating,
+    showBlurOverlay,
+    hasPreviewOrCropped
+  });
 
   const handleGenerateStyle = (e: React.MouseEvent) => {
     if (onGenerateStyle) {
@@ -55,7 +63,7 @@ const StyleCardImage = ({
         onExpandClick={onExpandClick}
       />
 
-      {/* Blur Overlay */}
+      {/* Blur Overlay - only show when needed */}
       {showBlurOverlay && (
         <StyleCardBlurOverlay
           style={style}

@@ -56,6 +56,14 @@ const StyleCard = ({
   // Show generated badge for styles that have previews (but not Original Image)
   const showGeneratedBadge = hasGeneratedPreview && style.id !== 1;
 
+  // CRITICAL FIX: Determine blur state properly
+  // Only blur if:
+  // 1. shouldBlur is true (non-popular style) AND
+  // 2. we don't have a generated preview AND
+  // 3. we're not currently generating AND
+  // 4. it's not the Original Image style
+  const shouldShowBlur = shouldBlur && !hasGeneratedPreview && !isGenerating && style.id !== 1;
+
   // Enhanced aspect ratio calculation
   const getCropAspectRatio = () => {
     switch (selectedOrientation) {
@@ -77,6 +85,7 @@ const StyleCard = ({
     hasGeneratedPreview,
     showGeneratedBadge,
     shouldBlur,
+    shouldShowBlur,
     hasPreview: !!previewUrl,
     croppedImage: !!croppedImage
   });
@@ -122,7 +131,7 @@ const StyleCard = ({
         isSelected={isSelected}
         styleId={style.id}
         onClick={handleClick}
-        shouldBlur={shouldBlur}
+        shouldBlur={shouldShowBlur}
       >
         {/* Hero Image Section */}
         <div className="flex-shrink-0">
@@ -135,7 +144,7 @@ const StyleCard = ({
             showGeneratedBadge={showGeneratedBadge}
             isSelected={isSelected}
             hasPreviewOrCropped={hasPreviewOrCropped}
-            shouldBlur={shouldBlur}
+            shouldBlur={shouldShowBlur}
             isGenerating={isGenerating}
             onExpandClick={() => {}} // Will be handled by lightboxes
             onCanvasPreviewClick={() => {}} // Will be handled by lightboxes
@@ -152,7 +161,7 @@ const StyleCard = ({
             isSelected={isSelected}
             showGeneratedBadge={showGeneratedBadge}
             showContinueInCard={showContinueInCard}
-            shouldBlur={shouldBlur}
+            shouldBlur={shouldShowBlur}
             onContinueClick={actions.handleContinueClick}
             onGenerateClick={actions.handleGenerateClick}
           />
