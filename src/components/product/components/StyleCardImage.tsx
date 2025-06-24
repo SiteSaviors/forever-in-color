@@ -59,7 +59,7 @@ const StyleCardImage = ({
 
   const handleGenerateClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    console.log(`🎨 GENERATE CLICKED ▶️ ${style.name} (ID: ${style.id})`);
+    console.log(`🎨 GENERATE BUTTON CLICKED ▶️ ${style.name} (ID: ${style.id})`);
     if (onGenerateStyle) {
       onGenerateStyle(e);
     }
@@ -90,6 +90,9 @@ const StyleCardImage = ({
 
   const selectionColors = getSelectionColors();
 
+  // CRITICAL FIX: Hide blur overlay when generating or when we have content
+  const showBlurOverlay = shouldBlur && !isGenerating && !hasPreviewOrCropped;
+
   return (
     <div className="relative">
       <AspectRatio ratio={heroAspectRatio} className="relative overflow-hidden rounded-t-xl">
@@ -98,7 +101,7 @@ const StyleCardImage = ({
           <div className="w-full h-full bg-white rounded-lg shadow-inner border border-gray-200/50 overflow-hidden relative">
             {/* Hero Image Content - Now the star */}
             {imageToShow ? (
-              <div className={`relative w-full h-full group-hover:scale-105 transition-transform duration-700 ease-out ${shouldBlur ? 'blur-sm scale-105' : ''}`}>
+              <div className={`relative w-full h-full group-hover:scale-105 transition-transform duration-700 ease-out ${showBlurOverlay ? 'blur-sm scale-105' : ''}`}>
                 <img 
                   src={imageToShow} 
                   alt={style.name}
@@ -121,13 +124,13 @@ const StyleCardImage = ({
               </div>
             )}
 
-            {/* FIXED: Premium Blur Overlay with Generate Button - Always clickable */}
-            {shouldBlur && (
+            {/* FIXED: Blur Overlay - Only show when needed */}
+            {showBlurOverlay && (
               <div 
                 className="absolute inset-0 rounded-lg overflow-hidden z-20 pointer-events-auto cursor-pointer"
                 onClick={handleGenerateClick}
               >
-                {/* Sophisticated blur backdrop - always visible with opacity */}
+                {/* Sophisticated blur backdrop */}
                 <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/60 backdrop-blur-md rounded-lg opacity-90">
                   {/* Subtle pattern overlay */}
                   <div className="absolute inset-0 opacity-10"
@@ -179,7 +182,7 @@ const StyleCardImage = ({
         </div>
 
         {/* Enhanced Expand Button - only show when image is clear and has content */}
-        {hasPreviewOrCropped && !shouldBlur && (
+        {hasPreviewOrCropped && !showBlurOverlay && (
           <button
             onClick={onExpandClick}
             className="absolute bottom-3 left-3 bg-white/90 hover:bg-white text-gray-700 rounded-full p-2.5 opacity-0 group-hover:opacity-100 transition-all duration-300 z-10 shadow-lg backdrop-blur-sm border border-white/20"
@@ -204,7 +207,7 @@ const StyleCardImage = ({
         )}
 
         {/* Refined canvas shine effect for premium feel - only when not blurred */}
-        {!shouldBlur && (
+        {!showBlurOverlay && (
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-x-[-100%] group-hover:translate-x-[100%]"></div>
         )}
       </AspectRatio>
