@@ -1,4 +1,6 @@
+
 import { useState } from "react";
+import { Check, Lock } from "lucide-react";
 import { Accordion } from "@/components/ui/accordion";
 import ProductStep from "./ProductStep";
 import { useProductStepsConfig } from "./ProductStepsConfig";
