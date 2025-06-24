@@ -40,7 +40,6 @@ const ProductContent = ({
   selectedOrientation,
   customizations,
   uploadedImage,
-  previewUrls,
   autoGenerationComplete,
   onCurrentStepChange,
   onPhotoAndStyleComplete,
@@ -68,6 +67,7 @@ const ProductContent = ({
           isCompleted={completedSteps.includes(1)}
           canAccess={canProceedToStep(1)}
           onStepClick={() => onCurrentStepChange(1)}
+          selectedStyle={selectedStyle}
         >
           {currentStep === 1 && (
             <StylePreviewProvider 
@@ -76,7 +76,6 @@ const ProductContent = ({
             >
               <PhotoUploadAndStyleSelection
                 selectedStyle={selectedStyle}
-                previewUrls={previewUrls}
                 autoGenerationComplete={autoGenerationComplete}
                 onComplete={onPhotoAndStyleComplete}
               />
@@ -120,7 +119,6 @@ const ProductContent = ({
             <CustomizationSelector
               customizations={customizations}
               selectedSize={selectedSize}
-              selectedOrientation={selectedOrientation}
               onCustomizationChange={onCustomizationChange}
               onContinue={() => onCurrentStepChange(4)}
             />

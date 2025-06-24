@@ -16,15 +16,25 @@ const PhotoUploadAndStyleSelection = ({
 }: PhotoUploadAndStyleSelectionProps) => {
   const { croppedImage } = useStylePreview();
 
+  const handleImageUpload = (imageUrl: string) => {
+    console.log('Image uploaded:', imageUrl);
+  };
+
+  const handleStyleSelect = (styleId: number, styleName: string) => {
+    if (croppedImage) {
+      onComplete(croppedImage, styleId, styleName);
+    }
+  };
+
   return (
     <div className="space-y-8">
-      <PhotoUpload />
+      <PhotoUpload onImageUpload={handleImageUpload} />
       
       {croppedImage && (
         <StyleGrid
           selectedStyle={selectedStyle}
           autoGenerationComplete={autoGenerationComplete}
-          onStyleSelect={onComplete}
+          onStyleSelect={handleStyleSelect}
         />
       )}
     </div>

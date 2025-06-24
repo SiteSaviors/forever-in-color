@@ -1,5 +1,5 @@
 
-import { LucideIcon, Check, ChevronRight, Sparkles, Lock, Unlock, CheckCircle } from "lucide-react";
+import { LucideIcon, Check, ChevronRight, Sparkles, Lock, Unlock, CheckCircle, Upload, Palette, Settings, ShoppingCart, Circle } from "lucide-react";
 import { AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 
@@ -27,15 +27,15 @@ const ProductStep = ({
   children 
 }: ProductStepProps) => {
   
-  // Get appropriate icon for each step
+  // Get appropriate icon for each step using proper ES module imports
   const getStepIcon = (stepNum: number): LucideIcon => {
     const icons = {
-      1: require("lucide-react").Upload,
-      2: require("lucide-react").Palette, 
-      3: require("lucide-react").Settings,
-      4: require("lucide-react").ShoppingCart
+      1: Upload,
+      2: Palette, 
+      3: Settings,
+      4: ShoppingCart
     };
-    return icons[stepNum as keyof typeof icons] || require("lucide-react").Circle;
+    return icons[stepNum as keyof typeof icons] || Circle;
   };
 
   const Icon = getStepIcon(stepNumber);
