@@ -67,7 +67,7 @@ const StyleGrid = ({
   if (!croppedImage) {
     return (
       <div className="space-y-6">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
           {artStyles.map((style) => (
             <div
               key={style.id}
@@ -121,7 +121,7 @@ const StyleGrid = ({
   // Show actual style cards when photo is uploaded
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
         {artStyles.map((style) => {
           const hasAutoPreview = previewUrls[style.id];
           
