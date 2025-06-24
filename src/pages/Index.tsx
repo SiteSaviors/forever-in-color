@@ -5,7 +5,6 @@ import LogoMarquee from "@/components/LogoMarquee";
 import HowItWorks from "@/components/HowItWorks";
 import EmotionalJourney from "@/components/EmotionalJourney";
 import ArtStylesCarousel from "@/components/ArtStylesCarousel";
-import ArtStylesGallery from "@/components/ArtStylesGallery";
 import InteractiveDemo from "@/components/InteractiveDemo";
 import Testimonials from "@/components/Testimonials";
 import FAQ from "@/components/FAQ";
@@ -20,7 +19,6 @@ const Index = () => {
       <HowItWorks />
       <EmotionalJourney />
       <ArtStylesCarousel />
-      <ArtStylesGallery />
       <InteractiveDemo />
       <Testimonials />
       <FAQ />
