@@ -54,32 +54,26 @@ const StyleCardImage = ({
     }
   };
 
-  // Use a more prominent aspect ratio for better hero image treatment
   const heroAspectRatio = cropAspectRatio > 0 ? cropAspectRatio : 4/3;
-
-  // CRITICAL FIX: Hide blur overlay when generating or when we have content
   const showBlurOverlay = shouldBlur && !isGenerating && !hasPreviewOrCropped;
 
   return (
     <div className="relative">
       <AspectRatio ratio={heroAspectRatio} className="relative overflow-hidden rounded-t-xl">
-        {/* Premium canvas frame effect - more refined */}
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-200 via-gray-100 to-white p-3">
-          <div className="w-full h-full bg-white rounded-lg shadow-inner border border-gray-200/50 overflow-hidden relative">
-            {/* Hero Image Content - Now the star */}
+        {/* Simplified canvas frame - removed heavy gradients */}
+        <div className="absolute inset-0 bg-gray-100 p-3">
+          <div className="w-full h-full bg-white rounded-lg shadow-sm border border-gray-200/50 overflow-hidden relative">
+            {/* Hero Image Content - Simplified transitions */}
             {imageToShow ? (
-              <div className={`relative w-full h-full group-hover:scale-105 transition-transform duration-700 ease-out ${showBlurOverlay ? 'blur-sm scale-105' : ''}`}>
+              <div className={`relative w-full h-full transition-transform duration-200 ease-out group-hover:scale-[1.02] ${showBlurOverlay ? 'blur-sm' : ''}`}>
                 <img 
                   src={imageToShow} 
                   alt={style.name}
                   className="w-full h-full object-cover"
                 />
-                {/* Subtle image overlay for depth */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent pointer-events-none"></div>
               </div>
             ) : (
-              // Enhanced placeholder with better visual hierarchy
-              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-gray-100 relative">
+              <div className="w-full h-full flex items-center justify-center bg-gray-50 relative">
                 <div className="text-center opacity-60">
                   <img 
                     src={style.image} 
@@ -91,29 +85,18 @@ const StyleCardImage = ({
               </div>
             )}
 
-            {/* FIXED: Blur Overlay - Only show when needed */}
+            {/* Simplified Blur Overlay */}
             {showBlurOverlay && (
               <div 
-                className="absolute inset-0 rounded-lg overflow-hidden z-20 pointer-events-auto cursor-pointer"
+                className="absolute inset-0 rounded-lg overflow-hidden z-20 cursor-pointer bg-black/50"
                 onClick={handleGenerateClick}
               >
-                {/* Sophisticated blur backdrop */}
-                <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/60 backdrop-blur-md rounded-lg opacity-90">
-                  {/* Subtle pattern overlay */}
-                  <div className="absolute inset-0 opacity-10"
-                       style={{
-                         backgroundImage: `radial-gradient(circle at 2px 2px, rgba(255,255,255,0.3) 1px, transparent 0)`,
-                         backgroundSize: '20px 20px'
-                       }}>
-                  </div>
-                </div>
-                
-                {/* Generate Button - Centered and clickable */}
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                {/* Generate Button - Simplified styling */}
+                <div className="absolute inset-0 flex items-center justify-center">
                   <Button
                     onClick={handleGenerateClick}
                     disabled={isGenerating}
-                    className="bg-white text-gray-900 hover:bg-gray-50 font-medium px-3 py-1.5 rounded-md shadow-xl border border-white/20 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-2xl text-xs pointer-events-auto"
+                    className="bg-white text-gray-900 hover:bg-gray-50 font-medium px-3 py-1.5 rounded-md shadow-lg transition-all duration-150 hover:scale-105 text-xs"
                   >
                     {isGenerating ? (
                       <div className="flex items-center gap-1.5">
@@ -129,30 +112,22 @@ const StyleCardImage = ({
                   </Button>
                 </div>
                 
-                {/* Premium corner indicator - smaller */}
-                <div className="absolute top-2 right-2 pointer-events-none">
-                  <div className="bg-white/90 backdrop-blur-sm px-1.5 py-0.5 rounded-full text-xs font-medium text-gray-700 shadow-lg border border-white/50">
+                {/* Simplified corner indicator */}
+                <div className="absolute top-2 right-2">
+                  <div className="bg-white/90 px-1.5 py-0.5 rounded-full text-xs font-medium text-gray-700 shadow-sm">
                     Click to Generate
                   </div>
                 </div>
               </div>
             )}
-
-            {/* Refined canvas texture overlay */}
-            <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
-                 style={{
-                   backgroundImage: `radial-gradient(circle at 1px 1px, rgba(0,0,0,0.3) 1px, transparent 0)`,
-                   backgroundSize: '12px 12px'
-                 }}>
-            </div>
           </div>
         </div>
 
-        {/* Enhanced Expand Button - only show when image is clear and has content */}
+        {/* Simplified Expand Button */}
         {hasPreviewOrCropped && !showBlurOverlay && (
           <button
             onClick={onExpandClick}
-            className="absolute bottom-3 left-3 bg-white/90 hover:bg-white text-gray-700 rounded-full p-2.5 opacity-0 group-hover:opacity-100 transition-all duration-300 z-10 shadow-lg backdrop-blur-sm border border-white/20"
+            className="absolute bottom-3 left-3 bg-white/90 hover:bg-white text-gray-700 rounded-full p-2.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 shadow-lg"
             title="View full size"
           >
             <Expand className="w-4 h-4" />
@@ -162,27 +137,19 @@ const StyleCardImage = ({
         {/* Loading Overlay */}
         {showLoadingState && <StyleCardLoadingOverlay />}
         
-        {/* Simplified Selection Overlay - clean purple glow without top-right clutter */}
+        {/* Simplified Selection Overlay */}
         {isSelected && (
           <div className="absolute inset-0 pointer-events-none z-30">
-            {/* Static glowing border effect */}
-            <div className={`absolute inset-0 rounded-t-xl ring-4 ring-purple-500 shadow-[0_0_30px_rgba(147,51,234,0.5)] transition-all duration-500`}></div>
-            
-            {/* Subtle selection background overlay */}
-            <div className={`absolute inset-0 bg-purple-50/90 opacity-20 rounded-t-xl transition-all duration-300`}></div>
+            <div className="absolute inset-0 rounded-t-xl ring-4 ring-purple-500 shadow-lg transition-all duration-200"></div>
+            <div className="absolute inset-0 bg-purple-50/20 rounded-t-xl transition-all duration-200"></div>
           </div>
-        )}
-
-        {/* Refined canvas shine effect for premium feel - only when not blurred */}
-        {!showBlurOverlay && (
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-x-[-100%] group-hover:translate-x-[100%]"></div>
         )}
       </AspectRatio>
 
       {/* Selection confirmation text */}
       {isSelected && (
         <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 z-40">
-          <div className={`bg-purple-50/90 text-purple-600 px-3 py-1 rounded-full text-xs font-bold shadow-lg border-2 border-white animate-slide-in`}>
+          <div className="bg-purple-50/90 text-purple-600 px-3 py-1 rounded-full text-xs font-bold shadow-lg border-2 border-white">
             ✓ SELECTED
           </div>
         </div>
