@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Crown } from "lucide-react";
+import { Sparkles } from "lucide-react";
 
 interface StyleCardInfoProps {
   style: {
@@ -16,6 +16,7 @@ interface StyleCardInfoProps {
   showGeneratedBadge: boolean;
   showContinueInCard: boolean;
   onContinueClick: (e: React.MouseEvent) => void;
+  onGenerateClick?: (e: React.MouseEvent) => void;
 }
 
 const StyleCardInfo = ({
@@ -25,8 +26,12 @@ const StyleCardInfo = ({
   isSelected,
   showGeneratedBadge,
   showContinueInCard,
-  onContinueClick
+  onContinueClick,
+  onGenerateClick
 }: StyleCardInfoProps) => {
+  // Don't show generate button for Original Image (ID: 1)
+  const showGenerateButton = style.id !== 1;
+  
   return (
     <div className="p-4 space-y-3 min-h-[90px] flex flex-col justify-between relative">
       {/* Clean title and description - no badges here */}
@@ -49,26 +54,25 @@ const StyleCardInfo = ({
           {style.description}
         </p>
       </div>
-
-      {/* Popular badge - positioned in bottom-right as per screenshot */}
-      {isPopular && (
-        <div className="absolute bottom-4 right-4 z-10">
-          <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300 text-xs px-3 py-1 font-semibold">
-            <Crown className="w-3 h-3 mr-1" />
-            Popular
-          </Badge>
-        </div>
-      )}
       
-      {/* Continue button */}
-      {showContinueInCard && (
+      {/* Generate/Continue button for all styles except Original */}
+      {showGenerateButton && (
         <div className="pt-1">
-          <Button 
-            onClick={onContinueClick}
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-sm py-2 h-auto font-medium"
-          >
-            Continue with {style.name}
-          </Button>
+          {hasGeneratedPreview ? (
+            <Button 
+              onClick={onContinueClick}
+              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-sm py-2 h-auto font-medium"
+            >
+              Continue with Style
+            </Button>
+          ) : (
+            <Button 
+              onClick={onGenerateClick}
+              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-sm py-2 h-auto font-medium"
+            >
+              Generate This Style
+            </Button>
+          )}
         </div>
       )}
     </div>

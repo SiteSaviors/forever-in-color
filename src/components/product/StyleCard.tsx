@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { useState } from "react";
 import { useStylePreview } from "./hooks/useStylePreview";
@@ -118,6 +117,13 @@ const StyleCard = ({
     }
   };
 
+  const handleGenerateClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    console.log(`Generate clicked for ${style.name}`);
+    // Trigger the style click which will generate the preview
+    onStyleClick(style);
+  };
+
   // Get style-specific selection colors for the main card border
   const getCardSelectionColors = () => {
     const colorMap: { [key: number]: string } = {
@@ -194,6 +200,7 @@ const StyleCard = ({
                 showGeneratedBadge={showGeneratedBadge}
                 showContinueInCard={showContinueInCard}
                 onContinueClick={handleContinueClick}
+                onGenerateClick={handleGenerateClick}
               />
             </div>
           </CardContent>
