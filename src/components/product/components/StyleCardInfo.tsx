@@ -81,10 +81,13 @@ const StyleCardInfo = ({
         ))}
       </div>
 
-      {/* Title with emoji - better spacing */}
-      <div className="text-center px-2">
-        <h5 className="font-poppins font-bold text-gray-900 text-lg leading-tight tracking-tight">
-          {styleInfo.emoji} {style.name}
+      {/* Emoji above title - larger and centered */}
+      <div className="text-center">
+        <div className="text-3xl mb-2">
+          {styleInfo.emoji}
+        </div>
+        <h5 className="font-poppins font-bold text-gray-900 text-xl leading-tight tracking-tight">
+          {style.name}
         </h5>
       </div>
 
