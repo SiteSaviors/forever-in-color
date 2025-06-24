@@ -96,12 +96,13 @@ export const StylePreviewProvider = ({
     ];
 
     const autoGeneratePreviews = async () => {
-      console.log('🚀 Auto-generating previews for popular styles with orientation:', selectedOrientation);
+      console.log('🚀 Auto-generating previews for popular styles IN PARALLEL with orientation:', selectedOrientation);
       
-      for (const style of popularStyles) {
+      // Start all generations simultaneously - no await in the loop
+      const generationPromises = popularStyles.map(async (style) => {
         try {
           dispatch({ type: 'START_GENERATION', styleId: style.id });
-          console.log(`Auto-generating preview for ${style.name} (ID: ${style.id})`);
+          console.log(`Starting parallel generation for ${style.name} (ID: ${style.id})`);
           
           const aspectRatio = getAspectRatio(selectedOrientation);
           const tempPhotoId = `temp_${Date.now()}_${style.id}`;
@@ -121,7 +122,7 @@ export const StylePreviewProvider = ({
                 styleId: style.id, 
                 url: watermarkedUrl 
               });
-              console.log(`✅ Auto-generated preview for ${style.name} completed`);
+              console.log(`✅ Parallel generation completed for ${style.name}`);
             } catch (watermarkError) {
               console.warn(`⚠️ Watermark failed for ${style.name}, using original:`, watermarkError);
               dispatch({ 
@@ -132,14 +133,18 @@ export const StylePreviewProvider = ({
             }
           }
         } catch (error) {
-          console.error(`❌ Auto-generation failed for ${style.name}:`, error);
+          console.error(`❌ Parallel generation failed for ${style.name}:`, error);
           dispatch({ 
             type: 'GENERATION_ERROR', 
             styleId: style.id, 
             error: error.message 
           });
         }
-      }
+      });
+
+      // Wait for all generations to complete (or fail)
+      await Promise.allSettled(generationPromises);
+      console.log('🎉 All parallel generations completed');
     };
 
     autoGeneratePreviews();
