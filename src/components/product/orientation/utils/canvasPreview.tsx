@@ -1,4 +1,6 @@
 
+import React from 'react';
+
 export const getCanvasPreview = (orientation: string, size: string) => {
   const baseClasses = "bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg flex items-center justify-center mx-auto border border-purple-200 shadow-sm";
   

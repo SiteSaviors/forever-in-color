@@ -1,10 +1,8 @@
 
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Sparkles } from "lucide-react";
 import { SizeOption } from "../types";
 import { getCanvasPreview } from "../utils/canvasPreview";
+import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
 
 interface SizeCardProps {
   option: SizeOption;
@@ -16,55 +14,62 @@ interface SizeCardProps {
 
 const SizeCard = ({ option, orientation, isSelected, onClick, onContinue }: SizeCardProps) => {
   return (
-    <Card 
-      className={`group cursor-pointer transition-all duration-500 hover:shadow-2xl hover:-translate-y-1 ${
-        isSelected 
-          ? 'ring-2 ring-indigo-200 shadow-xl bg-gradient-to-r from-indigo-50/50 to-purple-50/50 border-l-4 border-l-indigo-400' 
-          : 'shadow-lg hover:shadow-indigo-100/50'
+    <div
+      className={`relative p-6 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
+        isSelected
+          ? 'border-purple-500 bg-purple-50 shadow-lg scale-105'
+          : 'border-gray-200 bg-white hover:border-purple-300 hover:shadow-md'
       }`}
       onClick={onClick}
     >
-      <CardContent className="p-6">
-        <div className="mb-6">
-          {getCanvasPreview(orientation, option.size)}
+      {/* Popular Badge */}
+      {option.popular && (
+        <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+          <span className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg">
+            Most Popular
+          </span>
         </div>
-        <div className="text-center space-y-3">
+      )}
+
+      {/* Canvas Preview */}
+      <div className="mb-4">
+        {getCanvasPreview(orientation, option.size)}
+      </div>
+
+      {/* Size Info */}
+      <div className="text-center">
+        <h5 className="font-semibold text-gray-900 mb-1">{option.size}</h5>
+        <p className="text-sm text-gray-600 mb-2">{option.description}</p>
+        <p className="text-xs text-gray-500 mb-3">{option.category}</p>
+        
+        {/* Pricing */}
+        <div className="mb-4">
           <div className="flex items-center justify-center gap-2">
-            <span className={`font-bold text-xl font-poppins tracking-tight ${
-              isSelected ? 'text-indigo-600' : 'text-gray-900'
-            }`}>
-              {option.category}
-            </span>
-            {option.popular && (
-              <Badge className="bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 border-purple-200 font-semibold">
-                <Sparkles className="w-3 h-3 mr-1" />
-                Popular
-              </Badge>
+            <span className="text-lg font-bold text-purple-600">${option.salePrice}</span>
+            {option.originalPrice > option.salePrice && (
+              <span className="text-sm text-gray-500 line-through">${option.originalPrice}</span>
             )}
           </div>
-          <p className="text-sm text-gray-600 leading-tight">
-            {option.description}
-          </p>
-          <div className="space-y-2">
-            <div className="text-sm text-gray-500 line-through">
-              ${option.originalPrice}
-            </div>
-            <div className="text-2xl font-bold text-gray-900 font-poppins tracking-tight">
-              ${option.salePrice}
-            </div>
-          </div>
-          
-          <div className="pt-3">
-            <Button 
-              onClick={onContinue}
-              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-sm py-2 h-auto font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
-            >
-              Continue with {option.category}
-            </Button>
-          </div>
+          {option.originalPrice > option.salePrice && (
+            <p className="text-xs text-green-600 font-medium">
+              Save ${option.originalPrice - option.salePrice}
+            </p>
+          )}
         </div>
-      </CardContent>
-    </Card>
+
+        {/* Continue Button - Only show when selected */}
+        {isSelected && (
+          <Button
+            onClick={onContinue}
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+            size="sm"
+          >
+            Continue
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </Button>
+        )}
+      </div>
+    </div>
   );
 };
 
