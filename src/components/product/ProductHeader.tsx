@@ -20,7 +20,7 @@ const ProductHeader = ({ completedSteps, totalSteps }: ProductHeaderProps) => {
           Create Your Masterpiece
         </h1>
         <p className="text-lg md:text-xl text-gray-600 mb-3 md:mb-4 max-w-2xl mx-auto leading-relaxed">
-          Transform your precious memories into stunning canvas art with AI-powered artistic styles and magical AR experiences.
+          Turn your favorite moments into timeless art — with stunning AI art styles and 'Living Memory' videos you can see, hear, and feel.
         </p>
       </div>
     </section>
