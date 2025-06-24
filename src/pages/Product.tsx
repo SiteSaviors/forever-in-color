@@ -5,6 +5,7 @@ import ProductHeader from "@/components/product/ProductHeader";
 import ProductContent from "@/components/product/ProductContent";
 import TrustElements from "@/components/product/TrustElements";
 import PriceCalculator from "@/components/product/PriceCalculator";
+import ProductTestimonials from "@/components/product/ProductTestimonials";
 import { useProductState } from "@/components/product/ProductStateManager";
 
 const Product = () => {
