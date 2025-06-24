@@ -5,6 +5,7 @@ import StyleCardContainer from "./components/StyleCardContainer";
 import StyleCardActions from "./components/StyleCardActions";
 import StyleCardLightboxes from "./components/StyleCardLightboxes";
 import { useStylePreview } from "./contexts/StylePreviewContext";
+import { useState } from "react";
 
 interface StyleCardProps {
   style: {
@@ -34,6 +35,8 @@ const StyleCard = ({
   onStyleClick,
   onContinue
 }: StyleCardProps) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  
   const { 
     generatePreview, 
     isLoading, 
@@ -108,6 +111,11 @@ const StyleCard = ({
     await generatePreview(style.id, style.name);
   };
 
+  // Handle preview expansion
+  const handleExpandClick = () => {
+    setIsExpanded(true);
+  };
+
   // Get action handlers
   const actions = StyleCardActions({
     style,
@@ -123,8 +131,8 @@ const StyleCard = ({
         onClick={handleClick}
         shouldBlur={shouldShowBlur}
       >
-        {/* Hero Image Section */}
-        <div className="flex-shrink-0">
+        {/* Hero Image Section - Make this prominent on mobile */}
+        <div className="flex-shrink-0 relative">
           <StyleCardImage
             style={style}
             imageToShow={imageToShow}
@@ -139,13 +147,13 @@ const StyleCard = ({
             selectedOrientation={selectedOrientation}
             previewUrl={previewUrl}
             hasGeneratedPreview={hasGeneratedPreview}
-            onExpandClick={() => {}}
+            onExpandClick={handleExpandClick}
             onCanvasPreviewClick={() => {}}
             onGenerateStyle={handleGenerateStyle}
           />
         </div>
 
-        {/* Info Section */}
+        {/* Info Section - Streamlined for mobile */}
         <div className="flex-1 flex flex-col">
           <StyleCardInfo
             style={style}

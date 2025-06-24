@@ -49,16 +49,19 @@ const StyleCardImage = ({
 }: StyleCardImageProps) => {
   return (
     <div className="relative group/image">
-      {/* Main Image Display */}
-      <StyleCardImageDisplay
-        style={style}
-        imageToShow={imageToShow}
-        cropAspectRatio={cropAspectRatio}
-        showLoadingState={showLoadingState}
-        selectedOrientation={selectedOrientation}
-        previewUrl={previewUrl}
-        hasGeneratedPreview={hasGeneratedPreview}
-      />
+      {/* Main Image Display - Make this the priority on mobile */}
+      <div className="relative min-h-[200px] md:min-h-[250px]">
+        <StyleCardImageDisplay
+          style={style}
+          imageToShow={imageToShow}
+          cropAspectRatio={cropAspectRatio}
+          showLoadingState={showLoadingState}
+          selectedOrientation={selectedOrientation}
+          previewUrl={previewUrl}
+          hasGeneratedPreview={hasGeneratedPreview}
+          onExpandClick={onExpandClick}
+        />
+      </div>
 
       {/* Overlays and Indicators */}
       <StyleCardIndicators

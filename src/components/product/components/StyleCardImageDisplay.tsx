@@ -1,6 +1,7 @@
 
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { MockupCanvas } from "../MockupCanvas";
+import { Expand } from "lucide-react";
 
 interface StyleCardImageDisplayProps {
   style: {
@@ -14,6 +15,7 @@ interface StyleCardImageDisplayProps {
   selectedOrientation: string;
   previewUrl?: string | null;
   hasGeneratedPreview: boolean;
+  onExpandClick?: () => void;
 }
 
 const StyleCardImageDisplay = ({
@@ -23,26 +25,39 @@ const StyleCardImageDisplay = ({
   showLoadingState,
   selectedOrientation,
   previewUrl,
-  hasGeneratedPreview
+  hasGeneratedPreview,
+  onExpandClick
 }: StyleCardImageDisplayProps) => {
   // Use MockupCanvas for generated previews, regular image for others
   const shouldUseMockup = hasGeneratedPreview && previewUrl && style.id !== 1;
 
   if (shouldUseMockup) {
     return (
-      <div className="w-full">
+      <div className="w-full relative group">
         <MockupCanvas 
           previewUrl={previewUrl}
           orientation={selectedOrientation as 'square' | 'horizontal' | 'vertical'}
           className="transition-transform duration-300 group-hover:scale-105"
         />
+        {/* Expand button for mobile */}
+        {onExpandClick && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onExpandClick();
+            }}
+            className="absolute top-2 right-2 bg-black/50 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 md:hidden"
+          >
+            <Expand className="w-4 h-4" />
+          </button>
+        )}
       </div>
     );
   }
 
   // Fallback to regular image display
   return (
-    <AspectRatio ratio={cropAspectRatio} className="relative overflow-hidden rounded-lg">
+    <AspectRatio ratio={cropAspectRatio} className="relative overflow-hidden rounded-lg group">
       <img
         src={imageToShow}
         alt={style.name}
@@ -50,6 +65,19 @@ const StyleCardImageDisplay = ({
           showLoadingState ? 'opacity-50 blur-sm' : 'opacity-100'
         } group-hover:scale-105`}
       />
+      
+      {/* Expand button for mobile */}
+      {onExpandClick && !showLoadingState && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onExpandClick();
+          }}
+          className="absolute top-2 right-2 bg-black/50 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 md:hidden"
+        >
+          <Expand className="w-4 h-4" />
+        </button>
+      )}
       
       {showLoadingState && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/20">

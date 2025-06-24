@@ -1,6 +1,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { ReactNode } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface StyleCardContainerProps {
   isSelected: boolean;
@@ -17,24 +18,26 @@ const StyleCardContainer = ({
   children,
   onClick
 }: StyleCardContainerProps) => {
+  const isMobile = useIsMobile();
+  
   const handleCardClick = () => {
     console.log(`🎯 CARD CONTAINER CLICKED ▶️ Style ID: ${styleId}, shouldBlur: ${shouldBlur}`);
     onClick();
   };
 
   return (
-    <div className="relative p-2">
+    <div className="relative p-1 md:p-2">
       {/* Simplified background */}
       <div className="absolute inset-0 bg-gray-50 rounded-xl opacity-70"></div>
       
-      {/* Optimized card with faster transitions */}
+      {/* Optimized card with mobile-first responsive design */}
       <Card 
         className={`group cursor-pointer transition-all duration-200 ease-out relative z-10 bg-white/98 border-0 
-          shadow-lg hover:shadow-xl
-          ${!shouldBlur ? 'hover:scale-[1.02] hover:-translate-y-1' : ''} 
+          shadow-md hover:shadow-lg md:shadow-lg md:hover:shadow-xl
+          ${!shouldBlur && !isMobile ? 'hover:scale-[1.02] hover:-translate-y-1' : ''} 
           h-full flex flex-col
           ${isSelected ? 
-            'ring-4 ring-purple-500 shadow-purple-200 scale-[1.01] -translate-y-0.5' : 
+            'ring-2 md:ring-4 ring-purple-500 shadow-purple-200 scale-[1.01] -translate-y-0.5' : 
             ''
           }
         `}

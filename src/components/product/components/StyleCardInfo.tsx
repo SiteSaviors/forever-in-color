@@ -60,47 +60,47 @@ const StyleCardInfo = ({
   const styleInfo = getStyleInfo();
   
   return (
-    <div className={`p-5 space-y-4 min-h-[140px] flex flex-col relative ${shouldBlur ? 'opacity-50' : ''}`}>
+    <div className={`p-3 md:p-5 space-y-2 md:space-y-4 min-h-[120px] md:min-h-[140px] flex flex-col relative ${shouldBlur ? 'opacity-50' : ''}`}>
       {/* Generated badge - absolute positioned */}
       {showGeneratedBadge && hasGeneratedPreview && isPopular && (
-        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs px-2 py-1 h-auto absolute top-3 right-3 z-10">
+        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs px-2 py-1 h-auto absolute top-2 md:top-3 right-2 md:right-3 z-10">
           <Sparkles className="w-3 h-3 mr-1" />
           <span className="hidden sm:inline">Generated</span>
         </Badge>
       )}
 
-      {/* Style badges - smaller and more refined */}
-      <div className="flex gap-1.5 justify-center">
+      {/* Style badges - smaller and more refined, responsive */}
+      <div className="flex gap-1 md:gap-1.5 justify-center flex-wrap">
         {styleInfo.badges.map((badge, index) => (
           <div
             key={badge}
-            className={`${styleInfo.badgeColors[index]} text-white px-3 py-1.5 rounded-full text-xs font-semibold shadow-md`}
+            className={`${styleInfo.badgeColors[index]} text-white px-2 md:px-3 py-1 md:py-1.5 rounded-full text-xs font-semibold shadow-md`}
           >
             {badge}
           </div>
         ))}
       </div>
 
-      {/* Title with emoji - better spacing */}
-      <div className="text-center px-2">
-        <h5 className="font-poppins font-bold text-gray-900 text-lg leading-tight tracking-tight">
-          {styleInfo.emoji} {style.name}
+      {/* Title with emoji - better spacing, responsive */}
+      <div className="text-center px-1 md:px-2">
+        <h5 className="font-poppins font-bold text-gray-900 text-base md:text-lg leading-tight tracking-tight">
+          <span className="text-sm md:text-base">{styleInfo.emoji}</span> {style.name}
         </h5>
       </div>
 
-      {/* Description in rounded container - improved spacing */}
-      <div className="bg-gray-50 rounded-xl p-3 text-center flex-1 flex items-center">
-        <p className="font-inter font-medium text-gray-700 text-sm leading-relaxed w-full">
+      {/* Description in rounded container - improved spacing, responsive */}
+      <div className="bg-gray-50 rounded-lg md:rounded-xl p-2 md:p-3 text-center flex-1 flex items-center">
+        <p className="font-inter font-medium text-gray-700 text-xs md:text-sm leading-relaxed w-full">
           {style.description}
         </p>
       </div>
       
-      {/* Action buttons - consistent spacing */}
+      {/* Action buttons - consistent spacing, responsive */}
       {showContinueButton && (
         <div className="pt-1">
           <Button 
             onClick={onContinueClick}
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-sm py-2.5 h-auto font-medium rounded-lg"
+            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-xs md:text-sm py-2 md:py-2.5 h-auto font-medium rounded-lg"
           >
             Continue with Style
           </Button>
