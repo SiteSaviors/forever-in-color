@@ -1,9 +1,9 @@
-
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
 import { Check, CheckCircle, Expand } from "lucide-react";
 import StyleCardLoadingOverlay from "./StyleCardLoadingOverlay";
 import MiniCanvasPreview from "./MiniCanvasPreview";
+import StyleFloatingBadge from "./StyleFloatingBadge";
 
 interface StyleCardImageProps {
   style: {
@@ -93,6 +93,9 @@ const StyleCardImage = ({
         </div>
       </div>
 
+      {/* NEW: Floating Style Badge */}
+      <StyleFloatingBadge styleId={style.id} styleName={style.name} />
+
       {/* Mini Canvas Preview - refined positioning */}
       {showGeneratedBadge && imageToShow && (
         <div className="absolute top-3 right-3 z-10">
@@ -109,7 +112,7 @@ const StyleCardImage = ({
       {hasPreviewOrCropped && (
         <button
           onClick={onExpandClick}
-          className="absolute top-3 left-3 bg-white/90 hover:bg-white text-gray-700 rounded-full p-2.5 opacity-0 group-hover:opacity-100 transition-all duration-300 z-10 shadow-lg backdrop-blur-sm border border-white/20"
+          className="absolute bottom-3 left-3 bg-white/90 hover:bg-white text-gray-700 rounded-full p-2.5 opacity-0 group-hover:opacity-100 transition-all duration-300 z-10 shadow-lg backdrop-blur-sm border border-white/20"
           title="View full size"
         >
           <Expand className="w-4 h-4" />
@@ -119,7 +122,7 @@ const StyleCardImage = ({
       {/* Loading Overlay */}
       {showLoadingState && <StyleCardLoadingOverlay />}
 
-      {/* Refined Generated Badge */}
+      {/* Refined Generated Badge - moved to top-right */}
       {showGeneratedBadge && (
         <div className="absolute top-3 right-3 z-20">
           <Badge variant="secondary" className="bg-white/95 text-gray-700 font-semibold flex items-center gap-1.5 shadow-md backdrop-blur-sm border border-white/30">
@@ -129,9 +132,9 @@ const StyleCardImage = ({
         </div>
       )}
       
-      {/* Enhanced Selection Indicator */}
+      {/* Enhanced Selection Indicator - moved to bottom-right */}
       {isSelected && (
-        <div className="absolute top-3 left-3 z-20">
+        <div className="absolute bottom-3 right-3 z-20">
           <div className="bg-purple-600 text-white rounded-full p-2 shadow-lg ring-2 ring-white/50">
             <Check className="w-4 h-4" />
           </div>
