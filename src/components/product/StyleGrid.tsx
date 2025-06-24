@@ -1,7 +1,8 @@
+
 import { Button } from "@/components/ui/button";
 import { Upload, ImageIcon } from "lucide-react";
 import StyleCard from "./StyleCard";
-import { StylePreviewProvider } from "./contexts/StylePreviewContext";
+import { useStylePreview } from "./contexts/StylePreviewContext";
 import { artStyles } from "@/data/artStyles";
 
 interface StyleGridProps {
@@ -12,13 +13,13 @@ interface StyleGridProps {
   onComplete: () => void;
 }
 
-const StyleGridContent = ({ 
+const StyleGrid = ({ 
   croppedImage, 
   selectedStyle, 
   selectedOrientation = "square",
   onStyleSelect, 
   onComplete 
-}: Omit<StyleGridProps, 'previewUrls' | 'autoGenerationComplete' | 'cropAspectRatio'>) => {
+}: StyleGridProps) => {
   // Popular styles that auto-generate: Classic Oil (2), Watercolor Dreams (4), Pastel Bliss (5)
   const popularStyleIds = [2, 4, 5];
 
@@ -135,17 +136,6 @@ const StyleGridContent = ({
         })}
       </div>
     </div>
-  );
-};
-
-const StyleGrid = (props: StyleGridProps) => {
-  return (
-    <StylePreviewProvider 
-      croppedImage={props.croppedImage}
-      selectedOrientation={props.selectedOrientation || "square"}
-    >
-      <StyleGridContent {...props} />
-    </StylePreviewProvider>
   );
 };
 

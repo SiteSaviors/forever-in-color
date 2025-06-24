@@ -56,24 +56,24 @@ const ProductContent = ({
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <Accordion type="single" value={`step-${currentStep}`} className="space-y-8">
-        {/* Step 1: Photo Upload & Style Selection - Only wrap this step with StylePreviewProvider */}
-        <ProductStep
-          stepNumber={1}
-          title="Upload Photo & Choose Style"
-          description="Upload your photo and select an art style"
-          isActive={currentStep === 1}
-          isCompleted={completedSteps.includes(1)}
-          canAccess={canProceedToStep(1)}
-          onStepClick={() => onCurrentStepChange(1)}
-          selectedStyle={selectedStyle}
-        >
-          {currentStep === 1 && (
-            <StylePreviewProvider 
-              croppedImage={uploadedImage} 
-              selectedOrientation={selectedOrientation}
-            >
+    <StylePreviewProvider 
+      croppedImage={uploadedImage} 
+      selectedOrientation={selectedOrientation}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Accordion type="single" value={`step-${currentStep}`} className="space-y-8">
+          {/* Step 1: Photo Upload & Style Selection */}
+          <ProductStep
+            stepNumber={1}
+            title="Upload Photo & Choose Style"
+            description="Upload your photo and select an art style"
+            isActive={currentStep === 1}
+            isCompleted={completedSteps.includes(1)}
+            canAccess={canProceedToStep(1)}
+            onStepClick={() => onCurrentStepChange(1)}
+            selectedStyle={selectedStyle}
+          >
+            {currentStep === 1 && (
               <PhotoUploadAndStyleSelection
                 selectedStyle={selectedStyle}
                 uploadedImage={uploadedImage}
@@ -82,73 +82,73 @@ const ProductContent = ({
                 onComplete={onPhotoAndStyleComplete}
                 onPhotoAndStyleComplete={onPhotoAndStyleComplete}
               />
-            </StylePreviewProvider>
-          )}
-        </ProductStep>
+            )}
+          </ProductStep>
 
-        {/* Step 2: Orientation & Size Selection - No StylePreviewProvider needed */}
-        <ProductStep
-          stepNumber={2}
-          title="Choose Layout & Size"
-          description="Select your canvas orientation and size"
-          isActive={currentStep === 2}
-          isCompleted={completedSteps.includes(2)}
-          canAccess={canProceedToStep(2)}
-          onStepClick={() => onCurrentStepChange(2)}
-        >
-          {currentStep === 2 && (
-            <OrientationSelector
-              selectedOrientation={selectedOrientation}
-              selectedSize={selectedSize}
-              userImageUrl={uploadedImage}
-              onOrientationChange={onOrientationSelect}
-              onSizeChange={onSizeSelect}
-              onContinue={() => onCurrentStepChange(3)}
-            />
-          )}
-        </ProductStep>
+          {/* Step 2: Orientation & Size Selection */}
+          <ProductStep
+            stepNumber={2}
+            title="Choose Layout & Size"
+            description="Select your canvas orientation and size"
+            isActive={currentStep === 2}
+            isCompleted={completedSteps.includes(2)}
+            canAccess={canProceedToStep(2)}
+            onStepClick={() => onCurrentStepChange(2)}
+          >
+            {currentStep === 2 && (
+              <OrientationSelector
+                selectedOrientation={selectedOrientation}
+                selectedSize={selectedSize}
+                userImageUrl={uploadedImage}
+                onOrientationChange={onOrientationSelect}
+                onSizeChange={onSizeSelect}
+                onContinue={() => onCurrentStepChange(3)}
+              />
+            )}
+          </ProductStep>
 
-        {/* Step 3: Customization */}
-        <ProductStep
-          stepNumber={3}
-          title="Customize Your Canvas"
-          description="Add premium features and customizations"
-          isActive={currentStep === 3}
-          isCompleted={completedSteps.includes(3)}
-          canAccess={canProceedToStep(3)}
-          onStepClick={() => onCurrentStepChange(3)}
-        >
-          {currentStep === 3 && (
-            <CustomizationSelector
-              customizations={customizations}
-              selectedSize={selectedSize}
-              onCustomizationChange={onCustomizationChange}
-            />
-          )}
-        </ProductStep>
+          {/* Step 3: Customization */}
+          <ProductStep
+            stepNumber={3}
+            title="Customize Your Canvas"
+            description="Add premium features and customizations"
+            isActive={currentStep === 3}
+            isCompleted={completedSteps.includes(3)}
+            canAccess={canProceedToStep(3)}
+            onStepClick={() => onCurrentStepChange(3)}
+          >
+            {currentStep === 3 && (
+              <CustomizationSelector
+                customizations={customizations}
+                selectedSize={selectedSize}
+                onCustomizationChange={onCustomizationChange}
+              />
+            )}
+          </ProductStep>
 
-        {/* Step 4: Review & Order */}
-        <ProductStep
-          stepNumber={4}
-          title="Review & Order"
-          description="Review your canvas and place your order"
-          isActive={currentStep === 4}
-          isCompleted={completedSteps.includes(4)}
-          canAccess={canProceedToStep(4)}
-          onStepClick={() => onCurrentStepChange(4)}
-        >
-          {currentStep === 4 && (
-            <ReviewAndOrder
-              uploadedImage={uploadedImage}
-              selectedStyle={selectedStyle}
-              selectedSize={selectedSize}
-              selectedOrientation={selectedOrientation}
-              customizations={customizations}
-            />
-          )}
-        </ProductStep>
-      </Accordion>
-    </div>
+          {/* Step 4: Review & Order */}
+          <ProductStep
+            stepNumber={4}
+            title="Review & Order"
+            description="Review your canvas and place your order"
+            isActive={currentStep === 4}
+            isCompleted={completedSteps.includes(4)}
+            canAccess={canProceedToStep(4)}
+            onStepClick={() => onCurrentStepChange(4)}
+          >
+            {currentStep === 4 && (
+              <ReviewAndOrder
+                uploadedImage={uploadedImage}
+                selectedStyle={selectedStyle}
+                selectedSize={selectedSize}
+                selectedOrientation={selectedOrientation}
+                customizations={customizations}
+              />
+            )}
+          </ProductStep>
+        </Accordion>
+      </div>
+    </StylePreviewProvider>
   );
 };
 
