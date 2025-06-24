@@ -2,7 +2,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Frame } from "lucide-react";
 
 interface FloatingFrameCardProps {
   enabled: boolean;
@@ -102,7 +101,11 @@ const FloatingFrameCard = ({
                 ? 'bg-teal-100 text-teal-600 animate-slide-in' 
                 : 'bg-gray-100 text-gray-500 group-hover:bg-teal-50 group-hover:text-teal-400'
             }`}>
-              <Frame className="w-5 h-5 md:w-6 md:h-6" />
+              <img 
+                src="/lovable-uploads/b1b4a289-ef16-4ac2-87b2-c5bed1dae005.png" 
+                alt="Floating frame icon" 
+                className="w-5 h-5 md:w-6 md:h-6"
+              />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-3 mb-2 md:mb-3">
