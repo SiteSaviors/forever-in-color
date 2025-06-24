@@ -31,6 +31,7 @@ const StyleGrid = ({
     setLoadingStyle(styleId);
     
     try {
+      // Just notify parent component about style selection, don't auto-complete
       onStyleSelect(styleId, styleName);
     } finally {
       setLoadingStyle(null);
@@ -133,7 +134,7 @@ const StyleGrid = ({
               selectedStyle={selectedStyle}
               isPopular={[2, 4, 5].includes(style.id)} // Mark popular styles
               cropAspectRatio={cropAspectRatio}
-              showContinueButton={true}
+              showContinueButton={false} // Don't show continue button on individual cards
               preGeneratedPreview={hasAutoPreview ? previewUrls[style.id] : undefined}
               onStyleClick={() => handleStyleSelect(style.id, style.name)}
               onContinue={onComplete}

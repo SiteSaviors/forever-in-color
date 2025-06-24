@@ -26,6 +26,7 @@ const PhotoUploadAndStyleSelection = ({
   const [uploadedImageFile, setUploadedImageFile] = useState<string | null>(uploadedImage);
   const [croppedImage, setCroppedImage] = useState<string | null>(uploadedImage);
   const [selectedStyleId, setSelectedStyleId] = useState<number | null>(selectedStyle?.id || null);
+  const [selectedStyleName, setSelectedStyleName] = useState<string | null>(selectedStyle?.name || null);
   const [cropAspectRatio, setCropAspectRatio] = useState(1);
   const [showCropper, setShowCropper] = useState(false);
 
@@ -46,13 +47,16 @@ const PhotoUploadAndStyleSelection = ({
   const handleStyleSelect = (styleId: number, styleName: string) => {
     console.log('Style selected:', styleId, styleName);
     setSelectedStyleId(styleId);
+    setSelectedStyleName(styleName);
     
-    if (croppedImage) {
-      onPhotoAndStyleComplete(croppedImage, styleId, styleName);
-    }
+    // Don't automatically complete here - wait for user to click continue
   };
 
   const handleContinue = () => {
+    if (croppedImage && selectedStyleId && selectedStyleName) {
+      console.log('Completing photo and style selection:', croppedImage, selectedStyleId, selectedStyleName);
+      onPhotoAndStyleComplete(croppedImage, selectedStyleId, selectedStyleName);
+    }
     onContinue();
   };
 
