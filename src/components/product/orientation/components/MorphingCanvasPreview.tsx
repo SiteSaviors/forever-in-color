@@ -24,21 +24,16 @@ const MorphingCanvasPreview = ({
 }: MorphingCanvasPreviewProps) => {
   const [morphing, setMorphing] = useState(false);
   const [prevOrientation, setPrevOrientation] = useState(orientation);
-  const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
     if (prevOrientation !== orientation) {
       setMorphing(true);
-      setImageLoaded(false);
       setTimeout(() => {
         setPrevOrientation(orientation);
         setMorphing(false);
-        setImageLoaded(true);
       }, 300);
-    } else if (userImageUrl) {
-      setImageLoaded(true);
     }
-  }, [orientation, prevOrientation, userImageUrl]);
+  }, [orientation, prevOrientation]);
 
   const getCanvasFrame = () => {
     switch (orientation) {
@@ -53,19 +48,6 @@ const MorphingCanvasPreview = ({
     }
   };
 
-  const getImagePosition = () => {
-    switch (orientation) {
-      case 'horizontal':
-        return { top: '18%', left: '15%', width: '70%', height: '64%' };
-      case 'vertical':
-        return { top: '15%', left: '20%', width: '60%', height: '70%' };
-      case 'square':
-        return { top: '5.2%', left: '4.7%', width: '89.3%', height: '89.3%' };
-      default:
-        return { top: '5.2%', left: '4.7%', width: '89.3%', height: '89.3%' };
-    }
-  };
-
   const getAspectRatio = () => {
     switch (orientation) {
       case 'horizontal': return 4/3;
@@ -76,7 +58,6 @@ const MorphingCanvasPreview = ({
   };
 
   const canvasFrame = getCanvasFrame();
-  const imagePosition = getImagePosition();
 
   return (
     <div 
@@ -106,7 +87,7 @@ const MorphingCanvasPreview = ({
             className="absolute inset-0"
           />
 
-          {/* Canvas Frame with Glass Effect */}
+          {/* Canvas Frame with Glass Effect - NO USER IMAGE */}
           <div className="relative w-full h-full">
             <img 
               src={canvasFrame}
@@ -117,39 +98,6 @@ const MorphingCanvasPreview = ({
             {/* Glass Reflection */}
             <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-transparent opacity-60 rounded-xl z-20 pointer-events-none" />
           </div>
-          
-          {/* User's Image with Enhanced Effects */}
-          {userImageUrl && (
-            <div 
-              className={`absolute overflow-hidden transition-all duration-500 group-hover:brightness-110 z-15 ${
-                imageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
-              }`}
-              style={{
-                top: imagePosition.top,
-                left: imagePosition.left,
-                width: imagePosition.width,
-                height: imagePosition.height,
-              }}
-            >
-              <img 
-                src={userImageUrl}
-                alt="Your photo preview"
-                className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
-                style={{
-                  filter: 'brightness(0.95) contrast(1.05) saturate(1.1)',
-                }}
-                onLoad={() => setImageLoaded(true)}
-              />
-              
-              {/* Image Glass Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/5 via-transparent to-white/10 pointer-events-none" />
-              
-              {/* "Your Photo" indicator */}
-              <div className="absolute top-1 left-1 bg-green-500/90 text-white text-xs px-2 py-1 rounded backdrop-blur-sm">
-                Your Photo
-              </div>
-            </div>
-          )}
 
           {/* Premium Border Effect */}
           <div className={`absolute inset-0 border-2 rounded-xl transition-all duration-500 ${
