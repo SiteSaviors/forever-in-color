@@ -12,6 +12,13 @@ interface OrientationCardProps {
   isRecommended?: boolean;
   userImageUrl?: string | null;
   onClick: () => void;
+  // Accessibility props
+  role?: string;
+  'aria-checked'?: boolean;
+  'aria-labelledby'?: string;
+  tabIndex?: number;
+  'data-orientation'?: string;
+  className?: string;
 }
 
 const OrientationCard = ({ 
@@ -19,18 +26,42 @@ const OrientationCard = ({
   isSelected, 
   isRecommended = false,
   userImageUrl = null,
-  onClick 
+  onClick,
+  role = "button",
+  'aria-checked': ariaChecked,
+  'aria-labelledby': ariaLabelledBy,
+  tabIndex = 0,
+  'data-orientation': dataOrientation,
+  className = ""
 }: OrientationCardProps) => {
+  
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onClick();
+    }
+  };
+
   return (
     <Card 
-      className={`group cursor-pointer transition-all duration-500 hover:shadow-2xl hover:-translate-y-1 ${
-        isSelected 
+      className={`
+        group cursor-pointer transition-all duration-500 hover:shadow-2xl hover:-translate-y-1 
+        focus-within:ring-2 focus-within:ring-purple-300 focus-within:ring-offset-2
+        ${isSelected 
           ? 'ring-2 ring-purple-300 shadow-2xl bg-gradient-to-br from-purple-50/50 to-pink-50/50 border-l-4 border-l-purple-500' 
           : 'shadow-lg hover:shadow-purple-100/50'
-      }`}
+        }
+        ${className}
+      `}
       onClick={onClick}
+      onKeyDown={handleKeyDown}
+      role={role}
+      aria-checked={ariaChecked}
+      aria-labelledby={ariaLabelledBy}
+      tabIndex={tabIndex}
+      data-orientation={dataOrientation}
     >
-      <CardContent className="p-6 space-y-6">
+      <CardContent className="p-4 md:p-6 space-y-4 md:space-y-6">
         {/* Premium Badge */}
         {isRecommended && (
           <div className="flex justify-center">
@@ -44,7 +75,7 @@ const OrientationCard = ({
         {/* Interactive Canvas Preview */}
         {userImageUrl ? (
           <div className="flex justify-center">
-            <div className="w-32 h-32">
+            <div className="w-24 h-24 md:w-32 md:h-32">
               <InteractiveCanvasPreview
                 orientation={orientation.id}
                 userImageUrl={userImageUrl}
@@ -55,11 +86,13 @@ const OrientationCard = ({
             </div>
           </div>
         ) : (
-          <div className={`flex justify-center p-6 rounded-xl transition-all duration-300 relative ${
-            isSelected
+          <div className={`
+            flex justify-center p-4 md:p-6 rounded-xl transition-all duration-300 relative
+            ${isSelected
               ? 'bg-purple-100 text-purple-600 animate-pulse'
               : 'bg-gray-100 text-gray-500 group-hover:bg-purple-50 group-hover:text-purple-400'
-          }`}>
+            }
+          `}>
             {getOrientationIcon(orientation.id)}
             {isSelected && (
               <div className="absolute -top-2 -right-2">
@@ -73,11 +106,14 @@ const OrientationCard = ({
         )}
 
         {/* Enhanced Text Content */}
-        <div className="text-center space-y-3">
-          <h5 className="font-bold text-xl text-gray-900 font-poppins tracking-tight">
+        <div className="text-center space-y-2 md:space-y-3">
+          <h5 
+            id={`orientation-${orientation.id}-label`}
+            className="font-bold text-lg md:text-xl text-gray-900 font-poppins tracking-tight"
+          >
             {orientation.name}
           </h5>
-          <p className="text-gray-600 text-base leading-relaxed">
+          <p className="text-gray-600 text-sm md:text-base leading-relaxed">
             {orientation.description}
           </p>
           {isSelected && (
@@ -92,6 +128,9 @@ const OrientationCard = ({
         {isSelected && (
           <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-purple-500/10 pointer-events-none"></div>
         )}
+
+        {/* Focus indicator for keyboard navigation */}
+        <div className="absolute inset-0 rounded-lg ring-0 ring-purple-300 transition-all duration-200 pointer-events-none group-focus-within:ring-2"></div>
       </CardContent>
     </Card>
   );

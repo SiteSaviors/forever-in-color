@@ -15,6 +15,12 @@ export interface SizeOption {
   popular?: boolean;
 }
 
+export interface ValidationError {
+  field: 'orientation' | 'size' | 'general';
+  message: string;
+  type: 'error' | 'warning';
+}
+
 export interface OrientationSelectorProps {
   selectedOrientation: string;
   selectedSize: string;
@@ -36,6 +42,8 @@ export interface LayoutSelectionProps {
   onOrientationChange: (orientation: string) => void;
   isUpdating: boolean;
   disabled?: boolean;
+  validationErrors?: ValidationError[];
+  showErrors?: boolean;
 }
 
 export interface SizeSelectionProps {
@@ -46,6 +54,8 @@ export interface SizeSelectionProps {
   onContinue?: () => void;
   isUpdating: boolean;
   disabled?: boolean;
+  validationErrors?: ValidationError[];
+  showErrors?: boolean;
 }
 
 export interface GlassMorphismSizeCardProps {
@@ -57,10 +67,34 @@ export interface GlassMorphismSizeCardProps {
   disabled?: boolean;
   onClick: () => void;
   onContinue: (e?: React.MouseEvent) => void;
+  // Accessibility props
+  role?: string;
+  'aria-checked'?: boolean;
+  'aria-labelledby'?: string;
+  tabIndex?: number;
+  'data-size'?: string;
+  className?: string;
 }
 
 export interface OrientationStateHook {
   isUpdating: boolean;
   handleOrientationSelect: (orientation: string) => void;
   canContinueToNext: boolean;
+}
+
+export interface UseValidationProps {
+  selectedOrientation: string;
+  selectedSize: string;
+  isRequired?: boolean;
+}
+
+export interface UseAccessibilityProps {
+  selectedOrientation: string;
+  selectedSize: string;
+  orientationOptions: string[];
+  sizeOptions: string[];
+  onOrientationChange: (orientation: string) => void;
+  onSizeChange: (size: string) => void;
+  onContinue?: () => void;
+  disabled?: boolean;
 }
