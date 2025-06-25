@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -36,12 +37,6 @@ const CustomizationSelector = ({
   onCustomizationChange
 }: CustomizationSelectorProps) => {
   const [hasInteracted, setHasInteracted] = useState(false);
-  const [videoOptions, setVideoOptions] = useState({
-    voiceMatching: false,
-    backgroundAudio: 'none',
-    videoLength: 5,
-    voiceEnhancement: false
-  });
 
   const handleCustomizationUpdate = (updates: Partial<CustomizationOptions>) => {
     if (!hasInteracted) setHasInteracted(true);
@@ -118,7 +113,6 @@ const CustomizationSelector = ({
           <FloatingFrameCard
             enabled={customizations.floatingFrame.enabled}
             color={customizations.floatingFrame.color}
-            selectedSize={selectedSize}
             onEnabledChange={(enabled) => handleCustomizationUpdate({
               floatingFrame: { ...customizations.floatingFrame, enabled }
             })}
@@ -134,13 +128,11 @@ const CustomizationSelector = ({
 
           <VoiceMatchCard
             enabled={customizations.voiceMatch}
-            livingMemoryEnabled={customizations.livingMemory}
             onEnabledChange={(enabled) => handleCustomizationUpdate({ voiceMatch: enabled })}
           />
 
           <CustomMessageCard
             message={customizations.customMessage}
-            livingMemoryEnabled={customizations.livingMemory}
             onMessageChange={(message) => handleCustomizationUpdate({ customMessage: message })}
           />
 
@@ -156,8 +148,8 @@ const CustomizationSelector = ({
         <SocialProofGallery />
         <PremiumVideoOptions 
           livingMemoryEnabled={customizations.livingMemory}
-          options={videoOptions}
-          onOptionsChange={setVideoOptions}
+          options={{}}
+          onOptionsChange={() => {}}
         />
       </div>
 
