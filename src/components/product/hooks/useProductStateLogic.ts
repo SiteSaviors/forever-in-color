@@ -34,6 +34,7 @@ export const useProductStateLogic = () => {
   // Handle pre-selected style from style landing pages
   useEffect(() => {
     if (location.state?.preSelectedStyle && location.state?.styleName) {
+      console.log('🐛 Pre-selected style detected:', location.state);
       setSelectedStyle({
         id: location.state.preSelectedStyle,
         name: location.state.styleName
@@ -42,7 +43,7 @@ export const useProductStateLogic = () => {
   }, [location.state]);
 
   const handlePhotoAndStyleComplete = async (imageUrl: string, styleId: number, styleName: string) => {
-    console.log('ProductStateManager handlePhotoAndStyleComplete called with:', { imageUrl, styleId, styleName });
+    console.log('🐛 ProductStateManager handlePhotoAndStyleComplete called with:', { imageUrl, styleId, styleName });
     
     setUploadedImage(imageUrl);
     
@@ -51,70 +52,99 @@ export const useProductStateLogic = () => {
       setSelectedStyle({ id: styleId, name: styleName });
     }
     
-    // 🎯 GENIUS FEATURE: Auto-detect canvas orientation from image dimensions
+    // Auto-detect canvas orientation from image dimensions
     try {
       const detectedOrientation = await detectOrientationFromImage(imageUrl);
+      console.log('🐛 Detected orientation:', detectedOrientation);
       setSelectedOrientation(detectedOrientation);
     } catch (error) {
-      console.error('Error detecting orientation:', error);
+      console.error('🐛 Error detecting orientation:', error);
     }
     
-    // FIXED: Only mark step 1 as completed when user has both image AND style
-    // But DON'T automatically advance to step 2 - let user choose when to continue
+    // Mark step 1 as completed when user has both image AND style
     if (styleName !== "temp-style" && imageUrl) {
-      if (!completedSteps.includes(1)) {
-        setCompletedSteps(prev => [...prev, 1]);
-      }
-      // REMOVED: Automatic advancement to step 2
-      // Users should stay on step 1 to see their generated preview
-      console.log('Step 1 completed but staying on step 1 for user to see preview');
+      console.log('🐛 Marking step 1 as completed');
+      setCompletedSteps(prev => {
+        const newCompleted = prev.includes(1) ? prev : [...prev, 1];
+        console.log('🐛 New completed steps:', newCompleted);
+        return newCompleted;
+      });
     } else {
-      // Just photo uploaded, stay on step 1 to select style
-      console.log('Photo uploaded, staying on step 1 to select style');
+      console.log('🐛 Photo uploaded but no style selected yet, staying on step 1');
     }
   };
 
   const handleSizeSelect = (size: string) => {
+    console.log('🐛 Size selected:', size);
     setSelectedSize(size);
-    if (!completedSteps.includes(2)) {
-      setCompletedSteps([...completedSteps, 2]);
+    
+    // Mark step 2 as completed when both orientation and size are selected
+    if (selectedOrientation && size) {
+      console.log('🐛 Marking step 2 as completed');
+      setCompletedSteps(prev => {
+        const newCompleted = prev.includes(2) ? prev : [...prev, 2];
+        console.log('🐛 New completed steps after size select:', newCompleted);
+        return newCompleted;
+      });
     }
   };
 
   const handleOrientationSelect = (orientation: string) => {
-    console.log('Orientation manually changed to:', orientation);
+    console.log('🐛 Orientation manually changed to:', orientation);
     setSelectedOrientation(orientation);
+    
     // Reset size when orientation changes
     setSelectedSize("");
+    
     // Remove step 2 completion if it was completed, since we're changing orientation
-    if (completedSteps.includes(2)) {
-      setCompletedSteps(completedSteps.filter(step => step !== 2));
-    }
+    setCompletedSteps(prev => {
+      const filtered = prev.filter(step => step !== 2);
+      console.log('🐛 Removed step 2 completion due to orientation change:', filtered);
+      return filtered;
+    });
     
     // Clear existing previews when orientation changes to regenerate with new aspect ratio
-    console.log('Clearing existing previews due to orientation change');
+    console.log('🐛 Clearing existing previews due to orientation change');
     setPreviewUrls({});
     setAutoGenerationComplete(false);
-    
-    // IMPROVED: Stay in Step 2 instead of going back to Step 1
-    // Users can still manually go back to Step 1 if they want to recrop
-    console.log('Staying in Step 2 after orientation change');
   };
 
   const handleCustomizationChange = (newCustomizations: CustomizationOptions) => {
+    console.log('🐛 Customizations changed:', newCustomizations);
     setCustomizations(newCustomizations);
-    if (!completedSteps.includes(3)) {
-      setCompletedSteps([...completedSteps, 3]);
-    }
+    
+    // Mark step 3 as completed
+    setCompletedSteps(prev => {
+      const newCompleted = prev.includes(3) ? prev : [...prev, 3];
+      console.log('🐛 New completed steps after customization:', newCompleted);
+      return newCompleted;
+    });
   };
 
   const canProceedToStep = (step: number) => {
-    if (step === 1) return true;
-    if (step === 2) return completedSteps.includes(1);
-    if (step === 3) return completedSteps.includes(1) && completedSteps.includes(2);
-    if (step === 4) return completedSteps.includes(1) && completedSteps.includes(2) && completedSteps.includes(3);
-    return false;
+    const canProceed = (() => {
+      if (step === 1) return true;
+      if (step === 2) return completedSteps.includes(1);
+      if (step === 3) return completedSteps.includes(1) && completedSteps.includes(2);
+      if (step === 4) return completedSteps.includes(1) && completedSteps.includes(2) && completedSteps.includes(3);
+      return false;
+    })();
+    
+    console.log(`🐛 canProceedToStep(${step}):`, canProceed, 'completedSteps:', completedSteps);
+    return canProceed;
   };
+
+  // Debug log whenever state changes
+  useEffect(() => {
+    console.log('🐛 State update:', {
+      currentStep,
+      completedSteps,
+      selectedStyle: selectedStyle?.name,
+      uploadedImage: !!uploadedImage,
+      selectedSize,
+      selectedOrientation
+    });
+  }, [currentStep, completedSteps, selectedStyle, uploadedImage, selectedSize, selectedOrientation]);
 
   return {
     currentStep,

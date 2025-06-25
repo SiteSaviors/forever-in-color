@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import CustomizationHeader from "./customization/CustomizationHeader";
 import LivingMemoryShowcase from "./customization/LivingMemoryShowcase";
 import PremiumVideoOptions from "./customization/PremiumVideoOptions";
@@ -7,6 +8,8 @@ import FloatingFrameCard from "./customization/FloatingFrameCard";
 import VoiceMatchCard from "./customization/VoiceMatchCard";
 import CustomMessageCard from "./customization/CustomMessageCard";
 import AIUpscaleCard from "./customization/AIUpscaleCard";
+import StepNavigation from "./components/StepNavigation";
+import { useBackNavigation } from "./hooks/useBackNavigation";
 
 interface CustomizationOptions {
   floatingFrame: {
@@ -23,12 +26,20 @@ interface CustomizationSelectorProps {
   selectedSize: string;
   customizations: CustomizationOptions;
   onCustomizationChange: (customizations: CustomizationOptions) => void;
+  currentStep?: number;
+  completedSteps?: number[];
+  onStepChange?: (step: number) => void;
+  onContinue?: () => void;
 }
 
 const CustomizationSelector = ({ 
   selectedSize, 
   customizations, 
-  onCustomizationChange 
+  onCustomizationChange,
+  currentStep = 3,
+  completedSteps = [],
+  onStepChange = () => {},
+  onContinue = () => {}
 }: CustomizationSelectorProps) => {
   const [message, setMessage] = useState(customizations.customMessage);
   const [premiumVideoOptions, setPremiumVideoOptions] = useState({
@@ -38,7 +49,21 @@ const CustomizationSelector = ({
     voiceEnhancement: false
   });
 
+  const { canGoBack, handleBackStep } = useBackNavigation({
+    currentStep,
+    completedSteps,
+    onStepChange
+  });
+
+  console.log('🐛 CustomizationSelector rendered with:', {
+    selectedSize,
+    customizations,
+    currentStep,
+    completedSteps
+  });
+
   const updateCustomization = (key: keyof CustomizationOptions, value: any) => {
+    console.log('🐛 Updating customization:', key, value);
     const newCustomizations = {
       ...customizations,
       [key]: value
@@ -55,6 +80,7 @@ const CustomizationSelector = ({
   };
 
   const updateFrameOption = (key: keyof CustomizationOptions['floatingFrame'], value: any) => {
+    console.log('🐛 Updating frame option:', key, value);
     onCustomizationChange({
       ...customizations,
       floatingFrame: {
@@ -68,6 +94,14 @@ const CustomizationSelector = ({
     setMessage(value);
     updateCustomization('customMessage', value);
   };
+
+  // Auto-mark step 3 as completed when any customization is made
+  useEffect(() => {
+    console.log('🐛 CustomizationSelector effect - marking step 3 as completed');
+    // This will be handled by the parent component when onCustomizationChange is called
+  }, []);
+
+  const canContinue = true; // Customization step is optional
 
   return (
     <div className="space-y-8">
@@ -116,6 +150,20 @@ const CustomizationSelector = ({
           onEnabledChange={(enabled) => updateCustomization('aiUpscale', enabled)}
         />
       </div>
+
+      {/* Step Navigation */}
+      <StepNavigation
+        canGoBack={canGoBack}
+        canContinue={canContinue}
+        onBack={handleBackStep}
+        onContinue={() => {
+          console.log('🐛 CustomizationSelector: Continue to step 4');
+          onContinue();
+        }}
+        continueText="Review & Order"
+        currentStep={currentStep}
+        totalSteps={4}
+      />
     </div>
   );
 };

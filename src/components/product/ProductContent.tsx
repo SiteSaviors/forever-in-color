@@ -47,7 +47,25 @@ const ProductContent = ({
   onSizeSelect,
   onCustomizationChange
 }: ProductContentProps) => {
+  
+  console.log('🐛 ProductContent Debug:', {
+    currentStep,
+    completedSteps,
+    selectedStyle,
+    selectedSize,
+    selectedOrientation,
+    uploadedImage: !!uploadedImage,
+    autoGenerationComplete
+  });
+
   const canProceedToStep = (step: number) => {
+    console.log(`🐛 Checking access to step ${step}:`, {
+      step1Complete: completedSteps.includes(1),
+      step2Complete: completedSteps.includes(2),
+      step3Complete: completedSteps.includes(3),
+      completedSteps
+    });
+    
     if (step === 1) return true;
     if (step === 2) return completedSteps.includes(1);
     if (step === 3) return completedSteps.includes(1) && completedSteps.includes(2);
@@ -56,8 +74,18 @@ const ProductContent = ({
   };
 
   const handleContinueToStep2 = () => {
-    console.log('User clicked continue to step 2');
+    console.log('🐛 User clicked continue to step 2');
     onCurrentStepChange(2);
+  };
+
+  const handleContinueToStep3 = () => {
+    console.log('🐛 User clicked continue to step 3');
+    onCurrentStepChange(3);
+  };
+
+  const handleContinueToStep4 = () => {
+    console.log('🐛 User clicked continue to step 4');
+    onCurrentStepChange(4);
   };
 
   return (
@@ -75,7 +103,10 @@ const ProductContent = ({
             isActive={currentStep === 1}
             isCompleted={completedSteps.includes(1)}
             canAccess={canProceedToStep(1)}
-            onStepClick={() => onCurrentStepChange(1)}
+            onStepClick={() => {
+              console.log('🐛 Clicked on step 1');
+              onCurrentStepChange(1);
+            }}
             selectedStyle={selectedStyle}
           >
             {currentStep === 1 && (
@@ -102,16 +133,27 @@ const ProductContent = ({
             isActive={currentStep === 2}
             isCompleted={completedSteps.includes(2)}
             canAccess={canProceedToStep(2)}
-            onStepClick={() => onCurrentStepChange(2)}
+            onStepClick={() => {
+              console.log('🐛 Clicked on step 2, canAccess:', canProceedToStep(2));
+              if (canProceedToStep(2)) {
+                onCurrentStepChange(2);
+              }
+            }}
           >
             {currentStep === 2 && (
               <OrientationSelector
                 selectedOrientation={selectedOrientation}
                 selectedSize={selectedSize}
                 userImageUrl={uploadedImage}
-                onOrientationChange={onOrientationSelect}
-                onSizeChange={onSizeSelect}
-                onContinue={() => onCurrentStepChange(3)}
+                onOrientationChange={(orientation) => {
+                  console.log('🐛 Orientation changed to:', orientation);
+                  onOrientationSelect(orientation);
+                }}
+                onSizeChange={(size) => {
+                  console.log('🐛 Size changed to:', size);
+                  onSizeSelect(size);
+                }}
+                onContinue={handleContinueToStep3}
                 currentStep={currentStep}
                 completedSteps={completedSteps}
                 onStepChange={onCurrentStepChange}
@@ -127,7 +169,12 @@ const ProductContent = ({
             isActive={currentStep === 3}
             isCompleted={completedSteps.includes(3)}
             canAccess={canProceedToStep(3)}
-            onStepClick={() => onCurrentStepChange(3)}
+            onStepClick={() => {
+              console.log('🐛 Clicked on step 3, canAccess:', canProceedToStep(3));
+              if (canProceedToStep(3)) {
+                onCurrentStepChange(3);
+              }
+            }}
           >
             {currentStep === 3 && (
               <CustomizationSelector
@@ -146,7 +193,12 @@ const ProductContent = ({
             isActive={currentStep === 4}
             isCompleted={completedSteps.includes(4)}
             canAccess={canProceedToStep(4)}
-            onStepClick={() => onCurrentStepChange(4)}
+            onStepClick={() => {
+              console.log('🐛 Clicked on step 4, canAccess:', canProceedToStep(4));
+              if (canProceedToStep(4)) {
+                onCurrentStepChange(4);
+              }
+            }}
           >
             {currentStep === 4 && (
               <ReviewAndOrder
