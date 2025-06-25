@@ -33,6 +33,7 @@ const Product = () => {
         <ProductHeader 
           completedSteps={completedSteps}
           totalSteps={4}
+          currentStep={currentStep}
         />
         
         <TrustElements />
@@ -53,7 +54,6 @@ const Product = () => {
           onCustomizationChange={handleCustomizationChange}
         />
         
-        {/* Add Testimonials Section */}
         <ProductTestimonials />
       </div>
 

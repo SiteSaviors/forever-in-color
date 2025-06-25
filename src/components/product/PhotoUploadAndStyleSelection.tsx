@@ -1,9 +1,10 @@
-
 import { useState, useEffect } from "react";
 import PhotoUpload from "./PhotoUpload";
 import StyleGrid from "./StyleGrid";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Upload, RotateCcw } from "lucide-react";
+import StepNavigation from "./components/StepNavigation";
+import { useBackNavigation } from "./hooks/useBackNavigation";
 
 interface PhotoUploadAndStyleSelectionProps {
   selectedStyle: {id: number, name: string} | null;
@@ -13,6 +14,9 @@ interface PhotoUploadAndStyleSelectionProps {
   onComplete: (imageUrl: string, styleId: number, styleName: string) => void;
   onPhotoAndStyleComplete: (imageUrl: string, styleId: number, styleName: string) => void;
   onContinue: () => void;
+  currentStep: number;
+  completedSteps: number[];
+  onStepChange: (step: number) => void;
 }
 
 const PhotoUploadAndStyleSelection = ({
@@ -22,12 +26,21 @@ const PhotoUploadAndStyleSelection = ({
   autoGenerationComplete,
   onComplete,
   onPhotoAndStyleComplete,
-  onContinue
+  onContinue,
+  currentStep,
+  completedSteps,
+  onStepChange
 }: PhotoUploadAndStyleSelectionProps) => {
   const [croppedImage, setCroppedImage] = useState<string | null>(uploadedImage);
   const [originalImage, setOriginalImage] = useState<string | null>(null);
   const [localSelectedStyle, setLocalSelectedStyle] = useState<{id: number, name: string} | null>(selectedStyle);
   const [showRecrop, setShowRecrop] = useState(false);
+
+  const { canGoBack, handleBackStep } = useBackNavigation({
+    currentStep,
+    completedSteps,
+    onStepChange
+  });
 
   // Update local state when props change
   useEffect(() => {
@@ -87,7 +100,7 @@ const PhotoUploadAndStyleSelection = ({
           Upload Your Photo & Choose Style
         </h2>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Upload your favorite photo and select an artistic style to transform it into a beautiful canvas print.
+          Upload a high-quality image and select an artistic style to transform it into a beautiful canvas print.
         </p>
       </div>
 
@@ -98,10 +111,10 @@ const PhotoUploadAndStyleSelection = ({
             <div className="text-center mb-6">
               <Upload className="w-12 h-12 text-purple-500 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                Re-crop Your Photo
+                Perfect Your Composition
               </h3>
               <p className="text-gray-600">
-                Adjust your crop to get the perfect composition
+                Adjust your crop to get the perfect composition. This will be the focus of your artwork.
               </p>
             </div>
           )}
@@ -152,6 +165,9 @@ const PhotoUploadAndStyleSelection = ({
             <div className="text-center mb-8">
               <h3 className="text-2xl font-semibold text-gray-900 mb-2">Choose Your Artistic Style</h3>
               <p className="text-gray-600">Select a style to see how your photo will look as a canvas print</p>
+              {autoGenerationComplete && (
+                <p className="text-sm text-green-600 mt-2">✨ Live previews generated with your actual photo!</p>
+              )}
             </div>
             
             <StyleGrid
@@ -162,21 +178,20 @@ const PhotoUploadAndStyleSelection = ({
               onComplete={handleStyleGridContinue}
             />
           </div>
-
-          {/* Continue Button - Only show if both photo and style are selected */}
-          {canContinue && (
-            <div className="flex justify-center pt-6">
-              <Button
-                onClick={handleStyleGridContinue}
-                size="lg"
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
-              >
-                Continue to Layout & Size
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-            </div>
-          )}
         </>
+      )}
+
+      {/* Step Navigation */}
+      {croppedImage && (
+        <StepNavigation
+          canGoBack={canGoBack}
+          canContinue={canContinue}
+          onBack={handleBackStep}
+          onContinue={handleStyleGridContinue}
+          continueText="Continue to Layout & Size"
+          currentStep={currentStep}
+          totalSteps={4}
+        />
       )}
     </div>
   );

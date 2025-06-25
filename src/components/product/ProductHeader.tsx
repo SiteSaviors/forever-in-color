@@ -1,29 +1,64 @@
 
-import { Sparkles } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import StepProgress from "./components/StepProgress";
+import { Shield, Truck, Award } from "lucide-react";
 
 interface ProductHeaderProps {
   completedSteps: number[];
   totalSteps: number;
+  currentStep?: number;
 }
 
-const ProductHeader = ({ completedSteps, totalSteps }: ProductHeaderProps) => {
+const ProductHeader = ({ completedSteps, totalSteps, currentStep = 1 }: ProductHeaderProps) => {
+  const progressPercentage = (completedSteps.length / totalSteps) * 100;
+
   return (
-    <section className="pt-8 md:pt-12 pb-2 md:pb-3">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <div className="flex items-center justify-center gap-2 mb-2 md:mb-3">
-          <Sparkles className="w-5 h-5 md:w-6 md:h-6 text-purple-500" />
-          <span className="text-xs md:text-sm font-medium text-purple-600 bg-purple-100 px-2 md:px-3 py-1 rounded-full">
-            AI-Powered Art Creation
-          </span>
+    <div className="bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 border-b border-purple-100">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header Content */}
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <Badge variant="outline" className="bg-purple-100 text-purple-700 border-purple-200">
+              ✨ AI-Powered Art Creation
+            </Badge>
+            <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200">
+              {Math.round(progressPercentage)}% Complete
+            </Badge>
+          </div>
+          
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            Create Your Custom Canvas
+          </h1>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Transform your favorite photo into stunning wall art with our AI-powered artistic styles
+          </p>
         </div>
-        <h1 className="text-3xl md:text-4xl lg:text-6xl font-bold font-poppins tracking-tight bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent mb-3 md:mb-4">
-          Create Your Masterpiece
-        </h1>
-        <p className="text-lg md:text-xl text-gray-600 mb-3 md:mb-4 max-w-2xl mx-auto leading-relaxed">
-          Turn your favorite moments into timeless art — with stunning AI art styles and 'Living Memory' videos you can see, hear, and feel.
-        </p>
+
+        {/* Step Progress */}
+        <StepProgress 
+          currentStep={currentStep}
+          completedSteps={completedSteps}
+          totalSteps={totalSteps}
+        />
+
+        {/* Trust Indicators */}
+        <div className="flex items-center justify-center gap-8 text-sm text-gray-600 mt-8">
+          <div className="flex items-center gap-2">
+            <Shield className="w-4 h-4 text-green-500" />
+            <span>Secure Checkout</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Truck className="w-4 h-4 text-blue-500" />
+            <span>Free Shipping Over $75</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Award className="w-4 h-4 text-purple-500" />
+            <span>Premium Quality</span>
+          </div>
+        </div>
       </div>
-    </section>
+    </div>
   );
 };
 

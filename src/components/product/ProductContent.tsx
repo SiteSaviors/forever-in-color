@@ -87,6 +87,9 @@ const ProductContent = ({
                 onComplete={onPhotoAndStyleComplete}
                 onPhotoAndStyleComplete={onPhotoAndStyleComplete}
                 onContinue={handleContinueToStep2}
+                currentStep={currentStep}
+                completedSteps={completedSteps}
+                onStepChange={onCurrentStepChange}
               />
             )}
           </ProductStep>
@@ -109,6 +112,9 @@ const ProductContent = ({
                 onOrientationChange={onOrientationSelect}
                 onSizeChange={onSizeSelect}
                 onContinue={() => onCurrentStepChange(3)}
+                currentStep={currentStep}
+                completedSteps={completedSteps}
+                onStepChange={onCurrentStepChange}
               />
             )}
           </ProductStep>
