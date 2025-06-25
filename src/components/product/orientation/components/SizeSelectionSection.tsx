@@ -4,7 +4,7 @@ import SizeHeader from "./SizeHeader";
 import { sizeOptions } from "../data/sizeOptions";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ArrowDown, DollarSign } from "lucide-react";
-import { useCallback } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 interface SizeSelectionSectionProps {
   selectedOrientation: string;
@@ -23,16 +23,18 @@ const SizeSelectionSection = ({
   onContinue,
   isUpdating
 }: SizeSelectionSectionProps) => {
-  const getRecommendedSize = (orientation: string) => {
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const getRecommendedSize = useMemo(() => {
     const recommendations = {
       'square': '16" x 16"',
       'horizontal': '18" x 24"',
       'vertical': '16" x 20"'
     };
-    return recommendations[orientation as keyof typeof recommendations] || '';
-  };
+    return recommendations[selectedOrientation as keyof typeof recommendations] || '';
+  }, [selectedOrientation]);
 
-  const getSizePrice = (size: string) => {
+  const getSizePrice = useCallback((size: string) => {
     switch (size) {
       case "8x10": return 49;
       case "12x16": return 89;
@@ -40,27 +42,43 @@ const SizeSelectionSection = ({
       case "20x24": return 169;
       default: return 49;
     }
-  };
+  }, []);
 
   const handleSizeSelect = useCallback((size: string) => {
-    if (!isUpdating) {
+    if (isUpdating || isProcessing) return;
+    
+    setIsProcessing(true);
+    
+    // Debounce the size change to prevent rapid updates
+    setTimeout(() => {
       onSizeChange(size);
-    }
-  }, [onSizeChange, isUpdating]);
+      setIsProcessing(false);
+    }, 100);
+  }, [onSizeChange, isUpdating, isProcessing]);
   
-  const handleContinueWithSize = useCallback((size: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (isUpdating) return;
-    
-    onSizeChange(size);
-    if (onContinue) {
-      setTimeout(() => onContinue(), 50);
+  const handleContinueWithSize = useCallback((size: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
     }
-  }, [onSizeChange, onContinue, isUpdating]);
+    
+    if (isUpdating || isProcessing) return;
+    
+    setIsProcessing(true);
+    onSizeChange(size);
+    
+    if (onContinue) {
+      setTimeout(() => {
+        onContinue();
+        setIsProcessing(false);
+      }, 150);
+    } else {
+      setIsProcessing(false);
+    }
+  }, [onSizeChange, onContinue, isUpdating, isProcessing]);
 
-  const recommendedSize = getRecommendedSize(selectedOrientation);
+  const recommendedSize = getRecommendedSize;
+  const availableSizes = useMemo(() => sizeOptions[selectedOrientation] || [], [selectedOrientation]);
 
   if (!selectedOrientation) return null;
 
@@ -77,10 +95,15 @@ const SizeSelectionSection = ({
 
       <SizeHeader />
 
-      {/* Size Cards Grid */}
+      {/* Size Cards Grid with improved performance */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
-        {sizeOptions[selectedOrientation]?.map(option => (
-          <div key={option.size} className="transform transition-transform duration-300 hover:-translate-y-1">
+        {availableSizes.map(option => (
+          <div 
+            key={option.size} 
+            className={`transform transition-transform duration-200 will-change-transform ${
+              isProcessing ? 'pointer-events-none' : 'hover:-translate-y-1'
+            }`}
+          >
             <GlassMorphismSizeCard 
               option={option} 
               orientation={selectedOrientation}
@@ -89,6 +112,7 @@ const SizeSelectionSection = ({
               userImageUrl={userImageUrl} 
               onClick={() => handleSizeSelect(option.size)} 
               onContinue={e => handleContinueWithSize(option.size, e)} 
+              disabled={isProcessing || isUpdating}
             />
           </div>
         ))}

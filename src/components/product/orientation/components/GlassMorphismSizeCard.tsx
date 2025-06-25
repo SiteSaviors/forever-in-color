@@ -11,8 +11,9 @@ interface GlassMorphismSizeCardProps {
   isSelected: boolean;
   userImageUrl: string | null;
   isRecommended?: boolean;
+  disabled?: boolean;
   onClick: () => void;
-  onContinue: (e: React.MouseEvent) => void;
+  onContinue: (e?: React.MouseEvent) => void;
 }
 
 const GlassMorphismSizeCard = ({ 
@@ -21,6 +22,7 @@ const GlassMorphismSizeCard = ({
   isSelected, 
   userImageUrl,
   isRecommended = false,
+  disabled = false,
   onClick, 
   onContinue 
 }: GlassMorphismSizeCardProps) => {
@@ -57,14 +59,18 @@ const GlassMorphismSizeCard = ({
     return "Customer Favorite";
   };
 
-  // FIXED: Prevent event conflicts with proper event handling
+  // Prevent event conflicts with single event handler
   const handleCardClick = (e: React.MouseEvent) => {
+    if (disabled) return;
+    
     e.preventDefault();
     e.stopPropagation();
     onClick();
   };
 
   const handleContinueClick = (e: React.MouseEvent) => {
+    if (disabled) return;
+    
     e.preventDefault();
     e.stopPropagation();
     onContinue(e);
@@ -72,18 +78,19 @@ const GlassMorphismSizeCard = ({
 
   return (
     <div
-      className={`relative group cursor-pointer transition-all duration-300 will-change-transform ${
+      className={`relative group cursor-pointer transition-all duration-300 ${
+        disabled ? 'opacity-60 pointer-events-none' : ''
+      } ${
         isSelected ? 'scale-[1.02]' : 'hover:scale-[1.01]'
       }`}
       onClick={handleCardClick}
     >
-      {/* FIXED: Stable glass morphism background with reduced animations */}
-      <div className={`absolute inset-0 rounded-2xl transition-all duration-300 backdrop-blur-xl border ${
+      {/* Stable glass morphism background */}
+      <div className={`absolute inset-0 rounded-2xl backdrop-blur-xl border transition-all duration-300 ${
         isSelected 
           ? 'bg-gradient-to-br from-purple-500/20 via-pink-500/15 to-purple-500/20 shadow-xl shadow-purple-500/20 border-white/40' 
           : 'bg-white/70 shadow-lg hover:shadow-xl border-white/30 hover:border-white/50'
       }`}>
-        {/* FIXED: Simplified gradient overlay to prevent layout shifts */}
         <div className={`absolute inset-0 rounded-2xl transition-opacity duration-300 ${
           isSelected 
             ? 'bg-gradient-to-br from-purple-600/5 via-transparent to-pink-600/5 opacity-100' 
@@ -91,9 +98,9 @@ const GlassMorphismSizeCard = ({
         }`} />
       </div>
 
-      {/* Content Container - FIXED: Stable positioning */}
+      {/* Content Container */}
       <div className="relative p-4 md:p-6 space-y-3 md:space-y-4">
-        {/* Top Badges with Glass Effect */}
+        {/* Top Badges */}
         <div className="flex items-center justify-between">
           {(option.popular || isRecommended) && (
             <Badge className={`${
@@ -113,11 +120,11 @@ const GlassMorphismSizeCard = ({
           )}
         </div>
 
-        {/* FIXED: Stable canvas preview without excessive animations */}
+        {/* Canvas preview without user image to prevent glitches */}
         <div className="mb-3 md:mb-4">
           <MorphingCanvasPreview
             orientation={orientation}
-            userImageUrl={userImageUrl}
+            userImageUrl={null} // Removed user image to prevent rendering issues
             size={option.size}
             isSelected={isSelected}
             isRecommended={isRecommended}
@@ -125,7 +132,7 @@ const GlassMorphismSizeCard = ({
           />
         </div>
 
-        {/* Size Information with Glass Background */}
+        {/* Size Information */}
         <div className="text-center space-y-2">
           <div className="bg-white/60 backdrop-blur-sm rounded-lg p-2 md:p-3 border border-white/30">
             <h5 className="font-bold text-base md:text-lg text-gray-900 mb-1">{option.size}</h5>
@@ -134,7 +141,7 @@ const GlassMorphismSizeCard = ({
           </div>
         </div>
 
-        {/* Premium Pricing Display with Enhanced Glass Effect */}
+        {/* Pricing Display */}
         <div className="text-center space-y-2">
           <div className="bg-gradient-to-r from-white/70 to-white/50 backdrop-blur-sm rounded-xl p-3 md:p-4 border border-white/40 shadow-inner">
             <div className="flex items-center justify-center gap-2">
@@ -154,16 +161,17 @@ const GlassMorphismSizeCard = ({
           </div>
         </div>
 
-        {/* Premium Description with Glass Effect */}
+        {/* Description */}
         <div className="bg-gradient-to-r from-gray-50/80 to-gray-100/60 backdrop-blur-sm rounded-lg p-2 md:p-3 text-center border border-white/30">
           <p className="text-xs md:text-sm text-gray-700">{option.description}</p>
         </div>
 
-        {/* FIXED: Stable continue button with proper event handling */}
+        {/* Continue button with improved event handling */}
         {isSelected && (
           <Button
             onClick={handleContinueClick}
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-2 md:py-3 shadow-lg hover:shadow-purple-500/30 transition-all duration-300 backdrop-blur-sm border border-white/20 text-sm md:text-base"
+            disabled={disabled}
+            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-2 md:py-3 shadow-lg hover:shadow-purple-500/30 transition-all duration-300 backdrop-blur-sm border border-white/20 text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed"
             size="lg"
           >
             <Sparkles className="w-3 h-3 md:w-4 md:h-4 mr-2" />
@@ -173,10 +181,8 @@ const GlassMorphismSizeCard = ({
         )}
       </div>
 
-      {/* FIXED: Simplified hover effects to prevent layout conflicts */}
+      {/* Subtle hover effect */}
       <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-500/0 via-pink-500/0 to-purple-500/0 group-hover:from-purple-500/3 group-hover:via-pink-500/3 group-hover:to-purple-500/3 transition-all duration-500 pointer-events-none" />
-      
-      {/* FIXED: Removed problematic holographic border animation that was causing layout shifts */}
     </div>
   );
 };
