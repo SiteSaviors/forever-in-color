@@ -39,8 +39,8 @@ export class ClientWatermarkService {
         watermarkImage.onload = () => {
           console.log(`🖼️ Watermark image loaded: ${watermarkImage.width}x${watermarkImage.height}`);
           
-          // Calculate watermark size (20% of image width for better visibility)
-          const watermarkWidth = mainImage.width * 0.2;
+          // Calculate watermark size (80% of image width - 400% increase from 20%)
+          const watermarkWidth = mainImage.width * 0.8;
           const aspectRatio = watermarkImage.height / watermarkImage.width;
           const watermarkHeight = watermarkWidth * aspectRatio;
           
@@ -71,7 +71,7 @@ export class ClientWatermarkService {
           
           // Convert to data URL with high quality
           const watermarkedImageUrl = canvas.toDataURL('image/jpeg', 0.95);
-          console.log('✅ Client-side watermark applied successfully with enhanced visibility');
+          console.log('✅ Client-side watermark applied successfully with 400% increased size');
           resolve(watermarkedImageUrl);
         };
         
