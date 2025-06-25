@@ -32,8 +32,17 @@ const StyleCardImageDisplay = ({
 }: StyleCardImageDisplayProps) => {
   const isMobile = useIsMobile();
   
-  // Use MockupCanvas for generated previews, regular image for others
-  const shouldUseMockup = hasGeneratedPreview && previewUrl && style.id !== 1;
+  // CRITICAL FIX: For Original Image style, never use MockupCanvas
+  // For other styles, only use MockupCanvas if we have a generated preview
+  const shouldUseMockup = style.id !== 1 && hasGeneratedPreview && previewUrl && previewUrl !== style.image;
+
+  console.log(`🖼️ StyleCardImageDisplay for ${style.name}:`, {
+    styleId: style.id,
+    shouldUseMockup,
+    imageToShow: imageToShow ? imageToShow.substring(0, 50) + '...' : null,
+    hasGeneratedPreview,
+    isOriginalStyle: style.id === 1
+  });
 
   // Calculate aspect ratio based on selected orientation - mobile optimized
   const getOrientationAspectRatio = () => {
@@ -82,7 +91,7 @@ const StyleCardImageDisplay = ({
     );
   }
 
-  // Fallback to regular image display
+  // Regular image display - this will show the user's uploaded photo
   return (
     <AspectRatio ratio={orientationAspectRatio} className="relative overflow-hidden rounded-lg group touch-manipulation">
       <img
