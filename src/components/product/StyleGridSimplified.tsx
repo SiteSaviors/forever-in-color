@@ -62,16 +62,21 @@ const StyleGridSimplified = ({
 
   const canContinue = Boolean(croppedImage && localSelectedStyle);
 
+  // Create the context value object that matches StyleCardContextType
+  const contextValue = {
+    croppedImage,
+    selectedStyle: localSelectedStyle,
+    selectedOrientation,
+    shouldBlur: !!croppedImage,
+    previewUrls: {}, // Empty for now, will be populated by auto-generation
+    autoGenerationComplete: false,
+    onStyleClick: handleStyleClick,
+    onContinue: handleContinue
+  };
+
   return (
     <StylePreviewProvider croppedImage={croppedImage} selectedOrientation={selectedOrientation}>
-      <StyleCardProvider
-        selectedOrientation={selectedOrientation}
-        croppedImage={croppedImage}
-        selectedStyle={localSelectedStyle}
-        shouldBlur={!!croppedImage}
-        onStyleClick={handleStyleClick}
-        onContinue={handleContinue}
-      >
+      <StyleCardProvider value={contextValue}>
         <div className="space-y-6">
           {/* Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
