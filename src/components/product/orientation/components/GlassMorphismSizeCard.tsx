@@ -4,6 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Crown, ArrowRight } from "lucide-react";
 import { SizeOption } from "../types/interfaces";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { MockupCanvas } from "../../MockupCanvas";
 
 interface GlassMorphismSizeCardProps {
   option: SizeOption;
@@ -52,6 +54,16 @@ const GlassMorphismSizeCard = ({
     onContinue(e);
   };
 
+  // Get aspect ratio for canvas preview
+  const getAspectRatio = () => {
+    switch (orientation) {
+      case 'horizontal': return 4/3;
+      case 'vertical': return 3/4;
+      case 'square': return 1;
+      default: return 1;
+    }
+  };
+
   return (
     <Card 
       className={`
@@ -87,6 +99,26 @@ const GlassMorphismSizeCard = ({
               Recommended
             </Badge>
           )}
+        </div>
+
+        {/* Canvas Preview with User Image */}
+        <div className="mb-4">
+          <AspectRatio ratio={getAspectRatio()} className="relative overflow-hidden rounded-lg">
+            {userImageUrl ? (
+              <MockupCanvas 
+                previewUrl={userImageUrl}
+                orientation={orientation as 'square' | 'horizontal' | 'vertical'}
+                className="w-full h-full object-contain"
+              />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center">
+                <div className="text-center text-gray-500">
+                  <div className="text-xs font-medium mb-1">{option.size}</div>
+                  <div className="text-xs opacity-75">{orientation}</div>
+                </div>
+              </div>
+            )}
+          </AspectRatio>
         </div>
 
         {/* Size Info */}

@@ -23,20 +23,32 @@ const SizeSelectionSection = ({
 
   const getRecommendedSize = useMemo(() => {
     const recommendations = {
-      'square': '16" x 16"',
-      'horizontal': '18" x 24"',
-      'vertical': '16" x 20"'
+      'square': '24" x 24"',
+      'horizontal': '24" x 18"',
+      'vertical': '18" x 24"'
     };
     return recommendations[selectedOrientation as keyof typeof recommendations] || '';
   }, [selectedOrientation]);
 
   const getSizePrice = useCallback((size: string) => {
     switch (size) {
-      case "8x10": return 49;
-      case "12x16": return 89;
-      case "16x20": return 129;
-      case "20x24": return 169;
-      default: return 49;
+      case "16\" x 12\"": return 99.99;
+      case "24\" x 18\"": return 149.99;
+      case "36\" x 24\"": return 199.99;
+      case "40\" x 30\"": return 269.99;
+      case "48\" x 32\"": return 349.99;
+      case "60\" x 40\"": return 499.99;
+      case "12\" x 16\"": return 99.99;
+      case "18\" x 24\"": return 149.99;
+      case "24\" x 36\"": return 199.99;
+      case "30\" x 40\"": return 269.99;
+      case "32\" x 48\"": return 349.99;
+      case "40\" x 60\"": return 499.99;
+      case "16\" x 16\"": return 99.99;
+      case "24\" x 24\"": return 149.99;
+      case "32\" x 32\"": return 199.99;
+      case "36\" x 36\"": return 269.99;
+      default: return 99.99;
     }
   }, []);
 
@@ -79,6 +91,9 @@ const SizeSelectionSection = ({
   const hasSizeError = validationErrors.some(error => error.field === 'size' && error.type === 'error');
 
   if (!selectedOrientation) return null;
+
+  // Debug log to check userImageUrl
+  console.log('🖼️ SizeSelectionSection userImageUrl:', userImageUrl);
 
   return (
     <section className="space-y-6" aria-labelledby="size-selection-heading">
