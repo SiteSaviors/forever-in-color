@@ -1,7 +1,9 @@
 
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { MockupCanvas } from "../MockupCanvas";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Expand } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface StyleCardImageDisplayProps {
   style: {
@@ -28,19 +30,21 @@ const StyleCardImageDisplay = ({
   hasGeneratedPreview,
   onExpandClick
 }: StyleCardImageDisplayProps) => {
+  const isMobile = useIsMobile();
+  
   // Use MockupCanvas for generated previews, regular image for others
   const shouldUseMockup = hasGeneratedPreview && previewUrl && style.id !== 1;
 
-  // Calculate aspect ratio based on selected orientation
+  // Calculate aspect ratio based on selected orientation - mobile optimized
   const getOrientationAspectRatio = () => {
     switch (selectedOrientation) {
       case 'vertical':
-        return 3/4; // Portrait aspect ratio
+        return isMobile ? 3/4 : 3/4; // Portrait aspect ratio
       case 'horizontal':
-        return 4/3; // Landscape aspect ratio
+        return isMobile ? 4/3 : 4/3; // Landscape aspect ratio
       case 'square':
       default:
-        return 1; // Square aspect ratio
+        return isMobile ? 4/5 : 1; // Slightly taller on mobile for better touch interaction
     }
   };
 
@@ -59,14 +63,16 @@ const StyleCardImageDisplay = ({
             className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105 drop-shadow-2xl"
           />
         </div>
-        {/* Expand button - always visible on mobile, hover on desktop */}
+        {/* Enhanced expand button for mobile */}
         {canExpand && (
           <button
             onClick={onExpandClick}
-            className="absolute top-2 right-2 bg-black/70 hover:bg-black/90 text-white p-2 rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-200 z-10 shadow-lg"
+            className={`absolute top-2 right-2 bg-black/70 hover:bg-black/90 text-white rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-200 z-10 shadow-lg
+              ${isMobile ? 'p-3 w-10 h-10' : 'p-2 w-8 h-8'}
+            `}
             title="View full size"
           >
-            <Expand className="w-4 h-4" />
+            <Expand className={`${isMobile ? 'w-4 h-4' : 'w-4 h-4'}`} />
           </button>
         )}
       </AspectRatio>
@@ -86,20 +92,23 @@ const StyleCardImageDisplay = ({
         }`}
       />
       
-      {/* Expand button - always visible on mobile, hover on desktop */}
+      {/* Enhanced expand button for mobile */}
       {canExpand && (
         <button
           onClick={onExpandClick}
-          className="absolute top-2 right-2 bg-black/70 hover:bg-black/90 text-white p-2 rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-200 z-10 shadow-lg"
+          className={`absolute top-2 right-2 bg-black/70 hover:bg-black/90 text-white rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-200 z-10 shadow-lg
+            ${isMobile ? 'p-3 w-10 h-10' : 'p-2 w-8 h-8'}
+          `}
           title="View full size"
         >
-          <Expand className="w-4 h-4" />
+          <Expand className={`${isMobile ? 'w-4 h-4' : 'w-4 h-4'}`} />
         </button>
       )}
       
+      {/* Standardized loading overlay */}
       {showLoadingState && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-          <div className="w-8 h-8 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+          <LoadingSpinner size={isMobile ? "lg" : "md"} variant="default" />
         </div>
       )}
     </AspectRatio>
