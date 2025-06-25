@@ -2,7 +2,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 import { OpenAIService } from './openaiService.ts';
-import { WatermarkService } from './watermarkService.ts';
+import { CanvasWatermarkService } from './canvasWatermarkService.ts';
 import { logSecurityEvent } from './securityLogger.ts';
 import { validateInput, extractImageData } from './inputValidation.ts';
 import { handleSuccess, handleError } from './responseHandlers.ts';
@@ -69,7 +69,7 @@ serve(async (req) => {
     } = body;
 
     // Generate session ID if not provided
-    const sessionId = providedSessionId || WatermarkService.generateSessionId();
+    const sessionId = providedSessionId || CanvasWatermarkService.generateSessionId();
 
     // Enhanced input validation
     const validationResult = validateInput(imageUrl, style, aspectRatio);
@@ -123,30 +123,19 @@ serve(async (req) => {
       // Apply watermarking if requested (default behavior)
       if (watermark) {
         try {
-          // Fetch the generated image
-          const imageResponse = await fetch(result.output);
-          if (!imageResponse.ok) {
-            throw new Error(`Failed to fetch generated image: ${imageResponse.status}`);
-          }
+          console.log(`[${requestId}] Applying watermarks with Canvas API...`);
           
-          const imageBuffer = await imageResponse.arrayBuffer();
-          console.log(`[${requestId}] Applying watermarks with imagescript...`);
-          
-          // Apply watermarks using the WatermarkService
-          const watermarkedBuffer = await WatermarkService.createWatermarkedImage(
-            imageBuffer, 
+          // Apply watermarks using the CanvasWatermarkService
+          finalOutput = await CanvasWatermarkService.createWatermarkedImage(
+            result.output, 
             sessionId, 
             isPreview
           );
           
-          // Convert watermarked buffer to base64 data URL
-          const base64Image = btoa(String.fromCharCode(...new Uint8Array(watermarkedBuffer)));
-          finalOutput = `data:image/png;base64,${base64Image}`;
-          
-          console.log(`[${requestId}] Watermarking completed successfully with imagescript`);
+          console.log(`[${requestId}] Canvas watermarking completed successfully`);
           
         } catch (watermarkError) {
-          console.error(`[${requestId}] Watermarking failed, using original:`, watermarkError);
+          console.error(`[${requestId}] Canvas watermarking failed, using original:`, watermarkError);
           // Continue with original image if watermarking fails
         }
       }
