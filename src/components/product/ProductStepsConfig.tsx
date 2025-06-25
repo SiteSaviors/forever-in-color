@@ -1,3 +1,4 @@
+
 import { ReactNode } from "react";
 import { LucideIcon, Upload, Palette, Settings, ShoppingCart } from "lucide-react";
 import PhotoUploadAndStyleSelection from "./PhotoUploadAndStyleSelection";
@@ -97,6 +98,9 @@ export const useProductStepsConfig = ({
           onComplete={onPhotoAndStyleComplete}
           onPhotoAndStyleComplete={onPhotoAndStyleComplete}
           onContinue={onContinue}
+          currentStep={1}
+          completedSteps={completedSteps}
+          onStepChange={onEditStep}
         />
       )
     },
@@ -119,6 +123,9 @@ export const useProductStepsConfig = ({
             onOrientationChange={onOrientationSelect}
             onSizeChange={onSizeSelect}
             onContinue={onContinue}
+            currentStep={2}
+            completedSteps={completedSteps}
+            onStepChange={onEditStep}
           />
         </div>
       )

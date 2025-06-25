@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import PhotoUpload from "./PhotoUpload";
 import StyleGrid from "./StyleGrid";
@@ -14,9 +15,9 @@ interface PhotoUploadAndStyleSelectionProps {
   onComplete: (imageUrl: string, styleId: number, styleName: string) => void;
   onPhotoAndStyleComplete: (imageUrl: string, styleId: number, styleName: string) => void;
   onContinue: () => void;
-  currentStep: number;
-  completedSteps: number[];
-  onStepChange: (step: number) => void;
+  currentStep?: number;
+  completedSteps?: number[];
+  onStepChange?: (step: number) => void;
 }
 
 const PhotoUploadAndStyleSelection = ({
@@ -27,9 +28,9 @@ const PhotoUploadAndStyleSelection = ({
   onComplete,
   onPhotoAndStyleComplete,
   onContinue,
-  currentStep,
-  completedSteps,
-  onStepChange
+  currentStep = 1,
+  completedSteps = [],
+  onStepChange = () => {}
 }: PhotoUploadAndStyleSelectionProps) => {
   const [croppedImage, setCroppedImage] = useState<string | null>(uploadedImage);
   const [originalImage, setOriginalImage] = useState<string | null>(null);
@@ -90,7 +91,7 @@ const PhotoUploadAndStyleSelection = ({
     onContinue(); // This will now go to Step 2
   };
 
-  const canContinue = croppedImage && localSelectedStyle;
+  const canContinue = Boolean(croppedImage && localSelectedStyle);
 
   return (
     <div className="space-y-8">

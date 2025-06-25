@@ -1,3 +1,4 @@
+
 import OrientationCard from "./orientation/components/OrientationCard";
 import GlassMorphismSizeCard from "./orientation/components/GlassMorphismSizeCard";
 import OrientationHeader from "./orientation/components/OrientationHeader";
@@ -13,9 +14,9 @@ import { Eye, ArrowDown, DollarSign } from "lucide-react";
 
 interface ExtendedOrientationSelectorProps extends OrientationSelectorProps {
   userImageUrl?: string | null;
-  currentStep: number;
-  completedSteps: number[];
-  onStepChange: (step: number) => void;
+  currentStep?: number;
+  completedSteps?: number[];
+  onStepChange?: (step: number) => void;
 }
 
 const OrientationSelector = ({
@@ -25,9 +26,9 @@ const OrientationSelector = ({
   onOrientationChange,
   onSizeChange,
   onContinue,
-  currentStep,
-  completedSteps,
-  onStepChange
+  currentStep = 2,
+  completedSteps = [],
+  onStepChange = () => {}
 }: ExtendedOrientationSelectorProps) => {
   
   const { canGoBack, handleBackStep } = useBackNavigation({
@@ -41,9 +42,11 @@ const OrientationSelector = ({
     // Reset size when orientation changes
     onSizeChange("");
   };
+  
   const handleSizeSelect = (size: string) => {
     onSizeChange(size);
   };
+  
   const handleContinueWithSize = (size: string, e: React.MouseEvent) => {
     e.stopPropagation();
     onSizeChange(size);
@@ -68,10 +71,11 @@ const OrientationSelector = ({
     };
     return recommendations[orientation as keyof typeof recommendations] || '';
   };
+  
   const recommendedOrientation = getRecommendedOrientation();
   const recommendedSize = getRecommendedSize(selectedOrientation);
 
-  const canContinueToNext = selectedOrientation && selectedSize;
+  const canContinueToNext = Boolean(selectedOrientation && selectedSize);
 
   const getSizePrice = (size: string) => {
     switch (size) {
