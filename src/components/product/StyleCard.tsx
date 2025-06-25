@@ -4,10 +4,10 @@ import StyleCardImage from "./components/StyleCardImage";
 import StyleCardInfo from "./components/StyleCardInfo";
 import StyleCardContainer from "./components/StyleCardContainer";
 import StyleCardActions from "./components/StyleCardActions";
-import StyleCardLightboxes from "./components/StyleCardLightboxes";
+import StyleCardErrorState from "./components/StyleCardErrorState";
 import Lightbox from "@/components/ui/lightbox";
 import FullCanvasMockup from "./components/FullCanvasMockup";
-import { useStyleCardLogic } from "./hooks/useStyleCardLogic";
+import { useEnhancedStyleCardLogic } from "./hooks/useEnhancedStyleCardLogic";
 
 interface StyleCardProps {
   style: {
@@ -52,12 +52,15 @@ const StyleCard = ({
     hasPreviewOrCropped,
     showGeneratedBadge,
     shouldShowBlur,
-    getCropAspectRatio,
+    retryCount,
+    maxRetries,
+    watermarkResult,
     handleClick,
-    handleGenerateStyle,
     handleRetry,
-    handleContinueClick
-  } = useStyleCardLogic({
+    handleSkip,
+    handleContinueClick,
+    generatePreview
+  } = useEnhancedStyleCardLogic({
     style,
     croppedImage,
     selectedStyle,
@@ -66,7 +69,8 @@ const StyleCard = ({
     onContinue
   });
 
-  const cropAspectRatio = getCropAspectRatio(selectedOrientation);
+  const cropAspectRatio = selectedOrientation === 'vertical' ? 3/4 : 
+                         selectedOrientation === 'horizontal' ? 4/3 : 1;
 
   // Handle expand click for lightbox
   const handleExpandClick = () => {
@@ -90,8 +94,10 @@ const StyleCard = ({
     shouldBlur,
     shouldShowBlur,
     showError,
+    retryCount,
     hasPreview: !!previewUrl,
-    croppedImage: !!croppedImage
+    croppedImage: !!croppedImage,
+    watermarkSuccess: watermarkResult?.success
   });
 
   // Get action handlers
@@ -109,8 +115,8 @@ const StyleCard = ({
         onClick={handleClick}
         shouldBlur={shouldShowBlur}
       >
-        {/* Hero Image Section - Make this prominent on mobile */}
-        <div className="flex-shrink-0 relative">
+        {/* Hero Image Section with Enhanced Error Handling */}
+        <div className="flex-shrink-0 relative touch-manipulation">
           <StyleCardImage
             style={style}
             imageToShow={imageToShow}
@@ -129,13 +135,25 @@ const StyleCard = ({
             hasGeneratedPreview={hasGeneratedPreview}
             onExpandClick={handleExpandClick}
             onCanvasPreviewClick={handleCanvasPreviewClick}
-            onGenerateStyle={handleGenerateStyle}
+            onGenerateStyle={generatePreview}
             onRetry={handleRetry}
           />
+          
+          {/* Enhanced Error State Overlay */}
+          {showError && error && (
+            <StyleCardErrorState
+              error={error}
+              styleName={style.name}
+              onRetry={handleRetry}
+              onSkip={croppedImage ? handleSkip : undefined}
+              retryCount={retryCount}
+              maxRetries={maxRetries}
+            />
+          )}
         </div>
 
-        {/* Info Section - Streamlined for mobile */}
-        <div className="flex-1 flex flex-col">
+        {/* Info Section */}
+        <div className="flex-1 flex flex-col p-3 md:p-4 touch-manipulation">
           <StyleCardInfo
             style={style}
             hasGeneratedPreview={hasGeneratedPreview}
@@ -151,15 +169,6 @@ const StyleCard = ({
           />
         </div>
       </StyleCardContainer>
-
-      <StyleCardLightboxes
-        style={style}
-        finalPreviewUrl={previewUrl}
-        croppedImage={croppedImage}
-        selectedOrientation={selectedOrientation}
-        onExpandClick={handleExpandClick}
-        onCanvasPreviewClick={handleCanvasPreviewClick}
-      />
 
       {/* Lightboxes */}
       <Lightbox
