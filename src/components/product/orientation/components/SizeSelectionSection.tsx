@@ -1,7 +1,6 @@
 
 import GlassMorphismSizeCard from "./GlassMorphismSizeCard";
 import SizeHeader from "./SizeHeader";
-import ValidationMessage from "./ValidationMessage";
 import { sizeOptions } from "../data/sizeOptions";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ArrowDown, DollarSign } from "lucide-react";
@@ -15,9 +14,7 @@ const SizeSelectionSection = ({
   onSizeChange,
   onContinue,
   isUpdating,
-  disabled = false,
-  validationErrors = [],
-  showErrors = false
+  disabled = false
 }: SizeSelectionProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -76,12 +73,11 @@ const SizeSelectionSection = ({
   const recommendedSize = getRecommendedSize;
   const availableSizes = useMemo(() => sizeOptions[selectedOrientation] || [], [selectedOrientation]);
   const isInteractionDisabled = isUpdating || isProcessing || disabled;
-  const hasSizeError = validationErrors.some(error => error.field === 'size' && error.type === 'error');
 
   if (!selectedOrientation) return null;
 
   return (
-    <section className="space-y-6" aria-labelledby="size-selection-heading">
+    <>
       {/* Transition indicator */}
       <div className="flex justify-center">
         <div className="flex items-center gap-2 text-purple-600 animate-bounce">
@@ -93,73 +89,28 @@ const SizeSelectionSection = ({
 
       <SizeHeader />
 
-      {/* Validation Messages */}
-      <ValidationMessage 
-        errors={validationErrors.filter(error => error.field === 'size')}
-        showErrors={showErrors}
-        className="mb-4"
-      />
-
-      {/* Size Selection Fieldset */}
-      <fieldset 
-        className="space-y-6"
-        data-size-group
-        aria-labelledby="size-selection-heading"
-        aria-describedby="size-selection-description"
-      >
-        <legend className="sr-only">Choose your canvas size</legend>
-        
-        <div>
-          <h3 id="size-selection-heading" className="text-xl font-semibold text-gray-900 mb-2">
-            Select Your Size
-          </h3>
-          <p id="size-selection-description" className="text-gray-600 mb-4">
-            Choose the perfect size for your space and budget
-          </p>
-        </div>
-
-        {/* Size Cards Grid */}
-        <div 
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8"
-          role="radiogroup"
-          aria-labelledby="size-selection-heading"
-          aria-required="true"
-          aria-invalid={hasSizeError}
-        >
-          {availableSizes.map((option, index) => (
-            <div 
-              key={option.size} 
-              className={`transform transition-transform duration-200 will-change-transform ${
-                isInteractionDisabled ? 'pointer-events-none opacity-60' : 'hover:-translate-y-1'
-              }`}
-            >
-              <GlassMorphismSizeCard 
-                option={option} 
-                orientation={selectedOrientation}
-                isSelected={selectedSize === option.size} 
-                isRecommended={option.size === recommendedSize}
-                userImageUrl={userImageUrl} 
-                onClick={() => handleSizeSelect(option.size)} 
-                onContinue={e => handleContinueWithSize(option.size, e)} 
-                disabled={isInteractionDisabled}
-                // Accessibility props
-                role="radio"
-                aria-checked={selectedSize === option.size}
-                aria-labelledby={`size-${option.size}-label`}
-                tabIndex={selectedSize === option.size ? 0 : -1}
-                data-size={option.size}
-                // Mobile-optimized touch target
-                className="min-h-[48px] touch-manipulation"
-              />
-            </div>
-          ))}
-        </div>
-
-        {/* Keyboard navigation hint for screen readers */}
-        <div className="sr-only" aria-live="polite">
-          Use up and down arrow keys to navigate between size options. Press Enter or Space to select.
-        </div>
-      </fieldset>
+      {/* Size Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
+        {availableSizes.map(option => (
+          <div 
+            key={option.size} 
+            className={`transform transition-transform duration-200 will-change-transform ${
+              isInteractionDisabled ? 'pointer-events-none opacity-60' : 'hover:-translate-y-1'
+            }`}
+          >
+            <GlassMorphismSizeCard 
+              option={option} 
+              orientation={selectedOrientation}
+              isSelected={selectedSize === option.size} 
+              isRecommended={option.size === recommendedSize}
+              userImageUrl={userImageUrl} 
+              onClick={() => handleSizeSelect(option.size)} 
+              onContinue={e => handleContinueWithSize(option.size, e)} 
+              disabled={isInteractionDisabled}
+            />
+          </div>
+        ))}
+      </div>
 
       {/* Real-time Price Update */}
       {selectedSize && (
@@ -175,7 +126,7 @@ const SizeSelectionSection = ({
           </p>
         </div>
       )}
-    </section>
+    </>
   );
 };
 
