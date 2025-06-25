@@ -130,7 +130,7 @@ serve(async (req) => {
           }
           
           const imageBuffer = await imageResponse.arrayBuffer();
-          console.log(`[${requestId}] Applying watermarks...`);
+          console.log(`[${requestId}] Applying watermarks with imagescript...`);
           
           // Apply watermarks using the WatermarkService
           const watermarkedBuffer = await WatermarkService.createWatermarkedImage(
@@ -143,7 +143,7 @@ serve(async (req) => {
           const base64Image = btoa(String.fromCharCode(...new Uint8Array(watermarkedBuffer)));
           finalOutput = `data:image/png;base64,${base64Image}`;
           
-          console.log(`[${requestId}] Watermarking completed successfully`);
+          console.log(`[${requestId}] Watermarking completed successfully with imagescript`);
           
         } catch (watermarkError) {
           console.error(`[${requestId}] Watermarking failed, using original:`, watermarkError);
