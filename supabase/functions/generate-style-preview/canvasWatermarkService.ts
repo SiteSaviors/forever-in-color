@@ -1,6 +1,6 @@
 
 export class CanvasWatermarkService {
-  private static watermarkUrl = "/lovable-uploads/781d4b89-6ecc-4101-aeaf-c5743efce1c1.png";
+  private static watermarkUrl = "/lovable-uploads/6789ee1d-5679-4b94-bae6-e76ffd4f7526.png";
 
   static async createWatermarkedImage(
     imageUrl: string, 
@@ -27,53 +27,31 @@ export class CanvasWatermarkService {
       ctx.drawImage(originalImage, 0, 0);
 
       if (isPreview) {
-        // Load and draw the watermark logo
+        // Load and draw the infinity logo watermark in center
         try {
           const logoUrl = `https://fvjganetpyyrguuxjtqi.supabase.co${this.watermarkUrl}`;
-          console.log('Loading watermark logo from:', logoUrl);
+          console.log('Loading infinity logo from:', logoUrl);
           
           const logoImage = await loadImage(logoUrl);
-          console.log('Logo loaded successfully');
+          console.log('Infinity logo loaded successfully');
           
-          // Calculate logo size (15% of image width, maintaining aspect ratio)
-          const logoSize = Math.floor(originalImage.width() * 0.15);
+          // Calculate logo size (20% of image width, maintaining aspect ratio)
+          const logoSize = Math.floor(originalImage.width() * 0.2);
           const logoAspectRatio = logoImage.height() / logoImage.width();
           const logoHeight = Math.floor(logoSize * logoAspectRatio);
           
-          // Position logo in center
+          // Position logo in exact center
           const logoX = Math.floor((originalImage.width() - logoSize) / 2);
           const logoY = Math.floor((originalImage.height() - logoHeight) / 2);
           
-          // Set opacity and draw logo
-          ctx.globalAlpha = 0.3;
+          // Set opacity and draw centered logo
+          ctx.globalAlpha = 0.4;
           ctx.drawImage(logoImage, logoX, logoY, logoSize, logoHeight);
           ctx.globalAlpha = 1.0;
           
-          console.log('Logo watermark added successfully');
+          console.log('Infinity logo watermark added successfully at center:', { x: logoX, y: logoY, width: logoSize, height: logoHeight });
         } catch (logoError) {
-          console.warn('Could not load logo watermark:', logoError);
-        }
-
-        // Add session ID text watermark
-        if (sessionId) {
-          const sessionText = sessionId.slice(0, 8);
-          const timestamp = new Date().toISOString().slice(0, 10);
-          const watermarkText = `${sessionText} • ${timestamp}`;
-          
-          // Set up text style
-          ctx.font = `${Math.floor(originalImage.width() * 0.03)}px Arial`;
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-          ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
-          ctx.lineWidth = 1;
-          
-          // Draw text in bottom-left corner
-          const textX = Math.floor(originalImage.width() * 0.02);
-          const textY = Math.floor(originalImage.height() * 0.95);
-          
-          ctx.strokeText(watermarkText, textX, textY);
-          ctx.fillText(watermarkText, textX, textY);
-          
-          console.log('Session text watermark added:', watermarkText);
+          console.warn('Could not load infinity logo watermark:', logoError);
         }
       }
 
