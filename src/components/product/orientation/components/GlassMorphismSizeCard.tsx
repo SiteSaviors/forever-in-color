@@ -1,4 +1,3 @@
-
 import { SizeOption } from "../types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -59,7 +58,7 @@ const GlassMorphismSizeCard = ({
 
   return (
     <div
-      className={`relative group cursor-pointer transition-all duration-700 ${
+      className={`relative group/sidebar-wrapper cursor-pointer transition-all duration-700 ${
         isSelected ? 'scale-105' : 'hover:scale-102'
       }`}
       onClick={onClick}
@@ -100,7 +99,7 @@ const GlassMorphismSizeCard = ({
           )}
         </div>
 
-        {/* Enhanced Morphing Canvas Preview */}
+        {/* Canvas Preview - Only show when we have a user image */}
         <div className="mb-4">
           <MorphingCanvasPreview
             orientation={orientation}

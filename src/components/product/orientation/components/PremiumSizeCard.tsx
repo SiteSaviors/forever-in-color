@@ -1,4 +1,3 @@
-
 import { SizeOption } from "../types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -93,7 +92,7 @@ const PremiumSizeCard = ({
           )}
         </div>
 
-        {/* Interactive Canvas Preview */}
+        {/* Canvas Preview - Only show when we have a user image */}
         <div className="mb-4">
           <InteractiveCanvasPreview
             orientation={orientation}

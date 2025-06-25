@@ -1,4 +1,3 @@
-
 import OrientationCard from "./orientation/components/OrientationCard";
 import GlassMorphismSizeCard from "./orientation/components/GlassMorphismSizeCard";
 import OrientationHeader from "./orientation/components/OrientationHeader";
@@ -77,16 +76,6 @@ const OrientationSelector = ({
 
   const canContinueToNext = Boolean(selectedOrientation && selectedSize);
 
-  const getSizePrice = (size: string) => {
-    switch (size) {
-      case "8x10": return 49;
-      case "12x16": return 89;
-      case "16x20": return 129;
-      case "20x24": return 169;
-      default: return 49;
-    }
-  };
-
   return (
     <div className="space-y-10">
       <OrientationHeader selectedOrientation={selectedOrientation} />
@@ -160,7 +149,7 @@ const OrientationSelector = ({
               <div className="flex items-center justify-center gap-2 text-green-700">
                 <DollarSign className="w-5 h-5" />
                 <span className="text-lg font-semibold">
-                  Starting at ${getSizePrice(selectedSize)} for {selectedSize} canvas
+                  Starting at ${sizeOptions[selectedOrientation]?.find(opt => opt.size === selectedSize)?.salePrice || 99.99} for {selectedSize} canvas
                 </span>
               </div>
               <p className="text-sm text-green-600 mt-1">

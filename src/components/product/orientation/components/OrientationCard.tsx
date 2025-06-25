@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Sparkles } from "lucide-react";
@@ -41,7 +40,7 @@ const OrientationCard = ({
           </div>
         )}
 
-        {/* Interactive Canvas Preview */}
+        {/* Canvas Preview - Only show when we have a user image */}
         {userImageUrl ? (
           <div className="flex justify-center">
             <div className="w-32 h-32">

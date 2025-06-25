@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
@@ -143,11 +142,6 @@ const MorphingCanvasPreview = ({
               
               {/* Image Glass Overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/5 via-transparent to-white/10 pointer-events-none" />
-              
-              {/* "Your Photo" indicator */}
-              <div className="absolute top-1 left-1 bg-green-500/90 text-white text-xs px-2 py-1 rounded backdrop-blur-sm">
-                Your Photo
-              </div>
             </div>
           )}
 
@@ -170,24 +164,6 @@ const MorphingCanvasPreview = ({
             <Sparkles className="w-3 h-3" />
             Selected
           </div>
-        </div>
-      )}
-
-      {/* Floating Particles Effect */}
-      {isSelected && (
-        <div className="absolute inset-0 pointer-events-none">
-          {[...Array(8)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-1 h-1 bg-purple-400 rounded-full animate-float opacity-60"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 2}s`,
-                animationDuration: `${3 + Math.random() * 2}s`
-              }}
-            />
-          ))}
         </div>
       )}
     </div>

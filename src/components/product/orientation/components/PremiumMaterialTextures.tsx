@@ -1,4 +1,3 @@
-
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, Palette, Crown } from "lucide-react";
 
