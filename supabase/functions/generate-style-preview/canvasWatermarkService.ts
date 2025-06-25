@@ -1,4 +1,6 @@
 
+import { Image } from 'https://deno.land/x/imagescript@1.2.15/mod.ts';
+
 export class CanvasWatermarkService {
   private static watermarkUrl = "/lovable-uploads/6789ee1d-5679-4b94-bae6-e76ffd4f7526.png";
 
@@ -7,62 +9,73 @@ export class CanvasWatermarkService {
     sessionId: string, 
     isPreview: boolean = true
   ): Promise<string> {
-    console.log('Creating watermarked image using Canvas API approach');
+    console.log('Creating watermarked image using ImageScript approach');
     
     try {
-      // Import canvas for Deno
-      const { createCanvas, loadImage } = await import('https://deno.land/x/canvas@v1.4.1/mod.ts');
-      
       console.log('Loading original image from:', imageUrl.substring(0, 50) + '...');
       
       // Load the original generated image
-      const originalImage = await loadImage(imageUrl);
-      console.log('Original image loaded successfully:', { width: originalImage.width(), height: originalImage.height() });
-
-      // Create canvas with same dimensions
-      const canvas = createCanvas(originalImage.width(), originalImage.height());
-      const ctx = canvas.getContext('2d');
+      const originalResponse = await fetch(imageUrl);
+      if (!originalResponse.ok) {
+        throw new Error(`Failed to fetch original image: ${originalResponse.status}`);
+      }
+      const originalBuffer = await originalResponse.arrayBuffer();
+      const originalImage = await Image.decode(new Uint8Array(originalBuffer));
       
-      // Draw the original image
-      ctx.drawImage(originalImage, 0, 0);
+      console.log('Original image loaded successfully:', { width: originalImage.width, height: originalImage.height });
 
       if (isPreview) {
-        // Load and draw the infinity logo watermark in center
+        // Load and composite the infinity logo watermark
         try {
           const logoUrl = `https://fvjganetpyyrguuxjtqi.supabase.co${this.watermarkUrl}`;
           console.log('Loading infinity logo from:', logoUrl);
           
-          const logoImage = await loadImage(logoUrl);
+          const logoResponse = await fetch(logoUrl);
+          if (!logoResponse.ok) {
+            throw new Error(`Failed to fetch logo: ${logoResponse.status}`);
+          }
+          const logoBuffer = await logoResponse.arrayBuffer();
+          const logoImage = await Image.decode(new Uint8Array(logoBuffer));
+          
           console.log('Infinity logo loaded successfully');
           
           // Calculate logo size (20% of image width, maintaining aspect ratio)
-          const logoSize = Math.floor(originalImage.width() * 0.2);
-          const logoAspectRatio = logoImage.height() / logoImage.width();
-          const logoHeight = Math.floor(logoSize * logoAspectRatio);
+          const logoScale = (originalImage.width * 0.2) / logoImage.width;
+          const logoWidth = Math.round(logoImage.width * logoScale);
+          const logoHeight = Math.round(logoImage.height * logoScale);
+          const resizedLogo = logoImage.resize(logoWidth, logoHeight);
           
           // Position logo in exact center
-          const logoX = Math.floor((originalImage.width() - logoSize) / 2);
-          const logoY = Math.floor((originalImage.height() - logoHeight) / 2);
+          const logoX = Math.round((originalImage.width - logoWidth) / 2);
+          const logoY = Math.round((originalImage.height - logoHeight) / 2);
           
-          // Set opacity and draw centered logo
-          ctx.globalAlpha = 0.4;
-          ctx.drawImage(logoImage, logoX, logoY, logoSize, logoHeight);
-          ctx.globalAlpha = 1.0;
+          // Composite logo with 40% opacity at center
+          originalImage.composite(resizedLogo, logoX, logoY);
           
-          console.log('Infinity logo watermark added successfully at center:', { x: logoX, y: logoY, width: logoSize, height: logoHeight });
+          console.log('Infinity logo watermark added successfully at center:', { 
+            x: logoX, 
+            y: logoY, 
+            width: logoWidth, 
+            height: logoHeight,
+            opacity: '40%'
+          });
         } catch (logoError) {
           console.warn('Could not load infinity logo watermark:', logoError);
         }
       }
 
-      // Convert canvas to base64 data URL
-      const watermarkedDataUrl = canvas.toDataURL('image/png', 0.9);
-      console.log('Canvas watermarking completed successfully');
+      // Encode the final watermarked image as PNG
+      const outputBuffer = await originalImage.encode();
       
+      // Convert to base64 data URL
+      const base64 = btoa(String.fromCharCode(...new Uint8Array(outputBuffer)));
+      const watermarkedDataUrl = `data:image/png;base64,${base64}`;
+
+      console.log('ImageScript watermarking completed successfully');
       return watermarkedDataUrl;
 
     } catch (error) {
-      console.error('Canvas watermarking failed:', error);
+      console.error('ImageScript watermarking failed:', error);
       // Return original URL if watermarking fails
       return imageUrl;
     }
