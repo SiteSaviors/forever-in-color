@@ -11,6 +11,7 @@ import { sizeOptions } from "./orientation/data/sizeOptions";
 import { OrientationSelectorProps } from "./orientation/types";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Eye, ArrowDown, DollarSign } from "lucide-react";
+import { useState, useCallback } from "react";
 
 interface ExtendedOrientationSelectorProps extends OrientationSelectorProps {
   userImageUrl?: string | null;
@@ -37,23 +38,40 @@ const OrientationSelector = ({
     onStepChange
   });
 
-  const handleOrientationSelect = (orientation: string) => {
+  // FIXED: Add debounced state to prevent rapid updates
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  // FIXED: Debounced orientation handler to prevent layout thrashing
+  const handleOrientationSelect = useCallback((orientation: string) => {
+    if (isUpdating) return;
+    
+    setIsUpdating(true);
     onOrientationChange(orientation);
-    // Reset size when orientation changes
-    onSizeChange("");
-  };
+    onSizeChange(""); // Reset size when orientation changes
+    
+    // Debounce to prevent rapid state changes
+    setTimeout(() => setIsUpdating(false), 200);
+  }, [onOrientationChange, onSizeChange, isUpdating]);
   
-  const handleSizeSelect = (size: string) => {
+  // FIXED: Stable size selection handler
+  const handleSizeSelect = useCallback((size: string) => {
+    if (isUpdating) return;
     onSizeChange(size);
-  };
+  }, [onSizeChange, isUpdating]);
   
-  const handleContinueWithSize = (size: string, e: React.MouseEvent) => {
+  // FIXED: Improved continue handler with proper event management
+  const handleContinueWithSize = useCallback((size: string, e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
+    
+    if (isUpdating) return;
+    
     onSizeChange(size);
     if (onContinue) {
-      onContinue();
+      // Delay to ensure state update completes
+      setTimeout(() => onContinue(), 50);
     }
-  };
+  }, [onSizeChange, onContinue, isUpdating]);
 
   // Smart recommendation logic - for demo, recommend square as most versatile
   const getRecommendedOrientation = () => {
@@ -75,7 +93,7 @@ const OrientationSelector = ({
   const recommendedOrientation = getRecommendedOrientation();
   const recommendedSize = getRecommendedSize(selectedOrientation);
 
-  const canContinueToNext = Boolean(selectedOrientation && selectedSize);
+  const canContinueToNext = Boolean(selectedOrientation && selectedSize && !isUpdating);
 
   const getSizePrice = (size: string) => {
     switch (size) {
@@ -88,7 +106,7 @@ const OrientationSelector = ({
   };
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8 md:space-y-10">
       <OrientationHeader selectedOrientation={selectedOrientation} />
 
       {/* Visual Connection Helper */}
@@ -108,10 +126,10 @@ const OrientationSelector = ({
         </div>
       )}
 
-      {/* Premium Orientation Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      {/* FIXED: Stable orientation cards with improved spacing */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
         {orientationOptions.map(orientation => (
-          <div key={orientation.id} className="transform transition-all duration-500 hover:-translate-y-2">
+          <div key={orientation.id} className="transform transition-transform duration-300 hover:-translate-y-1">
             <OrientationCard 
               orientation={orientation} 
               isSelected={selectedOrientation === orientation.id} 
@@ -134,13 +152,13 @@ const OrientationSelector = ({
         </div>
       )}
 
-      {/* Premium Size Selection */}
+      {/* FIXED: Stable size selection with improved layout */}
       {selectedOrientation && (
         <>
           <SizeHeader />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
             {sizeOptions[selectedOrientation]?.map(option => (
-              <div key={option.size} className="transform transition-all duration-500 hover:-translate-y-2">
+              <div key={option.size} className="transform transition-transform duration-300 hover:-translate-y-1">
                 <GlassMorphismSizeCard 
                   option={option} 
                   orientation={selectedOrientation}
@@ -177,7 +195,7 @@ const OrientationSelector = ({
         canContinue={canContinueToNext}
         onBack={handleBackStep}
         onContinue={() => {
-          if (onContinue) onContinue();
+          if (onContinue && !isUpdating) onContinue();
         }}
         continueText="Continue to Customize"
         currentStep={currentStep}
