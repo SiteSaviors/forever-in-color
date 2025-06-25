@@ -95,7 +95,7 @@ const GlassMorphismSizeCard = ({
           
           {option.originalPrice > option.salePrice && (
             <Badge className="bg-green-500/80 text-white border border-green-300/30 backdrop-blur-sm shadow-lg">
-              Save ${option.originalPrice - option.salePrice}
+              Save $50
             </Badge>
           )}
         </div>
