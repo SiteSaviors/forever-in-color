@@ -1,8 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { generateStylePreview } from "@/utils/stylePreviewApi";
 import { addWatermarkToImage } from "@/utils/watermarkUtils";
 import { convertOrientationToAspectRatio } from "../utils/orientationDetection";
+import { previewCache, logCachePerformance } from "@/utils/previewCache";
+import { memoryManager, logMemoryUsage } from "@/utils/memoryManager";
 
 export const usePreviewGeneration = (uploadedImage: string | null, selectedOrientation: string) => {
   const [previewUrls, setPreviewUrls] = useState<{ [key: number]: string }>({});
@@ -23,11 +24,22 @@ export const usePreviewGeneration = (uploadedImage: string | null, selectedOrien
         console.log('Current selected orientation:', selectedOrientation);
         
         const aspectRatio = convertOrientationToAspectRatio(selectedOrientation);
-        console.log(`Using aspect ratio ${aspectRatio} for auto-generation based on orientation ${selectedOrientation}`);
+        
+        // Optimize image once for all generations
+        const optimizedImage = await memoryManager.optimizeForPreview(uploadedImage);
+        console.log(`🗜️ Optimized image for batch generation: ${memoryManager.getImageSizeMB(optimizedImage).toFixed(2)}MB`);
         
         for (const styleId of popularStyleIds) {
           const style = artStyles.find(s => s.id === styleId);
           if (!style) continue;
+
+          // Check cache first
+          const cachedPreview = previewCache.getCachedPreview(uploadedImage, styleId, aspectRatio);
+          if (cachedPreview) {
+            setPreviewUrls(prev => ({ ...prev, [styleId]: cachedPreview }));
+            console.log(`✅ Using cached preview for ${style.name}`);
+            continue;
+          }
 
           try {
             console.log(`🎨 Auto-generating preview for ${style.name} (ID: ${styleId}) with aspect ratio: ${aspectRatio}`);
@@ -35,7 +47,7 @@ export const usePreviewGeneration = (uploadedImage: string | null, selectedOrien
             const tempPhotoId = `temp_${Date.now()}_${styleId}`;
             
             // Generate without server-side watermarking
-            const rawPreviewUrl = await generateStylePreview(uploadedImage, style.name, tempPhotoId, aspectRatio, {
+            const rawPreviewUrl = await generateStylePreview(optimizedImage, style.name, tempPhotoId, aspectRatio, {
               watermark: false // Disable server-side watermarking
             });
 
@@ -43,10 +55,30 @@ export const usePreviewGeneration = (uploadedImage: string | null, selectedOrien
               try {
                 // Apply client-side watermarking
                 const watermarkedUrl = await addWatermarkToImage(rawPreviewUrl);
+                
+                // Cache the result
+                previewCache.cachePreview(
+                  uploadedImage, 
+                  styleId, 
+                  style.name, 
+                  aspectRatio, 
+                  watermarkedUrl
+                );
+                
                 setPreviewUrls(prev => ({ ...prev, [styleId]: watermarkedUrl }));
                 console.log(`✅ Auto-generated preview for ${style.name} completed with client-side watermark and aspect ratio ${aspectRatio}`);
               } catch (watermarkError) {
                 console.warn(`⚠️ Failed to add watermark for ${style.name}, using original:`, watermarkError);
+                
+                // Cache even without watermark
+                previewCache.cachePreview(
+                  uploadedImage, 
+                  styleId, 
+                  style.name, 
+                  aspectRatio, 
+                  rawPreviewUrl
+                );
+                
                 setPreviewUrls(prev => ({ ...prev, [styleId]: rawPreviewUrl }));
               }
             }
@@ -57,6 +89,10 @@ export const usePreviewGeneration = (uploadedImage: string | null, selectedOrien
         
         setAutoGenerationComplete(true);
         console.log('🏁 Auto-generation of popular style previews completed');
+        
+        // Log performance metrics
+        logCachePerformance();
+        logMemoryUsage();
       };
 
       generatePopularPreviews();
@@ -68,6 +104,7 @@ export const usePreviewGeneration = (uploadedImage: string | null, selectedOrien
     if (!uploadedImage) {
       setAutoGenerationComplete(false);
       setPreviewUrls({});
+      // Don't clear cache entirely - keep for session
     }
   }, [uploadedImage]);
 

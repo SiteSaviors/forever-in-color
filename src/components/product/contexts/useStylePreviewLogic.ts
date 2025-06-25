@@ -4,6 +4,8 @@ import { generateStylePreview } from '@/utils/stylePreviewApi';
 import { addWatermarkToImage } from '@/utils/watermarkUtils';
 import { StylePreviewAction } from './types';
 import { getAspectRatio } from './orientationUtils';
+import { previewCache } from '@/utils/previewCache';
+import { memoryManager } from '@/utils/memoryManager';
 
 interface UseStylePreviewLogicProps {
   croppedImage: string | null;
@@ -16,7 +18,7 @@ export const useStylePreviewLogic = ({
   selectedOrientation,
   dispatch
 }: UseStylePreviewLogicProps) => {
-  // Manual generation function
+  // Enhanced generation function with caching
   const generatePreview = useCallback(async (styleId: number, styleName: string) => {
     if (!croppedImage) {
       console.error('❌ Cannot generate preview: no cropped image');
@@ -28,22 +30,40 @@ export const useStylePreviewLogic = ({
       return;
     }
 
+    const aspectRatio = getAspectRatio(selectedOrientation);
+    
+    // Check cache first
+    const cachedPreview = previewCache.getCachedPreview(croppedImage, styleId, aspectRatio);
+    if (cachedPreview) {
+      dispatch({ 
+        type: 'GENERATION_SUCCESS', 
+        styleId, 
+        url: cachedPreview 
+      });
+      console.log(`✅ Using cached preview for ${styleName}`);
+      return;
+    }
+
     try {
-      console.log(`🎨 Starting manual generation for ${styleName} (ID: ${styleId})`);
+      console.log(`🎨 Starting generation for ${styleName} (ID: ${styleId})`);
       dispatch({ type: 'START_GENERATION', styleId });
       
-      const aspectRatio = getAspectRatio(selectedOrientation);
+      // Optimize image for preview generation
+      const optimizedImage = await memoryManager.optimizeForPreview(croppedImage);
+      
       const tempPhotoId = `temp_${Date.now()}_${styleId}`;
       
       console.log(`📋 Generation parameters:`, {
         styleName,
         styleId,
         aspectRatio,
-        selectedOrientation
+        selectedOrientation,
+        originalSizeMB: memoryManager.getImageSizeMB(croppedImage).toFixed(2),
+        optimizedSizeMB: memoryManager.getImageSizeMB(optimizedImage).toFixed(2)
       });
       
       const previewUrl = await generateStylePreview(
-        croppedImage, 
+        optimizedImage, 
         styleName, 
         tempPhotoId, 
         aspectRatio
@@ -52,14 +72,35 @@ export const useStylePreviewLogic = ({
       if (previewUrl) {
         try {
           const watermarkedUrl = await addWatermarkToImage(previewUrl);
+          
+          // Cache the result
+          previewCache.cachePreview(
+            croppedImage, 
+            styleId, 
+            styleName, 
+            aspectRatio, 
+            watermarkedUrl
+          );
+          
           dispatch({ 
             type: 'GENERATION_SUCCESS', 
             styleId, 
             url: watermarkedUrl 
           });
-          console.log(`✅ Manual generation completed for ${styleName}`);
+          
+          console.log(`✅ Generation completed and cached for ${styleName}`);
         } catch (watermarkError) {
           console.warn(`⚠️ Watermark failed for ${styleName}, using original:`, watermarkError);
+          
+          // Cache even without watermark
+          previewCache.cachePreview(
+            croppedImage, 
+            styleId, 
+            styleName, 
+            aspectRatio, 
+            previewUrl
+          );
+          
           dispatch({ 
             type: 'GENERATION_SUCCESS', 
             styleId, 
@@ -68,7 +109,7 @@ export const useStylePreviewLogic = ({
         }
       }
     } catch (error) {
-      console.error(`❌ Manual generation failed for ${styleName}:`, error);
+      console.error(`❌ Generation failed for ${styleName}:`, error);
       dispatch({ 
         type: 'GENERATION_ERROR', 
         styleId, 
