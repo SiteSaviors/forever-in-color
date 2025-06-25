@@ -5,15 +5,7 @@ import { sizeOptions } from "../data/sizeOptions";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ArrowDown, DollarSign } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
-
-interface SizeSelectionSectionProps {
-  selectedOrientation: string;
-  selectedSize: string;
-  userImageUrl: string | null;
-  onSizeChange: (size: string) => void;
-  onContinue?: () => void;
-  isUpdating: boolean;
-}
+import { SizeSelectionProps } from "../types/interfaces";
 
 const SizeSelectionSection = ({
   selectedOrientation,
@@ -21,8 +13,9 @@ const SizeSelectionSection = ({
   userImageUrl,
   onSizeChange,
   onContinue,
-  isUpdating
-}: SizeSelectionSectionProps) => {
+  isUpdating,
+  disabled = false
+}: SizeSelectionProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
 
   const getRecommendedSize = useMemo(() => {
@@ -45,16 +38,16 @@ const SizeSelectionSection = ({
   }, []);
 
   const handleSizeSelect = useCallback((size: string) => {
-    if (isUpdating || isProcessing) return;
+    if (isUpdating || isProcessing || disabled) return;
     
     setIsProcessing(true);
     
-    // Debounce the size change to prevent rapid updates
+    // Single debounced update
     setTimeout(() => {
       onSizeChange(size);
       setIsProcessing(false);
-    }, 100);
-  }, [onSizeChange, isUpdating, isProcessing]);
+    }, 50);
+  }, [onSizeChange, isUpdating, isProcessing, disabled]);
   
   const handleContinueWithSize = useCallback((size: string, e?: React.MouseEvent) => {
     if (e) {
@@ -62,7 +55,7 @@ const SizeSelectionSection = ({
       e.stopPropagation();
     }
     
-    if (isUpdating || isProcessing) return;
+    if (isUpdating || isProcessing || disabled) return;
     
     setIsProcessing(true);
     onSizeChange(size);
@@ -71,20 +64,21 @@ const SizeSelectionSection = ({
       setTimeout(() => {
         onContinue();
         setIsProcessing(false);
-      }, 150);
+      }, 100);
     } else {
       setIsProcessing(false);
     }
-  }, [onSizeChange, onContinue, isUpdating, isProcessing]);
+  }, [onSizeChange, onContinue, isUpdating, isProcessing, disabled]);
 
   const recommendedSize = getRecommendedSize;
   const availableSizes = useMemo(() => sizeOptions[selectedOrientation] || [], [selectedOrientation]);
+  const isInteractionDisabled = isUpdating || isProcessing || disabled;
 
   if (!selectedOrientation) return null;
 
   return (
     <>
-      {/* Smooth transition indicator */}
+      {/* Transition indicator */}
       <div className="flex justify-center">
         <div className="flex items-center gap-2 text-purple-600 animate-bounce">
           <ArrowDown className="w-4 h-4" />
@@ -95,13 +89,13 @@ const SizeSelectionSection = ({
 
       <SizeHeader />
 
-      {/* Size Cards Grid with improved performance */}
+      {/* Size Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
         {availableSizes.map(option => (
           <div 
             key={option.size} 
             className={`transform transition-transform duration-200 will-change-transform ${
-              isProcessing ? 'pointer-events-none' : 'hover:-translate-y-1'
+              isInteractionDisabled ? 'pointer-events-none opacity-60' : 'hover:-translate-y-1'
             }`}
           >
             <GlassMorphismSizeCard 
@@ -112,7 +106,7 @@ const SizeSelectionSection = ({
               userImageUrl={userImageUrl} 
               onClick={() => handleSizeSelect(option.size)} 
               onContinue={e => handleContinueWithSize(option.size, e)} 
-              disabled={isProcessing || isUpdating}
+              disabled={isInteractionDisabled}
             />
           </div>
         ))}

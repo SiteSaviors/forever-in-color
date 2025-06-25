@@ -3,20 +3,15 @@ import OrientationCard from "./OrientationCard";
 import { orientationOptions } from "../data/orientationOptions";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Eye } from "lucide-react";
-
-interface LayoutSelectionSectionProps {
-  selectedOrientation: string;
-  userImageUrl: string | null;
-  onOrientationChange: (orientation: string) => void;
-  isUpdating: boolean;
-}
+import { LayoutSelectionProps } from "../types/interfaces";
 
 const LayoutSelectionSection = ({
   selectedOrientation,
   userImageUrl,
   onOrientationChange,
-  isUpdating
-}: LayoutSelectionSectionProps) => {
+  isUpdating,
+  disabled = false
+}: LayoutSelectionProps) => {
   const getRecommendedOrientation = () => {
     if (!userImageUrl) return 'square';
     return 'square'; // Smart recommendation logic can be enhanced here
@@ -39,14 +34,19 @@ const LayoutSelectionSection = ({
       {/* Orientation Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
         {orientationOptions.map(orientation => (
-          <div key={orientation.id} className="transform transition-transform duration-300 hover:-translate-y-1">
+          <div 
+            key={orientation.id} 
+            className={`transform transition-transform duration-300 ${
+              disabled ? 'pointer-events-none opacity-60' : 'hover:-translate-y-1'
+            }`}
+          >
             <OrientationCard 
               orientation={orientation} 
               isSelected={selectedOrientation === orientation.id} 
               isRecommended={orientation.id === recommendedOrientation}
               userImageUrl={userImageUrl} 
               onClick={() => {
-                if (!isUpdating) {
+                if (!isUpdating && !disabled) {
                   onOrientationChange(orientation.id);
                 }
               }}

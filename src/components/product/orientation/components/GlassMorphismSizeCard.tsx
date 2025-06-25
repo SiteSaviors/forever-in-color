@@ -1,20 +1,9 @@
 
-import { SizeOption } from "../types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Crown, Zap, Heart, Sparkles } from "lucide-react";
 import MorphingCanvasPreview from "./MorphingCanvasPreview";
-
-interface GlassMorphismSizeCardProps {
-  option: SizeOption;
-  orientation: string;
-  isSelected: boolean;
-  userImageUrl: string | null;
-  isRecommended?: boolean;
-  disabled?: boolean;
-  onClick: () => void;
-  onContinue: (e?: React.MouseEvent) => void;
-}
+import { GlassMorphismSizeCardProps } from "../types/interfaces";
 
 const GlassMorphismSizeCard = ({ 
   option, 
@@ -59,7 +48,7 @@ const GlassMorphismSizeCard = ({
     return "Customer Favorite";
   };
 
-  // Prevent event conflicts with single event handler
+  // Single optimized event handler
   const handleCardClick = (e: React.MouseEvent) => {
     if (disabled) return;
     
@@ -85,7 +74,7 @@ const GlassMorphismSizeCard = ({
       }`}
       onClick={handleCardClick}
     >
-      {/* Stable glass morphism background */}
+      {/* Glass morphism background */}
       <div className={`absolute inset-0 rounded-2xl backdrop-blur-xl border transition-all duration-300 ${
         isSelected 
           ? 'bg-gradient-to-br from-purple-500/20 via-pink-500/15 to-purple-500/20 shadow-xl shadow-purple-500/20 border-white/40' 
@@ -120,11 +109,11 @@ const GlassMorphismSizeCard = ({
           )}
         </div>
 
-        {/* Canvas preview without user image to prevent glitches */}
+        {/* Canvas preview */}
         <div className="mb-3 md:mb-4">
           <MorphingCanvasPreview
             orientation={orientation}
-            userImageUrl={null} // Removed user image to prevent rendering issues
+            userImageUrl={null} // Optimized for performance
             size={option.size}
             isSelected={isSelected}
             isRecommended={isRecommended}
@@ -166,7 +155,7 @@ const GlassMorphismSizeCard = ({
           <p className="text-xs md:text-sm text-gray-700">{option.description}</p>
         </div>
 
-        {/* Continue button with improved event handling */}
+        {/* Continue button */}
         {isSelected && (
           <Button
             onClick={handleContinueClick}
@@ -181,7 +170,7 @@ const GlassMorphismSizeCard = ({
         )}
       </div>
 
-      {/* Subtle hover effect */}
+      {/* Hover effect */}
       <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-500/0 via-pink-500/0 to-purple-500/0 group-hover:from-purple-500/3 group-hover:via-pink-500/3 group-hover:to-purple-500/3 transition-all duration-500 pointer-events-none" />
     </div>
   );

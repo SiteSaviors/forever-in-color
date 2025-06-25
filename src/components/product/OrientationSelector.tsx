@@ -6,15 +6,9 @@ import SizeSelectionSection from "./orientation/components/SizeSelectionSection"
 import StepNavigation from "./components/StepNavigation";
 import OrientationErrorBoundary from "./orientation/components/OrientationErrorBoundary";
 import { useBackNavigation } from "./hooks/useBackNavigation";
-import { OrientationSelectorProps } from "./orientation/types";
-import { useState, useCallback, useMemo } from "react";
-
-interface ExtendedOrientationSelectorProps extends OrientationSelectorProps {
-  userImageUrl?: string | null;
-  currentStep?: number;
-  completedSteps?: number[];
-  onStepChange?: (step: number) => void;
-}
+import { useOrientationState } from "./orientation/hooks/useOrientationState";
+import { ExtendedOrientationSelectorProps } from "./orientation/types/interfaces";
+import { useCallback } from "react";
 
 const OrientationSelector = ({
   selectedOrientation,
@@ -34,34 +28,21 @@ const OrientationSelector = ({
     onStepChange
   });
 
-  const [isUpdating, setIsUpdating] = useState(false);
+  const {
+    isUpdating,
+    handleOrientationSelect,
+    canContinueToNext
+  } = useOrientationState({
+    initialOrientation: selectedOrientation,
+    initialSize: selectedSize,
+    onOrientationChange,
+    onSizeChange
+  });
 
-  // Memoize the orientation change handler to prevent unnecessary re-renders
-  const handleOrientationSelect = useCallback((orientation: string) => {
-    if (isUpdating) return;
-    
-    console.log('🐛 Orientation change initiated:', orientation);
-    setIsUpdating(true);
-    
-    // Batch the state updates to prevent glitches
-    onOrientationChange(orientation);
-    onSizeChange(""); // Reset size when orientation changes
-    
-    // Use requestAnimationFrame to ensure smooth transitions
-    requestAnimationFrame(() => {
-      setIsUpdating(false);
-    });
-  }, [onOrientationChange, onSizeChange, isUpdating]);
-
-  // Memoize navigation state to prevent unnecessary calculations
-  const canContinueToNext = useMemo(() => {
-    return Boolean(selectedOrientation && selectedSize && !isUpdating);
-  }, [selectedOrientation, selectedSize, isUpdating]);
-
-  // Debounced continue handler
+  // Optimized continue handler
   const handleContinue = useCallback(() => {
     if (onContinue && !isUpdating && canContinueToNext) {
-      console.log('🐛 Continuing to next step');
+      console.log('🚀 Continuing to next step');
       onContinue();
     }
   }, [onContinue, isUpdating, canContinueToNext]);
@@ -71,7 +52,7 @@ const OrientationSelector = ({
       <div className="space-y-8 md:space-y-10">
         <OrientationHeader selectedOrientation={selectedOrientation} />
 
-        {/* Smart Recommendations Panel - Only show if user has image */}
+        {/* Smart Recommendations Panel */}
         {userImageUrl && (
           <div className="relative">
             <SmartRecommendations 
@@ -81,15 +62,16 @@ const OrientationSelector = ({
           </div>
         )}
 
-        {/* Layout Selection with improved performance */}
+        {/* Layout Selection */}
         <LayoutSelectionSection
           selectedOrientation={selectedOrientation}
           userImageUrl={userImageUrl}
           onOrientationChange={handleOrientationSelect}
           isUpdating={isUpdating}
+          disabled={isUpdating}
         />
 
-        {/* Size Selection with glitch fixes */}
+        {/* Size Selection */}
         <SizeSelectionSection
           selectedOrientation={selectedOrientation}
           selectedSize={selectedSize}
@@ -97,9 +79,10 @@ const OrientationSelector = ({
           onSizeChange={onSizeChange}
           onContinue={handleContinue}
           isUpdating={isUpdating}
+          disabled={isUpdating}
         />
 
-        {/* Step Navigation with improved state management */}
+        {/* Step Navigation */}
         <StepNavigation
           canGoBack={canGoBack}
           canContinue={canContinueToNext}
@@ -108,6 +91,7 @@ const OrientationSelector = ({
           continueText="Continue to Customize"
           currentStep={currentStep}
           totalSteps={4}
+          isLoading={isUpdating}
         />
       </div>
     </OrientationErrorBoundary>
