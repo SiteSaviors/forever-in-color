@@ -27,11 +27,11 @@ const ProductHeader = ({ completedSteps, totalSteps, currentStep = 1 }: ProductH
             </Badge>
           </div>
           
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Create Your Custom Canvas
+          <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-purple-600 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+            Create Your Masterpiece
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Transform your favorite photo into stunning wall art with our AI-powered artistic styles
+            Transform your precious memories into stunning canvas art with AI-powered artistic styles and magical AR experiences
           </p>
         </div>
 
