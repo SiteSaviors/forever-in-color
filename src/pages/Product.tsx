@@ -29,7 +29,7 @@ const Product = () => {
     <div className="min-h-screen bg-gray-50">
       <Header />
       
-      <div className="pt-16">
+      <div className="pt-16 w-full">
         <ProductHeader 
           completedSteps={completedSteps}
           totalSteps={4}

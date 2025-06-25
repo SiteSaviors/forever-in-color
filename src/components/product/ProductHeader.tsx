@@ -15,7 +15,7 @@ const ProductHeader = ({ completedSteps, totalSteps, currentStep = 1 }: ProductH
 
   return (
     <div className="bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 border-b border-purple-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header Content */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-4">
@@ -30,7 +30,7 @@ const ProductHeader = ({ completedSteps, totalSteps, currentStep = 1 }: ProductH
           <h1 className="text-4xl md:text-6xl font-poppins font-bold tracking-tighter mb-4 bg-gradient-to-r from-purple-600 via-purple-500 to-pink-500 bg-clip-text text-transparent">
             Create Your Masterpiece
           </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="text-lg text-gray-600 max-w-4xl mx-auto">
             Transform your precious memories into stunning canvas art with AI-powered artistic styles and magical AR experiences
           </p>
         </div>
