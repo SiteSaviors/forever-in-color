@@ -73,19 +73,36 @@ const ProductContent = ({
     return false;
   };
 
+  const handleStepTransition = (targetStep: number) => {
+    console.log(`🐛 Transitioning to step ${targetStep}`);
+    onCurrentStepChange(targetStep);
+    
+    // Smooth scroll to the target step after accordion opens
+    setTimeout(() => {
+      const targetElement = document.querySelector(`[data-step="${targetStep}"]`);
+      if (targetElement) {
+        targetElement.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start',
+          inline: 'nearest'
+        });
+      }
+    }, 300);
+  };
+
   const handleContinueToStep2 = () => {
     console.log('🐛 User clicked continue to step 2');
-    onCurrentStepChange(2);
+    handleStepTransition(2);
   };
 
   const handleContinueToStep3 = () => {
     console.log('🐛 User clicked continue to step 3');
-    onCurrentStepChange(3);
+    handleStepTransition(3);
   };
 
   const handleContinueToStep4 = () => {
     console.log('🐛 User clicked continue to step 4');
-    onCurrentStepChange(4);
+    handleStepTransition(4);
   };
 
   return (

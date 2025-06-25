@@ -1,6 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import { useEffect } from "react";
 
 interface StepNavigationProps {
   canGoBack: boolean;
@@ -29,6 +30,22 @@ const StepNavigation = ({
     return continueText;
   };
 
+  const handleContinue = () => {
+    onContinue();
+    
+    // Smooth scroll to the next step after a brief delay to allow accordion to open
+    setTimeout(() => {
+      const nextStepElement = document.querySelector(`[data-step="${currentStep + 1}"]`);
+      if (nextStepElement) {
+        nextStepElement.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start',
+          inline: 'nearest'
+        });
+      }
+    }, 300);
+  };
+
   return (
     <div className="flex items-center justify-between pt-8 border-t border-gray-100">
       {/* Back Button */}
@@ -48,7 +65,7 @@ const StepNavigation = ({
 
       {/* Continue Button */}
       <Button
-        onClick={onContinue}
+        onClick={handleContinue}
         disabled={!canContinue || isLoading}
         className={`
           px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200

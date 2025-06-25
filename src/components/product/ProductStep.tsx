@@ -53,6 +53,7 @@ const ProductStep = ({
   return (
     <AccordionItem 
       value={`step-${stepNumber}`}
+      data-step={stepNumber}
       className={`
         relative bg-white rounded-xl md:rounded-2xl shadow-lg border-0 overflow-hidden transition-all duration-500
         ${isActive && canAccess ? 'ring-2 ring-purple-200 shadow-xl transform scale-[1.01] md:scale-[1.02]' : ''}
