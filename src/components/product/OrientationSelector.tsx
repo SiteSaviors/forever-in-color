@@ -10,10 +10,11 @@ import { useBackNavigation } from "./hooks/useBackNavigation";
 import { useOrientationState } from "./orientation/hooks/useOrientationState";
 import { useValidation } from "./orientation/hooks/useValidation";
 import { useAccessibility } from "./orientation/hooks/useAccessibility";
-import { ExtendedOrientationSelectorProps } from "./orientation/types/interfaces";
+import { useStepPersistence } from "./orientation/hooks/useStepPersistence";
+import { ExtendedOrientationSelectorProps, PersistedStepData } from "./orientation/types/interfaces";
 import { orientationOptions } from "./orientation/data/orientationOptions";
 import { sizeOptions } from "./orientation/data/sizeOptions";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useEffect } from "react";
 
 const OrientationSelector = ({
   selectedOrientation,
@@ -36,7 +37,9 @@ const OrientationSelector = ({
   const {
     isUpdating,
     handleOrientationSelect,
-    canContinueToNext
+    handleSizeSelect,
+    canContinueToNext,
+    cleanup
   } = useOrientationState({
     initialOrientation: selectedOrientation,
     initialSize: selectedSize,
@@ -57,6 +60,25 @@ const OrientationSelector = ({
     isRequired: true
   });
 
+  // Data persistence handling
+  const handleDataRestore = useCallback((data: PersistedStepData) => {
+    console.log('🔄 Restoring Step 2 data from storage:', data);
+    
+    if (data.selectedOrientation && data.selectedOrientation !== selectedOrientation) {
+      onOrientationChange(data.selectedOrientation);
+    }
+    
+    if (data.selectedSize && data.selectedSize !== selectedSize) {
+      onSizeChange(data.selectedSize);
+    }
+  }, [selectedOrientation, selectedSize, onOrientationChange, onSizeChange]);
+
+  const { saveData, clearData } = useStepPersistence({
+    selectedOrientation,
+    selectedSize,
+    onDataRestore: handleDataRestore
+  });
+
   // Get available options for accessibility
   const orientationOptionIds = useMemo(() => 
     orientationOptions.map(opt => opt.id), 
@@ -74,7 +96,7 @@ const OrientationSelector = ({
     orientationOptions: orientationOptionIds,
     sizeOptions: availableSizeOptions,
     onOrientationChange: handleOrientationSelect,
-    onSizeChange,
+    onSizeChange: handleSizeSelect,
     onContinue,
     disabled: isUpdating
   });
@@ -89,9 +111,9 @@ const OrientationSelector = ({
   // Enhanced size change handler with validation clearing
   const handleSizeChangeWithValidation = useCallback((size: string) => {
     clearErrors();
-    onSizeChange(size);
+    handleSizeSelect(size);
     announceSelection('size', size);
-  }, [onSizeChange, clearErrors, announceSelection]);
+  }, [handleSizeSelect, clearErrors, announceSelection]);
 
   // Optimized continue handler with validation
   const handleContinue = useCallback(() => {
@@ -106,12 +128,45 @@ const OrientationSelector = ({
 
     if (onContinue && !isUpdating && canContinueToNext && canContinue) {
       console.log('🚀 Continuing to next step');
+      saveData(); // Ensure data is saved before continuing
       onContinue();
     }
-  }, [onContinue, isUpdating, canContinueToNext, canContinue, validateAndShowErrors]);
+  }, [onContinue, isUpdating, canContinueToNext, canContinue, validateAndShowErrors, saveData]);
+
+  // Error boundary handlers
+  const handleRetry = useCallback(() => {
+    console.log('🔄 Retrying Step 2 after error');
+    clearErrors();
+    // Force re-render by clearing and restoring data
+    const currentData = { selectedOrientation, selectedSize };
+    setTimeout(() => {
+      if (currentData.selectedOrientation) {
+        onOrientationChange(currentData.selectedOrientation);
+      }
+      if (currentData.selectedSize) {
+        onSizeChange(currentData.selectedSize);
+      }
+    }, 100);
+  }, [selectedOrientation, selectedSize, onOrientationChange, onSizeChange, clearErrors]);
+
+  const handleGoBack = useCallback(() => {
+    console.log('🔙 Going back from Step 2');
+    saveData(); // Save current progress
+    handleBackStep();
+  }, [saveData, handleBackStep]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      cleanup();
+    };
+  }, [cleanup]);
 
   return (
-    <OrientationErrorBoundary>
+    <OrientationErrorBoundary 
+      onRetry={handleRetry}
+      onGoBack={handleGoBack}
+    >
       <div className="space-y-6 md:space-y-8">
         <OrientationHeader selectedOrientation={selectedOrientation} />
 
@@ -159,7 +214,7 @@ const OrientationSelector = ({
         <StepNavigation
           canGoBack={canGoBack}
           canContinue={canContinue && !isUpdating}
-          onBack={handleBackStep}
+          onBack={handleGoBack}
           onContinue={handleContinue}
           continueText="Continue to Customize"
           currentStep={currentStep}
