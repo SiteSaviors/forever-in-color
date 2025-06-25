@@ -1,15 +1,18 @@
 
-import { useState, useEffect } from "react";
-import CustomizationHeader from "./customization/CustomizationHeader";
-import LivingMemoryShowcase from "./customization/LivingMemoryShowcase";
-import PremiumVideoOptions from "./customization/PremiumVideoOptions";
-import SocialProofGallery from "./customization/SocialProofGallery";
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ArrowRight, Sparkles } from "lucide-react";
 import FloatingFrameCard from "./customization/FloatingFrameCard";
+import LivingMemoryCard from "./customization/LivingMemoryCard";
 import VoiceMatchCard from "./customization/VoiceMatchCard";
 import CustomMessageCard from "./customization/CustomMessageCard";
 import AIUpscaleCard from "./customization/AIUpscaleCard";
-import StepNavigation from "./components/StepNavigation";
-import { useBackNavigation } from "./hooks/useBackNavigation";
+import CustomizationHeader from "./customization/CustomizationHeader";
+import LiveActivityFeed from "./customization/LiveActivityFeed";
+import SocialProofGallery from "./customization/SocialProofGallery";
+import PremiumVideoOptions from "./customization/PremiumVideoOptions";
 
 interface CustomizationOptions {
   floatingFrame: {
@@ -26,144 +29,181 @@ interface CustomizationSelectorProps {
   selectedSize: string;
   customizations: CustomizationOptions;
   onCustomizationChange: (customizations: CustomizationOptions) => void;
-  currentStep?: number;
-  completedSteps?: number[];
-  onStepChange?: (step: number) => void;
-  onContinue?: () => void;
 }
 
-const CustomizationSelector = ({ 
-  selectedSize, 
-  customizations, 
-  onCustomizationChange,
-  currentStep = 3,
-  completedSteps = [],
-  onStepChange = () => {},
-  onContinue = () => {}
+const CustomizationSelector = ({
+  selectedSize,
+  customizations,
+  onCustomizationChange
 }: CustomizationSelectorProps) => {
-  const [message, setMessage] = useState(customizations.customMessage);
-  const [premiumVideoOptions, setPremiumVideoOptions] = useState({
-    voiceMatching: false,
-    backgroundAudio: 'none',
-    videoLength: 5,
-    voiceEnhancement: false
-  });
+  const [hasInteracted, setHasInteracted] = useState(false);
 
-  const { canGoBack, handleBackStep } = useBackNavigation({
-    currentStep,
-    completedSteps,
-    onStepChange
-  });
-
-  console.log('🐛 CustomizationSelector rendered with:', {
-    selectedSize,
-    customizations,
-    currentStep,
-    completedSteps
-  });
-
-  const updateCustomization = (key: keyof CustomizationOptions, value: any) => {
-    console.log('🐛 Updating customization:', key, value);
-    const newCustomizations = {
-      ...customizations,
-      [key]: value
-    };
-
-    // If Living Memory is being disabled, also disable dependent options
-    if (key === 'livingMemory' && !value) {
-      newCustomizations.voiceMatch = false;
-      newCustomizations.customMessage = '';
-      setMessage('');
-    }
-
+  const handleCustomizationUpdate = (updates: Partial<CustomizationOptions>) => {
+    if (!hasInteracted) setHasInteracted(true);
+    
+    const newCustomizations = { ...customizations, ...updates };
     onCustomizationChange(newCustomizations);
+    console.log('🎨 Customizations updated:', newCustomizations);
   };
 
-  const updateFrameOption = (key: keyof CustomizationOptions['floatingFrame'], value: any) => {
-    console.log('🐛 Updating frame option:', key, value);
-    onCustomizationChange({
-      ...customizations,
-      floatingFrame: {
-        ...customizations.floatingFrame,
-        [key]: value
-      }
-    });
+  const calculateTotalPrice = () => {
+    let basePrice = 149; // Base canvas price
+    let total = basePrice;
+    
+    if (customizations.floatingFrame.enabled) total += 79;
+    if (customizations.livingMemory) total += 29;
+    if (customizations.voiceMatch) total += 19;
+    if (customizations.aiUpscale) total += 15;
+    
+    return { basePrice, total };
   };
 
-  const handleMessageChange = (value: string) => {
-    setMessage(value);
-    updateCustomization('customMessage', value);
-  };
-
-  // Auto-mark step 3 as completed when any customization is made
-  useEffect(() => {
-    console.log('🐛 CustomizationSelector effect - marking step 3 as completed');
-    // This will be handled by the parent component when onCustomizationChange is called
-  }, []);
-
-  const canContinue = true; // Customization step is optional
+  const { basePrice, total } = calculateTotalPrice();
+  const savings = total > basePrice ? Math.round((total - basePrice) * 0.2) : 0;
 
   return (
-    <div className="space-y-8">
+    <div className="max-w-6xl mx-auto space-y-8">
       <CustomizationHeader />
+      
+      {/* Canvas Preview Section - Only showing blank canvas mockups */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Canvas Mockups Only */}
+        <div className="space-y-6">
+          <div className="text-center">
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Your Canvas Preview</h3>
+            <p className="text-gray-600">Premium gallery-quality canvas with your artwork</p>
+          </div>
+          
+          {/* Blank Canvas Mockups */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="relative group">
+              <img 
+                src="/lovable-uploads/1308e62b-7d30-4d01-bad3-ef128e25924b.png" 
+                alt="Square Canvas Mockup"
+                className="w-full h-auto rounded-lg shadow-lg group-hover:shadow-xl transition-shadow duration-300"
+              />
+              <div className="absolute inset-0 bg-black/5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            </div>
+            <div className="relative group">
+              <img 
+                src="/lovable-uploads/9eb9363d-dc17-4df1-a03d-0c5fb463a473.png" 
+                alt="Horizontal Canvas Mockup"
+                className="w-full h-auto rounded-lg shadow-lg group-hover:shadow-xl transition-shadow duration-300"
+              />
+              <div className="absolute inset-0 bg-black/5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            </div>
+          </div>
+          
+          <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4 border border-purple-100">
+            <div className="flex items-center gap-2 mb-2">
+              <Sparkles className="w-4 h-4 text-purple-600" />
+              <span className="font-medium text-purple-900">Premium Quality</span>
+            </div>
+            <ul className="text-sm text-purple-700 space-y-1">
+              <li>• Museum-grade canvas material</li>
+              <li>• Fade-resistant archival inks</li>
+              <li>• Hand-stretched wooden frame</li>
+              <li>• Ready to hang hardware included</li>
+            </ul>
+          </div>
+        </div>
 
-      {/* Living Memory Showcase - Hero Section */}
-      <LivingMemoryShowcase
-        enabled={customizations.livingMemory}
-        onEnabledChange={(enabled) => updateCustomization('livingMemory', enabled)}
-      />
+        {/* Customization Options */}
+        <div className="space-y-6">
+          <FloatingFrameCard
+            enabled={customizations.floatingFrame.enabled}
+            color={customizations.floatingFrame.color}
+            onToggle={(enabled) => handleCustomizationUpdate({
+              floatingFrame: { ...customizations.floatingFrame, enabled }
+            })}
+            onColorChange={(color) => handleCustomizationUpdate({
+              floatingFrame: { ...customizations.floatingFrame, color }
+            })}
+          />
 
-      {/* Premium Video Options - Only show if Living Memory is enabled */}
-      <PremiumVideoOptions
-        livingMemoryEnabled={customizations.livingMemory}
-        options={premiumVideoOptions}
-        onOptionsChange={setPremiumVideoOptions}
-      />
+          <LivingMemoryCard
+            enabled={customizations.livingMemory}
+            onToggle={(enabled) => handleCustomizationUpdate({ livingMemory: enabled })}
+          />
 
-      {/* Social Proof Gallery */}
-      <SocialProofGallery />
+          <VoiceMatchCard
+            enabled={customizations.voiceMatch}
+            onToggle={(enabled) => handleCustomizationUpdate({ voiceMatch: enabled })}
+          />
 
-      {/* Other Customizations */}
-      <div className="grid gap-6">
-        <FloatingFrameCard
-          enabled={customizations.floatingFrame.enabled}
-          color={customizations.floatingFrame.color}
-          selectedSize={selectedSize}
-          onEnabledChange={(enabled) => updateFrameOption('enabled', enabled)}
-          onColorChange={(color) => updateFrameOption('color', color)}
-        />
+          <CustomMessageCard
+            message={customizations.customMessage}
+            onChange={(message) => handleCustomizationUpdate({ customMessage: message })}
+          />
 
-        <VoiceMatchCard
-          enabled={customizations.voiceMatch}
-          livingMemoryEnabled={customizations.livingMemory}
-          onEnabledChange={(enabled) => updateCustomization('voiceMatch', enabled)}
-        />
-
-        <CustomMessageCard
-          message={message}
-          livingMemoryEnabled={customizations.livingMemory}
-          onMessageChange={handleMessageChange}
-        />
-
-        <AIUpscaleCard
-          enabled={customizations.aiUpscale}
-          onEnabledChange={(enabled) => updateCustomization('aiUpscale', enabled)}
-        />
+          <AIUpscaleCard
+            enabled={customizations.aiUpscale}
+            onToggle={(enabled) => handleCustomizationUpdate({ aiUpscale: enabled })}
+          />
+        </div>
       </div>
 
-      {/* Step Navigation */}
-      <StepNavigation
-        canGoBack={canGoBack}
-        canContinue={canContinue}
-        onBack={handleBackStep}
-        onContinue={() => {
-          console.log('🐛 CustomizationSelector: Continue to step 4');
-          onContinue();
-        }}
-        continueText="Review & Order"
-        currentStep={currentStep}
-        totalSteps={4}
-      />
+      {/* Social Proof & Video Options */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <SocialProofGallery />
+        <PremiumVideoOptions />
+      </div>
+
+      {/* Live Activity Feed */}
+      <LiveActivityFeed />
+
+      {/* Pricing Summary */}
+      <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200">
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span className="text-gray-900">Your Custom Canvas</span>
+            <Badge className="bg-green-500 text-white">
+              {savings > 0 ? `Save $${savings}` : 'Premium Quality'}
+            </Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600">Canvas ({selectedSize})</span>
+            <span className="font-semibold">${basePrice}</span>
+          </div>
+          
+          {customizations.floatingFrame.enabled && (
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">Floating Frame</span>
+              <span className="font-semibold">+$79</span>
+            </div>
+          )}
+          
+          {customizations.livingMemory && (
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">Living Memory</span>
+              <span className="font-semibold">+$29</span>
+            </div>
+          )}
+          
+          {customizations.voiceMatch && (
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">Voice Match</span>
+              <span className="font-semibold">+$19</span>
+            </div>
+          )}
+          
+          {customizations.aiUpscale && (
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">AI Upscale</span>
+              <span className="font-semibold">+$15</span>
+            </div>
+          )}
+          
+          <div className="border-t pt-4">
+            <div className="flex justify-between items-center text-lg font-bold">
+              <span>Total</span>
+              <span className="text-purple-600">${total}</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
