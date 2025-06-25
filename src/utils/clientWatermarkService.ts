@@ -23,15 +23,14 @@ export class ClientWatermarkService {
       mainImage.crossOrigin = 'anonymous';
       
       mainImage.onload = () => {
-        // CRITICAL: Set canvas size to EXACTLY match the main image - no scaling
+        // Set canvas size to match the main image
         canvas.width = mainImage.width;
         canvas.height = mainImage.height;
         
         console.log(`📐 Canvas dimensions: ${canvas.width}x${canvas.height}`);
-        console.log(`📐 Original image dimensions: ${mainImage.width}x${mainImage.height}`);
         
-        // Draw the main image at exact size and position - no scaling or cropping
-        ctx.drawImage(mainImage, 0, 0, mainImage.width, mainImage.height, 0, 0, canvas.width, canvas.height);
+        // Draw the main image
+        ctx.drawImage(mainImage, 0, 0);
         
         // Load and draw the watermark
         const watermarkImage = new Image();
@@ -50,7 +49,6 @@ export class ClientWatermarkService {
           const y = (mainImage.height - watermarkHeight) / 2;
           
           console.log(`🎯 Watermark position: (${x}, ${y}), size: ${watermarkWidth}x${watermarkHeight}`);
-          console.log(`🎯 Image center calculation: width=${mainImage.width}, height=${mainImage.height}`);
           
           // Set opacity for watermark (50% for better visibility)
           ctx.globalAlpha = 0.5;
@@ -71,10 +69,9 @@ export class ClientWatermarkService {
           ctx.shadowOffsetY = 0;
           ctx.globalAlpha = 1;
           
-          // Convert to data URL with high quality - preserve original format and quality
+          // Convert to data URL with high quality
           const watermarkedImageUrl = canvas.toDataURL('image/jpeg', 0.95);
           console.log('✅ Client-side watermark applied successfully with 400% increased size');
-          console.log('✅ Canvas output dimensions match original input exactly');
           resolve(watermarkedImageUrl);
         };
         
