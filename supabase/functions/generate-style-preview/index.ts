@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 import { OpenAIService } from './openaiService.ts';
@@ -43,7 +42,7 @@ serve(async (req) => {
   console.log(`=== GPT-IMAGE-1 REQUEST START [${requestId}] ===`);
 
   try {
-    // Enhanced environment variable validation
+    // Enhanced environment variable validation with better error messages
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY') || Deno.env.get('OPEN_AI_KEY');
     const replicateApiToken = Deno.env.get('REPLICATE_API_TOKEN');
 
@@ -51,22 +50,61 @@ serve(async (req) => {
       hasOpenAIKey: !!openaiApiKey,
       hasReplicateToken: !!replicateApiToken,
       openaiKeyLength: openaiApiKey?.length || 0,
-      replicateTokenLength: replicateApiToken?.length || 0
+      replicateTokenLength: replicateApiToken?.length || 0,
+      allEnvVars: Object.keys(Deno.env.toObject()).filter(key => 
+        key.includes('OPENAI') || key.includes('REPLICATE') || key.includes('API')
+      )
     });
 
     if (!openaiApiKey) {
-      console.error(`❌ [${requestId}] Missing OpenAI API key`);
-      await logSecurityEvent('api_key_missing', 'OpenAI API key not configured', req);
-      return handleError('Service configuration error - OpenAI key missing', corsHeaders, 500, requestId);
+      const errorMsg = 'OpenAI API key is not configured. Please set OPENAI_API_KEY or OPEN_AI_KEY environment variable in your Supabase project settings.';
+      console.error(`❌ [${requestId}] ${errorMsg}`);
+      
+      try {
+        await logSecurityEvent('api_key_missing', 'OpenAI API key not configured', req);
+      } catch (logError) {
+        console.warn('Failed to log security event:', logError);
+      }
+      
+      return new Response(
+        JSON.stringify({ 
+          error: 'Service configuration error',
+          message: 'AI service is not properly configured. Please contact support.',
+          requestId,
+          timestamp: new Date().toISOString()
+        }), 
+        { 
+          status: 503, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
     }
 
     if (!replicateApiToken) {
-      console.error(`❌ [${requestId}] Missing Replicate API token`);
-      await logSecurityEvent('api_key_missing', 'Replicate API token not configured', req);
-      return handleError('Service configuration error - Replicate token missing', corsHeaders, 500, requestId);
+      const errorMsg = 'Replicate API token is not configured. Please set REPLICATE_API_TOKEN environment variable in your Supabase project settings.';
+      console.error(`❌ [${requestId}] ${errorMsg}`);
+      
+      try {
+        await logSecurityEvent('api_key_missing', 'Replicate API token not configured', req);
+      } catch (logError) {
+        console.warn('Failed to log security event:', logError);
+      }
+      
+      return new Response(
+        JSON.stringify({ 
+          error: 'Service configuration error',
+          message: 'Image processing service is not properly configured. Please contact support.',
+          requestId,
+          timestamp: new Date().toISOString()
+        }), 
+        { 
+          status: 503, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
     }
 
-    // Parse request body with error handling
+    // Parse request body with enhanced error handling
     let body;
     try {
       const rawBody = await req.text();
@@ -80,7 +118,18 @@ serve(async (req) => {
       console.log(`📋 Parsed request body keys:`, Object.keys(body));
     } catch (parseError) {
       console.error(`❌ [${requestId}] Failed to parse request body:`, parseError);
-      return handleError('Invalid JSON in request body', corsHeaders, 400, requestId);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid request format',
+          message: 'Request body must be valid JSON',
+          requestId,
+          timestamp: new Date().toISOString()
+        }), 
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
     }
 
     console.log(`📋 [${requestId}] Request received:`, {
@@ -102,15 +151,39 @@ serve(async (req) => {
       quality = 'preview' // 'preview' or 'final'
     } = body;
 
-    // Validate required fields
+    // Validate required fields with better error messages
     if (!imageUrl) {
       console.error(`❌ [${requestId}] Missing imageUrl`);
-      return handleError('Missing required field: imageUrl', corsHeaders, 400, requestId);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Missing required field',
+          message: 'Image URL is required',
+          field: 'imageUrl',
+          requestId,
+          timestamp: new Date().toISOString()
+        }), 
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
     }
 
     if (!style) {
       console.error(`❌ [${requestId}] Missing style`);
-      return handleError('Missing required field: style', corsHeaders, 400, requestId);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Missing required field',
+          message: 'Art style is required',
+          field: 'style',
+          requestId,
+          timestamp: new Date().toISOString()
+        }), 
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
     }
 
     // Generate session ID if not provided
@@ -120,14 +193,30 @@ serve(async (req) => {
     const validationResult = validateInput(imageUrl, style, aspectRatio);
     if (!validationResult.isValid) {
       console.error(`❌ [${requestId}] Input validation failed:`, validationResult.error);
-      await logSecurityEvent('suspicious_upload', 'Input validation failed', req, {
-        reason: 'Input validation failed',
-        validation_error: validationResult.error,
-        received_style: style,
-        requestId
-      });
       
-      return handleError(validationResult.error, corsHeaders, 400, requestId);
+      try {
+        await logSecurityEvent('suspicious_upload', 'Input validation failed', req, {
+          reason: 'Input validation failed',
+          validation_error: validationResult.error,
+          received_style: style,
+          requestId
+        });
+      } catch (logError) {
+        console.warn('Failed to log security event:', logError);
+      }
+      
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid input',
+          message: validationResult.error,
+          requestId,
+          timestamp: new Date().toISOString()
+        }), 
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
     }
 
     // Initialize Supabase (optional)
@@ -143,8 +232,25 @@ serve(async (req) => {
     const imageData = extractImageData(imageUrl);
     if (!imageData) {
       console.error(`❌ [${requestId}] Failed to extract image data`);
-      await logSecurityEvent('invalid_image', 'Failed to extract image data', req);
-      return handleError('Invalid image data', corsHeaders, 400, requestId);
+      
+      try {
+        await logSecurityEvent('invalid_image', 'Failed to extract image data', req);
+      } catch (logError) {
+        console.warn('Failed to log security event:', logError);
+      }
+      
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid image',
+          message: 'Unable to process the provided image',
+          requestId,
+          timestamp: new Date().toISOString()
+        }), 
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
     }
 
     console.log(`🔧 [${requestId}] Creating OpenAI service with validated inputs`);
@@ -190,21 +296,48 @@ serve(async (req) => {
       const duration = endTime - startTime;
       console.log(`=== ✅ GPT-IMAGE-1 COMPLETED [${requestId}] in ${duration}ms ===`);
 
-      return handleSuccess(finalOutput, corsHeaders, requestId);
+      return new Response(
+        JSON.stringify({ 
+          preview_url: finalOutput,
+          requestId,
+          timestamp: new Date().toISOString(),
+          duration: `${duration}ms`
+        }), 
+        { 
+          status: 200, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
     } else {
       console.error(`❌ [${requestId}] Generation failed:`, result.error);
       
       // Determine appropriate status code based on error type
       let statusCode = 500;
+      let userMessage = 'Image generation failed. Please try again.';
+      
       if (result.errorType === 'service_unavailable') {
         statusCode = 503;
+        userMessage = 'AI service is temporarily unavailable. Please try again in a few moments.';
       } else if (result.errorType === 'rate_limit') {
         statusCode = 429;
+        userMessage = 'Too many requests. Please wait a moment before trying again.';
       } else if (result.errorType === 'invalid_request') {
         statusCode = 400;
+        userMessage = 'Invalid request. Please check your image and try again.';
       }
       
-      return handleError(result.error || 'Generation failed', corsHeaders, statusCode, requestId);
+      return new Response(
+        JSON.stringify({ 
+          error: result.errorType || 'generation_failed',
+          message: userMessage,
+          requestId,
+          timestamp: new Date().toISOString()
+        }), 
+        { 
+          status: statusCode, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
     }
 
   } catch (error) {
@@ -227,6 +360,17 @@ serve(async (req) => {
     const parsedError = EnhancedErrorHandler.parseError(error);
     const userMessage = EnhancedErrorHandler.createUserFriendlyMessage(parsedError);
     
-    return handleError(userMessage, corsHeaders, 500, requestId);
+    return new Response(
+      JSON.stringify({ 
+        error: 'internal_server_error',
+        message: userMessage,
+        requestId,
+        timestamp: new Date().toISOString()
+      }), 
+      { 
+        status: 500, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
+    );
   }
 });

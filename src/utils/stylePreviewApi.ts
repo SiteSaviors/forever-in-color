@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { createPreview } from "./previewOperations";
 
@@ -46,17 +45,36 @@ export const generateStylePreview = async (
 
     console.log('FULL REQUEST BODY TO SUPABASE FUNCTION:', JSON.stringify(requestBody, null, 2));
 
+    // Enhanced error handling for the Supabase function call
     const { data, error } = await supabase.functions.invoke('generate-style-preview', {
       body: requestBody
     });
 
     if (error) {
       console.error('Supabase function error:', error);
-      throw error;
+      
+      // Provide more specific error messages based on error type
+      if (error.message?.includes('Failed to fetch')) {
+        throw new Error('Unable to connect to the AI service. Please check your internet connection and try again.');
+      } else if (error.message?.includes('Service configuration error')) {
+        throw new Error('AI service is temporarily unavailable. Please try again later or contact support.');
+      } else if (error.message?.includes('rate_limit')) {
+        throw new Error('Too many requests. Please wait a moment before trying again.');
+      } else if (error.message?.includes('Invalid')) {
+        throw new Error('Invalid image or style selection. Please check your inputs and try again.');
+      }
+      
+      throw new Error(error.message || 'Failed to generate style preview. Please try again.');
     }
 
-    if (!data?.preview_url) {
-      throw new Error('No preview URL returned from GPT-Image-1 service');
+    // Enhanced response validation
+    if (!data) {
+      throw new Error('No response received from AI service. Please try again.');
+    }
+
+    if (!data.preview_url) {
+      console.error('Invalid response from GPT-Image-1 service:', data);
+      throw new Error('AI service returned an invalid response. Please try again.');
     }
 
     console.log('GPT-Image-1 preview generated successfully with watermarking:', data.preview_url.substring(0, 50) + '...');
@@ -65,8 +83,9 @@ export const generateStylePreview = async (
     if (isAuthenticated) {
       try {
         await createPreview(photoId, style, data.preview_url);
+        console.log('Preview stored successfully in database');
       } catch (storeError) {
-        console.warn('Could not store preview (user not authenticated):', storeError);
+        console.warn('Could not store preview (user not authenticated or database error):', storeError);
         // Continue anyway, just don't store
       }
     }
@@ -74,6 +93,12 @@ export const generateStylePreview = async (
     return data.preview_url;
   } catch (error) {
     console.error('Error generating GPT-Image-1 style preview:', error);
+    
+    // Re-throw with more user-friendly message if it's a generic error
+    if (error.message === 'Failed to fetch' || error.message.includes('TypeError')) {
+      throw new Error('Unable to connect to the AI service. Please check your internet connection and try again. If the problem persists, the service may be temporarily unavailable.');
+    }
+    
     throw error;
   }
 };
