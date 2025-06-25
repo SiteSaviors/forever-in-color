@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 
 interface UseOrientationStateProps {
   initialOrientation: string;
@@ -16,34 +16,93 @@ export const useOrientationState = ({
 }: UseOrientationStateProps) => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [lastUpdateTime, setLastUpdateTime] = useState(0);
+  const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const orientationChangeRef = useRef<string | null>(null);
 
-  // Debounced orientation change to prevent rapid updates
+  // Enhanced debounced orientation change with state batching
   const handleOrientationSelect = useCallback((orientation: string) => {
     const now = Date.now();
-    if (isUpdating || now - lastUpdateTime < 100) return;
+    
+    // Prevent rapid successive updates
+    if (isUpdating || now - lastUpdateTime < 150) {
+      orientationChangeRef.current = orientation;
+      return;
+    }
     
     console.log('🔄 Orientation change initiated:', orientation);
     setIsUpdating(true);
     setLastUpdateTime(now);
     
-    // Batch the state updates
-    onOrientationChange(orientation);
-    onSizeChange(""); // Reset size when orientation changes
+    // Clear any pending updates
+    if (updateTimeoutRef.current) {
+      clearTimeout(updateTimeoutRef.current);
+    }
     
-    // Use a single RAF to ensure smooth transitions
-    requestAnimationFrame(() => {
-      setIsUpdating(false);
-    });
+    // Batch the state updates with proper sequencing
+    updateTimeoutRef.current = setTimeout(() => {
+      try {
+        onOrientationChange(orientation);
+        onSizeChange(""); // Reset size when orientation changes
+        
+        // Complete the update cycle
+        requestAnimationFrame(() => {
+          setIsUpdating(false);
+          
+          // Process any queued orientation change
+          if (orientationChangeRef.current && orientationChangeRef.current !== orientation) {
+            const queuedOrientation = orientationChangeRef.current;
+            orientationChangeRef.current = null;
+            handleOrientationSelect(queuedOrientation);
+          }
+        });
+      } catch (error) {
+        console.error('🚨 Error during orientation update:', error);
+        setIsUpdating(false);
+      }
+    }, 50);
   }, [onOrientationChange, onSizeChange, isUpdating, lastUpdateTime]);
 
-  // Memoized navigation state
+  // Enhanced size change with validation
+  const handleSizeSelect = useCallback((size: string) => {
+    if (isUpdating) {
+      console.log('⏳ Size change blocked - update in progress');
+      return;
+    }
+    
+    console.log('📏 Size change initiated:', size);
+    
+    try {
+      onSizeChange(size);
+    } catch (error) {
+      console.error('🚨 Error during size update:', error);
+    }
+  }, [onSizeChange, isUpdating]);
+
+  // Cleanup effect
+  const cleanup = useCallback(() => {
+    if (updateTimeoutRef.current) {
+      clearTimeout(updateTimeoutRef.current);
+      updateTimeoutRef.current = null;
+    }
+    orientationChangeRef.current = null;
+  }, []);
+
+  // Memoized navigation state with safety checks
   const canContinueToNext = useMemo(() => {
-    return Boolean(initialOrientation && initialSize && !isUpdating);
+    return Boolean(
+      initialOrientation && 
+      initialOrientation.trim() && 
+      initialSize && 
+      initialSize.trim() && 
+      !isUpdating
+    );
   }, [initialOrientation, initialSize, isUpdating]);
 
   return {
     isUpdating,
     handleOrientationSelect,
-    canContinueToNext
+    handleSizeSelect,
+    canContinueToNext,
+    cleanup
   };
 };
