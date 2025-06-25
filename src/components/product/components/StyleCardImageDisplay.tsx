@@ -15,7 +15,7 @@ interface StyleCardImageDisplayProps {
   selectedOrientation: string;
   previewUrl?: string | null;
   hasGeneratedPreview: boolean;
-  onExpandClick?: (e: React.MouseEvent) => void;
+  onExpandClick?: () => void;
 }
 
 const StyleCardImageDisplay = ({
@@ -47,7 +47,7 @@ const StyleCardImageDisplay = ({
   const orientationAspectRatio = getOrientationAspectRatio();
 
   // Show expand button if there's an image to expand and handler is provided
-  const canExpand = (finalPreviewUrl || croppedImage || imageToShow) && onExpandClick && !showLoadingState;
+  const canExpand = (previewUrl || imageToShow) && onExpandClick && !showLoadingState;
 
   if (shouldUseMockup) {
     return (

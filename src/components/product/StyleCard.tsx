@@ -5,6 +5,8 @@ import StyleCardInfo from "./components/StyleCardInfo";
 import StyleCardContainer from "./components/StyleCardContainer";
 import StyleCardActions from "./components/StyleCardActions";
 import StyleCardLightboxes from "./components/StyleCardLightboxes";
+import Lightbox from "@/components/ui/lightbox";
+import FullCanvasMockup from "./components/FullCanvasMockup";
 import { useStyleCardLogic } from "./hooks/useStyleCardLogic";
 
 interface StyleCardProps {
@@ -67,16 +69,14 @@ const StyleCard = ({
   const cropAspectRatio = getCropAspectRatio(selectedOrientation);
 
   // Handle expand click for lightbox
-  const handleExpandClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleExpandClick = () => {
     if (previewUrl || croppedImage) {
       setIsLightboxOpen(true);
     }
   };
 
   // Handle canvas preview click
-  const handleCanvasPreviewClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleCanvasPreviewClick = () => {
     if (previewUrl || croppedImage) {
       setIsCanvasLightboxOpen(true);
     }
