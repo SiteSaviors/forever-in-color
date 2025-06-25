@@ -27,7 +27,7 @@ const ProductHeader = ({ completedSteps, totalSteps, currentStep = 1 }: ProductH
             </Badge>
           </div>
           
-          <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-purple-600 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+          <h1 className="text-4xl md:text-6xl font-poppins font-bold tracking-tighter mb-4 bg-gradient-to-r from-purple-600 via-purple-500 to-pink-500 bg-clip-text text-transparent">
             Create Your Masterpiece
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
