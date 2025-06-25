@@ -159,7 +159,7 @@ const GlassMorphismSizeCard = ({
         {isSelected && (
           <Button
             onClick={onContinue}
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-3 shadow-2xl hover:shadow-purple-500/50 transition-all duration-500 transform hover:scale-105 backdrop-blur-sm border border-white/20"
+            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-3 shadow-2xl hover:shadow-purple-500/50 transition-all duration-500 transform hover:scale-105 backdrop-blur-sm border border-white/20 min-h-[48px]"
             size="lg"
           >
             <Sparkles className="w-4 h-4 mr-2" />

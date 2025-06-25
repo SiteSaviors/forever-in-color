@@ -10,7 +10,7 @@ import { sizeOptions } from "./orientation/data/sizeOptions";
 import { OrientationSelectorProps } from "./orientation/types";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Eye, ArrowDown, DollarSign } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 interface ExtendedOrientationSelectorProps extends OrientationSelectorProps {
   userImageUrl?: string | null;
@@ -38,17 +38,52 @@ const OrientationSelector = ({
   });
 
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const orientationSectionRef = useRef<HTMLDivElement>(null);
+  const sizeSectionRef = useRef<HTMLDivElement>(null);
+
+  // Reset validation error when selections change
+  useEffect(() => {
+    if (selectedOrientation && selectedSize) {
+      setValidationError(null);
+    }
+  }, [selectedOrientation, selectedSize]);
 
   const handleOrientationSelect = (orientation: string) => {
+    if (isTransitioning) return;
+    
+    setIsTransitioning(true);
     setValidationError(null);
-    onOrientationChange(orientation);
-    // Reset size when orientation changes
-    onSizeChange("");
+    
+    // Slight delay to prevent UI jank during transition
+    setTimeout(() => {
+      onOrientationChange(orientation);
+      // Reset size when orientation changes
+      onSizeChange("");
+      setIsTransitioning(false);
+      
+      // Scroll to size section after orientation is selected
+      if (sizeSectionRef.current) {
+        setTimeout(() => {
+          sizeSectionRef.current?.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }, 300);
+      }
+    }, 100);
   };
   
   const handleSizeSelect = (size: string) => {
+    if (isTransitioning) return;
+    
+    setIsTransitioning(true);
     setValidationError(null);
-    onSizeChange(size);
+    
+    setTimeout(() => {
+      onSizeChange(size);
+      setIsTransitioning(false);
+    }, 100);
   };
   
   const handleContinueWithSize = (size: string, e: React.MouseEvent) => {
@@ -61,20 +96,24 @@ const OrientationSelector = ({
     if (!selectedOrientation) {
       setValidationError("Please select an orientation before continuing");
       // Scroll to orientation section
-      document.querySelector('[data-orientation-section]')?.scrollIntoView({ 
-        behavior: 'smooth',
-        block: 'center'
-      });
+      if (orientationSectionRef.current) {
+        orientationSectionRef.current.scrollIntoView({ 
+          behavior: 'smooth',
+          block: 'center'
+        });
+      }
       return;
     }
     
     if (!selectedSize) {
       setValidationError("Please select a size before continuing");
       // Scroll to size section
-      document.querySelector('[data-size-section]')?.scrollIntoView({ 
-        behavior: 'smooth',
-        block: 'center'
-      });
+      if (sizeSectionRef.current) {
+        sizeSectionRef.current.scrollIntoView({ 
+          behavior: 'smooth',
+          block: 'center'
+        });
+      }
       return;
     }
     
@@ -106,6 +145,14 @@ const OrientationSelector = ({
 
   const canContinueToNext = Boolean(selectedOrientation && selectedSize);
 
+  // Get the current size option details for price display
+  const getCurrentSizeOption = () => {
+    if (!selectedOrientation || !selectedSize) return null;
+    return sizeOptions[selectedOrientation]?.find(opt => opt.size === selectedSize);
+  };
+
+  const currentSizeOption = getCurrentSizeOption();
+
   return (
     <div className="space-y-10">
       <OrientationHeader selectedOrientation={selectedOrientation} />
@@ -136,8 +183,9 @@ const OrientationSelector = ({
         </div>
       )}
 
-      {/* Premium Orientation Cards */}
+      {/* Orientation Selection Section */}
       <div 
+        ref={orientationSectionRef}
         className="grid grid-cols-1 md:grid-cols-3 gap-8"
         data-orientation-section
         role="radiogroup"
@@ -170,11 +218,12 @@ const OrientationSelector = ({
         </div>
       )}
 
-      {/* Premium Size Selection */}
+      {/* Size Selection Section */}
       {selectedOrientation && (
         <>
           <SizeHeader />
           <div 
+            ref={sizeSectionRef}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
             data-size-section
             role="radiogroup"
@@ -196,12 +245,12 @@ const OrientationSelector = ({
           </div>
 
           {/* Real-time Price Update */}
-          {selectedSize && (
+          {selectedSize && currentSizeOption && (
             <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4 text-center">
               <div className="flex items-center justify-center gap-2 text-green-700">
                 <DollarSign className="w-5 h-5" />
                 <span className="text-lg font-semibold">
-                  Starting at ${sizeOptions[selectedOrientation]?.find(opt => opt.size === selectedSize)?.salePrice || 99.99} for {selectedSize} canvas
+                  Starting at ${currentSizeOption.salePrice} for {selectedSize} canvas
                 </span>
               </div>
               <p className="text-sm text-green-600 mt-1">
