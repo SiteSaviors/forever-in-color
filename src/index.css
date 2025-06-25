@@ -98,8 +98,16 @@
     @apply border-border;
   }
 
-  body {
+  html, body {
     @apply bg-background text-foreground;
+    width: 100%;
+    min-width: 100%;
+    overflow-x: auto;
+  }
+
+  #root {
+    width: 100%;
+    min-width: 100%;
   }
 }
 

@@ -26,10 +26,10 @@ const Product = () => {
   } = useProductState();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 w-full">
       <Header />
       
-      <div className="pt-16">
+      <div className="pt-16 w-full">
         <ProductHeader 
           completedSteps={completedSteps}
           totalSteps={4}
