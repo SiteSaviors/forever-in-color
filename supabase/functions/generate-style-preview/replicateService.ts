@@ -4,6 +4,7 @@ import { PromptEnhancer } from './replicate/promptEnhancer.ts';
 import { PollingService } from './replicate/pollingService.ts';
 import { ReplicateApiClient } from './replicate/apiClient.ts';
 import { ReplicateGenerationResponse } from './replicate/types.ts';
+import { EnhancedErrorHandler, executeWithRetry } from './errorHandling.ts';
 
 export class ReplicateService {
   private apiToken: string;
@@ -16,10 +17,7 @@ export class ReplicateService {
     this.apiToken = apiToken.replace(/^export\s+REPLICATE_API_TOKEN=/, '').trim();
     this.openaiApiKey = openaiApiKey;
     
-    // Debug logging to see what token we actually have
-    console.log("ReplicateService initialized for GPT-Image-1 with token:", this.apiToken);
-    console.log("Token starts with 'r8_':", this.apiToken?.startsWith('r8_'));
-    console.log("Token length:", this.apiToken?.length);
+    console.log("ReplicateService initialized for GPT-Image-1 with token length:", this.apiToken?.length);
 
     this.apiClient = new ReplicateApiClient(this.apiToken);
     this.pollingService = new PollingService(this.apiToken);
@@ -27,72 +25,86 @@ export class ReplicateService {
 
   async generateImageToImage(imageData: string, prompt: string, aspectRatio: string = "1:1", quality: string = "medium"): Promise<ReplicateGenerationResponse> {
     console.log('=== REPLICATE SERVICE GENERATION ===');
-    console.log('Starting GPT-Image-1 generation via Replicate with prompt:', prompt);
-    console.log('ASPECT RATIO RECEIVED IN REPLICATE SERVICE:', aspectRatio);
+    console.log('Starting GPT-Image-1 generation with enhanced error handling');
+    console.log('Aspect ratio:', aspectRatio);
+    console.log('Prompt length:', prompt.length);
     
-    // Additional debug logging
+    // Validate inputs
     if (!this.apiToken || this.apiToken === 'undefined' || this.apiToken.trim() === '') {
-      console.error('Invalid API token detected:', { 
-        token: this.apiToken, 
-        type: typeof this.apiToken,
-        isEmpty: !this.apiToken 
-      });
-      return {
-        ok: false,
-        error: 'Invalid or missing Replicate API token'
-      };
+      throw new Error('Invalid or missing Replicate API token');
     }
 
     if (!this.openaiApiKey || this.openaiApiKey === 'undefined' || this.openaiApiKey.trim() === '') {
-      console.error('Invalid OpenAI API key detected');
-      return {
-        ok: false,
-        error: 'Invalid or missing OpenAI API key'
-      };
+      throw new Error('Invalid or missing OpenAI API key');
     }
-    
+
+    const requestBody = {
+      input: {
+        prompt: prompt,
+        input_images: [imageData],
+        openai_api_key: this.openaiApiKey,
+        aspect_ratio: aspectRatio,
+        quality: quality
+      }
+    };
+
     try {
-      const requestBody = {
-        input: {
-          prompt: prompt,
-          input_images: [imageData],
-          openai_api_key: this.openaiApiKey,
-          aspect_ratio: aspectRatio, // CRITICAL: Ensure this is set
-          quality: quality
+      // Execute with retry logic
+      const result = await executeWithRetry(async () => {
+        console.log('Making API call to GPT-Image-1...');
+        const data = await this.apiClient.createPrediction(requestBody);
+
+        if (!data.ok) {
+          throw new Error(data.error || 'API call failed');
         }
-      };
 
-      console.log('REPLICATE REQUEST BODY INPUT:', JSON.stringify(requestBody.input, null, 2));
-      console.log('ASPECT RATIO IN REQUEST BODY:', requestBody.input.aspect_ratio);
+        // Handle immediate success
+        if (data.status === "succeeded" && data.output) {
+          console.log('GPT-Image-1 generation succeeded immediately');
+          return {
+            ok: true,
+            output: data.output
+          };
+        } 
+        
+        // Handle immediate failure
+        if (data.status === "failed") {
+          const errorMsg = data.error || "GPT-Image-1 generation failed";
+          console.error('GPT-Image-1 generation failed immediately:', errorMsg);
+          
+          // Check for specific error types
+          if (errorMsg.includes('high demand') || errorMsg.includes('E003')) {
+            const error = new Error(errorMsg);
+            error.name = 'ServiceUnavailable';
+            throw error;
+          }
+          
+          throw new Error(errorMsg);
+        }
+        
+        // Handle polling requirement
+        if (data.status === "processing" || data.status === "starting") {
+          console.log('GPT-Image-1 requires polling, prediction ID:', data.id);
+          return await this.pollingService.pollForCompletion(data.id!, data.urls?.get!);
+        }
 
-      const data = await this.apiClient.createPrediction(requestBody);
+        throw new Error(`Unexpected status: ${data.status}`);
+      }, 'GPT-Image-1 Generation');
 
-      if (!data.ok) {
-        return data;
-      }
+      return result;
 
-      // With "Prefer: wait" header, the response should contain the final result
-      if (data.status === "succeeded" && data.output) {
-        console.log('GPT-Image-1 generation succeeded with aspect ratio:', aspectRatio, 'Output:', data.output);
-        return {
-          ok: true,
-          output: data.output
-        };
-      } else if (data.status === "failed") {
-        console.error('GPT-Image-1 generation failed:', data.error);
-        return {
-          ok: false,
-          error: data.error || "GPT-Image-1 generation failed"
-        };
-      } else {
-        // Fallback to polling if needed
-        return await this.pollingService.pollForCompletion(data.id!, data.urls?.get!);
-      }
     } catch (error) {
-      console.error('GPT-Image-1 Replicate error:', error);
+      console.error('GPT-Image-1 Replicate error after retries:', error);
+      
+      // Convert to user-friendly error
+      const parsedError = EnhancedErrorHandler.parseError(error);
+      const userMessage = EnhancedErrorHandler.createUserFriendlyMessage(parsedError);
+      
       return {
         ok: false,
-        error: error.message
+        error: userMessage,
+        technicalError: error.message,
+        errorType: parsedError.type
       };
     }
   }

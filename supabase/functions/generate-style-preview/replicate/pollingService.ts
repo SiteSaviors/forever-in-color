@@ -1,72 +1,106 @@
 
-import { REPLICATE_CONFIG } from './config.ts';
 import { ReplicateGenerationResponse } from './types.ts';
+import { EnhancedErrorHandler, executeWithRetry } from '../errorHandling.ts';
 
 export class PollingService {
   constructor(private apiToken: string) {}
 
-  async pollForCompletion(predictionId: string, pollUrl: string): Promise<ReplicateGenerationResponse> {
-    if (!pollUrl) {
-      return {
-        ok: false,
-        error: "No poll URL provided"
-      };
-    }
-
-    console.log('Polling for completion:', predictionId);
+  async pollForCompletion(predictionId: string, getUrl: string): Promise<ReplicateGenerationResponse> {
+    console.log('=== POLLING SERVICE ===');
+    console.log('Starting enhanced polling for prediction:', predictionId);
     
-    let attempts = 0;
-
-    while (attempts < REPLICATE_CONFIG.maxPollAttempts) {
+    const maxAttempts = 30; // 60 seconds total
+    const pollInterval = 2000; // 2 seconds
+    
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
-        const response = await fetch(pollUrl, {
-          headers: {
-            "Authorization": `Bearer ${this.apiToken}`,
-          },
-        });
+        console.log(`Polling attempt ${attempt}/${maxAttempts} for prediction ${predictionId}`);
+        
+        const result = await executeWithRetry(async () => {
+          const response = await fetch(getUrl, {
+            headers: {
+              "Authorization": `Bearer ${this.apiToken}`,
+            },
+          });
 
-        if (!response.ok) {
-          console.error('Polling failed:', response.status);
-          return {
-            ok: false,
-            error: `Polling failed: ${response.status}`
-          };
-        }
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`Polling failed with status ${response.status}:`, errorText);
+            
+            if (response.status === 503) {
+              const error = new Error('Service temporarily unavailable');
+              error.name = 'ServiceUnavailable';
+              throw error;
+            }
+            
+            throw new Error(`Polling failed: ${response.status} - ${errorText}`);
+          }
 
-        const result = await response.json();
-        console.log(`Poll attempt ${attempts + 1}, status:`, result.status);
+          return await response.json();
+        }, `Polling attempt ${attempt}`);
 
-        if (result.status === "succeeded") {
-          console.log('Generation succeeded:', result.output);
+        console.log(`Poll attempt ${attempt} status:`, result.status);
+
+        if (result.status === 'succeeded') {
+          let outputUrl = result.output;
+          if (Array.isArray(outputUrl)) {
+            outputUrl = outputUrl[0];
+          }
+          
+          console.log('GPT-Image-1 polling completed successfully:', outputUrl);
           return {
             ok: true,
-            output: result.output
+            output: outputUrl
           };
-        } else if (result.status === "failed") {
-          console.error('Generation failed:', result.error);
+        }
+        
+        if (result.status === 'failed') {
+          const errorMsg = result.error || 'Generation failed during polling';
+          console.error('GPT-Image-1 failed during polling:', errorMsg);
+          
           return {
             ok: false,
-            error: result.error || "Image generation failed"
+            error: EnhancedErrorHandler.createUserFriendlyMessage({
+              type: 'service_unavailable',
+              status: 500,
+              message: errorMsg
+            })
           };
-        } else if (result.status === "canceled") {
+        }
+        
+        if (result.status === 'canceled') {
           return {
             ok: false,
-            error: "Generation was canceled"
+            error: 'Generation was canceled'
           };
         }
 
-        await new Promise(resolve => setTimeout(resolve, REPLICATE_CONFIG.pollIntervalMs));
-        attempts++;
+        // Continue polling for other statuses
+        if (attempt < maxAttempts) {
+          await new Promise(resolve => setTimeout(resolve, pollInterval));
+        }
+
       } catch (error) {
-        console.error('Polling error:', error);
-        attempts++;
-        await new Promise(resolve => setTimeout(resolve, REPLICATE_CONFIG.pollIntervalMs));
+        console.error(`Polling attempt ${attempt} error:`, error);
+        
+        // If this is the last attempt, return the error
+        if (attempt >= maxAttempts) {
+          const parsedError = EnhancedErrorHandler.parseError(error);
+          return {
+            ok: false,
+            error: EnhancedErrorHandler.createUserFriendlyMessage(parsedError)
+          };
+        }
+        
+        // Wait before next attempt
+        await new Promise(resolve => setTimeout(resolve, pollInterval));
       }
     }
 
+    console.log('Polling timed out after', maxAttempts, 'attempts');
     return {
       ok: false,
-      error: `Generation timed out after ${REPLICATE_CONFIG.timeoutMinutes} minute`
+      error: 'Generation is taking longer than expected. Please try again.'
     };
   }
 }
