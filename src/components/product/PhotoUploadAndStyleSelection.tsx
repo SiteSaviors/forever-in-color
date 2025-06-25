@@ -174,7 +174,6 @@ const PhotoUploadAndStyleSelection = ({
             <StyleGrid
               croppedImage={croppedImage}
               selectedStyle={localSelectedStyle?.id || null}
-              selectedOrientation={selectedOrientation}
               onStyleSelect={handleStyleSelect}
               onComplete={handleStyleGridContinue}
             />

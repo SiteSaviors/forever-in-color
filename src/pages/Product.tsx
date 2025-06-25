@@ -7,7 +7,6 @@ import TrustElements from "@/components/product/TrustElements";
 import PriceCalculator from "@/components/product/PriceCalculator";
 import ProductTestimonials from "@/components/product/ProductTestimonials";
 import { useProductState } from "@/components/product/ProductStateManager";
-import LayoutWidthDebugger from "@/components/LayoutWidthDebugger";
 
 const Product = () => {
   const {
@@ -28,7 +27,6 @@ const Product = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 w-full">
-      <LayoutWidthDebugger />
       <Header />
       
       <div className="pt-16 w-full">
