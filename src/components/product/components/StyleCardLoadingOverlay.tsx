@@ -1,5 +1,4 @@
 
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Sparkles, AlertCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -40,7 +39,7 @@ const StyleCardLoadingOverlay = ({ isGenerating, styleName, error }: StyleCardLo
     return () => clearInterval(interval);
   }, [isGenerating]);
 
-  // Error state - using standardized LoadingSpinner
+  // Error state
   if (error && !isGenerating) {
     return (
       <div className="absolute inset-0 bg-red-900/80 backdrop-blur-sm flex items-center justify-center z-20 rounded-lg">
@@ -55,13 +54,13 @@ const StyleCardLoadingOverlay = ({ isGenerating, styleName, error }: StyleCardLo
     );
   }
 
-  // Loading state - using standardized LoadingSpinner with enhanced UX
+  // Loading state
   if (!isGenerating) return null;
 
   return (
     <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-20 rounded-lg">
       <div className="text-white text-center space-y-4 px-4">
-        {/* Standardized loading spinner with custom animation wrapper */}
+        {/* Animated icon */}
         <div className="relative">
           <Sparkles className="w-8 h-8 mx-auto animate-pulse text-purple-400" />
           <div className="absolute inset-0 animate-spin">
@@ -86,7 +85,7 @@ const StyleCardLoadingOverlay = ({ isGenerating, styleName, error }: StyleCardLo
           </div>
         </div>
 
-        {/* Animated dots using our standardized approach */}
+        {/* Animated dots */}
         <div className="flex justify-center space-x-1">
           <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce"></div>
           <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce delay-150"></div>

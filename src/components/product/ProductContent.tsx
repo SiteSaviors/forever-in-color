@@ -1,11 +1,11 @@
 
+import PhotoUploadAndStyleSelection from "./PhotoUploadAndStyleSelection";
+import OrientationSelector from "./OrientationSelector";
+import CustomizationSelector from "./CustomizationSelector";
+import ReviewAndOrder from "./ReviewAndOrder";
+import ProductStep from "./ProductStep";
 import { StylePreviewProvider } from "./contexts/StylePreviewContext";
 import { Accordion } from "@/components/ui/accordion";
-import { useProductSteps } from "./hooks/useProductSteps";
-import PhotoUploadStep from "./steps/PhotoUploadStep";
-import OrientationStep from "./steps/OrientationStep";
-import CustomizationStep from "./steps/CustomizationStep";
-import ReviewStep from "./steps/ReviewStep";
 
 interface ProductContentProps {
   currentStep: number;
@@ -58,11 +58,58 @@ const ProductContent = ({
     autoGenerationComplete
   });
 
-  const { canProceedToStep, handleStepTransition } = useProductSteps(completedSteps);
+  const canProceedToStep = (step: number) => {
+    console.log(`🐛 Checking access to step ${step}:`, {
+      step1Complete: completedSteps.includes(1),
+      step2Complete: completedSteps.includes(2),
+      step3Complete: completedSteps.includes(3),
+      completedSteps
+    });
+    
+    if (step === 1) return true;
+    if (step === 2) return completedSteps.includes(1);
+    if (step === 3) return completedSteps.includes(1) && completedSteps.includes(2);
+    if (step === 4) return completedSteps.includes(1) && completedSteps.includes(2) && completedSteps.includes(3);
+    return false;
+  };
 
-  const createStepHandler = (targetStep: number) => () => {
-    console.log(`🐛 User clicked continue to step ${targetStep}`);
-    handleStepTransition(targetStep, onCurrentStepChange);
+  const handleStepTransition = (targetStep: number) => {
+    console.log(`🐛 Transitioning to step ${targetStep}`);
+    
+    // Change the step first
+    onCurrentStepChange(targetStep);
+    
+    // Use requestAnimationFrame to ensure the DOM has updated before scrolling
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        const targetElement = document.querySelector(`[data-step="${targetStep}"]`);
+        if (targetElement) {
+          // Scroll to the top of the target step with some offset
+          const elementTop = targetElement.getBoundingClientRect().top + window.pageYOffset;
+          const offsetTop = elementTop - 100; // 100px offset from top
+          
+          window.scrollTo({
+            top: offsetTop,
+            behavior: 'smooth'
+          });
+        }
+      }, 100); // Reduced timeout to minimize delay
+    });
+  };
+
+  const handleContinueToStep2 = () => {
+    console.log('🐛 User clicked continue to step 2');
+    handleStepTransition(2);
+  };
+
+  const handleContinueToStep3 = () => {
+    console.log('🐛 User clicked continue to step 3');
+    handleStepTransition(3);
+  };
+
+  const handleContinueToStep4 = () => {
+    console.log('🐛 User clicked continue to step 4');
+    handleStepTransition(4);
   };
 
   return (
@@ -79,28 +126,43 @@ const ProductContent = ({
             // Prevent default accordion scroll behavior
           }}
         >
-          <PhotoUploadStep
-            currentStep={currentStep}
-            completedSteps={completedSteps}
-            selectedStyle={selectedStyle}
-            uploadedImage={uploadedImage}
-            selectedOrientation={selectedOrientation}
-            autoGenerationComplete={autoGenerationComplete}
+          {/* Step 1: Photo Upload & Style Selection */}
+          <ProductStep
+            stepNumber={1}
+            title="Upload Photo & Choose Style"
+            description="Upload your photo and select an art style"
+            isActive={currentStep === 1}
+            isCompleted={completedSteps.includes(1)}
+            canAccess={canProceedToStep(1)}
             onStepClick={() => {
               console.log('🐛 Clicked on step 1');
               onCurrentStepChange(1);
             }}
-            onPhotoAndStyleComplete={onPhotoAndStyleComplete}
-            onContinueToStep2={createStepHandler(2)}
-            onStepChange={onCurrentStepChange}
-          />
+            selectedStyle={selectedStyle}
+          >
+            {currentStep === 1 && (
+              <PhotoUploadAndStyleSelection
+                selectedStyle={selectedStyle}
+                uploadedImage={uploadedImage}
+                selectedOrientation={selectedOrientation}
+                autoGenerationComplete={autoGenerationComplete}
+                onComplete={onPhotoAndStyleComplete}
+                onPhotoAndStyleComplete={onPhotoAndStyleComplete}
+                onContinue={handleContinueToStep2}
+                currentStep={currentStep}
+                completedSteps={completedSteps}
+                onStepChange={onCurrentStepChange}
+              />
+            )}
+          </ProductStep>
 
-          <OrientationStep
-            currentStep={currentStep}
-            completedSteps={completedSteps}
-            selectedOrientation={selectedOrientation}
-            selectedSize={selectedSize}
-            uploadedImage={uploadedImage}
+          {/* Step 2: Orientation & Size Selection */}
+          <ProductStep
+            stepNumber={2}
+            title="Choose Layout & Size"
+            description="Select your canvas orientation and size"
+            isActive={currentStep === 2}
+            isCompleted={completedSteps.includes(2)}
             canAccess={canProceedToStep(2)}
             onStepClick={() => {
               console.log('🐛 Clicked on step 2, canAccess:', canProceedToStep(2));
@@ -108,23 +170,35 @@ const ProductContent = ({
                 onCurrentStepChange(2);
               }
             }}
-            onOrientationChange={(orientation) => {
-              console.log('🐛 Orientation changed to:', orientation);
-              onOrientationSelect(orientation);
-            }}
-            onSizeChange={(size) => {
-              console.log('🐛 Size changed to:', size);
-              onSizeSelect(size);
-            }}
-            onContinueToStep3={createStepHandler(3)}
-            onStepChange={onCurrentStepChange}
-          />
+          >
+            {currentStep === 2 && (
+              <OrientationSelector
+                selectedOrientation={selectedOrientation}
+                selectedSize={selectedSize}
+                userImageUrl={uploadedImage}
+                onOrientationChange={(orientation) => {
+                  console.log('🐛 Orientation changed to:', orientation);
+                  onOrientationSelect(orientation);
+                }}
+                onSizeChange={(size) => {
+                  console.log('🐛 Size changed to:', size);
+                  onSizeSelect(size);
+                }}
+                onContinue={handleContinueToStep3}
+                currentStep={currentStep}
+                completedSteps={completedSteps}
+                onStepChange={onCurrentStepChange}
+              />
+            )}
+          </ProductStep>
 
-          <CustomizationStep
-            currentStep={currentStep}
-            completedSteps={completedSteps}
-            selectedSize={selectedSize}
-            customizations={customizations}
+          {/* Step 3: Customization */}
+          <ProductStep
+            stepNumber={3}
+            title="Customize Your Canvas"
+            description="Add premium features and customizations"
+            isActive={currentStep === 3}
+            isCompleted={completedSteps.includes(3)}
             canAccess={canProceedToStep(3)}
             onStepClick={() => {
               console.log('🐛 Clicked on step 3, canAccess:', canProceedToStep(3));
@@ -132,17 +206,23 @@ const ProductContent = ({
                 onCurrentStepChange(3);
               }
             }}
-            onCustomizationChange={onCustomizationChange}
-          />
+          >
+            {currentStep === 3 && (
+              <CustomizationSelector
+                customizations={customizations}
+                selectedSize={selectedSize}
+                onCustomizationChange={onCustomizationChange}
+              />
+            )}
+          </ProductStep>
 
-          <ReviewStep
-            currentStep={currentStep}
-            completedSteps={completedSteps}
-            uploadedImage={uploadedImage}
-            selectedStyle={selectedStyle}
-            selectedSize={selectedSize}
-            selectedOrientation={selectedOrientation}
-            customizations={customizations}
+          {/* Step 4: Review & Order */}
+          <ProductStep
+            stepNumber={4}
+            title="Review & Order"
+            description="Review your canvas and place your order"
+            isActive={currentStep === 4}
+            isCompleted={completedSteps.includes(4)}
             canAccess={canProceedToStep(4)}
             onStepClick={() => {
               console.log('🐛 Clicked on step 4, canAccess:', canProceedToStep(4));
@@ -150,7 +230,17 @@ const ProductContent = ({
                 onCurrentStepChange(4);
               }
             }}
-          />
+          >
+            {currentStep === 4 && (
+              <ReviewAndOrder
+                uploadedImage={uploadedImage}
+                selectedStyle={selectedStyle}
+                selectedSize={selectedSize}
+                selectedOrientation={selectedOrientation}
+                customizations={customizations}
+              />
+            )}
+          </ProductStep>
         </Accordion>
       </div>
     </StylePreviewProvider>
