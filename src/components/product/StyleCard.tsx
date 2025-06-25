@@ -109,8 +109,8 @@ const StyleCard = ({
         onClick={handleClick}
         shouldBlur={shouldShowBlur}
       >
-        {/* Hero Image Section - Enhanced for mobile with better touch targets */}
-        <div className="flex-shrink-0 relative touch-manipulation">
+        {/* Hero Image Section - Make this prominent on mobile */}
+        <div className="flex-shrink-0 relative">
           <StyleCardImage
             style={style}
             imageToShow={imageToShow}
@@ -134,8 +134,8 @@ const StyleCard = ({
           />
         </div>
 
-        {/* Info Section - Enhanced mobile layout with better spacing */}
-        <div className="flex-1 flex flex-col p-3 md:p-4 touch-manipulation">
+        {/* Info Section - Streamlined for mobile */}
+        <div className="flex-1 flex flex-col">
           <StyleCardInfo
             style={style}
             hasGeneratedPreview={hasGeneratedPreview}

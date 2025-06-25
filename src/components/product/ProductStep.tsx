@@ -41,29 +41,6 @@ const ProductStep = ({
   const Icon = getStepIcon(stepNumber);
   const isNextStep = !isCompleted && canAccess && !isActive;
 
-  // Enhanced step click with smooth scroll
-  const handleStepClick = () => {
-    if (!canAccess) return;
-    
-    onStepClick();
-    
-    // Smooth scroll to this step
-    requestAnimationFrame(() => {
-      setTimeout(() => {
-        const targetElement = document.querySelector(`[data-step="${stepNumber}"]`);
-        if (targetElement) {
-          const elementTop = targetElement.getBoundingClientRect().top + window.pageYOffset;
-          const offsetTop = elementTop - 80; // Header offset
-          
-          window.scrollTo({
-            top: offsetTop,
-            behavior: 'smooth'
-          });
-        }
-      }, 100);
-    });
-  };
-
   // Determine the lock status for gentle progression indication
   const getLockStatus = () => {
     if (isCompleted) return "complete";
@@ -97,15 +74,15 @@ const ProductStep = ({
       )}
 
       <AccordionTrigger 
-        className={`px-4 md:px-8 py-6 md:py-8 hover:no-underline group min-h-[80px] md:min-h-[100px] touch-manipulation ${!canAccess ? 'cursor-default' : 'cursor-pointer active:scale-[0.98]'}`}
+        className={`px-4 md:px-8 py-4 md:py-6 hover:no-underline group ${!canAccess ? 'cursor-default' : ''}`}
         disabled={!canAccess}
-        onClick={handleStepClick}
+        onClick={onStepClick}
       >
-        <div className="flex items-center gap-4 md:gap-6 w-full">
-          {/* Step Icon/Number - Enhanced touch targets */}
+        <div className="flex items-center gap-3 md:gap-6 w-full">
+          {/* Step Icon/Number */}
           <div className="relative">
             <div className={`
-              relative w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl flex items-center justify-center transition-all duration-500 shadow-lg
+              relative w-10 h-10 md:w-14 md:h-14 rounded-lg md:rounded-xl flex items-center justify-center transition-all duration-500 shadow-lg
               ${isCompleted 
                 ? 'bg-gradient-to-r from-green-400 to-emerald-500 text-white shadow-green-200' 
                 : isActive && canAccess
@@ -115,14 +92,14 @@ const ProductStep = ({
                 : 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-400 group-hover:from-purple-100 group-hover:to-pink-100 group-hover:text-purple-500'}
             `}>
               {isCompleted ? (
-                <Check className="w-6 h-6 md:w-8 md:h-8 animate-in zoom-in duration-300" />
+                <Check className="w-5 h-5 md:w-7 md:h-7 animate-in zoom-in duration-300" />
               ) : (
-                <Icon className="w-6 h-6 md:w-8 md:h-8" />
+                <Icon className="w-5 h-5 md:w-7 md:h-7" />
               )}
               
-              {/* Step number badge - Enhanced size */}
+              {/* Step number badge */}
               <div className={`
-                absolute -top-1 -right-1 md:-top-2 md:-right-2 w-6 h-6 md:w-7 md:h-7 rounded-full text-xs md:text-sm font-bold flex items-center justify-center
+                absolute -top-1 -right-1 md:-top-2 md:-right-2 w-5 h-5 md:w-6 md:h-6 rounded-full text-xs font-bold flex items-center justify-center
                 ${isCompleted ? 'bg-green-600 text-white' 
                   : isActive && canAccess ? 'bg-white text-purple-600' 
                   : !canAccess ? 'bg-gray-300 text-gray-500'
@@ -133,19 +110,19 @@ const ProductStep = ({
             </div>
           </div>
           
-          {/* Step Content - Enhanced typography */}
+          {/* Step Content */}
           <div className="flex-1 text-left">
             <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-3 mb-1">
               <div className="flex items-center gap-2">
                 <h3 className={`
-                  text-lg md:text-xl lg:text-2xl font-semibold transition-colors duration-300 font-poppins tracking-tight
+                  text-lg md:text-xl font-semibold transition-colors duration-300 font-poppins tracking-tight
                   ${isCompleted || (isActive && canAccess) ? 'text-gray-900' 
                     : !canAccess ? 'text-gray-500'
                     : 'text-gray-500 group-hover:text-gray-700'}
                 `}>
                   {title}
                   {stepNumber === 1 && selectedStyle && (
-                    <span className="text-purple-600 ml-2 font-normal text-base md:text-lg lg:text-xl">- {selectedStyle.name}</span>
+                    <span className="text-purple-600 ml-2 font-normal text-base md:text-lg">- {selectedStyle.name}</span>
                   )}
                 </h3>
                 
@@ -164,40 +141,40 @@ const ProductStep = ({
               </div>
             </div>
             
-            <p className={`text-sm md:text-base hidden md:block ${!canAccess ? 'text-gray-400' : 'text-gray-500'}`}>
+            <p className={`text-sm hidden md:block ${!canAccess ? 'text-gray-400' : 'text-gray-500'}`}>
               {description}
             </p>
           </div>
           
-          {/* Status Badges and Actions - Enhanced mobile visibility */}
+          {/* Status Badges and Actions */}
           <div className="flex items-center gap-2 md:gap-3">
             {isCompleted && (
-              <Badge className="bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 border-green-200 animate-in fade-in duration-500 text-xs md:text-sm px-2 py-1">
+              <Badge className="bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 border-green-200 animate-in fade-in duration-500 text-xs">
                 ✓ Done
               </Badge>
             )}
             
             {isNextStep && canAccess && !isActive && (
-              <Badge variant="outline" className="bg-gradient-to-r from-amber-100 to-orange-100 text-amber-700 border-amber-200 text-xs md:text-sm animate-pulse px-2 py-1">
+              <Badge variant="outline" className="bg-gradient-to-r from-amber-100 to-orange-100 text-amber-700 border-amber-200 text-xs hidden md:inline-flex animate-pulse">
                 Next
               </Badge>
             )}
             
-            {/* Enhanced chevron with better touch feedback */}
+            {/* Enhanced chevron */}
             <ChevronRight className={`
-              w-5 h-5 md:w-6 md:h-6 transition-all duration-300
+              w-4 h-4 md:w-5 md:h-5 transition-all duration-300
               ${isActive && canAccess ? 'rotate-90 text-purple-500' 
                 : !canAccess ? 'text-gray-300'
-                : 'text-gray-400 group-hover:text-gray-600 group-active:scale-90'}
+                : 'text-gray-400 group-hover:text-gray-600'}
             `} />
           </div>
         </div>
       </AccordionTrigger>
       
-      <AccordionContent className="px-4 md:px-8 pb-6 md:pb-8">
-        <div className="border-t border-gradient-to-r from-purple-100 to-pink-100 pt-4 md:pt-6 relative">
-          {/* Content area with enhanced mobile padding */}
-          <div className="bg-gradient-to-r from-gray-50/50 to-purple-50/30 rounded-lg md:rounded-xl p-4 md:p-6 border border-gray-100">
+      <AccordionContent className="px-4 md:px-8 pb-4 md:pb-8">
+        <div className="border-t border-gradient-to-r from-purple-100 to-pink-100 pt-3 md:pt-6 relative">
+          {/* Content area with reduced padding on mobile */}
+          <div className="bg-gradient-to-r from-gray-50/50 to-purple-50/30 rounded-lg md:rounded-xl p-3 md:p-6 border border-gray-100">
             {children}
           </div>
         </div>

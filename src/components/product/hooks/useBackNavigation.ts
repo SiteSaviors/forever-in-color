@@ -26,24 +26,7 @@ export const useBackNavigation = ({
     if (canGoBack()) {
       const previousStep = getPreviousStep();
       console.log(`Navigating back from step ${currentStep} to step ${previousStep}`);
-      
-      // Enhanced smooth scroll for back navigation
       onStepChange(previousStep);
-      
-      requestAnimationFrame(() => {
-        setTimeout(() => {
-          const targetElement = document.querySelector(`[data-step="${previousStep}"]`);
-          if (targetElement) {
-            const elementTop = targetElement.getBoundingClientRect().top + window.pageYOffset;
-            const offsetTop = elementTop - 80; // Header offset
-            
-            window.scrollTo({
-              top: offsetTop,
-              behavior: 'smooth'
-            });
-          }
-        }, 100);
-      });
     }
   }, [currentStep, canGoBack, getPreviousStep, onStepChange]);
 
