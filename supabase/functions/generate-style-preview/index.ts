@@ -2,9 +2,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 import { OpenAIService } from './openaiService.ts';
+import { CanvasWatermarkService } from './canvasWatermarkService.ts';
 import { logSecurityEvent } from './securityLogger.ts';
 import { validateInput, extractImageData } from './inputValidation.ts';
 import { handleSuccess, handleError } from './responseHandlers.ts';
+import { EnhancedErrorHandler } from './errorHandling.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -18,59 +20,72 @@ serve(async (req) => {
   }
 
   const startTime = Date.now();
-  console.log('=== GPT-Image-1 GENERATION REQUEST START ===');
+  const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  console.log(`=== GPT-IMAGE-1 REQUEST START [${requestId}] ===`);
 
   try {
-    // Get environment variables
+    // Enhanced environment variable validation
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY') || Deno.env.get('OPEN_AI_KEY');
     const replicateApiToken = Deno.env.get('REPLICATE_API_TOKEN');
 
+    console.log('Environment check:', {
+      hasOpenAIKey: !!openaiApiKey,
+      hasReplicateToken: !!replicateApiToken,
+      openaiKeyLength: openaiApiKey?.length || 0,
+      replicateTokenLength: replicateApiToken?.length || 0
+    });
+
     if (!openaiApiKey) {
-      console.error('Missing OpenAI API key');
+      console.error(`[${requestId}] Missing OpenAI API key`);
       await logSecurityEvent('api_key_missing', 'OpenAI API key not configured', req);
-      return Response.json(
-        { success: false, error: 'Service configuration error', timestamp: new Date().toISOString() },
-        { status: 500, headers: corsHeaders }
-      );
+      return handleError('Service configuration error - OpenAI key missing', corsHeaders, 500, requestId);
     }
 
     if (!replicateApiToken) {
-      console.error('Missing Replicate API token');
+      console.error(`[${requestId}] Missing Replicate API token`);
       await logSecurityEvent('api_key_missing', 'Replicate API token not configured', req);
-      return Response.json(
-        { success: false, error: 'Service configuration error', timestamp: new Date().toISOString() },
-        { status: 500, headers: corsHeaders }
-      );
+      return handleError('Service configuration error - Replicate token missing', corsHeaders, 500, requestId);
     }
 
-    // Parse request body
+    // Parse and validate request
     const body = await req.json();
-    console.log('Request body keys:', Object.keys(body));
-    console.log('ASPECT RATIO RECEIVED:', body.aspectRatio);
+    console.log(`[${requestId}] Request received:`, {
+      hasImageUrl: !!body.imageUrl,
+      style: body.style,
+      aspectRatio: body.aspectRatio,
+      isAuthenticated: body.isAuthenticated,
+      watermark: body.watermark !== false // Default to true unless explicitly false
+    });
 
-    const { imageUrl, style, photoId, aspectRatio = '1:1', isAuthenticated } = body;
+    const { 
+      imageUrl, 
+      style, 
+      photoId, 
+      aspectRatio = '1:1', 
+      isAuthenticated,
+      watermark = true,  // New parameter for watermark control
+      sessionId: providedSessionId,
+      quality = 'preview' // 'preview' or 'final'
+    } = body;
 
-    // Enhanced input validation with proper aspect ratio support
+    // Generate session ID if not provided
+    const sessionId = providedSessionId || CanvasWatermarkService.generateSessionId();
+
+    // Enhanced input validation
     const validationResult = validateInput(imageUrl, style, aspectRatio);
     if (!validationResult.isValid) {
-      console.error('Input validation failed:', validationResult.error);
+      console.error(`[${requestId}] Input validation failed:`, validationResult.error);
       await logSecurityEvent('suspicious_upload', 'Input validation failed', req, {
         reason: 'Input validation failed',
         validation_error: validationResult.error,
-        received_style: style
+        received_style: style,
+        requestId
       });
       
-      return Response.json(
-        { 
-          success: false, 
-          error: validationResult.error,
-          timestamp: new Date().toISOString() 
-        },
-        { status: 400, headers: corsHeaders }
-      );
+      return handleError(validationResult.error, corsHeaders, 400, requestId);
     }
 
-    // Token validation (optional now)
+    // Initialize Supabase (optional)
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     
@@ -79,64 +94,88 @@ serve(async (req) => {
       supabase = createClient(supabaseUrl, supabaseServiceKey);
     }
 
-    // Validate auth token if provided
-    const authHeader = req.headers.get('authorization');
-    let tokenValid = false;
-    if (authHeader && supabase) {
-      try {
-        const token = authHeader.replace('Bearer ', '');
-        const { data, error } = await supabase.auth.getUser(token);
-        tokenValid = !error && data.user;
-      } catch (error) {
-        console.log('Token validation failed, proceeding without authentication');
-      }
-    } else {
-      console.log('Token validation failed, proceeding without authentication');
-    }
-
     // Extract and validate image data
     const imageData = extractImageData(imageUrl);
     if (!imageData) {
-      console.error('Failed to extract image data');
+      console.error(`[${requestId}] Failed to extract image data`);
       await logSecurityEvent('invalid_image', 'Failed to extract image data', req);
-      return Response.json(
-        { success: false, error: 'Invalid image data', timestamp: new Date().toISOString() },
-        { status: 400, headers: corsHeaders }
-      );
+      return handleError('Invalid image data', corsHeaders, 400, requestId);
     }
 
-    console.log('VALIDATED ASPECT RATIO:', aspectRatio);
-    console.log('Creating OpenAI service...');
+    console.log(`[${requestId}] Creating OpenAI service with validated inputs`);
 
-    // Create OpenAI service
+    // Create OpenAI service with enhanced error handling
     const openaiService = new OpenAIService(openaiApiKey, replicateApiToken, supabase);
-
-    console.log('CALLING OPENAI SERVICE WITH ASPECT RATIO:', aspectRatio);
     
-    // Generate image
-    const result = await openaiService.generateImageToImage(imageData, style, aspectRatio);
-
-    const endTime = Date.now();
-    console.log(`=== GPT-Image-1 GENERATION COMPLETED in ${endTime - startTime}ms ===`);
+    // Determine quality settings
+    const isPreview = quality === 'preview';
+    const imageQuality = isPreview ? 'medium' : 'high';
+    
+    // Generate image with comprehensive error handling
+    console.log(`[${requestId}] Starting generation with aspect ratio:`, aspectRatio, 'quality:', imageQuality);
+    const result = await openaiService.generateImageToImage(imageData, style, aspectRatio, imageQuality);
 
     if (result.ok && result.output) {
-      console.log('Generation successful, output URL:', result.output);
-      return handleSuccess(result.output, corsHeaders);
+      console.log(`[${requestId}] Generation successful, applying watermarks...`);
+      
+      let finalOutput = result.output;
+      
+      // Apply watermarking if requested (default behavior)
+      if (watermark) {
+        try {
+          console.log(`[${requestId}] Applying watermarks with Canvas API...`);
+          
+          // Apply watermarks using the CanvasWatermarkService
+          finalOutput = await CanvasWatermarkService.createWatermarkedImage(
+            result.output, 
+            sessionId, 
+            isPreview
+          );
+          
+          console.log(`[${requestId}] Canvas watermarking completed successfully`);
+          
+        } catch (watermarkError) {
+          console.error(`[${requestId}] Canvas watermarking failed, using original:`, watermarkError);
+          // Continue with original image if watermarking fails
+        }
+      }
+
+      const endTime = Date.now();
+      const duration = endTime - startTime;
+      console.log(`=== GPT-IMAGE-1 COMPLETED [${requestId}] in ${duration}ms ===`);
+
+      return handleSuccess(finalOutput, corsHeaders, requestId);
     } else {
-      console.error('Generation failed:', result.error);
-      return handleError(result.error || 'Generation failed', corsHeaders);
+      console.error(`[${requestId}] Generation failed:`, result.error);
+      
+      // Determine appropriate status code based on error type
+      let statusCode = 500;
+      if (result.errorType === 'service_unavailable') {
+        statusCode = 503;
+      } else if (result.errorType === 'rate_limit') {
+        statusCode = 429;
+      } else if (result.errorType === 'invalid_request') {
+        statusCode = 400;
+      }
+      
+      return handleError(result.error || 'Generation failed', corsHeaders, statusCode, requestId);
     }
 
   } catch (error) {
     const endTime = Date.now();
-    console.error(`=== GPT-Image-1 GENERATION ERROR after ${endTime - startTime}ms ===`);
+    const duration = endTime - startTime;
+    console.error(`=== GPT-IMAGE-1 ERROR [${requestId}] after ${duration}ms ===`);
     console.error('Unexpected error:', error);
     
     await logSecurityEvent('generation_error', 'Unexpected error during generation', req, {
       error: error.message,
-      stack: error.stack
+      stack: error.stack,
+      requestId
     });
     
-    return handleError('Internal server error', corsHeaders, 500);
+    const parsedError = EnhancedErrorHandler.parseError(error);
+    const userMessage = EnhancedErrorHandler.createUserFriendlyMessage(parsedError);
+    
+    return handleError(userMessage, corsHeaders, 500, requestId);
   }
 });

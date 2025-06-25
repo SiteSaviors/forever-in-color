@@ -19,7 +19,7 @@ export const usePreviewGeneration = (uploadedImage: string | null, selectedOrien
       ];
       
       const generatePopularPreviews = async () => {
-        console.log('Auto-generating previews for popular styles:', popularStyleIds);
+        console.log('🚀 Auto-generating previews for popular styles:', popularStyleIds);
         console.log('Current selected orientation:', selectedOrientation);
         
         const aspectRatio = convertOrientationToAspectRatio(selectedOrientation);
@@ -30,28 +30,33 @@ export const usePreviewGeneration = (uploadedImage: string | null, selectedOrien
           if (!style) continue;
 
           try {
-            console.log(`Auto-generating preview for ${style.name} (ID: ${styleId}) with aspect ratio: ${aspectRatio}`);
+            console.log(`🎨 Auto-generating preview for ${style.name} (ID: ${styleId}) with aspect ratio: ${aspectRatio}`);
             
             const tempPhotoId = `temp_${Date.now()}_${styleId}`;
-            const previewUrl = await generateStylePreview(uploadedImage, style.name, tempPhotoId, aspectRatio);
+            
+            // Generate without server-side watermarking
+            const rawPreviewUrl = await generateStylePreview(uploadedImage, style.name, tempPhotoId, aspectRatio, {
+              watermark: false // Disable server-side watermarking
+            });
 
-            if (previewUrl) {
+            if (rawPreviewUrl) {
               try {
-                const watermarkedUrl = await addWatermarkToImage(previewUrl);
+                // Apply client-side watermarking
+                const watermarkedUrl = await addWatermarkToImage(rawPreviewUrl);
                 setPreviewUrls(prev => ({ ...prev, [styleId]: watermarkedUrl }));
-                console.log(`Auto-generated preview for ${style.name} completed with watermark and aspect ratio ${aspectRatio}`);
+                console.log(`✅ Auto-generated preview for ${style.name} completed with client-side watermark and aspect ratio ${aspectRatio}`);
               } catch (watermarkError) {
-                console.warn(`Failed to add watermark for ${style.name}, using original:`, watermarkError);
-                setPreviewUrls(prev => ({ ...prev, [styleId]: previewUrl }));
+                console.warn(`⚠️ Failed to add watermark for ${style.name}, using original:`, watermarkError);
+                setPreviewUrls(prev => ({ ...prev, [styleId]: rawPreviewUrl }));
               }
             }
           } catch (error) {
-            console.error(`Error auto-generating preview for ${style.name}:`, error);
+            console.error(`❌ Error auto-generating preview for ${style.name}:`, error);
           }
         }
         
         setAutoGenerationComplete(true);
-        console.log('Auto-generation of popular style previews completed');
+        console.log('🏁 Auto-generation of popular style previews completed');
       };
 
       generatePopularPreviews();

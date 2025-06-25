@@ -73,19 +73,43 @@ const ProductContent = ({
     return false;
   };
 
+  const handleStepTransition = (targetStep: number) => {
+    console.log(`🐛 Transitioning to step ${targetStep}`);
+    
+    // Change the step first
+    onCurrentStepChange(targetStep);
+    
+    // Use requestAnimationFrame to ensure the DOM has updated before scrolling
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        const targetElement = document.querySelector(`[data-step="${targetStep}"]`);
+        if (targetElement) {
+          // Scroll to the top of the target step with some offset
+          const elementTop = targetElement.getBoundingClientRect().top + window.pageYOffset;
+          const offsetTop = elementTop - 100; // 100px offset from top
+          
+          window.scrollTo({
+            top: offsetTop,
+            behavior: 'smooth'
+          });
+        }
+      }, 100); // Reduced timeout to minimize delay
+    });
+  };
+
   const handleContinueToStep2 = () => {
     console.log('🐛 User clicked continue to step 2');
-    onCurrentStepChange(2);
+    handleStepTransition(2);
   };
 
   const handleContinueToStep3 = () => {
     console.log('🐛 User clicked continue to step 3');
-    onCurrentStepChange(3);
+    handleStepTransition(3);
   };
 
   const handleContinueToStep4 = () => {
     console.log('🐛 User clicked continue to step 4');
-    onCurrentStepChange(4);
+    handleStepTransition(4);
   };
 
   return (
@@ -94,7 +118,14 @@ const ProductContent = ({
       selectedOrientation={selectedOrientation}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Accordion type="single" value={`step-${currentStep}`} className="space-y-8">
+        <Accordion 
+          type="single" 
+          value={`step-${currentStep}`} 
+          className="space-y-8"
+          onValueChange={() => {
+            // Prevent default accordion scroll behavior
+          }}
+        >
           {/* Step 1: Photo Upload & Style Selection */}
           <ProductStep
             stepNumber={1}

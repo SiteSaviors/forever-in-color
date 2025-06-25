@@ -9,6 +9,7 @@ import InteractiveDemo from "@/components/InteractiveDemo";
 import Testimonials from "@/components/Testimonials";
 import FAQ from "@/components/FAQ";
 import Footer from "@/components/Footer";
+import ExitIntentPopup from "@/components/ExitIntentPopup";
 
 const Index = () => {
   return (
@@ -23,6 +24,7 @@ const Index = () => {
       <Testimonials />
       <FAQ />
       <Footer />
+      <ExitIntentPopup />
     </div>
   );
 };
