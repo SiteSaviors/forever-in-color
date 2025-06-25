@@ -113,6 +113,7 @@ const CustomizationSelector = ({
           <FloatingFrameCard
             enabled={customizations.floatingFrame.enabled}
             color={customizations.floatingFrame.color}
+            selectedSize={selectedSize}
             onEnabledChange={(enabled) => handleCustomizationUpdate({
               floatingFrame: { ...customizations.floatingFrame, enabled }
             })}
@@ -128,11 +129,13 @@ const CustomizationSelector = ({
 
           <VoiceMatchCard
             enabled={customizations.voiceMatch}
+            livingMemoryEnabled={customizations.livingMemory}
             onEnabledChange={(enabled) => handleCustomizationUpdate({ voiceMatch: enabled })}
           />
 
           <CustomMessageCard
             message={customizations.customMessage}
+            livingMemoryEnabled={customizations.livingMemory}
             onMessageChange={(message) => handleCustomizationUpdate({ customMessage: message })}
           />
 
@@ -148,7 +151,12 @@ const CustomizationSelector = ({
         <SocialProofGallery />
         <PremiumVideoOptions 
           livingMemoryEnabled={customizations.livingMemory}
-          options={{}}
+          options={{
+            voiceMatching: false,
+            backgroundAudio: 'none',
+            videoLength: 30,
+            voiceEnhancement: false
+          }}
           onOptionsChange={() => {}}
         />
       </div>
