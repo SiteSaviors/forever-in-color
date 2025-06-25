@@ -1,3 +1,4 @@
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sparkles, ArrowRight, Zap, RefreshCw } from "lucide-react";
@@ -93,7 +94,7 @@ const StyleCardInfo = ({
       {/* Header with badges */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
-          <h3 className="font-poppins font-semibold text-gray-900 truncate text-lg md:text-xl">
+          <h3 className="font-poppins font-semibold text-gray-900 truncate text-sm md:text-base">
             {styleEmoji} {style.name}
           </h3>
           <p className="text-xs text-gray-600 line-clamp-2 mt-1 font-poppins">

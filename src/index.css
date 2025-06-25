@@ -1,45 +1,9 @@
 
-/* Critical Layout Reset - Must be first */
-@layer reset {
-  * {
-    box-sizing: border-box;
-  }
-  
-  html {
-    width: 100%;
-    min-width: 100%;
-    overflow-x: auto;
-  }
-  
-  body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    min-width: 100%;
-    overflow-x: auto;
-  }
-  
-  #root {
-    width: 100%;
-    min-width: 100%;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-  }
-  
-  /* Ensure no parent containers are constraining width */
-  main,
-  div[class*="container"],
-  div[class*="wrapper"] {
-    width: 100%;
-  }
-}
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ... keep existing code (definition of the design system) the same ... */
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. */
 
 @layer base {
   :root {
@@ -134,20 +98,10 @@
     @apply border-border;
   }
 
-  html, body {
+  body {
     @apply bg-background text-foreground;
-    width: 100%;
-    min-width: 100%;
-    overflow-x: auto;
-  }
-
-  #root {
-    width: 100%;
-    min-width: 100%;
   }
 }
-
-/* ... keep existing code (animations and utility classes) the same ... */
 
 /* Logo Marquee Animation */
 @keyframes scroll {

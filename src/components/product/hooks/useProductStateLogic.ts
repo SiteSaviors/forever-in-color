@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { CustomizationOptions } from "../types/productState";
 import { detectOrientationFromImage } from "../utils/orientationDetection";
@@ -74,8 +74,7 @@ export const useProductStateLogic = () => {
     }
   };
 
-  // FIXED: Debounced size selection to prevent rapid re-renders
-  const handleSizeSelect = useCallback((size: string) => {
+  const handleSizeSelect = (size: string) => {
     console.log('🐛 Size selected:', size);
     setSelectedSize(size);
     
@@ -88,30 +87,27 @@ export const useProductStateLogic = () => {
         return newCompleted;
       });
     }
-  }, [selectedOrientation]);
+  };
 
-  // FIXED: Stabilized orientation handling to prevent layout thrashing
-  const handleOrientationSelect = useCallback((orientation: string) => {
+  const handleOrientationSelect = (orientation: string) => {
     console.log('🐛 Orientation manually changed to:', orientation);
-    
-    // Batch state updates to prevent multiple re-renders
     setSelectedOrientation(orientation);
-    setSelectedSize(""); // Reset size when orientation changes
     
-    // Update completed steps in a single operation
+    // Reset size when orientation changes
+    setSelectedSize("");
+    
+    // Remove step 2 completion if it was completed, since we're changing orientation
     setCompletedSteps(prev => {
       const filtered = prev.filter(step => step !== 2);
       console.log('🐛 Removed step 2 completion due to orientation change:', filtered);
       return filtered;
     });
     
-    // Clear existing previews when orientation changes (debounced)
-    setTimeout(() => {
-      console.log('🐛 Clearing existing previews due to orientation change');
-      setPreviewUrls({});
-      setAutoGenerationComplete(false);
-    }, 100);
-  }, [setPreviewUrls, setAutoGenerationComplete]);
+    // Clear existing previews when orientation changes to regenerate with new aspect ratio
+    console.log('🐛 Clearing existing previews due to orientation change');
+    setPreviewUrls({});
+    setAutoGenerationComplete(false);
+  };
 
   const handleCustomizationChange = (newCustomizations: CustomizationOptions) => {
     console.log('🐛 Customizations changed:', newCustomizations);
@@ -138,20 +134,16 @@ export const useProductStateLogic = () => {
     return canProceed;
   };
 
-  // Debug log whenever state changes (throttled to prevent spam)
+  // Debug log whenever state changes
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      console.log('🐛 State update:', {
-        currentStep,
-        completedSteps,
-        selectedStyle: selectedStyle?.name,
-        uploadedImage: !!uploadedImage,
-        selectedSize,
-        selectedOrientation
-      });
-    }, 50);
-
-    return () => clearTimeout(timeoutId);
+    console.log('🐛 State update:', {
+      currentStep,
+      completedSteps,
+      selectedStyle: selectedStyle?.name,
+      uploadedImage: !!uploadedImage,
+      selectedSize,
+      selectedOrientation
+    });
   }, [currentStep, completedSteps, selectedStyle, uploadedImage, selectedSize, selectedOrientation]);
 
   return {

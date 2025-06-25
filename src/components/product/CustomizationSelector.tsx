@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -37,6 +36,12 @@ const CustomizationSelector = ({
   onCustomizationChange
 }: CustomizationSelectorProps) => {
   const [hasInteracted, setHasInteracted] = useState(false);
+  const [videoOptions, setVideoOptions] = useState({
+    voiceMatching: false,
+    backgroundAudio: 'none',
+    videoLength: 5,
+    voiceEnhancement: false
+  });
 
   const handleCustomizationUpdate = (updates: Partial<CustomizationOptions>) => {
     if (!hasInteracted) setHasInteracted(true);
@@ -151,13 +156,8 @@ const CustomizationSelector = ({
         <SocialProofGallery />
         <PremiumVideoOptions 
           livingMemoryEnabled={customizations.livingMemory}
-          options={{
-            voiceMatching: false,
-            backgroundAudio: 'none',
-            videoLength: 30,
-            voiceEnhancement: false
-          }}
-          onOptionsChange={() => {}}
+          options={videoOptions}
+          onOptionsChange={setVideoOptions}
         />
       </div>
 

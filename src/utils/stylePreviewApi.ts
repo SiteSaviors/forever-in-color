@@ -2,26 +2,16 @@
 import { supabase } from "@/integrations/supabase/client";
 import { createPreview } from "./previewOperations";
 
-export const generateStylePreview = async (
-  imageUrl: string, 
-  style: string, 
-  photoId: string, 
-  aspectRatio: string = "1:1",
-  options: {
-    watermark?: boolean;
-    quality?: 'preview' | 'final';
-    sessionId?: string;
-  } = {}
-) => {
+export const generateStylePreview = async (imageUrl: string, style: string, photoId: string, aspectRatio: string = "1:1") => {
   try {
     console.log('=== STYLE PREVIEW API CALL ===');
     console.log('Generating style preview with GPT-Image-1:', { 
       imageUrl: imageUrl.substring(0, 50) + '...', 
       style, 
       photoId, 
-      aspectRatio,
-      options
+      aspectRatio: aspectRatio 
     });
+    console.log('ASPECT RATIO BEING SENT TO BACKEND:', aspectRatio);
     
     // Check if user is authenticated (optional now)
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -29,19 +19,13 @@ export const generateStylePreview = async (
 
     console.log('User authentication status:', isAuthenticated ? 'authenticated' : 'not authenticated');
 
-    // Generate session ID for watermarking if not provided
-    const sessionId = options.sessionId || `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-    // Prepare the request body with watermarking options
+    // Prepare the request body - ENSURE aspectRatio is included
     const requestBody = { 
       imageUrl, 
       style,
       photoId,
       isAuthenticated,
-      aspectRatio,
-      watermark: options.watermark !== false, // Default to true
-      quality: options.quality || 'preview',
-      sessionId
+      aspectRatio // CRITICAL: This must reach the backend
     };
 
     console.log('FULL REQUEST BODY TO SUPABASE FUNCTION:', JSON.stringify(requestBody, null, 2));
@@ -59,7 +43,7 @@ export const generateStylePreview = async (
       throw new Error('No preview URL returned from GPT-Image-1 service');
     }
 
-    console.log('GPT-Image-1 preview generated successfully with watermarking:', data.preview_url.substring(0, 50) + '...');
+    console.log('GPT-Image-1 preview generated successfully with aspect ratio:', aspectRatio, 'URL:', data.preview_url);
     
     // Only store the preview if user is authenticated
     if (isAuthenticated) {
@@ -76,19 +60,4 @@ export const generateStylePreview = async (
     console.error('Error generating GPT-Image-1 style preview:', error);
     throw error;
   }
-};
-
-// New function for generating clean, unwatermarked images (post-purchase)
-export const generateFinalImage = async (
-  imageUrl: string, 
-  style: string, 
-  photoId: string, 
-  aspectRatio: string = "1:1",
-  sessionId?: string
-) => {
-  return generateStylePreview(imageUrl, style, photoId, aspectRatio, {
-    watermark: false,
-    quality: 'final',
-    sessionId
-  });
 };

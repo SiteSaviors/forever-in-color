@@ -7,63 +7,32 @@ interface UseBackNavigationProps {
   onStepChange: (step: number) => void;
 }
 
-/**
- * useBackNavigation Hook
- * 
- * Centralized logic for step navigation and back button behavior.
- * Provides consistent navigation patterns across all product steps.
- * 
- * Features:
- * - Smart back navigation logic
- * - Step validation
- * - Consistent scroll behavior
- * - Error prevention for invalid navigation
- */
 export const useBackNavigation = ({
   currentStep,
   completedSteps,
   onStepChange
 }: UseBackNavigationProps) => {
   
-  /**
-   * Determine if user can navigate back from current step
-   */
-  const canGoBack = currentStep > 1;
-  
-  /**
-   * Handle back navigation with validation and smooth scrolling
-   */
+  const canGoBack = useCallback(() => {
+    return currentStep > 1;
+  }, [currentStep]);
+
+  const getPreviousStep = useCallback(() => {
+    if (currentStep <= 1) return 1;
+    return currentStep - 1;
+  }, [currentStep]);
+
   const handleBackStep = useCallback(() => {
-    if (!canGoBack) {
-      console.warn('Cannot go back from step 1');
-      return;
+    if (canGoBack()) {
+      const previousStep = getPreviousStep();
+      console.log(`Navigating back from step ${currentStep} to step ${previousStep}`);
+      onStepChange(previousStep);
     }
-    
-    const previousStep = currentStep - 1;
-    console.log(`🔙 Navigating back from step ${currentStep} to step ${previousStep}`);
-    
-    // Update step
-    onStepChange(previousStep);
-    
-    // Smooth scroll to previous step
-    requestAnimationFrame(() => {
-      setTimeout(() => {
-        const targetElement = document.querySelector(`[data-step="${previousStep}"]`);
-        if (targetElement) {
-          const elementTop = targetElement.getBoundingClientRect().top + window.pageYOffset;
-          const offsetTop = elementTop - 80; // Header offset
-          
-          window.scrollTo({
-            top: offsetTop,
-            behavior: 'smooth'
-          });
-        }
-      }, 150); // Allow time for DOM updates
-    });
-  }, [currentStep, canGoBack, onStepChange]);
-  
+  }, [currentStep, canGoBack, getPreviousStep, onStepChange]);
+
   return {
-    canGoBack,
-    handleBackStep
+    canGoBack: canGoBack(),
+    handleBackStep,
+    previousStep: getPreviousStep()
   };
 };

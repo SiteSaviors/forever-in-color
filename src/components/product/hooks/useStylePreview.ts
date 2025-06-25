@@ -32,21 +32,9 @@ export const useStylePreview = ({
   // Initialize with pre-generated preview if available
   useEffect(() => {
     if (preGeneratedPreview) {
-      // Apply watermark to pre-generated preview
-      const applyWatermark = async () => {
-        try {
-          const watermarkedUrl = await addWatermarkToImage(preGeneratedPreview);
-          setPreviewUrl(watermarkedUrl);
-          setHasGeneratedPreview(true);
-          console.log(`✅ Watermark applied to pre-generated preview for ${style.name}`);
-        } catch (error) {
-          console.warn(`⚠️ Watermarking failed for ${style.name}, using original:`, error);
-          setPreviewUrl(preGeneratedPreview);
-          setHasGeneratedPreview(true);
-        }
-      };
-      
-      applyWatermark();
+      setPreviewUrl(preGeneratedPreview);
+      setHasGeneratedPreview(true);
+      console.log(`Using pre-generated preview for ${style.name}:`, preGeneratedPreview);
     }
   }, [preGeneratedPreview, style.name]);
 
@@ -77,51 +65,56 @@ export const useStylePreview = ({
     }
 
     const aspectRatio = getGenerationAspectRatio();
-    console.log(`🎨 Starting preview generation for style: ${style.name} (ID: ${style.id}) with orientation: ${selectedOrientation} -> aspect ratio: ${aspectRatio}`);
+    console.log(`Starting GPT-Image-1 preview generation for style: ${style.name} (ID: ${style.id}) with orientation: ${selectedOrientation} -> aspect ratio: ${aspectRatio}`);
     
     setIsLoading(true);
     
     try {
-      console.log(`🔄 Generating preview for ${style.name} with aspect ratio: ${aspectRatio}`);
+      console.log(`Generating GPT-Image-1 preview for ${style.name} with CONFIRMED aspect ratio: ${aspectRatio}`);
       
       const tempPhotoId = `temp_${Date.now()}_${style.id}`;
       
-      // Generate the preview without server-side watermarking
-      const rawPreviewUrl = await generateStylePreview(croppedImage, style.name, tempPhotoId, aspectRatio, {
-        watermark: false // Disable server-side watermarking
+      console.log(`API call parameters:`, {
+        styleName: style.name,
+        tempPhotoId,
+        aspectRatio,
+        selectedOrientation
       });
+      
+      const previewUrl = await generateStylePreview(croppedImage, style.name, tempPhotoId, aspectRatio);
 
-      if (rawPreviewUrl) {
-        console.log(`✅ Raw preview generated for ${style.name}, applying client-side watermark...`);
+      if (previewUrl) {
+        console.log(`GPT-Image-1 preview generated successfully for ${style.name} with aspect ratio ${aspectRatio}, adding watermark...`);
         
         try {
-          // Apply client-side watermarking
-          const watermarkedUrl = await addWatermarkToImage(rawPreviewUrl);
-          console.log(`✅ Client-side watermark applied successfully for ${style.name}`);
+          const watermarkedUrl = await addWatermarkToImage(previewUrl);
+          console.log(`Watermark added successfully for ${style.name}`);
           setPreviewUrl(watermarkedUrl);
+          console.log(`Preview URL set for ${style.name}:`, watermarkedUrl);
         } catch (watermarkError) {
-          console.warn(`⚠️ Client-side watermarking failed for ${style.name}, using original:`, watermarkError);
-          setPreviewUrl(rawPreviewUrl);
+          console.warn(`Failed to add watermark for ${style.name}, using original image:`, watermarkError);
+          setPreviewUrl(previewUrl);
+          console.log(`Preview URL set for ${style.name}:`, previewUrl);
         }
         
         setHasGeneratedPreview(true);
       } else {
-        console.error(`❌ Failed to generate preview for ${style.name}: No preview URL returned`);
+        console.error(`Failed to generate GPT-Image-1 preview for ${style.name}: No preview URL returned`);
       }
     } catch (error) {
-      console.error(`❌ Error generating preview for ${style.name}:`, error);
+      console.error(`Error generating GPT-Image-1 preview for ${style.name}:`, error);
     } finally {
       setIsLoading(false);
-      console.log(`🏁 Preview generation completed for ${style.name} (ID: ${style.id})`);
+      console.log(`GPT-Image-1 preview generation completed for ${style.name} (ID: ${style.id})`);
     }
   }, [croppedImage, style.id, style.name, preGeneratedPreview, getGenerationAspectRatio, selectedOrientation]);
 
   const handleClick = useCallback(() => {
-    console.log(`🎯 Style clicked: ${style.name} (ID: ${style.id}) with orientation: ${selectedOrientation}`);
+    console.log(`Style clicked: ${style.name} (ID: ${style.id}) with orientation: ${selectedOrientation}`);
     onStyleClick(style);
     
     if (croppedImage && !hasGeneratedPreview && !isLoading && style.id !== 1 && !preGeneratedPreview) {
-      console.log(`🚀 Auto-generating preview for style: ${style.name} with orientation ${selectedOrientation}`);
+      console.log(`Auto-generating GPT-Image-1 preview for style: ${style.name} with orientation ${selectedOrientation}`);
       generatePreview();
     }
   }, [style, croppedImage, hasGeneratedPreview, isLoading, onStyleClick, generatePreview, preGeneratedPreview, selectedOrientation]);

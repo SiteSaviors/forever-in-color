@@ -3,8 +3,6 @@ import { useState, useEffect } from "react";
 import { generateStylePreview } from "@/utils/stylePreviewApi";
 import { addWatermarkToImage } from "@/utils/watermarkUtils";
 import { convertOrientationToAspectRatio } from "../utils/orientationDetection";
-import { previewCache, logCachePerformance } from "@/utils/previewCache";
-import { memoryManager, logMemoryUsage } from "@/utils/memoryManager";
 
 export const usePreviewGeneration = (uploadedImage: string | null, selectedOrientation: string) => {
   const [previewUrls, setPreviewUrls] = useState<{ [key: number]: string }>({});
@@ -21,84 +19,39 @@ export const usePreviewGeneration = (uploadedImage: string | null, selectedOrien
       ];
       
       const generatePopularPreviews = async () => {
-        console.log('🚀 Auto-generating previews for popular styles:', popularStyleIds);
-        console.log('Using uploaded image:', uploadedImage.substring(0, 50) + '...');
+        console.log('Auto-generating previews for popular styles:', popularStyleIds);
         console.log('Current selected orientation:', selectedOrientation);
         
         const aspectRatio = convertOrientationToAspectRatio(selectedOrientation);
-        
-        // CRITICAL FIX: Use the actual uploaded image, not optimized version for cache key
-        const sourceImageForCache = uploadedImage;
-        
-        // Optimize image once for all generations
-        const optimizedImage = await memoryManager.optimizeForPreview(uploadedImage);
-        console.log(`🗜️ Optimized image for batch generation: ${memoryManager.getImageSizeMB(optimizedImage).toFixed(2)}MB`);
+        console.log(`Using aspect ratio ${aspectRatio} for auto-generation based on orientation ${selectedOrientation}`);
         
         for (const styleId of popularStyleIds) {
           const style = artStyles.find(s => s.id === styleId);
           if (!style) continue;
 
-          // Check cache first using the original uploaded image as key
-          const cachedPreview = previewCache.getCachedPreview(sourceImageForCache, styleId, aspectRatio);
-          if (cachedPreview) {
-            setPreviewUrls(prev => ({ ...prev, [styleId]: cachedPreview }));
-            console.log(`✅ Using cached preview for ${style.name}`);
-            continue;
-          }
-
           try {
-            console.log(`🎨 Auto-generating preview for ${style.name} (ID: ${styleId}) with aspect ratio: ${aspectRatio}`);
-            console.log(`📸 Using source image: ${uploadedImage.substring(0, 50)}...`);
+            console.log(`Auto-generating preview for ${style.name} (ID: ${styleId}) with aspect ratio: ${aspectRatio}`);
             
             const tempPhotoId = `temp_${Date.now()}_${styleId}`;
-            
-            // Generate without server-side watermarking using optimized image
-            const rawPreviewUrl = await generateStylePreview(optimizedImage, style.name, tempPhotoId, aspectRatio, {
-              watermark: false // Disable server-side watermarking
-            });
+            const previewUrl = await generateStylePreview(uploadedImage, style.name, tempPhotoId, aspectRatio);
 
-            if (rawPreviewUrl) {
+            if (previewUrl) {
               try {
-                // Apply client-side watermarking
-                const watermarkedUrl = await addWatermarkToImage(rawPreviewUrl);
-                
-                // Cache the result using original image as key
-                previewCache.cachePreview(
-                  sourceImageForCache, 
-                  styleId, 
-                  style.name, 
-                  aspectRatio, 
-                  watermarkedUrl
-                );
-                
+                const watermarkedUrl = await addWatermarkToImage(previewUrl);
                 setPreviewUrls(prev => ({ ...prev, [styleId]: watermarkedUrl }));
-                console.log(`✅ Auto-generated preview for ${style.name} completed with client-side watermark and aspect ratio ${aspectRatio}`);
+                console.log(`Auto-generated preview for ${style.name} completed with watermark and aspect ratio ${aspectRatio}`);
               } catch (watermarkError) {
-                console.warn(`⚠️ Failed to add watermark for ${style.name}, using original:`, watermarkError);
-                
-                // Cache even without watermark using original image as key
-                previewCache.cachePreview(
-                  sourceImageForCache, 
-                  styleId, 
-                  style.name, 
-                  aspectRatio, 
-                  rawPreviewUrl
-                );
-                
-                setPreviewUrls(prev => ({ ...prev, [styleId]: rawPreviewUrl }));
+                console.warn(`Failed to add watermark for ${style.name}, using original:`, watermarkError);
+                setPreviewUrls(prev => ({ ...prev, [styleId]: previewUrl }));
               }
             }
           } catch (error) {
-            console.error(`❌ Error auto-generating preview for ${style.name}:`, error);
+            console.error(`Error auto-generating preview for ${style.name}:`, error);
           }
         }
         
         setAutoGenerationComplete(true);
-        console.log('🏁 Auto-generation of popular style previews completed');
-        
-        // Log performance metrics
-        logCachePerformance();
-        logMemoryUsage();
+        console.log('Auto-generation of popular style previews completed');
       };
 
       generatePopularPreviews();
@@ -110,8 +63,6 @@ export const usePreviewGeneration = (uploadedImage: string | null, selectedOrien
     if (!uploadedImage) {
       setAutoGenerationComplete(false);
       setPreviewUrls({});
-      // Clear cache when no image to prevent stale previews
-      console.log('🧹 Clearing preview cache due to no uploaded image');
     }
   }, [uploadedImage]);
 

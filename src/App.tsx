@@ -7,11 +7,9 @@ import "./App.css";
 
 function App() {
   return (
-    <div className="min-h-screen w-full">
+    <div className="min-h-screen">
       <SessionTimeoutWarning />
-      <main className="w-full">
-        <Outlet />
-      </main>
+      <Outlet />
       <Toaster />
     </div>
   );
