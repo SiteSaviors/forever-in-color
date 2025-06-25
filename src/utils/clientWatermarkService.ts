@@ -27,6 +27,8 @@ export class ClientWatermarkService {
         canvas.width = mainImage.width;
         canvas.height = mainImage.height;
         
+        console.log(`📐 Canvas dimensions: ${canvas.width}x${canvas.height}`);
+        
         // Draw the main image
         ctx.drawImage(mainImage, 0, 0);
         
@@ -35,8 +37,10 @@ export class ClientWatermarkService {
         watermarkImage.crossOrigin = 'anonymous';
         
         watermarkImage.onload = () => {
-          // Calculate watermark size (15% of image width, maintaining aspect ratio)
-          const watermarkWidth = mainImage.width * 0.15;
+          console.log(`🖼️ Watermark image loaded: ${watermarkImage.width}x${watermarkImage.height}`);
+          
+          // Calculate watermark size (20% of image width for better visibility)
+          const watermarkWidth = mainImage.width * 0.2;
           const aspectRatio = watermarkImage.height / watermarkImage.width;
           const watermarkHeight = watermarkWidth * aspectRatio;
           
@@ -44,28 +48,43 @@ export class ClientWatermarkService {
           const x = (mainImage.width - watermarkWidth) / 2;
           const y = (mainImage.height - watermarkHeight) / 2;
           
-          // Set opacity for watermark (30% transparency)
-          ctx.globalAlpha = 0.3;
+          console.log(`🎯 Watermark position: (${x}, ${y}), size: ${watermarkWidth}x${watermarkHeight}`);
+          
+          // Set opacity for watermark (50% for better visibility)
+          ctx.globalAlpha = 0.5;
+          
+          // Add a subtle shadow for better contrast
+          ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+          ctx.shadowBlur = 4;
+          ctx.shadowOffsetX = 2;
+          ctx.shadowOffsetY = 2;
           
           // Draw watermark in center
           ctx.drawImage(watermarkImage, x, y, watermarkWidth, watermarkHeight);
           
+          // Reset shadow and alpha
+          ctx.shadowColor = 'transparent';
+          ctx.shadowBlur = 0;
+          ctx.shadowOffsetX = 0;
+          ctx.shadowOffsetY = 0;
+          ctx.globalAlpha = 1;
+          
           // Convert to data URL with high quality
           const watermarkedImageUrl = canvas.toDataURL('image/jpeg', 0.95);
-          console.log('✅ Client-side watermark applied successfully');
+          console.log('✅ Client-side watermark applied successfully with enhanced visibility');
           resolve(watermarkedImageUrl);
         };
         
-        watermarkImage.onerror = () => {
-          console.warn('⚠️ Failed to load watermark, returning original image');
+        watermarkImage.onerror = (error) => {
+          console.warn('⚠️ Failed to load watermark, returning original image', error);
           resolve(imageUrl);
         };
         
         watermarkImage.src = this.logoUrl;
       };
       
-      mainImage.onerror = () => {
-        console.error('❌ Failed to load main image for watermarking');
+      mainImage.onerror = (error) => {
+        console.error('❌ Failed to load main image for watermarking', error);
         reject(new Error('Failed to load main image'));
       };
       
