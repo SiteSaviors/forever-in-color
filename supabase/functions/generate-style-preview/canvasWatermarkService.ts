@@ -17,16 +17,16 @@ export class CanvasWatermarkService {
   ): Promise<string> {
     console.log(`[Watermark] TEMPORARY: Server-side watermarking disabled`);
     console.log(`[Watermark] Session: ${sessionId}, Preview: ${isPreview}`);
-    console.log(`[Watermark] Processing image URL: ${imageUrl.substring(0, 30)}...`);
+    console.log(`[Watermark] Returning original image: ${imageUrl.substring(0, 100)}...`);
+    
+    // Check if the image URL is a data URL (base64 encoded image)
+    if (imageUrl.startsWith('data:image/')) {
+      console.log('[Watermark] Image is a data URL, returning as-is');
+      return imageUrl;
+    }
     
     try {
-      // Check if the URL is a data URL (base64 encoded image)
-      if (imageUrl.startsWith('data:image/')) {
-        console.log('[Watermark] Detected data URL, returning without fetch verification');
-        return imageUrl;
-      }
-      
-      // For regular URLs, verify the image URL is accessible before returning it
+      // Verify the image URL is accessible before returning it
       const response = await fetch(imageUrl, { method: 'HEAD' });
       if (!response.ok) {
         console.error(`[Watermark] Image not accessible: ${response.status}`);

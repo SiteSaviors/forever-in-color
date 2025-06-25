@@ -1,4 +1,3 @@
-
 import { ClientWatermarkService } from './clientWatermarkService';
 
 export const addWatermarkToImage = async (
