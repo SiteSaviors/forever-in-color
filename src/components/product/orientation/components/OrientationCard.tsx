@@ -30,15 +30,17 @@ const OrientationCard = ({
     }
   };
 
-  // Enhanced touch handling for mobile
+  // Enhanced touch handling for mobile with proper typing
   const handleTouchStart = (e: React.TouchEvent) => {
-    e.currentTarget.style.transform = 'scale(0.98)';
-    e.currentTarget.style.transition = 'transform 0.1s ease';
+    const element = e.currentTarget as HTMLElement;
+    element.style.transform = 'scale(0.98)';
+    element.style.transition = 'transform 0.1s ease';
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
-    e.currentTarget.style.transform = isSelected ? 'scale(1.02)' : 'scale(1)';
-    e.currentTarget.style.transition = 'transform 0.2s ease';
+    const element = e.currentTarget as HTMLElement;
+    element.style.transform = isSelected ? 'scale(1.02)' : 'scale(1)';
+    element.style.transition = 'transform 0.2s ease';
   };
 
   const handleClick = (e: React.MouseEvent) => {
