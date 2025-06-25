@@ -1,4 +1,3 @@
-
 import { REPLICATE_CONFIG } from './replicate/config.ts';
 import { PromptEnhancer } from './replicate/promptEnhancer.ts';
 import { PollingService } from './replicate/pollingService.ts';
@@ -15,7 +14,7 @@ export class ReplicateService {
   constructor(apiToken: string, openaiApiKey: string) {
     // Clean the tokens in case they have extra text
     this.apiToken = apiToken.replace(/^export\s+REPLICATE_API_TOKEN=/, '').trim();
-    this.openaiApiKey = openaiApiKey;
+    this.openaiApiKey = openaiApiKey.replace(/^export\s+OPENAI_API_KEY=/, '').trim();
     
     console.log("ReplicateService initialized for GPT-Image-1 with token length:", this.apiToken?.length);
 
