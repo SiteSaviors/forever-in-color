@@ -28,6 +28,9 @@ export const StyleCardContextProvider = ({
   );
 };
 
+// Add the missing export alias
+export const StyleCardProvider = StyleCardContextProvider;
+
 export const useStyleCardContext = () => {
   const context = useContext(StyleCardContext);
   if (!context) {
