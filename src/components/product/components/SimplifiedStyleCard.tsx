@@ -26,17 +26,19 @@ const SimplifiedStyleCard = ({
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isCanvasLightboxOpen, setIsCanvasLightboxOpen] = useState(false);
 
-  // Get shared context instead of props
+  // Get shared context with preview URLs
   const {
     selectedOrientation,
     croppedImage,
     selectedStyle,
     shouldBlur,
+    previewUrls,
+    autoGenerationComplete,
     onStyleClick,
     onContinue
   } = useStyleCardContext();
 
-  // Use simplified hook
+  // Use simplified hook with preview URLs
   const {
     isSelected,
     isGenerating,
@@ -58,6 +60,8 @@ const SimplifiedStyleCard = ({
     croppedImage,
     selectedStyle,
     shouldBlur,
+    previewUrls, // Pass preview URLs from context
+    autoGenerationComplete,
     onStyleClick,
     onContinue
   });

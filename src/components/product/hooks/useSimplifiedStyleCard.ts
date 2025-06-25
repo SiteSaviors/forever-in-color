@@ -1,6 +1,6 @@
 
-import { useState, useCallback } from "react";
-import { useStylePreview } from "../contexts/StylePreviewContext";
+import { useMemo } from 'react';
+import { useStylePreview } from './useStylePreview';
 
 interface UseSimplifiedStyleCardProps {
   style: {
@@ -11,114 +11,120 @@ interface UseSimplifiedStyleCardProps {
   };
   croppedImage: string | null;
   selectedStyle: number | null;
-  shouldBlur?: boolean;
+  shouldBlur: boolean;
+  previewUrls: { [key: number]: string };
+  autoGenerationComplete: boolean;
   onStyleClick: (style: { id: number; name: string; description: string; image: string }) => void;
-  onContinue?: () => void;
+  onContinue: () => void;
 }
 
 export const useSimplifiedStyleCard = ({
   style,
   croppedImage,
   selectedStyle,
-  shouldBlur = false,
+  shouldBlur,
+  previewUrls,
+  autoGenerationComplete,
   onStyleClick,
   onContinue
 }: UseSimplifiedStyleCardProps) => {
-  const [isExpanded, setIsExpanded] = useState(false);
   
-  const { 
-    generatePreview, 
-    retryGeneration,
-    isLoading, 
-    hasPreview, 
-    hasError,
-    getPreviewUrl,
-    getError
-  } = useStylePreview();
-
-  // Computed states
-  const isSelected = selectedStyle === style.id;
-  const isGenerating = isLoading(style.id);
-  const hasGeneratedPreview = hasPreview(style.id);
-  const previewUrl = getPreviewUrl(style.id);
-  const error = getError(style.id);
-  const showError = hasError(style.id);
+  // Check if this style has a pre-generated preview
+  const preGeneratedPreview = previewUrls[style.id];
+  const isPopular = [2, 4, 5].includes(style.id);
   
-  // Image display logic
-  const imageToShow = previewUrl || croppedImage || style.image;
-  const showContinueInCard = style.id === 1 || hasGeneratedPreview;
-  const hasPreviewOrCropped = !!(previewUrl || croppedImage);
-  const showGeneratedBadge = hasGeneratedPreview && style.id !== 1;
-  const shouldShowBlur = shouldBlur && !hasGeneratedPreview && !isGenerating && !showError && style.id !== 1;
+  console.log(`🔍 useSimplifiedStyleCard for ${style.name}:`, {
+    styleId: style.id,
+    hasPreGeneratedPreview: !!preGeneratedPreview,
+    preGeneratedUrl: preGeneratedPreview ? preGeneratedPreview.substring(0, 50) + '...' : null,
+    isPopular,
+    autoGenerationComplete
+  });
 
-  // Main click handler - simplified logic
-  const handleClick = useCallback(() => {
-    console.log(`🎯 Style clicked: ${style.name} (ID: ${style.id})`);
-    onStyleClick(style);
+  const {
+    isLoading: isGenerating,
+    previewUrl,
+    hasGeneratedPreview,
+    handleClick: handleStyleClick
+  } = useStylePreview({
+    style,
+    croppedImage,
+    isPopular,
+    preGeneratedPreview, // Pass the auto-generated preview
+    selectedOrientation: "square", // Default for now
+    onStyleClick
+  });
+
+  // Determine which image to show
+  const imageToShow = useMemo(() => {
+    // If we have a preview (either pre-generated or newly generated), use it
+    if (previewUrl) {
+      console.log(`📸 ${style.name}: Using preview URL:`, previewUrl.substring(0, 50) + '...');
+      return previewUrl;
+    }
     
-    // Auto-generate if needed - simple condition check
-    const shouldAutoGenerate = croppedImage && 
-      !hasGeneratedPreview && 
-      !isGenerating && 
-      !showError && 
-      style.id !== 1;
-      
-    if (shouldAutoGenerate) {
-      console.log(`🚀 Auto-generating preview for: ${style.name}`);
-      generatePreview(style.id, style.name);
+    // If we have a pre-generated preview but no previewUrl yet, use the pre-generated one
+    if (preGeneratedPreview) {
+      console.log(`📸 ${style.name}: Using pre-generated preview:`, preGeneratedPreview.substring(0, 50) + '...');
+      return preGeneratedPreview;
     }
-  }, [style, croppedImage, hasGeneratedPreview, isGenerating, showError, onStyleClick, generatePreview]);
-
-  // Generate preview handler
-  const handleGenerateStyle = useCallback(async (e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    console.log(`🎨 Manual generate for: ${style.name}`);
-    onStyleClick(style);
-    await generatePreview(style.id, style.name);
-  }, [style, onStyleClick, generatePreview]);
-
-  // Retry handler
-  const handleRetry = useCallback(async (e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    console.log(`🔄 Retry for: ${style.name}`);
-    await retryGeneration(style.id, style.name);
-  }, [style, retryGeneration]);
-
-  // Continue handler
-  const handleContinueClick = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (onContinue) {
-      console.log(`Continue clicked for ${style.name}`);
-      onContinue();
+    
+    // If we have cropped image and this is the Original style, use cropped image
+    if (style.id === 1 && croppedImage) {
+      console.log(`📸 ${style.name}: Using cropped image for Original style`);
+      return croppedImage;
     }
-  }, [style.name, onContinue]);
+    
+    // Fall back to default style image
+    console.log(`📸 ${style.name}: Using default style image`);
+    return style.image;
+  }, [previewUrl, preGeneratedPreview, croppedImage, style.id, style.image, style.name]);
 
-  // Expand handler
-  const handleExpandClick = useCallback(() => {
-    setIsExpanded(true);
-  }, []);
+  const isSelected = selectedStyle === style.id;
+  const hasPreviewOrCropped = !!(previewUrl || preGeneratedPreview || (croppedImage && style.id === 1));
+  const showGeneratedBadge = hasGeneratedPreview || !!preGeneratedPreview;
+  const shouldShowBlur = shouldBlur && !isSelected;
+  const showContinueInCard = isSelected && hasPreviewOrCropped;
+
+  const handleClick = () => {
+    console.log(`🎯 ${style.name}: Card clicked`);
+    handleStyleClick();
+  };
+
+  const handleRetry = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    console.log(`🔄 ${style.name}: Retry clicked`);
+    // The useStylePreview hook will handle retry logic
+    handleStyleClick();
+  };
+
+  const handleContinueClick = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    console.log(`➡️ ${style.name}: Continue clicked`);
+    onContinue();
+  };
+
+  const handleGenerateStyle = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    console.log(`🎨 ${style.name}: Generate style clicked`);
+    handleStyleClick();
+  };
 
   return {
-    // States
     isSelected,
     isGenerating,
-    hasGeneratedPreview,
-    previewUrl,
-    error,
-    showError,
+    hasGeneratedPreview: hasGeneratedPreview || !!preGeneratedPreview,
+    previewUrl: imageToShow, // Return the determined image
+    error: null, // Simplified for now
+    showError: false,
     imageToShow,
     showContinueInCard,
     hasPreviewOrCropped,
     showGeneratedBadge,
     shouldShowBlur,
-    isExpanded,
-    setIsExpanded,
-    
-    // Handlers
     handleClick,
-    handleGenerateStyle,
     handleRetry,
     handleContinueClick,
-    handleExpandClick
+    handleGenerateStyle
   };
 };

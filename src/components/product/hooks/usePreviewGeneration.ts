@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { generateStylePreview } from "@/utils/stylePreviewApi";
 import { addWatermarkToImage } from "@/utils/watermarkUtils";
@@ -21,9 +22,13 @@ export const usePreviewGeneration = (uploadedImage: string | null, selectedOrien
       
       const generatePopularPreviews = async () => {
         console.log('🚀 Auto-generating previews for popular styles:', popularStyleIds);
+        console.log('Using uploaded image:', uploadedImage.substring(0, 50) + '...');
         console.log('Current selected orientation:', selectedOrientation);
         
         const aspectRatio = convertOrientationToAspectRatio(selectedOrientation);
+        
+        // CRITICAL FIX: Use the actual uploaded image, not optimized version for cache key
+        const sourceImageForCache = uploadedImage;
         
         // Optimize image once for all generations
         const optimizedImage = await memoryManager.optimizeForPreview(uploadedImage);
@@ -33,8 +38,8 @@ export const usePreviewGeneration = (uploadedImage: string | null, selectedOrien
           const style = artStyles.find(s => s.id === styleId);
           if (!style) continue;
 
-          // Check cache first
-          const cachedPreview = previewCache.getCachedPreview(uploadedImage, styleId, aspectRatio);
+          // Check cache first using the original uploaded image as key
+          const cachedPreview = previewCache.getCachedPreview(sourceImageForCache, styleId, aspectRatio);
           if (cachedPreview) {
             setPreviewUrls(prev => ({ ...prev, [styleId]: cachedPreview }));
             console.log(`✅ Using cached preview for ${style.name}`);
@@ -43,10 +48,11 @@ export const usePreviewGeneration = (uploadedImage: string | null, selectedOrien
 
           try {
             console.log(`🎨 Auto-generating preview for ${style.name} (ID: ${styleId}) with aspect ratio: ${aspectRatio}`);
+            console.log(`📸 Using source image: ${uploadedImage.substring(0, 50)}...`);
             
             const tempPhotoId = `temp_${Date.now()}_${styleId}`;
             
-            // Generate without server-side watermarking
+            // Generate without server-side watermarking using optimized image
             const rawPreviewUrl = await generateStylePreview(optimizedImage, style.name, tempPhotoId, aspectRatio, {
               watermark: false // Disable server-side watermarking
             });
@@ -56,9 +62,9 @@ export const usePreviewGeneration = (uploadedImage: string | null, selectedOrien
                 // Apply client-side watermarking
                 const watermarkedUrl = await addWatermarkToImage(rawPreviewUrl);
                 
-                // Cache the result
+                // Cache the result using original image as key
                 previewCache.cachePreview(
-                  uploadedImage, 
+                  sourceImageForCache, 
                   styleId, 
                   style.name, 
                   aspectRatio, 
@@ -70,9 +76,9 @@ export const usePreviewGeneration = (uploadedImage: string | null, selectedOrien
               } catch (watermarkError) {
                 console.warn(`⚠️ Failed to add watermark for ${style.name}, using original:`, watermarkError);
                 
-                // Cache even without watermark
+                // Cache even without watermark using original image as key
                 previewCache.cachePreview(
-                  uploadedImage, 
+                  sourceImageForCache, 
                   styleId, 
                   style.name, 
                   aspectRatio, 
@@ -104,7 +110,8 @@ export const usePreviewGeneration = (uploadedImage: string | null, selectedOrien
     if (!uploadedImage) {
       setAutoGenerationComplete(false);
       setPreviewUrls({});
-      // Don't clear cache entirely - keep for session
+      // Clear cache when no image to prevent stale previews
+      console.log('🧹 Clearing preview cache due to no uploaded image');
     }
   }, [uploadedImage]);
 
