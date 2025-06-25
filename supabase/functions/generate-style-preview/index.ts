@@ -56,12 +56,13 @@ serve(async (req) => {
       )
     });
 
-    if (!openaiApiKey) {
-      const errorMsg = 'OpenAI API key is not configured. Please set OPENAI_API_KEY or OPEN_AI_KEY environment variable in your Supabase project settings.';
+    // Check for missing or empty OpenAI API key
+    if (!openaiApiKey || openaiApiKey.trim() === '') {
+      const errorMsg = 'OpenAI API key is not configured or is empty. Please set OPENAI_API_KEY or OPEN_AI_KEY environment variable in your Supabase project settings.';
       console.error(`❌ [${requestId}] ${errorMsg}`);
       
       try {
-        await logSecurityEvent('api_key_missing', 'OpenAI API key not configured', req);
+        await logSecurityEvent('api_key_missing', 'OpenAI API key not configured or empty', req);
       } catch (logError) {
         console.warn('Failed to log security event:', logError);
       }
@@ -80,12 +81,13 @@ serve(async (req) => {
       );
     }
 
-    if (!replicateApiToken) {
-      const errorMsg = 'Replicate API token is not configured. Please set REPLICATE_API_TOKEN environment variable in your Supabase project settings.';
+    // Check for missing or empty Replicate API token
+    if (!replicateApiToken || replicateApiToken.trim() === '') {
+      const errorMsg = 'Replicate API token is not configured or is empty. Please set REPLICATE_API_TOKEN environment variable in your Supabase project settings.';
       console.error(`❌ [${requestId}] ${errorMsg}`);
       
       try {
-        await logSecurityEvent('api_key_missing', 'Replicate API token not configured', req);
+        await logSecurityEvent('api_key_missing', 'Replicate API token not configured or empty', req);
       } catch (logError) {
         console.warn('Failed to log security event:', logError);
       }
