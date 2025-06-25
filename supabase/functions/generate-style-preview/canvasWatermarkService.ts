@@ -20,7 +20,13 @@ export class CanvasWatermarkService {
     console.log(`[Watermark] Returning original image: ${imageUrl.substring(0, 100)}...`);
     
     try {
-      // Verify the image URL is accessible before returning it
+      // Check if the imageUrl is a data URL (base64 encoded image)
+      if (imageUrl.startsWith('data:image/')) {
+        console.log('[Watermark] Data URL detected, skipping fetch verification');
+        return imageUrl;
+      }
+      
+      // Verify the image URL is accessible before returning it (only for regular URLs)
       const response = await fetch(imageUrl, { method: 'HEAD' });
       if (!response.ok) {
         console.error(`[Watermark] Image not accessible: ${response.status}`);
