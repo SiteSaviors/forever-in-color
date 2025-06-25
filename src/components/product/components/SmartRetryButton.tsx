@@ -8,7 +8,7 @@ interface SmartRetryButtonProps {
   retryCount: number;
   maxRetries: number;
   disabled?: boolean;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'default' | 'lg';
   variant?: 'default' | 'outline' | 'ghost';
   className?: string;
 }
