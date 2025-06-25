@@ -4,7 +4,6 @@ import { Upload, ImageIcon } from "lucide-react";
 import StyleCard from "./StyleCard";
 import { useStylePreview } from "./contexts/StylePreviewContext";
 import { artStyles } from "@/data/artStyles";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 interface StyleGridProps {
   croppedImage: string | null;
@@ -21,8 +20,6 @@ const StyleGrid = ({
   onStyleSelect, 
   onComplete 
 }: StyleGridProps) => {
-  const isMobile = useIsMobile();
-  
   // Popular styles that auto-generate: Classic Oil (2), Watercolor Dreams (4), Pastel Bliss (5)
   const popularStyleIds = [2, 4, 5];
 
@@ -59,13 +56,11 @@ const StyleGrid = ({
   if (!croppedImage) {
     return (
       <div className="space-y-6">
-        {/* Mobile-optimized grid: 1 column on mobile, 2 on tablet, 3 on desktop */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
           {artStyles.map((style) => (
             <div
               key={style.id}
-              className="group relative bg-white rounded-xl overflow-hidden border-2 border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300"
-              style={{ aspectRatio: isMobile ? '4/5' : '1/1' }}
+              className="group relative bg-white rounded-xl overflow-hidden border-2 border-gray-200 aspect-square shadow-lg hover:shadow-xl transition-all duration-300"
             >
               {/* Premium glossy gradient background */}
               <div className={`absolute inset-0 bg-gradient-to-br ${getStyleGradient(style.id)} opacity-90`}>
@@ -75,33 +70,33 @@ const StyleGrid = ({
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 animate-pulse"></div>
               </div>
 
-              {/* Placeholder content - optimized for mobile */}
+              {/* Placeholder content - centered */}
               <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center z-10">
-                <div className={`${isMobile ? 'w-14 h-14' : 'w-12 h-12'} bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-3 border border-white/30`}>
-                  <ImageIcon className={`${isMobile ? 'w-7 h-7' : 'w-6 h-6'} text-white`} />
+                <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-3 border border-white/30">
+                  <ImageIcon className="w-6 h-6 text-white" />
                 </div>
-                <p className={`${isMobile ? 'text-sm' : 'text-xs'} text-white font-medium mb-1 drop-shadow-sm`}>
+                <p className="text-xs text-white font-medium mb-1 drop-shadow-sm">
                   Upload Photo to
                 </p>
-                <p className={`${isMobile ? 'text-sm' : 'text-xs'} text-white font-medium drop-shadow-sm`}>
+                <p className="text-xs text-white font-medium drop-shadow-sm">
                   Preview Style
                 </p>
               </div>
 
-              {/* Style info overlay - mobile optimized */}
+              {/* Style info overlay */}
               <div className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-sm p-3 border-t border-white/20">
-                <h4 className={`font-semibold ${isMobile ? 'text-base' : 'text-sm'} text-white truncate`}>
+                <h4 className="font-semibold text-sm text-white truncate">
                   {style.name}
                 </h4>
-                <p className={`${isMobile ? 'text-sm' : 'text-xs'} text-white/80 truncate`}>
+                <p className="text-xs text-white/80 truncate">
                   {style.description}
                 </p>
               </div>
 
-              {/* Upload prompt overlay on hover - enhanced touch targets */}
+              {/* Upload prompt overlay on hover */}
               <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center backdrop-blur-sm">
-                <div className={`bg-white/20 text-white ${isMobile ? 'px-4 py-2 text-sm' : 'px-3 py-1 text-xs'} rounded-full font-medium flex items-center gap-1 border border-white/30 backdrop-blur-sm`}>
-                  <Upload className={`${isMobile ? 'w-4 h-4' : 'w-3 h-3'}`} />
+                <div className="bg-white/20 text-white px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 border border-white/30 backdrop-blur-sm">
+                  <Upload className="w-3 h-3" />
                   Upload First
                 </div>
               </div>
@@ -112,11 +107,10 @@ const StyleGrid = ({
     );
   }
 
-  // Show actual style cards when photo is uploaded - mobile optimized
+  // Show actual style cards when photo is uploaded
   return (
     <div className="space-y-6">
-      {/* Responsive grid with better mobile spacing */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
         {artStyles.map((style) => {
           const isPopularStyle = popularStyleIds.includes(style.id);
           const isOriginalImage = style.id === 1;
