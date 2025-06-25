@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import StyleCardImage from "./components/StyleCardImage";
 import StyleCardInfo from "./components/StyleCardInfo";
 import StyleCardContainer from "./components/StyleCardContainer";
@@ -34,6 +35,9 @@ const StyleCard = ({
   onStyleClick,
   onContinue
 }: StyleCardProps) => {
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [isCanvasLightboxOpen, setIsCanvasLightboxOpen] = useState(false);
+
   const {
     isSelected,
     isGenerating,
@@ -50,7 +54,6 @@ const StyleCard = ({
     handleClick,
     handleGenerateStyle,
     handleRetry,
-    handleExpandClick,
     handleContinueClick
   } = useStyleCardLogic({
     style,
@@ -62,6 +65,22 @@ const StyleCard = ({
   });
 
   const cropAspectRatio = getCropAspectRatio(selectedOrientation);
+
+  // Handle expand click for lightbox
+  const handleExpandClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (previewUrl || croppedImage) {
+      setIsLightboxOpen(true);
+    }
+  };
+
+  // Handle canvas preview click
+  const handleCanvasPreviewClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (previewUrl || croppedImage) {
+      setIsCanvasLightboxOpen(true);
+    }
+  };
 
   console.log(`StyleCard ${style.name} (ID: ${style.id}):`, {
     isSelected,
@@ -109,7 +128,7 @@ const StyleCard = ({
             previewUrl={previewUrl}
             hasGeneratedPreview={hasGeneratedPreview}
             onExpandClick={handleExpandClick}
-            onCanvasPreviewClick={() => {}}
+            onCanvasPreviewClick={handleCanvasPreviewClick}
             onGenerateStyle={handleGenerateStyle}
             onRetry={handleRetry}
           />
@@ -138,6 +157,32 @@ const StyleCard = ({
         finalPreviewUrl={previewUrl}
         croppedImage={croppedImage}
         selectedOrientation={selectedOrientation}
+        onExpandClick={handleExpandClick}
+        onCanvasPreviewClick={handleCanvasPreviewClick}
+      />
+
+      {/* Lightboxes */}
+      <Lightbox
+        isOpen={isLightboxOpen}
+        onClose={() => setIsLightboxOpen(false)}
+        imageSrc={previewUrl || croppedImage || ''}
+        imageAlt={`${style.name} preview`}
+        title={style.name}
+      />
+
+      <Lightbox
+        isOpen={isCanvasLightboxOpen}
+        onClose={() => setIsCanvasLightboxOpen(false)}
+        imageSrc=""
+        imageAlt={`${style.name} canvas preview`}
+        title={`${style.name} on Canvas`}
+        customContent={
+          <FullCanvasMockup
+            imageUrl={previewUrl || croppedImage || ''}
+            orientation={selectedOrientation}
+            styleName={style.name}
+          />
+        }
       />
     </>
   );

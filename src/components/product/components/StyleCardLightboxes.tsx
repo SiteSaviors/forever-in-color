@@ -11,13 +11,17 @@ interface StyleCardLightboxesProps {
   finalPreviewUrl: string | null;
   croppedImage: string | null;
   selectedOrientation: string;
+  onExpandClick?: (e: React.MouseEvent) => void;
+  onCanvasPreviewClick?: (e: React.MouseEvent) => void;
 }
 
 const StyleCardLightboxes = ({
   style,
   finalPreviewUrl,
   croppedImage,
-  selectedOrientation
+  selectedOrientation,
+  onExpandClick,
+  onCanvasPreviewClick
 }: StyleCardLightboxesProps) => {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isCanvasLightboxOpen, setIsCanvasLightboxOpen] = useState(false);
@@ -27,6 +31,9 @@ const StyleCardLightboxes = ({
     if (finalPreviewUrl || croppedImage) {
       setIsLightboxOpen(true);
     }
+    if (onExpandClick) {
+      onExpandClick(e);
+    }
   };
 
   const handleCanvasPreviewClick = (e: React.MouseEvent) => {
@@ -34,7 +41,20 @@ const StyleCardLightboxes = ({
     if (finalPreviewUrl || croppedImage) {
       setIsCanvasLightboxOpen(true);
     }
+    if (onCanvasPreviewClick) {
+      onCanvasPreviewClick(e);
+    }
   };
+
+  // Expose handlers to parent component
+  React.useEffect(() => {
+    if (onExpandClick) {
+      (window as any)[`expandHandler_${style.id}`] = handleExpandClick;
+    }
+    if (onCanvasPreviewClick) {
+      (window as any)[`canvasHandler_${style.id}`] = handleCanvasPreviewClick;
+    }
+  }, [style.id]);
 
   return (
     <>
@@ -62,11 +82,6 @@ const StyleCardLightboxes = ({
           />
         }
       />
-
-      {/* Return handlers for parent component */}
-      <div style={{ display: 'none' }}>
-        {JSON.stringify({ handleExpandClick, handleCanvasPreviewClick })}
-      </div>
     </>
   );
 };

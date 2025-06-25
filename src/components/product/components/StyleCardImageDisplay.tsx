@@ -15,7 +15,7 @@ interface StyleCardImageDisplayProps {
   selectedOrientation: string;
   previewUrl?: string | null;
   hasGeneratedPreview: boolean;
-  onExpandClick?: () => void;
+  onExpandClick?: (e: React.MouseEvent) => void;
 }
 
 const StyleCardImageDisplay = ({
@@ -46,6 +46,9 @@ const StyleCardImageDisplay = ({
 
   const orientationAspectRatio = getOrientationAspectRatio();
 
+  // Show expand button if there's an image to expand and handler is provided
+  const canExpand = (finalPreviewUrl || croppedImage || imageToShow) && onExpandClick && !showLoadingState;
+
   if (shouldUseMockup) {
     return (
       <AspectRatio ratio={orientationAspectRatio} className="relative overflow-hidden rounded-lg group">
@@ -56,14 +59,12 @@ const StyleCardImageDisplay = ({
             className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105 drop-shadow-2xl"
           />
         </div>
-        {/* Mobile-only expand button - always visible on mobile */}
-        {onExpandClick && (
+        {/* Expand button - always visible on mobile, hover on desktop */}
+        {canExpand && (
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onExpandClick();
-            }}
-            className="absolute top-2 right-2 bg-black/50 text-white p-2 rounded-full sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200 sm:hidden md:block"
+            onClick={onExpandClick}
+            className="absolute top-2 right-2 bg-black/70 hover:bg-black/90 text-white p-2 rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-200 z-10 shadow-lg"
+            title="View full size"
           >
             <Expand className="w-4 h-4" />
           </button>
@@ -85,14 +86,12 @@ const StyleCardImageDisplay = ({
         }`}
       />
       
-      {/* Mobile-only expand button - always visible on mobile */}
-      {onExpandClick && !showLoadingState && (
+      {/* Expand button - always visible on mobile, hover on desktop */}
+      {canExpand && (
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onExpandClick();
-          }}
-          className="absolute top-2 right-2 bg-black/50 text-white p-2 rounded-full sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200 sm:hidden md:block"
+          onClick={onExpandClick}
+          className="absolute top-2 right-2 bg-black/70 hover:bg-black/90 text-white p-2 rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-200 z-10 shadow-lg"
+          title="View full size"
         >
           <Expand className="w-4 h-4" />
         </button>
