@@ -1,4 +1,5 @@
 
+
 export class CanvasWatermarkService {
   private static watermarkPath = "6789ee1d-5679-4b94-bae6-e76ffd4f7526.png";
   private static bucketName = "lovable-uploads";
@@ -23,40 +24,219 @@ export class CanvasWatermarkService {
         return imageUrl;
       }
 
-      // Load the original image with detailed error handling
-      const originalBitmap = await this.loadImageWithRetry(imageUrl, 'original');
-      if (!originalBitmap) {
-        console.error('[Watermark] Failed to load original image');
-        return imageUrl;
-      }
-
-      console.log(`[Watermark] Original image loaded: ${originalBitmap.width}x${originalBitmap.height}`);
-
-      // If not preview mode, just re-encode the original
+      // If not preview mode, return original URL
       if (!isPreview) {
-        return await this.encodeImageToDataUrl(originalBitmap);
-      }
-
-      // Load watermark logo with proper Supabase Storage URL
-      const logoUrl = this.getSupabaseStorageUrl();
-      console.log(`[Watermark] Loading logo from: ${logoUrl}`);
-      
-      const logoBitmap = await this.loadImageWithRetry(logoUrl, 'logo');
-      if (!logoBitmap) {
-        console.error('[Watermark] Failed to load logo, returning original');
+        console.log('[Watermark] Not preview mode, returning original');
         return imageUrl;
       }
 
-      console.log(`[Watermark] Logo loaded: ${logoBitmap.width}x${logoBitmap.height}`);
-
-      // Create watermarked image
-      const watermarkedDataUrl = await this.compositeImages(originalBitmap, logoBitmap);
-      console.log('[Watermark] Watermarking completed successfully');
+      // Try direct HTML Image approach instead of createImageBitmap
+      const watermarkedDataUrl = await this.createWatermarkWithHTMLImage(imageUrl, sessionId);
       
-      return watermarkedDataUrl;
+      if (watermarkedDataUrl && watermarkedDataUrl !== imageUrl) {
+        console.log('[Watermark] HTML Image approach succeeded');
+        return watermarkedDataUrl;
+      }
+
+      console.log('[Watermark] HTML Image approach failed, trying simple overlay');
+      
+      // Final fallback - return original if all methods fail
+      console.warn('[Watermark] All watermarking methods failed, returning original');
+      return imageUrl;
+
     } catch (error) {
       console.error('[Watermark] Unexpected error:', error);
       console.error('[Watermark] Error stack:', error.stack);
+      return imageUrl;
+    }
+  }
+
+  /**
+   * Create watermark using HTML Image elements instead of createImageBitmap
+   */
+  private static async createWatermarkWithHTMLImage(
+    imageUrl: string,
+    sessionId: string
+  ): Promise<string> {
+    console.log('[Watermark] Using HTML Image approach');
+
+    return new Promise(async (resolve) => {
+      try {
+        // Get the logo URL
+        const logoUrl = this.getSupabaseStorageUrl();
+        console.log(`[Watermark] Logo URL: ${logoUrl}`);
+
+        // Create image elements
+        const originalImg = new Image();
+        const logoImg = new Image();
+        
+        // Track loading
+        let originalLoaded = false;
+        let logoLoaded = false;
+        let hasResolved = false;
+
+        const tryComposite = () => {
+          if (originalLoaded && logoLoaded && !hasResolved) {
+            hasResolved = true;
+            console.log('[Watermark] Both images loaded, compositing...');
+            
+            try {
+              // Create canvas
+              const canvas = new OffscreenCanvas(originalImg.width || 1024, originalImg.height || 1024);
+              const ctx = canvas.getContext('2d');
+              
+              if (!ctx) {
+                console.error('[Watermark] Failed to get canvas context');
+                resolve(imageUrl);
+                return;
+              }
+
+              // Draw original image
+              ctx.drawImage(originalImg, 0, 0);
+              console.log('[Watermark] Original image drawn');
+
+              // Calculate logo size (20% of image width)
+              const logoSize = (originalImg.width || 1024) * 0.2;
+              const logoWidth = logoSize;
+              const logoHeight = (logoImg.height / logoImg.width) * logoSize;
+              
+              // Calculate center position
+              const logoX = ((originalImg.width || 1024) - logoWidth) / 2;
+              const logoY = ((originalImg.height || 1024) - logoHeight) / 2;
+              
+              // Draw logo with opacity
+              ctx.globalAlpha = 0.4;
+              ctx.drawImage(logoImg, logoX, logoY, logoWidth, logoHeight);
+              ctx.globalAlpha = 1.0;
+              
+              console.log('[Watermark] Logo drawn, converting to data URL');
+
+              // Convert to blob and then to data URL
+              canvas.convertToBlob({ type: 'image/png' })
+                .then(async (blob) => {
+                  const arrayBuffer = await blob.arrayBuffer();
+                  const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+                  const dataUrl = `data:image/png;base64,${base64}`;
+                  console.log(`[Watermark] Success! Data URL length: ${dataUrl.length}`);
+                  resolve(dataUrl);
+                })
+                .catch((error) => {
+                  console.error('[Watermark] Blob conversion failed:', error);
+                  resolve(imageUrl);
+                });
+
+            } catch (error) {
+              console.error('[Watermark] Compositing failed:', error);
+              resolve(imageUrl);
+            }
+          }
+        };
+
+        // Set up original image loading
+        originalImg.onload = () => {
+          console.log(`[Watermark] Original image loaded: ${originalImg.width}x${originalImg.height}`);
+          originalLoaded = true;
+          tryComposite();
+        };
+
+        originalImg.onerror = (error) => {
+          console.error('[Watermark] Original image load failed:', error);
+          if (!hasResolved) {
+            hasResolved = true;
+            resolve(imageUrl);
+          }
+        };
+
+        // Set up logo image loading
+        logoImg.onload = () => {
+          console.log(`[Watermark] Logo loaded: ${logoImg.width}x${logoImg.height}`);
+          logoLoaded = true;
+          tryComposite();
+        };
+
+        logoImg.onerror = (error) => {
+          console.error('[Watermark] Logo load failed:', error);
+          // Continue without logo - just return original with text overlay
+          if (!hasResolved && originalLoaded) {
+            hasResolved = true;
+            console.log('[Watermark] Proceeding without logo');
+            resolve(this.addTextWatermark(imageUrl, sessionId));
+          }
+        };
+
+        // Set crossOrigin and start loading
+        originalImg.crossOrigin = 'anonymous';
+        logoImg.crossOrigin = 'anonymous';
+        
+        // Start loading images
+        originalImg.src = imageUrl;
+        logoImg.src = logoUrl;
+
+        // Timeout fallback
+        setTimeout(() => {
+          if (!hasResolved) {
+            hasResolved = true;
+            console.warn('[Watermark] Timeout reached, returning original');
+            resolve(imageUrl);
+          }
+        }, 30000); // 30 second timeout
+
+      } catch (error) {
+        console.error('[Watermark] HTML Image method error:', error);
+        resolve(imageUrl);
+      }
+    });
+  }
+
+  /**
+   * Fallback method - add simple text watermark
+   */
+  private static async addTextWatermark(imageUrl: string, sessionId: string): Promise<string> {
+    console.log('[Watermark] Adding text watermark as fallback');
+    
+    try {
+      const img = new Image();
+      
+      return new Promise((resolve) => {
+        img.onload = async () => {
+          try {
+            const canvas = new OffscreenCanvas(img.width || 1024, img.height || 1024);
+            const ctx = canvas.getContext('2d');
+            
+            if (!ctx) {
+              resolve(imageUrl);
+              return;
+            }
+
+            // Draw original
+            ctx.drawImage(img, 0, 0);
+            
+            // Add text watermark
+            const fontSize = Math.max(24, (img.width || 1024) / 40);
+            ctx.font = `${fontSize}px Arial`;
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.textAlign = 'center';
+            ctx.fillText('PREVIEW', (img.width || 1024) / 2, (img.height || 1024) / 2);
+            
+            // Convert to data URL
+            const blob = await canvas.convertToBlob({ type: 'image/png' });
+            const arrayBuffer = await blob.arrayBuffer();
+            const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+            resolve(`data:image/png;base64,${base64}`);
+            
+          } catch (error) {
+            console.error('[Watermark] Text watermark failed:', error);
+            resolve(imageUrl);
+          }
+        };
+        
+        img.onerror = () => resolve(imageUrl);
+        img.crossOrigin = 'anonymous';
+        img.src = imageUrl;
+      });
+      
+    } catch (error) {
+      console.error('[Watermark] Text watermark setup failed:', error);
       return imageUrl;
     }
   }
@@ -66,169 +246,6 @@ export class CanvasWatermarkService {
    */
   private static getSupabaseStorageUrl(): string {
     return `https://${this.projectRef}.supabase.co/storage/v1/object/public/${this.bucketName}/${this.watermarkPath}`;
-  }
-
-  /**
-   * Loads an image with retry logic and fallback mechanisms
-   */
-  private static async loadImageWithRetry(
-    url: string, 
-    imageType: string, 
-    maxRetries: number = 2
-  ): Promise<ImageBitmap | null> {
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
-      try {
-        console.log(`[Watermark] Loading ${imageType} - Attempt ${attempt + 1}`);
-        
-        // Fetch with timeout
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
-        
-        const response = await fetch(url, {
-          signal: controller.signal,
-          headers: {
-            'Accept': 'image/*'
-          }
-        });
-        
-        clearTimeout(timeoutId);
-
-        if (!response.ok) {
-          console.error(`[Watermark] HTTP ${response.status} for ${imageType}`);
-          if (response.status === 404) {
-            console.error(`[Watermark] ${imageType} not found at: ${url}`);
-            return null; // Don't retry 404s
-          }
-          throw new Error(`HTTP ${response.status}`);
-        }
-
-        const contentType = response.headers.get('content-type');
-        console.log(`[Watermark] ${imageType} content-type: ${contentType}`);
-
-        const blob = await response.blob();
-        console.log(`[Watermark] ${imageType} size: ${blob.size} bytes`);
-
-        // Try createImageBitmap with error handling
-        try {
-          const bitmap = await createImageBitmap(blob);
-          console.log(`[Watermark] ${imageType} bitmap created successfully`);
-          return bitmap;
-        } catch (bitmapError) {
-          console.error(`[Watermark] createImageBitmap failed for ${imageType}:`, bitmapError);
-          
-          // Fallback: Try different approach for problematic images
-          if (attempt < maxRetries) {
-            console.log(`[Watermark] Retrying with different approach...`);
-            await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1s before retry
-            continue;
-          }
-        }
-      } catch (error) {
-        console.error(`[Watermark] Error loading ${imageType} (attempt ${attempt + 1}):`, error);
-        
-        if (attempt < maxRetries) {
-          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1s before retry
-          continue;
-        }
-      }
-    }
-    
-    return null;
-  }
-
-  /**
-   * Composites the logo onto the original image with proper positioning and opacity
-   */
-  private static async compositeImages(
-    originalBitmap: ImageBitmap,
-    logoBitmap: ImageBitmap
-  ): Promise<string> {
-    console.log('[Watermark] Starting image composition');
-    
-    // Create canvas
-    const canvas = new OffscreenCanvas(originalBitmap.width, originalBitmap.height);
-    const ctx = canvas.getContext('2d');
-    
-    if (!ctx) {
-      throw new Error('Failed to get 2d context from OffscreenCanvas');
-    }
-
-    // Draw original image
-    ctx.drawImage(originalBitmap, 0, 0);
-    console.log('[Watermark] Original image drawn to canvas');
-
-    // Calculate watermark dimensions (20% of image width)
-    const targetLogoWidth = originalBitmap.width * 0.2;
-    const logoScale = targetLogoWidth / logoBitmap.width;
-    const logoWidth = Math.round(logoBitmap.width * logoScale);
-    const logoHeight = Math.round(logoBitmap.height * logoScale);
-    
-    // Calculate center position
-    const logoX = Math.round((originalBitmap.width - logoWidth) / 2);
-    const logoY = Math.round((originalBitmap.height - logoHeight) / 2);
-    
-    console.log(`[Watermark] Logo dimensions: ${logoWidth}x${logoHeight} at position (${logoX}, ${logoY})`);
-
-    // Apply watermark with 40% opacity
-    ctx.globalAlpha = 0.4;
-    ctx.drawImage(logoBitmap, logoX, logoY, logoWidth, logoHeight);
-    ctx.globalAlpha = 1.0;
-    
-    console.log('[Watermark] Logo composited successfully');
-
-    // Convert to data URL
-    return await this.canvasToDataUrl(canvas);
-  }
-
-  /**
-   * Encodes an ImageBitmap directly to a data URL
-   */
-  private static async encodeImageToDataUrl(bitmap: ImageBitmap): Promise<string> {
-    const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
-    const ctx = canvas.getContext('2d');
-    
-    if (!ctx) {
-      throw new Error('Failed to get 2d context');
-    }
-
-    ctx.drawImage(bitmap, 0, 0);
-    return await this.canvasToDataUrl(canvas);
-  }
-
-  /**
-   * Converts a canvas to a data URL with error handling
-   */
-  private static async canvasToDataUrl(canvas: OffscreenCanvas): Promise<string> {
-    try {
-      // Method 1: convertToBlob (preferred)
-      const blob = await canvas.convertToBlob({ 
-        type: 'image/png',
-        quality: 1 
-      });
-      
-      console.log(`[Watermark] Blob created: ${blob.size} bytes`);
-      
-      // Convert blob to base64
-      const arrayBuffer = await blob.arrayBuffer();
-      const uint8Array = new Uint8Array(arrayBuffer);
-      
-      // Convert to base64 in chunks to avoid call stack issues with large images
-      let base64 = '';
-      const chunkSize = 32768; // 32KB chunks
-      
-      for (let i = 0; i < uint8Array.length; i += chunkSize) {
-        const chunk = uint8Array.slice(i, i + chunkSize);
-        base64 += btoa(String.fromCharCode.apply(null, Array.from(chunk)));
-      }
-      
-      const dataUrl = `data:image/png;base64,${base64}`;
-      console.log(`[Watermark] Data URL created: ${dataUrl.length} characters`);
-      
-      return dataUrl;
-    } catch (error) {
-      console.error('[Watermark] Canvas to data URL conversion failed:', error);
-      throw error;
-    }
   }
 
   static generateSessionId(): string {
@@ -292,3 +309,4 @@ export class WatermarkDebugHelper {
     console.log('\n=== END DIAGNOSTIC ===\n');
   }
 }
+
