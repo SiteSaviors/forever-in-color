@@ -113,7 +113,7 @@ const CustomizationSelector = ({
           <FloatingFrameCard
             enabled={customizations.floatingFrame.enabled}
             color={customizations.floatingFrame.color}
-            onToggle={(enabled) => handleCustomizationUpdate({
+            onEnabledChange={(enabled) => handleCustomizationUpdate({
               floatingFrame: { ...customizations.floatingFrame, enabled }
             })}
             onColorChange={(color) => handleCustomizationUpdate({
@@ -123,22 +123,22 @@ const CustomizationSelector = ({
 
           <LivingMemoryCard
             enabled={customizations.livingMemory}
-            onToggle={(enabled) => handleCustomizationUpdate({ livingMemory: enabled })}
+            onEnabledChange={(enabled) => handleCustomizationUpdate({ livingMemory: enabled })}
           />
 
           <VoiceMatchCard
             enabled={customizations.voiceMatch}
-            onToggle={(enabled) => handleCustomizationUpdate({ voiceMatch: enabled })}
+            onEnabledChange={(enabled) => handleCustomizationUpdate({ voiceMatch: enabled })}
           />
 
           <CustomMessageCard
             message={customizations.customMessage}
-            onChange={(message) => handleCustomizationUpdate({ customMessage: message })}
+            onMessageChange={(message) => handleCustomizationUpdate({ customMessage: message })}
           />
 
           <AIUpscaleCard
             enabled={customizations.aiUpscale}
-            onToggle={(enabled) => handleCustomizationUpdate({ aiUpscale: enabled })}
+            onEnabledChange={(enabled) => handleCustomizationUpdate({ aiUpscale: enabled })}
           />
         </div>
       </div>
@@ -146,7 +146,11 @@ const CustomizationSelector = ({
       {/* Social Proof & Video Options */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <SocialProofGallery />
-        <PremiumVideoOptions />
+        <PremiumVideoOptions 
+          livingMemoryEnabled={customizations.livingMemory}
+          options={{}}
+          onOptionsChange={() => {}}
+        />
       </div>
 
       {/* Live Activity Feed */}
