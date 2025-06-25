@@ -1,15 +1,20 @@
 
 export function handleSuccess(output: string, corsHeaders: Record<string, string>, requestId?: string) {
-  return Response.json(
-    {
+  console.log(`✅ Sending success response for [${requestId}]`);
+  
+  return new Response(
+    JSON.stringify({
       success: true,
       preview_url: output,
       timestamp: new Date().toISOString(),
       requestId: requestId || 'unknown'
-    },
+    }),
     { 
       status: 200, 
-      headers: corsHeaders 
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/json'
+      }
     }
   );
 }
@@ -20,16 +25,21 @@ export function handleError(
   status: number = 400,
   requestId?: string
 ) {
-  return Response.json(
-    {
+  console.error(`❌ Sending error response for [${requestId}]:`, { error, status });
+  
+  return new Response(
+    JSON.stringify({
       success: false,
       error: error,
       timestamp: new Date().toISOString(),
       requestId: requestId || 'unknown'
-    },
+    }),
     { 
       status, 
-      headers: corsHeaders 
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/json'
+      }
     }
   );
 }

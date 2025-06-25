@@ -11,12 +11,31 @@ import { EnhancedErrorHandler } from './errorHandling.ts';
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
 serve(async (req) => {
+  console.log(`🔥 Edge Function Request: ${req.method} ${req.url}`);
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    console.log('✅ Handling CORS preflight request');
+    return new Response(null, { 
+      status: 200,
+      headers: corsHeaders 
+    });
+  }
+
+  // Only allow POST requests
+  if (req.method !== 'POST') {
+    console.log(`❌ Method not allowed: ${req.method}`);
+    return new Response(
+      JSON.stringify({ error: 'Method not allowed' }), 
+      { 
+        status: 405, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
+    );
   }
 
   const startTime = Date.now();
@@ -28,7 +47,7 @@ serve(async (req) => {
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY') || Deno.env.get('OPEN_AI_KEY');
     const replicateApiToken = Deno.env.get('REPLICATE_API_TOKEN');
 
-    console.log('Environment check:', {
+    console.log('🔧 Environment check:', {
       hasOpenAIKey: !!openaiApiKey,
       hasReplicateToken: !!replicateApiToken,
       openaiKeyLength: openaiApiKey?.length || 0,
@@ -36,20 +55,35 @@ serve(async (req) => {
     });
 
     if (!openaiApiKey) {
-      console.error(`[${requestId}] Missing OpenAI API key`);
+      console.error(`❌ [${requestId}] Missing OpenAI API key`);
       await logSecurityEvent('api_key_missing', 'OpenAI API key not configured', req);
       return handleError('Service configuration error - OpenAI key missing', corsHeaders, 500, requestId);
     }
 
     if (!replicateApiToken) {
-      console.error(`[${requestId}] Missing Replicate API token`);
+      console.error(`❌ [${requestId}] Missing Replicate API token`);
       await logSecurityEvent('api_key_missing', 'Replicate API token not configured', req);
       return handleError('Service configuration error - Replicate token missing', corsHeaders, 500, requestId);
     }
 
-    // Parse and validate request
-    const body = await req.json();
-    console.log(`[${requestId}] Request received:`, {
+    // Parse request body with error handling
+    let body;
+    try {
+      const rawBody = await req.text();
+      console.log(`📝 Raw request body length: ${rawBody.length}`);
+      
+      if (!rawBody || rawBody.trim() === '') {
+        throw new Error('Request body is empty');
+      }
+      
+      body = JSON.parse(rawBody);
+      console.log(`📋 Parsed request body keys:`, Object.keys(body));
+    } catch (parseError) {
+      console.error(`❌ [${requestId}] Failed to parse request body:`, parseError);
+      return handleError('Invalid JSON in request body', corsHeaders, 400, requestId);
+    }
+
+    console.log(`📋 [${requestId}] Request received:`, {
       hasImageUrl: !!body.imageUrl,
       style: body.style,
       aspectRatio: body.aspectRatio,
@@ -68,13 +102,24 @@ serve(async (req) => {
       quality = 'preview' // 'preview' or 'final'
     } = body;
 
+    // Validate required fields
+    if (!imageUrl) {
+      console.error(`❌ [${requestId}] Missing imageUrl`);
+      return handleError('Missing required field: imageUrl', corsHeaders, 400, requestId);
+    }
+
+    if (!style) {
+      console.error(`❌ [${requestId}] Missing style`);
+      return handleError('Missing required field: style', corsHeaders, 400, requestId);
+    }
+
     // Generate session ID if not provided
     const sessionId = providedSessionId || CanvasWatermarkService.generateSessionId();
 
     // Enhanced input validation
     const validationResult = validateInput(imageUrl, style, aspectRatio);
     if (!validationResult.isValid) {
-      console.error(`[${requestId}] Input validation failed:`, validationResult.error);
+      console.error(`❌ [${requestId}] Input validation failed:`, validationResult.error);
       await logSecurityEvent('suspicious_upload', 'Input validation failed', req, {
         reason: 'Input validation failed',
         validation_error: validationResult.error,
@@ -97,12 +142,12 @@ serve(async (req) => {
     // Extract and validate image data
     const imageData = extractImageData(imageUrl);
     if (!imageData) {
-      console.error(`[${requestId}] Failed to extract image data`);
+      console.error(`❌ [${requestId}] Failed to extract image data`);
       await logSecurityEvent('invalid_image', 'Failed to extract image data', req);
       return handleError('Invalid image data', corsHeaders, 400, requestId);
     }
 
-    console.log(`[${requestId}] Creating OpenAI service with validated inputs`);
+    console.log(`🔧 [${requestId}] Creating OpenAI service with validated inputs`);
 
     // Create OpenAI service with enhanced error handling
     const openaiService = new OpenAIService(openaiApiKey, replicateApiToken, supabase);
@@ -112,18 +157,18 @@ serve(async (req) => {
     const imageQuality = isPreview ? 'medium' : 'high';
     
     // Generate image with comprehensive error handling
-    console.log(`[${requestId}] Starting generation with aspect ratio:`, aspectRatio, 'quality:', imageQuality);
+    console.log(`🎨 [${requestId}] Starting generation with aspect ratio:`, aspectRatio, 'quality:', imageQuality);
     const result = await openaiService.generateImageToImage(imageData, style, aspectRatio, imageQuality);
 
     if (result.ok && result.output) {
-      console.log(`[${requestId}] Generation successful, applying watermarks...`);
+      console.log(`✅ [${requestId}] Generation successful, applying watermarks...`);
       
       let finalOutput = result.output;
       
       // Apply watermarking if requested (default behavior)
       if (watermark) {
         try {
-          console.log(`[${requestId}] Applying watermarks with Canvas API...`);
+          console.log(`💧 [${requestId}] Applying watermarks with Canvas API...`);
           
           // Apply watermarks using the CanvasWatermarkService
           finalOutput = await CanvasWatermarkService.createWatermarkedImage(
@@ -132,21 +177,22 @@ serve(async (req) => {
             isPreview
           );
           
-          console.log(`[${requestId}] Canvas watermarking completed successfully`);
+          console.log(`✅ [${requestId}] Canvas watermarking completed successfully`);
           
         } catch (watermarkError) {
-          console.error(`[${requestId}] Canvas watermarking failed, using original:`, watermarkError);
+          console.error(`⚠️ [${requestId}] Canvas watermarking failed, using original:`, watermarkError);
           // Continue with original image if watermarking fails
+          finalOutput = result.output;
         }
       }
 
       const endTime = Date.now();
       const duration = endTime - startTime;
-      console.log(`=== GPT-IMAGE-1 COMPLETED [${requestId}] in ${duration}ms ===`);
+      console.log(`=== ✅ GPT-IMAGE-1 COMPLETED [${requestId}] in ${duration}ms ===`);
 
       return handleSuccess(finalOutput, corsHeaders, requestId);
     } else {
-      console.error(`[${requestId}] Generation failed:`, result.error);
+      console.error(`❌ [${requestId}] Generation failed:`, result.error);
       
       // Determine appropriate status code based on error type
       let statusCode = 500;
@@ -164,14 +210,19 @@ serve(async (req) => {
   } catch (error) {
     const endTime = Date.now();
     const duration = endTime - startTime;
-    console.error(`=== GPT-IMAGE-1 ERROR [${requestId}] after ${duration}ms ===`);
-    console.error('Unexpected error:', error);
+    console.error(`=== ❌ GPT-IMAGE-1 ERROR [${requestId}] after ${duration}ms ===`);
+    console.error('💥 Unexpected error:', error);
+    console.error('📍 Error stack:', error.stack);
     
-    await logSecurityEvent('generation_error', 'Unexpected error during generation', req, {
-      error: error.message,
-      stack: error.stack,
-      requestId
-    });
+    try {
+      await logSecurityEvent('generation_error', 'Unexpected error during generation', req, {
+        error: error.message,
+        stack: error.stack,
+        requestId
+      });
+    } catch (logError) {
+      console.error('Failed to log security event:', logError);
+    }
     
     const parsedError = EnhancedErrorHandler.parseError(error);
     const userMessage = EnhancedErrorHandler.createUserFriendlyMessage(parsedError);
