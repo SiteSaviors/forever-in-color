@@ -1,71 +1,22 @@
+
+import { ClientWatermarkService } from './clientWatermarkService';
+
 export const addWatermarkToImage = async (
   imageUrl: string, 
-  logoUrl: string = "/lovable-uploads/c4c5b902-8aa4-467b-9565-a8a53dfe7ff0.png"
+  logoUrl: string = "/lovable-uploads/df3291f2-07fa-4780-a6d2-0d024f3dec89.png"
 ): Promise<string> => {
-  // For server-side watermarked images, return as-is
-  // This function is now primarily used as a fallback
-  if (imageUrl.startsWith('data:image/')) {
-    console.log('Image already processed server-side, skipping client watermarking');
+  try {
+    console.log('🎨 Adding client-side watermark to image...');
+    
+    // Use the new client watermarking service
+    const watermarkedImage = await ClientWatermarkService.addWatermarkToImage(imageUrl);
+    
+    console.log('✅ Watermarking completed successfully');
+    return watermarkedImage;
+    
+  } catch (error) {
+    console.error('❌ Client-side watermarking failed:', error);
+    console.log('🔄 Returning original image as fallback');
     return imageUrl;
   }
-
-  return new Promise((resolve, reject) => {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    
-    if (!ctx) {
-      reject(new Error('Canvas context not available'));
-      return;
-    }
-
-    const mainImage = new Image();
-    mainImage.crossOrigin = 'anonymous';
-    
-    mainImage.onload = () => {
-      // Set canvas size to match the main image
-      canvas.width = mainImage.width;
-      canvas.height = mainImage.height;
-      
-      // Draw the main image
-      ctx.drawImage(mainImage, 0, 0);
-      
-      // Load and draw the watermark
-      const watermarkImage = new Image();
-      watermarkImage.crossOrigin = 'anonymous';
-      
-      watermarkImage.onload = () => {
-        // Calculate watermark size (10% of image width, maintaining aspect ratio)
-        const watermarkWidth = mainImage.width * 0.1;
-        const aspectRatio = watermarkImage.height / watermarkImage.width;
-        const watermarkHeight = watermarkWidth * aspectRatio;
-        
-        // Position watermark in center
-        const x = (mainImage.width - watermarkWidth) / 2;
-        const y = (mainImage.height - watermarkHeight) / 2;
-        
-        // Set opacity for watermark
-        ctx.globalAlpha = 0.3;
-        
-        // Draw watermark
-        ctx.drawImage(watermarkImage, x, y, watermarkWidth, watermarkHeight);
-        
-        // Convert to data URL
-        const watermarkedImageUrl = canvas.toDataURL('image/jpeg', 0.9);
-        resolve(watermarkedImageUrl);
-      };
-      
-      watermarkImage.onerror = () => {
-        console.warn('Failed to load watermark, returning original image');
-        resolve(imageUrl);
-      };
-      
-      watermarkImage.src = logoUrl;
-    };
-    
-    mainImage.onerror = () => {
-      reject(new Error('Failed to load main image'));
-    };
-    
-    mainImage.src = imageUrl;
-  });
 };
