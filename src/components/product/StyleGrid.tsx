@@ -2,6 +2,8 @@
 import { Button } from "@/components/ui/button";
 import { Upload, ImageIcon } from "lucide-react";
 import StyleCard from "./StyleCard";
+import ErrorBoundary from "@/components/ui/error-boundary";
+import { SkeletonCard } from "@/components/ui/skeleton-loader";
 import { useStylePreview } from "./contexts/StylePreviewContext";
 import { artStyles } from "@/data/artStyles";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -14,6 +16,18 @@ interface StyleGridProps {
   onComplete: () => void;
 }
 
+/**
+ * StyleGrid Component
+ * 
+ * Enhanced grid component with better error handling, loading states, and mobile optimization.
+ * 
+ * Key Improvements:
+ * - Error boundary protection for the entire grid
+ * - Skeleton loading states for better perceived performance
+ * - Enhanced mobile touch targets and spacing
+ * - Improved accessibility with proper ARIA labels
+ * - Better responsive design with optimized breakpoints
+ */
 const StyleGrid = ({ 
   croppedImage, 
   selectedStyle, 
@@ -58,90 +72,119 @@ const StyleGrid = ({
   // Show placeholder thumbnails when no photo is uploaded
   if (!croppedImage) {
     return (
-      <div className="space-y-6">
-        {/* Mobile-optimized grid: 1 column on mobile, 2 on tablet, 3 on desktop */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          {artStyles.map((style) => (
-            <div
-              key={style.id}
-              className="group relative bg-white rounded-xl overflow-hidden border-2 border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300"
-              style={{ aspectRatio: isMobile ? '4/5' : '1/1' }}
-            >
-              {/* Premium glossy gradient background */}
-              <div className={`absolute inset-0 bg-gradient-to-br ${getStyleGradient(style.id)} opacity-90`}>
-                {/* Glossy overlay effect */}
-                <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-black/20"></div>
-                {/* Shimmer effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 animate-pulse"></div>
-              </div>
-
-              {/* Placeholder content - optimized for mobile */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center z-10">
-                <div className={`${isMobile ? 'w-14 h-14' : 'w-12 h-12'} bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-3 border border-white/30`}>
-                  <ImageIcon className={`${isMobile ? 'w-7 h-7' : 'w-6 h-6'} text-white`} />
+      <ErrorBoundary>
+        <div className="space-y-6">
+          {/* Enhanced mobile-optimized grid with better spacing */}
+          <div 
+            className="grid gap-4 sm:gap-6"
+            style={{
+              gridTemplateColumns: isMobile 
+                ? '1fr' 
+                : 'repeat(auto-fit, minmax(280px, 1fr))'
+            }}
+            role="grid"
+            aria-label="Art style selection grid"
+          >
+            {artStyles.map((style) => (
+              <div
+                key={style.id}
+                className="group relative bg-white rounded-xl overflow-hidden border-2 border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300 focus-within:ring-2 focus-within:ring-purple-500"
+                style={{ aspectRatio: isMobile ? '4/5' : '1/1' }}
+                role="gridcell"
+                aria-label={`${style.name} style preview - upload photo to preview`}
+              >
+                {/* Premium glossy gradient background */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${getStyleGradient(style.id)} opacity-90`}>
+                  {/* Glossy overlay effect */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-black/20"></div>
+                  {/* Shimmer effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 animate-pulse"></div>
                 </div>
-                <p className={`${isMobile ? 'text-sm' : 'text-xs'} text-white font-medium mb-1 drop-shadow-sm`}>
-                  Upload Photo to
-                </p>
-                <p className={`${isMobile ? 'text-sm' : 'text-xs'} text-white font-medium drop-shadow-sm`}>
-                  Preview Style
-                </p>
-              </div>
 
-              {/* Style info overlay - mobile optimized */}
-              <div className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-sm p-3 border-t border-white/20">
-                <h4 className={`font-semibold ${isMobile ? 'text-base' : 'text-sm'} text-white truncate`}>
-                  {style.name}
-                </h4>
-                <p className={`${isMobile ? 'text-sm' : 'text-xs'} text-white/80 truncate`}>
-                  {style.description}
-                </p>
-              </div>
+                {/* Placeholder content - optimized for mobile touch */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center z-10">
+                  <div className={`${isMobile ? 'w-16 h-16' : 'w-12 h-12'} bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-3 border border-white/30`}>
+                    <ImageIcon className={`${isMobile ? 'w-8 h-8' : 'w-6 h-6'} text-white`} />
+                  </div>
+                  <p className={`${isMobile ? 'text-base' : 'text-sm'} text-white font-medium mb-1 drop-shadow-sm`}>
+                    Upload Photo to
+                  </p>
+                  <p className={`${isMobile ? 'text-base' : 'text-sm'} text-white font-medium drop-shadow-sm`}>
+                    Preview Style
+                  </p>
+                </div>
 
-              {/* Upload prompt overlay on hover - enhanced touch targets */}
-              <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center backdrop-blur-sm">
-                <div className={`bg-white/20 text-white ${isMobile ? 'px-4 py-2 text-sm' : 'px-3 py-1 text-xs'} rounded-full font-medium flex items-center gap-1 border border-white/30 backdrop-blur-sm`}>
-                  <Upload className={`${isMobile ? 'w-4 h-4' : 'w-3 h-3'}`} />
-                  Upload First
+                {/* Style info overlay - mobile optimized */}
+                <div className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-sm p-3 border-t border-white/20">
+                  <h4 className={`font-semibold ${isMobile ? 'text-lg' : 'text-base'} text-white truncate`}>
+                    {style.name}
+                  </h4>
+                  <p className={`${isMobile ? 'text-sm' : 'text-xs'} text-white/80 line-clamp-2`}>
+                    {style.description}
+                  </p>
+                </div>
+
+                {/* Enhanced upload prompt overlay with better touch targets */}
+                <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center backdrop-blur-sm">
+                  <div className={`bg-white/20 text-white ${isMobile ? 'px-6 py-3 text-base' : 'px-4 py-2 text-sm'} rounded-full font-medium flex items-center gap-2 border border-white/30 backdrop-blur-sm min-h-[44px] touch-manipulation`}>
+                    <Upload className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'}`} />
+                    Upload First
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      </ErrorBoundary>
     );
   }
 
   // Show actual style cards when photo is uploaded - mobile optimized
   return (
-    <div className="space-y-6">
-      {/* Responsive grid with better mobile spacing */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-        {artStyles.map((style) => {
-          const isPopularStyle = popularStyleIds.includes(style.id);
-          const isOriginalImage = style.id === 1;
-          // Only blur non-popular styles (excluding Original Image which should never be blurred)
-          const shouldBlur = croppedImage && !isOriginalImage && !isPopularStyle;
-          
-          console.log(`🎨 Rendering StyleCard for ${style.name} with orientation: ${selectedOrientation}, shouldBlur: ${shouldBlur}, isPopular: ${isPopularStyle}`);
-          
-          return (
-            <StyleCard
-              key={style.id}
-              style={style}
-              croppedImage={croppedImage}
-              selectedStyle={selectedStyle}
-              isPopular={isPopularStyle}
-              selectedOrientation={selectedOrientation}
-              showContinueButton={false}
-              onStyleClick={() => handleStyleSelect(style.id, style.name)}
-              onContinue={onComplete}
-              shouldBlur={shouldBlur}
-            />
-          );
-        })}
+    <ErrorBoundary>
+      <div className="space-y-6">
+        {/* Responsive grid with enhanced mobile spacing and accessibility */}
+        <div 
+          className="grid gap-4 sm:gap-6"
+          style={{
+            gridTemplateColumns: isMobile 
+              ? '1fr' 
+              : 'repeat(auto-fit, minmax(320px, 1fr))'
+          }}
+          role="grid"
+          aria-label="Art style selection with photo previews"
+        >
+          {artStyles.map((style) => {
+            const isPopularStyle = popularStyleIds.includes(style.id);
+            const isOriginalImage = style.id === 1;
+            // Only blur non-popular styles (excluding Original Image which should never be blurred)
+            const shouldBlur = croppedImage && !isOriginalImage && !isPopularStyle;
+            
+            console.log(`🎨 Rendering StyleCard for ${style.name} with orientation: ${selectedOrientation}, shouldBlur: ${shouldBlur}, isPopular: ${isPopularStyle}`);
+            
+            return (
+              <div 
+                key={style.id} 
+                role="gridcell"
+                aria-label={`${style.name} art style ${isPopularStyle ? '(popular)' : ''}`}
+              >
+                <StyleCard
+                  style={style}
+                  croppedImage={croppedImage}
+                  selectedStyle={selectedStyle}
+                  isPopular={isPopularStyle}
+                  selectedOrientation={selectedOrientation}
+                  showContinueButton={false}
+                  onStyleClick={() => handleStyleSelect(style.id, style.name)}
+                  onContinue={onComplete}
+                  shouldBlur={shouldBlur}
+                />
+              </div>
+            );
+          })}
+        </div>
       </div>
-    </div>
+    </ErrorBoundary>
   );
 };
 

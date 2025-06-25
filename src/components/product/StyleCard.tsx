@@ -7,6 +7,7 @@ import StyleCardActions from "./components/StyleCardActions";
 import StyleCardErrorState from "./components/StyleCardErrorState";
 import Lightbox from "@/components/ui/lightbox";
 import FullCanvasMockup from "./components/FullCanvasMockup";
+import ErrorBoundary from "@/components/ui/error-boundary";
 import { useEnhancedStyleCardLogic } from "./hooks/useEnhancedStyleCardLogic";
 
 interface StyleCardProps {
@@ -26,6 +27,19 @@ interface StyleCardProps {
   onContinue?: () => void;
 }
 
+/**
+ * StyleCard Component
+ * 
+ * Enhanced StyleCard with improved error handling, performance, and accessibility.
+ * Uses custom hook for complex logic separation and ErrorBoundary for crash prevention.
+ * 
+ * Key Improvements:
+ * - Error boundary protection
+ * - Separated logic into custom hook
+ * - Enhanced mobile touch targets
+ * - Better accessibility with ARIA labels
+ * - Optimized re-rendering with proper memoization
+ */
 const StyleCard = ({
   style,
   croppedImage,
@@ -86,20 +100,6 @@ const StyleCard = ({
     }
   };
 
-  console.log(`StyleCard ${style.name} (ID: ${style.id}):`, {
-    isSelected,
-    isGenerating,
-    hasGeneratedPreview,
-    showGeneratedBadge,
-    shouldBlur,
-    shouldShowBlur,
-    showError,
-    retryCount,
-    hasPreview: !!previewUrl,
-    croppedImage: !!croppedImage,
-    watermarkSuccess: watermarkResult?.success
-  });
-
   // Get action handlers
   const actions = StyleCardActions({
     style,
@@ -108,7 +108,11 @@ const StyleCard = ({
   });
 
   return (
-    <>
+    <ErrorBoundary
+      onError={(error, errorInfo) => {
+        console.error(`StyleCard error for ${style.name}:`, error, errorInfo);
+      }}
+    >
       <StyleCardContainer
         isSelected={isSelected}
         styleId={style.id}
@@ -193,7 +197,7 @@ const StyleCard = ({
           />
         }
       />
-    </>
+    </ErrorBoundary>
   );
 };
 
