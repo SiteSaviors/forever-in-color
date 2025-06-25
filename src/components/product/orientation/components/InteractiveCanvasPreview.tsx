@@ -43,7 +43,7 @@ const InteractiveCanvasPreview = ({
         <div className="absolute -top-2 -left-2 z-30">
           <Badge className="bg-green-500 text-white px-2 py-1 text-xs shadow-lg flex items-center gap-1">
             <CheckCircle className="w-3 h-3" />
-            Your Photo
+            Canvas Preview
           </Badge>
         </div>
       )}

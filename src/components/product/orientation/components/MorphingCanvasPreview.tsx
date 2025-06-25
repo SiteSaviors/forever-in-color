@@ -83,6 +83,16 @@ const MorphingCanvasPreview = ({
         isSelected ? 'scale-105' : 'hover:scale-102'
       } transition-all duration-500`}
       onClick={onClick}
+      role="button"
+      tabIndex={0}
+      aria-pressed={isSelected}
+      aria-label={`Select ${orientation} orientation`}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick();
+        }
+      }}
     >
       {/* Recommended Badge with Glass Effect */}
       {isRecommended && (
@@ -117,7 +127,7 @@ const MorphingCanvasPreview = ({
             <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-transparent opacity-60 rounded-xl z-20 pointer-events-none" />
           </div>
           
-          {/* User's Image with Enhanced Effects */}
+          {/* User's Image with Enhanced Effects - Only show if we have a user image */}
           {userImageUrl && (
             <div 
               className={`absolute overflow-hidden transition-all duration-500 group-hover:brightness-110 z-15 ${
@@ -132,7 +142,7 @@ const MorphingCanvasPreview = ({
             >
               <img 
                 src={userImageUrl}
-                alt="Your photo preview"
+                alt="Canvas preview"
                 className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
                 style={{
                   filter: 'brightness(0.95) contrast(1.05) saturate(1.1)',

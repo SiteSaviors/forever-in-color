@@ -10,6 +10,7 @@ import { sizeOptions } from "./orientation/data/sizeOptions";
 import { OrientationSelectorProps } from "./orientation/types";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Eye, ArrowDown, DollarSign } from "lucide-react";
+import { useState } from "react";
 
 interface ExtendedOrientationSelectorProps extends OrientationSelectorProps {
   userImageUrl?: string | null;
@@ -36,19 +37,48 @@ const OrientationSelector = ({
     onStepChange
   });
 
+  const [validationError, setValidationError] = useState<string | null>(null);
+
   const handleOrientationSelect = (orientation: string) => {
+    setValidationError(null);
     onOrientationChange(orientation);
     // Reset size when orientation changes
     onSizeChange("");
   };
   
   const handleSizeSelect = (size: string) => {
+    setValidationError(null);
     onSizeChange(size);
   };
   
   const handleContinueWithSize = (size: string, e: React.MouseEvent) => {
     e.stopPropagation();
     onSizeChange(size);
+    handleContinueClick();
+  };
+
+  const handleContinueClick = () => {
+    if (!selectedOrientation) {
+      setValidationError("Please select an orientation before continuing");
+      // Scroll to orientation section
+      document.querySelector('[data-orientation-section]')?.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'center'
+      });
+      return;
+    }
+    
+    if (!selectedSize) {
+      setValidationError("Please select a size before continuing");
+      // Scroll to size section
+      document.querySelector('[data-size-section]')?.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'center'
+      });
+      return;
+    }
+    
+    setValidationError(null);
     if (onContinue) {
       onContinue();
     }
@@ -80,6 +110,15 @@ const OrientationSelector = ({
     <div className="space-y-10">
       <OrientationHeader selectedOrientation={selectedOrientation} />
 
+      {/* Validation Error Alert */}
+      {validationError && (
+        <Alert className="border-red-200 bg-red-50 animate-in fade-in duration-300">
+          <AlertDescription className="text-red-800 font-medium">
+            {validationError}
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Visual Connection Helper */}
       {userImageUrl && (
         <Alert className="border-blue-200 bg-blue-50">
@@ -98,9 +137,17 @@ const OrientationSelector = ({
       )}
 
       {/* Premium Orientation Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div 
+        className="grid grid-cols-1 md:grid-cols-3 gap-8"
+        data-orientation-section
+        role="radiogroup"
+        aria-label="Canvas orientation options"
+      >
         {orientationOptions.map(orientation => (
-          <div key={orientation.id} className="transform transition-all duration-500 hover:-translate-y-2">
+          <div 
+            key={orientation.id} 
+            className="transform transition-all duration-500 hover:-translate-y-2"
+          >
             <OrientationCard 
               orientation={orientation} 
               isSelected={selectedOrientation === orientation.id} 
@@ -127,7 +174,12 @@ const OrientationSelector = ({
       {selectedOrientation && (
         <>
           <SizeHeader />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div 
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+            data-size-section
+            role="radiogroup"
+            aria-label="Canvas size options"
+          >
             {sizeOptions[selectedOrientation]?.map(option => (
               <div key={option.size} className="transform transition-all duration-500 hover:-translate-y-2">
                 <GlassMorphismSizeCard 
@@ -165,9 +217,7 @@ const OrientationSelector = ({
         canGoBack={canGoBack}
         canContinue={canContinueToNext}
         onBack={handleBackStep}
-        onContinue={() => {
-          if (onContinue) onContinue();
-        }}
+        onContinue={handleContinueClick}
         continueText="Continue to Customize"
         currentStep={currentStep}
         totalSteps={4}

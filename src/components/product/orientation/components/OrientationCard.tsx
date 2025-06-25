@@ -28,6 +28,16 @@ const OrientationCard = ({
           : 'shadow-lg hover:shadow-purple-100/50'
       }`}
       onClick={onClick}
+      role="button"
+      tabIndex={0}
+      aria-pressed={isSelected}
+      aria-label={`Select ${orientation.name} orientation`}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick();
+        }
+      }}
     >
       <CardContent className="p-6 space-y-6">
         {/* Premium Badge */}

@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
@@ -36,7 +35,7 @@ const StepNavigation = ({
         <Button
           variant="outline"
           onClick={onBack}
-          className="text-gray-600 border-gray-300 hover:bg-gray-50"
+          className="text-gray-600 border-gray-300 hover:bg-gray-50 min-h-[48px] px-6"
           disabled={isLoading}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -52,10 +51,12 @@ const StepNavigation = ({
         disabled={!canContinue || isLoading}
         className={`
           px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200
+          min-h-[48px] min-w-[180px]
           ${canContinue 
             ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white' 
             : 'bg-gray-200 text-gray-500 cursor-not-allowed'}
         `}
+        aria-disabled={!canContinue}
       >
         {isLoading ? (
           <div className="flex items-center">

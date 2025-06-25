@@ -58,10 +58,20 @@ const GlassMorphismSizeCard = ({
 
   return (
     <div
-      className={`relative group/sidebar-wrapper cursor-pointer transition-all duration-700 ${
+      className={`relative group cursor-pointer transition-all duration-700 ${
         isSelected ? 'scale-105' : 'hover:scale-102'
       }`}
       onClick={onClick}
+      role="button"
+      tabIndex={0}
+      aria-pressed={isSelected}
+      aria-label={`Select ${option.size} size`}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick();
+        }
+      }}
     >
       {/* Glass Morphism Background */}
       <div className={`absolute inset-0 rounded-2xl transition-all duration-500 backdrop-blur-xl ${
@@ -94,7 +104,7 @@ const GlassMorphismSizeCard = ({
           
           {option.originalPrice > option.salePrice && (
             <Badge className="bg-green-500/80 text-white border border-green-300/30 backdrop-blur-sm shadow-lg">
-              Save $50
+              Save ${(option.originalPrice - option.salePrice).toFixed(2)}
             </Badge>
           )}
         </div>

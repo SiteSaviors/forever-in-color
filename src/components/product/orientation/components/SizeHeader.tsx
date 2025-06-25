@@ -1,4 +1,3 @@
-
 const SizeHeader = () => {
   return (
     <div className="text-center mb-8 p-8 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 rounded-2xl border border-indigo-100">
