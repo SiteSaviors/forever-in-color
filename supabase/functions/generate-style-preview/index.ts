@@ -2,6 +2,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 import { OpenAIService } from './openaiService.ts';
+import { WatermarkService } from './watermarkService.ts';
 import { logSecurityEvent } from './securityLogger.ts';
 import { validateInput, extractImageData } from './inputValidation.ts';
 import { handleSuccess, handleError } from './responseHandlers.ts';
@@ -37,29 +38,13 @@ serve(async (req) => {
     if (!openaiApiKey) {
       console.error(`[${requestId}] Missing OpenAI API key`);
       await logSecurityEvent('api_key_missing', 'OpenAI API key not configured', req);
-      return Response.json(
-        { 
-          success: false, 
-          error: 'Service configuration error - OpenAI key missing', 
-          timestamp: new Date().toISOString(),
-          requestId 
-        },
-        { status: 500, headers: corsHeaders }
-      );
+      return handleError('Service configuration error - OpenAI key missing', corsHeaders, 500, requestId);
     }
 
     if (!replicateApiToken) {
       console.error(`[${requestId}] Missing Replicate API token`);
       await logSecurityEvent('api_key_missing', 'Replicate API token not configured', req);
-      return Response.json(
-        { 
-          success: false, 
-          error: 'Service configuration error - Replicate token missing', 
-          timestamp: new Date().toISOString(),
-          requestId 
-        },
-        { status: 500, headers: corsHeaders }
-      );
+      return handleError('Service configuration error - Replicate token missing', corsHeaders, 500, requestId);
     }
 
     // Parse and validate request
@@ -68,10 +53,23 @@ serve(async (req) => {
       hasImageUrl: !!body.imageUrl,
       style: body.style,
       aspectRatio: body.aspectRatio,
-      isAuthenticated: body.isAuthenticated
+      isAuthenticated: body.isAuthenticated,
+      watermark: body.watermark !== false // Default to true unless explicitly false
     });
 
-    const { imageUrl, style, photoId, aspectRatio = '1:1', isAuthenticated } = body;
+    const { 
+      imageUrl, 
+      style, 
+      photoId, 
+      aspectRatio = '1:1', 
+      isAuthenticated,
+      watermark = true,  // New parameter for watermark control
+      sessionId: providedSessionId,
+      quality = 'preview' // 'preview' or 'final'
+    } = body;
+
+    // Generate session ID if not provided
+    const sessionId = providedSessionId || WatermarkService.generateSessionId();
 
     // Enhanced input validation
     const validationResult = validateInput(imageUrl, style, aspectRatio);
@@ -84,15 +82,7 @@ serve(async (req) => {
         requestId
       });
       
-      return Response.json(
-        { 
-          success: false, 
-          error: validationResult.error,
-          timestamp: new Date().toISOString(),
-          requestId
-        },
-        { status: 400, headers: corsHeaders }
-      );
+      return handleError(validationResult.error, corsHeaders, 400, requestId);
     }
 
     // Initialize Supabase (optional)
@@ -109,15 +99,7 @@ serve(async (req) => {
     if (!imageData) {
       console.error(`[${requestId}] Failed to extract image data`);
       await logSecurityEvent('invalid_image', 'Failed to extract image data', req);
-      return Response.json(
-        { 
-          success: false, 
-          error: 'Invalid image data', 
-          timestamp: new Date().toISOString(),
-          requestId 
-        },
-        { status: 400, headers: corsHeaders }
-      );
+      return handleError('Invalid image data', corsHeaders, 400, requestId);
     }
 
     console.log(`[${requestId}] Creating OpenAI service with validated inputs`);
@@ -125,17 +107,55 @@ serve(async (req) => {
     // Create OpenAI service with enhanced error handling
     const openaiService = new OpenAIService(openaiApiKey, replicateApiToken, supabase);
     
+    // Determine quality settings
+    const isPreview = quality === 'preview';
+    const imageQuality = isPreview ? 'medium' : 'high';
+    
     // Generate image with comprehensive error handling
-    console.log(`[${requestId}] Starting generation with aspect ratio:`, aspectRatio);
-    const result = await openaiService.generateImageToImage(imageData, style, aspectRatio);
-
-    const endTime = Date.now();
-    const duration = endTime - startTime;
-    console.log(`=== GPT-IMAGE-1 COMPLETED [${requestId}] in ${duration}ms ===`);
+    console.log(`[${requestId}] Starting generation with aspect ratio:`, aspectRatio, 'quality:', imageQuality);
+    const result = await openaiService.generateImageToImage(imageData, style, aspectRatio, imageQuality);
 
     if (result.ok && result.output) {
-      console.log(`[${requestId}] Generation successful, output URL:`, result.output);
-      return handleSuccess(result.output, corsHeaders, requestId);
+      console.log(`[${requestId}] Generation successful, applying watermarks...`);
+      
+      let finalOutput = result.output;
+      
+      // Apply watermarking if requested (default behavior)
+      if (watermark) {
+        try {
+          // Fetch the generated image
+          const imageResponse = await fetch(result.output);
+          if (!imageResponse.ok) {
+            throw new Error(`Failed to fetch generated image: ${imageResponse.status}`);
+          }
+          
+          const imageBuffer = await imageResponse.arrayBuffer();
+          console.log(`[${requestId}] Applying watermarks...`);
+          
+          // Apply watermarks using the WatermarkService
+          const watermarkedBuffer = await WatermarkService.createWatermarkedImage(
+            imageBuffer, 
+            sessionId, 
+            isPreview
+          );
+          
+          // Convert watermarked buffer to base64 data URL
+          const base64Image = btoa(String.fromCharCode(...new Uint8Array(watermarkedBuffer)));
+          finalOutput = `data:image/png;base64,${base64Image}`;
+          
+          console.log(`[${requestId}] Watermarking completed successfully`);
+          
+        } catch (watermarkError) {
+          console.error(`[${requestId}] Watermarking failed, using original:`, watermarkError);
+          // Continue with original image if watermarking fails
+        }
+      }
+
+      const endTime = Date.now();
+      const duration = endTime - startTime;
+      console.log(`=== GPT-IMAGE-1 COMPLETED [${requestId}] in ${duration}ms ===`);
+
+      return handleSuccess(finalOutput, corsHeaders, requestId);
     } else {
       console.error(`[${requestId}] Generation failed:`, result.error);
       

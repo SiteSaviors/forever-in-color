@@ -1,8 +1,14 @@
-
 export const addWatermarkToImage = async (
   imageUrl: string, 
   logoUrl: string = "/lovable-uploads/c4c5b902-8aa4-467b-9565-a8a53dfe7ff0.png"
 ): Promise<string> => {
+  // For server-side watermarked images, return as-is
+  // This function is now primarily used as a fallback
+  if (imageUrl.startsWith('data:image/')) {
+    console.log('Image already processed server-side, skipping client watermarking');
+    return imageUrl;
+  }
+
   return new Promise((resolve, reject) => {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
