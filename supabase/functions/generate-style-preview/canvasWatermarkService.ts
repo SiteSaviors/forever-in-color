@@ -235,3 +235,60 @@ export class CanvasWatermarkService {
     return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 }
+
+// Debug helper to diagnose watermark issues
+export class WatermarkDebugHelper {
+  static async diagnoseWatermarkService(): Promise<void> {
+    console.log('=== WATERMARK SERVICE DIAGNOSTIC ===');
+    
+    // Test 1: Check Supabase Storage URL
+    const projectRef = "fvjganetpyyrguuxjtqi";
+    const bucketName = "lovable-uploads";
+    const filePath = "6789ee1d-5679-4b94-bae6-e76ffd4f7526.png";
+    
+    const urls = [
+      // Wrong format (what was previously used)
+      `https://${projectRef}.supabase.co/${bucketName}/${filePath}`,
+      // Correct format
+      `https://${projectRef}.supabase.co/storage/v1/object/public/${bucketName}/${filePath}`,
+    ];
+    
+    console.log('\n1. Testing Supabase Storage URLs:');
+    for (const url of urls) {
+      try {
+        const response = await fetch(url, { method: 'HEAD' });
+        console.log(`   ${response.ok ? '✓' : '✗'} ${response.status} - ${url}`);
+        
+        if (response.ok) {
+          console.log(`     Content-Type: ${response.headers.get('content-type')}`);
+          console.log(`     Content-Length: ${response.headers.get('content-length')}`);
+        }
+      } catch (error) {
+        console.log(`   ✗ ERROR - ${url}`);
+        console.log(`     ${error.message}`);
+      }
+    }
+    
+    // Test 2: Canvas API availability
+    console.log('\n2. Testing Canvas API availability:');
+    try {
+      const canvas = new OffscreenCanvas(100, 100);
+      console.log('   ✓ OffscreenCanvas is available');
+      
+      const ctx = canvas.getContext('2d');
+      console.log(`   ${ctx ? '✓' : '✗'} 2D context is available`);
+      
+      if (ctx) {
+        ctx.fillStyle = 'red';
+        ctx.fillRect(0, 0, 50, 50);
+        
+        const blob = await canvas.convertToBlob({ type: 'image/png' });
+        console.log(`   ✓ convertToBlob works (blob size: ${blob.size})`);
+      }
+    } catch (error) {
+      console.log('   ✗ Canvas API error:', error.message);
+    }
+    
+    console.log('\n=== END DIAGNOSTIC ===\n');
+  }
+}
