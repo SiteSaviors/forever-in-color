@@ -55,8 +55,8 @@ const StyleCardImage = ({
   onRetry
 }: StyleCardImageProps) => {
   
-  // STEP 5: Use the centralized blinking hook
-  const { isBlinking } = useBlinking(previewUrl);
+  // STEP 5: Use the centralized blinking hook with isGenerating parameter
+  const { isBlinking } = useBlinking(previewUrl, { isGenerating });
 
   console.log(`StyleCardImage ${style.name}:`, {
     previewUrl: previewUrl ? previewUrl.substring(0, 30) + '...' : 'null',
@@ -79,7 +79,7 @@ const StyleCardImage = ({
         previewUrl={previewUrl}
         onExpandClick={onExpandClick}
         variant={hasGeneratedPreview ? 'mockup' : 'standard'}
-        isBlinking={isBlinking} // Now properly typed
+        isBlinking={isBlinking}
       />
 
       {/* Indicators */}
@@ -88,15 +88,15 @@ const StyleCardImage = ({
         showGeneratedBadge={showGeneratedBadge}
         isSelected={isSelected}
         hasPreviewOrCropped={hasPreviewOrCropped}
-        onExpandClick={onExpandClick || (() => {})} // Provide required prop
+        onExpandClick={onExpandClick || (() => {})}
         onCanvasPreviewClick={onCanvasPreviewClick}
       />
 
       {/* STEP 3: Pass single source of truth to overlays */}
       
-      {/* Loading overlay - only show when blinking */}
+      {/* Loading overlay - only show when blinking AND actually generating */}
       <StyleCardLoadingOverlay
-        isBlinking={isBlinking}
+        isBlinking={isBlinking && isGenerating}
         styleName={style.name}
         error={error}
       />
@@ -113,9 +113,9 @@ const StyleCardImage = ({
       {/* Error retry overlay */}
       {showError && onRetry && (
         <StyleCardRetryOverlay
-          hasError={showError} // Pass hasError prop
+          hasError={showError}
           error={error}
-          styleName={style.name} // Now properly typed
+          styleName={style.name}
           onRetry={onRetry}
         />
       )}

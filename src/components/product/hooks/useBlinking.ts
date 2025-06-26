@@ -9,24 +9,30 @@ interface UseBlinkingOptions {
 export const useBlinking = (previewUrl: string | null, options: UseBlinkingOptions = {}) => {
   const [isBlinking, setIsBlinking] = useState(false);
 
+  // Only start blinking if we're actually generating something
+  const { isGenerating = false } = options;
+
   // STEP 1: Verify hook updates are immediate - log inside the hook
   useEffect(() => {
     console.log('🔔 useBlinking - Hook sees state change:', {
       previewUrl: previewUrl ? 'EXISTS' : 'NULL',
       previewUrlValue: previewUrl ? previewUrl.substring(0, 50) + '...' : 'null',
       currentBlinkingState: isBlinking,
+      isGenerating,
       timestamp: new Date().toISOString()
     });
-  }, [previewUrl, isBlinking]);
+  }, [previewUrl, isBlinking, isGenerating]);
 
   // STEP 2 & 3: Single source of truth with proper cleanup
   useEffect(() => {
     console.log('🎯 useBlinking - Effect triggered:', {
       previewUrl: previewUrl ? 'EXISTS' : 'NULL',
-      shouldStartBlinking: !previewUrl
+      isGenerating,
+      shouldStartBlinking: !previewUrl && isGenerating
     });
 
-    if (!previewUrl) {
+    // Only start blinking if we don't have a preview AND we're actively generating
+    if (!previewUrl && isGenerating) {
       // Start blinking - use setInterval for controlled animation
       console.log('🚀 Starting blink animation');
       setIsBlinking(true);
@@ -45,11 +51,11 @@ export const useBlinking = (previewUrl: string | null, options: UseBlinkingOptio
         clearInterval(blinkInterval);
       };
     } else {
-      // Preview is ready - STOP BLINKING IMMEDIATELY
-      console.log('🛑 Preview ready - STOPPING blink animation');
+      // Preview is ready OR we're not generating - STOP BLINKING IMMEDIATELY
+      console.log('🛑 Preview ready or not generating - STOPPING blink animation');
       setIsBlinking(false);
     }
-  }, [previewUrl]); // Only previewUrl in dependency array
+  }, [previewUrl, isGenerating]); // Include isGenerating in dependency array
 
   // STEP 1: Additional verification - force stop when preview becomes available
   useEffect(() => {
@@ -59,7 +65,7 @@ export const useBlinking = (previewUrl: string | null, options: UseBlinkingOptio
     }
   }, [previewUrl, isBlinking]);
 
-  console.log('🔔 useBlinking returning:', { isBlinking, hasPreview: !!previewUrl });
+  console.log('🔔 useBlinking returning:', { isBlinking, hasPreview: !!previewUrl, isGenerating });
   
   return { isBlinking };
 };
