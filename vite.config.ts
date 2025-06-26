@@ -69,15 +69,8 @@ export default defineConfig(({ mode }) => ({
     sourcemap: mode === 'production' ? 'hidden' : true,
     // Optimize for modern browsers
     target: 'es2020',
-    // Minification options
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: mode === 'production',
-        drop_debugger: mode === 'production',
-        pure_funcs: mode === 'production' ? ['console.log'] : []
-      }
-    },
+    // Use esbuild for minification (default, no additional deps needed)
+    minify: mode === 'production' ? 'esbuild' : false,
     // Enable CSS code splitting
     cssCodeSplit: true,
     // Asset size warnings
