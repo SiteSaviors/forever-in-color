@@ -9,7 +9,7 @@ import CustomizationOptions from "./customization/CustomizationOptions";
 import PricingSummary from "./customization/PricingSummary";
 import { useCanvasPreview } from "./customization/hooks/useCanvasPreview";
 
-interface CustomizationOptions {
+interface CustomizationConfig {
   floatingFrame: {
     enabled: boolean;
     color: 'white' | 'black' | 'espresso';
@@ -22,8 +22,8 @@ interface CustomizationOptions {
 
 interface CustomizationSelectorProps {
   selectedSize: string;
-  customizations: CustomizationOptions;
-  onCustomizationChange: (customizations: CustomizationOptions) => void;
+  customizations: CustomizationConfig;
+  onCustomizationChange: (customizations: CustomizationConfig) => void;
   userArtworkUrl?: string | null;
   selectedOrientation?: string;
 }
@@ -38,7 +38,7 @@ const CustomizationSelector = ({
   const [hasInteracted, setHasInteracted] = useState(false);
   const { canvasFrame, artworkPosition } = useCanvasPreview(selectedOrientation);
 
-  const handleCustomizationUpdate = (updates: Partial<CustomizationOptions>) => {
+  const handleCustomizationUpdate = (updates: Partial<CustomizationConfig>) => {
     if (!hasInteracted) setHasInteracted(true);
     const newCustomizations = {
       ...customizations,

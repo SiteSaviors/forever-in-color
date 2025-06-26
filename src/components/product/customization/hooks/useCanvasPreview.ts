@@ -1,6 +1,6 @@
 
 export const useCanvasPreview = (selectedOrientation: string) => {
-  // Get proper canvas frame based on orientation
+  // Get clean canvas (without frame) based on orientation
   const getCanvasFrame = () => {
     switch (selectedOrientation) {
       case 'horizontal':
@@ -9,7 +9,7 @@ export const useCanvasPreview = (selectedOrientation: string) => {
         return '/lovable-uploads/79613d9d-74f9-4f65-aec0-50fd2346a131.png';
       case 'square':
       default:
-        return '/lovable-uploads/7db3e997-ea34-4d40-af3e-67b693dc0544.png';
+        return '/lovable-uploads/1308e62b-7d30-4d01-bad3-ef128e25924b.png'; // Clean canvas without frame
     }
   };
 
@@ -18,25 +18,25 @@ export const useCanvasPreview = (selectedOrientation: string) => {
     switch (selectedOrientation) {
       case 'horizontal':
         return {
-          top: '18%',
-          left: '15%',
-          width: '70%',
-          height: '64%'
+          top: '8%',
+          left: '8%',
+          width: '84%',
+          height: '84%'
         };
       case 'vertical':
         return {
-          top: '15%',
-          left: '20%',
-          width: '60%',
-          height: '70%'
+          top: '8%',
+          left: '8%',
+          width: '84%',
+          height: '84%'
         };
       case 'square':
       default:
         return {
-          top: '5.2%',
-          left: '4.7%',
-          width: '89.3%',
-          height: '89.3%'
+          top: '8%',
+          left: '8%',
+          width: '84%',
+          height: '84%'
         };
     }
   };
