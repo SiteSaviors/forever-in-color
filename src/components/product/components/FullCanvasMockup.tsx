@@ -11,11 +11,11 @@ const FullCanvasMockup = ({ imageUrl, orientation, styleName }: FullCanvasMockup
   const getCanvasFrame = () => {
     switch (orientation) {
       case 'horizontal':
-        return '/lovable-uploads/9eb9363d-dc17-4df1-a03d-0c5fb463a473.png';
+        return '/lovable-uploads/5e67d281-e2f5-4b6b-942d-32f66511851e.png'; // New horizontal canvas
       case 'vertical':
         return '/lovable-uploads/79613d9d-74f9-4f65-aec0-50fd2346a131.png';
       case 'square':
-        return '/lovable-uploads/7db3e997-ea34-4d40-af3e-67b693dc0544.png'; // New Photoshop template
+        return '/lovable-uploads/7db3e997-ea34-4d40-af3e-67b693dc0544.png';
       default:
         return '/lovable-uploads/7db3e997-ea34-4d40-af3e-67b693dc0544.png';
     }
@@ -25,11 +25,11 @@ const FullCanvasMockup = ({ imageUrl, orientation, styleName }: FullCanvasMockup
     switch (orientation) {
       case 'horizontal':
         return { 
-          top: '18%', 
-          left: '15%', 
-          width: '70%', 
-          height: '64%',
-          transform: 'perspective(1000px) rotateX(8deg) rotateY(-12deg) rotateZ(2deg)'
+          top: '6%', 
+          left: '6%', 
+          width: '88%', 
+          height: '88%',
+          transform: 'none' // Clean positioning
         };
       case 'vertical':
         return { 
@@ -40,13 +40,12 @@ const FullCanvasMockup = ({ imageUrl, orientation, styleName }: FullCanvasMockup
           transform: 'perspective(1000px) rotateX(5deg) rotateY(-8deg) rotateZ(1deg)'
         };
       case 'square':
-        // Using exact pixel coordinates from Photoshop template (768x768px base)
         return { 
-          top: '5.2%',     // 40px / 768px = 5.2%
-          left: '4.7%',    // 36px / 768px = 4.7%
-          width: '89.3%',  // 686px / 768px = 89.3%
-          height: '89.3%', // 686px / 768px = 89.3%
-          transform: 'none' // No distortion needed as per specs
+          top: '5.2%',
+          left: '4.7%',
+          width: '89.3%',
+          height: '89.3%',
+          transform: 'none'
         };
       default:
         return { 

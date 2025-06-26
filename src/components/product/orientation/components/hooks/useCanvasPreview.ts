@@ -34,7 +34,7 @@ export const useCanvasPreview = ({
   const canvasFrame = useMemo(() => {
     switch (orientation) {
       case 'horizontal':
-        return '/lovable-uploads/9eb9363d-dc17-4df1-a03d-0c5fb463a473.png';
+        return '/lovable-uploads/5e67d281-e2f5-4b6b-942d-32f66511851e.png'; // New horizontal canvas
       case 'vertical':
         return '/lovable-uploads/79613d9d-74f9-4f65-aec0-50fd2346a131.png';
       case 'square':
@@ -48,10 +48,10 @@ export const useCanvasPreview = ({
     switch (orientation) {
       case 'horizontal':
         return {
-          top: '18%',
-          left: '15%',
-          width: '70%',
-          height: '64%'
+          top: '6%',
+          left: '6%',
+          width: '88%',
+          height: '88%'
         };
       case 'vertical':
         return {

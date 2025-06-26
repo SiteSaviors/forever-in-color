@@ -21,30 +21,30 @@ const CanvasWallMockup = ({
   customizations,
   className = ""
 }: CanvasWallMockupProps) => {
-  // Get the appropriate canvas frame based on orientation
+  // Get the appropriate canvas frame based on orientation - using new horizontal canvas
   const getCanvasFrame = () => {
     switch (selectedOrientation) {
       case 'horizontal':
-        return '/lovable-uploads/9eb9363d-dc17-4df1-a03d-0c5fb463a473.png';
+        return '/lovable-uploads/5e67d281-e2f5-4b6b-942d-32f66511851e.png'; // New horizontal canvas
       case 'vertical':
         return '/lovable-uploads/79613d9d-74f9-4f65-aec0-50fd2346a131.png';
       case 'square':
-        return '/lovable-uploads/7db3e997-ea34-4d40-af3e-67b693dc0544.png'; // New Photoshop template
+        return '/lovable-uploads/7db3e997-ea34-4d40-af3e-67b693dc0544.png';
       default:
         return '/lovable-uploads/7db3e997-ea34-4d40-af3e-67b693dc0544.png';
     }
   };
 
-  // Calculate positioning and perspective transforms for different orientations
+  // Calculate positioning for different orientations
   const getImagePosition = () => {
     switch (selectedOrientation) {
       case 'horizontal':
         return {
-          top: '18%',
-          left: '15%',
-          width: '70%',
-          height: '64%',
-          transform: 'perspective(1000px) rotateX(8deg) rotateY(-12deg) rotateZ(2deg)'
+          top: '6%',
+          left: '6%',
+          width: '88%',
+          height: '88%',
+          transform: 'none' // Clean positioning like the square canvas
         };
       case 'vertical':
         return {
@@ -55,13 +55,12 @@ const CanvasWallMockup = ({
           transform: 'perspective(1000px) rotateX(5deg) rotateY(-8deg) rotateZ(1deg)'
         };
       case 'square':
-        // Using exact pixel coordinates from Photoshop template
         return {
-          top: '5.2%',     // 40px / 768px = 5.2%
-          left: '4.7%',    // 36px / 768px = 4.7%
-          width: '89.3%',  // 686px / 768px = 89.3%
-          height: '89.3%', // 686px / 768px = 89.3%
-          transform: 'none' // No distortion needed as per specs
+          top: '5.2%',
+          left: '4.7%',
+          width: '89.3%',
+          height: '89.3%',
+          transform: 'none'
         };
       default:
         return {
@@ -87,7 +86,7 @@ const CanvasWallMockup = ({
           className="w-full h-auto object-contain"
         />
         
-        {/* User's Image Overlay with Perspective Transform */}
+        {/* User's Image Overlay */}
         <div 
           className="absolute overflow-hidden"
           style={{
@@ -105,7 +104,7 @@ const CanvasWallMockup = ({
             style={{
               transform: imagePosition.transform,
               transformOrigin: 'center center',
-              filter: 'brightness(0.95) contrast(1.05)', // Slight adjustment to match canvas lighting
+              filter: 'brightness(0.95) contrast(1.05)',
             }}
           />
         </div>
