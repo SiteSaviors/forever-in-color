@@ -12,6 +12,19 @@ export const useBlinking = (previewUrl: string | null, options: UseBlinkingOptio
   // Only start blinking if we're actually generating something
   const { isGenerating = false } = options;
 
+  // CRITICAL FIX: Immediate stop when preview becomes available
+  useEffect(() => {
+    if (previewUrl) {
+      console.log('🚨 IMMEDIATE STOP - Preview detected, forcing stop:', {
+        previewUrl: previewUrl.substring(0, 50) + '...',
+        wasBlinking: isBlinking,
+        timestamp: new Date().toISOString()
+      });
+      setIsBlinking(false);
+      return; // Exit early
+    }
+  }, [previewUrl]); // Run this first and separately
+
   // STEP 1: Verify hook updates are immediate - log inside the hook
   useEffect(() => {
     console.log('🔔 useBlinking - Hook sees state change:', {
@@ -57,10 +70,10 @@ export const useBlinking = (previewUrl: string | null, options: UseBlinkingOptio
     }
   }, [previewUrl, isGenerating]); // Include isGenerating in dependency array
 
-  // STEP 1: Additional verification - force stop when preview becomes available
+  // ENHANCED: Double-check to force stop when preview becomes available
   useEffect(() => {
     if (previewUrl && isBlinking) {
-      console.log('🚨 FORCE STOP - Preview exists but still blinking, forcing stop');
+      console.log('🚨 DOUBLE-CHECK FORCE STOP - Preview exists but still blinking, forcing stop');
       setIsBlinking(false);
     }
   }, [previewUrl, isBlinking]);

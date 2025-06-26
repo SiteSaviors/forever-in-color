@@ -5,7 +5,7 @@ interface MockupCanvasProps {
   previewUrl: string | null;
   orientation: 'square' | 'horizontal' | 'vertical';
   className?: string;
-  isBlinking?: boolean; // STEP 5: Fallback controlled prop
+  isBlinking?: boolean;
 }
 
 export function MockupCanvas({ previewUrl, orientation, className = "", isBlinking }: MockupCanvasProps) {
@@ -16,16 +16,17 @@ export function MockupCanvas({ previewUrl, orientation, className = "", isBlinki
     vertical: '/lovable-uploads/79613d9d-74f9-4f65-aec0-50fd2346a131.png',
   }[orientation];
 
-  // STEP 5: Use controlled prop if provided, otherwise fallback to !previewUrl
-  const shouldShowLoading = isBlinking !== undefined ? isBlinking : !previewUrl;
+  // ENHANCED DEBUGGING: Force stop blinking when preview exists
+  const shouldShowLoading = isBlinking !== undefined ? isBlinking && !previewUrl : !previewUrl;
 
-  // STEP 1: Enhanced logging to verify immediate updates
+  // Enhanced logging to track the animation issue
   console.log('🖼️ MockupCanvas render:', { 
     previewUrl: previewUrl ? previewUrl.substring(0, 50) + '...' : 'NULL', 
     shouldShowLoading, 
     orientation,
     hasPreview: !!previewUrl,
     isBlinkingProp: isBlinking,
+    finalDecision: shouldShowLoading,
     timestamp: new Date().toISOString()
   });
 
@@ -62,7 +63,7 @@ export function MockupCanvas({ previewUrl, orientation, className = "", isBlinki
         />
       )}
 
-      {/* STEP 3 & 4: Controlled loading state with CSS animation management */}
+      {/* CRITICAL FIX: Only show loading when blinking AND no preview exists */}
       {shouldShowLoading && (
         <div 
           className="

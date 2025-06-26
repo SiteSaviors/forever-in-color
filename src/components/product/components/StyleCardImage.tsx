@@ -58,12 +58,15 @@ const StyleCardImage = ({
   // STEP 5: Use the centralized blinking hook with isGenerating parameter
   const { isBlinking } = useBlinking(previewUrl, { isGenerating });
 
-  console.log(`StyleCardImage ${style.name}:`, {
+  // ENHANCED DEBUG: Log the complete state picture
+  console.log(`🎭 StyleCardImage ${style.name} COMPLETE STATE:`, {
     previewUrl: previewUrl ? previewUrl.substring(0, 30) + '...' : 'null',
     isBlinking,
     isGenerating,
     showError,
-    hasGeneratedPreview
+    hasGeneratedPreview,
+    shouldShowLoadingOverlay: isBlinking && isGenerating && !previewUrl,
+    timestamp: new Date().toISOString()
   });
 
   return (
@@ -79,7 +82,7 @@ const StyleCardImage = ({
         previewUrl={previewUrl}
         onExpandClick={onExpandClick}
         variant={hasGeneratedPreview ? 'mockup' : 'standard'}
-        isBlinking={isBlinking}
+        isBlinking={isBlinking && !previewUrl} // CRITICAL: Don't blink if preview exists
       />
 
       {/* Indicators */}
@@ -92,11 +95,9 @@ const StyleCardImage = ({
         onCanvasPreviewClick={onCanvasPreviewClick}
       />
 
-      {/* STEP 3: Pass single source of truth to overlays */}
-      
-      {/* Loading overlay - only show when blinking AND actually generating */}
+      {/* CRITICAL FIX: Only show loading when generating AND no preview exists */}
       <StyleCardLoadingOverlay
-        isBlinking={isBlinking && isGenerating}
+        isBlinking={isBlinking && isGenerating && !previewUrl}
         styleName={style.name}
         error={error}
       />
@@ -104,7 +105,7 @@ const StyleCardImage = ({
       {/* Blur overlay - pass blinking state */}
       <StyleCardBlurOverlay
         shouldBlur={shouldBlur}
-        isBlinking={isBlinking}
+        isBlinking={isBlinking && !previewUrl} // Don't blur if preview exists
         previewUrl={previewUrl}
         styleName={style.name}
         onGenerateStyle={onGenerateStyle || (() => {})}
