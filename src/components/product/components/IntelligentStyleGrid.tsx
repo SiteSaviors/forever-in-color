@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -39,15 +38,15 @@ const IntelligentStyleGrid = ({
     if (croppedImage) {
       setIsAnalyzing(true);
       analyzeImageForRecommendations(croppedImage)
-        .then(analysis => {
-          const recs = generateStyleRecommendations(analysis);
+        .then(async (analysis) => {
+          const recs = await generateStyleRecommendations(analysis, croppedImage);
           setRecommendations(recs);
           console.log('🎯 AI Recommendations generated:', recs);
         })
-        .catch(error => {
+        .catch(async (error) => {
           console.error('Recommendation analysis failed:', error);
           // Fallback to default recommendations
-          const fallbackRecs = generateStyleRecommendations({
+          const fallbackRecs = await generateStyleRecommendations({
             orientation: selectedOrientation,
             hasPortrait: false,
             isLandscape: false,
