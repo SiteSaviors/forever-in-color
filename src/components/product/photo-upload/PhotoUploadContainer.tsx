@@ -72,14 +72,14 @@ const PhotoUploadContainer = ({ onImageUpload, initialImage }: PhotoUploadContai
     }
   }, [initialImage]);
 
-  const handleAcceptAutoCrop = () => {
+  const handleAcceptAutoCrop = (croppedImageUrl: string) => {
+    console.log('✅ Accepting auto crop with URL:', croppedImageUrl);
     setCropAccepted(true);
     setCurrentFlowStage('complete');
     setShowAutoCropPreview(false);
     
-    if (uploadedImage) {
-      onImageUpload(uploadedImage, uploadedImage, recommendedOrientation);
-    }
+    // Pass the cropped image URL as the main image
+    onImageUpload(croppedImageUrl, uploadedImage || undefined, recommendedOrientation);
   };
 
   const handleCustomizeCrop = () => {
