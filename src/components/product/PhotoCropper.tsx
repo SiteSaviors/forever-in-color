@@ -158,7 +158,10 @@ const PhotoCropper = ({
 
         {/* Prominent Orientation Selection */}
         <div className="space-y-4">
-          
+          <div className="text-center">
+            
+            {recommendedOrientation}
+          </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto">
             {orientationOptions.map(option => {
