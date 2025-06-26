@@ -54,7 +54,28 @@ export class PhotoAnalysisEngine {
   private async getFallbackAnalysis(imageUrl: string): Promise<PhotoAnalysisResult> {
     console.log('⚠️ Using fallback analysis...');
     
-    // Basic fallback analysis
+    // Basic fallback analysis with all required properties
+    const styleAffinities = {
+      1: 1.0,
+      2: 0.7,
+      4: 0.6,
+      5: 0.5,
+      6: 0.4,
+      7: 0.4,
+      8: 0.3,
+      9: 0.5,
+      10: 0.3,
+      11: 0.4,
+      13: 0.3,
+      15: 0.4
+    };
+
+    // Get recommended styles from styleAffinities
+    const recommendedStyles = Object.entries(styleAffinities)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 5)
+      .map(([styleId]) => parseInt(styleId));
+    
     return {
       orientation: 'square',
       hasPortrait: false,
@@ -73,20 +94,8 @@ export class PhotoAnalysisEngine {
       textureComplexity: 0.5,
       subjectType: 'object',
       focusArea: { x: 0.5, y: 0.5, strength: 0.5 },
-      styleAffinities: {
-        1: 1.0,
-        2: 0.7,
-        4: 0.6,
-        5: 0.5,
-        6: 0.4,
-        7: 0.4,
-        8: 0.3,
-        9: 0.5,
-        10: 0.3,
-        11: 0.4,
-        13: 0.3,
-        15: 0.4
-      },
+      styleAffinities,
+      recommendedStyles,
       confidence: 0.3,
       processingTime: Date.now(),
       version: '2.0.0-fallback'

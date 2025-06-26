@@ -1,6 +1,6 @@
 
 import { UserPreference } from './types';
-import { PhotoAnalysisResult } from '../photoAnalysisEngine';
+import { PhotoAnalysisResult } from '../photoAnalysis/types';
 
 export class UserPreferencesManager {
   private userPreferences: UserPreference[] = [];
@@ -16,9 +16,9 @@ export class UserPreferencesManager {
   recordUserChoice(styleId: number, imageAnalysis: PhotoAnalysisResult, completed: boolean): void {
     // Find existing preference
     const existingPref = this.userPreferences.find(p => 
-      p.styleId === styleId &&
-      p.context.orientation === imageAnalysis.orientation &&
-      p.context.imageType === imageAnalysis.subjectType
+      p.favoriteStyles.includes(styleId) ||
+      (p.context.orientation === imageAnalysis.orientation &&
+       p.context.imageType === imageAnalysis.subjectType)
     );
     
     if (existingPref) {
@@ -26,17 +26,31 @@ export class UserPreferencesManager {
       existingPref.satisfaction = completed ? 
         Math.min(1, existingPref.satisfaction + 0.1) : 
         Math.max(0, existingPref.satisfaction - 0.1);
+      
+      if (completed && !existingPref.favoriteStyles.includes(styleId)) {
+        existingPref.favoriteStyles.push(styleId);
+      }
     } else {
-      this.userPreferences.push({
+      // Create new preference with all required properties
+      const newPreference: UserPreference = {
         styleId,
         frequency: 1,
+        satisfaction: completed ? 0.8 : 0.3,
         context: {
           imageType: imageAnalysis.subjectType,
           orientation: imageAnalysis.orientation,
           timeOfDay: new Date().getHours()
         },
-        satisfaction: completed ? 0.8 : 0.3
-      });
+        favoriteStyles: completed ? [styleId] : [],
+        colorPreferences: imageAnalysis.dominantColors.slice(0, 3),
+        complexityPreference: imageAnalysis.complexity,
+        orientationPreference: imageAnalysis.orientation,
+        lastInteraction: Date.now(),
+        totalInteractions: 1,
+        completionRate: completed ? 1.0 : 0.0
+      };
+      
+      this.userPreferences.push(newPreference);
     }
     
     this.saveUserPreferences();
