@@ -99,17 +99,19 @@ const PhotoUploadFlow = ({
           selectedStyle={selectedStyle}
         />
 
-        {/* Smart Progress Indicator - Only shows after photo upload */}
+        {/* Smart Progress Indicator - Always render but only show content when there's an image */}
         <SmartProgressIndicator uploadedImage={croppedImage} />
 
         {/* Show cropper if user wants to recrop */}
-        <PhotoCropperSection
-          showCropper={showCropper}
-          originalImage={originalImage}
-          currentOrientation={currentOrientation}
-          onCropComplete={handleCropComplete}
-          onOrientationChange={setCurrentOrientation}
-        />
+        {showCropper && (
+          <PhotoCropperSection
+            showCropper={showCropper}
+            originalImage={originalImage}
+            currentOrientation={currentOrientation}
+            onCropComplete={handleCropComplete}
+            onOrientationChange={setCurrentOrientation}
+          />
+        )}
 
         {/* Photo Upload Section - Only show if no image or not showing cropper */}
         {!showCropper && (
@@ -121,16 +123,18 @@ const PhotoUploadFlow = ({
             />
 
             {/* Style Selection Section - Only show after image is uploaded */}
-            <StyleSelectionSection
-              hasImage={hasImage}
-              croppedImage={croppedImage}
-              selectedStyle={selectedStyle}
-              cropAspectRatio={cropAspectRatio}
-              selectedOrientation={currentOrientation}
-              onStyleSelect={handleEnhancedStyleSelect}
-              onStyleComplete={handleStyleComplete}
-              onRecropImage={handleRecropImage}
-            />
+            {hasImage && (
+              <StyleSelectionSection
+                hasImage={hasImage}
+                croppedImage={croppedImage}
+                selectedStyle={selectedStyle}
+                cropAspectRatio={cropAspectRatio}
+                selectedOrientation={currentOrientation}
+                onStyleSelect={handleEnhancedStyleSelect}
+                onStyleComplete={handleStyleComplete}
+                onRecropImage={handleRecropImage}
+              />
+            )}
           </>
         )}
 
