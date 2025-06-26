@@ -60,20 +60,14 @@ const ProductContent = ({
   }
 
   // Get the actual preview URLs with error handling
-  const { previewUrls, autoGenerationComplete: previewGenerationComplete, error: previewError } = usePreviewGeneration(uploadedImage, selectedOrientation);
+  const { previewUrls, autoGenerationComplete: previewGenerationComplete } = usePreviewGeneration(uploadedImage, selectedOrientation);
   
   console.log('🖼️ ProductContent Preview Debug:', {
     previewUrls,
     previewUrlsKeys: Object.keys(previewUrls || {}),
     previewGenerationComplete,
-    selectedStyleId: selectedStyle?.id,
-    previewError
+    selectedStyleId: selectedStyle?.id
   });
-
-  // Handle preview generation errors
-  if (previewError) {
-    console.error('❌ Preview generation error:', previewError);
-  }
 
   const {
     canProceedToStep,

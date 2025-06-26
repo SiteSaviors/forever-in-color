@@ -1,7 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import UploadDropzone from "./UploadDropzone";
-import UploadProgress from "./UploadProgress";
 import UploadFeatures from "./UploadFeatures";
 import UploadCTA from "./UploadCTA";
 

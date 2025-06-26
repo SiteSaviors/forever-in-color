@@ -2,7 +2,7 @@
 import { useState, useCallback } from "react";
 import PhotoUploadMain from "./components/PhotoUploadMain";
 import { validateImageFile } from "@/utils/fileValidation";
-import { compressImage } from "@/utils/imageCompression";
+import { ImageCompressor } from "@/utils/imageCompression";
 
 interface PhotoUploadContainerProps {
   onImageUpload: (imageUrl: string, originalImageUrl?: string, orientation?: string) => void;
@@ -26,7 +26,7 @@ const PhotoUploadContainer = ({ onImageUpload, initialImage }: PhotoUploadContai
 
     try {
       // Enhanced validation with specific error messages
-      const validation = validateImageFile(file);
+      const validation = await validateImageFile(file);
       if (!validation.isValid) {
         throw new Error(validation.error || 'Invalid file format');
       }
@@ -36,13 +36,10 @@ const PhotoUploadContainer = ({ onImageUpload, initialImage }: PhotoUploadContai
 
       // Compress image with progress tracking
       console.log('🔄 Starting image compression...');
-      const compressedFile = await compressImage(file, {
+      const compressedFile = await ImageCompressor.compressImage(file, {
         maxWidth: 2048,
         maxHeight: 2048,
-        quality: 0.9,
-        onProgress: (progress) => {
-          setUploadProgress(20 + (progress * 0.6)); // 20-80% for compression
-        }
+        quality: 0.9
       });
 
       console.log('✅ Image compression completed');
@@ -163,13 +160,8 @@ const PhotoUploadContainer = ({ onImageUpload, initialImage }: PhotoUploadContai
       onDrop={handleDrop}
     >
       <PhotoUploadMain
-        onFileUpload={handleFileUpload}
-        uploadProgress={uploadProgress}
-        isUploading={isUploading}
-        uploadError={uploadError}
-        dragActive={dragActive}
+        onImageUpload={handleFileUpload}
         initialImage={initialImage}
-        onClearError={clearError}
       />
     </div>
   );
