@@ -1,4 +1,3 @@
-
 import PhotoUploadAndStyleSelection from "./PhotoUploadAndStyleSelection";
 import OrientationSelector from "./OrientationSelector";
 import CustomizationSelector from "./CustomizationSelector";
@@ -6,6 +5,7 @@ import ReviewAndOrder from "./ReviewAndOrder";
 import ProductStep from "./ProductStep";
 import { StylePreviewProvider } from "./contexts/StylePreviewContext";
 import { Accordion } from "@/components/ui/accordion";
+import { CustomizationOptions } from "./types/productState";
 
 interface ProductContentProps {
   currentStep: number;
@@ -13,23 +13,14 @@ interface ProductContentProps {
   selectedStyle: {id: number, name: string} | null;
   selectedSize: string;
   selectedOrientation: string;
-  customizations: {
-    floatingFrame: {
-      enabled: boolean;
-      color: 'white' | 'black' | 'espresso';
-    };
-    livingMemory: boolean;
-    voiceMatch: boolean;
-    customMessage: string;
-    aiUpscale: boolean;
-  };
+  customizations: CustomizationOptions;
   uploadedImage: string | null;
   autoGenerationComplete: boolean;
   onCurrentStepChange: (step: number) => void;
   onPhotoAndStyleComplete: (imageUrl: string, styleId: number, styleName: string) => void;
   onOrientationSelect: (orientation: string) => void;
   onSizeSelect: (size: string) => void;
-  onCustomizationChange: (customizations: any) => void;
+  onCustomizationChange: (customizations: CustomizationOptions) => void;
 }
 
 const ProductContent = ({
