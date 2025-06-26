@@ -146,14 +146,9 @@ const PhotoCropper = ({
       <div className="space-y-6">
         {/* Enhanced Header */}
         <div className="text-center space-y-3">
-          <Badge variant="secondary" className="bg-purple-100 text-purple-700 font-medium text-sm">
-            Step 1: Select Your Canvas Orientation & Crop
-          </Badge>
-          <h3 className="text-xl font-bold text-gray-900">Choose Your Canvas & Perfect Your Crop</h3>
-          <p className="text-sm text-gray-600 max-w-2xl mx-auto">
-            Select your preferred canvas orientation and adjust the crop to highlight the best part of your photo. 
-            Your choice here will be used throughout the entire process.
-          </p>
+          
+          <h3 className="text-xl font-bold text-gray-900">Choose Canvas Orientation</h3>
+          <p className="text-sm text-gray-600 max-w-2xl mx-auto">Select your preferred canvas orientation and adjust the crop to highlight the best part of your photo. Your choice here will be used throughout the process.</p>
         </div>
 
         {/* Prominent Orientation Selection */}
