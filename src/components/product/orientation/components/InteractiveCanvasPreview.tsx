@@ -1,5 +1,5 @@
 
-import MorphingCanvasPreview from "./MorphingCanvasPreview";
+import UnifiedCanvasPreview from "./UnifiedCanvasPreview";
 
 interface InteractiveCanvasPreviewProps {
   orientation: string;
@@ -9,13 +9,7 @@ interface InteractiveCanvasPreviewProps {
   onClick: () => void;
 }
 
-const InteractiveCanvasPreview = ({ 
-  orientation, 
-  userImageUrl, 
-  isSelected, 
-  isRecommended = false,
-  onClick 
-}: InteractiveCanvasPreviewProps) => {
+const InteractiveCanvasPreview = (props: InteractiveCanvasPreviewProps) => {
   // Get a default size for the preview
   const getDefaultSize = (orientation: string) => {
     switch (orientation) {
@@ -27,16 +21,11 @@ const InteractiveCanvasPreview = ({
   };
 
   return (
-    <div className="relative">
-      <MorphingCanvasPreview
-        orientation={orientation}
-        userImageUrl={userImageUrl}
-        size={getDefaultSize(orientation)}
-        isSelected={isSelected}
-        isRecommended={isRecommended}
-        onClick={onClick}
-      />
-    </div>
+    <UnifiedCanvasPreview 
+      {...props} 
+      size={getDefaultSize(props.orientation)}
+      variant="interactive" 
+    />
   );
 };
 
