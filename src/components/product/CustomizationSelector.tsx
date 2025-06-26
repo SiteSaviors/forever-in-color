@@ -47,39 +47,40 @@ const CustomizationSelector = ({
   const { canvasFrame, artworkPosition } = useCanvasPreview(selectedOrientation);
 
   /**
-   * Get the appropriate artwork URL based on availability
-   * PRIORITY: Generated AI artwork > Original uploaded photo
+   * Get the appropriate artwork URL - PRIORITIZE AI-GENERATED ART
+   * PRIORITY: Generated AI artwork > Original uploaded photo (only as absolute fallback)
    */
   const getArtworkUrl = useMemo(() => {
     console.log('🖼️ CustomizationSelector - Artwork URL Resolution:', {
-      userArtworkUrl,
       selectedStyleId: selectedStyle?.id,
       previewUrls,
       previewUrlsKeys: Object.keys(previewUrls || {}),
       previewUrlsLength: Object.keys(previewUrls || {}).length,
-      isGeneratingPreviews
+      isGeneratingPreviews,
+      userArtworkUrl: userArtworkUrl ? userArtworkUrl.substring(0, 50) + '...' : null
     });
 
-    // Priority 1: Generated preview URL for selected style (AI-generated artwork)
+    // PRIORITY 1: Generated preview URL for selected style (AI-generated artwork)
     if (selectedStyle?.id && previewUrls && typeof previewUrls === 'object') {
+      // Try both number and string keys
       const previewUrl = previewUrls[selectedStyle.id] || previewUrls[String(selectedStyle.id)];
-      if (previewUrl) {
+      if (previewUrl && typeof previewUrl === 'string') {
         console.log('✅ Using AI-generated preview URL for style:', selectedStyle.id, '->', previewUrl.substring(0, 50) + '...');
         return previewUrl;
       } else {
         console.log('⚠️ No AI-generated preview URL found for selected style:', selectedStyle.id);
-        console.log('Available preview URLs:', Object.keys(previewUrls));
+        console.log('Available preview URLs:', Object.entries(previewUrls));
       }
     }
 
-    // Priority 2: First available preview URL (fallback to any generated artwork)
-    const availableUrls = Object.values(previewUrls || {});
-    if (availableUrls.length > 0 && availableUrls[0]) {
+    // PRIORITY 2: First available preview URL (any generated artwork)
+    const availableUrls = Object.values(previewUrls || {}).filter(url => url && typeof url === 'string');
+    if (availableUrls.length > 0) {
       console.log('⚠️ Using first available AI-generated preview URL as fallback:', availableUrls[0].substring(0, 50) + '...');
       return availableUrls[0];
     }
 
-    // Priority 3: Direct user artwork URL (original uploaded photo - only as last resort)
+    // ONLY as absolute last resort: Direct user artwork URL (original uploaded photo)
     if (userArtworkUrl && typeof userArtworkUrl === 'string') {
       console.log('⚠️ Falling back to original uploaded photo (no AI artwork available):', userArtworkUrl.substring(0, 50) + '...');
       return userArtworkUrl;
@@ -115,9 +116,8 @@ const CustomizationSelector = ({
     <div className="max-w-6xl mx-auto space-y-8">
       <CustomizationHeader />
       
-      {/* Canvas Preview Section - Expanded canvas mockup */}
+      {/* Canvas Preview Section - Show AI-generated artwork */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Canvas Mockups Only - Expanded to fill column */}
         <CanvasPreviewSection
           userArtworkUrl={getArtworkUrl}
           selectedOrientation={selectedOrientation}

@@ -30,7 +30,7 @@ const CanvasPreviewSection = ({
         <p className="text-gray-600">Premium gallery-quality canvas with your AI-generated artwork</p>
       </div>
       
-      {/* Expanded Canvas Mockup with User Artwork Overlay */}
+      {/* Canvas Preview with AI-Generated Artwork */}
       <div className="relative group">
         {/* Canvas Frame */}
         <img 
@@ -39,7 +39,7 @@ const CanvasPreviewSection = ({
           className="w-full h-auto rounded-lg shadow-lg group-hover:shadow-xl transition-all duration-300 transform group-hover:scale-[1.02]" 
         />
         
-        {/* User's Generated Artwork Overlay */}
+        {/* AI-Generated Artwork Overlay - THIS IS THE KEY SECTION */}
         {userArtworkUrl && !isLoading && (
           <div 
             className="absolute overflow-hidden transition-all duration-300 group-hover:brightness-110 rounded-sm"
@@ -52,8 +52,8 @@ const CanvasPreviewSection = ({
               style={{
                 filter: 'brightness(0.95) contrast(1.05) saturate(1.1)'
               }}
-              onLoad={() => console.log('✅ AI-generated artwork loaded successfully:', userArtworkUrl.substring(0, 50) + '...')}
-              onError={(e) => console.error('❌ Failed to load AI-generated artwork:', userArtworkUrl, e)}
+              onLoad={() => console.log('✅ AI-generated artwork loaded successfully on canvas:', userArtworkUrl.substring(0, 50) + '...')}
+              onError={(e) => console.error('❌ Failed to load AI-generated artwork on canvas:', userArtworkUrl, e)}
             />
           </div>
         )}
@@ -90,7 +90,7 @@ const CanvasPreviewSection = ({
             style={artworkPosition}
           >
             <div className="text-center">
-              <div className="text-xs">No artwork available</div>
+              <div className="text-xs">Waiting for AI artwork...</div>
             </div>
           </div>
         )}
