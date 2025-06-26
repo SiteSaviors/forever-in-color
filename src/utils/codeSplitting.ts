@@ -178,7 +178,7 @@ export class CodeSplitter {
       'payment': [
         () => import('@/components/product/PaymentForm'),
         () => import('@/components/product/OrderSummary'),
-        () => import('@/hooks/useStripePayment')
+        () => import('@/components/product/hooks/useStripePayment')
       ]
     };
 

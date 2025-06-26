@@ -6,29 +6,13 @@ import UploadFeatures from "./UploadFeatures";
 import UploadCTA from "./UploadCTA";
 
 interface PhotoUploadMainProps {
-  isDragOver: boolean;
-  isUploading: boolean;
-  uploadProgress: number;
-  processingStage: string;
-  fileInputRef: React.RefObject<HTMLInputElement>;
-  onDrop: (e: React.DragEvent<HTMLDivElement>) => void;
-  onDragOver: (e: React.DragEvent<HTMLDivElement>) => void;
-  onDragLeave: (e: React.DragEvent<HTMLDivElement>) => void;
-  onClick: () => void;
-  onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onImageUpload: (file: File) => Promise<void>;
+  initialImage?: string | null;
 }
 
 const PhotoUploadMain = ({
-  isDragOver,
-  isUploading,
-  uploadProgress,
-  processingStage,
-  fileInputRef,
-  onDrop,
-  onDragOver,
-  onDragLeave,
-  onClick,
-  onFileChange
+  onImageUpload,
+  initialImage
 }: PhotoUploadMainProps) => {
   return (
     <Card className="w-full overflow-hidden border-0 shadow-2xl bg-gradient-to-br from-white to-gray-50">
@@ -46,19 +30,9 @@ const PhotoUploadMain = ({
 
           <div className="relative p-8 lg:p-12">
             <UploadDropzone
-              isDragOver={isDragOver}
-              isUploading={isUploading}
-              processingStage={processingStage}
-              onDrop={onDrop}
-              onDragOver={onDragOver}
-              onDragLeave={onDragLeave}
-              onClick={onClick}
-              fileInputRef={fileInputRef}
-              onFileChange={onFileChange}
+              onImageUpload={onImageUpload}
+              initialImage={initialImage}
             />
-            
-            {/* Progress Bar */}
-            <UploadProgress uploadProgress={uploadProgress} isUploading={isUploading} />
             
             {/* Enhanced Features */}
             <div className="mt-6">
@@ -66,7 +40,7 @@ const PhotoUploadMain = ({
             </div>
             
             {/* CTA Button */}
-            <UploadCTA isUploading={isUploading} onClick={onClick} />
+            <UploadCTA onImageUpload={onImageUpload} />
           </div>
         </div>
       </CardContent>
