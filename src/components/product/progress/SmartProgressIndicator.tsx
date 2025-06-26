@@ -120,7 +120,7 @@ const SmartProgressIndicator = ({ uploadedImage }: SmartProgressIndicatorProps) 
           ))}
         </div>
 
-        <SocialProofSection state={state} />
+        <SocialProofSection />
       </div>
     </div>
   );
