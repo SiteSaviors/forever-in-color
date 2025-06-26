@@ -1,9 +1,8 @@
-
 import { useCallback } from 'react';
 import { generateStylePreview } from '@/utils/stylePreviewApi';
 import { addWatermarkToImage } from '@/utils/watermarkUtils';
 import { StylePreviewAction } from './types';
-import { getAspectRatio } from './orientationUtils';
+import { getAspectRatio } from '../orientation/utils';
 
 interface UseStylePreviewLogicProps {
   croppedImage: string | null;
