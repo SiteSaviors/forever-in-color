@@ -100,13 +100,8 @@ const EnhancedStyleCard = ({
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
             />
 
-            {/* Enhanced Gradient Overlay on Hover */}
-            <div className={`absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent transition-opacity duration-300 ${
-              isHovered ? 'opacity-100' : 'opacity-0'
-            }`} />
-
             {/* Top Badges - Enhanced */}
-            <div className="absolute top-3 left-3 right-3 flex justify-between items-start">
+            <div className="absolute top-3 left-3 right-3 flex justify-between items-start z-20">
               <div className="flex flex-col gap-2">
                 {isRecommended && (
                   <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold shadow-lg animate-pulse">
@@ -130,41 +125,44 @@ const EnhancedStyleCard = ({
               )}
             </div>
 
-            {/* Enhanced Hover Action Buttons */}
-            <div className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${
-              isHovered ? 'opacity-100 backdrop-blur-sm' : 'opacity-0'
+            {/* Enhanced Hover Action Buttons - Fixed positioning */}
+            <div className={`absolute inset-0 flex items-center justify-center transition-all duration-300 z-10 ${
+              isHovered ? 'opacity-100' : 'opacity-0'
             }`}>
-              <div className="flex gap-3">
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  className="bg-white/95 hover:bg-white backdrop-blur-sm shadow-xl border-0 transform transition-all duration-200 hover:scale-110"
-                  onClick={handleCanvasPreview}
-                >
-                  <Eye className="w-4 h-4 mr-1" />
-                  Preview
-                </Button>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  className="bg-white/95 hover:bg-white backdrop-blur-sm shadow-xl border-0 transform transition-all duration-200 hover:scale-110"
-                  onClick={handleLightboxOpen}
-                >
-                  <Maximize2 className="w-4 h-4 mr-1" />
-                  Full Size
-                </Button>
+              {/* Subtle backdrop blur only behind buttons */}
+              <div className="bg-black/20 backdrop-blur-sm rounded-2xl p-2">
+                <div className="flex gap-3">
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="bg-white/95 hover:bg-white backdrop-blur-sm shadow-xl border-0 transform transition-all duration-200 hover:scale-110"
+                    onClick={handleCanvasPreview}
+                  >
+                    <Eye className="w-4 h-4 mr-1" />
+                    Preview
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="bg-white/95 hover:bg-white backdrop-blur-sm shadow-xl border-0 transform transition-all duration-200 hover:scale-110"
+                    onClick={handleLightboxOpen}
+                  >
+                    <Maximize2 className="w-4 h-4 mr-1" />
+                    Full Size
+                  </Button>
+                </div>
               </div>
             </div>
 
-            {/* Enhanced Bottom Info Overlay */}
-            <div className={`absolute bottom-0 left-0 right-0 p-4 transition-all duration-300 ${
+            {/* Enhanced Bottom Info Overlay - Improved positioning and readability */}
+            <div className={`absolute bottom-0 left-0 right-0 p-3 transition-all duration-300 z-30 ${
               isHovered ? 'translate-y-0' : 'translate-y-full'
             }`}>
-              <div className="bg-white/98 backdrop-blur-md rounded-xl p-4 shadow-2xl border border-white/20">
+              <div className="bg-white/95 backdrop-blur-md rounded-xl p-4 shadow-2xl border border-white/30">
                 <div className="flex items-start justify-between mb-2">
-                  <h4 className="font-bold text-gray-900">{style.name}</h4>
+                  <h4 className="font-bold text-gray-900 text-sm md:text-base">{style.name}</h4>
                   {confidence && (
-                    <div className="flex">
+                    <div className="flex ml-2">
                       {[...Array(5)].map((_, i) => (
                         <Star
                           key={i}
@@ -178,12 +176,14 @@ const EnhancedStyleCard = ({
                     </div>
                   )}
                 </div>
-                <p className="text-sm text-gray-600 mb-3 leading-relaxed">{style.description}</p>
+                <p className="text-xs md:text-sm text-gray-600 mb-3 leading-relaxed line-clamp-2">
+                  {style.description}
+                </p>
                 {recommendationReason && (
                   <div className="bg-amber-50 border border-amber-200 rounded-lg p-2">
                     <p className="text-xs text-amber-800 font-medium flex items-center">
-                      <Sparkles className="w-3 h-3 mr-1" />
-                      {recommendationReason}
+                      <Sparkles className="w-3 h-3 mr-1 flex-shrink-0" />
+                      <span className="line-clamp-2">{recommendationReason}</span>
                     </p>
                   </div>
                 )}
@@ -195,8 +195,8 @@ const EnhancedStyleCard = ({
         {/* Enhanced Card Content */}
         <div className="p-4 bg-gradient-to-r from-white to-gray-50">
           <div className="flex items-center justify-between">
-            <div>
-              <h4 className="font-semibold text-gray-900">{style.name}</h4>
+            <div className="flex-1 min-w-0">
+              <h4 className="font-semibold text-gray-900 truncate">{style.name}</h4>
               {isSelected && (
                 <Badge className="mt-2 bg-purple-600 text-white shadow-lg">
                   <Star className="w-3 h-3 mr-1" />
@@ -208,7 +208,7 @@ const EnhancedStyleCard = ({
             {isSelected && onContinue && (
               <Button
                 size="sm"
-                className="bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg hover:shadow-xl transform transition-all duration-200 hover:scale-105"
+                className="bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg hover:shadow-xl transform transition-all duration-200 hover:scale-105 ml-3"
                 onClick={(e) => {
                   e.stopPropagation();
                   onContinue();
