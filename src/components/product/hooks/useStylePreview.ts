@@ -59,20 +59,23 @@ export const useStylePreview = ({
       return;
     }
 
-    console.log(`🎯 useStylePreview: Selected orientation is: ${selectedOrientation}`);
+    console.log('');
+    console.log('🔥🔥🔥 STYLE PREVIEW GENERATION START 🔥🔥🔥');
+    console.log('🔥 Style Name:', style.name);
+    console.log('🔥 Style ID:', style.id);
+    console.log('🔥 Selected Orientation FROM PROPS:', selectedOrientation);
     
     // CRITICAL FIX: Map orientation to correct aspect ratio BEFORE API call
     const aspectRatio = getAspectRatio(selectedOrientation);
-    console.log(`🎨 Starting preview generation for style: ${style.name} (ID: ${style.id}) with orientation: ${selectedOrientation} -> aspect ratio: ${aspectRatio}`);
+    console.log('🔥🔥🔥 MAPPED ASPECT RATIO:', aspectRatio, '🔥🔥🔥');
+    console.log('🔥🔥🔥 CALLING API WITH ASPECT RATIO:', aspectRatio, '🔥🔥🔥');
     
     setIsLoading(true);
     
     try {
-      console.log(`🔄 Generating preview for ${style.name} with mapped aspect ratio: ${aspectRatio} (from orientation: ${selectedOrientation})`);
-      
       const tempPhotoId = `temp_${Date.now()}_${style.id}`;
       
-      console.log(`🔥 CRITICAL: About to call generateStylePreview with aspectRatio: ${aspectRatio}`);
+      console.log('🔥 About to call generateStylePreview API...');
       
       // Generate the preview without server-side watermarking
       const rawPreviewUrl = await generateStylePreview(croppedImage, style.name, tempPhotoId, aspectRatio, {
@@ -80,7 +83,7 @@ export const useStylePreview = ({
       });
 
       if (rawPreviewUrl) {
-        console.log(`✅ Raw preview generated for ${style.name} with correct aspect ratio ${aspectRatio}, applying client-side watermark...`);
+        console.log(`✅ Raw preview generated for ${style.name} with aspect ratio ${aspectRatio}`);
         
         try {
           // Apply client-side watermarking
@@ -100,12 +103,19 @@ export const useStylePreview = ({
       console.error(`❌ Error generating preview for ${style.name}:`, error);
     } finally {
       setIsLoading(false);
-      console.log(`🏁 Preview generation completed for ${style.name} (ID: ${style.id}) with aspect ratio: ${aspectRatio}`);
+      console.log('🔥🔥🔥 STYLE PREVIEW GENERATION END 🔥🔥🔥');
+      console.log('');
     }
   }, [croppedImage, style.id, style.name, preGeneratedPreview, selectedOrientation]);
 
   const handleClick = useCallback(() => {
-    console.log(`🎯 Style clicked: ${style.name} (ID: ${style.id}) with orientation: ${selectedOrientation}`);
+    console.log('');
+    console.log('🔥🔥🔥 STYLE CLICK HANDLER 🔥🔥🔥');
+    console.log('🔥 Style clicked:', style.name, '(ID:', style.id, ')');
+    console.log('🔥 Current orientation:', selectedOrientation);
+    console.log('🔥🔥🔥 END STYLE CLICK 🔥🔥🔥');
+    console.log('');
+    
     onStyleClick(style);
     
     if (croppedImage && !hasGeneratedPreview && !isLoading && style.id !== 1 && !preGeneratedPreview) {

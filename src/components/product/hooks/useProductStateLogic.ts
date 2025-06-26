@@ -96,8 +96,11 @@ export const useProductStateLogic = () => {
   };
 
   const handleOrientationSelect = (orientation: string) => {
+    console.log('🔥🔥🔥 ORIENTATION CHANGE HANDLER CALLED 🔥🔥🔥');
     console.log('🔥 CRITICAL: Orientation manually changed to:', orientation);
     console.log('🔥 CRITICAL: Previous orientation was:', selectedOrientation);
+    console.log('🔥 CRITICAL: This should trigger preview regeneration with new aspect ratio');
+    
     setSelectedOrientation(orientation);
     
     // Reset size when orientation changes
@@ -111,7 +114,7 @@ export const useProductStateLogic = () => {
     });
     
     // CRITICAL: Clear existing previews when orientation changes to regenerate with new aspect ratio
-    console.log('🔥 CRITICAL: Clearing existing previews due to orientation change - will regenerate with new aspect ratio');
+    console.log('🔥🔥🔥 CLEARING PREVIEWS - WILL REGENERATE WITH NEW ASPECT RATIO 🔥🔥🔥');
     setPreviewUrls({});
     setAutoGenerationComplete(false);
   };
@@ -141,16 +144,18 @@ export const useProductStateLogic = () => {
     return canProceed;
   };
 
-  // Debug log whenever state changes
+  // Debug log whenever state changes - ENHANCED VISIBILITY
   useEffect(() => {
-    console.log('🔥 CRITICAL STATE UPDATE:', {
-      currentStep,
-      completedSteps,
-      selectedStyle: selectedStyle?.name,
-      uploadedImage: !!uploadedImage,
-      selectedSize,
-      selectedOrientation: selectedOrientation + ' ⭐' // Adding star to make it more visible
-    });
+    console.log('');
+    console.log('🔥🔥🔥 CRITICAL STATE UPDATE 🔥🔥🔥');
+    console.log('🔥 Current Step:', currentStep);
+    console.log('🔥 Completed Steps:', completedSteps);
+    console.log('🔥 Selected Style:', selectedStyle?.name || 'NONE');
+    console.log('🔥 Uploaded Image:', !!uploadedImage ? 'YES' : 'NO');
+    console.log('🔥 Selected Size:', selectedSize || 'NONE');
+    console.log('🔥🔥🔥 SELECTED ORIENTATION:', selectedOrientation, '🔥🔥🔥');
+    console.log('🔥🔥🔥 END STATE UPDATE 🔥🔥🔥');
+    console.log('');
   }, [currentStep, completedSteps, selectedStyle, uploadedImage, selectedSize, selectedOrientation]);
 
   return {
