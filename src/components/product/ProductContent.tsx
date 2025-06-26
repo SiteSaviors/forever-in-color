@@ -1,4 +1,3 @@
-
 import { StylePreviewProvider } from "./contexts/StylePreviewContext";
 import { Accordion } from "@/components/ui/accordion";
 import { CustomizationOptions } from "./types/productState";
@@ -120,15 +119,18 @@ const ProductContent = ({
             isActive={currentStep === 3}
             isCompleted={completedSteps.includes(3)}
             canAccess={canProceedToStep(3)}
-            customizations={customizations}
             selectedSize={selectedSize}
+            customizations={customizations}
+            selectedOrientation={selectedOrientation}
+            selectedStyle={selectedStyle}
+            previewUrls={{}}
+            onCustomizationChange={onCustomizationChange}
             onStepClick={() => {
               console.log('🐛 Clicked on step 3, canAccess:', canProceedToStep(3));
               if (canProceedToStep(3)) {
                 onCurrentStepChange(3);
               }
             }}
-            onCustomizationChange={onCustomizationChange}
           />
 
           <ReviewOrderStep
