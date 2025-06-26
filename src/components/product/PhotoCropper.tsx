@@ -1,6 +1,6 @@
 
 import { useState, useCallback } from "react";
-import { Crop, RotateCcw, Monitor, Smartphone, Square } from "lucide-react";
+import { Crop, RotateCcw, Monitor, Smartphone, Square, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Cropper from 'react-easy-crop';
@@ -9,7 +9,7 @@ interface PhotoCropperProps {
   imageUrl: string;
   initialAspectRatio?: number;
   selectedOrientation?: string;
-  onCropComplete: (croppedImage: string, aspectRatio: number) => void;
+  onCropComplete: (croppedImage: string, aspectRatio: number, orientation: string) => void;
   onOrientationChange?: (orientation: string) => void;
 }
 
@@ -23,6 +23,9 @@ const PhotoCropper = ({
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+  
+  // Auto-detect recommended orientation based on image dimensions
+  const [recommendedOrientation, setRecommendedOrientation] = useState<string>("");
   
   // Convert selectedOrientation to aspect ratio
   const getAspectRatioFromOrientation = (orientation: string) => {
@@ -39,29 +42,54 @@ const PhotoCropper = ({
 
   const [cropAspect, setCropAspect] = useState(getAspectRatioFromOrientation(selectedOrientation));
 
+  // Enhanced orientation options with better descriptions
   const orientationOptions = [
     { 
       id: 'square', 
       name: 'Square', 
       ratio: 1, 
       icon: Square,
-      description: 'Perfect for social media'
+      description: 'Perfect for social media & symmetric art',
+      dimensions: '1:1'
     },
     { 
       id: 'horizontal', 
       name: 'Horizontal', 
       ratio: 4/3, 
       icon: Monitor,
-      description: 'Great for landscapes'
+      description: 'Ideal for landscapes & wide shots',
+      dimensions: '4:3'
     },
     { 
       id: 'vertical', 
       name: 'Vertical', 
       ratio: 3/4, 
       icon: Smartphone,
-      description: 'Ideal for portraits'
+      description: 'Best for portraits & tall compositions',
+      dimensions: '3:4'
     }
   ];
+
+  // Auto-detect recommended orientation when image loads
+  useState(() => {
+    const img = new Image();
+    img.onload = () => {
+      const aspectRatio = img.width / img.height;
+      let detected = 'square';
+      
+      if (aspectRatio > 1.2) {
+        detected = 'horizontal';
+      } else if (aspectRatio < 0.8) {
+        detected = 'vertical';
+      } else {
+        detected = 'square';
+      }
+      
+      setRecommendedOrientation(detected);
+      console.log('🎯 Auto-detected recommended orientation:', detected, 'from aspect ratio:', aspectRatio.toFixed(2));
+    };
+    img.src = imageUrl;
+  });
 
   const onCropCompleteHandler = useCallback((croppedArea: any, croppedAreaPixels: any) => {
     setCroppedAreaPixels(croppedAreaPixels);
@@ -107,7 +135,8 @@ const PhotoCropper = ({
     if (croppedAreaPixels && imageUrl) {
       try {
         const croppedImage = await getCroppedImg(imageUrl, croppedAreaPixels);
-        onCropComplete(croppedImage, cropAspect);
+        const currentOrientation = getCurrentOrientation().id;
+        onCropComplete(croppedImage, cropAspect, currentOrientation);
       } catch (e) {
         console.error(e);
       }
@@ -139,64 +168,103 @@ const PhotoCropper = ({
 
   return (
     <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-4 md:p-6">
-      <div className="space-y-4 md:space-y-6">
-        {/* Header with requirement notice */}
-        <div className="text-center space-y-2">
-          <Badge variant="secondary" className="bg-purple-100 text-purple-700 font-medium">
-            Required Step: Choose Your Canvas Format
+      <div className="space-y-6">
+        {/* Enhanced Header */}
+        <div className="text-center space-y-3">
+          <Badge variant="secondary" className="bg-purple-100 text-purple-700 font-medium text-sm">
+            Step 1: Select Your Canvas Orientation & Crop
           </Badge>
-          <p className="text-sm text-gray-600">
-            Select your preferred canvas orientation and adjust the crop to highlight the best part of your photo
+          <h3 className="text-xl font-bold text-gray-900">Choose Your Canvas & Perfect Your Crop</h3>
+          <p className="text-sm text-gray-600 max-w-2xl mx-auto">
+            Select your preferred canvas orientation and adjust the crop to highlight the best part of your photo. 
+            Your choice here will be used throughout the entire process.
           </p>
         </div>
 
-        {/* Orientation Selection */}
-        <div className="space-y-3">
+        {/* Prominent Orientation Selection */}
+        <div className="space-y-4">
           <div className="text-center">
-            <Badge variant="outline" className="bg-white border-purple-200 text-purple-700 font-medium">
-              Current: {getCurrentOrientation().name}
-            </Badge>
+            <h4 className="text-lg font-semibold text-gray-800 mb-2">Canvas Orientation</h4>
+            {recommendedOrientation && (
+              <Badge variant="outline" className="bg-green-50 border-green-200 text-green-700 font-medium">
+                <Sparkles className="w-3 h-3 mr-1" />
+                Recommended: {orientationOptions.find(opt => opt.id === recommendedOrientation)?.name}
+              </Badge>
+            )}
           </div>
           
-          <div className="grid grid-cols-3 gap-2 md:gap-3 max-w-md mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto">
             {orientationOptions.map((option) => {
               const IconComponent = option.icon;
               const isActive = cropAspect === option.ratio;
+              const isRecommended = option.id === recommendedOrientation;
               
               return (
-                <Button
+                <div
                   key={option.id}
-                  variant={isActive ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => handleOrientationChange(option.ratio, option.id)}
-                  className={`flex flex-col items-center gap-1 h-auto py-3 px-2 md:px-3 text-xs ${
+                  className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 ${
                     isActive 
-                      ? 'bg-purple-600 hover:bg-purple-700 text-white shadow-lg' 
-                      : 'hover:bg-purple-50 hover:border-purple-300 text-gray-700'
+                      ? 'border-purple-500 bg-purple-50 shadow-lg transform scale-105' 
+                      : 'border-gray-200 bg-white hover:border-purple-300 hover:bg-purple-25'
                   }`}
+                  onClick={() => handleOrientationChange(option.ratio, option.id)}
                 >
-                  <IconComponent className="w-5 h-5" />
-                  <span className="font-medium">{option.name}</span>
-                  <span className="text-[10px] opacity-75 hidden md:block">
-                    {option.description}
-                  </span>
-                </Button>
+                  {isRecommended && (
+                    <Badge className="absolute -top-2 -right-2 bg-green-500 text-white text-xs">
+                      <Sparkles className="w-3 h-3 mr-1" />
+                      Recommended
+                    </Badge>
+                  )}
+                  
+                  <div className="text-center space-y-3">
+                    <div className={`flex justify-center p-3 rounded-lg ${
+                      isActive ? 'bg-purple-100 text-purple-600' : 'bg-gray-100 text-gray-500'
+                    }`}>
+                      <IconComponent className="w-8 h-8" />
+                    </div>
+                    
+                    <div>
+                      <div className="flex items-center justify-center gap-2 mb-1">
+                        <h5 className="font-bold text-lg text-gray-900">{option.name}</h5>
+                        <Badge variant="outline" className="text-xs">{option.dimensions}</Badge>
+                      </div>
+                      <p className="text-sm text-gray-600 leading-relaxed">
+                        {option.description}
+                      </p>
+                    </div>
+                    
+                    {isActive && (
+                      <Badge className="bg-purple-500 text-white">
+                        ✓ Selected
+                      </Badge>
+                    )}
+                  </div>
+                </div>
               );
             })}
           </div>
         </div>
 
         {/* Crop Area */}
-        <div className="relative w-full h-64 md:h-80 bg-black rounded-xl overflow-hidden shadow-inner">
-          <Cropper
-            image={imageUrl}
-            crop={crop}
-            zoom={zoom}
-            aspect={cropAspect}
-            onCropChange={setCrop}
-            onZoomChange={setZoom}
-            onCropComplete={onCropCompleteHandler}
-          />
+        <div className="space-y-3">
+          <div className="text-center">
+            <h4 className="text-lg font-semibold text-gray-800">Perfect Your Crop</h4>
+            <p className="text-sm text-gray-600">
+              Adjust the crop area to highlight the best part of your photo
+            </p>
+          </div>
+          
+          <div className="relative w-full h-80 bg-black rounded-xl overflow-hidden shadow-inner">
+            <Cropper
+              image={imageUrl}
+              crop={crop}
+              zoom={zoom}
+              aspect={cropAspect}
+              onCropChange={setCrop}
+              onZoomChange={setZoom}
+              onCropComplete={onCropCompleteHandler}
+            />
+          </div>
         </div>
 
         {/* Action Buttons */}
@@ -207,15 +275,15 @@ const PhotoCropper = ({
             className="text-sm flex items-center gap-2 border-purple-200 hover:bg-purple-50"
           >
             <RotateCcw className="w-4 h-4" />
-            Reset Position
+            Reset Crop Position
           </Button>
           <Button
             onClick={handleCropSave}
             disabled={!croppedAreaPixels}
-            className="bg-purple-600 hover:bg-purple-700 text-sm font-medium px-6 py-2"
+            className="bg-purple-600 hover:bg-purple-700 text-sm font-medium px-8 py-3"
           >
             <Crop className="w-4 h-4 mr-2" />
-            Apply Crop & Continue
+            Apply Canvas & Crop
           </Button>
         </div>
       </div>

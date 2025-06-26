@@ -7,7 +7,7 @@ import { validateImageFile } from "@/utils/fileValidation";
 import PhotoCropper from "./PhotoCropper";
 
 interface PhotoUploadProps {
-  onImageUpload: (imageUrl: string, originalImageUrl?: string) => void;
+  onImageUpload: (imageUrl: string, originalImageUrl?: string, orientation?: string) => void;
   initialImage?: string | null;
 }
 
@@ -43,7 +43,7 @@ const PhotoUpload = ({ onImageUpload, initialImage }: PhotoUploadProps) => {
       const imageUrl = URL.createObjectURL(file);
       setUploadedImage(imageUrl);
       setShowCropper(true);
-      console.log('Photo uploaded, showing cropper:', imageUrl);
+      console.log('Photo uploaded, showing unified canvas selection & cropper:', imageUrl);
     } catch (error) {
       console.error('Error uploading file:', error);
     } finally {
@@ -51,9 +51,9 @@ const PhotoUpload = ({ onImageUpload, initialImage }: PhotoUploadProps) => {
     }
   };
 
-  const handleCropComplete = (croppedImage: string, aspectRatio: number) => {
-    console.log('Crop completed:', croppedImage);
-    onImageUpload(croppedImage, uploadedImage || undefined);
+  const handleCropComplete = (croppedImage: string, aspectRatio: number, orientation: string) => {
+    console.log('Unified crop & canvas selection completed:', { croppedImage, aspectRatio, orientation });
+    onImageUpload(croppedImage, uploadedImage || undefined, orientation);
     setShowCropper(false);
   };
 
@@ -88,7 +88,7 @@ const PhotoUpload = ({ onImageUpload, initialImage }: PhotoUploadProps) => {
     }
   };
 
-  // Show cropper if image is uploaded OR if we're re-cropping
+  // Show unified canvas selection & cropper if image is uploaded
   if (showCropper && uploadedImage) {
     return (
       <Card className="w-full">
@@ -96,7 +96,6 @@ const PhotoUpload = ({ onImageUpload, initialImage }: PhotoUploadProps) => {
           <PhotoCropper
             imageUrl={uploadedImage}
             onCropComplete={handleCropComplete}
-            onOrientationChange={() => {}} // This will be handled by the cropper internally
           />
         </CardContent>
       </Card>
@@ -141,10 +140,10 @@ const PhotoUpload = ({ onImageUpload, initialImage }: PhotoUploadProps) => {
             
             <div className="space-y-2">
               <h3 className="text-xl font-semibold text-gray-900">
-                {isUploading ? 'Uploading...' : 'Start with Your Photo'}
+                {isUploading ? 'Uploading...' : 'Upload Your Photo'}
               </h3>
               <p className="text-gray-600">
-                Upload a high-quality image to transform into art
+                Upload a high-quality image to transform into art. You'll select your canvas orientation next.
               </p>
             </div>
             

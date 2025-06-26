@@ -36,8 +36,8 @@ const OrientationStep = ({
   return (
     <ProductStepWrapper
       stepNumber={2}
-      title="Choose Layout & Size"
-      description="Select your canvas orientation and size"
+      title="Choose Your Canvas Size"
+      description={`Perfect! Your ${selectedOrientation} canvas is ready. Now select the ideal size.`}
       isActive={isActive}
       isCompleted={isCompleted}
       canAccess={canAccess}
@@ -48,10 +48,7 @@ const OrientationStep = ({
           selectedOrientation={selectedOrientation}
           selectedSize={selectedSize}
           userImageUrl={uploadedImage}
-          onOrientationChange={(orientation) => {
-            console.log('🐛 Orientation changed to:', orientation);
-            onOrientationSelect(orientation);
-          }}
+          onOrientationChange={onOrientationSelect}
           onSizeChange={(size) => {
             console.log('🐛 Size changed to:', size);
             onSizeSelect(size);

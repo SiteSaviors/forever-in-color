@@ -42,23 +42,29 @@ export const useProductStateLogic = () => {
     }
   }, [location.state]);
 
-  const handlePhotoAndStyleComplete = async (imageUrl: string, styleId: number, styleName: string) => {
-    console.log('🐛 ProductStateManager handlePhotoAndStyleComplete called with:', { imageUrl, styleId, styleName });
+  const handlePhotoAndStyleComplete = async (imageUrl: string, styleId: number, styleName: string, orientation?: string) => {
+    console.log('🐛 ProductStateManager handlePhotoAndStyleComplete called with:', { imageUrl, styleId, styleName, orientation });
     
     setUploadedImage(imageUrl);
+    
+    // Set orientation if provided (from unified canvas selection)
+    if (orientation) {
+      console.log('🎯 Setting orientation from unified selection:', orientation);
+      setSelectedOrientation(orientation);
+    } else {
+      // Fallback to auto-detection for backward compatibility
+      try {
+        const detectedOrientation = await detectOrientationFromImage(imageUrl);
+        console.log('🐛 Auto-detected orientation (fallback):', detectedOrientation);
+        setSelectedOrientation(detectedOrientation);
+      } catch (error) {
+        console.error('🐛 Error detecting orientation:', error);
+      }
+    }
     
     // Only set the style if it's not a temporary style from photo upload
     if (styleName !== "temp-style") {
       setSelectedStyle({ id: styleId, name: styleName });
-    }
-    
-    // Auto-detect canvas orientation from image dimensions
-    try {
-      const detectedOrientation = await detectOrientationFromImage(imageUrl);
-      console.log('🐛 Detected orientation:', detectedOrientation);
-      setSelectedOrientation(detectedOrientation);
-    } catch (error) {
-      console.error('🐛 Error detecting orientation:', error);
     }
     
     // Mark step 1 as completed when user has both image AND style
@@ -78,7 +84,7 @@ export const useProductStateLogic = () => {
     console.log('🐛 Size selected:', size);
     setSelectedSize(size);
     
-    // Mark step 2 as completed when both orientation and size are selected
+    // Mark step 2 as completed when size is selected (orientation already set in step 1)
     if (selectedOrientation && size) {
       console.log('🐛 Marking step 2 as completed');
       setCompletedSteps(prev => {
@@ -90,7 +96,7 @@ export const useProductStateLogic = () => {
   };
 
   const handleOrientationSelect = (orientation: string) => {
-    console.log('🐛 Orientation manually changed to:', orientation);
+    console.log('🐛 Orientation manually changed to (should be rare now):', orientation);
     setSelectedOrientation(orientation);
     
     // Reset size when orientation changes

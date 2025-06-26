@@ -1,13 +1,13 @@
 
 import OrientationHeader from "./orientation/components/OrientationHeader";
 import ValidationErrorAlert from "./orientation/components/ValidationErrorAlert";
-import LivePreviewAlert from "./orientation/components/LivePreviewAlert";
-import OrientationSelectionSection from "./orientation/components/OrientationSelectionSection";
 import SizeSelectionSection from "./orientation/components/SizeSelectionSection";
 import StepNavigation from "./components/StepNavigation";
 import { useBackNavigation } from "./hooks/useBackNavigation";
 import { useOrientationSelector } from "./orientation/hooks/useOrientationSelector";
 import { OrientationSelectorProps } from "./orientation/types";
+import { Badge } from "@/components/ui/badge";
+import { CheckCircle } from "lucide-react";
 
 interface ExtendedOrientationSelectorProps extends OrientationSelectorProps {
   userImageUrl?: string | null;
@@ -36,13 +36,10 @@ const OrientationSelector = ({
 
   const {
     validationError,
-    orientationSectionRef,
     sizeSectionRef,
-    handleOrientationSelect,
     handleSizeSelect,
     handleContinueWithSize,
     handleContinueClick,
-    recommendedOrientation,
     recommendedSize,
     canContinueToNext,
     currentSizeOption
@@ -57,24 +54,25 @@ const OrientationSelector = ({
 
   return (
     <div className="space-y-10">
-      <OrientationHeader selectedOrientation={selectedOrientation} />
+      {/* Confirmation Header */}
+      <div className="text-center space-y-4">
+        <Badge className="bg-green-100 text-green-700 font-medium">
+          <CheckCircle className="w-4 h-4 mr-2" />
+          Canvas Orientation Selected: {selectedOrientation}
+        </Badge>
+        <div>
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">Perfect! Now Choose Your Size</h2>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            Your {selectedOrientation} canvas orientation has been locked in from Step 1. 
+            Now select the perfect size for your artwork.
+          </p>
+        </div>
+      </div>
 
       {/* Validation Error Alert */}
       <ValidationErrorAlert validationError={validationError} />
 
-      {/* Visual Connection Helper */}
-      <LivePreviewAlert userImageUrl={userImageUrl} />
-
-      {/* Orientation Selection Section */}
-      <OrientationSelectionSection
-        ref={orientationSectionRef}
-        selectedOrientation={selectedOrientation}
-        userImageUrl={userImageUrl}
-        recommendedOrientation={recommendedOrientation}
-        onOrientationSelect={handleOrientationSelect}
-      />
-
-      {/* Size Selection Section */}
+      {/* Size Selection Section - This is now the main focus */}
       <SizeSelectionSection
         ref={sizeSectionRef}
         selectedOrientation={selectedOrientation}
