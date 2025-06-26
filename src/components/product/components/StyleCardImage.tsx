@@ -1,10 +1,10 @@
 
-import StyleCardImageDisplay from "./StyleCardImageDisplay";
-import StyleCardIndicators from "./StyleCardIndicators";
+import UnifiedImageDisplay from "./UnifiedImageDisplay";
 import StyleCardLoadingOverlay from "./StyleCardLoadingOverlay";
-import StyleCardSelectionOverlay from "./StyleCardSelectionOverlay";
 import StyleCardBlurOverlay from "./StyleCardBlurOverlay";
 import StyleCardRetryOverlay from "./StyleCardRetryOverlay";
+import StyleCardIndicators from "./StyleCardIndicators";
+import { useBlinking } from "../hooks/useBlinking";
 
 interface StyleCardImageProps {
   style: {
@@ -15,91 +15,108 @@ interface StyleCardImageProps {
   };
   imageToShow: string;
   cropAspectRatio: number;
-  showLoadingState: boolean;
-  isPopular: boolean;
-  showGeneratedBadge: boolean;
-  isSelected: boolean;
-  hasPreviewOrCropped: boolean;
-  shouldBlur: boolean;
-  isGenerating: boolean;
-  showError: boolean;
-  error?: string;
+  showLoadingState?: boolean;
+  isPopular?: boolean;
+  showGeneratedBadge?: boolean;
+  isSelected?: boolean;
+  hasPreviewOrCropped?: boolean;
+  shouldBlur?: boolean;
+  isGenerating?: boolean;
+  showError?: boolean;
+  error?: string | null;
   selectedOrientation?: string;
   previewUrl?: string | null;
   hasGeneratedPreview?: boolean;
-  onExpandClick: () => void;
-  onCanvasPreviewClick: () => void;
-  onGenerateStyle: (e?: React.MouseEvent) => void;
-  onRetry: (e?: React.MouseEvent) => void;
+  onExpandClick?: () => void;
+  onCanvasPreviewClick?: () => void;
+  onGenerateStyle?: () => void;
+  onRetry?: () => void;
 }
 
 const StyleCardImage = ({
   style,
   imageToShow,
   cropAspectRatio,
-  showLoadingState,
-  isPopular,
-  showGeneratedBadge,
-  isSelected,
-  hasPreviewOrCropped,
-  shouldBlur,
-  isGenerating,
-  showError,
-  error,
-  selectedOrientation = "square",
-  previewUrl,
+  showLoadingState = false,
+  isPopular = false,
+  showGeneratedBadge = false,
+  isSelected = false,
+  hasPreviewOrCropped = false,
+  shouldBlur = false,
+  isGenerating = false,
+  showError = false,
+  error = null,
+  selectedOrientation = 'square',
+  previewUrl = null,
   hasGeneratedPreview = false,
   onExpandClick,
   onCanvasPreviewClick,
   onGenerateStyle,
   onRetry
 }: StyleCardImageProps) => {
-  return (
-    <div className="relative group/image">
-      {/* Main Image Display - Make this the priority on mobile */}
-      <div className="relative min-h-[200px] md:min-h-[250px]">
-        <StyleCardImageDisplay
-          style={style}
-          imageToShow={imageToShow}
-          cropAspectRatio={cropAspectRatio}
-          showLoadingState={showLoadingState}
-          selectedOrientation={selectedOrientation}
-          previewUrl={previewUrl}
-          hasGeneratedPreview={hasGeneratedPreview}
-          onExpandClick={onExpandClick}
-        />
-      </div>
+  
+  // STEP 5: Use the centralized blinking hook
+  const { isBlinking } = useBlinking(previewUrl);
 
-      {/* Overlays and Indicators */}
+  console.log(`StyleCardImage ${style.name}:`, {
+    previewUrl: previewUrl ? previewUrl.substring(0, 30) + '...' : 'null',
+    isBlinking,
+    isGenerating,
+    showError,
+    hasGeneratedPreview
+  });
+
+  return (
+    <div className="relative">
+      {/* Main image display */}
+      <UnifiedImageDisplay
+        imageUrl={imageToShow}
+        alt={`${style.name} preview`}
+        aspectRatio={cropAspectRatio}
+        showLoadingState={showLoadingState}
+        hasGeneratedPreview={hasGeneratedPreview}
+        selectedOrientation={selectedOrientation}
+        previewUrl={previewUrl}
+        onExpandClick={onExpandClick}
+        variant={hasGeneratedPreview ? 'mockup' : 'standard'}
+        isBlinking={isBlinking} // Pass controlled blinking state
+      />
+
+      {/* Indicators */}
       <StyleCardIndicators
         isPopular={isPopular}
         showGeneratedBadge={showGeneratedBadge}
         isSelected={isSelected}
         hasPreviewOrCropped={hasPreviewOrCropped}
-        onExpandClick={onExpandClick}
         onCanvasPreviewClick={onCanvasPreviewClick}
       />
 
+      {/* STEP 3: Pass single source of truth to overlays */}
+      
+      {/* Loading overlay - only show when blinking */}
       <StyleCardLoadingOverlay
-        isGenerating={isGenerating}
+        isBlinking={isBlinking}
         styleName={style.name}
         error={error}
       />
 
-      <StyleCardRetryOverlay
-        hasError={showError}
-        error={error}
-        onRetry={onRetry}
-      />
-
-      <StyleCardSelectionOverlay isSelected={isSelected} />
-
+      {/* Blur overlay - pass blinking state */}
       <StyleCardBlurOverlay
         shouldBlur={shouldBlur}
-        isGenerating={isGenerating}
+        isBlinking={isBlinking}
+        previewUrl={previewUrl}
         styleName={style.name}
-        onGenerateStyle={onGenerateStyle}
+        onGenerateStyle={onGenerateStyle || (() => {})}
       />
+
+      {/* Error retry overlay */}
+      {showError && onRetry && (
+        <StyleCardRetryOverlay
+          error={error}
+          styleName={style.name}
+          onRetry={onRetry}
+        />
+      )}
     </div>
   );
 };

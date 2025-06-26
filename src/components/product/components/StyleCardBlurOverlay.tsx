@@ -4,25 +4,33 @@ import { Sparkles, Zap } from "lucide-react";
 
 interface StyleCardBlurOverlayProps {
   shouldBlur: boolean;
-  isGenerating: boolean;
+  isBlinking: boolean; // STEP 3: Use single source of truth from useBlinking hook
   previewUrl?: string | null;
   styleName?: string;
   onGenerateStyle: (e?: React.MouseEvent) => void;
 }
 
-const StyleCardBlurOverlay = ({ shouldBlur, isGenerating, previewUrl, styleName, onGenerateStyle }: StyleCardBlurOverlayProps) => {
-  // Debug logging
+const StyleCardBlurOverlay = ({ shouldBlur, isBlinking, previewUrl, styleName, onGenerateStyle }: StyleCardBlurOverlayProps) => {
+  // STEP 3: Enhanced debug logging with single source of truth
   console.log('🎭 StyleCardBlurOverlay render:', { 
     shouldBlur, 
-    isGenerating, 
+    isBlinking, 
     hasPreview: !!previewUrl, 
     styleName,
-    willShow: shouldBlur && !isGenerating && !previewUrl
+    willShow: shouldBlur && !isBlinking && !previewUrl,
+    logicCheck: {
+      shouldBlur,
+      notBlinking: !isBlinking,
+      noPreview: !previewUrl,
+      finalDecision: shouldBlur && !isBlinking && !previewUrl
+    }
   });
 
-  // Critical fix: Don't show blur overlay if preview exists OR if currently generating
-  if (!shouldBlur || isGenerating || previewUrl) {
-    console.log('🎭 StyleCardBlurOverlay: NOT showing overlay');
+  // STEP 3: Single source of truth - don't show if blinking OR if preview exists
+  if (!shouldBlur || isBlinking || previewUrl) {
+    console.log('🎭 StyleCardBlurOverlay: NOT showing overlay', {
+      reason: !shouldBlur ? 'shouldBlur=false' : isBlinking ? 'isBlinking=true' : 'previewUrl exists'
+    });
     return null;
   }
 
