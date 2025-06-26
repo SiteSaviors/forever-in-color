@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Sparkles, Crop, RotateCcw, ArrowLeft } from "lucide-react";
@@ -56,9 +57,6 @@ const StyleSelector = ({
             Back to Photo & Crop
           </Button>
         </div>}
-
-      {/* Crop Info & Recrop Option */}
-      {croppedImage && onRecropImage}
 
       {/* Helpful notification when user has uploaded an image */}
       {croppedImage && <Alert className="border-purple-200 bg-purple-50">
