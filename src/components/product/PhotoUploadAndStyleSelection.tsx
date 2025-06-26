@@ -1,4 +1,3 @@
-
 import PhotoUploadProgress from "./components/PhotoUploadProgress";
 import PhotoUploadSection from "./components/PhotoUploadSection";
 import StyleSelectionSection from "./components/StyleSelectionSection";
@@ -151,8 +150,8 @@ const PhotoUploadAndStyleContent = ({
       showGestureHints={true}
     >
       <div className="space-y-8">
-        {/* Smart Progress Indicator - Replaces basic progress */}
-        <SmartProgressIndicator />
+        {/* Smart Progress Indicator - Only shows after photo upload */}
+        <SmartProgressIndicator uploadedImage={croppedImage} />
 
         {/* Show cropper if user wants to recrop */}
         <PhotoCropperSection

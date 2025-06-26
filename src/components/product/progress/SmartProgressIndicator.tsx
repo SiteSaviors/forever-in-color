@@ -1,15 +1,23 @@
-
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle, Sparkles, Users, Trophy, Zap, Clock, TrendingUp } from "lucide-react";
 import { useProgressOrchestrator } from "./ProgressOrchestrator";
 
-const SmartProgressIndicator = () => {
+interface SmartProgressIndicatorProps {
+  uploadedImage?: string | null;
+}
+
+const SmartProgressIndicator = ({ uploadedImage }: SmartProgressIndicatorProps) => {
   const { state, triggerHaptic } = useProgressOrchestrator();
   const [animatingStep, setAnimatingStep] = useState<number | null>(null);
   const [showMilestone, setShowMilestone] = useState(false);
   const [predictiveProgress, setPredictiveProgress] = useState(0);
+
+  // Don't render the progress indicator if no photo has been uploaded
+  if (!uploadedImage) {
+    return null;
+  }
 
   const steps = [
     { 
