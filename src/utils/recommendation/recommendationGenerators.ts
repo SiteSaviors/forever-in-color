@@ -1,13 +1,16 @@
 
 import { SmartRecommendation, RecommendationGeneratorParams } from './types';
-import { PhotoAnalysisResult } from '../photoAnalysisEngine';
+import { PhotoAnalysisResult } from '../photoAnalysis/types';
 
 export class RecommendationGenerators {
   static generateAIRecommendations(analysis: PhotoAnalysisResult): SmartRecommendation[] {
     const recommendations: SmartRecommendation[] = [];
     
-    // Get top 3 AI-analyzed styles
-    const topStyles = analysis.recommendedStyles.slice(0, 3);
+    // Get top 3 AI-analyzed styles from styleAffinities
+    const topStyles = Object.entries(analysis.styleAffinities)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 3)
+      .map(([styleId]) => parseInt(styleId));
     
     topStyles.forEach((styleId, index) => {
       const confidence = analysis.styleAffinities[styleId];
@@ -107,9 +110,9 @@ export class RecommendationGenerators {
     const reasons: { [key: number]: (analysis: PhotoAnalysisResult) => string } = {
       2: (a) => a.hasPortrait ? 'Perfect for portraits with rich, classical depth' : 'Classic oil technique enhances your image beautifully',
       4: (a) => a.isLandscape ? 'Ideal for landscapes with flowing watercolor effects' : 'Soft watercolor style creates dreamy atmosphere',
-      5: (a) => a.brightness === 'bright' ? 'Pastel tones perfect for bright, cheerful photos' : 'Gentle pastels add warmth and softness',
+      5: (a) => a.brightness > 0.6 ? 'Pastel tones perfect for bright, cheerful photos' : 'Gentle pastels add warmth and softness',
       8: (a) => a.contrast === 'high' ? 'High contrast perfect for dramatic charcoal effect' : 'Artistic charcoal style adds timeless elegance',
-      9: (a) => a.saturation === 'vibrant' ? 'Vibrant colors ideal for bold pop art style' : 'Pop art brings energy and modern appeal',
+      9: (a) => a.saturation > 0.6 ? 'Vibrant colors ideal for bold pop art style' : 'Pop art brings energy and modern appeal',
     };
     
     const reasonGenerator = reasons[styleId];

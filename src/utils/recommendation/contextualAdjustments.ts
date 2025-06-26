@@ -37,7 +37,7 @@ export class ContextualAdjustments {
     recommendations.forEach(rec => {
       if (rec.category === 'ai-perfect') {
         rec.confidence *= 1.2; // Boost AI recommendations for new users
-        rec.urgency = 'high';
+        if (rec.urgency) rec.urgency = 'high';
       }
     });
   }

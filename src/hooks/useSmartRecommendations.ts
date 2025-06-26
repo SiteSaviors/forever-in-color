@@ -51,22 +51,19 @@ export const useSmartRecommendations = (
         styleId: 2,
         confidence: 0.8,
         reason: 'Classic choice that works beautifully with any photo',
-        category: 'ai-perfect',
-        urgency: 'high'
+        category: 'ai-perfect'
       },
       {
         styleId: 4,
         confidence: 0.7,
         reason: 'Popular watercolor style for artistic appeal',
-        category: 'trending',
-        urgency: 'medium'
+        category: 'trending'
       },
       {
         styleId: 5,
         confidence: 0.6,
         reason: 'Gentle pastel style for a dreamy look',
-        category: 'discovery',
-        urgency: 'low'
+        category: 'discovery'
       }
     ];
   };

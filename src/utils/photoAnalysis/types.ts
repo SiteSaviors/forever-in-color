@@ -31,11 +31,24 @@ export interface PhotoAnalysisResult {
   
   // ML-based style affinities
   styleAffinities: { [styleId: number]: number }; // 0-1 confidence for each style
+  recommendedStyles: number[]; // Top recommended style IDs in order
   
   // Metadata
   confidence: number; // 0-1 confidence in the analysis
   processingTime: number; // timestamp
   version: string; // analysis engine version
+}
+
+export interface ColorAnalysis {
+  dominantColors: string[];
+  colorPalette: {
+    primary: string;
+    secondary: string;
+    accent: string;
+  };
+  brightness: 'bright' | 'normal' | 'dark';
+  saturation: 'vibrant' | 'balanced' | 'muted';
+  contrast: 'low' | 'medium' | 'high';
 }
 
 export interface AnalysisCache {

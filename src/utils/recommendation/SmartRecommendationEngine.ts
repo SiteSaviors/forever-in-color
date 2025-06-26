@@ -86,10 +86,18 @@ export class SmartRecommendationEngine {
     completed: boolean
   ): void {
     let preferences = this.userPreferences.get(userId) || {
+      styleId,
+      frequency: 0,
+      satisfaction: 0,
+      context: {
+        imageType: analysis.subjectType,
+        orientation: analysis.orientation,
+        timeOfDay: new Date().getHours()
+      },
       favoriteStyles: [],
       colorPreferences: [],
-      complexityPreference: 'moderate',
-      orientationPreference: 'square',
+      complexityPreference: 'moderate' as const,
+      orientationPreference: 'square' as const,
       lastInteraction: Date.now(),
       totalInteractions: 0,
       completionRate: 0
@@ -147,7 +155,7 @@ export class SmartRecommendationEngine {
         styleId: 5,
         confidence: 0.6,
         reason: 'Gentle pastel tones create beautiful results',
-        category: 'popular'
+        category: 'trending'
       },
       {
         styleId: 9,
@@ -223,7 +231,7 @@ export class SmartRecommendationEngine {
     
     return {
       totalUsers,
-      averageCompletionRate,
+      averageCompletionRate: avgCompletionRate,
       topStyles,
       colorTrends
     };

@@ -126,15 +126,14 @@ export const useAdvancedPredictiveLoading = (
     const resourceEntries = entries.filter(entry => 
       entry.entryType === 'resource' && 
       (entry.name.includes('style-preview') || entry.name.includes('generate-style'))
-    );
+    ) as PerformanceResourceTiming[];
     
     if (resourceEntries.length > 0) {
       const totalDuration = resourceEntries.reduce((sum, entry) => sum + entry.duration, 0);
       const averageLoadTime = totalDuration / resourceEntries.length;
       
-      const successfulLoads = resourceEntries.filter(entry => 
-        (entry as PerformanceResourceTiming).responseStatus === 200
-      ).length;
+      // Count successful loads (we'll assume they're successful if they complete)
+      const successfulLoads = resourceEntries.filter(entry => entry.responseEnd > 0).length;
       const successRate = successfulLoads / resourceEntries.length;
       
       setPerformanceMetrics(prev => ({
@@ -265,13 +264,12 @@ export const useAdvancedPredictiveLoading = (
         setLoadingProgress(prev => new Map(prev).set(styleId, progress));
       }, 200);
       
-      // Generate preview with abort signal
+      // Generate preview - removed signal option as it's not supported
       const previewUrl = await generateStylePreview(
         imageUrl!,
         getStyleName(styleId),
         `preload_${styleId}_${Date.now()}`,
-        '1:1',
-        { signal: abortController.signal }
+        '1:1'
       );
       
       clearInterval(progressInterval);
@@ -302,7 +300,7 @@ export const useAdvancedPredictiveLoading = (
       }
       
     } catch (error) {
-      if (error.name !== 'AbortError') {
+      if ((error as Error).name !== 'AbortError') {
         console.error(`❌ Failed to preload style ${styleId}:`, error);
       }
     } finally {

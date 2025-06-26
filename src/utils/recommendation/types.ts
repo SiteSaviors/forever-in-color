@@ -4,12 +4,14 @@ export interface SmartRecommendation {
   confidence: number; // 0-1 ML confidence score
   reason: string; // Human-readable explanation
   category: 'ai-perfect' | 'personal' | 'trending' | 'discovery';
+  urgency?: 'high' | 'medium' | 'low';
   metadata?: {
     baseAffinity?: number;
     personalizationBoost?: number;
     trendingBoost?: number;
     contextualBoost?: number;
     realTimeBoost?: number;
+    discoveryBoost?: number;
   };
 }
 
@@ -23,6 +25,14 @@ export interface ContextualFactors {
 }
 
 export interface UserPreference {
+  styleId: number;
+  frequency: number;
+  satisfaction: number; // 0-1
+  context: {
+    imageType: 'portrait' | 'landscape' | 'object' | 'abstract';
+    orientation: 'vertical' | 'horizontal' | 'square';
+    timeOfDay: number;
+  };
   favoriteStyles: number[];
   colorPreferences: string[];
   complexityPreference: 'simple' | 'moderate' | 'complex';
@@ -30,6 +40,12 @@ export interface UserPreference {
   lastInteraction: number; // timestamp
   totalInteractions: number;
   completionRate: number; // 0-1
+}
+
+export interface RecommendationGeneratorParams {
+  analysis: import('../photoAnalysis/types').PhotoAnalysisResult;
+  userPreferences: UserPreference[];
+  contextualFactors: ContextualFactors;
 }
 
 export interface RecommendationMetrics {
