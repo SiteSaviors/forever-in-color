@@ -1,5 +1,5 @@
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { ProgressState, ProgressAction } from '../types';
 
 export const useProgressEffects = (
@@ -7,6 +7,9 @@ export const useProgressEffects = (
   dispatch: React.Dispatch<ProgressAction>,
   showContextualHelp: (type: string, message: string, level?: 'minimal' | 'moderate' | 'detailed') => void
 ) => {
+  const helpShownRef = useRef<Set<string>>(new Set());
+  const lastHelpDismissalRef = useRef<number>(0);
+
   // Listen for custom initial help event
   useEffect(() => {
     const handleInitialHelp = (event: CustomEvent) => {
@@ -18,14 +21,41 @@ export const useProgressEffects = (
     return () => window.removeEventListener('showInitialHelp', handleInitialHelp);
   }, [showContextualHelp]);
 
+  // Reset help tracking when user moves to different sub-step
+  useEffect(() => {
+    helpShownRef.current.clear();
+    lastHelpDismissalRef.current = 0;
+  }, [state.currentSubStep]);
+
+  // Track when help is dismissed to prevent immediate re-showing
+  useEffect(() => {
+    if (!state.contextualHelp.showTooltip && helpShownRef.current.size > 0) {
+      lastHelpDismissalRef.current = Date.now();
+    }
+  }, [state.contextualHelp.showTooltip]);
+
   // Advanced hesitation detection with progressive help
   useEffect(() => {
     const interval = setInterval(() => {
       const now = Date.now();
       const timeSinceLastInteraction = now - state.userBehavior.lastInteraction;
+      const timeSinceLastDismissal = now - lastHelpDismissalRef.current;
+      
+      // Don't show help if tooltip is already visible or was recently dismissed (within 30 seconds)
+      if (state.contextualHelp.showTooltip || timeSinceLastDismissal < 30000) {
+        return;
+      }
+      
+      // Create unique key for current context
+      const helpKey = `${state.currentSubStep}-${Math.floor(timeSinceLastInteraction / 15000)}`;
+      
+      // Don't show help if already shown for this context
+      if (helpShownRef.current.has(helpKey)) {
+        return;
+      }
       
       // Progressive help levels based on hesitation
-      if (timeSinceLastInteraction > 15000 && !state.contextualHelp.showTooltip) {
+      if (timeSinceLastInteraction > 15000) {
         const helpLevel = timeSinceLastInteraction > 45000 ? 'detailed' : 
                          timeSinceLastInteraction > 30000 ? 'moderate' : 'minimal';
         
@@ -44,6 +74,7 @@ export const useProgressEffects = (
         
         const messages = helpMessages[state.currentSubStep as keyof typeof helpMessages];
         if (messages) {
+          helpShownRef.current.add(helpKey);
           showContextualHelp('hesitation', messages[helpLevel], helpLevel);
         }
       }
