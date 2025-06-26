@@ -1,24 +1,16 @@
 
-import React from 'react';
-import { Loader2 } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-
 interface LoadingStateProps {
   message?: string;
-  className?: string;
 }
 
-const LoadingState = ({ 
-  message = "Loading...", 
-  className = "" 
-}: LoadingStateProps) => {
+const LoadingState = ({ message = "Loading..." }: LoadingStateProps) => {
   return (
-    <Card className={`border-gray-200 bg-gray-50 ${className}`}>
-      <CardContent className="p-6 text-center">
-        <Loader2 className="w-8 h-8 text-purple-500 mx-auto mb-4 animate-spin" />
+    <div className="flex items-center justify-center py-12">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4"></div>
         <p className="text-gray-600">{message}</p>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 
