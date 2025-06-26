@@ -2,12 +2,13 @@
 import { RefreshCw, AlertCircle } from "lucide-react";
 
 interface StyleCardRetryOverlayProps {
-  hasError: boolean;
-  error?: string;
+  hasError?: boolean; // Make optional since it's not always passed
+  error?: string | null;
+  styleName?: string; // Add the missing prop
   onRetry: () => void;
 }
 
-const StyleCardRetryOverlay = ({ hasError, error, onRetry }: StyleCardRetryOverlayProps) => {
+const StyleCardRetryOverlay = ({ hasError, error, styleName, onRetry }: StyleCardRetryOverlayProps) => {
   if (!hasError) return null;
 
   return (
@@ -18,7 +19,7 @@ const StyleCardRetryOverlay = ({ hasError, error, onRetry }: StyleCardRetryOverl
         <div className="space-y-2">
           <p className="text-sm font-semibold">Generation Failed</p>
           <p className="text-xs text-red-200 max-w-32">
-            {error || "Something went wrong. Please try again."}
+            {error || `Failed to generate ${styleName || 'style'}. Please try again.`}
           </p>
         </div>
 

@@ -79,7 +79,7 @@ const StyleCardImage = ({
         previewUrl={previewUrl}
         onExpandClick={onExpandClick}
         variant={hasGeneratedPreview ? 'mockup' : 'standard'}
-        isBlinking={isBlinking} // Pass controlled blinking state
+        isBlinking={isBlinking} // Now properly typed
       />
 
       {/* Indicators */}
@@ -88,6 +88,7 @@ const StyleCardImage = ({
         showGeneratedBadge={showGeneratedBadge}
         isSelected={isSelected}
         hasPreviewOrCropped={hasPreviewOrCropped}
+        onExpandClick={onExpandClick || (() => {})} // Provide required prop
         onCanvasPreviewClick={onCanvasPreviewClick}
       />
 
@@ -112,8 +113,9 @@ const StyleCardImage = ({
       {/* Error retry overlay */}
       {showError && onRetry && (
         <StyleCardRetryOverlay
+          hasError={showError} // Pass hasError prop
           error={error}
-          styleName={style.name}
+          styleName={style.name} // Now properly typed
           onRetry={onRetry}
         />
       )}
