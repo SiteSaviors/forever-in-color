@@ -1,17 +1,34 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import UploadDropzone from "./UploadDropzone";
+import UploadProgress from "./UploadProgress";
 import UploadFeatures from "./UploadFeatures";
 import UploadCTA from "./UploadCTA";
 
 interface PhotoUploadMainProps {
-  onImageUpload: (file: File) => Promise<void>;
-  initialImage?: string | null;
+  isDragOver: boolean;
+  isUploading: boolean;
+  uploadProgress: number;
+  processingStage: string;
+  fileInputRef: React.RefObject<HTMLInputElement>;
+  onDrop: (e: React.DragEvent<HTMLDivElement>) => void;
+  onDragOver: (e: React.DragEvent<HTMLDivElement>) => void;
+  onDragLeave: (e: React.DragEvent<HTMLDivElement>) => void;
+  onClick: () => void;
+  onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 const PhotoUploadMain = ({
-  onImageUpload,
-  initialImage
+  isDragOver,
+  isUploading,
+  uploadProgress,
+  processingStage,
+  fileInputRef,
+  onDrop,
+  onDragOver,
+  onDragLeave,
+  onClick,
+  onFileChange
 }: PhotoUploadMainProps) => {
   return (
     <Card className="w-full overflow-hidden border-0 shadow-2xl bg-gradient-to-br from-white to-gray-50">
@@ -29,9 +46,19 @@ const PhotoUploadMain = ({
 
           <div className="relative p-8 lg:p-12">
             <UploadDropzone
-              onImageUpload={onImageUpload}
-              initialImage={initialImage}
+              isDragOver={isDragOver}
+              isUploading={isUploading}
+              processingStage={processingStage}
+              onDrop={onDrop}
+              onDragOver={onDragOver}
+              onDragLeave={onDragLeave}
+              onClick={onClick}
+              fileInputRef={fileInputRef}
+              onFileChange={onFileChange}
             />
+            
+            {/* Progress Bar */}
+            <UploadProgress uploadProgress={uploadProgress} isUploading={isUploading} />
             
             {/* Enhanced Features */}
             <div className="mt-6">
@@ -39,7 +66,7 @@ const PhotoUploadMain = ({
             </div>
             
             {/* CTA Button */}
-            <UploadCTA onImageUpload={onImageUpload} />
+            <UploadCTA isUploading={isUploading} onClick={onClick} />
           </div>
         </div>
       </CardContent>

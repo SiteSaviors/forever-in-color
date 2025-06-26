@@ -16,67 +16,26 @@ const SmartProgressIndicator = ({ uploadedImage }: SmartProgressIndicatorProps) 
   const [showMilestone, setShowMilestone] = useState(false);
   const [animatingStep, setAnimatingStep] = useState<number | null>(null);
 
-  // Calculate progress based on actual completion, not just momentum
+  // Always call hooks at the top level
   const completedStepsCount = state.completedSteps?.length || 0;
+  const overallProgress = Math.min((completedStepsCount / 4) * 100, 100);
   
-  // Fixed progress calculation that properly reflects user progress
-  const calculateActualProgress = () => {
-    // If no image uploaded, progress should be 0%
-    if (!uploadedImage) {
-      console.log('📊 Progress: 0% - No image uploaded');
-      return 0;
-    }
-    
-    // Base progress on completed steps (25% per step)
-    let baseProgress = (completedStepsCount / 4) * 100;
-    
-    // Add small momentum bonus only if user has actually started (has an image)
-    // and only for users who have made meaningful progress
-    if (uploadedImage && completedStepsCount > 0 && state.conversionElements.momentumScore > 0) {
-      // Cap momentum bonus at 5% to avoid inflating progress too much
-      const momentumBonus = Math.min(state.conversionElements.momentumScore * 0.05, 5);
-      baseProgress += momentumBonus;
-      console.log('📊 Progress: Base:', Math.round(baseProgress - momentumBonus), '% + Momentum:', Math.round(momentumBonus), '%');
-    }
-    
-    const finalProgress = Math.min(Math.max(baseProgress, 0), 100);
-    console.log('📊 Final Progress:', Math.round(finalProgress), '%');
-    return finalProgress;
-  };
-  
-  const overallProgress = calculateActualProgress();
-  
-  // Effect to handle milestone animations with better validation
+  // Effect to handle milestone animations
   useEffect(() => {
-    if (state.completedSteps && state.completedSteps.length > 0 && uploadedImage) {
+    if (state.completedSteps && state.completedSteps.length > 0) {
       const lastCompletedStep = Math.max(...state.completedSteps);
+      setAnimatingStep(lastCompletedStep);
+      setShowMilestone(true);
       
-      // Only show milestone for valid steps
-      if (lastCompletedStep >= 1 && lastCompletedStep <= 4) {
-        setAnimatingStep(lastCompletedStep);
-        setShowMilestone(true);
-        
-        console.log('🎉 Milestone triggered for step:', lastCompletedStep);
-        
-        const timeoutId = setTimeout(() => {
-          setShowMilestone(false);
-          setAnimatingStep(null);
-        }, 3000);
-
-        return () => clearTimeout(timeoutId);
-      }
+      setTimeout(() => {
+        setShowMilestone(false);
+        setAnimatingStep(null);
+      }, 3000);
     }
-  }, [state.completedSteps, uploadedImage]);
+  }, [state.completedSteps]);
 
   // Don't render anything if no image is uploaded
   if (!uploadedImage) {
-    console.log('🚫 SmartProgressIndicator: Not rendering - no uploaded image');
-    return null;
-  }
-
-  // Validate state before rendering
-  if (!state || typeof state.currentStep !== 'number') {
-    console.warn('⚠️ SmartProgressIndicator: Invalid state', state);
     return null;
   }
 
@@ -118,9 +77,7 @@ const SmartProgressIndicator = ({ uploadedImage }: SmartProgressIndicatorProps) 
       <div className="p-8">
         <ProgressHeader 
           completedStepsCount={completedStepsCount}
-          personalizedMessages={state.personalizedMessages || []}
-          overallProgress={overallProgress}
-          hasUploadedImage={!!uploadedImage}
+          personalizedMessages={state.personalizedMessages}
         />
         
         <ProgressBar 
@@ -129,13 +86,13 @@ const SmartProgressIndicator = ({ uploadedImage }: SmartProgressIndicatorProps) 
           completedStepsCount={completedStepsCount}
         />
 
-        {/* Steps Grid with enhanced validation */}
+        {/* Steps Grid */}
         <div className="grid md:grid-cols-2 gap-4 mb-8">
           {steps.map((step) => (
             <StepCard 
               key={step.id}
               step={step}
-              showPersonalizedMessage={(state.personalizedMessages?.length || 0) > 0}
+              showPersonalizedMessage={state.personalizedMessages.length > 0}
             />
           ))}
         </div>

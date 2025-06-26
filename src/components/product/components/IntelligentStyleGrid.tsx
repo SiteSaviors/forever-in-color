@@ -1,13 +1,16 @@
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useEffect } from "react";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye } from "lucide-react";
-import { useSmartRecommendations } from "./hooks/useSmartRecommendations";
-import AIAnalysisStatus from "./intelligence/AIAnalysisStatus";
-import EmptyPhotoState from "./intelligence/EmptyPhotoState";
-import HeroRecommendations from "./intelligence/HeroRecommendations";
-import PopularChoices from "./intelligence/PopularChoices";
-import CompleteCollection from "./intelligence/CompleteCollection";
+import { Sparkles, Users, Crown, Zap, Eye, Loader2 } from "lucide-react";
+import StyleCard from "../StyleCard";
+import { artStyles } from "@/data/artStyles";
+import { 
+  analyzeImageForRecommendations, 
+  generateStyleRecommendations, 
+  StyleRecommendation 
+} from "../utils/styleRecommendationEngine";
 
 interface IntelligentStyleGridProps {
   croppedImage: string | null;
@@ -26,125 +29,308 @@ const IntelligentStyleGrid = ({
   onStyleSelect, 
   onComplete 
 }: IntelligentStyleGridProps) => {
+  const [recommendations, setRecommendations] = useState<StyleRecommendation[]>([]);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showAllStyles, setShowAllStyles] = useState(false);
+  const [hoveredStyle, setHoveredStyle] = useState<number | null>(null);
 
-  // Memoize smart recommendations to prevent unnecessary re-calculations
-  const {
-    isAnalyzing,
-    heroRecommendations,
-    popularChoices,
-    secondaryStyles
-  } = useSmartRecommendations({
-    croppedImage,
-    selectedOrientation
-  });
+  // Analyze image and generate recommendations
+  useEffect(() => {
+    if (croppedImage) {
+      setIsAnalyzing(true);
+      analyzeImageForRecommendations(croppedImage)
+        .then(analysis => {
+          const recs = generateStyleRecommendations(analysis);
+          setRecommendations(recs);
+          console.log('🎯 AI Recommendations generated:', recs);
+        })
+        .catch(error => {
+          console.error('Recommendation analysis failed:', error);
+          // Fallback to default recommendations
+          const fallbackRecs = generateStyleRecommendations({
+            orientation: selectedOrientation,
+            hasPortrait: false,
+            isLandscape: false,
+            hasHighContrast: false,
+            dominantColors: ['neutral'],
+            complexity: 'moderate'
+          });
+          setRecommendations(fallbackRecs);
+        })
+        .finally(() => {
+          setIsAnalyzing(false);
+        });
+    }
+  }, [croppedImage, selectedOrientation]);
 
-  // Memoized style selection handler to prevent re-renders
-  const handleStyleSelect = useCallback((styleId: number, styleName: string) => {
+  const handleStyleSelect = (styleId: number, styleName: string) => {
     console.log('🎯 IntelligentStyleGrid handleStyleSelect:', styleId, styleName);
-    
-    // Validate inputs before calling parent handler
-    if (typeof styleId !== 'number' || !styleName || typeof styleName !== 'string') {
-      console.error('❌ Invalid style selection parameters:', { styleId, styleName });
-      return;
-    }
-    
-    try {
-      onStyleSelect(styleId, styleName);
-    } catch (error) {
-      console.error('❌ Error in style selection:', error);
-    }
-  }, [onStyleSelect]);
+    onStyleSelect(styleId, styleName);
+  };
 
-  // Memoized toggle handler
-  const handleToggleAllStyles = useCallback(() => {
-    setShowAllStyles(prev => {
-      const newValue = !prev;
-      console.log('👁️ Toggle all styles:', newValue ? 'showing' : 'hiding');
-      return newValue;
-    });
-  }, []);
+  // Get recommendations by category
+  const heroRecommendations = recommendations.filter(r => r.category === 'hero').slice(0, 3);
+  const popularChoices = recommendations.filter(r => r.category === 'popular').slice(0, 3);
+  const secondaryStyles = recommendations.filter(r => r.category === 'secondary');
 
-  // Memoized button text calculation
-  const buttonText = useMemo(() => {
-    return showAllStyles 
-      ? 'Show Less Styles' 
-      : `Explore ${secondaryStyles.length} More Styles`;
-  }, [showAllStyles, secondaryStyles.length]);
-
-  // Early return with validation
   if (!croppedImage) {
-    return <EmptyPhotoState />;
-  }
-
-  // Validate required props
-  if (typeof cropAspectRatio !== 'number' || cropAspectRatio <= 0) {
-    console.error('❌ Invalid cropAspectRatio:', cropAspectRatio);
-    return <EmptyPhotoState />;
+    return (
+      <div className="text-center py-12">
+        <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <Sparkles className="w-8 h-8 text-purple-600" />
+        </div>
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">
+          Upload Your Photo First
+        </h3>
+        <p className="text-gray-600">
+          Once you upload a photo, our AI will instantly show you personalized style recommendations
+        </p>
+      </div>
+    );
   }
 
   return (
     <div className="space-y-8 md:space-y-12">
       {/* AI Analysis Status with Loading Skeleton */}
-      <AIAnalysisStatus isAnalyzing={isAnalyzing} />
+      {isAnalyzing && (
+        <div className="text-center py-4">
+          <div className="inline-flex items-center space-x-3 bg-gradient-to-r from-purple-50 to-pink-50 px-6 py-3 rounded-full border border-purple-200">
+            <Loader2 className="h-4 w-4 animate-spin text-purple-600" />
+            <span className="text-sm font-medium text-purple-700">
+              AI analyzing your photo for perfect style matches...
+            </span>
+          </div>
+          
+          {/* Loading Skeleton for Hero Section */}
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="loading-shimmer rounded-2xl h-64 animate-pulse"></div>
+            ))}
+          </div>
+        </div>
+      )}
 
-      {/* Hero Recommendations Section with Error Boundary */}
+      {/* Hero Recommendations Section */}
       {heroRecommendations.length > 0 && (
-        <div>
-          <HeroRecommendations
-            heroRecommendations={heroRecommendations}
-            croppedImage={croppedImage}
-            selectedStyle={selectedStyle}
-            cropAspectRatio={cropAspectRatio}
-            selectedOrientation={selectedOrientation}
-            onStyleSelect={handleStyleSelect}
-            onComplete={onComplete}
-          />
+        <div className="space-y-6">
+          <div className="text-center space-y-2">
+            <div className="flex items-center justify-center gap-2">
+              <Crown className="w-6 h-6 text-amber-500" />
+              <h3 className="text-2xl font-bold text-gray-900">
+                Perfect for Your Photo
+              </h3>
+              <Crown className="w-6 h-6 text-amber-500" />
+            </div>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Our AI analyzed your image and selected these styles that will create stunning results
+            </p>
+          </div>
+
+          {/* Hero Grid - Enhanced with Pulsing */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
+            {heroRecommendations.map((rec, index) => {
+              const style = artStyles.find(s => s.id === rec.styleId);
+              if (!style) return null;
+
+              return (
+                <div
+                  key={rec.styleId}
+                  className={`relative group transform transition-all duration-500 hover:scale-105 recommended-pulse ${
+                    hoveredStyle === rec.styleId ? 'z-10' : ''
+                  }`}
+                  style={{ animationDelay: `${index * 200}ms` }}
+                  onMouseEnter={() => setHoveredStyle(rec.styleId)}
+                  onMouseLeave={() => setHoveredStyle(null)}
+                >
+                  {/* Enhanced Premium Glow Effect */}
+                  <div className="absolute -inset-2 bg-gradient-to-r from-amber-400 via-pink-500 to-purple-600 rounded-3xl blur-md opacity-30 group-hover:opacity-60 transition duration-500"></div>
+                  
+                  <div className="relative style-card-hover style-card-press">
+                    <StyleCard
+                      style={style}
+                      croppedImage={croppedImage}
+                      selectedStyle={selectedStyle}
+                      isPopular={true}
+                      cropAspectRatio={cropAspectRatio}
+                      selectedOrientation={selectedOrientation}
+                      showContinueButton={false}
+                      onStyleClick={() => handleStyleSelect(rec.styleId, rec.styleName)}
+                      onContinue={onComplete}
+                      shouldBlur={false}
+                    />
+
+                    {/* Enhanced AI Recommendation Badge */}
+                    <div className="absolute -top-3 -right-3 z-20">
+                      <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold px-3 py-1 shadow-lg">
+                        <Zap className="w-3 h-3 mr-1 animate-pulse" />
+                        AI Pick
+                      </Badge>
+                    </div>
+
+                    {/* Enhanced Confidence & Reason Overlay */}
+                    <div className="absolute bottom-4 left-4 right-4 bg-black/90 backdrop-blur-sm rounded-xl p-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-white text-sm font-semibold">
+                          {Math.round(rec.confidence * 100)}% Match
+                        </p>
+                        <div className="flex">
+                          {[...Array(5)].map((_, i) => (
+                            <div
+                              key={i}
+                              className={`w-2 h-2 rounded-full mx-0.5 ${
+                                i < Math.round(rec.confidence * 5)
+                                  ? 'bg-amber-400'
+                                  : 'bg-gray-600'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      <p className="text-white/90 text-xs leading-relaxed">
+                        {rec.reason}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 
-      {/* Popular Choices Section with Error Boundary */}
+      {/* Popular Choices Section - Enhanced */}
       {popularChoices.length > 0 && (
-        <div>
-          <PopularChoices
-            popularChoices={popularChoices}
-            croppedImage={croppedImage}
-            selectedStyle={selectedStyle}
-            cropAspectRatio={cropAspectRatio}
-            selectedOrientation={selectedOrientation}
-            onStyleSelect={handleStyleSelect}
-            onComplete={onComplete}
-          />
+        <div className="space-y-6">
+          <div className="flex items-center justify-center gap-3">
+            <Users className="w-5 h-5 text-blue-600" />
+            <h3 className="text-xl font-semibold text-gray-900">
+              Popular Choices
+            </h3>
+            <Badge variant="secondary" className="bg-blue-100 text-blue-700 animate-pulse">
+              <Users className="w-3 h-3 mr-1" />
+              Trending
+            </Badge>
+          </div>
+          
+          <p className="text-center text-gray-600">
+            Styles other customers loved for similar photos
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+            {popularChoices.map((rec, index) => {
+              const style = artStyles.find(s => s.id === rec.styleId);
+              if (!style) return null;
+
+              return (
+                <div
+                  key={rec.styleId}
+                  className="transform transition-all duration-300 hover:scale-105 style-card-hover style-card-press"
+                  style={{ animationDelay: `${(index + 3) * 150}ms` }}
+                >
+                  <StyleCard
+                    style={style}
+                    croppedImage={croppedImage}
+                    selectedStyle={selectedStyle}
+                    isPopular={true}
+                    cropAspectRatio={cropAspectRatio}
+                    selectedOrientation={selectedOrientation}
+                    showContinueButton={false}
+                    onStyleClick={() => handleStyleSelect(rec.styleId, rec.styleName)}
+                    onContinue={onComplete}
+                    shouldBlur={false}
+                  />
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 
-      {/* Show More Styles Toggle - Enhanced with better validation */}
+      {/* Show More Styles Toggle - Enhanced */}
       {secondaryStyles.length > 0 && (
         <div className="text-center py-4">
           <Button
             variant="outline"
-            onClick={handleToggleAllStyles}
+            onClick={() => setShowAllStyles(!showAllStyles)}
             className="bg-white hover:bg-gray-50 border-2 border-gray-200 text-gray-700 px-8 py-3 rounded-full font-medium transition-all duration-300 hover:border-purple-300 hover:text-purple-700 hover:shadow-lg transform hover:scale-105"
-            disabled={isAnalyzing}
           >
             <Eye className="w-4 h-4 mr-2" />
-            {buttonText}
+            {showAllStyles ? 'Show Less Styles' : `Explore ${secondaryStyles.length} More Styles`}
           </Button>
         </div>
       )}
 
-      {/* Complete Collection with Error Boundary */}
+      {/* Complete Collection - FIXED LAYOUT & SPACING */}
       {showAllStyles && secondaryStyles.length > 0 && (
-        <div>
-          <CompleteCollection
-            secondaryStyles={secondaryStyles}
-            croppedImage={croppedImage}
-            selectedStyle={selectedStyle}
-            cropAspectRatio={cropAspectRatio}
-            selectedOrientation={selectedOrientation}
-            onStyleSelect={handleStyleSelect}
-            onComplete={onComplete}
-          />
+        <div className="space-y-8">
+          <div className="text-center space-y-3">
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">
+              Complete Collection
+            </h3>
+            <p className="text-gray-600 max-w-2xl mx-auto leading-relaxed">
+              Discover all our artistic styles and find your perfect match. Each style is carefully crafted to transform your photo into a unique work of art.
+            </p>
+          </div>
+
+          {/* OPTIMIZED GRID LAYOUT - Mobile First, Conversion Focused */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+            {secondaryStyles.map((rec, index) => {
+              const style = artStyles.find(s => s.id === rec.styleId);
+              if (!style) return null;
+
+              return (
+                <div
+                  key={rec.styleId}
+                  className="group relative transform transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2 grid-item"
+                  style={{ 
+                    animationDelay: `${index * 100}ms`
+                  }}
+                >
+                  {/* Enhanced Card Container with Premium Effects */}
+                  <div className="relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 hover:border-purple-200 overflow-hidden">
+                    {/* Subtle Gradient Background */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-white opacity-80 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    
+                    <div className="relative z-10">
+                      <StyleCard
+                        style={style}
+                        croppedImage={croppedImage}
+                        selectedStyle={selectedStyle}
+                        isPopular={false}
+                        cropAspectRatio={cropAspectRatio}
+                        selectedOrientation={selectedOrientation}
+                        showContinueButton={false}
+                        onStyleClick={() => handleStyleSelect(rec.styleId, rec.styleName)}
+                        onContinue={onComplete}
+                        shouldBlur={false}
+                      />
+                    </div>
+
+                    {/* Hover Enhancement Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-purple-50/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none rounded-2xl"></div>
+                    
+                    {/* Premium Glow Effect on Hover */}
+                    <div className="absolute -inset-1 bg-gradient-to-r from-purple-200 via-pink-200 to-purple-200 rounded-2xl opacity-0 group-hover:opacity-30 blur-sm transition-all duration-500 -z-10"></div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Conversion-Optimized CTA Section */}
+          <div className="text-center mt-12 p-8 bg-gradient-to-br from-purple-50 to-pink-50 rounded-3xl border border-purple-100">
+            <div className="max-w-md mx-auto space-y-4">
+              <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto">
+                <Sparkles className="w-8 h-8 text-white" />
+              </div>
+              <h4 className="text-xl font-semibold text-gray-900">
+                Ready to Create Your Masterpiece?
+              </h4>
+              <p className="text-gray-600 text-sm">
+                Select any style above to see your photo transformed with AI magic
+              </p>
+            </div>
+          </div>
         </div>
       )}
     </div>

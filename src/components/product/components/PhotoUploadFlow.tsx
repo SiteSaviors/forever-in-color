@@ -1,8 +1,17 @@
 
+import PhotoUploadSection from "./PhotoUploadSection";
+import StyleSelectionSection from "./StyleSelectionSection";
+import PhotoCropperSection from "./PhotoCropperSection";
+import SmartProgressIndicator from "../progress/SmartProgressIndicator";
+import ContextualHelp from "../help/ContextualHelp";
+import SocialProofFeed from "../social/SocialProofFeed";
 import MobileGestureHandler from "../mobile/MobileGestureHandler";
-import PhotoUploadStageRenderer from "./PhotoUploadStageRenderer";
-import PhotoUploadEnhancedUX from "./PhotoUploadEnhancedUX";
-import { usePhotoUploadFlow } from "./hooks/usePhotoUploadFlow";
+import ConversionMomentumTracker from "../progress/ConversionMomentumTracker";
+import ProgressStateManager from "./ProgressStateManager";
+import { useProgressOrchestrator } from "../progress/ProgressOrchestrator";
+import { usePhotoUploadState } from "../hooks/usePhotoUploadState";
+import { getAspectRatioFromOrientation } from "../cropper/data/orientationOptions";
+import { useEnhancedHandlers } from "./EnhancedHandlers";
 
 interface PhotoUploadFlowProps {
   selectedStyle: {
@@ -20,44 +29,56 @@ interface PhotoUploadFlowProps {
   onStepChange: (step: number) => void;
 }
 
-const PhotoUploadFlow = (props: PhotoUploadFlowProps) => {
+const PhotoUploadFlow = ({
+  selectedStyle,
+  uploadedImage,
+  selectedOrientation,
+  autoGenerationComplete,
+  onComplete,
+  onPhotoAndStyleComplete,
+  onContinue,
+  currentStep,
+  completedSteps,
+  onStepChange
+}: PhotoUploadFlowProps) => {
+  const { dispatch, showContextualHelp } = useProgressOrchestrator();
+  
   const {
-    // State
-    showAutoCrop,
-    recommendedOrientation,
-    isAnalyzing,
     currentOrientation,
     showCropper,
     originalImage,
     croppedImage,
-    hasImage,
-    hasStyle,
-    cropAspectRatio,
-    stageConfig,
-    
-    // Handlers
     setCurrentOrientation,
-    handleEnhancedImageUpload,
+    handleImageUpload,
     handleCropComplete,
     handleRecropImage,
-    handleEnhancedStyleSelect,
-    handleAcceptAutoCrop,
-    handleCustomizeAutoCrop,
-    handleStyleComplete,
-    
-    // Context functions
-    showContextualHelp
-  } = usePhotoUploadFlow(props);
-
-  console.log('🔍 PhotoUploadFlow Debug:', {
-    uploadedImage: !!props.uploadedImage,
-    isAnalyzing,
-    showAutoCrop,
-    showCropper,
-    hasImage,
-    recommendedOrientation,
-    ...stageConfig
+    handleStyleSelect
+  } = usePhotoUploadState({
+    selectedStyle,
+    uploadedImage,
+    selectedOrientation,
+    onPhotoAndStyleComplete
   });
+
+  const { handleEnhancedImageUpload, handleEnhancedStyleSelect } = useEnhancedHandlers(
+    handleImageUpload,
+    handleStyleSelect
+  );
+
+  const handleStyleComplete = (imageUrl: string, styleId: number, styleName: string) => {
+    console.log('🎨 Style selection completed:', {
+      imageUrl,
+      styleId,
+      styleName
+    });
+    dispatch({ type: 'COMPLETE_STEP', payload: 1 });
+    onComplete(imageUrl, styleId, styleName);
+    onContinue();
+  };
+
+  const hasImage = !!croppedImage;
+  const hasStyle = selectedStyle && selectedStyle.name !== "temp-style";
+  const cropAspectRatio = getAspectRatioFromOrientation(currentOrientation);
 
   return (
     <MobileGestureHandler
@@ -70,37 +91,57 @@ const PhotoUploadFlow = (props: PhotoUploadFlowProps) => {
       showGestureHints={true}
     >
       <div className="space-y-8">
-        {/* Enhanced UX Components */}
-        <PhotoUploadEnhancedUX
-          currentStep={props.currentStep}
-          completedSteps={props.completedSteps}
+        {/* Progress State Manager */}
+        <ProgressStateManager
+          currentStep={currentStep}
+          completedSteps={completedSteps}
           croppedImage={croppedImage}
-          selectedStyle={props.selectedStyle}
-          shouldShowProgress={stageConfig.shouldShowStyleSelection}
+          selectedStyle={selectedStyle}
         />
 
-        {/* Stage Renderer */}
-        <PhotoUploadStageRenderer
-          stageConfig={stageConfig}
-          hasImage={hasImage}
-          croppedImage={croppedImage}
-          onImageUpload={handleEnhancedImageUpload}
-          isAnalyzing={isAnalyzing}
-          uploadedImage={props.uploadedImage}
-          recommendedOrientation={recommendedOrientation}
-          onAcceptAutoCrop={handleAcceptAutoCrop}
-          onCustomizeAutoCrop={handleCustomizeAutoCrop}
-          showCropper={showCropper}
-          originalImage={originalImage}
-          currentOrientation={currentOrientation}
-          onCropComplete={handleCropComplete}
-          onOrientationChange={setCurrentOrientation}
-          selectedStyle={props.selectedStyle}
-          cropAspectRatio={cropAspectRatio}
-          onStyleSelect={handleEnhancedStyleSelect}
-          onStyleComplete={handleStyleComplete}
-          onRecropImage={handleRecropImage}
-        />
+        {/* Smart Progress Indicator - Always render but only show content when there's an image */}
+        <SmartProgressIndicator uploadedImage={croppedImage} />
+
+        {/* Show cropper if user wants to recrop */}
+        {showCropper && (
+          <PhotoCropperSection
+            showCropper={showCropper}
+            originalImage={originalImage}
+            currentOrientation={currentOrientation}
+            onCropComplete={handleCropComplete}
+            onOrientationChange={setCurrentOrientation}
+          />
+        )}
+
+        {/* Photo Upload Section - Only show if no image or not showing cropper */}
+        {!showCropper && (
+          <>
+            <PhotoUploadSection
+              hasImage={hasImage}
+              croppedImage={croppedImage}
+              onImageUpload={handleEnhancedImageUpload}
+            />
+
+            {/* Style Selection Section - Only show after image is uploaded */}
+            {hasImage && (
+              <StyleSelectionSection
+                hasImage={hasImage}
+                croppedImage={croppedImage}
+                selectedStyle={selectedStyle}
+                cropAspectRatio={cropAspectRatio}
+                selectedOrientation={currentOrientation}
+                onStyleSelect={handleEnhancedStyleSelect}
+                onStyleComplete={handleStyleComplete}
+                onRecropImage={handleRecropImage}
+              />
+            )}
+          </>
+        )}
+
+        {/* Enhanced UX Components */}
+        <ContextualHelp />
+        <SocialProofFeed />
+        <ConversionMomentumTracker />
       </div>
     </MobileGestureHandler>
   );

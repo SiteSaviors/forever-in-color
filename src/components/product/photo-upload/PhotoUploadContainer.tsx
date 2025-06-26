@@ -1,8 +1,12 @@
 
-import { useState, useCallback } from "react";
+import { useState, useEffect } from "react";
+import { detectOrientationFromImage } from "../utils/orientationDetection";
+import { usePhotoUploadLogic } from "./hooks/usePhotoUploadLogic";
+import UnifiedFlowProgress from "../components/UnifiedFlowProgress";
+import AutoCropPreview from "../components/AutoCropPreview";
+import PhotoCropper from "../PhotoCropper";
 import PhotoUploadMain from "./components/PhotoUploadMain";
-import { validateImageFile } from "@/utils/fileValidation";
-import { ImageCompressor } from "@/utils/imageCompression";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface PhotoUploadContainerProps {
   onImageUpload: (imageUrl: string, originalImageUrl?: string, orientation?: string) => void;
@@ -10,158 +14,159 @@ interface PhotoUploadContainerProps {
 }
 
 const PhotoUploadContainer = ({ onImageUpload, initialImage }: PhotoUploadContainerProps) => {
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
-  const [dragActive, setDragActive] = useState(false);
+  const [showCropper, setShowCropper] = useState(false);
+  const [showAutoCropPreview, setShowAutoCropPreview] = useState(false);
+  const [recommendedOrientation, setRecommendedOrientation] = useState<string>("");
+  const [analysisComplete, setAnalysisComplete] = useState(false);
+  const [cropAccepted, setCropAccepted] = useState(false);
+  const [currentFlowStage, setCurrentFlowStage] = useState<'upload' | 'analyzing' | 'crop-preview' | 'orientation' | 'complete'>('upload');
 
-  // Enhanced file upload handler with better error handling
-  const handleFileUpload = useCallback(async (file: File) => {
-    console.log('📁 PhotoUploadContainer: Starting file upload for:', file.name);
+  const handleImageAnalysis = async (imageUrl: string) => {
+    setCurrentFlowStage('analyzing');
     
-    // Reset previous states
-    setUploadError(null);
-    setUploadProgress(0);
-    setIsUploading(true);
-
     try {
-      // Enhanced validation with specific error messages
-      const validation = await validateImageFile(file);
-      if (!validation.isValid) {
-        throw new Error(validation.error || 'Invalid file format');
-      }
-
-      console.log('✅ File validation passed');
-      setUploadProgress(20);
-
-      // Compress image with progress tracking
-      console.log('🔄 Starting image compression...');
-      const compressedFile = await ImageCompressor.compressImage(file, {
-        maxWidth: 2048,
-        maxHeight: 2048,
-        quality: 0.9
-      });
-
-      console.log('✅ Image compression completed');
-      setUploadProgress(80);
-
-      // Create object URLs for both original and compressed
-      const originalImageUrl = URL.createObjectURL(file);
-      const compressedImageUrl = URL.createObjectURL(compressedFile);
+      const orientation = await detectOrientationFromImage(imageUrl);
+      setRecommendedOrientation(orientation);
       
-      setUploadProgress(100);
-      
-      console.log('🎯 Calling onImageUpload with compressed image');
-      
-      // Call the upload callback with compressed image
-      onImageUpload(compressedImageUrl, originalImageUrl);
-      
-      console.log('✅ File upload completed successfully');
-
+      setTimeout(() => {
+        setAnalysisComplete(true);
+        setCurrentFlowStage('crop-preview');
+        setShowAutoCropPreview(true);
+      }, 1500);
     } catch (error) {
-      console.error('❌ File upload failed:', error);
-      
-      // Enhanced error handling with specific error types
-      let errorMessage = 'Upload failed. Please try again.';
-      
-      if (error instanceof Error) {
-        if (error.message.includes('format')) {
-          errorMessage = 'Please upload a valid image file (JPG, PNG, or WebP)';
-        } else if (error.message.includes('size')) {
-          errorMessage = 'File is too large. Please choose an image under 10MB';
-        } else if (error.message.includes('network')) {
-          errorMessage = 'Network error. Please check your connection and try again';
-        } else {
-          errorMessage = error.message;
-        }
-      }
-      
-      setUploadError(errorMessage);
-      
-      // Reset progress on error
-      setUploadProgress(0);
-    } finally {
-      setIsUploading(false);
+      console.error('Error analyzing image:', error);
+      setRecommendedOrientation('square');
+      setAnalysisComplete(true);
+      setCurrentFlowStage('crop-preview');
+      setShowAutoCropPreview(true);
     }
-  }, [onImageUpload]);
+  };
 
-  // Enhanced drag handlers with validation
-  const handleDragEnter = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    // Check if dragged items contain files
-    if (e.dataTransfer?.items && e.dataTransfer.items.length > 0) {
-      const hasFiles = Array.from(e.dataTransfer.items).some(item => item.kind === 'file');
-      if (hasFiles) {
-        setDragActive(true);
-      }
-    }
-  }, []);
-
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-  }, []);
-
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  }, []);
-
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-
-    const files = Array.from(e.dataTransfer?.files || []);
-    
-    if (files.length === 0) {
-      setUploadError('No files were dropped');
-      return;
-    }
-
-    if (files.length > 1) {
-      setUploadError('Please upload one image at a time');
-      return;
-    }
-
-    const file = files[0];
-    
-    // Quick validation before processing
-    if (!file.type.startsWith('image/')) {
-      setUploadError('Please drop an image file');
-      return;
-    }
-
-    handleFileUpload(file);
-  }, [handleFileUpload]);
-
-  // Clear error handler
-  const clearError = useCallback(() => {
-    setUploadError(null);
-  }, []);
-
-  console.log('🔄 PhotoUploadContainer render:', {
+  const {
+    isDragOver,
     isUploading,
     uploadProgress,
-    uploadError: !!uploadError,
-    dragActive,
-    initialImage: !!initialImage
+    uploadedImage,
+    processingStage,
+    fileInputRef,
+    handleDrop,
+    handleDragOver,
+    handleDragLeave,
+    handleClick,
+    handleFileChange,
+    handleChangePhoto,
+    setUploadedImage
+  } = usePhotoUploadLogic({
+    onImageUpload,
+    initialImage,
+    onImageAnalysis: handleImageAnalysis,
+    onFlowStageChange: setCurrentFlowStage
   });
 
+  // Update uploadedImage and flow when initialImage changes
+  useEffect(() => {
+    if (initialImage) {
+      setUploadedImage(initialImage);
+      setCurrentFlowStage('analyzing');
+      handleImageAnalysis(initialImage);
+    }
+  }, [initialImage]);
+
+  const handleAcceptAutoCrop = (croppedImageUrl: string) => {
+    console.log('✅ Accepting auto crop with URL:', croppedImageUrl);
+    setCropAccepted(true);
+    setCurrentFlowStage('complete');
+    setShowAutoCropPreview(false);
+    
+    // Pass the cropped image URL as the main image
+    onImageUpload(croppedImageUrl, uploadedImage || undefined, recommendedOrientation);
+  };
+
+  const handleCustomizeCrop = () => {
+    setShowAutoCropPreview(false);
+    setShowCropper(true);
+    setCurrentFlowStage('orientation');
+  };
+
+  const handleCropComplete = (croppedImage: string, aspectRatio: number, orientation: string) => {
+    console.log('Custom crop completed:', { croppedImage, aspectRatio, orientation });
+    setCropAccepted(true);
+    setCurrentFlowStage('complete');
+    onImageUpload(croppedImage, uploadedImage || undefined, orientation);
+    setShowCropper(false);
+  };
+
+  // Show auto-crop preview after analysis
+  if (showAutoCropPreview && uploadedImage) {
+    return (
+      <div className="space-y-6">
+        <UnifiedFlowProgress
+          currentStage={currentFlowStage}
+          hasImage={!!uploadedImage}
+          analysisComplete={analysisComplete}
+          cropAccepted={cropAccepted}
+          orientationSelected={false}
+        />
+        
+        <AutoCropPreview
+          imageUrl={uploadedImage}
+          onAcceptCrop={handleAcceptAutoCrop}
+          onCustomizeCrop={handleCustomizeCrop}
+          recommendedOrientation={recommendedOrientation}
+        />
+      </div>
+    );
+  }
+
+  // Show custom cropper if user wants to adjust
+  if (showCropper && uploadedImage) {
+    return (
+      <div className="space-y-6">
+        <UnifiedFlowProgress
+          currentStage={currentFlowStage}
+          hasImage={!!uploadedImage}
+          analysisComplete={analysisComplete}
+          cropAccepted={cropAccepted}
+          orientationSelected={false}
+        />
+        
+        <Card className="w-full overflow-hidden">
+          <CardContent className="p-0">
+            <PhotoCropper
+              imageUrl={uploadedImage}
+              onCropComplete={handleCropComplete}
+              onChangePhoto={handleChangePhoto}
+            />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
-    <div 
-      className="relative"
-      onDragEnter={handleDragEnter}
-      onDragLeave={handleDragLeave}
-      onDragOver={handleDragOver}
-      onDrop={handleDrop}
-    >
+    <div className="space-y-6">
+      {/* Show progress if we have an image */}
+      {uploadedImage && (
+        <UnifiedFlowProgress
+          currentStage={currentFlowStage}
+          hasImage={!!uploadedImage}
+          analysisComplete={analysisComplete}
+          cropAccepted={cropAccepted}
+          orientationSelected={false}
+        />
+      )}
+
       <PhotoUploadMain
-        onImageUpload={handleFileUpload}
-        initialImage={initialImage}
+        isDragOver={isDragOver}
+        isUploading={isUploading}
+        uploadProgress={uploadProgress}
+        processingStage={processingStage}
+        fileInputRef={fileInputRef}
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onClick={handleClick}
+        onFileChange={handleFileChange}
       />
     </div>
   );

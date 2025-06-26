@@ -1,33 +1,38 @@
 
-export const detectOrientationFromImage = async (imageUrl: string): Promise<string> => {
+export const detectOrientationFromImage = (imageUrl: string): Promise<string> => {
   return new Promise((resolve) => {
     const img = new Image();
     img.onload = () => {
       const aspectRatio = img.width / img.height;
+      let detectedOrientation = 'square';
       
       if (aspectRatio > 1.2) {
-        resolve('horizontal');
+        detectedOrientation = 'horizontal';
       } else if (aspectRatio < 0.8) {
-        resolve('vertical');
+        detectedOrientation = 'vertical';
       } else {
-        resolve('square');
+        detectedOrientation = 'square';
       }
-    };
-    img.onerror = () => {
-      resolve('square'); // fallback
+      
+      console.log(`🎯 Auto-detected canvas orientation: ${detectedOrientation} (aspect ratio: ${aspectRatio.toFixed(2)})`);
+      resolve(detectedOrientation);
     };
     img.src = imageUrl;
   });
 };
 
-export const convertOrientationToAspectRatio = (orientation: string): number => {
+export const convertOrientationToAspectRatio = (orientation: string) => {
+  console.log('Converting orientation to GPT-Image-1 aspect ratio:', orientation);
   switch (orientation) {
-    case 'horizontal':
-      return 3/2; // 1.5
     case 'vertical':
-      return 2/3; // 0.67
+      console.log('Using 2:3 for vertical orientation (GPT-Image-1 supported)');
+      return '2:3';
+    case 'horizontal':
+      console.log('Using 3:2 for horizontal orientation (GPT-Image-1 supported)');
+      return '3:2';
     case 'square':
     default:
-      return 1; // 1.0
+      console.log('Using 1:1 for square orientation');
+      return '1:1';
   }
 };

@@ -53,13 +53,7 @@ const ProductContent = ({
     autoGenerationComplete
   });
 
-  // Enhanced validation for required props
-  if (typeof currentStep !== 'number' || !Array.isArray(completedSteps)) {
-    console.error('❌ ProductContent: Invalid props received', { currentStep, completedSteps });
-    return <LoadingState message="Loading product configuration..." />;
-  }
-
-  // Get the actual preview URLs with error handling
+  // Get the actual preview URLs from the state management system
   const { previewUrls, autoGenerationComplete: previewGenerationComplete } = usePreviewGeneration(uploadedImage, selectedOrientation);
   
   console.log('🖼️ ProductContent Preview Debug:', {
@@ -80,15 +74,10 @@ const ProductContent = ({
     onCurrentStepChange
   });
 
-  // Enhanced step access validation
-  const stepAccessValidation = {
-    step1: canProceedToStep(1),
-    step2: canProceedToStep(2),
-    step3: canProceedToStep(3),
-    step4: canProceedToStep(4)
-  };
-
-  console.log('🔒 Step Access Validation:', stepAccessValidation);
+  // Add validation for required props
+  if (typeof currentStep !== 'number' || !Array.isArray(completedSteps)) {
+    return <LoadingState message="Loading product configuration..." />;
+  }
 
   return (
     <ErrorBoundary>
@@ -110,18 +99,14 @@ const ProductContent = ({
                 currentStep={currentStep}
                 isActive={currentStep === 1}
                 isCompleted={completedSteps.includes(1)}
-                canAccess={stepAccessValidation.step1}
+                canAccess={canProceedToStep(1)}
                 selectedStyle={selectedStyle}
                 uploadedImage={uploadedImage}
                 selectedOrientation={selectedOrientation}
                 autoGenerationComplete={autoGenerationComplete}
                 onStepClick={() => {
                   console.log('🐛 Clicked on step 1');
-                  if (stepAccessValidation.step1) {
-                    onCurrentStepChange(1);
-                  } else {
-                    console.warn('⚠️ Step 1 access denied');
-                  }
+                  onCurrentStepChange(1);
                 }}
                 onPhotoAndStyleComplete={onPhotoAndStyleComplete}
                 onContinue={handleContinueToStep2}
@@ -135,16 +120,14 @@ const ProductContent = ({
                 currentStep={currentStep}
                 isActive={currentStep === 2}
                 isCompleted={completedSteps.includes(2)}
-                canAccess={stepAccessValidation.step2}
+                canAccess={canProceedToStep(2)}
                 selectedOrientation={selectedOrientation}
                 selectedSize={selectedSize}
                 uploadedImage={uploadedImage}
                 onStepClick={() => {
-                  console.log('🐛 Clicked on step 2, canAccess:', stepAccessValidation.step2);
-                  if (stepAccessValidation.step2) {
+                  console.log('🐛 Clicked on step 2, canAccess:', canProceedToStep(2));
+                  if (canProceedToStep(2)) {
                     onCurrentStepChange(2);
-                  } else {
-                    console.warn('⚠️ Step 2 access denied');
                   }
                 }}
                 onOrientationSelect={onOrientationSelect}
@@ -160,7 +143,7 @@ const ProductContent = ({
                 currentStep={currentStep}
                 isActive={currentStep === 3}
                 isCompleted={completedSteps.includes(3)}
-                canAccess={stepAccessValidation.step3}
+                canAccess={canProceedToStep(3)}
                 selectedSize={selectedSize}
                 customizations={customizations}
                 selectedOrientation={selectedOrientation}
@@ -169,11 +152,9 @@ const ProductContent = ({
                 userArtworkUrl={uploadedImage}
                 onCustomizationChange={onCustomizationChange}
                 onStepClick={() => {
-                  console.log('🐛 Clicked on step 3, canAccess:', stepAccessValidation.step3);
-                  if (stepAccessValidation.step3) {
+                  console.log('🐛 Clicked on step 3, canAccess:', canProceedToStep(3));
+                  if (canProceedToStep(3)) {
                     onCurrentStepChange(3);
-                  } else {
-                    console.warn('⚠️ Step 3 access denied');
                   }
                 }}
               />
@@ -184,18 +165,16 @@ const ProductContent = ({
                 currentStep={currentStep}
                 isActive={currentStep === 4}
                 isCompleted={completedSteps.includes(4)}
-                canAccess={stepAccessValidation.step4}
+                canAccess={canProceedToStep(4)}
                 uploadedImage={uploadedImage}
                 selectedStyle={selectedStyle}
                 selectedSize={selectedSize}
                 selectedOrientation={selectedOrientation}
                 customizations={customizations}
                 onStepClick={() => {
-                  console.log('🐛 Clicked on step 4, canAccess:', stepAccessValidation.step4);
-                  if (stepAccessValidation.step4) {
+                  console.log('🐛 Clicked on step 4, canAccess:', canProceedToStep(4));
+                  if (canProceedToStep(4)) {
                     onCurrentStepChange(4);
-                  } else {
-                    console.warn('⚠️ Step 4 access denied');
                   }
                 }}
               />

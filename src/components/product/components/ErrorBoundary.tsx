@@ -1,34 +1,63 @@
 
-import { Component, ReactNode } from 'react';
+import React, { Component, ReactNode } from 'react';
+import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 
-interface ErrorBoundaryProps {
+interface Props {
   children: ReactNode;
+  fallback?: ReactNode;
 }
 
-interface ErrorBoundaryState {
+interface State {
   hasError: boolean;
+  error?: Error;
 }
 
-class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  constructor(props: ErrorBoundaryProps) {
+class ErrorBoundary extends Component<Props, State> {
+  constructor(props: Props) {
     super(props);
     this.state = { hasError: false };
   }
 
-  static getDerivedStateFromError(): ErrorBoundaryState {
-    return { hasError: true };
+  static getDerivedStateFromError(error: Error): State {
+    return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: any) {
-    console.error('Error boundary caught an error:', error, errorInfo);
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('ProductStep Error Boundary caught an error:', error, errorInfo);
   }
+
+  handleRetry = () => {
+    this.setState({ hasError: false, error: undefined });
+  };
 
   render() {
     if (this.state.hasError) {
+      if (this.props.fallback) {
+        return this.props.fallback;
+      }
+
       return (
-        <div className="text-center py-8">
-          <p className="text-red-600">Something went wrong. Please refresh the page.</p>
-        </div>
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="p-6 text-center">
+            <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-red-800 mb-2">
+              Something went wrong
+            </h3>
+            <p className="text-red-600 mb-4">
+              {this.state.error?.message || 'An unexpected error occurred while loading this section.'}
+            </p>
+            <Button 
+              onClick={this.handleRetry}
+              variant="outline"
+              className="border-red-300 text-red-700 hover:bg-red-100"
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
       );
     }
 

@@ -1,4 +1,3 @@
-
 import React from "react";
 import { LucideIcon, Check, ChevronRight, Sparkles, Lock } from "lucide-react";
 import { AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
@@ -172,7 +171,11 @@ const ActiveStepView = ({
           <div className="border-t border-gradient-to-r from-purple-100 to-pink-100 pt-6 relative">
             {/* Enhanced content area with premium styling and animations */}
             <div className="bg-gradient-to-r from-gray-50/80 to-purple-50/40 rounded-2xl p-4 md:p-8 border border-gray-100/50 shadow-inner animate-fade-in">
-              <ErrorBoundary>
+              <ErrorBoundary fallback={
+                <div className="text-center py-4">
+                  <p className="text-gray-600">Unable to load step content. Please refresh the page.</p>
+                </div>
+              }>
                 {children}
               </ErrorBoundary>
             </div>
