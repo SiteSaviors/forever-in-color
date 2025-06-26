@@ -54,7 +54,7 @@ const StyleCardLoadingOverlay = ({ isGenerating, styleName, error }: StyleCardLo
     );
   }
 
-  // Loading state
+  // Only show loading overlay when actually generating
   if (!isGenerating) return null;
 
   return (

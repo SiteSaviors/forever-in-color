@@ -15,6 +15,9 @@ export function MockupCanvas({ previewUrl, orientation, className = "" }: Mockup
     vertical: '/lovable-uploads/79613d9d-74f9-4f65-aec0-50fd2346a131.png', // Existing vertical canvas
   }[orientation];
 
+  // Determine if we should show loading state - only when no preview is available
+  const isLoading = !previewUrl;
+
   return (
     <div className={`relative w-full max-w-md mx-auto ${className}`}>
       {/* Base canvas mockup */}
@@ -24,7 +27,7 @@ export function MockupCanvas({ previewUrl, orientation, className = "" }: Mockup
         className="block w-full h-auto"
       />
 
-      {/* Overlay preview when ready - adjusted positioning for horizontal */}
+      {/* Overlay actual preview when ready */}
       {previewUrl && (
         <img
           src={previewUrl}
@@ -34,6 +37,7 @@ export function MockupCanvas({ previewUrl, orientation, className = "" }: Mockup
             object-cover
             shadow-lg
             transition-opacity duration-300
+            opacity-100
           "
           style={{
             // Adjusted positioning for different orientations
@@ -46,8 +50,8 @@ export function MockupCanvas({ previewUrl, orientation, className = "" }: Mockup
         />
       )}
 
-      {/* Loading state overlay */}
-      {!previewUrl && (
+      {/* Loading state overlay - only show when actually loading */}
+      {isLoading && (
         <div className="
           absolute
           flex items-center justify-center
