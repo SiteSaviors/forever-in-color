@@ -121,6 +121,16 @@ const PhotoUploadFlow = ({
   const hasStyle = selectedStyle && selectedStyle.name !== "temp-style";
   const cropAspectRatio = getAspectRatioFromOrientation(currentOrientation);
 
+  console.log('🔍 PhotoUploadFlow Debug:', {
+    uploadedImage: !!uploadedImage,
+    isAnalyzing,
+    analysisResult: !!analysisResult,
+    showAutoCrop,
+    showCropper,
+    hasImage,
+    recommendedOrientation
+  });
+
   return (
     <MobileGestureHandler
       onSwipeLeft={() => {
@@ -140,7 +150,31 @@ const PhotoUploadFlow = ({
           selectedStyle={selectedStyle}
         />
 
-        {/* Show cropper if user wants to recrop */}
+        {/* Photo Upload Section - Only show if no image uploaded yet */}
+        {!uploadedImage && (
+          <PhotoUploadSection
+            hasImage={hasImage}
+            croppedImage={croppedImage}
+            onImageUpload={handleEnhancedImageUpload}
+          />
+        )}
+
+        {/* AI Analysis Status - Show immediately when image is uploaded and being analyzed */}
+        {uploadedImage && isAnalyzing && !showAutoCrop && !showCropper && (
+          <AIAnalysisStatus isAnalyzing={isAnalyzing} />
+        )}
+
+        {/* Auto Crop Preview - Show after analysis completes */}
+        {uploadedImage && !isAnalyzing && showAutoCrop && !showCropper && (
+          <AutoCropPreview
+            imageUrl={uploadedImage}
+            onAcceptCrop={handleAcceptAutoCrop}
+            onCustomizeCrop={handleCustomizeAutoCrop}
+            recommendedOrientation={recommendedOrientation}
+          />
+        )}
+
+        {/* Manual Photo Cropper - Show when user wants to customize crop */}
         {showCropper && (
           <PhotoCropperSection
             showCropper={showCropper}
@@ -151,34 +185,8 @@ const PhotoUploadFlow = ({
           />
         )}
 
-        {/* Photo Upload Section - Only show if no image or not showing cropper */}
-        {!showCropper && !showAutoCrop && (
-          <>
-            <PhotoUploadSection
-              hasImage={hasImage}
-              croppedImage={croppedImage}
-              onImageUpload={handleEnhancedImageUpload}
-            />
-
-            {/* AI Analysis Status - Show when analyzing uploaded image */}
-            {uploadedImage && isAnalyzing && (
-              <AIAnalysisStatus isAnalyzing={isAnalyzing} />
-            )}
-          </>
-        )}
-
-        {/* Auto Crop Preview - Show after analysis completes */}
-        {showAutoCrop && uploadedImage && recommendedOrientation && (
-          <AutoCropPreview
-            imageUrl={uploadedImage}
-            onAcceptCrop={handleAcceptAutoCrop}
-            onCustomizeCrop={handleCustomizeAutoCrop}
-            recommendedOrientation={recommendedOrientation}
-          />
-        )}
-
         {/* Style Selection Section - Only show after image processing is complete */}
-        {!showCropper && !showAutoCrop && !isAnalyzing && hasImage && (
+        {!isAnalyzing && !showAutoCrop && !showCropper && hasImage && (
           <>
             {/* Smart Progress Indicator */}
             <SmartProgressIndicator uploadedImage={croppedImage} />

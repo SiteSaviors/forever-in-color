@@ -10,7 +10,7 @@ export const usePhotoAnalysis = (
   imageUrl: string | null,
   options: UsePhotoAnalysisOptions = {}
 ) => {
-  const { analysisDelay = 500 } = options;
+  const { analysisDelay = 800 } = options; // Slightly longer delay for better UX
   
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<PhotoAnalysisResult | null>(null);
@@ -30,8 +30,8 @@ export const usePhotoAnalysis = (
     }
 
     // Don't re-analyze the same image
-    if (imageUrl === lastImageUrlRef.current) {
-      console.log('🔍 usePhotoAnalysis: Same image, skipping analysis');
+    if (imageUrl === lastImageUrlRef.current && analysisResult) {
+      console.log('🔍 usePhotoAnalysis: Same image with existing result, skipping analysis');
       return;
     }
 
@@ -50,6 +50,7 @@ export const usePhotoAnalysis = (
 
     console.log('🚀 usePhotoAnalysis: Starting analysis for new image');
     setIsAnalyzing(true);
+    setAnalysisResult(null); // Clear previous result
     
     analysisTimeoutRef.current = setTimeout(() => {
       performAnalysis(imageUrl, abortControllerRef.current!.signal);
