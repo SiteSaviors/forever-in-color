@@ -12,6 +12,7 @@ import CustomizationHeader from "./customization/CustomizationHeader";
 import LiveActivityFeed from "./customization/LiveActivityFeed";
 import SocialProofGallery from "./customization/SocialProofGallery";
 import PremiumVideoOptions from "./customization/PremiumVideoOptions";
+
 interface CustomizationOptions {
   floatingFrame: {
     enabled: boolean;
@@ -62,22 +63,23 @@ const CustomizationSelector = ({
   return <div className="max-w-6xl mx-auto space-y-8">
       <CustomizationHeader />
       
-      {/* Canvas Preview Section - Only showing blank canvas mockups */}
+      {/* Canvas Preview Section - Expanded canvas mockup */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Canvas Mockups Only */}
+        {/* Canvas Mockups Only - Expanded to fill column */}
         <div className="space-y-6">
           <div className="text-center">
             <h3 className="text-xl font-semibold text-gray-900 mb-2">Your Canvas Preview</h3>
             <p className="text-gray-600">Premium gallery-quality canvas with your artwork</p>
           </div>
           
-          {/* Blank Canvas Mockups */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="relative group">
-              <img src="/lovable-uploads/1308e62b-7d30-4d01-bad3-ef128e25924b.png" alt="Square Canvas Mockup" className="w-full h-auto rounded-lg shadow-lg group-hover:shadow-xl transition-shadow duration-300" />
-              <div className="absolute inset-0 bg-black/5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            </div>
-            
+          {/* Expanded Canvas Mockup - Single large image */}
+          <div className="relative group">
+            <img 
+              src="/lovable-uploads/1308e62b-7d30-4d01-bad3-ef128e25924b.png" 
+              alt="Canvas Mockup" 
+              className="w-full h-auto rounded-lg shadow-lg group-hover:shadow-xl transition-all duration-300 transform group-hover:scale-[1.02]" 
+            />
+            <div className="absolute inset-0 bg-black/5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           </div>
           
           <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4 border border-purple-100">
