@@ -9,11 +9,14 @@ import MobileGestureHandler from "../mobile/MobileGestureHandler";
 import ConversionMomentumTracker from "../progress/ConversionMomentumTracker";
 import ProgressStateManager from "./ProgressStateManager";
 import AIAnalysisStatus from "./intelligence/AIAnalysisStatus";
+import AutoCropPreview from "./AutoCropPreview";
 import { useProgressOrchestrator } from "../progress/ProgressOrchestrator";
 import { usePhotoUploadState } from "../hooks/usePhotoUploadState";
 import { getAspectRatioFromOrientation } from "../cropper/data/orientationOptions";
 import { useEnhancedHandlers } from "./EnhancedHandlers";
 import { usePhotoAnalysis } from "../../../hooks/usePhotoAnalysis";
+import { detectOrientationFromImage } from "../utils/orientationDetection";
+import { useState, useEffect } from "react";
 
 interface PhotoUploadFlowProps {
   selectedStyle: {
@@ -44,9 +47,11 @@ const PhotoUploadFlow = ({
   onStepChange
 }: PhotoUploadFlowProps) => {
   const { dispatch, showContextualHelp } = useProgressOrchestrator();
+  const [showAutoCrop, setShowAutoCrop] = useState(false);
+  const [recommendedOrientation, setRecommendedOrientation] = useState<string>("");
   
   // Track photo analysis for the originally uploaded image
-  const { isAnalyzing } = usePhotoAnalysis(uploadedImage);
+  const { isAnalyzing, analysisResult } = usePhotoAnalysis(uploadedImage);
   
   const {
     currentOrientation,
@@ -69,6 +74,37 @@ const PhotoUploadFlow = ({
     handleImageUpload,
     handleStyleSelect
   );
+
+  // Detect orientation and trigger auto-crop when analysis completes
+  useEffect(() => {
+    if (analysisResult && uploadedImage && !showCropper) {
+      console.log('🎯 Analysis completed, detecting orientation for auto-crop...');
+      
+      detectOrientationFromImage(uploadedImage).then(detected => {
+        console.log('🎯 Detected orientation:', detected);
+        setRecommendedOrientation(detected);
+        setShowAutoCrop(true);
+      });
+    }
+  }, [analysisResult, uploadedImage, showCropper]);
+
+  const handleAcceptAutoCrop = (croppedImageUrl: string) => {
+    console.log('✅ User accepted auto crop');
+    setShowAutoCrop(false);
+    
+    // Update the state with the auto-cropped image
+    if (selectedStyle) {
+      onPhotoAndStyleComplete(croppedImageUrl, selectedStyle.id, selectedStyle.name);
+    } else {
+      onPhotoAndStyleComplete(croppedImageUrl, 0, "temp-style");
+    }
+  };
+
+  const handleCustomizeAutoCrop = () => {
+    console.log('🎨 User wants to customize crop');
+    setShowAutoCrop(false);
+    handleRecropImage();
+  };
 
   const handleStyleComplete = (imageUrl: string, styleId: number, styleName: string) => {
     console.log('🎨 Style selection completed:', {
@@ -116,7 +152,7 @@ const PhotoUploadFlow = ({
         )}
 
         {/* Photo Upload Section - Only show if no image or not showing cropper */}
-        {!showCropper && (
+        {!showCropper && !showAutoCrop && (
           <>
             <PhotoUploadSection
               hasImage={hasImage}
@@ -128,23 +164,35 @@ const PhotoUploadFlow = ({
             {uploadedImage && isAnalyzing && (
               <AIAnalysisStatus isAnalyzing={isAnalyzing} />
             )}
+          </>
+        )}
 
-            {/* Smart Progress Indicator - Always render but only show content when there's an image */}
+        {/* Auto Crop Preview - Show after analysis completes */}
+        {showAutoCrop && uploadedImage && recommendedOrientation && (
+          <AutoCropPreview
+            imageUrl={uploadedImage}
+            onAcceptCrop={handleAcceptAutoCrop}
+            onCustomizeCrop={handleCustomizeAutoCrop}
+            recommendedOrientation={recommendedOrientation}
+          />
+        )}
+
+        {/* Style Selection Section - Only show after image processing is complete */}
+        {!showCropper && !showAutoCrop && !isAnalyzing && hasImage && (
+          <>
+            {/* Smart Progress Indicator */}
             <SmartProgressIndicator uploadedImage={croppedImage} />
 
-            {/* Style Selection Section - Only show after image is uploaded and not analyzing */}
-            {hasImage && !isAnalyzing && (
-              <StyleSelectionSection
-                hasImage={hasImage}
-                croppedImage={croppedImage}
-                selectedStyle={selectedStyle}
-                cropAspectRatio={cropAspectRatio}
-                selectedOrientation={currentOrientation}
-                onStyleSelect={handleEnhancedStyleSelect}
-                onStyleComplete={handleStyleComplete}
-                onRecropImage={handleRecropImage}
-              />
-            )}
+            <StyleSelectionSection
+              hasImage={hasImage}
+              croppedImage={croppedImage}
+              selectedStyle={selectedStyle}
+              cropAspectRatio={cropAspectRatio}
+              selectedOrientation={currentOrientation}
+              onStyleSelect={handleEnhancedStyleSelect}
+              onStyleComplete={handleStyleComplete}
+              onRecropImage={handleRecropImage}
+            />
           </>
         )}
 
