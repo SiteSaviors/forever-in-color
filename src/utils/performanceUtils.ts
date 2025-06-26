@@ -246,7 +246,7 @@ export const collectPerformanceMetrics = () => {
     loadComplete: navigation.loadEventEnd - navigation.loadEventStart,
     
     // Resource loading
-    totalLoadTime: navigation.loadEventEnd - navigation.navigationStart,
+    totalLoadTime: navigation.loadEventEnd - navigation.fetchStart,
     
     // Memory usage
     memory: monitorMemoryUsage()

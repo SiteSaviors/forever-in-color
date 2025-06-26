@@ -1,10 +1,10 @@
 
-import { useState, useCallback, forwardRef, ImgHTMLAttributes } from 'react';
+import { useState, useCallback, forwardRef, ImgHTMLAttributes, SyntheticEvent } from 'react';
 import { useLazyLoading } from '@/hooks/useLazyLoading';
 import { optimizeImage, generateImageSrcSet, generateImageSizes } from '@/utils/imageOptimization';
 import { cn } from '@/lib/utils';
 
-export interface OptimizedImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, 'src' | 'srcSet' | 'sizes'> {
+export interface OptimizedImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, 'src' | 'srcSet' | 'sizes' | 'onError'> {
   src: string;
   alt: string;
   lazy?: boolean;
@@ -96,11 +96,16 @@ const OptimizedImage = forwardRef<HTMLImageElement, OptimizedImageProps>(({
     }
   }, [lazyRef, ref]);
 
+  // Handle React's native onError event
+  const handleNativeError = useCallback((event: SyntheticEvent<HTMLImageElement, Event>) => {
+    const error = new Error('Image failed to load');
+    onError?.(error);
+  }, [onError]);
+
   // Show placeholder while optimizing or lazy loading
   if ((lazy && (!isLoaded || isLazyLoading)) || isOptimizing) {
     return (
       <div 
-        ref={combinedRef}
         className={cn(
           'bg-gray-200 animate-pulse flex items-center justify-center',
           placeholderClassName || className
@@ -121,6 +126,7 @@ const OptimizedImage = forwardRef<HTMLImageElement, OptimizedImageProps>(({
           src={errorFallback}
           alt={alt}
           className={cn('opacity-50', className)}
+          onError={handleNativeError}
           {...props}
         />
       );
@@ -128,7 +134,6 @@ const OptimizedImage = forwardRef<HTMLImageElement, OptimizedImageProps>(({
     
     return (
       <div 
-        ref={combinedRef}
         className={cn(
           'bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-500 text-sm',
           className
@@ -162,6 +167,7 @@ const OptimizedImage = forwardRef<HTMLImageElement, OptimizedImageProps>(({
       alt={alt}
       className={cn('transition-opacity duration-300', className)}
       loading={lazy ? 'lazy' : 'eager'}
+      onError={handleNativeError}
       {...props}
     />
   );
