@@ -31,12 +31,12 @@ const StepNavigation = ({
 
   return (
     <div className="flex items-center justify-between pt-6 sm:pt-8 border-t border-gray-100 px-4 sm:px-0">
-      {/* Back Button - Enhanced for mobile */}
+      {/* Back Button - Enhanced touch target (44px minimum) */}
       {canGoBack ? (
         <Button
           variant="outline"
           onClick={onBack}
-          className="text-gray-600 border-gray-300 hover:bg-gray-50 min-h-[48px] px-4 sm:px-6 text-sm sm:text-base touch-manipulation"
+          className="text-gray-600 border-gray-300 hover:bg-gray-50 active:bg-gray-100 min-h-[44px] min-w-[44px] px-4 sm:px-6 text-sm sm:text-base touch-manipulation transition-colors duration-200"
           disabled={isLoading}
         >
           <ArrowLeft className="w-4 h-4 mr-1 sm:mr-2" />
@@ -46,15 +46,15 @@ const StepNavigation = ({
         <div /> // Empty div to maintain flex layout
       )}
 
-      {/* Continue Button - Mobile-optimized */}
+      {/* Continue Button - Enhanced touch target (44px minimum) */}
       <Button
         onClick={onContinue}
         disabled={!canContinue || isLoading}
         className={`
-          px-6 sm:px-8 py-3 text-base sm:text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200
-          min-h-[48px] min-w-[140px] sm:min-w-[180px] touch-manipulation
+          px-6 sm:px-8 py-3 text-base sm:text-lg font-semibold shadow-lg hover:shadow-xl active:shadow-md transition-all duration-200
+          min-h-[44px] min-w-[140px] sm:min-w-[180px] touch-manipulation
           ${canContinue 
-            ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white' 
+            ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 active:from-purple-800 active:to-pink-800 text-white' 
             : 'bg-gray-200 text-gray-500 cursor-not-allowed'}
         `}
         aria-disabled={!canContinue}

@@ -45,18 +45,19 @@ const Lightbox = ({ isOpen, onClose, imageSrc, imageAlt, title, customContent }:
         onKeyDown={handleKeyDown}
       >
         <div className="relative flex items-center justify-center min-h-[50vh] max-h-[95vh]">
-          {/* Close Button */}
-          <DialogClose className="absolute top-4 right-4 z-10 bg-white/10 hover:bg-white/20 text-white rounded-full p-2 transition-colors">
+          {/* Close Button - Enhanced touch target (44px minimum) */}
+          <DialogClose className="absolute top-4 right-4 z-10 bg-white/10 hover:bg-white/20 active:bg-white/30 text-white rounded-full p-2 transition-colors touch-manipulation" style={{ minWidth: '44px', minHeight: '44px' }}>
             <X className="w-6 h-6" />
           </DialogClose>
 
-          {/* Zoom Controls - Only show for regular images */}
+          {/* Zoom Controls - Enhanced touch targets for mobile */}
           {!customContent && (
             <div className="absolute top-4 left-4 z-10 flex gap-2">
               <button
                 onClick={toggleZoom}
-                className="bg-white/10 hover:bg-white/20 text-white rounded-full p-2 transition-colors"
+                className="bg-white/10 hover:bg-white/20 active:bg-white/30 text-white rounded-full p-2 transition-colors touch-manipulation"
                 title={isZoomed ? "Zoom Out" : "Zoom In"}
+                style={{ minWidth: '44px', minHeight: '44px' }}
               >
                 {isZoomed ? <ZoomOut className="w-5 h-5" /> : <ZoomIn className="w-5 h-5" />}
               </button>
@@ -66,7 +67,7 @@ const Lightbox = ({ isOpen, onClose, imageSrc, imageAlt, title, customContent }:
           {/* Title */}
           {title && (
             <div className="absolute bottom-4 left-4 z-10">
-              <h3 className="text-white text-lg font-semibold bg-black/50 px-3 py-1 rounded">
+              <h3 className="text-white text-sm sm:text-lg font-semibold bg-black/50 px-3 py-1 rounded">
                 {title}
               </h3>
             </div>
@@ -74,11 +75,11 @@ const Lightbox = ({ isOpen, onClose, imageSrc, imageAlt, title, customContent }:
 
           {/* Content */}
           {customContent ? (
-            <div className="w-full max-w-full max-h-full p-8 overflow-auto">
+            <div className="w-full max-w-full max-h-full p-4 sm:p-8 overflow-auto">
               {customContent}
             </div>
           ) : (
-            <div className={`transition-transform duration-300 ${isZoomed ? 'scale-150' : 'scale-100'} overflow-auto max-w-full max-h-full`}>
+            <div className={`transition-transform duration-300 ${isZoomed ? 'scale-150' : 'scale-100'} overflow-auto max-w-full max-h-full touch-manipulation`}>
               <img
                 src={imageSrc}
                 alt={imageAlt}
