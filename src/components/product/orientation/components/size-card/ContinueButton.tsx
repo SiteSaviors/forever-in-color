@@ -20,7 +20,7 @@ const ContinueButton = ({ size, isSelected, onContinue }: ContinueButtonProps) =
   return (
     <Button 
       onClick={handleContinueClick} 
-      className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 active:from-purple-800 active:to-pink-800 text-white font-semibold py-3 transition-all duration-150 border-0 min-h-[44px] touch-manipulation" 
+      className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-3 transition-all duration-150 border-0 min-h-[48px]" 
       size="lg"
     >
       <Sparkles className="w-4 h-4 mr-2" />

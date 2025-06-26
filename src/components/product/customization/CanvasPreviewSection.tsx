@@ -1,4 +1,3 @@
-
 import { Sparkles, Expand } from "lucide-react";
 import { useState } from "react";
 import Lightbox from "@/components/ui/lightbox";
@@ -49,11 +48,11 @@ const CanvasPreviewSection = ({
           className="w-full h-auto rounded-lg shadow-lg group-hover:shadow-xl transition-all duration-300 transform group-hover:scale-[1.02]" 
         />
         
-        {/* Enhanced Expand Button - Always visible on mobile with 44px minimum touch target */}
+        {/* Enhanced Expand Button - Mobile-first design */}
         {userArtworkUrl && !isLoading && !error && (
           <button
             onClick={handleExpandClick}
-            className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-black/70 hover:bg-black/90 active:bg-black text-white rounded-full p-3 sm:p-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-300 z-20 touch-manipulation shadow-lg"
+            className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-black/70 hover:bg-black/90 text-white rounded-full p-3 sm:p-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-300 z-20 touch-manipulation"
             title="Expand to full size"
             style={{ minWidth: '44px', minHeight: '44px' }}
           >
@@ -61,10 +60,10 @@ const CanvasPreviewSection = ({
           </button>
         )}
         
-        {/* AI-Generated Artwork Overlay - Enhanced for touch */}
+        {/* AI-Generated Artwork Overlay */}
         {userArtworkUrl && !isLoading && (
           <div 
-            className="absolute overflow-hidden transition-all duration-300 group-hover:brightness-110 rounded-sm cursor-pointer touch-manipulation active:brightness-95"
+            className="absolute overflow-hidden transition-all duration-300 group-hover:brightness-110 rounded-sm cursor-pointer touch-manipulation"
             style={artworkPosition}
             onClick={handleExpandClick}
           >
@@ -118,8 +117,8 @@ const CanvasPreviewSection = ({
           </div>
         )}
         
-        {/* Hover overlay - Enhanced for touch devices */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent rounded-lg opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300 pointer-events-none" />
+        {/* Hover overlay - Adjusted for mobile */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
       </div>
       
       {/* Premium Quality Section - Enhanced mobile layout */}
@@ -136,7 +135,7 @@ const CanvasPreviewSection = ({
         </ul>
       </div>
 
-      {/* Enhanced Lightbox for mobile with touch optimizations */}
+      {/* Enhanced Lightbox for mobile */}
       <Lightbox
         isOpen={isLightboxOpen}
         onClose={() => setIsLightboxOpen(false)}
