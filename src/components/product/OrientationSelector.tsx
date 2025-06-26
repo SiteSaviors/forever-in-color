@@ -1,16 +1,17 @@
 
-import OrientationCard from "./orientation/components/OrientationCard";
-import GlassMorphismSizeCard from "./orientation/components/GlassMorphismSizeCard";
 import OrientationHeader from "./orientation/components/OrientationHeader";
 import SizeHeader from "./orientation/components/SizeHeader";
 import SmartRecommendations from "./orientation/components/SmartRecommendations";
 import StepNavigation from "./components/StepNavigation";
+import ValidationErrorAlert from "./orientation/components/ValidationErrorAlert";
+import LivePreviewAlert from "./orientation/components/LivePreviewAlert";
+import OrientationGrid from "./orientation/components/OrientationGrid";
+import SizeTransitionIndicator from "./orientation/components/SizeTransitionIndicator";
+import SizeGrid from "./orientation/components/SizeGrid";
+import PriceUpdateDisplay from "./orientation/components/PriceUpdateDisplay";
 import { useBackNavigation } from "./hooks/useBackNavigation";
-import { orientationOptions } from "./orientation/data/orientationOptions";
 import { sizeOptions } from "./orientation/data/sizeOptions";
 import { OrientationSelectorProps } from "./orientation/types";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Eye, ArrowDown, DollarSign } from "lucide-react";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 
 interface ExtendedOrientationSelectorProps extends OrientationSelectorProps {
@@ -143,23 +144,10 @@ const OrientationSelector = ({
       <OrientationHeader selectedOrientation={selectedOrientation} />
 
       {/* Validation Error Alert */}
-      {validationError && (
-        <Alert className="border-red-200 bg-red-50 animate-in fade-in duration-300">
-          <AlertDescription className="text-red-800 font-medium">
-            {validationError}
-          </AlertDescription>
-        </Alert>
-      )}
+      <ValidationErrorAlert validationError={validationError} />
 
       {/* Visual Connection Helper */}
-      {userImageUrl && (
-        <Alert className="border-blue-200 bg-blue-50">
-          <Eye className="h-4 w-4 text-blue-600" />
-          <AlertDescription className="text-blue-800">
-            <strong>✨ Live Preview:</strong> The canvases below show exactly how your photo will look in each orientation. This is your actual image positioned on the final product!
-          </AlertDescription>
-        </Alert>
-      )}
+      <LivePreviewAlert userImageUrl={userImageUrl} />
 
       {/* Smart Recommendations Panel */}
       {userImageUrl && (
@@ -169,80 +157,37 @@ const OrientationSelector = ({
       )}
 
       {/* Orientation Selection Section */}
-      <div 
-        ref={orientationSectionRef}
-        className="grid grid-cols-1 md:grid-cols-3 gap-8"
-        data-orientation-section
-        role="radiogroup"
-        aria-label="Canvas orientation options"
-      >
-        {orientationOptions.map(orientation => (
-          <div 
-            key={orientation.id} 
-            className="transform transition-all duration-300 hover:-translate-y-1"
-          >
-            <OrientationCard 
-              orientation={orientation} 
-              isSelected={selectedOrientation === orientation.id} 
-              isRecommended={orientation.id === recommendedOrientation}
-              userImageUrl={userImageUrl} 
-              onClick={() => handleOrientationSelect(orientation.id)} 
-            />
-          </div>
-        ))}
+      <div ref={orientationSectionRef}>
+        <OrientationGrid
+          selectedOrientation={selectedOrientation}
+          userImageUrl={userImageUrl}
+          onOrientationSelect={handleOrientationSelect}
+          recommendedOrientation={recommendedOrientation}
+        />
       </div>
 
       {/* Smooth transition indicator */}
-      {selectedOrientation && (
-        <div className="flex justify-center">
-          <div className="flex items-center gap-2 text-purple-600 animate-bounce">
-            <ArrowDown className="w-4 h-4" />
-            <span className="text-sm font-medium">Now choose your size</span>
-            <ArrowDown className="w-4 h-4" />
-          </div>
-        </div>
-      )}
+      <SizeTransitionIndicator selectedOrientation={selectedOrientation} />
 
       {/* Size Selection Section - Optimized grid */}
       {selectedOrientation && (
         <>
           <SizeHeader />
-          <div 
-            ref={sizeSectionRef}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-            data-size-section
-            role="radiogroup"
-            aria-label="Canvas size options"
-          >
-            {sizeOptions[selectedOrientation]?.map(option => (
-              <div key={option.size} className="transform transition-all duration-200 hover:-translate-y-1">
-                <GlassMorphismSizeCard 
-                  option={option} 
-                  orientation={selectedOrientation}
-                  isSelected={selectedSize === option.size} 
-                  isRecommended={option.size === recommendedSize}
-                  userImageUrl={null} 
-                  onClick={() => handleSizeSelect(option.size)} 
-                  onContinue={e => handleContinueWithSize(option.size, e)} 
-                />
-              </div>
-            ))}
+          <div ref={sizeSectionRef}>
+            <SizeGrid
+              selectedOrientation={selectedOrientation}
+              selectedSize={selectedSize}
+              recommendedSize={recommendedSize}
+              onSizeSelect={handleSizeSelect}
+              onContinueWithSize={handleContinueWithSize}
+            />
           </div>
 
           {/* Real-time Price Update */}
-          {selectedSize && currentSizeOption && (
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4 text-center">
-              <div className="flex items-center justify-center gap-2 text-green-700">
-                <DollarSign className="w-5 h-5" />
-                <span className="text-lg font-semibold">
-                  Starting at ${currentSizeOption.salePrice} for {selectedSize} canvas
-                </span>
-              </div>
-              <p className="text-sm text-green-600 mt-1">
-                Final price will be calculated with your customizations
-              </p>
-            </div>
-          )}
+          <PriceUpdateDisplay
+            selectedSize={selectedSize}
+            currentSizeOption={currentSizeOption}
+          />
         </>
       )}
 
