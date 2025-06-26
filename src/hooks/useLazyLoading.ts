@@ -40,7 +40,7 @@ export const useLazyLoading = (
   const [isInView, setIsInView] = useState(false);
   const [actualImageSrc, setActualImageSrc] = useState<string>(placeholderUrl || '');
   
-  const elementRef = useRef<HTMLImageElement>(null);
+  const elementRef = useRef<HTMLElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
