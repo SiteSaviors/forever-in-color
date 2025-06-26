@@ -46,11 +46,6 @@ const CustomizationSelector = ({
   const [hasInteracted, setHasInteracted] = useState(false);
   const { canvasFrame, artworkPosition } = useCanvasPreview(selectedOrientation);
 
-  // Debug log for orientation tracking
-  useEffect(() => {
-    console.log('🔥 CRITICAL: CustomizationSelector received selectedOrientation:', selectedOrientation);
-  }, [selectedOrientation]);
-
   /**
    * Get the appropriate artwork URL - PRIORITIZE AI-GENERATED ART
    * PRIORITY: Generated AI artwork > Original uploaded photo (only as absolute fallback)
@@ -62,8 +57,7 @@ const CustomizationSelector = ({
       previewUrlsKeys: Object.keys(previewUrls || {}),
       previewUrlsLength: Object.keys(previewUrls || {}).length,
       isGeneratingPreviews,
-      userArtworkUrl: userArtworkUrl ? userArtworkUrl.substring(0, 50) + '...' : null,
-      selectedOrientation: selectedOrientation + ' ⭐' // Adding star for visibility
+      userArtworkUrl: userArtworkUrl ? userArtworkUrl.substring(0, 50) + '...' : null
     });
 
     // PRIORITY 1: Generated preview URL for selected style (AI-generated artwork)
@@ -94,7 +88,7 @@ const CustomizationSelector = ({
 
     console.log('❌ No artwork URL available');
     return null;
-  }, [selectedStyle, previewUrls, userArtworkUrl, isGeneratingPreviews, selectedOrientation]);
+  }, [selectedStyle, previewUrls, userArtworkUrl, isGeneratingPreviews]);
 
   // Log state changes for debugging
   useEffect(() => {
@@ -104,10 +98,9 @@ const CustomizationSelector = ({
       previewUrlsCount: Object.keys(previewUrls || {}).length,
       canvasFrame,
       artworkPosition,
-      isGeneratingPreviews,
-      selectedOrientation: selectedOrientation + ' ⭐'
+      isGeneratingPreviews
     });
-  }, [getArtworkUrl, selectedStyle, previewUrls, canvasFrame, artworkPosition, isGeneratingPreviews, selectedOrientation]);
+  }, [getArtworkUrl, selectedStyle, previewUrls, canvasFrame, artworkPosition, isGeneratingPreviews]);
 
   const handleCustomizationUpdate = (updates: Partial<CustomizationConfig>) => {
     if (!hasInteracted) setHasInteracted(true);
