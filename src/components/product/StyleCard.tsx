@@ -108,6 +108,7 @@ const StyleCard = ({
         styleId={style.id}
         onClick={handleClick}
         shouldBlur={shouldShowBlur}
+        hideBlurOverlay={shouldBlur && !isPopular && style.id !== 1}
       >
         {/* Hero Image Section - Make this prominent on mobile */}
         <div className="flex-shrink-0 relative">

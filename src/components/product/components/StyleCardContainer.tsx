@@ -7,6 +7,7 @@ interface StyleCardContainerProps {
   isSelected: boolean;
   styleId: number;
   shouldBlur?: boolean;
+  hideBlurOverlay?: boolean;
   children: ReactNode;
   onClick: () => void;
 }
@@ -22,6 +23,7 @@ const StyleCardContainer = ({
   isSelected,
   styleId,
   shouldBlur = false,
+  hideBlurOverlay = false,
   children,
   onClick
 }: StyleCardContainerProps) => {
@@ -35,7 +37,7 @@ const StyleCardContainer = ({
 
   const getCardState = () => {
     if (isSelected) return "selected";
-    if (shouldBlur) return "unavailable";
+    if (shouldBlur && !hideBlurOverlay) return "unavailable";
     return "available";
   };
 
@@ -79,8 +81,8 @@ const StyleCardContainer = ({
             </div>
           )}
           
-          {/* Unavailable state overlay */}
-          {cardState === "unavailable" && (
+          {/* Unavailable state overlay - only show when not hiding blur overlay */}
+          {cardState === "unavailable" && !hideBlurOverlay && (
             <div className="absolute inset-0 bg-black/10 z-10 flex items-center justify-center rounded-3xl">
               <div className="bg-white/90 backdrop-blur-sm rounded-2xl px-6 py-3 shadow-lg">
                 <span className="text-gray-600 font-medium">Select photo first</span>
@@ -91,7 +93,7 @@ const StyleCardContainer = ({
           {/* Content with state-aware filtering */}
           <div className={`
             h-full flex flex-col transition-all duration-500
-            ${cardState === "unavailable" ? 'blur-sm' : ''}
+            ${cardState === "unavailable" && !hideBlurOverlay ? 'blur-sm' : ''}
           `}>
             {children}
           </div>
