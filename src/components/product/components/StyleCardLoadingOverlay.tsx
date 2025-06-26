@@ -20,14 +20,15 @@ const StyleCardLoadingOverlay = ({ isGenerating, styleName, error }: StyleCardLo
     "Almost ready!"
   ];
 
-  // Debug logging for mount/unmount and state changes
+  // Mount/unmount logging
   useEffect(() => {
-    console.log('🔄 StyleCardLoadingOverlay mounted for:', styleName, { isGenerating, error });
+    console.log('🔄 StyleCardLoadingOverlay MOUNTED for:', styleName, { isGenerating, error });
     return () => {
-      console.log('🔄 StyleCardLoadingOverlay unmounted for:', styleName);
+      console.log('🔄 StyleCardLoadingOverlay UNMOUNTED for:', styleName);
     };
   }, []);
 
+  // State change logging
   useEffect(() => {
     console.log('🔄 StyleCardLoadingOverlay state change:', styleName, { isGenerating, error });
   }, [isGenerating, error, styleName]);
@@ -37,6 +38,7 @@ const StyleCardLoadingOverlay = ({ isGenerating, styleName, error }: StyleCardLo
 
     if (isGenerating) {
       console.log('🚀 Starting progress animation for:', styleName);
+      setProgress(0); // Reset progress when starting
       interval = setInterval(() => {
         setProgress((prev) => {
           const newProgress = Math.min(prev + Math.random() * 15, 95);
@@ -47,12 +49,13 @@ const StyleCardLoadingOverlay = ({ isGenerating, styleName, error }: StyleCardLo
       }, 800);
     } else {
       console.log('⏹️ Stopping progress animation for:', styleName);
-      // Reset progress when not generating
-      setProgress(0);
-      setCurrentStep("Initializing...");
+      // Clear interval immediately when not generating
+      if (interval) {
+        clearInterval(interval);
+      }
     }
 
-    // Cleanup interval when component unmounts or isGenerating changes
+    // Cleanup function
     return () => {
       if (interval) {
         clearInterval(interval);
@@ -77,7 +80,12 @@ const StyleCardLoadingOverlay = ({ isGenerating, styleName, error }: StyleCardLo
   }
 
   // Only show loading overlay when actually generating
-  if (!isGenerating) return null;
+  if (!isGenerating) {
+    console.log('👻 StyleCardLoadingOverlay not rendering - not generating:', styleName);
+    return null;
+  }
+
+  console.log('✅ StyleCardLoadingOverlay rendering for:', styleName);
 
   return (
     <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-20 rounded-lg">

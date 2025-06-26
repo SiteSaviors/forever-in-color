@@ -12,15 +12,21 @@ interface StyleCardBlurOverlayProps {
 
 const StyleCardBlurOverlay = ({ shouldBlur, isGenerating, previewUrl, styleName, onGenerateStyle }: StyleCardBlurOverlayProps) => {
   // Debug logging
-  console.log('🎭 StyleCardBlurOverlay:', { 
+  console.log('🎭 StyleCardBlurOverlay render:', { 
     shouldBlur, 
     isGenerating, 
     hasPreview: !!previewUrl, 
-    styleName 
+    styleName,
+    willShow: shouldBlur && !isGenerating && !previewUrl
   });
 
-  // Only show blur overlay if we explicitly should blur, we're not currently generating, and no preview exists
-  if (!shouldBlur || isGenerating || previewUrl) return null;
+  // Critical fix: Don't show blur overlay if preview exists OR if currently generating
+  if (!shouldBlur || isGenerating || previewUrl) {
+    console.log('🎭 StyleCardBlurOverlay: NOT showing overlay');
+    return null;
+  }
+
+  console.log('🎭 StyleCardBlurOverlay: SHOWING overlay for', styleName);
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();

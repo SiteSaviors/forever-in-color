@@ -18,11 +18,12 @@ export function MockupCanvas({ previewUrl, orientation, className = "" }: Mockup
   // Determine if we should show loading state - only when no preview is available
   const isLoading = !previewUrl;
 
-  // Debug logging to track state changes
-  console.log('🖼️ MockupCanvas state:', { 
-    previewUrl: previewUrl ? previewUrl.substring(0, 50) + '...' : null, 
+  // Enhanced debug logging to track state changes
+  console.log('🖼️ MockupCanvas render:', { 
+    previewUrl: previewUrl ? previewUrl.substring(0, 50) + '...' : 'NULL', 
     isLoading, 
-    orientation 
+    orientation,
+    hasPreview: !!previewUrl
   });
 
   return (
@@ -54,6 +55,8 @@ export function MockupCanvas({ previewUrl, orientation, className = "" }: Mockup
             height: orientation === 'horizontal' ? '88%' : orientation === 'square' ? '84%' : '88%',
             borderRadius: '6px',
           }}
+          onLoad={() => console.log('✅ MockupCanvas: Preview image loaded successfully')}
+          onError={() => console.log('❌ MockupCanvas: Preview image failed to load')}
         />
       )}
 
