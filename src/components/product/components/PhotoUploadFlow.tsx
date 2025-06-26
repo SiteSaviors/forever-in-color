@@ -8,10 +8,12 @@ import SocialProofFeed from "../social/SocialProofFeed";
 import MobileGestureHandler from "../mobile/MobileGestureHandler";
 import ConversionMomentumTracker from "../progress/ConversionMomentumTracker";
 import ProgressStateManager from "./ProgressStateManager";
+import AIAnalysisStatus from "./intelligence/AIAnalysisStatus";
 import { useProgressOrchestrator } from "../progress/ProgressOrchestrator";
 import { usePhotoUploadState } from "../hooks/usePhotoUploadState";
 import { getAspectRatioFromOrientation } from "../cropper/data/orientationOptions";
 import { useEnhancedHandlers } from "./EnhancedHandlers";
+import { usePhotoAnalysis } from "../../../hooks/usePhotoAnalysis";
 
 interface PhotoUploadFlowProps {
   selectedStyle: {
@@ -42,6 +44,9 @@ const PhotoUploadFlow = ({
   onStepChange
 }: PhotoUploadFlowProps) => {
   const { dispatch, showContextualHelp } = useProgressOrchestrator();
+  
+  // Add photo analysis hook to track analysis state
+  const { isAnalyzing } = usePhotoAnalysis(uploadedImage);
   
   const {
     currentOrientation,
@@ -99,6 +104,9 @@ const PhotoUploadFlow = ({
           selectedStyle={selectedStyle}
         />
 
+        {/* AI Analysis Status - Show when analyzing */}
+        <AIAnalysisStatus isAnalyzing={isAnalyzing} />
+
         {/* Smart Progress Indicator - Always render but only show content when there's an image */}
         <SmartProgressIndicator uploadedImage={croppedImage} />
 
@@ -122,8 +130,8 @@ const PhotoUploadFlow = ({
               onImageUpload={handleEnhancedImageUpload}
             />
 
-            {/* Style Selection Section - Only show after image is uploaded */}
-            {hasImage && (
+            {/* Style Selection Section - Only show after image is uploaded and not analyzing */}
+            {hasImage && !isAnalyzing && (
               <StyleSelectionSection
                 hasImage={hasImage}
                 croppedImage={croppedImage}
