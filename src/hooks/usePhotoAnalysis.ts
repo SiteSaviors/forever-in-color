@@ -14,6 +14,7 @@ export const usePhotoAnalysis = (
   
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<PhotoAnalysisResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
   
   const analysisTimeoutRef = useRef<NodeJS.Timeout>();
   const abortControllerRef = useRef<AbortController>();
@@ -22,6 +23,9 @@ export const usePhotoAnalysis = (
   useEffect(() => {
     console.log('🔍 usePhotoAnalysis: imageUrl changed to:', imageUrl);
     
+    // Clear error when new image is provided
+    setError(null);
+    
     if (!imageUrl) {
       setAnalysisResult(null);
       setIsAnalyzing(false);
@@ -29,7 +33,7 @@ export const usePhotoAnalysis = (
       return;
     }
 
-    // Don't re-analyze the same image
+    // Don't re-analyze the same image if we already have a result
     if (imageUrl === lastImageUrlRef.current && analysisResult) {
       console.log('🔍 usePhotoAnalysis: Same image with existing result, skipping analysis');
       return;
@@ -80,10 +84,12 @@ export const usePhotoAnalysis = (
       console.log('✅ Photo analysis completed:', result);
       setAnalysisResult(result);
       setIsAnalyzing(false);
+      setError(null);
 
     } catch (error) {
       if (!signal.aborted) {
         console.error('❌ Photo analysis failed:', error);
+        setError(error instanceof Error ? error.message : 'Analysis failed');
         setIsAnalyzing(false);
       }
     }
@@ -92,6 +98,7 @@ export const usePhotoAnalysis = (
   return {
     isAnalyzing,
     analysisResult,
+    error,
     confidence: analysisResult?.confidence || 0
   };
 };
