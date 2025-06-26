@@ -1,40 +1,58 @@
 
-import { PhotoAnalysisResult } from '../photoAnalysisEngine';
-
-export interface UserPreference {
-  styleId: number;
-  frequency: number;
-  context: {
-    imageType: string;
-    orientation: string;
-    timeOfDay: number;
-  };
-  satisfaction: number; // 0-1 based on completion rate
-}
-
 export interface SmartRecommendation {
   styleId: number;
-  confidence: number;
-  reason: string;
-  category: 'ai-perfect' | 'trending' | 'personal' | 'discovery';
-  urgency: 'high' | 'medium' | 'low';
+  confidence: number; // 0-1 ML confidence score
+  reason: string; // Human-readable explanation
+  category: 'ai-perfect' | 'personal' | 'trending' | 'discovery';
+  metadata?: {
+    baseAffinity?: number;
+    personalizationBoost?: number;
+    trendingBoost?: number;
+    contextualBoost?: number;
+    realTimeBoost?: number;
+  };
 }
 
 export interface ContextualFactors {
-  timeOfDay?: number;
-  isFirstTime?: boolean;
-  deviceType?: 'mobile' | 'desktop';
+  timeOfDay: number; // 0-23 hour
+  isFirstTime: boolean;
+  deviceType: 'mobile' | 'desktop' | 'tablet';
+  connectionQuality?: 'slow' | 'medium' | 'fast';
+  sessionDuration?: number; // milliseconds
+  previousStyles?: number[]; // previously selected styles
 }
 
-export interface SessionContext {
-  startTime: number;
-  interactions: number;
-  previousSelections: number[];
+export interface UserPreference {
+  favoriteStyles: number[];
+  colorPreferences: string[];
+  complexityPreference: 'simple' | 'moderate' | 'complex';
+  orientationPreference: 'vertical' | 'horizontal' | 'square';
+  lastInteraction: number; // timestamp
+  totalInteractions: number;
+  completionRate: number; // 0-1
 }
 
-export interface RecommendationGeneratorParams {
-  analysis: PhotoAnalysisResult;
-  userPreferences: UserPreference[];
-  globalTrends: Map<number, number>;
-  sessionContext: SessionContext;
+export interface RecommendationMetrics {
+  clickThroughRate: number;
+  conversionRate: number;
+  userSatisfactionScore: number; // 1-5
+  averageProcessingTime: number;
+  cacheUtilization: number;
+}
+
+export interface TrendingData {
+  styleId: number;
+  trendScore: number; // composite trending score
+  recentSelections: number; // last 24h
+  velocityChange: number; // rate of change
+  socialShares: number;
+  completionRate: number;
+}
+
+export interface UserBehaviorInsight {
+  preferredTimeSlots: number[]; // hours when user is most active
+  devicePreferences: string[];
+  styleProgression: number[]; // styles in order of discovery
+  engagementLevel: 'low' | 'medium' | 'high';
+  churnRisk: number; // 0-1 probability of churning
 }
