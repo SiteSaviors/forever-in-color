@@ -53,6 +53,18 @@
   }
 }
 
+/* Fade in animation for Complete Collection */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Hero Recommendations */
 .hero-recommendation {
   animation: slideInUp 0.6s ease-out forwards;
@@ -95,18 +107,21 @@
   transform: scale(0.98);
 }
 
-/* Staggered Grid Animation */
+/* Optimized Grid Animation for Complete Collection */
 .grid-item {
   opacity: 0;
-  animation: fadeInScale 0.5s ease-out forwards;
+  animation: fadeInScale 0.6s ease-out forwards;
 }
 
+/* Staggered animation delays for better visual flow */
 .grid-item:nth-child(1) { animation-delay: 0.1s; }
-.grid-item:nth-child(2) { animation-delay: 0.2s; }
-.grid-item:nth-child(3) { animation-delay: 0.3s; }
-.grid-item:nth-child(4) { animation-delay: 0.4s; }
-.grid-item:nth-child(5) { animation-delay: 0.5s; }
-.grid-item:nth-child(6) { animation-delay: 0.6s; }
+.grid-item:nth-child(2) { animation-delay: 0.15s; }
+.grid-item:nth-child(3) { animation-delay: 0.2s; }
+.grid-item:nth-child(4) { animation-delay: 0.25s; }
+.grid-item:nth-child(5) { animation-delay: 0.3s; }
+.grid-item:nth-child(6) { animation-delay: 0.35s; }
+.grid-item:nth-child(7) { animation-delay: 0.4s; }
+.grid-item:nth-child(8) { animation-delay: 0.45s; }
 
 /* Canvas Preview Overlay */
 .canvas-overlay {
@@ -149,7 +164,12 @@
   overflow: hidden;
 }
 
-/* Enhanced responsive design */
+/* Fade in animation class */
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Enhanced responsive design for Complete Collection */
 @media (max-width: 768px) {
   .style-card-hover:hover {
     transform: translateY(-3px) scale(1.02);
@@ -157,5 +177,24 @@
   
   .recommended-pulse {
     animation-duration: 4s;
+  }
+  
+  /* Improved mobile grid spacing */
+  .grid-item {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Tablet optimizations */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .grid-item:hover {
+    transform: translateY(-4px) scale(1.02);
+  }
+}
+
+/* Desktop enhancements */
+@media (min-width: 1024px) {
+  .grid-item:hover {
+    transform: translateY(-6px) scale(1.03);
   }
 }
