@@ -1,89 +1,176 @@
 
+import { useState, useCallback } from "react";
 import PhotoUploadMain from "./components/PhotoUploadMain";
-import { useState } from "react";
+import { validateImageFile } from "@/utils/fileValidation";
+import { compressImage } from "@/utils/imageCompression";
 
 interface PhotoUploadContainerProps {
   onImageUpload: (imageUrl: string, originalImageUrl?: string, orientation?: string) => void;
   initialImage?: string | null;
 }
 
-const PhotoUploadContainer = ({
-  onImageUpload,
-  initialImage
-}: PhotoUploadContainerProps) => {
-  const [isCompressing, setIsCompressing] = useState(false);
-  const [compressionProgress, setCompressionProgress] = useState(0);
+const PhotoUploadContainer = ({ onImageUpload, initialImage }: PhotoUploadContainerProps) => {
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [dragActive, setDragActive] = useState(false);
 
-  const handleFileUpload = async (file: File) => {
+  // Enhanced file upload handler with better error handling
+  const handleFileUpload = useCallback(async (file: File) => {
+    console.log('📁 PhotoUploadContainer: Starting file upload for:', file.name);
+    
+    // Reset previous states
+    setUploadError(null);
+    setUploadProgress(0);
+    setIsUploading(true);
+
     try {
-      setIsCompressing(true);
-      setCompressionProgress(0);
+      // Enhanced validation with specific error messages
+      const validation = validateImageFile(file);
+      if (!validation.isValid) {
+        throw new Error(validation.error || 'Invalid file format');
+      }
 
-      // Simulate compression progress
-      const progressInterval = setInterval(() => {
-        setCompressionProgress(prev => Math.min(prev + 10, 90));
-      }, 100);
+      console.log('✅ File validation passed');
+      setUploadProgress(20);
 
-      // Simple file handling without complex compression
-      const originalUrl = URL.createObjectURL(file);
-
-      clearInterval(progressInterval);
-      setCompressionProgress(100);
-
-      console.log('Image upload complete:', {
-        originalSize: (file.size / 1024 / 1024).toFixed(2) + 'MB'
+      // Compress image with progress tracking
+      console.log('🔄 Starting image compression...');
+      const compressedFile = await compressImage(file, {
+        maxWidth: 2048,
+        maxHeight: 2048,
+        quality: 0.9,
+        onProgress: (progress) => {
+          setUploadProgress(20 + (progress * 0.6)); // 20-80% for compression
+        }
       });
 
-      // Use original image
-      onImageUpload(originalUrl);
+      console.log('✅ Image compression completed');
+      setUploadProgress(80);
 
-      // Clean up progress
-      setTimeout(() => {
-        setIsCompressing(false);
-        setCompressionProgress(0);
-      }, 500);
+      // Create object URLs for both original and compressed
+      const originalImageUrl = URL.createObjectURL(file);
+      const compressedImageUrl = URL.createObjectURL(compressedFile);
+      
+      setUploadProgress(100);
+      
+      console.log('🎯 Calling onImageUpload with compressed image');
+      
+      // Call the upload callback with compressed image
+      onImageUpload(compressedImageUrl, originalImageUrl);
+      
+      console.log('✅ File upload completed successfully');
 
     } catch (error) {
-      console.error('Image upload failed:', error);
+      console.error('❌ File upload failed:', error);
       
-      // Fallback to original file
-      const originalUrl = URL.createObjectURL(file);
-      onImageUpload(originalUrl);
+      // Enhanced error handling with specific error types
+      let errorMessage = 'Upload failed. Please try again.';
       
-      setIsCompressing(false);
-      setCompressionProgress(0);
+      if (error instanceof Error) {
+        if (error.message.includes('format')) {
+          errorMessage = 'Please upload a valid image file (JPG, PNG, or WebP)';
+        } else if (error.message.includes('size')) {
+          errorMessage = 'File is too large. Please choose an image under 10MB';
+        } else if (error.message.includes('network')) {
+          errorMessage = 'Network error. Please check your connection and try again';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      setUploadError(errorMessage);
+      
+      // Reset progress on error
+      setUploadProgress(0);
+    } finally {
+      setIsUploading(false);
     }
-  };
+  }, [onImageUpload]);
+
+  // Enhanced drag handlers with validation
+  const handleDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Check if dragged items contain files
+    if (e.dataTransfer?.items && e.dataTransfer.items.length > 0) {
+      const hasFiles = Array.from(e.dataTransfer.items).some(item => item.kind === 'file');
+      if (hasFiles) {
+        setDragActive(true);
+      }
+    }
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+
+    const files = Array.from(e.dataTransfer?.files || []);
+    
+    if (files.length === 0) {
+      setUploadError('No files were dropped');
+      return;
+    }
+
+    if (files.length > 1) {
+      setUploadError('Please upload one image at a time');
+      return;
+    }
+
+    const file = files[0];
+    
+    // Quick validation before processing
+    if (!file.type.startsWith('image/')) {
+      setUploadError('Please drop an image file');
+      return;
+    }
+
+    handleFileUpload(file);
+  }, [handleFileUpload]);
+
+  // Clear error handler
+  const clearError = useCallback(() => {
+    setUploadError(null);
+  }, []);
+
+  console.log('🔄 PhotoUploadContainer render:', {
+    isUploading,
+    uploadProgress,
+    uploadError: !!uploadError,
+    dragActive,
+    initialImage: !!initialImage
+  });
 
   return (
-    <div className="w-full">
-      <PhotoUploadMain 
-        onImageUpload={handleFileUpload}
+    <div 
+      className="relative"
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+    >
+      <PhotoUploadMain
+        onFileUpload={handleFileUpload}
+        uploadProgress={uploadProgress}
+        isUploading={isUploading}
+        uploadError={uploadError}
+        dragActive={dragActive}
         initialImage={initialImage}
+        onClearError={clearError}
       />
-      
-      {/* Compression Progress Indicator */}
-      {isCompressing && (
-        <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-blue-800">
-              Processing image...
-            </span>
-            <span className="text-sm text-blue-600">
-              {compressionProgress}%
-            </span>
-          </div>
-          <div className="w-full bg-blue-200 rounded-full h-2">
-            <div 
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
-              style={{ width: `${compressionProgress}%` }}
-            />
-          </div>
-          <p className="text-xs text-blue-600 mt-2">
-            Preparing your image for upload
-          </p>
-        </div>
-      )}
     </div>
   );
 };
