@@ -1,0 +1,94 @@
+
+/* Progressive Enhancement Animations */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(168, 85, 247, 0);
+  }
+}
+
+/* Hero Recommendations */
+.hero-recommendation {
+  animation: slideInUp 0.6s ease-out forwards;
+}
+
+.hero-recommendation:nth-child(1) { animation-delay: 0.1s; }
+.hero-recommendation:nth-child(2) { animation-delay: 0.2s; }
+.hero-recommendation:nth-child(3) { animation-delay: 0.3s; }
+
+/* Popular Choices */
+.popular-choice {
+  animation: fadeInScale 0.5s ease-out forwards;
+}
+
+.popular-choice:nth-child(1) { animation-delay: 0.4s; }
+.popular-choice:nth-child(2) { animation-delay: 0.5s; }
+.popular-choice:nth-child(3) { animation-delay: 0.6s; }
+
+/* Recommended Style Pulse */
+.recommended-pulse {
+  animation: pulseGlow 2s infinite;
+}
+
+/* Smooth Hover Transforms */
+.style-card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.style-card-hover:hover {
+  transform: translateY(-4px) scale(1.02);
+}
+
+/* Staggered Grid Animation */
+.grid-item {
+  opacity: 0;
+  animation: fadeInScale 0.5s ease-out forwards;
+}
+
+.grid-item:nth-child(1) { animation-delay: 0.1s; }
+.grid-item:nth-child(2) { animation-delay: 0.2s; }
+.grid-item:nth-child(3) { animation-delay: 0.3s; }
+.grid-item:nth-child(4) { animation-delay: 0.4s; }
+.grid-item:nth-child(5) { animation-delay: 0.5s; }
+.grid-item:nth-child(6) { animation-delay: 0.6s; }
+
+/* Canvas Preview Overlay */
+.canvas-overlay {
+  backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.8);
+  transition: all 0.3s ease;
+}
+
+.canvas-overlay.entering {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+.canvas-overlay.entered {
+  opacity: 1;
+  transform: scale(1);
+}
