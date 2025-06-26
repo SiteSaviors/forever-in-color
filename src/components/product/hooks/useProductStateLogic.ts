@@ -96,7 +96,8 @@ export const useProductStateLogic = () => {
   };
 
   const handleOrientationSelect = (orientation: string) => {
-    console.log('🐛 Orientation manually changed to (should be rare now):', orientation);
+    console.log('🔥 CRITICAL: Orientation manually changed to:', orientation);
+    console.log('🔥 CRITICAL: Previous orientation was:', selectedOrientation);
     setSelectedOrientation(orientation);
     
     // Reset size when orientation changes
@@ -109,8 +110,8 @@ export const useProductStateLogic = () => {
       return filtered;
     });
     
-    // Clear existing previews when orientation changes to regenerate with new aspect ratio
-    console.log('🐛 Clearing existing previews due to orientation change');
+    // CRITICAL: Clear existing previews when orientation changes to regenerate with new aspect ratio
+    console.log('🔥 CRITICAL: Clearing existing previews due to orientation change - will regenerate with new aspect ratio');
     setPreviewUrls({});
     setAutoGenerationComplete(false);
   };
@@ -142,13 +143,13 @@ export const useProductStateLogic = () => {
 
   // Debug log whenever state changes
   useEffect(() => {
-    console.log('🐛 State update:', {
+    console.log('🔥 CRITICAL STATE UPDATE:', {
       currentStep,
       completedSteps,
       selectedStyle: selectedStyle?.name,
       uploadedImage: !!uploadedImage,
       selectedSize,
-      selectedOrientation
+      selectedOrientation: selectedOrientation + ' ⭐' // Adding star to make it more visible
     });
   }, [currentStep, completedSteps, selectedStyle, uploadedImage, selectedSize, selectedOrientation]);
 
