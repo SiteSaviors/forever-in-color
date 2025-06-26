@@ -79,7 +79,7 @@ const PhotoUploadAndStyleContent = ({
   }, [croppedImage, selectedStyle, dispatch]);
 
   // Enhanced image upload handler with personalized messaging
-  const handleEnhancedImageUpload = (file: File) => {
+  const handleEnhancedImageUpload = (imageUrl: string, originalImageUrl?: string, orientation?: string) => {
     dispatch({ type: 'SET_SUB_STEP', payload: 'analyzing' });
     dispatch({ 
       type: 'ADD_PERSONALIZED_MESSAGE', 
@@ -88,14 +88,14 @@ const PhotoUploadAndStyleContent = ({
 
     // Add AI analysis recommendations
     setTimeout(() => {
-      const imageType = file.type.includes('portrait') ? 'portrait' : 'landscape';
+      const imageType = imageUrl.includes('portrait') ? 'portrait' : 'landscape';
       showContextualHelp(
         'recommendation',
         `Perfect! Your ${imageType} photo will look amazing in our Classic Oil or Abstract Fusion styles.`
       );
     }, 2000);
 
-    handleImageUpload(file);
+    handleImageUpload(imageUrl, originalImageUrl, orientation);
   };
 
   // Enhanced style selection with confidence scoring
