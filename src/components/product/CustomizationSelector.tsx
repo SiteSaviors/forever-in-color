@@ -28,8 +28,8 @@ interface CustomizationSelectorProps {
   selectedSize: string;
   customizations: CustomizationOptions;
   onCustomizationChange: (customizations: CustomizationOptions) => void;
-  userArtworkUrl?: string | null; // Add prop for user's generated artwork
-  selectedOrientation?: string; // Add orientation for proper positioning
+  userArtworkUrl?: string | null;
+  selectedOrientation?: string;
 }
 
 const CustomizationSelector = ({
@@ -60,7 +60,7 @@ const CustomizationSelector = ({
         return '/lovable-uploads/79613d9d-74f9-4f65-aec0-50fd2346a131.png';
       case 'square':
       default:
-        return '/lovable-uploads/1308e62b-7d30-4d01-bad3-ef128e25924b.png';
+        return '/lovable-uploads/7db3e997-ea34-4d40-af3e-67b693dc0544.png';
     }
   };
 
@@ -84,10 +84,10 @@ const CustomizationSelector = ({
       case 'square':
       default:
         return {
-          top: '8%',
-          left: '8%',
-          width: '84%',
-          height: '84%'
+          top: '5.2%',
+          left: '4.7%',
+          width: '89.3%',
+          height: '89.3%'
         };
     }
   };
@@ -111,6 +111,13 @@ const CustomizationSelector = ({
   const savings = total > basePrice ? Math.round((total - basePrice) * 0.2) : 0;
   const canvasFrame = getCanvasFrame();
   const artworkPosition = getArtworkPosition();
+
+  console.log('🖼️ CustomizationSelector Debug:', {
+    userArtworkUrl,
+    selectedOrientation,
+    canvasFrame,
+    artworkPosition
+  });
 
   return <div className="max-w-6xl mx-auto space-y-8">
       <CustomizationHeader />
@@ -136,13 +143,8 @@ const CustomizationSelector = ({
             {/* User's Generated Artwork Overlay */}
             {userArtworkUrl && (
               <div 
-                className="absolute overflow-hidden transition-all duration-300 group-hover:brightness-110"
-                style={{
-                  top: artworkPosition.top,
-                  left: artworkPosition.left,
-                  width: artworkPosition.width,
-                  height: artworkPosition.height
-                }}
+                className="absolute overflow-hidden transition-all duration-300 group-hover:brightness-110 rounded-sm"
+                style={artworkPosition}
               >
                 <img 
                   src={userArtworkUrl}
@@ -151,12 +153,24 @@ const CustomizationSelector = ({
                   style={{
                     filter: 'brightness(0.95) contrast(1.05) saturate(1.1)'
                   }}
+                  onLoad={() => console.log('✅ User artwork loaded successfully:', userArtworkUrl)}
+                  onError={(e) => console.error('❌ Failed to load user artwork:', userArtworkUrl, e)}
                 />
               </div>
             )}
             
+            {/* Debug overlay to show artwork position */}
+            {!userArtworkUrl && (
+              <div 
+                className="absolute border-2 border-dashed border-red-300 bg-red-50/50 flex items-center justify-center text-red-600 text-sm font-medium"
+                style={artworkPosition}
+              >
+                No artwork URL provided
+              </div>
+            )}
+            
             {/* Hover overlay */}
-            <div className="absolute inset-0 bg-black/5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           </div>
           
           <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4 border border-purple-100">
@@ -283,7 +297,7 @@ const CustomizationSelector = ({
           {customizations.aiUpscale && (
             <div className="flex justify-between items-center">
               <span className="text-gray-600">AI Upscale</span>
-              <span className="font-semibold">+$15</span>
+              <span className="font-semiboral">+$15</span>
             </div>
           )}
           
