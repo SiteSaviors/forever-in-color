@@ -71,7 +71,7 @@ const CropperActions = ({
         className="bg-purple-600 hover:bg-purple-700 text-sm font-medium px-8 py-3"
       >
         <Crop className="w-4 h-4 mr-2" />
-        Apply Canvas & Crop
+        Apply Crop
       </Button>
     </div>
   );
