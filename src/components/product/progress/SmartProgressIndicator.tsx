@@ -16,9 +16,30 @@ const SmartProgressIndicator = ({ uploadedImage }: SmartProgressIndicatorProps) 
   const [showMilestone, setShowMilestone] = useState(false);
   const [animatingStep, setAnimatingStep] = useState<number | null>(null);
 
-  // Always call hooks at the top level
+  // Calculate progress based on actual completion, not just momentum
   const completedStepsCount = state.completedSteps?.length || 0;
-  const overallProgress = Math.min((completedStepsCount / 4) * 100, 100);
+  
+  // Better progress calculation that reflects actual user progress
+  const calculateActualProgress = () => {
+    // If no image uploaded, progress should be 0%
+    if (!uploadedImage) {
+      return 0;
+    }
+    
+    // Base progress on completed steps (25% per step)
+    let baseProgress = (completedStepsCount / 4) * 100;
+    
+    // Add momentum bonus only if user has actually started (has an image)
+    if (uploadedImage && state.conversionElements.momentumScore > 0) {
+      // Cap momentum bonus at 10% to avoid inflating progress too much
+      const momentumBonus = Math.min(state.conversionElements.momentumScore * 0.1, 10);
+      baseProgress += momentumBonus;
+    }
+    
+    return Math.min(baseProgress, 100);
+  };
+  
+  const overallProgress = calculateActualProgress();
   
   // Effect to handle milestone animations
   useEffect(() => {
@@ -78,6 +99,8 @@ const SmartProgressIndicator = ({ uploadedImage }: SmartProgressIndicatorProps) 
         <ProgressHeader 
           completedStepsCount={completedStepsCount}
           personalizedMessages={state.personalizedMessages}
+          overallProgress={overallProgress}
+          hasUploadedImage={!!uploadedImage}
         />
         
         <ProgressBar 
@@ -97,7 +120,7 @@ const SmartProgressIndicator = ({ uploadedImage }: SmartProgressIndicatorProps) 
           ))}
         </div>
 
-        <SocialProofSection />
+        <SocialProofSection state={state} />
       </div>
     </div>
   );

@@ -33,7 +33,7 @@ export const initialState: ProgressState = {
   personalizedMessages: [],
   conversionElements: {
     urgencyMessage: "",
-    momentumScore: 0,
+    momentumScore: 0, // Start at 0 instead of inflated value
     personalizationLevel: 'low',
     timeSpentOnPlatform: 0
   },
@@ -52,9 +52,12 @@ export function progressReducer(state: ProgressState, action: ProgressAction): P
         ...state, 
         currentStep: action.payload,
         userBehavior: { ...state.userBehavior, lastInteraction: Date.now() },
+        // Only add momentum if user has actually progressed
         conversionElements: {
           ...state.conversionElements,
-          momentumScore: Math.min(100, state.conversionElements.momentumScore + 15)
+          momentumScore: state.completedSteps.length > 0 ? 
+            Math.min(100, state.conversionElements.momentumScore + 10) : 
+            state.conversionElements.momentumScore
         }
       };
     case 'SET_SUB_STEP':
@@ -64,6 +67,7 @@ export function progressReducer(state: ProgressState, action: ProgressAction): P
         userBehavior: { ...state.userBehavior, lastInteraction: Date.now() }
       };
     case 'COMPLETE_STEP':
+      // Significant momentum boost for actual step completion
       const newMomentumScore = Math.min(100, state.conversionElements.momentumScore + 25);
       return {
         ...state,
@@ -122,6 +126,11 @@ export function progressReducer(state: ProgressState, action: ProgressAction): P
           ...state.aiAnalysis,
           isAnalyzing: true,
           analysisStage: action.payload.stage
+        },
+        // Small momentum boost for starting analysis
+        conversionElements: {
+          ...state.conversionElements,
+          momentumScore: Math.min(100, state.conversionElements.momentumScore + 5)
         }
       };
     case 'COMPLETE_AI_ANALYSIS':
