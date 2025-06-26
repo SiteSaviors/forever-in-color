@@ -1,9 +1,11 @@
 
 import { SizeOption } from "../types";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Crown, Zap, Heart, Sparkles } from "lucide-react";
-import { memo, useState, useCallback, useMemo } from "react";
+import { memo, useCallback, useMemo } from "react";
+import CanvasPreview from "./size-card/CanvasPreview";
+import SizeInfo from "./size-card/SizeInfo";
+import PricingDisplay from "./size-card/PricingDisplay";
+import CardBadges from "./size-card/CardBadges";
+import ContinueButton from "./size-card/ContinueButton";
 
 interface GlassMorphismSizeCardProps {
   option: SizeOption;
@@ -24,53 +26,7 @@ const GlassMorphismSizeCard = memo(({
   onClick,
   onContinue
 }: GlassMorphismSizeCardProps) => {
-  const [imageLoaded, setImageLoaded] = useState(false);
-
-  // Memoize expensive calculations
-  const roomContext = useMemo(() => {
-    const contexts = {
-      '8" x 8"': 'Perfect for desks & shelves',
-      '12" x 12"': 'Ideal for gallery walls',
-      '16" x 16"': 'Statement piece for any room',
-      '20" x 20"': 'Bold focal point',
-      '24" x 24"': 'Luxury centerpiece',
-      '8" x 10"': 'Cozy personal spaces',
-      '11" x 14"': 'Classic home display',
-      '16" x 20"': 'Professional presentation',
-      '18" x 24"': 'Impressive wall art',
-      '24" x 36"': 'Grand statement piece',
-      '10" x 8"': 'Modern accent piece',
-      '14" x 11"': 'Sophisticated display',
-      '20" x 16"': 'Eye-catching feature',
-      '24" x 18"': 'Premium wall art',
-      '36" x 24"': 'Luxury showcase'
-    };
-    return contexts[option.size] || 'Beautiful for any space';
-  }, [option.size]);
-
-  const popularityData = useMemo(() => {
-    if (option.popular) return { icon: Crown, label: "Most Popular" };
-    if (option.salePrice < option.originalPrice) return { icon: Zap, label: "Best Value" };
-    return { icon: Heart, label: "Customer Favorite" };
-  }, [option.popular, option.salePrice, option.originalPrice]);
-
-  const canvasFrame = useMemo(() => {
-    switch (orientation) {
-      case 'horizontal':
-        return '/lovable-uploads/9eb9363d-dc17-4df1-a03d-0c5fb463a473.png';
-      case 'vertical':
-        return '/lovable-uploads/79613d9d-74f9-4f65-aec0-50fd2346a131.png';
-      case 'square':
-        return '/lovable-uploads/7db3e997-ea34-4d40-af3e-67b693dc0544.png';
-      default:
-        return '/lovable-uploads/7db3e997-ea34-4d40-af3e-67b693dc0544.png';
-    }
-  }, [orientation]);
-
-  const handleImageLoad = useCallback(() => {
-    setImageLoaded(true);
-  }, []);
-
+  
   // Optimized click handler to prevent event bubbling issues
   const handleCardClick = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -104,7 +60,7 @@ const GlassMorphismSizeCard = memo(({
       aria-pressed={isSelected} 
       aria-label={`Select ${option.size} size`}
     >
-      {/* Simplified Background - Removed complex gradients */}
+      {/* Simplified Background */}
       <div 
         className="absolute inset-0 rounded-2xl border-2 transition-all duration-150"
         style={{
@@ -117,91 +73,39 @@ const GlassMorphismSizeCard = memo(({
       {/* Content Container */}
       <div className="relative p-6 space-y-4">
         {/* Top Badges */}
-        <div className="flex items-center justify-between">
-          {(option.popular || isRecommended) && (
-            <Badge className={`${
-              isRecommended 
-                ? 'bg-amber-500 text-white' 
-                : 'bg-purple-600 text-white'
-            } border-0`}>
-              <popularityData.icon className="w-3 h-3" />
-              <span className="ml-1">{isRecommended ? 'AI Pick' : popularityData.label}</span>
-            </Badge>
-          )}
-          
-          {option.originalPrice > option.salePrice && (
-            <Badge className="bg-green-500 text-white border-0">
-              Save ${(option.originalPrice - option.salePrice).toFixed(2)}
-            </Badge>
-          )}
-        </div>
+        <CardBadges 
+          popular={option.popular}
+          isRecommended={isRecommended}
+          salePrice={option.salePrice}
+          originalPrice={option.originalPrice}
+        />
 
-        {/* Optimized Canvas Preview - Removed complex animations */}
-        <div className="mb-4 flex justify-center">
-          <div className="w-24 h-24 relative">
-            {!imageLoaded && (
-              <div className="w-full h-full bg-gray-200 rounded-lg flex items-center justify-center">
-                <div className="w-8 h-8 bg-gray-300 rounded animate-pulse"></div>
-              </div>
-            )}
-            <img 
-              src={canvasFrame} 
-              alt={`${orientation} canvas frame`} 
-              className={`w-full h-full object-contain transition-opacity duration-150 ${
-                imageLoaded ? 'opacity-100' : 'opacity-0'
-              }`}
-              loading="lazy"
-              onLoad={handleImageLoad}
-            />
-          </div>
-        </div>
+        {/* Canvas Preview */}
+        <CanvasPreview 
+          orientation={orientation}
+          userImageUrl={userImageUrl}
+        />
 
         {/* Size Information */}
-        <div className="text-center space-y-2">
-          <div className="bg-white/60 rounded-lg p-3 border border-white/30">
-            <h5 className="font-bold text-gray-900 mb-1 text-2xl">{option.size}</h5>
-            <p className="text-sm text-purple-600 font-medium">{roomContext}</p>
-            <p className="text-xs text-gray-500">{option.category}</p>
-          </div>
-        </div>
+        <SizeInfo size={option.size} />
 
-        {/* Simplified Pricing Display */}
-        <div className="text-center space-y-2">
-          <div className="bg-white/80 rounded-xl p-4 border border-white/40">
-            <div className="flex items-center justify-center gap-2">
-              <span className="text-2xl font-bold text-purple-600">
-                ${option.salePrice}
-              </span>
-              {option.originalPrice > option.salePrice && (
-                <span className="text-lg text-gray-500 line-through">${option.originalPrice}</span>
-              )}
-            </div>
-            
-            {option.originalPrice > option.salePrice && (
-              <p className="text-sm text-green-600 font-semibold mt-1">
-                🎉 Limited Time: {Math.round((option.originalPrice - option.salePrice) / option.originalPrice * 100)}% Off
-              </p>
-            )}
-          </div>
-        </div>
+        {/* Pricing Display */}
+        <PricingDisplay 
+          salePrice={option.salePrice}
+          originalPrice={option.originalPrice}
+        />
 
         {/* Description */}
         <div className="bg-gray-50/90 rounded-lg p-3 text-center border border-white/30">
           <p className="text-sm text-gray-700">{option.description}</p>
         </div>
 
-        {/* Continue Button - Simplified animation */}
-        {isSelected && (
-          <Button 
-            onClick={handleContinueClick} 
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-3 transition-all duration-150 border-0 min-h-[48px]" 
-            size="lg"
-          >
-            <Sparkles className="w-4 h-4 mr-2" />
-            Continue with {option.size}
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
-        )}
+        {/* Continue Button */}
+        <ContinueButton 
+          size={option.size}
+          isSelected={isSelected}
+          onContinue={handleContinueClick}
+        />
       </div>
 
       {/* Simplified Selection Indicator */}
