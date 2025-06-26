@@ -1,6 +1,7 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Sparkles } from "lucide-react";
+import { CheckCircle } from "lucide-react";
 import { OrientationOption } from "../types";
 import { getOrientationIcon } from "../utils/orientationIcons";
 import InteractiveCanvasPreview from "./InteractiveCanvasPreview";
@@ -40,16 +41,6 @@ const OrientationCard = ({
       }}
     >
       <CardContent className="p-6 space-y-6">
-        {/* Premium Badge */}
-        {isRecommended && (
-          <div className="flex justify-center">
-            <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1 shadow-lg">
-              <Sparkles className="w-3 h-3 mr-1" />
-              AI Recommended
-            </Badge>
-          </div>
-        )}
-
         {/* Canvas Preview - Only show when we have a user image */}
         {userImageUrl ? (
           <div className="flex justify-center">

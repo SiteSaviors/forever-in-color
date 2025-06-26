@@ -1,6 +1,5 @@
+
 import MorphingCanvasPreview from "./MorphingCanvasPreview";
-import { Badge } from "@/components/ui/badge";
-import { CheckCircle } from "lucide-react";
 
 interface InteractiveCanvasPreviewProps {
   orientation: string;
@@ -37,14 +36,6 @@ const InteractiveCanvasPreview = ({
         isRecommended={isRecommended}
         onClick={onClick}
       />
-      
-      {/* Canvas Preview indicator */}
-      <div className="absolute -top-2 -left-2 z-30">
-        <Badge className="bg-green-500 text-white px-2 py-1 text-xs shadow-lg flex items-center gap-1">
-          <CheckCircle className="w-3 h-3" />
-          Canvas Preview
-        </Badge>
-      </div>
     </div>
   );
 };
