@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import CustomizationHeader from "./customization/CustomizationHeader";
 import LiveActivityFeed from "./customization/LiveActivityFeed";
 import SocialProofGallery from "./customization/SocialProofGallery";
@@ -42,20 +42,58 @@ const CustomizationSelector = ({
   const [hasInteracted, setHasInteracted] = useState(false);
   const { canvasFrame, artworkPosition } = useCanvasPreview(selectedOrientation);
 
-  // Get the correct artwork URL - either the direct userArtworkUrl or from previewUrls
-  const getArtworkUrl = () => {
-    if (userArtworkUrl) {
+  /**
+   * Get the appropriate artwork URL based on availability
+   * Priority: Direct userArtworkUrl > Generated preview > null
+   */
+  const getArtworkUrl = useMemo(() => {
+    console.log('🖼️ CustomizationSelector - Artwork URL Resolution:', {
+      userArtworkUrl,
+      selectedStyleId: selectedStyle?.id,
+      previewUrls,
+      previewUrlsKeys: Object.keys(previewUrls || {}),
+      previewUrlsLength: Object.keys(previewUrls || {}).length
+    });
+
+    // Priority 1: Direct user artwork URL (uploaded image)
+    if (userArtworkUrl && typeof userArtworkUrl === 'string') {
+      console.log('✅ Using direct userArtworkUrl:', userArtworkUrl);
       return userArtworkUrl;
     }
-    
-    if (selectedStyle && previewUrls[selectedStyle.id]) {
-      return previewUrls[selectedStyle.id];
-    }
-    
-    return null;
-  };
 
-  const artworkUrl = getArtworkUrl();
+    // Priority 2: Generated preview URL for selected style
+    if (selectedStyle?.id && previewUrls && typeof previewUrls === 'object') {
+      const previewUrl = previewUrls[selectedStyle.id] || previewUrls[String(selectedStyle.id)];
+      if (previewUrl) {
+        console.log('✅ Using preview URL for style:', selectedStyle.id, '->', previewUrl);
+        return previewUrl;
+      } else {
+        console.log('⚠️ No preview URL found for selected style:', selectedStyle.id);
+        console.log('Available preview URLs:', Object.keys(previewUrls));
+      }
+    }
+
+    // Priority 3: First available preview URL (fallback)
+    const availableUrls = Object.values(previewUrls || {});
+    if (availableUrls.length > 0 && availableUrls[0]) {
+      console.log('⚠️ Using first available preview URL as fallback:', availableUrls[0]);
+      return availableUrls[0];
+    }
+
+    console.log('❌ No artwork URL available');
+    return null;
+  }, [userArtworkUrl, selectedStyle, previewUrls]);
+
+  // Log state changes for debugging
+  useEffect(() => {
+    console.log('🖼️ CustomizationSelector State Update:', {
+      finalArtworkUrl: getArtworkUrl,
+      selectedStyle: selectedStyle,
+      previewUrlsCount: Object.keys(previewUrls || {}).length,
+      canvasFrame,
+      artworkPosition
+    });
+  }, [getArtworkUrl, selectedStyle, previewUrls, canvasFrame, artworkPosition]);
 
   const handleCustomizationUpdate = (updates: Partial<CustomizationConfig>) => {
     if (!hasInteracted) setHasInteracted(true);
@@ -67,16 +105,6 @@ const CustomizationSelector = ({
     console.log('🎨 Customizations updated:', newCustomizations);
   };
 
-  console.log('🖼️ CustomizationSelector Debug:', {
-    userArtworkUrl,
-    selectedOrientation,
-    canvasFrame,
-    artworkPosition,
-    selectedStyle,
-    previewUrls,
-    finalArtworkUrl: artworkUrl
-  });
-
   return (
     <div className="max-w-6xl mx-auto space-y-8">
       <CustomizationHeader />
@@ -85,7 +113,7 @@ const CustomizationSelector = ({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Canvas Mockups Only - Expanded to fill column */}
         <CanvasPreviewSection
-          userArtworkUrl={artworkUrl}
+          userArtworkUrl={getArtworkUrl}
           selectedOrientation={selectedOrientation}
           canvasFrame={canvasFrame}
           artworkPosition={artworkPosition}

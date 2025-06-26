@@ -1,7 +1,9 @@
+
 import { StylePreviewProvider } from "./contexts/StylePreviewContext";
 import { Accordion } from "@/components/ui/accordion";
 import { CustomizationOptions } from "./types/productState";
 import { useProductSteps } from "./hooks/useProductSteps";
+import { usePreviewGeneration } from "./hooks/usePreviewGeneration";
 import PhotoUploadStep from "./components/PhotoUploadStep";
 import OrientationStep from "./components/OrientationStep";
 import CustomizationStep from "./components/CustomizationStep";
@@ -47,6 +49,16 @@ const ProductContent = ({
     selectedOrientation,
     uploadedImage: !!uploadedImage,
     autoGenerationComplete
+  });
+
+  // Get the actual preview URLs from the state management system
+  const { previewUrls, autoGenerationComplete: previewGenerationComplete } = usePreviewGeneration(uploadedImage, selectedOrientation);
+  
+  console.log('🖼️ ProductContent Preview Debug:', {
+    previewUrls,
+    previewUrlsKeys: Object.keys(previewUrls || {}),
+    previewGenerationComplete,
+    selectedStyleId: selectedStyle?.id
   });
 
   const {
@@ -123,7 +135,8 @@ const ProductContent = ({
             customizations={customizations}
             selectedOrientation={selectedOrientation}
             selectedStyle={selectedStyle}
-            previewUrls={{}}
+            previewUrls={previewUrls}
+            userArtworkUrl={uploadedImage}
             onCustomizationChange={onCustomizationChange}
             onStepClick={() => {
               console.log('🐛 Clicked on step 3, canAccess:', canProceedToStep(3));

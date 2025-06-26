@@ -14,6 +14,7 @@ interface CustomizationStepProps {
   selectedOrientation: string;
   selectedStyle?: { id: number; name: string } | null;
   previewUrls?: { [key: number]: string };
+  userArtworkUrl?: string | null;
   onStepClick: () => void;
 }
 
@@ -28,6 +29,7 @@ const CustomizationStep = ({
   selectedOrientation,
   selectedStyle,
   previewUrls,
+  userArtworkUrl,
   onStepClick
 }: CustomizationStepProps) => {
   return (
@@ -48,6 +50,7 @@ const CustomizationStep = ({
           selectedOrientation={selectedOrientation}
           selectedStyle={selectedStyle}
           previewUrls={previewUrls}
+          userArtworkUrl={userArtworkUrl}
         />
       )}
     </ProductStepWrapper>
