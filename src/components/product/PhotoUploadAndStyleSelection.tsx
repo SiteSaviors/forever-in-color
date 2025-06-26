@@ -63,6 +63,12 @@ const PhotoUploadAndStyleSelection = ({
     }
   };
 
+  const handleStyleComplete = (imageUrl: string, styleId: number, styleName: string) => {
+    console.log('🎨 Style selection completed:', { imageUrl, styleId, styleName });
+    onComplete(imageUrl, styleId, styleName);
+    onContinue();
+  };
+
   const hasImage = !!uploadedImage;
   const hasStyle = selectedStyle && selectedStyle.name !== "temp-style";
   const canContinue = hasImage && hasStyle;
@@ -129,13 +135,8 @@ const PhotoUploadAndStyleSelection = ({
           <StyleSelector
             croppedImage={uploadedImage}
             selectedStyle={selectedStyle?.id || null}
-            autoGenerationComplete={autoGenerationComplete}
             onStyleSelect={handleStyleSelect}
-            onContinue={onContinue}
-            canContinue={canContinue}
-            currentStep={currentStep}
-            completedSteps={completedSteps}
-            onStepChange={onStepChange}
+            onComplete={handleStyleComplete}
           />
         </div>
       )}
