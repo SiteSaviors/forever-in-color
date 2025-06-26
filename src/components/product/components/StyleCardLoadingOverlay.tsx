@@ -20,24 +20,46 @@ const StyleCardLoadingOverlay = ({ isGenerating, styleName, error }: StyleCardLo
     "Almost ready!"
   ];
 
+  // Debug logging for mount/unmount and state changes
   useEffect(() => {
-    if (!isGenerating) {
+    console.log('🔄 StyleCardLoadingOverlay mounted for:', styleName, { isGenerating, error });
+    return () => {
+      console.log('🔄 StyleCardLoadingOverlay unmounted for:', styleName);
+    };
+  }, []);
+
+  useEffect(() => {
+    console.log('🔄 StyleCardLoadingOverlay state change:', styleName, { isGenerating, error });
+  }, [isGenerating, error, styleName]);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    if (isGenerating) {
+      console.log('🚀 Starting progress animation for:', styleName);
+      interval = setInterval(() => {
+        setProgress((prev) => {
+          const newProgress = Math.min(prev + Math.random() * 15, 95);
+          const stepIndex = Math.floor((newProgress / 100) * steps.length);
+          setCurrentStep(steps[stepIndex] || steps[steps.length - 1]);
+          return newProgress;
+        });
+      }, 800);
+    } else {
+      console.log('⏹️ Stopping progress animation for:', styleName);
+      // Reset progress when not generating
       setProgress(0);
       setCurrentStep("Initializing...");
-      return;
     }
 
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        const newProgress = Math.min(prev + Math.random() * 15, 95);
-        const stepIndex = Math.floor((newProgress / 100) * steps.length);
-        setCurrentStep(steps[stepIndex] || steps[steps.length - 1]);
-        return newProgress;
-      });
-    }, 800);
-
-    return () => clearInterval(interval);
-  }, [isGenerating]);
+    // Cleanup interval when component unmounts or isGenerating changes
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+        console.log('🧹 Cleared progress interval for:', styleName);
+      }
+    };
+  }, [isGenerating, styleName]);
 
   // Error state
   if (error && !isGenerating) {

@@ -18,6 +18,13 @@ export function MockupCanvas({ previewUrl, orientation, className = "" }: Mockup
   // Determine if we should show loading state - only when no preview is available
   const isLoading = !previewUrl;
 
+  // Debug logging to track state changes
+  console.log('🖼️ MockupCanvas state:', { 
+    previewUrl: previewUrl ? previewUrl.substring(0, 50) + '...' : null, 
+    isLoading, 
+    orientation 
+  });
+
   return (
     <div className={`relative w-full max-w-md mx-auto ${className}`}>
       {/* Base canvas mockup */}
