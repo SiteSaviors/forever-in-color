@@ -1,3 +1,4 @@
+
 import { Sparkles, Expand } from "lucide-react";
 import { useState } from "react";
 import Lightbox from "@/components/ui/lightbox";
@@ -33,14 +34,14 @@ const CanvasPreviewSection = ({
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      <div className="text-center px-4 sm:px-0">
-        <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Your Canvas Preview</h3>
-        <p className="text-sm sm:text-base text-gray-600">Premium gallery-quality canvas with your AI-generated artwork</p>
+    <div className="space-y-6">
+      <div className="text-center">
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">Your Canvas Preview</h3>
+        <p className="text-gray-600">Premium gallery-quality canvas with your AI-generated artwork</p>
       </div>
       
       {/* Canvas Preview with AI-Generated Artwork */}
-      <div className="relative group mx-auto max-w-lg sm:max-w-none">
+      <div className="relative group">
         {/* Canvas Frame */}
         <img 
           src={canvasFrame}
@@ -48,22 +49,21 @@ const CanvasPreviewSection = ({
           className="w-full h-auto rounded-lg shadow-lg group-hover:shadow-xl transition-all duration-300 transform group-hover:scale-[1.02]" 
         />
         
-        {/* Enhanced Expand Button - Mobile-first design */}
+        {/* Expand Button - Only show when artwork is available */}
         {userArtworkUrl && !isLoading && !error && (
           <button
             onClick={handleExpandClick}
-            className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-black/70 hover:bg-black/90 text-white rounded-full p-3 sm:p-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-300 z-20 touch-manipulation"
+            className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-all duration-300 z-20"
             title="Expand to full size"
-            style={{ minWidth: '44px', minHeight: '44px' }}
           >
-            <Expand className="w-4 h-4 sm:w-4 sm:h-4" />
+            <Expand className="w-4 h-4" />
           </button>
         )}
         
-        {/* AI-Generated Artwork Overlay */}
+        {/* AI-Generated Artwork Overlay - THIS IS THE KEY SECTION */}
         {userArtworkUrl && !isLoading && (
           <div 
-            className="absolute overflow-hidden transition-all duration-300 group-hover:brightness-110 rounded-sm cursor-pointer touch-manipulation"
+            className="absolute overflow-hidden transition-all duration-300 group-hover:brightness-110 rounded-sm cursor-pointer"
             style={artworkPosition}
             onClick={handleExpandClick}
           >
@@ -117,17 +117,16 @@ const CanvasPreviewSection = ({
           </div>
         )}
         
-        {/* Hover overlay - Adjusted for mobile */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+        {/* Hover overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       </div>
       
-      {/* Premium Quality Section - Enhanced mobile layout */}
-      <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-3 sm:p-4 border border-purple-100 mx-4 sm:mx-0">
+      <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4 border border-purple-100">
         <div className="flex items-center gap-2 mb-2">
-          <Sparkles className="w-4 h-4 text-purple-600 flex-shrink-0" />
-          <span className="font-medium text-purple-900 text-sm sm:text-base">Premium Quality</span>
+          <Sparkles className="w-4 h-4 text-purple-600" />
+          <span className="font-medium text-purple-900">Premium Quality</span>
         </div>
-        <ul className="text-xs sm:text-sm text-purple-700 space-y-1">
+        <ul className="text-sm text-purple-700 space-y-1">
           <li>• Museum-grade canvas material</li>
           <li>• Fade-resistant archival inks</li>
           <li>• Hand-stretched wooden frame</li>
@@ -135,7 +134,7 @@ const CanvasPreviewSection = ({
         </ul>
       </div>
 
-      {/* Enhanced Lightbox for mobile */}
+      {/* Lightbox for expanded view */}
       <Lightbox
         isOpen={isLightboxOpen}
         onClose={() => setIsLightboxOpen(false)}

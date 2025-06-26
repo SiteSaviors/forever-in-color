@@ -77,12 +77,11 @@ const ProductContent = ({
       croppedImage={uploadedImage} 
       selectedOrientation={selectedOrientation}
     >
-      {/* Enhanced mobile-responsive container */}
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Accordion 
           type="single" 
           value={`step-${currentStep}`} 
-          className="space-y-6 sm:space-y-8"
+          className="space-y-8"
           onValueChange={() => {
             // Prevent default accordion scroll behavior
           }}
@@ -165,9 +164,6 @@ const ProductContent = ({
             }}
           />
         </Accordion>
-        
-        {/* Add bottom padding for mobile sticky elements */}
-        <div className="h-20 sm:h-0" />
       </div>
     </StylePreviewProvider>
   );
