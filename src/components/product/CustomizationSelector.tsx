@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,7 +12,6 @@ import CustomizationHeader from "./customization/CustomizationHeader";
 import LiveActivityFeed from "./customization/LiveActivityFeed";
 import SocialProofGallery from "./customization/SocialProofGallery";
 import PremiumVideoOptions from "./customization/PremiumVideoOptions";
-
 interface CustomizationOptions {
   floatingFrame: {
     enabled: boolean;
@@ -24,45 +22,44 @@ interface CustomizationOptions {
   customMessage: string;
   aiUpscale: boolean;
 }
-
 interface CustomizationSelectorProps {
   selectedSize: string;
   customizations: CustomizationOptions;
   onCustomizationChange: (customizations: CustomizationOptions) => void;
 }
-
 const CustomizationSelector = ({
   selectedSize,
   customizations,
   onCustomizationChange
 }: CustomizationSelectorProps) => {
   const [hasInteracted, setHasInteracted] = useState(false);
-
   const handleCustomizationUpdate = (updates: Partial<CustomizationOptions>) => {
     if (!hasInteracted) setHasInteracted(true);
-    
-    const newCustomizations = { ...customizations, ...updates };
+    const newCustomizations = {
+      ...customizations,
+      ...updates
+    };
     onCustomizationChange(newCustomizations);
     console.log('🎨 Customizations updated:', newCustomizations);
   };
-
   const calculateTotalPrice = () => {
     let basePrice = 149; // Base canvas price
     let total = basePrice;
-    
     if (customizations.floatingFrame.enabled) total += 79;
     if (customizations.livingMemory) total += 29;
     if (customizations.voiceMatch) total += 19;
     if (customizations.aiUpscale) total += 15;
-    
-    return { basePrice, total };
+    return {
+      basePrice,
+      total
+    };
   };
-
-  const { basePrice, total } = calculateTotalPrice();
+  const {
+    basePrice,
+    total
+  } = calculateTotalPrice();
   const savings = total > basePrice ? Math.round((total - basePrice) * 0.2) : 0;
-
-  return (
-    <div className="max-w-6xl mx-auto space-y-8">
+  return <div className="max-w-6xl mx-auto space-y-8">
       <CustomizationHeader />
       
       {/* Canvas Preview Section - Only showing blank canvas mockups */}
@@ -77,21 +74,10 @@ const CustomizationSelector = ({
           {/* Blank Canvas Mockups */}
           <div className="grid grid-cols-2 gap-4">
             <div className="relative group">
-              <img 
-                src="/lovable-uploads/1308e62b-7d30-4d01-bad3-ef128e25924b.png" 
-                alt="Square Canvas Mockup"
-                className="w-full h-auto rounded-lg shadow-lg group-hover:shadow-xl transition-shadow duration-300"
-              />
+              <img src="/lovable-uploads/1308e62b-7d30-4d01-bad3-ef128e25924b.png" alt="Square Canvas Mockup" className="w-full h-auto rounded-lg shadow-lg group-hover:shadow-xl transition-shadow duration-300" />
               <div className="absolute inset-0 bg-black/5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </div>
-            <div className="relative group">
-              <img 
-                src="/lovable-uploads/9eb9363d-dc17-4df1-a03d-0c5fb463a473.png" 
-                alt="Horizontal Canvas Mockup"
-                className="w-full h-auto rounded-lg shadow-lg group-hover:shadow-xl transition-shadow duration-300"
-              />
-              <div className="absolute inset-0 bg-black/5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            </div>
+            
           </div>
           
           <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4 border border-purple-100">
@@ -110,55 +96,45 @@ const CustomizationSelector = ({
 
         {/* Customization Options */}
         <div className="space-y-6">
-          <FloatingFrameCard
-            enabled={customizations.floatingFrame.enabled}
-            color={customizations.floatingFrame.color}
-            selectedSize={selectedSize}
-            onEnabledChange={(enabled) => handleCustomizationUpdate({
-              floatingFrame: { ...customizations.floatingFrame, enabled }
-            })}
-            onColorChange={(color) => handleCustomizationUpdate({
-              floatingFrame: { ...customizations.floatingFrame, color }
-            })}
-          />
+          <FloatingFrameCard enabled={customizations.floatingFrame.enabled} color={customizations.floatingFrame.color} selectedSize={selectedSize} onEnabledChange={enabled => handleCustomizationUpdate({
+          floatingFrame: {
+            ...customizations.floatingFrame,
+            enabled
+          }
+        })} onColorChange={color => handleCustomizationUpdate({
+          floatingFrame: {
+            ...customizations.floatingFrame,
+            color
+          }
+        })} />
 
-          <LivingMemoryCard
-            enabled={customizations.livingMemory}
-            onEnabledChange={(enabled) => handleCustomizationUpdate({ livingMemory: enabled })}
-          />
+          <LivingMemoryCard enabled={customizations.livingMemory} onEnabledChange={enabled => handleCustomizationUpdate({
+          livingMemory: enabled
+        })} />
 
-          <VoiceMatchCard
-            enabled={customizations.voiceMatch}
-            livingMemoryEnabled={customizations.livingMemory}
-            onEnabledChange={(enabled) => handleCustomizationUpdate({ voiceMatch: enabled })}
-          />
+          <VoiceMatchCard enabled={customizations.voiceMatch} livingMemoryEnabled={customizations.livingMemory} onEnabledChange={enabled => handleCustomizationUpdate({
+          voiceMatch: enabled
+        })} />
 
-          <CustomMessageCard
-            message={customizations.customMessage}
-            livingMemoryEnabled={customizations.livingMemory}
-            onMessageChange={(message) => handleCustomizationUpdate({ customMessage: message })}
-          />
+          <CustomMessageCard message={customizations.customMessage} livingMemoryEnabled={customizations.livingMemory} onMessageChange={message => handleCustomizationUpdate({
+          customMessage: message
+        })} />
 
-          <AIUpscaleCard
-            enabled={customizations.aiUpscale}
-            onEnabledChange={(enabled) => handleCustomizationUpdate({ aiUpscale: enabled })}
-          />
+          <AIUpscaleCard enabled={customizations.aiUpscale} onEnabledChange={enabled => handleCustomizationUpdate({
+          aiUpscale: enabled
+        })} />
         </div>
       </div>
 
       {/* Social Proof & Video Options */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <SocialProofGallery />
-        <PremiumVideoOptions 
-          livingMemoryEnabled={customizations.livingMemory}
-          options={{
-            voiceMatching: false,
-            backgroundAudio: 'none',
-            videoLength: 30,
-            voiceEnhancement: false
-          }}
-          onOptionsChange={() => {}}
-        />
+        <PremiumVideoOptions livingMemoryEnabled={customizations.livingMemory} options={{
+        voiceMatching: false,
+        backgroundAudio: 'none',
+        videoLength: 30,
+        voiceEnhancement: false
+      }} onOptionsChange={() => {}} />
       </div>
 
       {/* Live Activity Feed */}
@@ -180,33 +156,25 @@ const CustomizationSelector = ({
             <span className="font-semibold">${basePrice}</span>
           </div>
           
-          {customizations.floatingFrame.enabled && (
-            <div className="flex justify-between items-center">
+          {customizations.floatingFrame.enabled && <div className="flex justify-between items-center">
               <span className="text-gray-600">Floating Frame</span>
               <span className="font-semibold">+$79</span>
-            </div>
-          )}
+            </div>}
           
-          {customizations.livingMemory && (
-            <div className="flex justify-between items-center">
+          {customizations.livingMemory && <div className="flex justify-between items-center">
               <span className="text-gray-600">Living Memory</span>
               <span className="font-semibold">+$29</span>
-            </div>
-          )}
+            </div>}
           
-          {customizations.voiceMatch && (
-            <div className="flex justify-between items-center">
+          {customizations.voiceMatch && <div className="flex justify-between items-center">
               <span className="text-gray-600">Voice Match</span>
               <span className="font-semibold">+$19</span>
-            </div>
-          )}
+            </div>}
           
-          {customizations.aiUpscale && (
-            <div className="flex justify-between items-center">
+          {customizations.aiUpscale && <div className="flex justify-between items-center">
               <span className="text-gray-600">AI Upscale</span>
               <span className="font-semibold">+$15</span>
-            </div>
-          )}
+            </div>}
           
           <div className="border-t pt-4">
             <div className="flex justify-between items-center text-lg font-bold">
@@ -216,8 +184,6 @@ const CustomizationSelector = ({
           </div>
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>;
 };
-
 export default CustomizationSelector;
