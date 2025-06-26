@@ -36,7 +36,7 @@ const OrientationStep = ({
   return (
     <ProductStepWrapper
       stepNumber={2}
-      title="Choose Your Canvas Size"
+      title="Choose Size"
       description={`Perfect! Your ${selectedOrientation} canvas is ready. Now select the ideal size.`}
       isActive={isActive}
       isCompleted={isCompleted}
