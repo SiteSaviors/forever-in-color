@@ -1,173 +1,107 @@
-
-import { useState, useEffect } from "react";
-import { detectOrientationFromImage } from "../utils/orientationDetection";
-import { usePhotoUploadLogic } from "./hooks/usePhotoUploadLogic";
-import UnifiedFlowProgress from "../components/UnifiedFlowProgress";
-import AutoCropPreview from "../components/AutoCropPreview";
-import PhotoCropper from "../PhotoCropper";
 import PhotoUploadMain from "./components/PhotoUploadMain";
-import { Card, CardContent } from "@/components/ui/card";
+import { ImageCompressor } from "@/utils/imageCompression";
+import { IntelligentPreloader } from "@/utils/performanceUtils";
+import { useEffect, useState } from "react";
 
 interface PhotoUploadContainerProps {
   onImageUpload: (imageUrl: string, originalImageUrl?: string, orientation?: string) => void;
   initialImage?: string | null;
 }
 
-const PhotoUploadContainer = ({ onImageUpload, initialImage }: PhotoUploadContainerProps) => {
-  const [showCropper, setShowCropper] = useState(false);
-  const [showAutoCropPreview, setShowAutoCropPreview] = useState(false);
-  const [recommendedOrientation, setRecommendedOrientation] = useState<string>("");
-  const [analysisComplete, setAnalysisComplete] = useState(false);
-  const [cropAccepted, setCropAccepted] = useState(false);
-  const [currentFlowStage, setCurrentFlowStage] = useState<'upload' | 'analyzing' | 'crop-preview' | 'orientation' | 'complete'>('upload');
+const PhotoUploadContainer = ({
+  onImageUpload,
+  initialImage
+}: PhotoUploadContainerProps) => {
+  const [isCompressing, setIsCompressing] = useState(false);
+  const [compressionProgress, setCompressionProgress] = useState(0);
 
-  const handleImageAnalysis = async (imageUrl: string) => {
-    setCurrentFlowStage('analyzing');
-    
-    try {
-      const orientation = await detectOrientationFromImage(imageUrl);
-      setRecommendedOrientation(orientation);
-      
-      setTimeout(() => {
-        setAnalysisComplete(true);
-        setCurrentFlowStage('crop-preview');
-        setShowAutoCropPreview(true);
-      }, 1500);
-    } catch (error) {
-      console.error('Error analyzing image:', error);
-      setRecommendedOrientation('square');
-      setAnalysisComplete(true);
-      setCurrentFlowStage('crop-preview');
-      setShowAutoCropPreview(true);
-    }
-  };
-
-  const {
-    isDragOver,
-    isUploading,
-    uploadProgress,
-    uploadedImage,
-    processingStage,
-    fileInputRef,
-    handleDrop,
-    handleDragOver,
-    handleDragLeave,
-    handleClick,
-    handleFileChange,
-    handleChangePhoto,
-    setUploadedImage
-  } = usePhotoUploadLogic({
-    onImageUpload,
-    initialImage,
-    onImageAnalysis: handleImageAnalysis,
-    onFlowStageChange: setCurrentFlowStage
-  });
-
-  // Update uploadedImage and flow when initialImage changes
   useEffect(() => {
-    if (initialImage) {
-      setUploadedImage(initialImage);
-      setCurrentFlowStage('analyzing');
-      handleImageAnalysis(initialImage);
+    // Preload compression worker and popular styles
+    IntelligentPreloader.preloadPopularStyles();
+  }, []);
+
+  const handleFileUpload = async (file: File) => {
+    try {
+      setIsCompressing(true);
+      setCompressionProgress(0);
+
+      // Simulate compression progress
+      const progressInterval = setInterval(() => {
+        setCompressionProgress(prev => Math.min(prev + 10, 90));
+      }, 100);
+
+      // Compress image with intelligent settings
+      const compressedFile = await ImageCompressor.compressImage(file, {
+        maxWidth: 2048,
+        maxHeight: 2048,
+        quality: 0.85,
+        enableWorker: true,
+        progressive: true
+      });
+
+      clearInterval(progressInterval);
+      setCompressionProgress(100);
+
+      // Create URLs for both original and compressed
+      const originalUrl = URL.createObjectURL(file);
+      const compressedUrl = URL.createObjectURL(compressedFile);
+
+      console.log('Image compression complete:', {
+        originalSize: (file.size / 1024 / 1024).toFixed(2) + 'MB',
+        compressedSize: (compressedFile.size / 1024 / 1024).toFixed(2) + 'MB',
+        compressionRatio: ((1 - compressedFile.size / file.size) * 100).toFixed(1) + '%'
+      });
+
+      // Use compressed image but keep original as backup
+      onImageUpload(compressedUrl, originalUrl);
+
+      // Clean up progress
+      setTimeout(() => {
+        setIsCompressing(false);
+        setCompressionProgress(0);
+      }, 500);
+
+    } catch (error) {
+      console.error('Image compression failed:', error);
+      
+      // Fallback to original file
+      const originalUrl = URL.createObjectURL(file);
+      onImageUpload(originalUrl);
+      
+      setIsCompressing(false);
+      setCompressionProgress(0);
     }
-  }, [initialImage]);
-
-  const handleAcceptAutoCrop = (croppedImageUrl: string) => {
-    console.log('✅ Accepting auto crop with URL:', croppedImageUrl);
-    setCropAccepted(true);
-    setCurrentFlowStage('complete');
-    setShowAutoCropPreview(false);
-    
-    // Pass the cropped image URL as the main image
-    onImageUpload(croppedImageUrl, uploadedImage || undefined, recommendedOrientation);
   };
-
-  const handleCustomizeCrop = () => {
-    setShowAutoCropPreview(false);
-    setShowCropper(true);
-    setCurrentFlowStage('orientation');
-  };
-
-  const handleCropComplete = (croppedImage: string, aspectRatio: number, orientation: string) => {
-    console.log('Custom crop completed:', { croppedImage, aspectRatio, orientation });
-    setCropAccepted(true);
-    setCurrentFlowStage('complete');
-    onImageUpload(croppedImage, uploadedImage || undefined, orientation);
-    setShowCropper(false);
-  };
-
-  // Show auto-crop preview after analysis
-  if (showAutoCropPreview && uploadedImage) {
-    return (
-      <div className="space-y-6">
-        <UnifiedFlowProgress
-          currentStage={currentFlowStage}
-          hasImage={!!uploadedImage}
-          analysisComplete={analysisComplete}
-          cropAccepted={cropAccepted}
-          orientationSelected={false}
-        />
-        
-        <AutoCropPreview
-          imageUrl={uploadedImage}
-          onAcceptCrop={handleAcceptAutoCrop}
-          onCustomizeCrop={handleCustomizeCrop}
-          recommendedOrientation={recommendedOrientation}
-        />
-      </div>
-    );
-  }
-
-  // Show custom cropper if user wants to adjust
-  if (showCropper && uploadedImage) {
-    return (
-      <div className="space-y-6">
-        <UnifiedFlowProgress
-          currentStage={currentFlowStage}
-          hasImage={!!uploadedImage}
-          analysisComplete={analysisComplete}
-          cropAccepted={cropAccepted}
-          orientationSelected={false}
-        />
-        
-        <Card className="w-full overflow-hidden">
-          <CardContent className="p-0">
-            <PhotoCropper
-              imageUrl={uploadedImage}
-              onCropComplete={handleCropComplete}
-              onChangePhoto={handleChangePhoto}
-            />
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   return (
-    <div className="space-y-6">
-      {/* Show progress if we have an image */}
-      {uploadedImage && (
-        <UnifiedFlowProgress
-          currentStage={currentFlowStage}
-          hasImage={!!uploadedImage}
-          analysisComplete={analysisComplete}
-          cropAccepted={cropAccepted}
-          orientationSelected={false}
-        />
-      )}
-
-      <PhotoUploadMain
-        isDragOver={isDragOver}
-        isUploading={isUploading}
-        uploadProgress={uploadProgress}
-        processingStage={processingStage}
-        fileInputRef={fileInputRef}
-        onDrop={handleDrop}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onClick={handleClick}
-        onFileChange={handleFileChange}
+    <div className="w-full">
+      <PhotoUploadMain 
+        onImageUpload={handleFileUpload}
+        initialImage={initialImage}
       />
+      
+      {/* Compression Progress Indicator */}
+      {isCompressing && (
+        <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-blue-800">
+              Optimizing image for best performance...
+            </span>
+            <span className="text-sm text-blue-600">
+              {compressionProgress}%
+            </span>
+          </div>
+          <div className="w-full bg-blue-200 rounded-full h-2">
+            <div 
+              className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
+              style={{ width: `${compressionProgress}%` }}
+            />
+          </div>
+          <p className="text-xs text-blue-600 mt-2">
+            Reducing file size while maintaining quality for faster uploads and previews
+          </p>
+        </div>
+      )}
     </div>
   );
 };

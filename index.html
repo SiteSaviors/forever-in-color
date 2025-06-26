@@ -7,21 +7,162 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vite + React + TS</title>
     
-    <!-- Optimized font loading with preconnect and font-display -->
+    <!-- Critical performance optimizations -->
+    <!-- Preconnect to external domains -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://api.replicate.com">
+    <link rel="dns-prefetch" href="https://replicate.delivery">
     
-    <!-- Add font-display swap for better performance -->
-    <style>
-      @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap');
+    <!-- Critical CSS - Will be inlined by JS -->
+    <style id="critical-css">
+      /* Critical above-the-fold styles */
+      body { 
+        margin: 0; 
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+        background-color: #f9fafb;
+      }
+      #root { 
+        min-height: 100vh; 
+      }
+      .loading-skeleton {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: loading 1.5s infinite;
+      }
+      @keyframes loading {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+      }
     </style>
     
-    <!-- Preload critical resources -->
-    <link rel="preload" href="/lovable-uploads/3e752087-b61d-463b-87ca-313d878c43c1.png" as="image" type="image/png">
+    <!-- Optimized font loading with preload and display swap -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap"></noscript>
+    
+    <!-- Load secondary fonts with lower priority -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap"></noscript>
+    
+    <!-- Preload critical images with high priority -->
+    <link rel="preload" href="/lovable-uploads/3e752087-b61d-463b-87ca-313d878c43c1.png" as="image" type="image/png" fetchpriority="high">
+    <link rel="preload" href="/lovable-uploads/7db3e997-ea34-4d40-af3e-67b693dc0544.png" as="image" type="image/png">
+    <link rel="preload" href="/lovable-uploads/9eb9363d-dc17-4df1-a03d-0c5fb463a473.png" as="image" type="image/png">
+    
+    <!-- Prefetch likely-to-be-needed resources -->
+    <link rel="prefetch" href="/lovable-uploads/79613d9d-74f9-4f65-aec0-50fd2346a131.png" as="image">
+    <link rel="prefetch" href="/lovable-uploads/5e67d281-e2f5-4b6b-942d-32f66511851e.png" as="image">
+    
+    <!-- Progressive Web App meta -->
+    <meta name="theme-color" content="#6366f1">
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- Performance hints -->
+    <meta http-equiv="Accept-CH" content="DPR, Viewport-Width, Width">
+    
+    <!-- Inline critical JavaScript for immediate execution -->
+    <script>
+      // Performance timing
+      window.performanceMetrics = {
+        navigationStart: performance.timeOrigin || performance.timing.navigationStart,
+        firstPaint: 0,
+        firstContentfulPaint: 0,
+        largestContentfulPaint: 0
+      };
+      
+      // Detect support for modern image formats
+      function detectImageSupport() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 1;
+        canvas.height = 1;
+        
+        // Test WebP support
+        window.supportsWebP = canvas.toDataURL('image/webp').indexOf('webp') > -1;
+        
+        // Test AVIF support (basic check)
+        window.supportsAVIF = false; // Will be detected properly by JS
+      }
+      
+      detectImageSupport();
+      
+      // Early resource hints injection
+      function injectEarlyHints() {
+        const hints = [
+          { rel: 'dns-prefetch', href: '//fonts.gstatic.com' },
+          { rel: 'preconnect', href: 'https://api.stripe.com' },
+        ];
+        
+        hints.forEach(hint => {
+          const link = document.createElement('link');
+          Object.assign(link, hint);
+          document.head.appendChild(link);
+        });
+      }
+      
+      // Run immediately
+      injectEarlyHints();
+      
+      // Web Vitals tracking
+      function trackWebVitals() {
+        // First Paint
+        if ('PerformancePaintTiming' in window) {
+          const paintTimings = performance.getEntriesByType('paint');
+          paintTimings.forEach(timing => {
+            if (timing.name === 'first-paint') {
+              window.performanceMetrics.firstPaint = timing.startTime;
+            } else if (timing.name === 'first-contentful-paint') {
+              window.performanceMetrics.firstContentfulPaint = timing.startTime;
+            }
+          });
+        }
+        
+        // Largest Contentful Paint
+        if ('PerformanceObserver' in window) {
+          const lcpObserver = new PerformanceObserver((list) => {
+            const entries = list.getEntries();
+            const lastEntry = entries[entries.length - 1];
+            window.performanceMetrics.largestContentfulPaint = lastEntry.startTime;
+          });
+          
+          try {
+            lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
+          } catch (e) {
+            // Not supported in all browsers
+          }
+        }
+      }
+      
+      // Start tracking
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', trackWebVitals);
+      } else {
+        trackWebVitals();
+      }
+    </script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Loading skeleton for immediate visual feedback -->
+      <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #f9fafb;">
+        <div style="text-align: center; max-width: 400px; padding: 2rem;">
+          <div style="width: 120px; height: 120px; margin: 0 auto 2rem; border-radius: 50%; background: linear-gradient(45deg, #6366f1, #8b5cf6); opacity: 0.8; animation: pulse 2s infinite;"></div>
+          <div class="loading-skeleton" style="height: 24px; border-radius: 4px; margin-bottom: 1rem;"></div>
+          <div class="loading-skeleton" style="height: 16px; border-radius: 4px; width: 80%; margin: 0 auto;"></div>
+        </div>
+      </div>
+    </div>
+    
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Non-critical JavaScript loaded after main app -->
+    <script>
+      // Analytics placeholder (would be replaced with actual analytics)
+      window.addEventListener('load', () => {
+        // Load analytics after everything else
+        setTimeout(() => {
+          console.log('Analytics would load here');
+        }, 1000);
+      });
+    </script>
   </body>
 </html>
