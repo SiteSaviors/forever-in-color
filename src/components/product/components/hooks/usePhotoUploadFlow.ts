@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useProgressOrchestrator } from "../../progress/ProgressOrchestrator";
 import { usePhotoUploadState } from "../../hooks/usePhotoUploadState";
@@ -95,6 +94,11 @@ export const usePhotoUploadFlow = ({
     handleRecropImage();
   };
 
+  const handleEnhancedCropComplete = (croppedImageUrl: string) => {
+    // Call the original handler with just the image URL
+    handleCropComplete(croppedImageUrl);
+  };
+
   const handleStyleComplete = (imageUrl: string, styleId: number, styleName: string) => {
     console.log('🎨 Style selection completed:', {
       imageUrl,
@@ -138,7 +142,7 @@ export const usePhotoUploadFlow = ({
     // Handlers
     setCurrentOrientation,
     handleEnhancedImageUpload,
-    handleCropComplete,
+    handleCropComplete: handleEnhancedCropComplete,
     handleRecropImage,
     handleEnhancedStyleSelect,
     handleAcceptAutoCrop,
