@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Crop, RotateCcw, Monitor, Smartphone, Square, Sparkles } from "lucide-react";
+import { Crop, RotateCcw, Monitor, Smartphone, Square, Sparkles, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Cropper from 'react-easy-crop';
@@ -9,13 +9,15 @@ interface PhotoCropperProps {
   selectedOrientation?: string;
   onCropComplete: (croppedImage: string, aspectRatio: number, orientation: string) => void;
   onOrientationChange?: (orientation: string) => void;
+  onChangePhoto?: () => void;
 }
 const PhotoCropper = ({
   imageUrl,
   initialAspectRatio = 1,
   selectedOrientation = "square",
   onCropComplete,
-  onOrientationChange
+  onOrientationChange,
+  onChangePhoto
 }: PhotoCropperProps) => {
   const [crop, setCrop] = useState({
     x: 0,
@@ -206,6 +208,16 @@ const PhotoCropper = ({
 
         {/* Action Buttons */}
         <div className="flex flex-col md:flex-row justify-center gap-3 md:gap-4">
+          {onChangePhoto && (
+            <Button 
+              variant="outline" 
+              onClick={onChangePhoto} 
+              className="text-sm flex items-center gap-2 border-gray-300 hover:bg-gray-50"
+            >
+              <Upload className="w-4 h-4" />
+              Change Photo
+            </Button>
+          )}
           <Button variant="outline" onClick={handleAutoCenterCrop} className="text-sm flex items-center gap-2 border-purple-200 hover:bg-purple-50">
             <RotateCcw className="w-4 h-4" />
             Reset Crop Position

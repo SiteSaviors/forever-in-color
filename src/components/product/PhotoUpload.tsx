@@ -57,6 +57,13 @@ const PhotoUpload = ({ onImageUpload, initialImage }: PhotoUploadProps) => {
     setShowCropper(false);
   };
 
+  const handleChangePhoto = () => {
+    // Reset state and show file picker
+    setUploadedImage(null);
+    setShowCropper(false);
+    fileInputRef.current?.click();
+  };
+
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
@@ -96,6 +103,7 @@ const PhotoUpload = ({ onImageUpload, initialImage }: PhotoUploadProps) => {
           <PhotoCropper
             imageUrl={uploadedImage}
             onCropComplete={handleCropComplete}
+            onChangePhoto={handleChangePhoto}
           />
         </CardContent>
       </Card>
