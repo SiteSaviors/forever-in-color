@@ -1,4 +1,5 @@
 
+
 import { useState, useEffect } from "react";
 import { useProgressOrchestrator } from "../../progress/ProgressOrchestrator";
 import { usePhotoUploadState } from "../../hooks/usePhotoUploadState";
@@ -95,6 +96,13 @@ export const usePhotoUploadFlow = ({
     handleRecropImage();
   };
 
+  // Create a wrapper function that matches the expected signature for PhotoUploadStageRenderer
+  const handleCropCompleteWrapper = (croppedImageUrl: string) => {
+    // Call the original handler with default values for the missing parameters
+    const aspectRatio = getAspectRatioFromOrientation(currentOrientation);
+    handleCropComplete(croppedImageUrl, aspectRatio, currentOrientation);
+  };
+
   const handleStyleComplete = (imageUrl: string, styleId: number, styleName: string) => {
     console.log('🎨 Style selection completed:', {
       imageUrl,
@@ -138,7 +146,7 @@ export const usePhotoUploadFlow = ({
     // Handlers
     setCurrentOrientation,
     handleEnhancedImageUpload,
-    handleCropComplete, // Use the original handleCropComplete with 3 parameters
+    handleCropComplete: handleCropCompleteWrapper, // Use the wrapper function that matches expected signature
     handleRecropImage,
     handleEnhancedStyleSelect,
     handleAcceptAutoCrop,
@@ -149,3 +157,4 @@ export const usePhotoUploadFlow = ({
     showContextualHelp
   };
 };
+
