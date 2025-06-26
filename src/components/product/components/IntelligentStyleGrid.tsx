@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Users, Crown, Zap, Eye } from "lucide-react";
+import { Sparkles, Users, Crown, Zap, Eye, Loader2 } from "lucide-react";
 import StyleCard from "../StyleCard";
 import { artStyles } from "@/data/artStyles";
 import { 
@@ -91,14 +91,21 @@ const IntelligentStyleGrid = ({
 
   return (
     <div className="space-y-8">
-      {/* AI Analysis Status */}
+      {/* AI Analysis Status with Loading Skeleton */}
       {isAnalyzing && (
         <div className="text-center py-4">
           <div className="inline-flex items-center space-x-3 bg-gradient-to-r from-purple-50 to-pink-50 px-6 py-3 rounded-full border border-purple-200">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600"></div>
+            <Loader2 className="h-4 w-4 animate-spin text-purple-600" />
             <span className="text-sm font-medium text-purple-700">
               AI analyzing your photo for perfect style matches...
             </span>
+          </div>
+          
+          {/* Loading Skeleton for Hero Section */}
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="loading-shimmer rounded-2xl h-64 animate-pulse"></div>
+            ))}
           </div>
         </div>
       )}
@@ -119,7 +126,7 @@ const IntelligentStyleGrid = ({
             </p>
           </div>
 
-          {/* Hero Grid - Larger, Premium Layout */}
+          {/* Hero Grid - Enhanced with Pulsing */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             {heroRecommendations.map((rec, index) => {
               const style = artStyles.find(s => s.id === rec.styleId);
@@ -128,13 +135,17 @@ const IntelligentStyleGrid = ({
               return (
                 <div
                   key={rec.styleId}
-                  className="relative group transform transition-all duration-500 hover:scale-105"
+                  className={`relative group transform transition-all duration-500 hover:scale-105 recommended-pulse ${
+                    hoveredStyle === rec.styleId ? 'z-10' : ''
+                  }`}
                   style={{ animationDelay: `${index * 200}ms` }}
+                  onMouseEnter={() => setHoveredStyle(rec.styleId)}
+                  onMouseLeave={() => setHoveredStyle(null)}
                 >
-                  {/* Premium Glow Effect */}
-                  <div className="absolute -inset-1 bg-gradient-to-r from-amber-400 via-pink-500 to-purple-600 rounded-2xl blur opacity-25 group-hover:opacity-75 transition duration-500"></div>
+                  {/* Enhanced Premium Glow Effect */}
+                  <div className="absolute -inset-2 bg-gradient-to-r from-amber-400 via-pink-500 to-purple-600 rounded-3xl blur-md opacity-30 group-hover:opacity-60 transition duration-500"></div>
                   
-                  <div className="relative">
+                  <div className="relative style-card-hover style-card-press">
                     <StyleCard
                       style={style}
                       croppedImage={croppedImage}
@@ -148,20 +159,34 @@ const IntelligentStyleGrid = ({
                       shouldBlur={false}
                     />
 
-                    {/* AI Recommendation Badge */}
+                    {/* Enhanced AI Recommendation Badge */}
                     <div className="absolute -top-3 -right-3 z-20">
-                      <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold px-3 py-1 shadow-lg animate-pulse">
-                        <Zap className="w-3 h-3 mr-1" />
+                      <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold px-3 py-1 shadow-lg">
+                        <Zap className="w-3 h-3 mr-1 animate-pulse" />
                         AI Pick
                       </Badge>
                     </div>
 
-                    {/* Confidence & Reason Overlay */}
-                    <div className="absolute bottom-4 left-4 right-4 bg-black/80 backdrop-blur-sm rounded-lg p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <p className="text-white text-sm font-medium mb-1">
-                        {Math.round(rec.confidence * 100)}% Match
-                      </p>
-                      <p className="text-white/80 text-xs">
+                    {/* Enhanced Confidence & Reason Overlay */}
+                    <div className="absolute bottom-4 left-4 right-4 bg-black/90 backdrop-blur-sm rounded-xl p-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-white text-sm font-semibold">
+                          {Math.round(rec.confidence * 100)}% Match
+                        </p>
+                        <div className="flex">
+                          {[...Array(5)].map((_, i) => (
+                            <div
+                              key={i}
+                              className={`w-2 h-2 rounded-full mx-0.5 ${
+                                i < Math.round(rec.confidence * 5)
+                                  ? 'bg-amber-400'
+                                  : 'bg-gray-600'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      <p className="text-white/90 text-xs leading-relaxed">
                         {rec.reason}
                       </p>
                     </div>
@@ -173,7 +198,7 @@ const IntelligentStyleGrid = ({
         </div>
       )}
 
-      {/* Popular Choices Section */}
+      {/* Popular Choices Section - Enhanced */}
       {popularChoices.length > 0 && (
         <div className="space-y-6">
           <div className="flex items-center justify-center gap-3">
@@ -181,7 +206,8 @@ const IntelligentStyleGrid = ({
             <h3 className="text-xl font-semibold text-gray-900">
               Popular Choices
             </h3>
-            <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+            <Badge variant="secondary" className="bg-blue-100 text-blue-700 animate-pulse">
+              <Users className="w-3 h-3 mr-1" />
               Trending
             </Badge>
           </div>
@@ -198,7 +224,7 @@ const IntelligentStyleGrid = ({
               return (
                 <div
                   key={rec.styleId}
-                  className="transform transition-all duration-300 hover:scale-102"
+                  className="transform transition-all duration-300 hover:scale-105 style-card-hover style-card-press"
                   style={{ animationDelay: `${(index + 3) * 150}ms` }}
                 >
                   <StyleCard
@@ -220,13 +246,13 @@ const IntelligentStyleGrid = ({
         </div>
       )}
 
-      {/* Show More Styles Toggle */}
+      {/* Show More Styles Toggle - Enhanced */}
       {secondaryStyles.length > 0 && (
         <div className="text-center">
           <Button
             variant="outline"
             onClick={() => setShowAllStyles(!showAllStyles)}
-            className="bg-white hover:bg-gray-50 border-2 border-gray-200 text-gray-700 px-8 py-3 rounded-full font-medium transition-all duration-300 hover:border-purple-300 hover:text-purple-700"
+            className="bg-white hover:bg-gray-50 border-2 border-gray-200 text-gray-700 px-8 py-3 rounded-full font-medium transition-all duration-300 hover:border-purple-300 hover:text-purple-700 hover:shadow-lg transform hover:scale-105"
           >
             <Eye className="w-4 h-4 mr-2" />
             {showAllStyles ? 'Show Less Styles' : `Explore ${secondaryStyles.length} More Styles`}
@@ -234,7 +260,7 @@ const IntelligentStyleGrid = ({
         </div>
       )}
 
-      {/* Complete Collection - Progressive Enhancement */}
+      {/* Complete Collection - Enhanced Progressive Enhancement */}
       {showAllStyles && secondaryStyles.length > 0 && (
         <div className="space-y-6 animate-fade-in">
           <div className="text-center">
@@ -257,10 +283,9 @@ const IntelligentStyleGrid = ({
               return (
                 <div
                   key={rec.styleId}
-                  className="transform transition-all duration-300 hover:scale-102"
+                  className="transform transition-all duration-300 hover:scale-105 style-card-hover style-card-press grid-item"
                   style={{ 
-                    animationDelay: `${index * 100}ms`,
-                    animation: 'fade-in 0.5s ease-out forwards'
+                    animationDelay: `${index * 100}ms`
                   }}
                 >
                   <StyleCard

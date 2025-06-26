@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, Maximize2, Sparkles, Crown, Users } from "lucide-react";
+import { Eye, Maximize2, Sparkles, Crown, Users, Star } from "lucide-react";
 import Lightbox from "@/components/ui/lightbox";
 import FullCanvasMockup from "./FullCanvasMockup";
 
@@ -40,6 +40,7 @@ const EnhancedStyleCard = ({
   onContinue
 }: EnhancedStyleCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [isPressed, setIsPressed] = useState(false);
   const [showCanvasPreview, setShowCanvasPreview] = useState(false);
   const [showLightbox, setShowLightbox] = useState(false);
 
@@ -60,21 +61,32 @@ const EnhancedStyleCard = ({
     setShowLightbox(true);
   };
 
+  const handleMouseDown = () => setIsPressed(true);
+  const handleMouseUp = () => setIsPressed(false);
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+    setIsPressed(false);
+  };
+
   return (
     <>
       <Card
         className={`group cursor-pointer transition-all duration-500 overflow-hidden ${
           isSelected 
             ? 'ring-2 ring-purple-500 shadow-2xl scale-105' 
-            : 'hover:shadow-xl hover:scale-105'
+            : 'hover:shadow-2xl hover:scale-105'
         } ${
           isRecommended 
             ? 'border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50' 
             : 'bg-white'
+        } ${
+          isPressed ? 'scale-95' : ''
         }`}
         onClick={handleClick}
         onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        onMouseLeave={handleMouseLeave}
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
       >
         {/* Image Container */}
         <div className="relative overflow-hidden">
@@ -88,16 +100,16 @@ const EnhancedStyleCard = ({
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
             />
 
-            {/* Gradient Overlay on Hover */}
-            <div className={`absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent transition-opacity duration-300 ${
+            {/* Enhanced Gradient Overlay on Hover */}
+            <div className={`absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent transition-opacity duration-300 ${
               isHovered ? 'opacity-100' : 'opacity-0'
             }`} />
 
-            {/* Top Badges */}
+            {/* Top Badges - Enhanced */}
             <div className="absolute top-3 left-3 right-3 flex justify-between items-start">
               <div className="flex flex-col gap-2">
                 {isRecommended && (
-                  <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold shadow-lg">
+                  <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold shadow-lg animate-pulse">
                     <Crown className="w-3 h-3 mr-1" />
                     AI Pick
                   </Badge>
@@ -111,21 +123,22 @@ const EnhancedStyleCard = ({
               </div>
 
               {confidence && (
-                <Badge variant="secondary" className="bg-black/80 text-white border-0">
+                <Badge variant="secondary" className="bg-black/80 text-white border-0 backdrop-blur-sm">
+                  <Star className="w-3 h-3 mr-1 text-amber-400" />
                   {Math.round(confidence * 100)}% Match
                 </Badge>
               )}
             </div>
 
-            {/* Hover Action Buttons */}
-            <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${
-              isHovered ? 'opacity-100' : 'opacity-0'
+            {/* Enhanced Hover Action Buttons */}
+            <div className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${
+              isHovered ? 'opacity-100 backdrop-blur-sm' : 'opacity-0'
             }`}>
               <div className="flex gap-3">
                 <Button
                   size="sm"
                   variant="secondary"
-                  className="bg-white/90 hover:bg-white backdrop-blur-sm shadow-lg"
+                  className="bg-white/95 hover:bg-white backdrop-blur-sm shadow-xl border-0 transform transition-all duration-200 hover:scale-110"
                   onClick={handleCanvasPreview}
                 >
                   <Eye className="w-4 h-4 mr-1" />
@@ -134,7 +147,7 @@ const EnhancedStyleCard = ({
                 <Button
                   size="sm"
                   variant="secondary"
-                  className="bg-white/90 hover:bg-white backdrop-blur-sm shadow-lg"
+                  className="bg-white/95 hover:bg-white backdrop-blur-sm shadow-xl border-0 transform transition-all duration-200 hover:scale-110"
                   onClick={handleLightboxOpen}
                 >
                   <Maximize2 className="w-4 h-4 mr-1" />
@@ -143,31 +156,50 @@ const EnhancedStyleCard = ({
               </div>
             </div>
 
-            {/* Bottom Info Overlay */}
-            <div className={`absolute bottom-0 left-0 right-0 p-4 transition-transform duration-300 ${
+            {/* Enhanced Bottom Info Overlay */}
+            <div className={`absolute bottom-0 left-0 right-0 p-4 transition-all duration-300 ${
               isHovered ? 'translate-y-0' : 'translate-y-full'
             }`}>
-              <div className="bg-white/95 backdrop-blur-sm rounded-lg p-3 shadow-lg">
-                <h4 className="font-semibold text-gray-900 mb-1">{style.name}</h4>
-                <p className="text-sm text-gray-600 mb-2">{style.description}</p>
+              <div className="bg-white/98 backdrop-blur-md rounded-xl p-4 shadow-2xl border border-white/20">
+                <div className="flex items-start justify-between mb-2">
+                  <h4 className="font-bold text-gray-900">{style.name}</h4>
+                  {confidence && (
+                    <div className="flex">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`w-3 h-3 ${
+                            i < Math.round(confidence * 5)
+                              ? 'text-amber-400 fill-current'
+                              : 'text-gray-300'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <p className="text-sm text-gray-600 mb-3 leading-relaxed">{style.description}</p>
                 {recommendationReason && (
-                  <p className="text-xs text-amber-700 font-medium flex items-center">
-                    <Sparkles className="w-3 h-3 mr-1" />
-                    {recommendationReason}
-                  </p>
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-2">
+                    <p className="text-xs text-amber-800 font-medium flex items-center">
+                      <Sparkles className="w-3 h-3 mr-1" />
+                      {recommendationReason}
+                    </p>
+                  </div>
                 )}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Card Content - Always Visible */}
-        <div className="p-4">
+        {/* Enhanced Card Content */}
+        <div className="p-4 bg-gradient-to-r from-white to-gray-50">
           <div className="flex items-center justify-between">
             <div>
               <h4 className="font-semibold text-gray-900">{style.name}</h4>
               {isSelected && (
-                <Badge className="mt-1 bg-purple-600 text-white">
+                <Badge className="mt-2 bg-purple-600 text-white shadow-lg">
+                  <Star className="w-3 h-3 mr-1" />
                   Selected
                 </Badge>
               )}
@@ -176,7 +208,7 @@ const EnhancedStyleCard = ({
             {isSelected && onContinue && (
               <Button
                 size="sm"
-                className="bg-gradient-to-r from-purple-600 to-pink-600 text-white"
+                className="bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg hover:shadow-xl transform transition-all duration-200 hover:scale-105"
                 onClick={(e) => {
                   e.stopPropagation();
                   onContinue();
@@ -188,9 +220,11 @@ const EnhancedStyleCard = ({
           </div>
         </div>
 
-        {/* Selection Pulse Animation */}
+        {/* Enhanced Selection Pulse Animation */}
         {isSelected && (
-          <div className="absolute inset-0 border-2 border-purple-500 rounded-lg animate-pulse pointer-events-none" />
+          <div className="absolute inset-0 border-2 border-purple-500 rounded-lg pointer-events-none">
+            <div className="absolute inset-0 border-2 border-purple-400 rounded-lg animate-ping opacity-75"></div>
+          </div>
         )}
       </Card>
 
