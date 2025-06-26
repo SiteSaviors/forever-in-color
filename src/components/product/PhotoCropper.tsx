@@ -58,6 +58,22 @@ const PhotoCropper = ({
     }
   };
 
+  const handleChangePhotoFile = (file: File) => {
+    // Create object URL for the uploaded file and trigger the change photo callback
+    const imageUrl = URL.createObjectURL(file);
+    console.log('New photo selected in cropper:', imageUrl);
+    
+    // If there's a change photo callback, call it to handle the new image
+    if (onChangePhoto) {
+      // We need to pass the new image URL back to the parent component
+      // For now, we'll just call the existing callback
+      onChangePhoto();
+      
+      // In a real implementation, you might want to update the imageUrl prop
+      // or have a more specific callback that accepts the new image URL
+    }
+  };
+
   const getCurrentOrientation = () => {
     return orientationOptions.find(opt => opt.ratio === cropAspect) || orientationOptions[0];
   };
@@ -84,7 +100,7 @@ const PhotoCropper = ({
         />
 
         <CropperActions
-          onChangePhoto={onChangePhoto}
+          onChangePhoto={onChangePhoto ? handleChangePhotoFile : undefined}
           onAutoCenterCrop={handleAutoCenterCrop}
           onCropSave={handleCropSave}
           croppedAreaPixels={croppedAreaPixels}

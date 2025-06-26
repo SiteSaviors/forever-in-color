@@ -1,10 +1,11 @@
 
-import React from "react";
+import React, { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Upload, RotateCcw, Crop } from "lucide-react";
+import { validateImageFile } from "@/utils/fileValidation";
 
 interface CropperActionsProps {
-  onChangePhoto?: () => void;
+  onChangePhoto?: (file: File) => void;
   onAutoCenterCrop: () => void;
   onCropSave: () => void;
   croppedAreaPixels: any;
@@ -16,17 +17,45 @@ const CropperActions = ({
   onCropSave,
   croppedAreaPixels
 }: CropperActionsProps) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleChangePhotoClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0 && onChangePhoto) {
+      const file = files[0];
+      const validationResult = await validateImageFile(file);
+      if (validationResult.isValid) {
+        onChangePhoto(file);
+      } else {
+        console.error('File validation failed:', validationResult.error);
+      }
+    }
+  };
+
   return (
     <div className="flex flex-col md:flex-row justify-center gap-3 md:gap-4">
       {onChangePhoto && (
-        <Button 
-          variant="outline" 
-          onClick={onChangePhoto} 
-          className="text-sm flex items-center gap-2 border-gray-300 hover:bg-gray-50"
-        >
-          <Upload className="w-4 h-4" />
-          Change Photo
-        </Button>
+        <>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+          <Button 
+            variant="outline" 
+            onClick={handleChangePhotoClick} 
+            className="text-sm flex items-center gap-2 border-gray-300 hover:bg-gray-50"
+          >
+            <Upload className="w-4 h-4" />
+            Change Photo
+          </Button>
+        </>
       )}
       <Button 
         variant="outline" 
