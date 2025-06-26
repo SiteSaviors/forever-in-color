@@ -5,7 +5,7 @@ import LiveActivityFeed from "./customization/LiveActivityFeed";
 import SocialProofGallery from "./customization/SocialProofGallery";
 import PremiumVideoOptions from "./customization/PremiumVideoOptions";
 import CanvasPreviewSection from "./customization/CanvasPreviewSection";
-import CustomizationOptions from "./customization/CustomizationOptions";
+import CustomizationOptionsComponent from "./customization/CustomizationOptions";
 import PricingSummary from "./customization/PricingSummary";
 import { useCanvasPreview } from "./customization/hooks/useCanvasPreview";
 
@@ -70,7 +70,7 @@ const CustomizationSelector = ({
         />
 
         {/* Customization Options */}
-        <CustomizationOptions
+        <CustomizationOptionsComponent
           selectedSize={selectedSize}
           customizations={customizations}
           onCustomizationUpdate={handleCustomizationUpdate}
