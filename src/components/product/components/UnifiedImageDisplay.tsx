@@ -14,7 +14,6 @@ interface UnifiedImageDisplayProps {
   showExpandButton?: boolean;
   onExpandClick?: () => void;
   variant?: 'standard' | 'mockup';
-  isBlinking?: boolean; // Add the missing prop
 }
 
 const UnifiedImageDisplay = ({
@@ -27,8 +26,7 @@ const UnifiedImageDisplay = ({
   previewUrl,
   showExpandButton = true,
   onExpandClick,
-  variant = 'standard',
-  isBlinking = false // Add default value
+  variant = 'standard'
 }: UnifiedImageDisplayProps) => {
   // Use MockupCanvas for generated previews, regular image for others
   const shouldUseMockup = variant === 'mockup' && hasGeneratedPreview && previewUrl;
@@ -44,7 +42,6 @@ const UnifiedImageDisplay = ({
             previewUrl={previewUrl}
             orientation={selectedOrientation as 'square' | 'horizontal' | 'vertical'}
             className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105 drop-shadow-2xl"
-            isBlinking={isBlinking} // Pass the prop to MockupCanvas
           />
         </div>
         {canExpand && (

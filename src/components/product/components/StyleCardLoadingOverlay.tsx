@@ -3,7 +3,7 @@ import { Sparkles, AlertCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 
 interface StyleCardLoadingOverlayProps {
-  isBlinking: boolean; // STEP 3: Single source of truth from useBlinking hook
+  isBlinking: boolean;
   styleName: string;
   error?: string | null;
 }
@@ -20,28 +20,10 @@ const StyleCardLoadingOverlay = ({ isBlinking, styleName, error }: StyleCardLoad
     "Almost ready!"
   ];
 
-  // Mount/unmount logging
-  useEffect(() => {
-    console.log('🔄 StyleCardLoadingOverlay MOUNTED for:', styleName, { isBlinking, error });
-    return () => {
-      console.log('🔄 StyleCardLoadingOverlay UNMOUNTED for:', styleName);
-    };
-  }, []);
-
-  // STEP 3: Remove all blink logic - only use the passed isBlinking prop
-  useEffect(() => {
-    console.log('🔄 StyleCardLoadingOverlay state change:', styleName, { 
-      isBlinking, 
-      error,
-      willShow: isBlinking && !error
-    });
-  }, [isBlinking, error, styleName]);
-
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
     if (isBlinking) {
-      console.log('🚀 Starting progress animation for:', styleName);
       setProgress(0);
       interval = setInterval(() => {
         setProgress((prev) => {
@@ -51,24 +33,17 @@ const StyleCardLoadingOverlay = ({ isBlinking, styleName, error }: StyleCardLoad
           return newProgress;
         });
       }, 800);
-    } else {
-      console.log('⏹️ Stopping progress animation for:', styleName);
-      if (interval) {
-        clearInterval(interval);
-      }
     }
 
     return () => {
       if (interval) {
         clearInterval(interval);
-        console.log('🧹 Cleared progress interval for:', styleName);
       }
     };
   }, [isBlinking, styleName]);
 
-  // Error state - only show if there's an error and not blinking
+  // Error state
   if (error && !isBlinking) {
-    console.log('❌ Showing error state for:', styleName);
     return (
       <div className="absolute inset-0 bg-red-900/80 backdrop-blur-sm flex items-center justify-center z-20 rounded-lg">
         <div className="text-white text-center space-y-3 px-4">
@@ -82,20 +57,16 @@ const StyleCardLoadingOverlay = ({ isBlinking, styleName, error }: StyleCardLoad
     );
   }
 
-  // STEP 3: Only show when actually blinking (single source of truth)
+  // Only show when actively loading
   if (!isBlinking) {
-    console.log('👻 StyleCardLoadingOverlay not rendering - not blinking:', styleName);
     return null;
   }
-
-  console.log('✅ StyleCardLoadingOverlay rendering for:', styleName);
 
   return (
     <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-20 rounded-lg">
       <div className="text-white text-center space-y-4 px-4">
-        {/* STEP 4: CSS animation with controlled blinking */}
         <div className="relative">
-          <Sparkles className={`w-8 h-8 mx-auto text-purple-400 ${isBlinking ? 'animate-pulse' : ''}`} />
+          <Sparkles className="w-8 h-8 mx-auto text-purple-400 animate-pulse" />
           <div className="absolute inset-0 animate-spin">
             <div className="w-8 h-8 border-2 border-transparent border-t-white/50 rounded-full mx-auto"></div>
           </div>
@@ -116,11 +87,10 @@ const StyleCardLoadingOverlay = ({ isBlinking, styleName, error }: StyleCardLoad
           </div>
         </div>
 
-        {/* STEP 4: Controlled CSS animation */}
         <div className="flex justify-center space-x-1">
-          <div className={`w-2 h-2 bg-purple-400 rounded-full ${isBlinking ? 'animate-bounce' : ''}`}></div>
-          <div className={`w-2 h-2 bg-purple-400 rounded-full ${isBlinking ? 'animate-bounce delay-150' : ''}`}></div>
-          <div className={`w-2 h-2 bg-purple-400 rounded-full ${isBlinking ? 'animate-bounce delay-300' : ''}`}></div>
+          <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce"></div>
+          <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce delay-150"></div>
+          <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce delay-300"></div>
         </div>
 
         <p className="text-xs text-gray-400">This usually takes 10-15 seconds</p>

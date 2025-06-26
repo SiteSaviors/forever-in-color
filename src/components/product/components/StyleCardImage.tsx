@@ -4,7 +4,6 @@ import StyleCardLoadingOverlay from "./StyleCardLoadingOverlay";
 import StyleCardBlurOverlay from "./StyleCardBlurOverlay";
 import StyleCardRetryOverlay from "./StyleCardRetryOverlay";
 import StyleCardIndicators from "./StyleCardIndicators";
-import { useBlinking } from "../hooks/useBlinking";
 
 interface StyleCardImageProps {
   style: {
@@ -54,20 +53,6 @@ const StyleCardImage = ({
   onGenerateStyle,
   onRetry
 }: StyleCardImageProps) => {
-  
-  // STEP 5: Use the centralized blinking hook with isGenerating parameter
-  const { isBlinking } = useBlinking(previewUrl, { isGenerating });
-
-  // ENHANCED DEBUG: Log the complete state picture
-  console.log(`🎭 StyleCardImage ${style.name} COMPLETE STATE:`, {
-    previewUrl: previewUrl ? previewUrl.substring(0, 30) + '...' : 'null',
-    isBlinking,
-    isGenerating,
-    showError,
-    hasGeneratedPreview,
-    shouldShowLoadingOverlay: isBlinking && isGenerating && !previewUrl,
-    timestamp: new Date().toISOString()
-  });
 
   return (
     <div className="relative">
@@ -82,7 +67,6 @@ const StyleCardImage = ({
         previewUrl={previewUrl}
         onExpandClick={onExpandClick}
         variant={hasGeneratedPreview ? 'mockup' : 'standard'}
-        isBlinking={isBlinking && !previewUrl} // CRITICAL: Don't blink if preview exists
       />
 
       {/* Indicators */}
@@ -95,17 +79,17 @@ const StyleCardImage = ({
         onCanvasPreviewClick={onCanvasPreviewClick}
       />
 
-      {/* CRITICAL FIX: Only show loading when generating AND no preview exists */}
+      {/* Loading overlay - only show when actively generating */}
       <StyleCardLoadingOverlay
-        isBlinking={isBlinking && isGenerating && !previewUrl}
+        isBlinking={isGenerating && !previewUrl}
         styleName={style.name}
         error={error}
       />
 
-      {/* Blur overlay - pass blinking state */}
+      {/* Blur overlay */}
       <StyleCardBlurOverlay
         shouldBlur={shouldBlur}
-        isBlinking={isBlinking && !previewUrl} // Don't blur if preview exists
+        isBlinking={false}
         previewUrl={previewUrl}
         styleName={style.name}
         onGenerateStyle={onGenerateStyle || (() => {})}
