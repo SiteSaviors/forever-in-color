@@ -16,6 +16,7 @@ export const generateStylePreview = async (
 ) => {
   try {
     console.log('=== STYLE PREVIEW API CALL ===');
+    console.log('🎯 CRITICAL: generateStylePreview called with aspect ratio:', aspectRatio);
     console.log('Generating style preview with GPT-Image-1:', { 
       imageUrl: imageUrl.substring(0, 50) + '...', 
       style, 
@@ -45,7 +46,8 @@ export const generateStylePreview = async (
       sessionId
     };
 
-    console.log('FULL REQUEST BODY TO SUPABASE FUNCTION:', JSON.stringify(requestBody, null, 2));
+    console.log('🔥 CRITICAL: FULL REQUEST BODY TO SUPABASE FUNCTION:');
+    console.log(JSON.stringify(requestBody, null, 2));
     console.log('🎯 CRITICAL: Aspect ratio being sent to API:', aspectRatio);
 
     // Enhanced error handling for the Supabase function call
@@ -80,7 +82,7 @@ export const generateStylePreview = async (
       throw new Error('AI service returned an invalid response. Please try again.');
     }
 
-    console.log('GPT-Image-1 preview generated successfully with aspect ratio:', aspectRatio, '-> URL:', data.preview_url.substring(0, 50) + '...');
+    console.log('✅ GPT-Image-1 preview generated successfully with aspect ratio:', aspectRatio, '-> URL:', data.preview_url.substring(0, 50) + '...');
     
     // Only store the preview if user is authenticated
     if (isAuthenticated) {

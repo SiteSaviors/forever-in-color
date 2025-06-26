@@ -30,7 +30,7 @@ export const useStylePreviewLogic = ({
 
     try {
       console.log(`🎨 Starting manual generation for ${styleName} (ID: ${styleId})`);
-      console.log(`🎯 Selected orientation: ${selectedOrientation}`);
+      console.log(`🎯 CRITICAL: Selected orientation before mapping: ${selectedOrientation}`);
       dispatch({ type: 'START_GENERATION', styleId });
       
       // CRITICAL FIX: Map orientation to correct aspect ratio BEFORE API call
@@ -45,7 +45,7 @@ export const useStylePreviewLogic = ({
         croppedImageLength: croppedImage.length
       });
       
-      console.log(`🔥 CRITICAL DEBUG: Calling generateStylePreview with aspect ratio: ${aspectRatio} for orientation: ${selectedOrientation}`);
+      console.log(`🔥 CRITICAL: Calling generateStylePreview with aspect ratio: ${aspectRatio} for orientation: ${selectedOrientation}`);
       
       const previewUrl = await generateStylePreview(
         croppedImage, 

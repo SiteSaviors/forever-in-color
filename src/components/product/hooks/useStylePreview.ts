@@ -72,7 +72,7 @@ export const useStylePreview = ({
       
       const tempPhotoId = `temp_${Date.now()}_${style.id}`;
       
-      console.log(`🔥 CRITICAL DEBUG: About to call generateStylePreview with aspectRatio: ${aspectRatio}`);
+      console.log(`🔥 CRITICAL: About to call generateStylePreview with aspectRatio: ${aspectRatio}`);
       
       // Generate the preview without server-side watermarking
       const rawPreviewUrl = await generateStylePreview(croppedImage, style.name, tempPhotoId, aspectRatio, {
