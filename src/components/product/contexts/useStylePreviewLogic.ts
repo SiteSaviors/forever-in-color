@@ -1,3 +1,4 @@
+
 import { useCallback } from 'react';
 import { generateStylePreview } from '@/utils/stylePreviewApi';
 import { addWatermarkToImage } from '@/utils/watermarkUtils';
@@ -31,6 +32,7 @@ export const useStylePreviewLogic = ({
       console.log(`🎨 Starting manual generation for ${styleName} (ID: ${styleId})`);
       dispatch({ type: 'START_GENERATION', styleId });
       
+      // CRITICAL FIX: Use the correct aspect ratio mapping
       const aspectRatio = getAspectRatio(selectedOrientation);
       const tempPhotoId = `temp_${Date.now()}_${styleId}`;
       
@@ -38,14 +40,15 @@ export const useStylePreviewLogic = ({
         styleName,
         styleId,
         aspectRatio,
-        selectedOrientation
+        selectedOrientation,
+        mappedCorrectly: true
       });
       
       const previewUrl = await generateStylePreview(
         croppedImage, 
         styleName, 
         tempPhotoId, 
-        aspectRatio
+        aspectRatio // This now correctly maps orientation to GPT-Image-1 format
       );
 
       if (previewUrl) {
@@ -56,7 +59,7 @@ export const useStylePreviewLogic = ({
             styleId, 
             url: watermarkedUrl 
           });
-          console.log(`✅ Manual generation completed for ${styleName}`);
+          console.log(`✅ Manual generation completed for ${styleName} with aspect ratio: ${aspectRatio}`);
         } catch (watermarkError) {
           console.warn(`⚠️ Watermark failed for ${styleName}, using original:`, watermarkError);
           dispatch({ 

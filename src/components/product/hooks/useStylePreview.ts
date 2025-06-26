@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { generateStylePreview } from '@/utils/stylePreviewApi';
 import { addWatermarkToImage } from '@/utils/watermarkUtils';
+import { getAspectRatio } from '../orientation/utils';
 
 interface UseStylePreviewProps {
   style: {
@@ -52,31 +53,14 @@ export const useStylePreview = ({
 
   const isStyleGenerated = hasGeneratedPreview && !!(preGeneratedPreview || previewUrl);
 
-  // Convert selected orientation to GPT-Image-1 supported aspect ratios
-  const getGenerationAspectRatio = useCallback(() => {
-    console.log('Converting selected orientation to GPT-Image-1 aspect ratio:', selectedOrientation);
-    
-    switch (selectedOrientation) {
-      case 'vertical':
-        console.log('Using 2:3 aspect ratio for vertical orientation (GPT-Image-1 supported)');
-        return '2:3';
-      case 'horizontal':
-        console.log('Using 3:2 aspect ratio for horizontal orientation (GPT-Image-1 supported)');
-        return '3:2';
-      case 'square':
-      default:
-        console.log('Using 1:1 aspect ratio for square orientation');
-        return '1:1';
-    }
-  }, [selectedOrientation]);
-
   const generatePreview = useCallback(async () => {
     if (!croppedImage || style.id === 1 || preGeneratedPreview) {
       console.log(`Cannot generate preview for ${style.name}: croppedImage=${!!croppedImage}, styleId=${style.id}, preGenerated=${!!preGeneratedPreview}`);
       return;
     }
 
-    const aspectRatio = getGenerationAspectRatio();
+    // CRITICAL FIX: Use the correct aspect ratio mapping
+    const aspectRatio = getAspectRatio(selectedOrientation);
     console.log(`🎨 Starting preview generation for style: ${style.name} (ID: ${style.id}) with orientation: ${selectedOrientation} -> aspect ratio: ${aspectRatio}`);
     
     setIsLoading(true);
@@ -92,7 +76,7 @@ export const useStylePreview = ({
       });
 
       if (rawPreviewUrl) {
-        console.log(`✅ Raw preview generated for ${style.name}, applying client-side watermark...`);
+        console.log(`✅ Raw preview generated for ${style.name} with correct aspect ratio ${aspectRatio}, applying client-side watermark...`);
         
         try {
           // Apply client-side watermarking
@@ -112,9 +96,9 @@ export const useStylePreview = ({
       console.error(`❌ Error generating preview for ${style.name}:`, error);
     } finally {
       setIsLoading(false);
-      console.log(`🏁 Preview generation completed for ${style.name} (ID: ${style.id})`);
+      console.log(`🏁 Preview generation completed for ${style.name} (ID: ${style.id}) with aspect ratio: ${aspectRatio}`);
     }
-  }, [croppedImage, style.id, style.name, preGeneratedPreview, getGenerationAspectRatio, selectedOrientation]);
+  }, [croppedImage, style.id, style.name, preGeneratedPreview, selectedOrientation]);
 
   const handleClick = useCallback(() => {
     console.log(`🎯 Style clicked: ${style.name} (ID: ${style.id}) with orientation: ${selectedOrientation}`);

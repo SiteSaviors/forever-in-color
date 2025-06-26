@@ -23,16 +23,15 @@ export const detectOrientationFromImage = (imageUrl: string): Promise<string> =>
 
 export const convertOrientationToAspectRatio = (orientation: string) => {
   console.log('Converting orientation to GPT-Image-1 aspect ratio:', orientation);
-  switch (orientation) {
-    case 'vertical':
-      console.log('Using 2:3 for vertical orientation (GPT-Image-1 supported)');
-      return '2:3';
-    case 'horizontal':
-      console.log('Using 3:2 for horizontal orientation (GPT-Image-1 supported)');
-      return '3:2';
-    case 'square':
-    default:
-      console.log('Using 1:1 for square orientation');
-      return '1:1';
-  }
+  
+  const orientationMap = {
+    'square': '1:1',
+    'horizontal': '4:3', 
+    'vertical': '3:4'
+  };
+  
+  const aspectRatio = orientationMap[orientation as keyof typeof orientationMap] || '1:1';
+  console.log(`FIXED MAPPING: ${orientation} -> ${aspectRatio} (was incorrectly using 2:3/3:2 before)`);
+  
+  return aspectRatio;
 };

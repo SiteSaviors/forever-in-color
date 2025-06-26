@@ -1,22 +1,27 @@
 
-// Consolidated orientation utilities
-export { getOrientationIcon } from './orientationIcons';
-export { getCanvasPreview } from './canvasPreview';
-export { detectOrientationFromImage, convertOrientationToAspectRatio } from '../../utils/orientationDetection';
+// Utility functions for orientation handling
 
-// Aspect ratio utility (moved from contexts)
 export const getAspectRatio = (orientation: string): string => {
-  switch (orientation) {
-    case 'vertical':
-      return '2:3';
-    case 'horizontal':
-      return '3:2';
-    case 'square':
-    default:
-      return '1:1';
-  }
+  console.log('Converting orientation to GPT-Image-1 aspect ratio:', orientation);
+  
+  const orientationMap = {
+    'square': '1:1',
+    'horizontal': '4:3', 
+    'vertical': '3:4'
+  };
+  
+  const aspectRatio = orientationMap[orientation as keyof typeof orientationMap] || '1:1';
+  console.log(`Mapped ${orientation} to aspect ratio: ${aspectRatio}`);
+  
+  return aspectRatio;
 };
 
-// Re-export commonly used orientation data
-export { orientationOptions } from '../data/orientationOptions';
-export { sizeOptions } from '../data/sizeOptions';
+export const getDisplayAspectRatio = (orientation: string): number => {
+  const ratioMap = {
+    'square': 1,
+    'horizontal': 4/3,
+    'vertical': 3/4
+  };
+  
+  return ratioMap[orientation as keyof typeof ratioMap] || 1;
+};
