@@ -26,6 +26,8 @@ interface CustomizationSelectorProps {
   onCustomizationChange: (customizations: CustomizationConfig) => void;
   userArtworkUrl?: string | null;
   selectedOrientation?: string;
+  previewUrls?: { [key: number]: string };
+  selectedStyle?: { id: number; name: string } | null;
 }
 
 const CustomizationSelector = ({
@@ -33,10 +35,27 @@ const CustomizationSelector = ({
   customizations,
   onCustomizationChange,
   userArtworkUrl,
-  selectedOrientation = 'square'
+  selectedOrientation = 'square',
+  previewUrls = {},
+  selectedStyle
 }: CustomizationSelectorProps) => {
   const [hasInteracted, setHasInteracted] = useState(false);
   const { canvasFrame, artworkPosition } = useCanvasPreview(selectedOrientation);
+
+  // Get the correct artwork URL - either the direct userArtworkUrl or from previewUrls
+  const getArtworkUrl = () => {
+    if (userArtworkUrl) {
+      return userArtworkUrl;
+    }
+    
+    if (selectedStyle && previewUrls[selectedStyle.id]) {
+      return previewUrls[selectedStyle.id];
+    }
+    
+    return null;
+  };
+
+  const artworkUrl = getArtworkUrl();
 
   const handleCustomizationUpdate = (updates: Partial<CustomizationConfig>) => {
     if (!hasInteracted) setHasInteracted(true);
@@ -52,7 +71,10 @@ const CustomizationSelector = ({
     userArtworkUrl,
     selectedOrientation,
     canvasFrame,
-    artworkPosition
+    artworkPosition,
+    selectedStyle,
+    previewUrls,
+    finalArtworkUrl: artworkUrl
   });
 
   return (
@@ -63,7 +85,7 @@ const CustomizationSelector = ({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Canvas Mockups Only - Expanded to fill column */}
         <CanvasPreviewSection
-          userArtworkUrl={userArtworkUrl}
+          userArtworkUrl={artworkUrl}
           selectedOrientation={selectedOrientation}
           canvasFrame={canvasFrame}
           artworkPosition={artworkPosition}
