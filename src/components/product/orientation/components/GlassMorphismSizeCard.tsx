@@ -1,3 +1,4 @@
+
 import { SizeOption } from "../types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -77,10 +78,16 @@ const GlassMorphismSizeCard = ({
             </Badge>}
         </div>
 
-        {/* Canvas Preview - Only show when we have a user image */}
+        {/* Canvas Preview - Show only canvas mockup without user image */}
         <div className="mb-4">
-          <MorphingCanvasPreview orientation={orientation} userImageUrl={userImageUrl} size={option.size} isSelected={isSelected} isRecommended={isRecommended} onClick={() => {}} // Prevent nested clicks
-        />
+          <MorphingCanvasPreview 
+            orientation={orientation} 
+            userImageUrl={null} // Pass null to only show canvas frame
+            size={option.size} 
+            isSelected={isSelected} 
+            isRecommended={isRecommended} 
+            onClick={() => {}} // Prevent nested clicks
+          />
         </div>
 
         {/* Size Information with Glass Background */}
