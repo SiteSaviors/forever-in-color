@@ -138,14 +138,25 @@ export const ProgressOrchestrator = ({ children }: { children: ReactNode }) => {
     dispatch({ type: 'HIDE_HELP', payload: null });
   };
 
-  // Track user behavior for hesitation detection
+  // Listen for custom initial help event
+  useEffect(() => {
+    const handleInitialHelp = (event: CustomEvent) => {
+      const { type, message } = event.detail;
+      showContextualHelp(type, message);
+    };
+
+    window.addEventListener('showInitialHelp', handleInitialHelp);
+    return () => window.removeEventListener('showInitialHelp', handleInitialHelp);
+  }, []);
+
+  // Track user behavior for hesitation detection (excluding initial 20-second tooltip)
   useEffect(() => {
     const interval = setInterval(() => {
       const now = Date.now();
       const timeSinceLastInteraction = now - state.userBehavior.lastInteraction;
       
-      // If user hasn't interacted for 10 seconds, show contextual help
-      if (timeSinceLastInteraction > 10000 && !state.contextualHelp.showTooltip) {
+      // Only show hesitation help after 30 seconds (after initial 20-second period)
+      if (timeSinceLastInteraction > 30000 && !state.contextualHelp.showTooltip) {
         const helpMessages = {
           upload: "💡 Upload any photo - our AI works best with clear, well-lit images",
           style: "🎨 Try hovering over styles to see how they transform your photo",
@@ -156,7 +167,7 @@ export const ProgressOrchestrator = ({ children }: { children: ReactNode }) => {
         const message = helpMessages[state.currentSubStep as keyof typeof helpMessages] || "Need help? We're here to guide you!";
         showContextualHelp('hesitation', message);
       }
-    }, 5000);
+    }, 10000);
 
     return () => clearInterval(interval);
   }, [state.userBehavior.lastInteraction, state.contextualHelp.showTooltip, state.currentSubStep]);

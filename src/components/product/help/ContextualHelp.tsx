@@ -9,10 +9,41 @@ import { useProgressOrchestrator } from "../progress/ProgressOrchestrator";
 const ContextualHelp = () => {
   const { state, hideContextualHelp, triggerHaptic } = useProgressOrchestrator();
   const [isVisible, setIsVisible] = useState(false);
+  const [hasShownInitialTooltip, setHasShownInitialTooltip] = useState(false);
+  const [pageLoadTime] = useState(Date.now());
 
   useEffect(() => {
     setIsVisible(state.contextualHelp.showTooltip);
   }, [state.contextualHelp.showTooltip]);
+
+  // Show initial tooltip once after 20 seconds if no image uploaded
+  useEffect(() => {
+    if (hasShownInitialTooltip) return;
+
+    const timer = setTimeout(() => {
+      // Check if user hasn't uploaded an image (still on upload sub-step)
+      if (state.currentSubStep === 'upload' && !hasShownInitialTooltip) {
+        setHasShownInitialTooltip(true);
+        // This will trigger the contextual help through the existing system
+        const helpEvent = new CustomEvent('showInitialHelp', {
+          detail: {
+            type: 'hesitation',
+            message: "💡 Upload any photo - our AI works best with clear, well-lit images"
+          }
+        });
+        window.dispatchEvent(helpEvent);
+      }
+    }, 20000); // 20 seconds
+
+    return () => clearTimeout(timer);
+  }, [state.currentSubStep, hasShownInitialTooltip]);
+
+  // Reset the flag if user moves past upload step
+  useEffect(() => {
+    if (state.currentSubStep !== 'upload') {
+      setHasShownInitialTooltip(true); // Prevent showing again
+    }
+  }, [state.currentSubStep]);
 
   if (!isVisible) return null;
 
