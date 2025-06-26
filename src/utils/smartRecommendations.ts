@@ -4,4 +4,5 @@ export type { UserPreference, SmartRecommendation, ContextualFactors } from './r
 export { SmartRecommendationEngine } from './recommendation/SmartRecommendationEngine';
 
 // Create and export a singleton instance
+import { SmartRecommendationEngine } from './recommendation/SmartRecommendationEngine';
 export const smartRecommendationEngine = new SmartRecommendationEngine();
