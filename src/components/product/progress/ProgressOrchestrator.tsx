@@ -10,22 +10,42 @@ interface ProgressState {
     hesitationCount: number;
     timeOnStep: number;
     lastInteraction: number;
+    hoverDuration: number;
+    clickPattern: string[];
   };
   contextualHelp: {
     showTooltip: boolean;
     tooltipType: string;
     tooltipMessage: string;
+    helpLevel: 'minimal' | 'moderate' | 'detailed';
   };
   socialProof: {
     recentActivity: string[];
     confidenceScore: number;
     completionRate: number;
+    liveUserCount: number;
+    recentCompletions: number;
   };
   personalizedMessages: string[];
+  conversionElements: {
+    urgencyMessage: string;
+    momentumScore: number;
+    personalizationLevel: 'low' | 'medium' | 'high';
+    timeSpentOnPlatform: number;
+  };
+  aiAnalysis: {
+    isAnalyzing: boolean;
+    analysisStage: string;
+    imageType: 'portrait' | 'landscape' | 'square' | 'unknown';
+    recommendedStyles: number[];
+  };
 }
 
 interface ProgressAction {
-  type: 'SET_STEP' | 'SET_SUB_STEP' | 'COMPLETE_STEP' | 'SHOW_HELP' | 'HIDE_HELP' | 'UPDATE_BEHAVIOR' | 'UPDATE_SOCIAL_PROOF' | 'ADD_PERSONALIZED_MESSAGE';
+  type: 'SET_STEP' | 'SET_SUB_STEP' | 'COMPLETE_STEP' | 'SHOW_HELP' | 'HIDE_HELP' | 
+        'UPDATE_BEHAVIOR' | 'UPDATE_SOCIAL_PROOF' | 'ADD_PERSONALIZED_MESSAGE' |
+        'UPDATE_CONVERSION_ELEMENTS' | 'START_AI_ANALYSIS' | 'COMPLETE_AI_ANALYSIS' |
+        'UPDATE_HELP_LEVEL' | 'TRACK_HOVER' | 'TRACK_CLICK';
   payload: any;
 }
 
@@ -36,12 +56,15 @@ const initialState: ProgressState = {
   userBehavior: {
     hesitationCount: 0,
     timeOnStep: 0,
-    lastInteraction: Date.now()
+    lastInteraction: Date.now(),
+    hoverDuration: 0,
+    clickPattern: []
   },
   contextualHelp: {
     showTooltip: false,
     tooltipType: '',
-    tooltipMessage: ''
+    tooltipMessage: '',
+    helpLevel: 'minimal'
   },
   socialProof: {
     recentActivity: [
@@ -51,9 +74,23 @@ const initialState: ProgressState = {
       "David ordered his 24x18 canvas"
     ],
     confidenceScore: 95,
-    completionRate: 87
+    completionRate: 87,
+    liveUserCount: 247,
+    recentCompletions: 43
   },
-  personalizedMessages: []
+  personalizedMessages: [],
+  conversionElements: {
+    urgencyMessage: "",
+    momentumScore: 0,
+    personalizationLevel: 'low',
+    timeSpentOnPlatform: 0
+  },
+  aiAnalysis: {
+    isAnalyzing: false,
+    analysisStage: '',
+    imageType: 'unknown',
+    recommendedStyles: []
+  }
 };
 
 function progressReducer(state: ProgressState, action: ProgressAction): ProgressState {
@@ -62,7 +99,11 @@ function progressReducer(state: ProgressState, action: ProgressAction): Progress
       return { 
         ...state, 
         currentStep: action.payload,
-        userBehavior: { ...state.userBehavior, lastInteraction: Date.now() }
+        userBehavior: { ...state.userBehavior, lastInteraction: Date.now() },
+        conversionElements: {
+          ...state.conversionElements,
+          momentumScore: Math.min(100, state.conversionElements.momentumScore + 15)
+        }
       };
     case 'SET_SUB_STEP':
       return { 
@@ -71,10 +112,16 @@ function progressReducer(state: ProgressState, action: ProgressAction): Progress
         userBehavior: { ...state.userBehavior, lastInteraction: Date.now() }
       };
     case 'COMPLETE_STEP':
+      const newMomentumScore = Math.min(100, state.conversionElements.momentumScore + 25);
       return {
         ...state,
         completedSteps: [...state.completedSteps, action.payload],
-        userBehavior: { ...state.userBehavior, lastInteraction: Date.now() }
+        userBehavior: { ...state.userBehavior, lastInteraction: Date.now() },
+        conversionElements: {
+          ...state.conversionElements,
+          momentumScore: newMomentumScore,
+          personalizationLevel: newMomentumScore > 50 ? 'high' : newMomentumScore > 25 ? 'medium' : 'low'
+        }
       };
     case 'SHOW_HELP':
       return {
@@ -82,13 +129,19 @@ function progressReducer(state: ProgressState, action: ProgressAction): Progress
         contextualHelp: {
           showTooltip: true,
           tooltipType: action.payload.type,
-          tooltipMessage: action.payload.message
+          tooltipMessage: action.payload.message,
+          helpLevel: action.payload.level || state.contextualHelp.helpLevel
         }
       };
     case 'HIDE_HELP':
       return {
         ...state,
-        contextualHelp: { showTooltip: false, tooltipType: '', tooltipMessage: '' }
+        contextualHelp: { 
+          showTooltip: false, 
+          tooltipType: '', 
+          tooltipMessage: '',
+          helpLevel: state.contextualHelp.helpLevel
+        }
       };
     case 'UPDATE_BEHAVIOR':
       return {
@@ -105,6 +158,57 @@ function progressReducer(state: ProgressState, action: ProgressAction): Progress
         ...state,
         personalizedMessages: [...state.personalizedMessages, action.payload]
       };
+    case 'UPDATE_CONVERSION_ELEMENTS':
+      return {
+        ...state,
+        conversionElements: { ...state.conversionElements, ...action.payload }
+      };
+    case 'START_AI_ANALYSIS':
+      return {
+        ...state,
+        aiAnalysis: {
+          ...state.aiAnalysis,
+          isAnalyzing: true,
+          analysisStage: action.payload.stage
+        }
+      };
+    case 'COMPLETE_AI_ANALYSIS':
+      return {
+        ...state,
+        aiAnalysis: {
+          ...state.aiAnalysis,
+          isAnalyzing: false,
+          analysisStage: '',
+          imageType: action.payload.imageType,
+          recommendedStyles: action.payload.recommendedStyles
+        }
+      };
+    case 'UPDATE_HELP_LEVEL':
+      return {
+        ...state,
+        contextualHelp: {
+          ...state.contextualHelp,
+          helpLevel: action.payload
+        }
+      };
+    case 'TRACK_HOVER':
+      return {
+        ...state,
+        userBehavior: {
+          ...state.userBehavior,
+          hoverDuration: state.userBehavior.hoverDuration + action.payload,
+          lastInteraction: Date.now()
+        }
+      };
+    case 'TRACK_CLICK':
+      return {
+        ...state,
+        userBehavior: {
+          ...state.userBehavior,
+          clickPattern: [...state.userBehavior.clickPattern, action.payload].slice(-10),
+          lastInteraction: Date.now()
+        }
+      };
     default:
       return state;
   }
@@ -114,28 +218,52 @@ const ProgressContext = createContext<{
   state: ProgressState;
   dispatch: React.Dispatch<ProgressAction>;
   triggerHaptic: () => void;
-  showContextualHelp: (type: string, message: string) => void;
+  showContextualHelp: (type: string, message: string, level?: 'minimal' | 'moderate' | 'detailed') => void;
   hideContextualHelp: () => void;
+  startAIAnalysis: (stage: string) => void;
+  completeAIAnalysis: (imageType: string, recommendations: number[]) => void;
+  trackHover: (duration: number) => void;
+  trackClick: (element: string) => void;
 } | null>(null);
 
 export const ProgressOrchestrator = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(progressReducer, initialState);
   const isMobile = useIsMobile();
 
-  // Haptic feedback for mobile
+  // Enhanced haptic feedback for mobile
   const triggerHaptic = () => {
     if (isMobile && 'vibrate' in navigator) {
-      navigator.vibrate(50);
+      // Different vibration patterns based on action
+      const pattern = state.completedSteps.length > 0 ? [50, 30, 50] : [50];
+      navigator.vibrate(pattern);
     }
   };
 
-  // Smart contextual help
-  const showContextualHelp = (type: string, message: string) => {
-    dispatch({ type: 'SHOW_HELP', payload: { type, message } });
+  // Smart contextual help with progressive disclosure
+  const showContextualHelp = (type: string, message: string, level: 'minimal' | 'moderate' | 'detailed' = 'minimal') => {
+    dispatch({ type: 'SHOW_HELP', payload: { type, message, level } });
   };
 
   const hideContextualHelp = () => {
     dispatch({ type: 'HIDE_HELP', payload: null });
+  };
+
+  // AI Analysis tracking
+  const startAIAnalysis = (stage: string) => {
+    dispatch({ type: 'START_AI_ANALYSIS', payload: { stage } });
+  };
+
+  const completeAIAnalysis = (imageType: string, recommendations: number[]) => {
+    dispatch({ type: 'COMPLETE_AI_ANALYSIS', payload: { imageType, recommendedStyles: recommendations } });
+  };
+
+  // Behavior tracking
+  const trackHover = (duration: number) => {
+    dispatch({ type: 'TRACK_HOVER', payload: duration });
+  };
+
+  const trackClick = (element: string) => {
+    dispatch({ type: 'TRACK_CLICK', payload: element });
   };
 
   // Listen for custom initial help event
@@ -149,30 +277,41 @@ export const ProgressOrchestrator = ({ children }: { children: ReactNode }) => {
     return () => window.removeEventListener('showInitialHelp', handleInitialHelp);
   }, []);
 
-  // Track user behavior for hesitation detection (excluding initial 20-second tooltip)
+  // Advanced hesitation detection with progressive help
   useEffect(() => {
     const interval = setInterval(() => {
       const now = Date.now();
       const timeSinceLastInteraction = now - state.userBehavior.lastInteraction;
       
-      // Only show hesitation help after 30 seconds (after initial 20-second period)
-      if (timeSinceLastInteraction > 30000 && !state.contextualHelp.showTooltip) {
+      // Progressive help levels based on hesitation
+      if (timeSinceLastInteraction > 15000 && !state.contextualHelp.showTooltip) {
+        const helpLevel = timeSinceLastInteraction > 45000 ? 'detailed' : 
+                         timeSinceLastInteraction > 30000 ? 'moderate' : 'minimal';
+        
         const helpMessages = {
-          upload: "💡 Upload any photo - our AI works best with clear, well-lit images",
-          style: "🎨 Try hovering over styles to see how they transform your photo",
-          orientation: "📐 Choose the format that best showcases your photo's composition",
-          size: "📏 Larger sizes create more stunning wall art - most popular is 24x18\""
+          upload: {
+            minimal: "💡 Upload any photo to get started",
+            moderate: "💡 Upload any photo - our AI works best with clear, well-lit images. Try portrait or landscape photos!",
+            detailed: "💡 Ready to create art? Upload any photo and our AI will analyze it to recommend the perfect artistic styles. Works best with clear, well-lit photos of people, pets, or landscapes."
+          },
+          'style-selection': {
+            minimal: "🎨 Choose your favorite style",
+            moderate: "🎨 Try hovering over styles to see live previews with your photo",
+            detailed: "🎨 Our AI has analyzed your photo! Hover over any style to see an instant preview. The highlighted styles work especially well with your image composition."
+          }
         };
         
-        const message = helpMessages[state.currentSubStep as keyof typeof helpMessages] || "Need help? We're here to guide you!";
-        showContextualHelp('hesitation', message);
+        const messages = helpMessages[state.currentSubStep as keyof typeof helpMessages];
+        if (messages) {
+          showContextualHelp('hesitation', messages[helpLevel], helpLevel);
+        }
       }
-    }, 10000);
+    }, 8000);
 
     return () => clearInterval(interval);
   }, [state.userBehavior.lastInteraction, state.contextualHelp.showTooltip, state.currentSubStep]);
 
-  // Rotate social proof activity
+  // Dynamic social proof with real-time updates
   useEffect(() => {
     const interval = setInterval(() => {
       const activities = [
@@ -183,18 +322,66 @@ export const ProgressOrchestrator = ({ children }: { children: ReactNode }) => {
         "Lisa chose Neon Splash for her pet photo",
         "James upgraded to Premium Float Frame",
         "Maya selected square orientation",
-        "Alex just placed his order"
+        "Alex just placed his order",
+        "Sarah created stunning Watercolor Dreams art",
+        "Mike chose Classic Oil for his family portrait",
+        "Anna selected Electric Bloom style",
+        "Tom ordered his 16x20 masterpiece"
       ];
       
+      // Simulate live user activity
       const shuffled = [...activities].sort(() => Math.random() - 0.5);
+      const newCompletions = Math.floor(Math.random() * 5) + 40;
+      const liveUsers = Math.floor(Math.random() * 50) + 200;
+      
       dispatch({ 
         type: 'UPDATE_SOCIAL_PROOF', 
-        payload: { recentActivity: shuffled.slice(0, 4) }
+        payload: { 
+          recentActivity: shuffled.slice(0, 4),
+          recentCompletions: newCompletions,
+          liveUserCount: liveUsers
+        }
       });
-    }, 15000);
+    }, 12000);
 
     return () => clearInterval(interval);
   }, []);
+
+  // Conversion momentum tracking
+  useEffect(() => {
+    const timer = setInterval(() => {
+      dispatch({
+        type: 'UPDATE_CONVERSION_ELEMENTS',
+        payload: {
+          timeSpentOnPlatform: state.conversionElements.timeSpentOnPlatform + 1
+        }
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [state.conversionElements.timeSpentOnPlatform]);
+
+  // Urgency messaging based on user behavior
+  useEffect(() => {
+    const timeSpent = state.conversionElements.timeSpentOnPlatform;
+    const momentum = state.conversionElements.momentumScore;
+    
+    let urgencyMessage = "";
+    if (timeSpent > 300 && momentum < 50) { // 5 minutes, low momentum
+      urgencyMessage = "🔥 Your personalized recommendations are ready!";
+    } else if (momentum > 75) {
+      urgencyMessage = "✨ You're almost done creating your masterpiece!";
+    } else if (state.completedSteps.length > 0) {
+      urgencyMessage = "🎨 Great progress! Your art is taking shape...";
+    }
+
+    if (urgencyMessage !== state.conversionElements.urgencyMessage) {
+      dispatch({
+        type: 'UPDATE_CONVERSION_ELEMENTS',
+        payload: { urgencyMessage }
+      });
+    }
+  }, [state.conversionElements.timeSpentOnPlatform, state.conversionElements.momentumScore, state.completedSteps.length]);
 
   return (
     <ProgressContext.Provider value={{ 
@@ -202,7 +389,11 @@ export const ProgressOrchestrator = ({ children }: { children: ReactNode }) => {
       dispatch, 
       triggerHaptic, 
       showContextualHelp, 
-      hideContextualHelp 
+      hideContextualHelp,
+      startAIAnalysis,
+      completeAIAnalysis,
+      trackHover,
+      trackClick
     }}>
       {children}
     </ProgressContext.Provider>
