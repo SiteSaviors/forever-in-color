@@ -1,5 +1,7 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { createPreview } from "./previewOperations";
+import { getAspectRatio } from "@/components/product/orientation/utils";
 
 export const generateStylePreview = async (
   imageUrl: string, 
@@ -37,13 +39,14 @@ export const generateStylePreview = async (
       style,
       photoId,
       isAuthenticated,
-      aspectRatio,
+      aspectRatio, // This should now be the correctly mapped aspect ratio
       watermark: options.watermark !== false, // Default to true
       quality: options.quality || 'preview',
       sessionId
     };
 
     console.log('FULL REQUEST BODY TO SUPABASE FUNCTION:', JSON.stringify(requestBody, null, 2));
+    console.log('🎯 CRITICAL: Aspect ratio being sent to API:', aspectRatio);
 
     // Enhanced error handling for the Supabase function call
     const { data, error } = await supabase.functions.invoke('generate-style-preview', {
@@ -77,7 +80,7 @@ export const generateStylePreview = async (
       throw new Error('AI service returned an invalid response. Please try again.');
     }
 
-    console.log('GPT-Image-1 preview generated successfully with watermarking:', data.preview_url.substring(0, 50) + '...');
+    console.log('GPT-Image-1 preview generated successfully with aspect ratio:', aspectRatio, '-> URL:', data.preview_url.substring(0, 50) + '...');
     
     // Only store the preview if user is authenticated
     if (isAuthenticated) {

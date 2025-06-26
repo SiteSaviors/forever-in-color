@@ -59,16 +59,20 @@ export const useStylePreview = ({
       return;
     }
 
-    // CRITICAL FIX: Use the correct aspect ratio mapping
+    console.log(`🎯 useStylePreview: Selected orientation is: ${selectedOrientation}`);
+    
+    // CRITICAL FIX: Map orientation to correct aspect ratio BEFORE API call
     const aspectRatio = getAspectRatio(selectedOrientation);
     console.log(`🎨 Starting preview generation for style: ${style.name} (ID: ${style.id}) with orientation: ${selectedOrientation} -> aspect ratio: ${aspectRatio}`);
     
     setIsLoading(true);
     
     try {
-      console.log(`🔄 Generating preview for ${style.name} with aspect ratio: ${aspectRatio}`);
+      console.log(`🔄 Generating preview for ${style.name} with mapped aspect ratio: ${aspectRatio} (from orientation: ${selectedOrientation})`);
       
       const tempPhotoId = `temp_${Date.now()}_${style.id}`;
+      
+      console.log(`🔥 CRITICAL DEBUG: About to call generateStylePreview with aspectRatio: ${aspectRatio}`);
       
       // Generate the preview without server-side watermarking
       const rawPreviewUrl = await generateStylePreview(croppedImage, style.name, tempPhotoId, aspectRatio, {

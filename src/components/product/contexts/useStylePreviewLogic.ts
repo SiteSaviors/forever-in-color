@@ -30,25 +30,28 @@ export const useStylePreviewLogic = ({
 
     try {
       console.log(`🎨 Starting manual generation for ${styleName} (ID: ${styleId})`);
+      console.log(`🎯 Selected orientation: ${selectedOrientation}`);
       dispatch({ type: 'START_GENERATION', styleId });
       
-      // CRITICAL FIX: Use the correct aspect ratio mapping
+      // CRITICAL FIX: Map orientation to correct aspect ratio BEFORE API call
       const aspectRatio = getAspectRatio(selectedOrientation);
       const tempPhotoId = `temp_${Date.now()}_${styleId}`;
       
       console.log(`📋 Generation parameters:`, {
         styleName,
         styleId,
-        aspectRatio,
         selectedOrientation,
-        mappedCorrectly: true
+        mappedAspectRatio: aspectRatio,
+        croppedImageLength: croppedImage.length
       });
+      
+      console.log(`🔥 CRITICAL DEBUG: Calling generateStylePreview with aspect ratio: ${aspectRatio} for orientation: ${selectedOrientation}`);
       
       const previewUrl = await generateStylePreview(
         croppedImage, 
         styleName, 
         tempPhotoId, 
-        aspectRatio // This now correctly maps orientation to GPT-Image-1 format
+        aspectRatio // This should now be "4:3", "3:4", or "1:1"
       );
 
       if (previewUrl) {
