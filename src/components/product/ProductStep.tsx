@@ -1,7 +1,8 @@
 
-import { LucideIcon, Check, ChevronRight, Sparkles, Lock, Unlock, CheckCircle, Upload, Palette, Settings, ShoppingCart, Circle } from "lucide-react";
+import { LucideIcon, Check, ChevronRight, Sparkles, Lock, Unlock, CheckCircle, Upload, Palette, Settings, ShoppingCart, Circle, Edit3 } from "lucide-react";
 import { AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 interface ProductStepProps {
   stepNumber: number;
@@ -49,6 +50,11 @@ const ProductStep = ({
   };
 
   const lockStatus = getLockStatus();
+
+  const handleEditSelection = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onStepClick();
+  };
 
   return (
     <AccordionItem 
@@ -134,8 +140,18 @@ const ProductStep = ({
                 )}
                 
                 {lockStatus === "complete" && (
-                  <div className="animate-in zoom-in duration-300">
+                  <div className="flex items-center gap-2 animate-in zoom-in duration-300">
                     <CheckCircle className="w-4 h-4 text-emerald-500" />
+                    {/* Edit Selection Button - Only show when step is completed */}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleEditSelection}
+                      className="h-8 px-3 text-xs font-medium text-purple-600 hover:text-purple-800 hover:bg-purple-50 transition-all duration-200 opacity-80 hover:opacity-100"
+                    >
+                      <Edit3 className="w-3 h-3 mr-1" />
+                      Edit Selection
+                    </Button>
                   </div>
                 )}
               </div>
