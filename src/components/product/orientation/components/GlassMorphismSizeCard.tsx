@@ -46,21 +46,40 @@ const GlassMorphismSizeCard = memo(({
     onContinue(e);
   }, [onContinue]);
 
-  // Enhanced card styling with better touch feedback
+  const getCardState = () => {
+    if (isSelected) return "selected";
+    if (isRecommended) return "recommended";
+    return "default";
+  };
+
+  const cardState = getCardState();
+
+  // Enhanced card styling with state-based transitions
   const cardStyles = useMemo(() => ({
-    transform: isSelected ? 'scale(1.03)' : 'scale(1)',
-    background: isSelected 
-      ? 'rgba(255, 255, 255, 0.95)' 
+    transform: isSelected ? 'scale(1.05)' : 'scale(1)',
+    background: cardState === "selected"
+      ? 'rgba(255, 255, 255, 0.98)' 
+      : cardState === "recommended"
+      ? 'rgba(255, 251, 235, 0.95)'
       : 'rgba(255, 255, 255, 0.85)',
-    borderColor: isSelected ? 'rgb(168, 85, 247)' : 'rgba(255, 255, 255, 0.6)',
-    boxShadow: isSelected 
-      ? '0 25px 50px -12px rgba(168, 85, 247, 0.25), 0 0 0 1px rgba(168, 85, 247, 0.1)' 
+    borderColor: cardState === "selected" 
+      ? 'rgb(168, 85, 247)' 
+      : cardState === "recommended"
+      ? 'rgb(245, 158, 11)'
+      : 'rgba(255, 255, 255, 0.6)',
+    boxShadow: cardState === "selected"
+      ? '0 25px 50px -12px rgba(168, 85, 247, 0.35), 0 0 0 1px rgba(168, 85, 247, 0.2)' 
+      : cardState === "recommended"
+      ? '0 25px 50px -12px rgba(245, 158, 11, 0.25), 0 0 0 1px rgba(245, 158, 11, 0.1)'
       : '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
-  }), [isSelected]);
+  }), [cardState]);
 
   return (
     <div 
-      className="relative group cursor-pointer transition-all duration-300 will-change-transform min-w-[280px] touch-manipulation"
+      className={`
+        relative group cursor-pointer transition-all duration-500 will-change-transform min-w-[280px] touch-manipulation
+        ${cardState === "selected" ? 'z-10 animate-pulse' : ''}
+      `}
       style={cardStyles}
       onClick={handleCardClick}
       role="button" 
@@ -75,9 +94,9 @@ const GlassMorphismSizeCard = memo(({
         }
       }}
     >
-      {/* Premium background with enhanced visual depth */}
+      {/* Enhanced background with state transitions */}
       <div 
-        className="absolute inset-0 rounded-3xl border-2 transition-all duration-300 backdrop-blur-sm"
+        className="absolute inset-0 rounded-3xl border-2 transition-all duration-500 backdrop-blur-md"
         style={{
           background: `linear-gradient(135deg, ${cardStyles.background}, rgba(255, 255, 255, 0.7))`,
           borderColor: cardStyles.borderColor,
@@ -85,9 +104,9 @@ const GlassMorphismSizeCard = memo(({
         }}
       />
 
-      {/* Content Container with improved spacing */}
+      {/* Content Container with improved spacing and animations */}
       <div className="relative p-6 md:p-8 space-y-6">
-        {/* Top Badges with better visual hierarchy */}
+        {/* Enhanced Top Badges */}
         <CardBadges 
           popular={option.popular}
           isRecommended={isRecommended}
@@ -95,44 +114,79 @@ const GlassMorphismSizeCard = memo(({
           originalPrice={option.originalPrice}
         />
 
-        {/* Enhanced Canvas Preview */}
-        <div className="flex justify-center">
+        {/* Enhanced Canvas Preview with state transitions */}
+        <div className={`
+          flex justify-center transition-all duration-500
+          ${cardState === "selected" ? 'scale-110 drop-shadow-2xl' : 'group-hover:scale-105'}
+        `}>
           <CanvasPreview 
             orientation={orientation}
             userImageUrl={userImageUrl}
           />
         </div>
 
-        {/* Size Information with improved typography */}
+        {/* Size Information with enhanced typography */}
         <SizeInfo size={option.size} />
 
-        {/* Enhanced Pricing Display */}
+        {/* Enhanced Pricing Display with state awareness */}
         <PricingDisplay 
           salePrice={option.salePrice}
           originalPrice={option.originalPrice}
         />
 
-        {/* Description with premium card styling */}
-        <div className="bg-gradient-to-r from-gray-50/95 to-purple-50/80 rounded-2xl p-4 text-center border border-white/50 backdrop-blur-sm">
-          <p className="text-sm md:text-base text-gray-700 leading-relaxed font-medium">{option.description}</p>
+        {/* Description with state-based styling */}
+        <div className={`
+          rounded-2xl p-4 text-center border backdrop-blur-sm transition-all duration-300
+          ${cardState === "selected"
+            ? 'bg-gradient-to-r from-purple-50/95 to-pink-50/80 border-purple-200/70'
+            : cardState === "recommended"
+            ? 'bg-gradient-to-r from-amber-50/95 to-orange-50/80 border-amber-200/70'
+            : 'bg-gradient-to-r from-gray-50/95 to-purple-50/80 border-white/50'
+          }
+        `}>
+          <p className={`
+            text-sm md:text-base leading-relaxed font-medium transition-colors duration-300
+            ${cardState === "selected" ? 'text-purple-700' : 'text-gray-700'}
+          `}>
+            {option.description}
+          </p>
         </div>
 
-        {/* Enhanced Continue Button with better touch target */}
-        <ContinueButton 
-          size={option.size}
-          isSelected={isSelected}
-          onContinue={handleContinueClick}
-        />
+        {/* Enhanced Continue Button with better visibility */}
+        <div className={`
+          transition-all duration-500 transform
+          ${isSelected ? 'scale-100 opacity-100' : 'scale-95 opacity-0 pointer-events-none'}
+        `}>
+          <ContinueButton 
+            size={option.size}
+            isSelected={isSelected}
+            onContinue={handleContinueClick}
+          />
+        </div>
       </div>
 
-      {/* Premium selection ring indicator */}
+      {/* Enhanced selection effects with multiple layers */}
       {isSelected && (
-        <div className="absolute inset-0 rounded-3xl border-3 border-purple-400/70 pointer-events-none animate-pulse"></div>
+        <>
+          <div className="absolute inset-0 rounded-3xl border-3 border-purple-400/70 pointer-events-none animate-pulse"></div>
+          <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-purple-400/20 to-pink-400/20 blur-md pointer-events-none animate-pulse"></div>
+        </>
+      )}
+      
+      {/* Recommended glow effect */}
+      {isRecommended && !isSelected && (
+        <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-amber-400/15 to-orange-400/15 blur-sm pointer-events-none"></div>
       )}
       
       {/* Hover enhancement for non-selected cards */}
       {!isSelected && (
-        <div className="absolute inset-0 rounded-3xl border-2 border-transparent group-hover:border-purple-200/50 transition-all duration-300 pointer-events-none"></div>
+        <div className={`
+          absolute inset-0 rounded-3xl border-2 border-transparent transition-all duration-500 pointer-events-none
+          ${cardState === "recommended" 
+            ? 'group-hover:border-amber-300/60' 
+            : 'group-hover:border-purple-200/60'
+          }
+        `}></div>
       )}
     </div>
   );
