@@ -3,7 +3,7 @@ import { SizeOption } from "../types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Crown, Zap, Heart, Sparkles } from "lucide-react";
-import { memo, useState, useCallback } from "react";
+import { memo, useState, useCallback, useMemo } from "react";
 
 interface GlassMorphismSizeCardProps {
   option: SizeOption;
@@ -26,7 +26,8 @@ const GlassMorphismSizeCard = memo(({
 }: GlassMorphismSizeCardProps) => {
   const [imageLoaded, setImageLoaded] = useState(false);
 
-  const getRoomContext = useCallback((size: string) => {
+  // Memoize expensive calculations
+  const roomContext = useMemo(() => {
     const contexts = {
       '8" x 8"': 'Perfect for desks & shelves',
       '12" x 12"': 'Ideal for gallery walls',
@@ -44,22 +45,16 @@ const GlassMorphismSizeCard = memo(({
       '24" x 18"': 'Premium wall art',
       '36" x 24"': 'Luxury showcase'
     };
-    return contexts[size] || 'Beautiful for any space';
-  }, []);
+    return contexts[option.size] || 'Beautiful for any space';
+  }, [option.size]);
 
-  const getPopularityIcon = useCallback(() => {
-    if (option.popular) return <Crown className="w-3 h-3" />;
-    if (option.salePrice < option.originalPrice) return <Zap className="w-3 h-3" />;
-    return <Heart className="w-3 h-3" />;
+  const popularityData = useMemo(() => {
+    if (option.popular) return { icon: Crown, label: "Most Popular" };
+    if (option.salePrice < option.originalPrice) return { icon: Zap, label: "Best Value" };
+    return { icon: Heart, label: "Customer Favorite" };
   }, [option.popular, option.salePrice, option.originalPrice]);
 
-  const getPopularityLabel = useCallback(() => {
-    if (option.popular) return "Most Popular";
-    if (option.salePrice < option.originalPrice) return "Best Value";
-    return "Customer Favorite";
-  }, [option.popular, option.salePrice, option.originalPrice]);
-
-  const getCanvasFrame = useCallback(() => {
+  const canvasFrame = useMemo(() => {
     switch (orientation) {
       case 'horizontal':
         return '/lovable-uploads/9eb9363d-dc17-4df1-a03d-0c5fb463a473.png';
@@ -76,30 +71,48 @@ const GlassMorphismSizeCard = memo(({
     setImageLoaded(true);
   }, []);
 
+  // Optimized click handler to prevent event bubbling issues
+  const handleCardClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    onClick();
+  }, [onClick]);
+
+  const handleContinueClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    onContinue(e);
+  }, [onContinue]);
+
+  // Simplified styles to reduce re-computation
+  const cardStyles = useMemo(() => ({
+    transform: isSelected ? 'scale(1.02)' : 'scale(1)',
+    background: isSelected 
+      ? 'rgba(255, 255, 255, 0.85)' 
+      : 'rgba(255, 255, 255, 0.65)',
+    borderColor: isSelected ? 'rgb(196, 181, 253)' : 'rgba(255, 255, 255, 0.4)',
+    boxShadow: isSelected 
+      ? '0 25px 50px -12px rgba(0, 0, 0, 0.25)' 
+      : '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
+  }), [isSelected]);
+
   return (
     <div 
-      className={`relative group cursor-pointer transition-transform duration-200 ${
-        isSelected ? 'scale-105' : 'hover:scale-102'
-      }`} 
-      onClick={onClick}
+      className="relative group cursor-pointer transition-transform duration-150 will-change-transform"
+      style={cardStyles}
+      onClick={handleCardClick}
       role="button" 
       tabIndex={0} 
       aria-pressed={isSelected} 
       aria-label={`Select ${option.size} size`}
     >
-      {/* Optimized Glass Morphism Background - Reduced complexity */}
-      <div className={`absolute inset-0 rounded-2xl transition-all duration-200 ${
-        isSelected 
-          ? 'bg-white/80 shadow-2xl border-2 border-purple-300' 
-          : 'bg-white/60 shadow-xl hover:shadow-2xl border border-white/40'
-      }`}>
-        {/* Simplified Gradient Overlay */}
-        <div className={`absolute inset-0 rounded-2xl transition-opacity duration-200 ${
-          isSelected 
-            ? 'bg-gradient-to-br from-purple-50/80 to-pink-50/80 opacity-100' 
-            : 'bg-gradient-to-br from-gray-50/50 to-gray-100/50 opacity-0 group-hover:opacity-100'
-        }`} />
-      </div>
+      {/* Simplified Background - Removed complex gradients */}
+      <div 
+        className="absolute inset-0 rounded-2xl border-2 transition-all duration-150"
+        style={{
+          background: cardStyles.background,
+          borderColor: cardStyles.borderColor,
+          boxShadow: cardStyles.boxShadow
+        }}
+      />
 
       {/* Content Container */}
       <div className="relative p-6 space-y-4">
@@ -108,33 +121,33 @@ const GlassMorphismSizeCard = memo(({
           {(option.popular || isRecommended) && (
             <Badge className={`${
               isRecommended 
-                ? 'bg-amber-500/90 text-white' 
-                : 'bg-purple-600/90 text-white'
-            } shadow-lg border-0`}>
-              {getPopularityIcon()}
-              <span className="ml-1">{isRecommended ? 'AI Pick' : getPopularityLabel()}</span>
+                ? 'bg-amber-500 text-white' 
+                : 'bg-purple-600 text-white'
+            } border-0`}>
+              <popularityData.icon className="w-3 h-3" />
+              <span className="ml-1">{isRecommended ? 'AI Pick' : popularityData.label}</span>
             </Badge>
           )}
           
           {option.originalPrice > option.salePrice && (
-            <Badge className="bg-green-500/80 text-white border-0 shadow-lg">
+            <Badge className="bg-green-500 text-white border-0">
               Save ${(option.originalPrice - option.salePrice).toFixed(2)}
             </Badge>
           )}
         </div>
 
-        {/* Optimized Canvas Preview - Lazy loading */}
+        {/* Optimized Canvas Preview - Removed complex animations */}
         <div className="mb-4 flex justify-center">
           <div className="w-24 h-24 relative">
             {!imageLoaded && (
-              <div className="w-full h-full bg-gray-200 rounded-lg animate-pulse flex items-center justify-center">
-                <div className="w-8 h-8 bg-gray-300 rounded"></div>
+              <div className="w-full h-full bg-gray-200 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-gray-300 rounded animate-pulse"></div>
               </div>
             )}
             <img 
-              src={getCanvasFrame()} 
+              src={canvasFrame} 
               alt={`${orientation} canvas frame`} 
-              className={`w-full h-full object-contain transition-opacity duration-200 ${
+              className={`w-full h-full object-contain transition-opacity duration-150 ${
                 imageLoaded ? 'opacity-100' : 'opacity-0'
               }`}
               loading="lazy"
@@ -145,16 +158,16 @@ const GlassMorphismSizeCard = memo(({
 
         {/* Size Information */}
         <div className="text-center space-y-2">
-          <div className="bg-white/50 rounded-lg p-3 border border-white/20">
+          <div className="bg-white/60 rounded-lg p-3 border border-white/30">
             <h5 className="font-bold text-gray-900 mb-1 text-2xl">{option.size}</h5>
-            <p className="text-sm text-purple-600 font-medium">{getRoomContext(option.size)}</p>
+            <p className="text-sm text-purple-600 font-medium">{roomContext}</p>
             <p className="text-xs text-gray-500">{option.category}</p>
           </div>
         </div>
 
         {/* Simplified Pricing Display */}
         <div className="text-center space-y-2">
-          <div className="bg-white/70 rounded-xl p-4 border border-white/30 shadow-sm">
+          <div className="bg-white/80 rounded-xl p-4 border border-white/40">
             <div className="flex items-center justify-center gap-2">
               <span className="text-2xl font-bold text-purple-600">
                 ${option.salePrice}
@@ -173,15 +186,15 @@ const GlassMorphismSizeCard = memo(({
         </div>
 
         {/* Description */}
-        <div className="bg-gray-50/80 rounded-lg p-3 text-center border border-white/20">
+        <div className="bg-gray-50/90 rounded-lg p-3 text-center border border-white/30">
           <p className="text-sm text-gray-700">{option.description}</p>
         </div>
 
-        {/* Continue Button */}
+        {/* Continue Button - Simplified animation */}
         {isSelected && (
           <Button 
-            onClick={onContinue} 
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-3 shadow-xl transition-all duration-200 transform hover:scale-105 border-0 min-h-[48px]" 
+            onClick={handleContinueClick} 
+            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-3 transition-all duration-150 border-0 min-h-[48px]" 
             size="lg"
           >
             <Sparkles className="w-4 h-4 mr-2" />
@@ -193,7 +206,7 @@ const GlassMorphismSizeCard = memo(({
 
       {/* Simplified Selection Indicator */}
       {isSelected && (
-        <div className="absolute inset-0 rounded-2xl border-2 border-purple-400 opacity-60 pointer-events-none"></div>
+        <div className="absolute inset-0 rounded-2xl border-2 border-purple-400/60 pointer-events-none"></div>
       )}
     </div>
   );

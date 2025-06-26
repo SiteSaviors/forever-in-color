@@ -1,3 +1,4 @@
+
 import OrientationCard from "./orientation/components/OrientationCard";
 import GlassMorphismSizeCard from "./orientation/components/GlassMorphismSizeCard";
 import OrientationHeader from "./orientation/components/OrientationHeader";
@@ -10,7 +11,7 @@ import { sizeOptions } from "./orientation/data/sizeOptions";
 import { OrientationSelectorProps } from "./orientation/types";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Eye, ArrowDown, DollarSign } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 
 interface ExtendedOrientationSelectorProps extends OrientationSelectorProps {
   userImageUrl?: string | null;
@@ -38,7 +39,6 @@ const OrientationSelector = ({
   });
 
   const [validationError, setValidationError] = useState<string | null>(null);
-  const [isTransitioning, setIsTransitioning] = useState(false);
   const orientationSectionRef = useRef<HTMLDivElement>(null);
   const sizeSectionRef = useRef<HTMLDivElement>(null);
 
@@ -49,50 +49,36 @@ const OrientationSelector = ({
     }
   }, [selectedOrientation, selectedSize]);
 
-  const handleOrientationSelect = (orientation: string) => {
-    if (isTransitioning) return;
-    
-    setIsTransitioning(true);
+  // Optimized handlers with useCallback to prevent re-renders
+  const handleOrientationSelect = useCallback((orientation: string) => {
     setValidationError(null);
+    onOrientationChange(orientation);
+    // Reset size when orientation changes
+    onSizeChange("");
     
-    // Slight delay to prevent UI jank during transition
-    setTimeout(() => {
-      onOrientationChange(orientation);
-      // Reset size when orientation changes
-      onSizeChange("");
-      setIsTransitioning(false);
-      
-      // Scroll to size section after orientation is selected
-      if (sizeSectionRef.current) {
-        setTimeout(() => {
-          sizeSectionRef.current?.scrollIntoView({ 
-            behavior: 'smooth',
-            block: 'start'
-          });
-        }, 300);
-      }
-    }, 100);
-  };
+    // Scroll to size section after orientation is selected
+    if (sizeSectionRef.current) {
+      setTimeout(() => {
+        sizeSectionRef.current?.scrollIntoView({ 
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }, 150);
+    }
+  }, [onOrientationChange, onSizeChange]);
   
-  const handleSizeSelect = (size: string) => {
-    if (isTransitioning) return;
-    
-    setIsTransitioning(true);
+  const handleSizeSelect = useCallback((size: string) => {
     setValidationError(null);
-    
-    setTimeout(() => {
-      onSizeChange(size);
-      setIsTransitioning(false);
-    }, 100);
-  };
+    onSizeChange(size);
+  }, [onSizeChange]);
   
-  const handleContinueWithSize = (size: string, e: React.MouseEvent) => {
+  const handleContinueWithSize = useCallback((size: string, e: React.MouseEvent) => {
     e.stopPropagation();
     onSizeChange(size);
     handleContinueClick();
-  };
+  }, [onSizeChange]);
 
-  const handleContinueClick = () => {
+  const handleContinueClick = useCallback(() => {
     if (!selectedOrientation) {
       setValidationError("Please select an orientation before continuing");
       // Scroll to orientation section
@@ -121,37 +107,36 @@ const OrientationSelector = ({
     if (onContinue) {
       onContinue();
     }
-  };
+  }, [selectedOrientation, selectedSize, onContinue]);
 
-  // Smart recommendation logic - for demo, recommend square as most versatile
-  const getRecommendedOrientation = () => {
+  // Memoize expensive calculations
+  const getRecommendedOrientation = useCallback(() => {
     if (!userImageUrl) return 'square';
     // This would analyze the image aspect ratio in a real implementation
     return 'square';
-  };
+  }, [userImageUrl]);
 
-  // Smart size recommendation based on orientation
-  const getRecommendedSize = (orientation: string) => {
+  const getRecommendedSize = useCallback((orientation: string) => {
     const recommendations = {
       'square': '16" x 16"',
       'horizontal': '18" x 24"',
       'vertical': '16" x 20"'
     };
     return recommendations[orientation as keyof typeof recommendations] || '';
-  };
+  }, []);
   
-  const recommendedOrientation = getRecommendedOrientation();
-  const recommendedSize = getRecommendedSize(selectedOrientation);
+  const recommendedOrientation = useMemo(() => getRecommendedOrientation(), [getRecommendedOrientation]);
+  const recommendedSize = useMemo(() => getRecommendedSize(selectedOrientation), [getRecommendedSize, selectedOrientation]);
 
-  const canContinueToNext = Boolean(selectedOrientation && selectedSize);
+  const canContinueToNext = useMemo(() => Boolean(selectedOrientation && selectedSize), [selectedOrientation, selectedSize]);
 
   // Get the current size option details for price display
-  const getCurrentSizeOption = () => {
+  const getCurrentSizeOption = useCallback(() => {
     if (!selectedOrientation || !selectedSize) return null;
     return sizeOptions[selectedOrientation]?.find(opt => opt.size === selectedSize);
-  };
+  }, [selectedOrientation, selectedSize]);
 
-  const currentSizeOption = getCurrentSizeOption();
+  const currentSizeOption = useMemo(() => getCurrentSizeOption(), [getCurrentSizeOption]);
 
   return (
     <div className="space-y-10">
@@ -194,12 +179,12 @@ const OrientationSelector = ({
         {orientationOptions.map(orientation => (
           <div 
             key={orientation.id} 
-            className="transform transition-all duration-500 hover:-translate-y-2"
+            className="transform transition-all duration-300 hover:-translate-y-1"
           >
             <OrientationCard 
               orientation={orientation} 
               isSelected={selectedOrientation === orientation.id} 
-              isRecommended={orientation.id === getRecommendedOrientation()}
+              isRecommended={orientation.id === recommendedOrientation}
               userImageUrl={userImageUrl} 
               onClick={() => handleOrientationSelect(orientation.id)} 
             />
@@ -218,25 +203,25 @@ const OrientationSelector = ({
         </div>
       )}
 
-      {/* Size Selection Section */}
+      {/* Size Selection Section - Optimized grid */}
       {selectedOrientation && (
         <>
           <SizeHeader />
           <div 
             ref={sizeSectionRef}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
             data-size-section
             role="radiogroup"
             aria-label="Canvas size options"
           >
             {sizeOptions[selectedOrientation]?.map(option => (
-              <div key={option.size} className="transform transition-all duration-500 hover:-translate-y-2">
+              <div key={option.size} className="transform transition-all duration-200 hover:-translate-y-1">
                 <GlassMorphismSizeCard 
                   option={option} 
                   orientation={selectedOrientation}
                   isSelected={selectedSize === option.size} 
-                  isRecommended={option.size === getRecommendedSize(selectedOrientation)}
-                  userImageUrl={userImageUrl} 
+                  isRecommended={option.size === recommendedSize}
+                  userImageUrl={null} 
                   onClick={() => handleSizeSelect(option.size)} 
                   onContinue={e => handleContinueWithSize(option.size, e)} 
                 />
