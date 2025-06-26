@@ -1,5 +1,7 @@
 
-import { Sparkles } from "lucide-react";
+import { Sparkles, Expand } from "lucide-react";
+import { useState } from "react";
+import Lightbox from "@/components/ui/lightbox";
 
 interface CanvasPreviewSectionProps {
   userArtworkUrl?: string | null;
@@ -23,6 +25,14 @@ const CanvasPreviewSection = ({
   isLoading = false,
   error = null
 }: CanvasPreviewSectionProps) => {
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+
+  const handleExpandClick = () => {
+    if (userArtworkUrl && !isLoading && !error) {
+      setIsLightboxOpen(true);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="text-center">
@@ -39,11 +49,23 @@ const CanvasPreviewSection = ({
           className="w-full h-auto rounded-lg shadow-lg group-hover:shadow-xl transition-all duration-300 transform group-hover:scale-[1.02]" 
         />
         
+        {/* Expand Button - Only show when artwork is available */}
+        {userArtworkUrl && !isLoading && !error && (
+          <button
+            onClick={handleExpandClick}
+            className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-all duration-300 z-20"
+            title="Expand to full size"
+          >
+            <Expand className="w-4 h-4" />
+          </button>
+        )}
+        
         {/* AI-Generated Artwork Overlay - THIS IS THE KEY SECTION */}
         {userArtworkUrl && !isLoading && (
           <div 
-            className="absolute overflow-hidden transition-all duration-300 group-hover:brightness-110 rounded-sm"
+            className="absolute overflow-hidden transition-all duration-300 group-hover:brightness-110 rounded-sm cursor-pointer"
             style={artworkPosition}
+            onClick={handleExpandClick}
           >
             <img 
               src={userArtworkUrl}
@@ -111,6 +133,15 @@ const CanvasPreviewSection = ({
           <li>• Ready to hang hardware included</li>
         </ul>
       </div>
+
+      {/* Lightbox for expanded view */}
+      <Lightbox
+        isOpen={isLightboxOpen}
+        onClose={() => setIsLightboxOpen(false)}
+        imageSrc={userArtworkUrl || ''}
+        imageAlt="Your AI-generated artwork - Full Size"
+        title={`Your Canvas Preview - ${selectedOrientation.charAt(0).toUpperCase() + selectedOrientation.slice(1)} Orientation`}
+      />
     </div>
   );
 };
