@@ -1,4 +1,4 @@
-
+import React from "react";
 import { LucideIcon, Check, ChevronRight, Sparkles, Lock } from "lucide-react";
 import { AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
