@@ -19,6 +19,7 @@ interface StyleCardProps {
   croppedImage: string | null;
   selectedStyle: number | null;
   isPopular: boolean;
+  cropAspectRatio: number;
   selectedOrientation?: string;
   showContinueButton?: boolean;
   shouldBlur?: boolean;
@@ -31,6 +32,7 @@ const StyleCard = ({
   croppedImage,
   selectedStyle,
   isPopular,
+  cropAspectRatio,
   selectedOrientation = "square",
   showContinueButton = true,
   shouldBlur = false,
@@ -52,7 +54,6 @@ const StyleCard = ({
     hasPreviewOrCropped,
     showGeneratedBadge,
     shouldShowBlur,
-    getCropAspectRatio,
     handleClick,
     handleGenerateStyle,
     handleRetry,
@@ -65,8 +66,6 @@ const StyleCard = ({
     onStyleClick,
     onContinue
   });
-
-  const cropAspectRatio = getCropAspectRatio(selectedOrientation);
 
   // Handle expand click for lightbox
   const handleExpandClick = () => {
@@ -91,7 +90,8 @@ const StyleCard = ({
     shouldShowBlur,
     showError,
     hasPreview: !!previewUrl,
-    croppedImage: !!croppedImage
+    croppedImage: !!croppedImage,
+    cropAspectRatio
   });
 
   // Get action handlers

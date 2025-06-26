@@ -4,6 +4,7 @@ import PhotoUploadSection from "./components/PhotoUploadSection";
 import StyleSelectionSection from "./components/StyleSelectionSection";
 import PhotoCropperSection from "./components/PhotoCropperSection";
 import { usePhotoUploadState } from "./hooks/usePhotoUploadState";
+import { getAspectRatioFromOrientation } from "./cropper/data/orientationOptions";
 
 interface PhotoUploadAndStyleSelectionProps {
   selectedStyle: {
@@ -63,6 +64,9 @@ const PhotoUploadAndStyleSelection = ({
   const hasImage = !!croppedImage;
   const hasStyle = selectedStyle && selectedStyle.name !== "temp-style";
 
+  // Get the crop aspect ratio based on the current orientation
+  const cropAspectRatio = getAspectRatioFromOrientation(currentOrientation);
+
   return (
     <div className="space-y-8">
       {/* Progress Indicators */}
@@ -96,6 +100,8 @@ const PhotoUploadAndStyleSelection = ({
             hasImage={hasImage}
             croppedImage={croppedImage}
             selectedStyle={selectedStyle}
+            cropAspectRatio={cropAspectRatio}
+            selectedOrientation={currentOrientation}
             onStyleSelect={handleStyleSelect}
             onStyleComplete={handleStyleComplete}
             onRecropImage={handleRecropImage}

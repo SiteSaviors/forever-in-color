@@ -8,6 +8,7 @@ import { artStyles } from "@/data/artStyles";
 interface StyleGridProps {
   croppedImage: string | null;
   selectedStyle: number | null;
+  cropAspectRatio: number;
   selectedOrientation?: string;
   onStyleSelect: (styleId: number, styleName: string) => void;
   onComplete: () => void;
@@ -16,6 +17,7 @@ interface StyleGridProps {
 const StyleGrid = ({ 
   croppedImage, 
   selectedStyle, 
+  cropAspectRatio,
   selectedOrientation = "square",
   onStyleSelect, 
   onComplete 
@@ -60,7 +62,10 @@ const StyleGrid = ({
           {artStyles.map((style) => (
             <div
               key={style.id}
-              className="group relative bg-white rounded-xl overflow-hidden border-2 border-gray-200 aspect-square shadow-lg hover:shadow-xl transition-all duration-300"
+              className="group relative bg-white rounded-xl overflow-hidden border-2 border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300"
+              style={{
+                aspectRatio: cropAspectRatio
+              }}
             >
               {/* Premium glossy gradient background */}
               <div className={`absolute inset-0 bg-gradient-to-br ${getStyleGradient(style.id)} opacity-90`}>
@@ -117,7 +122,7 @@ const StyleGrid = ({
           // Only blur non-popular styles (excluding Original Image which should never be blurred)
           const shouldBlur = croppedImage && !isOriginalImage && !isPopularStyle;
           
-          console.log(`🎨 Rendering StyleCard for ${style.name} with orientation: ${selectedOrientation}, shouldBlur: ${shouldBlur}, isPopular: ${isPopularStyle}`);
+          console.log(`🎨 Rendering StyleCard for ${style.name} with orientation: ${selectedOrientation}, cropAspectRatio: ${cropAspectRatio}, shouldBlur: ${shouldBlur}, isPopular: ${isPopularStyle}`);
           
           return (
             <StyleCard
@@ -126,6 +131,7 @@ const StyleGrid = ({
               croppedImage={croppedImage}
               selectedStyle={selectedStyle}
               isPopular={isPopularStyle}
+              cropAspectRatio={cropAspectRatio}
               selectedOrientation={selectedOrientation}
               showContinueButton={false}
               onStyleClick={() => handleStyleSelect(style.id, style.name)}

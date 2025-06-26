@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Sparkles, Crop, RotateCcw, ArrowLeft } from "lucide-react";
@@ -7,19 +6,17 @@ import { artStyles } from "@/data/artStyles";
 interface StyleSelectorProps {
   croppedImage: string | null;
   selectedStyle: number | null;
-  preSelectedStyle?: {
-    id: number;
-    name: string;
-  } | null;
-  cropAspectRatio?: number;
+  cropAspectRatio: number;
+  selectedOrientation: string;
   onStyleSelect: (styleId: number, styleName: string) => void;
   onComplete: (imageUrl: string, styleId: number, styleName: string) => void;
-  onRecropImage?: () => void;
+  onRecropImage: () => void;
 }
 const StyleSelector = ({
   croppedImage,
   selectedStyle,
-  cropAspectRatio = 1,
+  cropAspectRatio,
+  selectedOrientation,
   onStyleSelect,
   onComplete,
   onRecropImage
@@ -44,10 +41,12 @@ const StyleSelector = ({
       });
     }
   };
-  const getOrientationName = () => {
-    if (cropAspectRatio === 1) return "Square";
-    if (cropAspectRatio > 1) return "Horizontal";
-    return "Vertical";
+  const handleStyleSelect = (styleId: number, styleName: string) => {
+    console.log('StyleSelector handleStyleSelect called', {
+      styleId,
+      styleName
+    });
+    onStyleSelect(styleId, styleName);
   };
   return <div className="space-y-6">
       {/* Back to Crop Button - Prominent placement */}
@@ -66,7 +65,14 @@ const StyleSelector = ({
           </AlertDescription>
         </Alert>}
 
-      <StyleGrid croppedImage={croppedImage} selectedStyle={selectedStyle} onStyleSelect={onStyleSelect} onComplete={handleComplete} />
+      <StyleGrid
+        croppedImage={croppedImage}
+        selectedStyle={selectedStyle}
+        cropAspectRatio={cropAspectRatio}
+        selectedOrientation={selectedOrientation}
+        onStyleSelect={handleStyleSelect}
+        onComplete={handleComplete}
+      />
     </div>;
 };
 export default StyleSelector;
