@@ -1,3 +1,4 @@
+
 import { REPLICATE_CONFIG } from './replicate/config.ts';
 import { PromptEnhancer } from './replicate/promptEnhancer.ts';
 import { PollingService } from './replicate/pollingService.ts';
@@ -25,7 +26,7 @@ export class ReplicateService {
   async generateImageToImage(imageData: string, prompt: string, aspectRatio: string = "1:1", quality: string = "medium"): Promise<ReplicateGenerationResponse> {
     console.log('=== REPLICATE SERVICE GENERATION ===');
     console.log('Starting GPT-Image-1 generation with enhanced error handling');
-    console.log('Aspect ratio:', aspectRatio);
+    console.log('🔥 CRITICAL: Replicate Service received aspect ratio:', aspectRatio);
     console.log('Prompt length:', prompt.length);
     
     // Validate inputs
@@ -42,10 +43,12 @@ export class ReplicateService {
         prompt: prompt,
         input_images: [imageData],
         openai_api_key: this.openaiApiKey,
-        aspect_ratio: aspectRatio,
+        aspect_ratio: aspectRatio, // 🎯 CRITICAL: This must be the correct aspect ratio
         quality: quality
       }
     };
+
+    console.log('🎯 CRITICAL: Request body aspect_ratio before API call:', requestBody.input.aspect_ratio);
 
     try {
       // Execute with retry logic

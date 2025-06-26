@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 import { OpenAIService } from './openaiService.ts';
@@ -152,6 +153,13 @@ serve(async (req) => {
       sessionId: providedSessionId,
       quality = 'preview' // 'preview' or 'final'
     } = body;
+
+    // CRITICAL DEBUG: Log the exact aspect ratio received and what will be used
+    console.log(`🎯 [${requestId}] ASPECT RATIO DEBUG:`, {
+      receivedAspectRatio: body.aspectRatio,
+      defaultedAspectRatio: aspectRatio,
+      willUseForGeneration: aspectRatio
+    });
 
     // Validate required fields with better error messages
     if (!imageUrl) {
