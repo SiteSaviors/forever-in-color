@@ -3,7 +3,7 @@ import { useEffect, ReactNode, useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useProgressOrchestrator } from "../progress/ProgressOrchestrator";
 import { Badge } from "@/components/ui/badge";
-import { Smartphone, Swipe, Hand } from "lucide-react";
+import { Smartphone, ArrowLeftRight, Hand } from "lucide-react";
 
 interface MobileGestureHandlerProps {
   children: ReactNode;
@@ -138,7 +138,7 @@ const MobileGestureHandler = ({
             <Smartphone className="w-8 h-8 mx-auto mb-2 text-blue-400" />
             <h3 className="font-semibold mb-2">Mobile Tip</h3>
             <div className="flex items-center justify-center gap-2 mb-2">
-              <Swipe className="w-4 h-4" />
+              <ArrowLeftRight className="w-4 h-4" />
               <span className="text-sm">Swipe to browse styles</span>
             </div>
             <div className="flex items-center justify-center gap-2">
@@ -153,28 +153,10 @@ const MobileGestureHandler = ({
       {lastGesture && (
         <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 z-40 animate-scale-in">
           <Badge className="bg-purple-500 text-white px-4 py-2">
-            <Swipe className="w-4 h-4 mr-2" />
+            <ArrowLeftRight className="w-4 h-4 mr-2" />
             {lastGesture === 'swipe-left' ? 'Swiped Left' : 'Swiped Right'}
           </Badge>
         </div>
-      )}
-
-      {/* Touch Target Optimization for Mobile */}
-      {isMobile && (
-        <style jsx>{`
-          button, .clickable {
-            min-height: 44px;
-            min-width: 44px;
-          }
-          
-          .touch-feedback {
-            transition: transform 0.1s ease-out;
-          }
-          
-          .touch-feedback:active {
-            transform: scale(0.98);
-          }
-        `}</style>
       )}
     </div>
   );
