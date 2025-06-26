@@ -70,7 +70,8 @@ const AutoCropPreview = ({
 
   const handleAcceptCrop = () => {
     console.log('✅ User accepted smart crop');
-    onAcceptCrop(croppedImageUrl || imageUrl);
+    // Always use the cropped image URL, never the original
+    onAcceptCrop(croppedImageUrl);
   };
 
   return (
@@ -122,23 +123,25 @@ const AutoCropPreview = ({
                   </div>
                 </div>
               ) : (
-                <img 
-                  src={croppedImageUrl || imageUrl} 
-                  alt="AI smart crop preview" 
-                  className="w-full h-64 object-cover"
-                />
-              )}
-              
-              {/* Smart Crop Overlay */}
-              {!isGeneratingCrop && (
-                <div className="absolute inset-0 border-4 border-purple-400 border-dashed bg-purple-400/10">
-                  <div className="absolute top-2 left-2">
-                    <Badge className="bg-purple-500 text-white shadow-lg">
-                      <Sparkles className="w-3 h-3 mr-1" />
-                      Smart Crop Applied
-                    </Badge>
-                  </div>
-                </div>
+                <>
+                  <img 
+                    src={croppedImageUrl} 
+                    alt="AI smart crop preview" 
+                    className="w-full h-64 object-cover"
+                  />
+                  
+                  {/* Smart Crop Overlay - only show when we have a cropped image different from original */}
+                  {croppedImageUrl !== imageUrl && (
+                    <div className="absolute inset-0 border-4 border-purple-400 border-dashed bg-purple-400/10">
+                      <div className="absolute top-2 left-2">
+                        <Badge className="bg-purple-500 text-white shadow-lg">
+                          <Sparkles className="w-3 h-3 mr-1" />
+                          Smart Crop Applied
+                        </Badge>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
