@@ -25,11 +25,6 @@ const Product = () => {
     handleCustomizationChange
   } = useProductState();
 
-  // Enhanced handler to support orientation from unified selection
-  const handlePhotoAndStyleCompleteWithOrientation = (imageUrl: string, styleId: number, styleName: string, orientation?: string) => {
-    handlePhotoAndStyleComplete(imageUrl, styleId, styleName, orientation);
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -53,7 +48,7 @@ const Product = () => {
           uploadedImage={uploadedImage}
           autoGenerationComplete={autoGenerationComplete}
           onCurrentStepChange={setCurrentStep}
-          onPhotoAndStyleComplete={handlePhotoAndStyleCompleteWithOrientation}
+          onPhotoAndStyleComplete={handlePhotoAndStyleComplete}
           onOrientationSelect={handleOrientationSelect}
           onSizeSelect={handleSizeSelect}
           onCustomizationChange={handleCustomizationChange}
