@@ -30,21 +30,24 @@ const AutoCropPreview = ({
       case 'vertical':
         return {
           containerClass: "w-full max-w-md mx-auto", // Narrower container for vertical
-          imageClass: "w-full h-80 object-cover", // Taller aspect ratio (3:2 vertical ~ 1:1.5)
-          aspectRatio: "3/2"
+          imageClass: "w-full object-cover",
+          aspectRatio: "2/3", // 2:3 for vertical (portrait)
+          heightClass: "h-96" // Taller for vertical
         };
       case 'horizontal':
         return {
           containerClass: "w-full max-w-2xl mx-auto", // Wider container for horizontal
-          imageClass: "w-full h-48 object-cover", // Wider aspect ratio (2:3 horizontal ~ 1.5:1)
-          aspectRatio: "2/3"
+          imageClass: "w-full object-cover",
+          aspectRatio: "3/2", // 3:2 for horizontal (landscape)
+          heightClass: "h-48" // Shorter for horizontal
         };
       case 'square':
       default:
         return {
           containerClass: "w-full max-w-lg mx-auto", // Balanced container for square
-          imageClass: "w-full h-64 object-cover", // Square aspect ratio (1:1)
-          aspectRatio: "1/1"
+          imageClass: "w-full object-cover",
+          aspectRatio: "1/1", // 1:1 for square
+          heightClass: "h-64" // Balanced height for square
         };
     }
   };
@@ -145,7 +148,10 @@ const AutoCropPreview = ({
               {/* Crop Preview with Smart Crop Applied */}
               <div className="relative rounded-xl overflow-hidden shadow-lg bg-white transform transition-all duration-700 hover:scale-[1.02]">
                 {isGeneratingCrop ? (
-                  <div className={`${dynamicStyles.imageClass} bg-gray-100 flex items-center justify-center`}>
+                  <div 
+                    className={`${dynamicStyles.imageClass} ${dynamicStyles.heightClass} bg-gray-100 flex items-center justify-center`}
+                    style={{ aspectRatio: dynamicStyles.aspectRatio }}
+                  >
                     <div className="text-center space-y-2">
                       <Sparkles className="w-8 h-8 text-purple-500 animate-spin mx-auto" />
                       <p className="text-gray-600">Applying smart crop...</p>
