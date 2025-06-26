@@ -19,3 +19,15 @@ export const detectOrientationFromImage = async (imageUrl: string): Promise<stri
     img.src = imageUrl;
   });
 };
+
+export const convertOrientationToAspectRatio = (orientation: string): number => {
+  switch (orientation) {
+    case 'horizontal':
+      return 3/2; // 1.5
+    case 'vertical':
+      return 2/3; // 0.67
+    case 'square':
+    default:
+      return 1; // 1.0
+  }
+};
