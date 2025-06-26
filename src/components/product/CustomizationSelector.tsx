@@ -23,17 +23,24 @@ interface CustomizationOptions {
   customMessage: string;
   aiUpscale: boolean;
 }
+
 interface CustomizationSelectorProps {
   selectedSize: string;
   customizations: CustomizationOptions;
   onCustomizationChange: (customizations: CustomizationOptions) => void;
+  userArtworkUrl?: string | null; // Add prop for user's generated artwork
+  selectedOrientation?: string; // Add orientation for proper positioning
 }
+
 const CustomizationSelector = ({
   selectedSize,
   customizations,
-  onCustomizationChange
+  onCustomizationChange,
+  userArtworkUrl,
+  selectedOrientation = 'square'
 }: CustomizationSelectorProps) => {
   const [hasInteracted, setHasInteracted] = useState(false);
+
   const handleCustomizationUpdate = (updates: Partial<CustomizationOptions>) => {
     if (!hasInteracted) setHasInteracted(true);
     const newCustomizations = {
@@ -43,23 +50,68 @@ const CustomizationSelector = ({
     onCustomizationChange(newCustomizations);
     console.log('🎨 Customizations updated:', newCustomizations);
   };
+
+  // Get proper canvas frame based on orientation
+  const getCanvasFrame = () => {
+    switch (selectedOrientation) {
+      case 'horizontal':
+        return '/lovable-uploads/9eb9363d-dc17-4df1-a03d-0c5fb463a473.png';
+      case 'vertical':
+        return '/lovable-uploads/79613d9d-74f9-4f65-aec0-50fd2346a131.png';
+      case 'square':
+      default:
+        return '/lovable-uploads/1308e62b-7d30-4d01-bad3-ef128e25924b.png';
+    }
+  };
+
+  // Get positioning for artwork overlay based on orientation
+  const getArtworkPosition = () => {
+    switch (selectedOrientation) {
+      case 'horizontal':
+        return {
+          top: '18%',
+          left: '15%',
+          width: '70%',
+          height: '64%'
+        };
+      case 'vertical':
+        return {
+          top: '15%',
+          left: '20%',
+          width: '60%',
+          height: '70%'
+        };
+      case 'square':
+      default:
+        return {
+          top: '8%',
+          left: '8%',
+          width: '84%',
+          height: '84%'
+        };
+    }
+  };
+
   const calculateTotalPrice = () => {
     let basePrice = 149; // Base canvas price
     let total = basePrice;
+    
     if (customizations.floatingFrame.enabled) total += 79;
     if (customizations.livingMemory) total += 29;
     if (customizations.voiceMatch) total += 19;
     if (customizations.aiUpscale) total += 15;
+    
     return {
       basePrice,
       total
     };
   };
-  const {
-    basePrice,
-    total
-  } = calculateTotalPrice();
+
+  const { basePrice, total } = calculateTotalPrice();
   const savings = total > basePrice ? Math.round((total - basePrice) * 0.2) : 0;
+  const canvasFrame = getCanvasFrame();
+  const artworkPosition = getArtworkPosition();
+
   return <div className="max-w-6xl mx-auto space-y-8">
       <CustomizationHeader />
       
@@ -72,13 +124,38 @@ const CustomizationSelector = ({
             <p className="text-gray-600">Premium gallery-quality canvas with your artwork</p>
           </div>
           
-          {/* Expanded Canvas Mockup - Single large image */}
+          {/* Expanded Canvas Mockup with User Artwork Overlay */}
           <div className="relative group">
+            {/* Canvas Frame */}
             <img 
-              src="/lovable-uploads/1308e62b-7d30-4d01-bad3-ef128e25924b.png" 
+              src={canvasFrame}
               alt="Canvas Mockup" 
               className="w-full h-auto rounded-lg shadow-lg group-hover:shadow-xl transition-all duration-300 transform group-hover:scale-[1.02]" 
             />
+            
+            {/* User's Generated Artwork Overlay */}
+            {userArtworkUrl && (
+              <div 
+                className="absolute overflow-hidden transition-all duration-300 group-hover:brightness-110"
+                style={{
+                  top: artworkPosition.top,
+                  left: artworkPosition.left,
+                  width: artworkPosition.width,
+                  height: artworkPosition.height
+                }}
+              >
+                <img 
+                  src={userArtworkUrl}
+                  alt="Your generated artwork"
+                  className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105"
+                  style={{
+                    filter: 'brightness(0.95) contrast(1.05) saturate(1.1)'
+                  }}
+                />
+              </div>
+            )}
+            
+            {/* Hover overlay */}
             <div className="absolute inset-0 bg-black/5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           </div>
           
@@ -98,45 +175,69 @@ const CustomizationSelector = ({
 
         {/* Customization Options */}
         <div className="space-y-6">
-          <FloatingFrameCard enabled={customizations.floatingFrame.enabled} color={customizations.floatingFrame.color} selectedSize={selectedSize} onEnabledChange={enabled => handleCustomizationUpdate({
-          floatingFrame: {
-            ...customizations.floatingFrame,
-            enabled
-          }
-        })} onColorChange={color => handleCustomizationUpdate({
-          floatingFrame: {
-            ...customizations.floatingFrame,
-            color
-          }
-        })} />
+          <FloatingFrameCard 
+            enabled={customizations.floatingFrame.enabled} 
+            color={customizations.floatingFrame.color} 
+            selectedSize={selectedSize} 
+            onEnabledChange={enabled => handleCustomizationUpdate({
+              floatingFrame: {
+                ...customizations.floatingFrame,
+                enabled
+              }
+            })} 
+            onColorChange={color => handleCustomizationUpdate({
+              floatingFrame: {
+                ...customizations.floatingFrame,
+                color
+              }
+            })} 
+          />
 
-          <LivingMemoryCard enabled={customizations.livingMemory} onEnabledChange={enabled => handleCustomizationUpdate({
-          livingMemory: enabled
-        })} />
+          <LivingMemoryCard 
+            enabled={customizations.livingMemory} 
+            onEnabledChange={enabled => handleCustomizationUpdate({
+              livingMemory: enabled
+            })} 
+          />
 
-          <VoiceMatchCard enabled={customizations.voiceMatch} livingMemoryEnabled={customizations.livingMemory} onEnabledChange={enabled => handleCustomizationUpdate({
-          voiceMatch: enabled
-        })} />
+          <VoiceMatchCard 
+            enabled={customizations.voiceMatch} 
+            livingMemoryEnabled={customizations.livingMemory} 
+            onEnabledChange={enabled => handleCustomizationUpdate({
+              voiceMatch: enabled
+            })} 
+          />
 
-          <CustomMessageCard message={customizations.customMessage} livingMemoryEnabled={customizations.livingMemory} onMessageChange={message => handleCustomizationUpdate({
-          customMessage: message
-        })} />
+          <CustomMessageCard 
+            message={customizations.customMessage} 
+            livingMemoryEnabled={customizations.livingMemory} 
+            onMessageChange={message => handleCustomizationUpdate({
+              customMessage: message
+            })} 
+          />
 
-          <AIUpscaleCard enabled={customizations.aiUpscale} onEnabledChange={enabled => handleCustomizationUpdate({
-          aiUpscale: enabled
-        })} />
+          <AIUpscaleCard 
+            enabled={customizations.aiUpscale} 
+            onEnabledChange={enabled => handleCustomizationUpdate({
+              aiUpscale: enabled
+            })} 
+          />
         </div>
       </div>
 
       {/* Social Proof & Video Options */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <SocialProofGallery />
-        <PremiumVideoOptions livingMemoryEnabled={customizations.livingMemory} options={{
-        voiceMatching: false,
-        backgroundAudio: 'none',
-        videoLength: 30,
-        voiceEnhancement: false
-      }} onOptionsChange={() => {}} />
+        <PremiumVideoOptions 
+          livingMemoryEnabled={customizations.livingMemory} 
+          options={{
+            voiceMatching: false,
+            backgroundAudio: 'none',
+            videoLength: 30,
+            voiceEnhancement: false
+          }} 
+          onOptionsChange={() => {}} 
+        />
       </div>
 
       {/* Live Activity Feed */}
@@ -158,25 +259,33 @@ const CustomizationSelector = ({
             <span className="font-semibold">${basePrice}</span>
           </div>
           
-          {customizations.floatingFrame.enabled && <div className="flex justify-between items-center">
+          {customizations.floatingFrame.enabled && (
+            <div className="flex justify-between items-center">
               <span className="text-gray-600">Floating Frame</span>
               <span className="font-semibold">+$79</span>
-            </div>}
+            </div>
+          )}
           
-          {customizations.livingMemory && <div className="flex justify-between items-center">
+          {customizations.livingMemory && (
+            <div className="flex justify-between items-center">
               <span className="text-gray-600">Living Memory</span>
               <span className="font-semibold">+$29</span>
-            </div>}
+            </div>
+          )}
           
-          {customizations.voiceMatch && <div className="flex justify-between items-center">
+          {customizations.voiceMatch && (
+            <div className="flex justify-between items-center">
               <span className="text-gray-600">Voice Match</span>
               <span className="font-semibold">+$19</span>
-            </div>}
+            </div>
+          )}
           
-          {customizations.aiUpscale && <div className="flex justify-between items-center">
+          {customizations.aiUpscale && (
+            <div className="flex justify-between items-center">
               <span className="text-gray-600">AI Upscale</span>
               <span className="font-semibold">+$15</span>
-            </div>}
+            </div>
+          )}
           
           <div className="border-t pt-4">
             <div className="flex justify-between items-center text-lg font-bold">
@@ -188,4 +297,5 @@ const CustomizationSelector = ({
       </Card>
     </div>;
 };
+
 export default CustomizationSelector;
