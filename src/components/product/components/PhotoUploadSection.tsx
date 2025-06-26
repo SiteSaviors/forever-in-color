@@ -1,5 +1,7 @@
 
 import PhotoUploadContainer from "../photo-upload/PhotoUploadContainer";
+import { IntelligentPreloader } from "@/utils/performanceUtils";
+import { useEffect } from "react";
 
 interface PhotoUploadSectionProps {
   hasImage: boolean;
@@ -12,6 +14,11 @@ const PhotoUploadSection = ({
   croppedImage,
   onImageUpload
 }: PhotoUploadSectionProps) => {
+  // Preload popular styles when component mounts
+  useEffect(() => {
+    IntelligentPreloader.preloadPopularStyles();
+  }, []);
+
   // Only show the upload interface if no image is present
   if (hasImage && croppedImage) {
     return null;

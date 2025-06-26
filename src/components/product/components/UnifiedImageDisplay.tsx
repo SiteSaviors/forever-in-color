@@ -2,6 +2,9 @@
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { MockupCanvas } from "../MockupCanvas";
 import { Expand } from "lucide-react";
+import OptimizedImage from "@/components/ui/OptimizedImage";
+import { IntelligentPreloader } from "@/utils/performanceUtils";
+import { useEffect } from "react";
 
 interface UnifiedImageDisplayProps {
   imageUrl: string;
@@ -34,6 +37,14 @@ const UnifiedImageDisplay = ({
   // Show expand button if there's an image to expand and handler is provided
   const canExpand = (previewUrl || imageUrl) && onExpandClick && !showLoadingState && showExpandButton;
 
+  // Intelligent preloading based on context
+  useEffect(() => {
+    if (hasGeneratedPreview) {
+      // Preload canvas frames for other orientations
+      IntelligentPreloader.preloadCanvasFrames(selectedOrientation);
+    }
+  }, [hasGeneratedPreview, selectedOrientation]);
+
   if (shouldUseMockup) {
     return (
       <AspectRatio ratio={aspectRatio} className="relative overflow-hidden rounded-lg group">
@@ -57,10 +68,10 @@ const UnifiedImageDisplay = ({
     );
   }
 
-  // Standard image display
+  // Standard image display with optimization
   return (
     <AspectRatio ratio={aspectRatio} className="relative overflow-hidden rounded-lg group">
-      <img
+      <OptimizedImage
         src={imageUrl}
         alt={alt}
         className={`w-full h-full object-cover transition-all duration-300 ${
@@ -68,6 +79,8 @@ const UnifiedImageDisplay = ({
         } group-hover:scale-105 ${
           hasGeneratedPreview && previewUrl ? 'drop-shadow-2xl' : ''
         }`}
+        priority={hasGeneratedPreview}
+        quality={hasGeneratedPreview ? 90 : 85}
       />
       
       {canExpand && (
