@@ -128,7 +128,6 @@ const PhotoUploadAndStyleSelection = ({
           
           <StyleSelector
             croppedImage={uploadedImage}
-            selectedOrientation={currentOrientation}
             selectedStyle={selectedStyle?.id || null}
             autoGenerationComplete={autoGenerationComplete}
             onStyleSelect={handleStyleSelect}
