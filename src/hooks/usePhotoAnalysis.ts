@@ -17,13 +17,25 @@ export const usePhotoAnalysis = (
   
   const analysisTimeoutRef = useRef<NodeJS.Timeout>();
   const abortControllerRef = useRef<AbortController>();
+  const lastImageUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
+    console.log('🔍 usePhotoAnalysis: imageUrl changed to:', imageUrl);
+    
     if (!imageUrl) {
       setAnalysisResult(null);
       setIsAnalyzing(false);
+      lastImageUrlRef.current = null;
       return;
     }
+
+    // Don't re-analyze the same image
+    if (imageUrl === lastImageUrlRef.current) {
+      console.log('🔍 usePhotoAnalysis: Same image, skipping analysis');
+      return;
+    }
+
+    lastImageUrlRef.current = imageUrl;
 
     // Cancel previous analysis
     if (abortControllerRef.current) {
@@ -36,6 +48,7 @@ export const usePhotoAnalysis = (
       clearTimeout(analysisTimeoutRef.current);
     }
 
+    console.log('🚀 usePhotoAnalysis: Starting analysis for new image');
     setIsAnalyzing(true);
     
     analysisTimeoutRef.current = setTimeout(() => {
@@ -54,18 +67,22 @@ export const usePhotoAnalysis = (
 
   const performAnalysis = async (url: string, signal: AbortSignal) => {
     try {
-      console.log('🚀 Starting photo analysis...');
+      console.log('🔍 Performing photo analysis for:', url);
       
       const result = await photoAnalysisEngine.analyzePhoto(url);
       
-      if (signal.aborted) return;
+      if (signal.aborted) {
+        console.log('🔍 Photo analysis aborted');
+        return;
+      }
 
+      console.log('✅ Photo analysis completed:', result);
       setAnalysisResult(result);
       setIsAnalyzing(false);
 
     } catch (error) {
       if (!signal.aborted) {
-        console.error('Photo analysis failed:', error);
+        console.error('❌ Photo analysis failed:', error);
         setIsAnalyzing(false);
       }
     }

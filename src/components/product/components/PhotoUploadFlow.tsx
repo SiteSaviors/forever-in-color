@@ -45,7 +45,7 @@ const PhotoUploadFlow = ({
 }: PhotoUploadFlowProps) => {
   const { dispatch, showContextualHelp } = useProgressOrchestrator();
   
-  // Add photo analysis hook to track analysis state
+  // Track photo analysis for the originally uploaded image
   const { isAnalyzing } = usePhotoAnalysis(uploadedImage);
   
   const {
@@ -104,12 +104,6 @@ const PhotoUploadFlow = ({
           selectedStyle={selectedStyle}
         />
 
-        {/* AI Analysis Status - Show when analyzing */}
-        <AIAnalysisStatus isAnalyzing={isAnalyzing} />
-
-        {/* Smart Progress Indicator - Always render but only show content when there's an image */}
-        <SmartProgressIndicator uploadedImage={croppedImage} />
-
         {/* Show cropper if user wants to recrop */}
         {showCropper && (
           <PhotoCropperSection
@@ -129,6 +123,14 @@ const PhotoUploadFlow = ({
               croppedImage={croppedImage}
               onImageUpload={handleEnhancedImageUpload}
             />
+
+            {/* AI Analysis Status - Show when analyzing uploaded image */}
+            {uploadedImage && isAnalyzing && (
+              <AIAnalysisStatus isAnalyzing={isAnalyzing} />
+            )}
+
+            {/* Smart Progress Indicator - Always render but only show content when there's an image */}
+            <SmartProgressIndicator uploadedImage={croppedImage} />
 
             {/* Style Selection Section - Only show after image is uploaded and not analyzing */}
             {hasImage && !isAnalyzing && (
