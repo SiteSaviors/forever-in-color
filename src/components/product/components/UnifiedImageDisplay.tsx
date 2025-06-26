@@ -2,10 +2,6 @@
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { MockupCanvas } from "../MockupCanvas";
 import { Expand } from "lucide-react";
-import OptimizedImage from "@/components/ui/OptimizedImage";
-import { useLazyLoading } from "@/hooks/useLazyLoading";
-import { predictivePreloader } from "@/utils/performanceUtils";
-import { useEffect } from "react";
 
 interface UnifiedImageDisplayProps {
   imageUrl: string;
@@ -38,26 +34,6 @@ const UnifiedImageDisplay = ({
   // Show expand button if there's an image to expand and handler is provided
   const canExpand = (previewUrl || imageUrl) && onExpandClick && !showLoadingState && showExpandButton;
 
-  // Predictive preloading based on user behavior
-  useEffect(() => {
-    if (imageUrl && selectedOrientation) {
-      // Preload canvas frames for current orientation
-      predictivePreloader.preloadCanvasFrames(selectedOrientation as 'square' | 'horizontal' | 'vertical');
-    }
-  }, [imageUrl, selectedOrientation]);
-
-  // Lazy loading setup for better performance
-  const {
-    ref: lazyRef,
-    isLoading: isLazyLoading,
-    isLoaded,
-    hasError
-  } = useLazyLoading(imageUrl, {
-    threshold: 0.1,
-    rootMargin: '50px',
-    triggerOnce: true
-  });
-
   if (shouldUseMockup) {
     return (
       <AspectRatio ratio={aspectRatio} className="relative overflow-hidden rounded-lg group">
@@ -81,11 +57,10 @@ const UnifiedImageDisplay = ({
     );
   }
 
-  // Standard optimized image display
+  // Standard image display
   return (
     <AspectRatio ratio={aspectRatio} className="relative overflow-hidden rounded-lg group">
-      <OptimizedImage
-        ref={lazyRef}
+      <img
         src={imageUrl}
         alt={alt}
         className={`w-full h-full object-cover transition-all duration-300 ${
@@ -93,18 +68,7 @@ const UnifiedImageDisplay = ({
         } group-hover:scale-105 ${
           hasGeneratedPreview && previewUrl ? 'drop-shadow-2xl' : ''
         }`}
-        lazy={true}
-        quality={0.85}
-        maxWidth={1200}
-        maxHeight={1200}
-        enableSrcSet={true}
-        placeholderClassName="w-full h-full bg-gray-200 animate-pulse rounded-lg"
-        onLoadComplete={() => {
-          // Preload related content after image loads
-          if (hasGeneratedPreview) {
-            predictivePreloader.preloadRelatedStyles(1); // Adjust based on style ID
-          }
-        }}
+        loading="lazy"
       />
       
       {canExpand && (
