@@ -1,4 +1,3 @@
-
 import { LucideIcon, Check, ChevronRight, ChevronDown, Sparkles, Lock, CheckCircle, Upload, Palette, Settings, ShoppingCart, Circle, Edit3 } from "lucide-react";
 import { AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
@@ -22,7 +21,7 @@ interface ProductStepProps {
 // Haptic feedback utility
 const triggerHapticFeedback = () => {
   if ('vibrate' in navigator) {
-    navigator vibrate(50);
+    navigator.vibrate(50);
   }
 };
 
