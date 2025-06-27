@@ -110,6 +110,15 @@ const StyleCard = memo(({
   // Calculate interaction states
   const canAccess = !shouldShowBlur || isPopular || style.id === 1;
 
+  // Fix: Wrap event handlers to match expected signatures
+  const handleGenerateClickWrapper = () => {
+    handleGenerateStyle();
+  };
+
+  const handleRetryClickWrapper = () => {
+    handleRetry();
+  };
+
   return (
     <>
       <StyleCardContainer
@@ -146,8 +155,8 @@ const StyleCard = memo(({
           onGenerateStyle={handleGenerateStyle}
           onRetry={handleRetry}
           onContinueClick={handleContinueClick}
-          onGenerateClick={actions.handleGenerateClick}
-          onRetryClick={handleRetry}
+          onGenerateClick={handleGenerateClickWrapper}
+          onRetryClick={handleRetryClickWrapper}
         />
       </StyleCardContainer>
 
