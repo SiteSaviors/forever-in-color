@@ -1,5 +1,5 @@
 
-import { memo, Suspense } from 'react';
+import { memo, Suspense, lazy } from 'react';
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
 import StyleCardSkeleton from './StyleCardSkeleton';
 
@@ -22,10 +22,7 @@ interface LazyStyleCardProps {
 }
 
 // Lazy import the actual StyleCard component
-const StyleCard = memo(
-  ({ ...props }: LazyStyleCardProps) => 
-    import('../StyleCard').then(module => module.default)
-);
+const StyleCard = lazy(() => import('../StyleCard'));
 
 const LazyStyleCard = memo(({
   style,
@@ -51,7 +48,6 @@ const LazyStyleCard = memo(({
         <Suspense 
           fallback={
             <StyleCardSkeleton 
-              count={1} 
               aspectRatio={cropAspectRatio}
             />
           }
@@ -71,7 +67,6 @@ const LazyStyleCard = memo(({
         </Suspense>
       ) : (
         <StyleCardSkeleton 
-          count={1} 
           aspectRatio={cropAspectRatio}
         />
       )}
