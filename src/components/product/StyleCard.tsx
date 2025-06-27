@@ -98,7 +98,7 @@ const StyleCard = ({
     previewUrl,
     isPermanentlyGenerated,
     effectiveIsLoading,
-    hasError: hasErrorBoolean, // Pass boolean here
+    hasError: hasErrorBoolean,
     setShowError,
     setLocalIsLoading,
     setIsLightboxOpen,
@@ -148,14 +148,16 @@ const StyleCard = ({
             </div>
           )}
           
-          {/* Loading Overlay - Never show if permanently generated */}
-          <EnhancedStyleCardLoadingOverlay
-            isBlinking={false}
-            styleName={style.name}
-            isLoading={effectiveIsLoading}
-            error={hasErrorBoolean ? errorMessage : null}
-            onRetry={() => handleRetryClick({} as React.MouseEvent)}
-          />
+          {/* Loading Overlay - CRITICAL: Never show if permanently generated */}
+          {!isPermanentlyGenerated && (
+            <EnhancedStyleCardLoadingOverlay
+              isBlinking={false}
+              styleName={style.name}
+              isLoading={effectiveIsLoading}
+              error={hasErrorBoolean ? errorMessage : null}
+              onRetry={() => handleRetryClick({} as React.MouseEvent)}
+            />
+          )}
         </div>
 
         {/* Info Section */}
