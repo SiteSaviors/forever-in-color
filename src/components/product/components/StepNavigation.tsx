@@ -1,5 +1,6 @@
 
-import { Button } from "@/components/ui/button";
+import { MobileButton } from "@/components/ui/mobile-button";
+import { MobileTypography } from "@/components/ui/mobile-typography";
 import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
 
 interface StepNavigationProps {
@@ -55,30 +56,33 @@ const StepNavigation = ({
   const buttonVariant = getButtonVariant();
 
   return (
-    <div className="sticky bottom-0 bg-white/98 backdrop-blur-md border-t border-gray-100/80 p-4 md:p-6 mt-8 -mx-4 md:-mx-8 shadow-2xl z-50 transition-all duration-300">
-      <div className="flex items-center justify-between max-w-4xl mx-auto gap-4">
-        {/* Enhanced Back Button with smooth transitions */}
+    <div className="sticky bottom-0 bg-white/98 backdrop-blur-md border-t border-gray-100/80 p-3 sm:p-4 md:p-6 mt-6 sm:mt-8 -mx-3 sm:-mx-4 md:-mx-8 shadow-2xl z-50 transition-all duration-300">
+      <div className="flex items-center justify-between max-w-4xl mx-auto gap-3 sm:gap-4">
+        {/* Mobile-optimized Back Button */}
         {canGoBack ? (
-          <Button
+          <MobileButton
             variant="outline"
             onClick={handleBackClick}
-            className="text-gray-600 border-gray-300 hover:bg-gray-50 min-h-[52px] min-w-[120px] md:min-w-[140px] px-6 md:px-8 rounded-2xl transition-all duration-300 hover:shadow-lg hover:border-gray-400 hover:-translate-y-0.5 active:scale-95"
+            className="text-gray-600 border-gray-300 hover:bg-gray-50 rounded-xl sm:rounded-2xl transition-all duration-300 hover:shadow-lg hover:border-gray-400 hover:-translate-y-0.5 active:scale-95 flex-shrink-0"
             disabled={isLoading}
+            size="lg"
           >
-            <ArrowLeft className="w-4 h-4 mr-3 transition-transform duration-200 group-hover:-translate-x-1" />
-            <span className="font-semibold">Back</span>
-          </Button>
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3 transition-transform duration-200 group-hover:-translate-x-1" />
+            <span className="font-semibold hidden sm:inline">Back</span>
+            <span className="font-semibold sm:hidden">←</span>
+          </MobileButton>
         ) : (
-          <div className="w-[120px] md:w-[140px]" />
+          <div className="w-[44px] sm:w-[120px] md:w-[140px]" />
         )}
 
-        {/* Enhanced Continue Button with state-based styling */}
+        {/* Mobile-optimized Continue Button */}
         <div className="flex-1 max-w-sm">
-          <Button
+          <MobileButton
             onClick={handleContinueClick}
             disabled={!canContinue || isLoading}
+            size="lg"
             className={`
-              w-full min-h-[60px] px-8 md:px-10 py-4 text-lg md:text-xl font-bold rounded-3xl
+              w-full py-3 sm:py-4 px-6 sm:px-8 md:px-10 text-base sm:text-lg md:text-xl font-bold rounded-2xl sm:rounded-3xl
               transition-all duration-500 shadow-xl hover:shadow-2xl transform active:scale-95 relative overflow-hidden
               ${buttonVariant === "final" 
                 ? 'bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 hover:from-emerald-600 hover:via-green-600 hover:to-teal-600 text-white border-0 animate-pulse' 
@@ -93,26 +97,28 @@ const StepNavigation = ({
               <div className="absolute inset-0 bg-gradient-to-r from-emerald-400/20 to-teal-400/20 animate-pulse" />
             )}
             
-            {/* Button content with enhanced loading state */}
+            {/* Button content with mobile-optimized loading state */}
             {isLoading ? (
               <div className="flex items-center justify-center relative z-10">
-                <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin mr-4" />
-                <span className="font-bold tracking-wide">Processing...</span>
+                <div className="w-5 h-5 sm:w-6 sm:h-6 border-2 sm:border-3 border-white border-t-transparent rounded-full animate-spin mr-3 sm:mr-4" />
+                <MobileTypography variant="body" className="font-bold tracking-wide text-white">
+                  Processing...
+                </MobileTypography>
               </div>
             ) : (
               <div className="flex items-center justify-center relative z-10">
                 {/* Final step sparkle effect */}
                 {buttonVariant === "final" && (
-                  <Sparkles className="w-6 h-6 mr-3 animate-pulse" />
+                  <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3 animate-pulse" />
                 )}
                 
-                <span className="font-bold tracking-wide text-center">
+                <MobileTypography variant="body" className="font-bold tracking-wide text-center text-white">
                   {getFinalStepText()}
-                </span>
+                </MobileTypography>
                 
                 {/* Animated arrow for continue states */}
                 {currentStep < totalSteps && buttonVariant !== "disabled" && (
-                  <ArrowRight className="w-6 h-6 ml-4 transition-transform duration-200 group-hover:translate-x-1" />
+                  <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 ml-3 sm:ml-4 transition-transform duration-200 group-hover:translate-x-1" />
                 )}
               </div>
             )}
@@ -121,7 +127,7 @@ const StepNavigation = ({
             {buttonVariant !== "disabled" && (
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
             )}
-          </Button>
+          </MobileButton>
         </div>
       </div>
     </div>

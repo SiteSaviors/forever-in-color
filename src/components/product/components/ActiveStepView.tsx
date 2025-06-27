@@ -1,7 +1,10 @@
+
 import React from "react";
 import { LucideIcon, Check, ChevronRight, Sparkles, Lock } from "lucide-react";
 import { AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
+import { MobileTypography } from "@/components/ui/mobile-typography";
+import { TouchTarget } from "@/components/ui/mobile-touch-target";
 import { getStepIcon, getLockStatus, triggerHapticFeedback } from "./ProductStepUtils";
 import ErrorBoundary from "./ErrorBoundary";
 
@@ -56,7 +59,7 @@ const ActiveStepView = ({
   const renderStyleName = () => {
     if (stepNumber === 1 && selectedStyle?.name) {
       return (
-        <span className={`ml-3 font-medium text-lg md:text-xl transition-colors duration-300 ${
+        <span className={`ml-2 sm:ml-3 font-medium text-base sm:text-lg md:text-xl transition-colors duration-300 ${
           isActive ? 'text-purple-600' : 'text-gray-600'
         }`}>
           - {selectedStyle.name}
@@ -72,8 +75,8 @@ const ActiveStepView = ({
         value={`step-${stepNumber}`}
         data-step={stepNumber}
         className={`
-          relative bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden 
-          transition-all duration-500 ease-out hover:shadow-xl
+          relative bg-white rounded-xl sm:rounded-2xl shadow-md border border-gray-100 overflow-hidden 
+          transition-all duration-500 ease-out hover:shadow-xl mx-2 sm:mx-0
           ${isActive && canAccess ? 'ring-2 ring-purple-200 shadow-xl transform scale-[1.01] animate-fade-in' : ''}
           ${isNextStep && canAccess ? 'ring-1 ring-purple-100 hover:ring-2 hover:ring-purple-200 animate-pulse' : ''}
         `}
@@ -85,21 +88,21 @@ const ActiveStepView = ({
         
         {/* Success sparkle effect */}
         {isCompleted && (
-          <div className="absolute top-4 right-4 text-green-500 animate-pulse">
-            <Sparkles className="w-5 h-5" />
+          <div className="absolute top-3 right-3 sm:top-4 sm:right-4 text-green-500 animate-pulse">
+            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
         )}
 
         <AccordionTrigger 
-          className={`px-6 md:px-8 py-6 md:py-8 hover:no-underline group min-h-[80px] transition-all duration-300 ${!canAccess ? 'cursor-default' : ''}`}
+          className={`px-4 py-4 sm:px-6 sm:py-6 md:px-8 md:py-8 hover:no-underline group min-h-[60px] sm:min-h-[80px] transition-all duration-300 ${!canAccess ? 'cursor-default' : ''}`}
           disabled={!canAccess}
           onClick={handleStepClick}
         >
-          <div className="flex items-center gap-4 md:gap-6 w-full">
-            {/* Enhanced Step Icon with smooth transitions */}
-            <div className="relative flex-shrink-0">
+          <div className="flex items-center gap-3 sm:gap-4 md:gap-6 w-full">
+            {/* Enhanced Step Icon with mobile-optimized sizing */}
+            <TouchTarget size="lg" className="flex-shrink-0">
               <div className={`
-                relative w-14 h-14 md:w-16 md:h-16 rounded-2xl flex items-center justify-center 
+                relative w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center 
                 transition-all duration-500 shadow-lg transform
                 ${isCompleted 
                   ? 'bg-gradient-to-r from-green-400 to-emerald-500 text-white shadow-green-200/50 scale-105' 
@@ -110,70 +113,80 @@ const ActiveStepView = ({
                   : 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-500 group-hover:from-purple-100 group-hover:to-pink-100 group-hover:text-purple-500 group-hover:scale-105'}
               `}>
                 {isCompleted ? (
-                  <Check className="w-6 h-6 md:w-7 md:h-7 animate-in zoom-in duration-500" />
+                  <Check className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 animate-in zoom-in duration-500" />
                 ) : (
-                  <Icon className="w-6 h-6 md:w-7 md:h-7 transition-transform duration-300" />
+                  <Icon className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 transition-transform duration-300" />
                 )}
               </div>
-            </div>
+            </TouchTarget>
             
-            {/* Enhanced Step Content with better visual hierarchy */}
+            {/* Enhanced Step Content with mobile-first typography */}
             <div className="flex-1 text-left min-w-0">
-              <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 mb-2">
-                <div className="flex items-center gap-3 flex-wrap">
-                  <h3 className={`
-                    text-xl md:text-2xl font-bold transition-colors duration-300 font-poppins tracking-tight
-                    ${isCompleted || (isActive && canAccess) ? 'text-gray-900' 
-                      : !canAccess ? 'text-gray-500'
-                      : 'text-gray-600 group-hover:text-gray-800'}
-                  `}>
+              <div className="flex flex-col gap-1 sm:gap-2 mb-2">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 flex-wrap">
+                  <MobileTypography
+                    variant="h3"
+                    className={`
+                      font-bold transition-colors duration-300 font-poppins tracking-tight
+                      ${isCompleted || (isActive && canAccess) ? 'text-gray-900' 
+                        : !canAccess ? 'text-gray-500'
+                        : 'text-gray-600 group-hover:text-gray-800'}
+                    `}
+                  >
                     {title}
                     {renderStyleName()}
-                  </h3>
+                  </MobileTypography>
                   
-                  {/* Enhanced Status Indicators with smooth transitions */}
+                  {/* Enhanced Status Indicators */}
                   {lockStatus === "locked" && (
-                    <div className="transition-all duration-300 opacity-60">
-                      <Lock className="w-5 h-5 text-gray-400" />
+                    <div className="transition-all duration-300 opacity-60 sm:self-center">
+                      <Lock className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
                     </div>
                   )}
                 </div>
               </div>
               
-              {/* Context-aware description visibility */}
-              <p className={`text-base md:text-lg leading-relaxed transition-all duration-300 ${
-                !canAccess ? 'text-gray-400' : 'text-gray-600'
-              } ${isActive ? 'block' : 'hidden md:block'}`}>
+              {/* Mobile-optimized description */}
+              <MobileTypography
+                variant="body"
+                className={`transition-all duration-300 ${
+                  !canAccess ? 'text-gray-400' : 'text-gray-600'
+                } ${isActive ? 'block' : 'hidden sm:block'}`}
+              >
                 {description}
-              </p>
+              </MobileTypography>
             </div>
             
-            {/* Enhanced Status Badges and Actions with smooth animations */}
-            <div className="flex items-center gap-3 flex-shrink-0">
+            {/* Mobile-optimized status badges and actions */}
+            <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
               {isNextStep && canAccess && !isActive && (
-                <Badge variant="outline" className="bg-gradient-to-r from-amber-50 to-orange-50 text-amber-700 border-amber-200 px-3 py-1 text-sm font-medium rounded-full hidden md:inline-flex animate-pulse">
+                <Badge variant="outline" className="bg-gradient-to-r from-amber-50 to-orange-50 text-amber-700 border-amber-200 px-2 py-1 text-xs sm:text-sm font-medium rounded-full hidden sm:inline-flex animate-pulse">
                   Next Step
                 </Badge>
               )}
               
-              {/* Enhanced chevron with smooth transitions */}
-              <ChevronRight className={`
-                w-6 h-6 transition-all duration-500 ease-out
-                ${isActive && canAccess ? 'rotate-90 text-purple-500 scale-110' 
-                  : !canAccess ? 'text-gray-300'
-                  : 'text-gray-400 group-hover:text-gray-600 group-hover:translate-x-1 group-hover:scale-110'}
-              `} />
+              {/* Enhanced chevron with mobile-optimized sizing */}
+              <TouchTarget size="sm" interactive={false}>
+                <ChevronRight className={`
+                  w-5 h-5 sm:w-6 sm:h-6 transition-all duration-500 ease-out
+                  ${isActive && canAccess ? 'rotate-90 text-purple-500 scale-110' 
+                    : !canAccess ? 'text-gray-300'
+                    : 'text-gray-400 group-hover:text-gray-600 group-hover:translate-x-1 group-hover:scale-110'}
+                `} />
+              </TouchTarget>
             </div>
           </div>
         </AccordionTrigger>
         
-        <AccordionContent className="px-6 md:px-8 pb-6 md:pb-8 animate-accordion-down">
-          <div className="border-t border-gradient-to-r from-purple-100 to-pink-100 pt-6 relative">
-            {/* Enhanced content area with premium styling and animations */}
-            <div className="bg-gradient-to-r from-gray-50/80 to-purple-50/40 rounded-2xl p-4 md:p-8 border border-gray-100/50 shadow-inner animate-fade-in">
+        <AccordionContent className="px-4 pb-4 sm:px-6 sm:pb-6 md:px-8 md:pb-8 animate-accordion-down">
+          <div className="border-t border-gradient-to-r from-purple-100 to-pink-100 pt-4 sm:pt-6 relative">
+            {/* Enhanced content area with mobile-optimized spacing */}
+            <div className="bg-gradient-to-r from-gray-50/80 to-purple-50/40 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-8 border border-gray-100/50 shadow-inner animate-fade-in">
               <ErrorBoundary fallback={
                 <div className="text-center py-4">
-                  <p className="text-gray-600">Unable to load step content. Please refresh the page.</p>
+                  <MobileTypography variant="body" className="text-gray-600">
+                    Unable to load step content. Please refresh the page.
+                  </MobileTypography>
                 </div>
               }>
                 {children}
