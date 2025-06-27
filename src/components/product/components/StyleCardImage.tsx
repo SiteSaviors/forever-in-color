@@ -55,6 +55,9 @@ const StyleCardImage = memo(({
   onRetry
 }: StyleCardImageProps) => {
 
+  // Check if this is a recommended card (not original image and in the recommended styles)
+  const isRecommendedCard = style.id !== 1 && [2, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15].includes(style.id);
+
   return (
     <div className="relative">
       {/* Main image display */}
@@ -81,7 +84,7 @@ const StyleCardImage = memo(({
       />
 
       {/* Small AI Match indicator - only on recommended cards on hover */}
-      {isPopular && !hasGeneratedPreview && !isGenerating && !showError && style.id !== 1 && (
+      {isRecommendedCard && !hasGeneratedPreview && !isGenerating && !showError && (
         <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-30">
           <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg backdrop-blur-sm border border-white/20">
             <div className="flex items-center gap-1.5">
