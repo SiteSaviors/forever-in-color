@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { createPreview } from "./previewOperations";
 import { getAspectRatio, validateOrientationFlow, isValidAspectRatio } from "@/components/product/orientation/utils";

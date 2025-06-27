@@ -1,4 +1,3 @@
-
 // Single source of truth for all orientation and aspect ratio mappings
 
 export type OrientationType = 'square' | 'horizontal' | 'vertical';
