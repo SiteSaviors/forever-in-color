@@ -1,4 +1,5 @@
 
+import { memo } from "react";
 import { Button } from "@/components/ui/button";
 import { Upload, ImageIcon } from "lucide-react";
 import StyleCard from "./StyleCard";
@@ -14,7 +15,7 @@ interface StyleGridProps {
   onComplete: () => void;
 }
 
-const StyleGrid = ({ 
+const StyleGrid = memo(({ 
   croppedImage, 
   selectedStyle, 
   cropAspectRatio,
@@ -143,6 +144,8 @@ const StyleGrid = ({
       </div>
     </div>
   );
-};
+});
+
+StyleGrid.displayName = 'StyleGrid';
 
 export default StyleGrid;

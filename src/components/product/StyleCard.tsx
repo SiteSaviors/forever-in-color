@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, memo } from "react";
 import StyleCardImage from "./components/StyleCardImage";
 import StyleCardInfo from "./components/StyleCardInfo";
 import StyleCardContainer from "./components/StyleCardContainer";
@@ -28,7 +28,7 @@ interface StyleCardProps {
   onContinue?: () => void;
 }
 
-const StyleCard = ({
+const StyleCard = memo(({
   style,
   croppedImage,
   selectedStyle,
@@ -196,6 +196,8 @@ const StyleCard = ({
       />
     </>
   );
-};
+});
+
+StyleCard.displayName = 'StyleCard';
 
 export default StyleCard;

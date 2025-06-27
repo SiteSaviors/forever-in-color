@@ -1,4 +1,5 @@
 
+import { memo } from "react";
 import UnifiedImageDisplay from "./UnifiedImageDisplay";
 import StyleCardLoadingOverlay from "./StyleCardLoadingOverlay";
 import StyleCardBlurOverlay from "./StyleCardBlurOverlay";
@@ -32,7 +33,7 @@ interface StyleCardImageProps {
   onRetry?: () => void;
 }
 
-const StyleCardImage = ({
+const StyleCardImage = memo(({
   style,
   imageToShow,
   cropAspectRatio,
@@ -106,6 +107,8 @@ const StyleCardImage = ({
       )}
     </div>
   );
-};
+});
+
+StyleCardImage.displayName = 'StyleCardImage';
 
 export default StyleCardImage;
