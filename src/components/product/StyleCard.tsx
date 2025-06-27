@@ -7,6 +7,7 @@ import StyleCardImage from './components/StyleCardImage';
 import EnhancedStyleCardLoadingOverlay from './components/EnhancedStyleCardLoadingOverlay';
 import StyleCardRetryOverlay from './components/StyleCardRetryOverlay';
 import Lightbox from '@/components/ui/lightbox';
+import { useBlinking } from './hooks/useBlinking';
 
 interface StyleCardProps {
   style: {
@@ -43,6 +44,7 @@ const StyleCard = ({
   const [showError, setShowError] = useState(false);
   const [localIsLoading, setLocalIsLoading] = useState(false);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [hasGeneratedOnce, setHasGeneratedOnce] = useState(false);
 
   const {
     isLoading,
@@ -61,6 +63,21 @@ const StyleCard = ({
     onStyleClick
   });
 
+  // Track if this style has been generated before
+  useEffect(() => {
+    if (previewUrl && !hasGeneratedOnce) {
+      console.log(`🎯 StyleCard: Marking ${style.name} as generated for the first time`);
+      setHasGeneratedOnce(true);
+    }
+  }, [previewUrl, hasGeneratedOnce, style.name]);
+
+  // Use the updated blinking hook
+  const { isBlinking } = useBlinking(previewUrl, {
+    isGenerating: isLoading || localIsLoading,
+    hasPreview: !!previewUrl,
+    hasGeneratedOnce
+  });
+
   // CRITICAL FIX: Stop loading immediately when preview is available
   useEffect(() => {
     if (previewUrl) {
@@ -69,30 +86,32 @@ const StyleCard = ({
     }
   }, [previewUrl, style.name]);
 
-  // Combine loading states - stop loading if we have a preview
-  const effectiveIsLoading = previewUrl ? false : (isLoading || localIsLoading);
+  // Combine loading states - stop loading if we have a preview OR if we've generated once
+  const effectiveIsLoading = (previewUrl || hasGeneratedOnce) ? false : (isLoading || localIsLoading);
 
   const isSelected = selectedStyle === style.id;
   const showGeneratedBadge = hasGeneratedPreview && isStyleGenerated;
-  const showContinueInCard = showContinueButton && isSelected && isStyleGenerated;
+  const showContinueInCard = showContinueButton && isSelected && (isStyleGenerated || hasGeneratedOnce);
   const hasError = showError || validationError;
 
   // Determine what image to show - preview URL if available, otherwise cropped image, otherwise default style image
   const imageToShow = previewUrl || croppedImage || style.image;
 
-  // SOLUTION 1: Prevent regeneration if style already has a preview
+  // SOLUTION 1: Prevent regeneration if style already has a preview OR has been generated once
   const handleCardClick = useCallback(() => {
-    console.log(`🎯 StyleCard clicked: ${style.name}, hasPreview: ${!!previewUrl}, isGenerating: ${effectiveIsLoading}`);
+    console.log(`🎯 StyleCard clicked: ${style.name}, hasPreview: ${!!previewUrl}, hasGeneratedOnce: ${hasGeneratedOnce}, isGenerating: ${effectiveIsLoading}`);
     
     // Always call onStyleClick to select the style
     onStyleClick(style);
     
-    // Only generate if we don't already have a preview and not currently generating
-    if (!previewUrl && !effectiveIsLoading && !hasError && style.id !== 1) {
-      console.log(`🚀 Auto-generating preview for ${style.name}`);
+    // Only generate if we don't already have a preview AND haven't generated once AND not currently generating
+    if (!previewUrl && !hasGeneratedOnce && !effectiveIsLoading && !hasError && style.id !== 1) {
+      console.log(`🚀 Auto-generating preview for ${style.name} (first time)`);
       handleGenerateClick({} as React.MouseEvent);
+    } else if (hasGeneratedOnce || previewUrl) {
+      console.log(`🛑 Skipping generation for ${style.name} - already generated before`);
     }
-  }, [style, previewUrl, effectiveIsLoading, hasError, onStyleClick]);
+  }, [style, previewUrl, hasGeneratedOnce, effectiveIsLoading, hasError, onStyleClick]);
 
   // SOLUTION 3: Make continue button navigate to next step
   const handleContinueClick = (e: React.MouseEvent) => {
@@ -110,11 +129,19 @@ const StyleCard = ({
 
   const handleGenerateClick = useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    // Don't generate if we've already generated once
+    if (hasGeneratedOnce || previewUrl) {
+      console.log(`🛑 Skipping generation for ${style.name} - already generated`);
+      return;
+    }
+    
     setShowError(false);
     setLocalIsLoading(true);
     
     try {
       await generatePreview();
+      setHasGeneratedOnce(true);
     } catch (error) {
       setShowError(true);
     } finally {
@@ -123,7 +150,7 @@ const StyleCard = ({
         setLocalIsLoading(false);
       }
     }
-  }, [generatePreview, previewUrl]);
+  }, [generatePreview, previewUrl, hasGeneratedOnce, style.name]);
 
   const handleRetryClick = useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -132,6 +159,7 @@ const StyleCard = ({
     
     try {
       await generatePreview();
+      setHasGeneratedOnce(true);
     } catch (error) {
       setShowError(true);
     } finally {
@@ -140,7 +168,7 @@ const StyleCard = ({
         setLocalIsLoading(false);
       }
     }
-  }, [generatePreview, previewUrl]);
+  }, [generatePreview, previewUrl, style.name]);
 
   return (
     <>
@@ -166,7 +194,7 @@ const StyleCard = ({
           
           {/* Enhanced Loading Overlay */}
           <EnhancedStyleCardLoadingOverlay
-            isBlinking={effectiveIsLoading}
+            isBlinking={isBlinking}
             styleName={style.name}
             error={hasError ? (validationError || 'Generation failed') : null}
             onRetry={() => handleRetryClick({} as React.MouseEvent)}
@@ -176,10 +204,10 @@ const StyleCard = ({
         {/* Info Section */}
         <StyleCardInfo
           style={style}
-          hasGeneratedPreview={hasGeneratedPreview}
+          hasGeneratedPreview={hasGeneratedPreview || hasGeneratedOnce}
           isPopular={isPopular}
           isSelected={isSelected}
-          showGeneratedBadge={showGeneratedBadge}
+          showGeneratedBadge={showGeneratedBadge || hasGeneratedOnce}
           showContinueInCard={showContinueInCard}
           shouldBlur={shouldBlur}
           showError={!!hasError}
