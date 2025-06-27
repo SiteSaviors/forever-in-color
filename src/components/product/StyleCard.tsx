@@ -94,14 +94,13 @@ const StyleCard = ({
       hasError={!!hasError}
       canAccess={!!croppedImage}
       onClick={handleClick}
-      onGenerateStyle={handleGenerateClick}
+      onGenerateStyle={() => handleGenerateClick({} as React.MouseEvent)}
     >
       {/* Image Section */}
       <div className="relative flex-1">
         <StyleCardImage
           style={style}
           previewUrl={previewUrl}
-          isLoading={isLoading}
           aspectRatio={cropAspectRatio}
         />
         
@@ -110,7 +109,7 @@ const StyleCard = ({
           isBlinking={isLoading}
           styleName={style.name}
           error={hasError ? (validationError || 'Generation failed') : null}
-          onRetry={handleRetryClick}
+          onRetry={() => handleRetryClick({} as React.MouseEvent)}
         />
       </div>
 
