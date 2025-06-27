@@ -6,6 +6,7 @@ import ErrorBoundary from "./ErrorBoundary";
 import StepContainer from "./ActiveStepView/StepContainer";
 import StepOverlays from "./ActiveStepView/StepOverlays";
 import StepTrigger from "./ActiveStepView/StepTrigger";
+import { useInteractionStateMachine } from "../hooks/useInteractionStateMachine";
 import "../styles/activeStepOptimized.css";
 
 interface ActiveStepViewProps {
@@ -31,15 +32,50 @@ const ActiveStepView = React.memo(({
   selectedStyle,
   children
 }: ActiveStepViewProps) => {
-  const [isHovered, setIsHovered] = useState(false);
+  // Use interaction state machine for step interactions
+  const stepStateMachine = useInteractionStateMachine({
+    initialState: !canAccess ? 'disabled' : isActive ? 'selected' : isCompleted ? 'idle' : 'idle',
+    debounceDelay: 100,
+    animationDuration: 300
+  });
+
+  // Sync external state with state machine
+  React.useEffect(() => {
+    if (!canAccess && !stepStateMachine.isDisabled) {
+      stepStateMachine.transition('DISABLE', true);
+    } else if (canAccess && stepStateMachine.isDisabled) {
+      stepStateMachine.transition('ENABLE', true);
+    }
+    
+    if (isActive && !stepStateMachine.isSelected) {
+      stepStateMachine.transition('SELECT', true);
+    } else if (!isActive && stepStateMachine.isSelected) {
+      stepStateMachine.transition('DESELECT', true);
+    }
+  }, [canAccess, isActive, stepStateMachine]);
 
   const handleMouseEnter = useCallback(() => {
-    setIsHovered(true);
-  }, []);
+    if (stepStateMachine.isInteractive) {
+      stepStateMachine.debouncedHoverStart();
+    }
+  }, [stepStateMachine]);
 
   const handleMouseLeave = useCallback(() => {
-    setIsHovered(false);
-  }, []);
+    if (stepStateMachine.isInteractive) {
+      stepStateMachine.hoverEnd();
+    }
+  }, [stepStateMachine]);
+
+  const handleStepClick = useCallback(() => {
+    if (!stepStateMachine.isInteractive || stepStateMachine.isAnimating) {
+      return;
+    }
+
+    stepStateMachine.queueAnimation(() => {
+      onStepClick();
+      stepStateMachine.transition('SELECT');
+    });
+  }, [stepStateMachine, onStepClick]);
 
   return (
     <ErrorBoundary>
@@ -48,6 +84,10 @@ const ActiveStepView = React.memo(({
         className="relative step-container-optimized"
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
+        style={{
+          willChange: stepStateMachine.isAnimating ? 'transform, box-shadow' : 'auto',
+          transform: 'translate3d(0,0,0)'
+        }}
       >
         <StepContainer
           isActive={isActive}
@@ -68,7 +108,7 @@ const ActiveStepView = React.memo(({
             isActive={isActive}
             isCompleted={isCompleted}
             canAccess={canAccess}
-            onStepClick={onStepClick}
+            onStepClick={handleStepClick}
             selectedStyle={selectedStyle}
           />
           

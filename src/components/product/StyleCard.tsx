@@ -110,14 +110,22 @@ const StyleCard = memo(({
     onContinue
   });
 
+  // Calculate interaction states
+  const canAccess = !shouldShowBlur || isPopular || style.id === 1;
+
   return (
     <>
       <StyleCardContainer
         isSelected={isSelected}
         styleId={style.id}
+        styleName={style.name}
         onClick={handleClick}
         shouldBlur={shouldShowBlur}
         hideBlurOverlay={shouldBlur && !isPopular && style.id !== 1}
+        isGenerating={isGenerating}
+        hasError={showError}
+        canAccess={canAccess}
+        onGenerateStyle={handleGenerateStyle}
       >
         {/* Hero Image Section - Make this prominent on mobile */}
         <div className="flex-shrink-0 relative">
