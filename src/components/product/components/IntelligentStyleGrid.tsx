@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -260,7 +259,7 @@ const IntelligentStyleGrid = ({
         </div>
       )}
 
-      {/* Complete Collection - FIXED LAYOUT & SPACING */}
+      {/* Complete Collection - UPDATED LAYOUT & SIZING */}
       {showAllStyles && secondaryStyles.length > 0 && (
         <div className="space-y-8">
           <div className="text-center space-y-3">
@@ -272,8 +271,8 @@ const IntelligentStyleGrid = ({
             </p>
           </div>
 
-          {/* OPTIMIZED GRID LAYOUT - Mobile First, Conversion Focused */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+          {/* UPDATED GRID LAYOUT - Match Popular Choices: 3 cards per row on desktop */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
             {secondaryStyles.map((rec, index) => {
               const style = artStyles.find(s => s.id === rec.styleId);
               if (!style) return null;
@@ -281,37 +280,23 @@ const IntelligentStyleGrid = ({
               return (
                 <div
                   key={rec.styleId}
-                  className="group relative transform transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2 grid-item"
+                  className="transform transition-all duration-300 hover:scale-105 style-card-hover style-card-press"
                   style={{ 
-                    animationDelay: `${index * 100}ms`
+                    animationDelay: `${index * 150}ms`
                   }}
                 >
-                  {/* Enhanced Card Container with Premium Effects */}
-                  <div className="relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 hover:border-purple-200 overflow-hidden">
-                    {/* Subtle Gradient Background */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-white opacity-80 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    
-                    <div className="relative z-10">
-                      <StyleCard
-                        style={style}
-                        croppedImage={croppedImage}
-                        selectedStyle={selectedStyle}
-                        isPopular={false}
-                        cropAspectRatio={cropAspectRatio}
-                        selectedOrientation={selectedOrientation}
-                        showContinueButton={false}
-                        onStyleClick={() => handleStyleSelect(rec.styleId, rec.styleName)}
-                        onContinue={onComplete}
-                        shouldBlur={false}
-                      />
-                    </div>
-
-                    {/* Hover Enhancement Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-purple-50/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none rounded-2xl"></div>
-                    
-                    {/* Premium Glow Effect on Hover */}
-                    <div className="absolute -inset-1 bg-gradient-to-r from-purple-200 via-pink-200 to-purple-200 rounded-2xl opacity-0 group-hover:opacity-30 blur-sm transition-all duration-500 -z-10"></div>
-                  </div>
+                  <StyleCard
+                    style={style}
+                    croppedImage={croppedImage}
+                    selectedStyle={selectedStyle}
+                    isPopular={false}
+                    cropAspectRatio={cropAspectRatio}
+                    selectedOrientation={selectedOrientation}
+                    showContinueButton={false}
+                    onStyleClick={() => handleStyleSelect(rec.styleId, rec.styleName)}
+                    onContinue={onComplete}
+                    shouldBlur={false}
+                  />
                 </div>
               );
             })}
