@@ -1,9 +1,9 @@
+
 import PhotoUploadSection from "./PhotoUploadSection";
 import StyleSelectionSection from "./StyleSelectionSection";
 import PhotoCropperSection from "./PhotoCropperSection";
 import SmartProgressIndicator from "../progress/SmartProgressIndicator";
 import ContextualHelp from "../help/ContextualHelp";
-import SocialProofFeed from "../social/SocialProofFeed";
 import MobileGestureHandler from "../mobile/MobileGestureHandler";
 import ConversionMomentumTracker from "../progress/ConversionMomentumTracker";
 import ProgressStateManager from "./ProgressStateManager";
@@ -137,9 +137,8 @@ const PhotoUploadFlow = ({
           </>
         )}
 
-        {/* Enhanced UX Components */}
+        {/* Enhanced UX Components - Removed SocialProofFeed from here */}
         <ContextualHelp />
-        <SocialProofFeed />
         <ConversionMomentumTracker />
       </div>
     </MobileGestureHandler>

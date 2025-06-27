@@ -6,6 +6,7 @@ import ProductContent from "@/components/product/ProductContent";
 import TrustElements from "@/components/product/TrustElements";
 import BottomMomentumPopup from "@/components/product/components/BottomMomentumPopup";
 import ProductTestimonials from "@/components/product/ProductTestimonials";
+import SocialProofFeed from "@/components/product/social/SocialProofFeed";
 import { useProductState } from "@/components/product/ProductStateManager";
 import { ProgressOrchestrator } from "@/components/product/progress/ProgressOrchestrator";
 
@@ -71,6 +72,9 @@ const Product = () => {
           <ProductTestimonials />
         </div>
 
+        {/* Fixed floating components - rendered at page level */}
+        <SocialProofFeed />
+        
         <BottomMomentumPopup
           currentStep={currentStep}
           completedSteps={completedSteps}
