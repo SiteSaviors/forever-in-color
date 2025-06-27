@@ -1,83 +1,64 @@
+
 import { useState, useEffect } from 'react';
 
 interface UseBlinkingOptions {
   isGenerating?: boolean;
   hasPreview?: boolean;
+  hasGeneratedOnce?: boolean;
 }
 
 export const useBlinking = (previewUrl: string | null, options: UseBlinkingOptions = {}) => {
   const [isBlinking, setIsBlinking] = useState(false);
+  const [hasGeneratedOnce, setHasGeneratedOnce] = useState(false);
 
-  // Only start blinking if we're actually generating something
   const { isGenerating = false } = options;
 
-  // CRITICAL FIX: Immediate stop when preview becomes available
+  // Track if we've ever generated a preview - this should persist permanently
   useEffect(() => {
-    if (previewUrl) {
-      console.log('🚨 IMMEDIATE STOP - Preview detected, forcing stop:', {
-        previewUrl: previewUrl.substring(0, 50) + '...',
-        wasBlinking: isBlinking,
-        timestamp: new Date().toISOString()
-      });
-      setIsBlinking(false);
-      return; // Exit early
+    if (previewUrl && !hasGeneratedOnce) {
+      console.log('🎯 Style has been generated for the first time, marking as permanently generated');
+      setHasGeneratedOnce(true);
+      setIsBlinking(false); // Immediately stop blinking when preview is available
     }
-  }, [previewUrl]); // Run this first and separately
+  }, [previewUrl, hasGeneratedOnce]);
 
-  // STEP 1: Verify hook updates are immediate - log inside the hook
+  // CRITICAL FIX: Never allow blinking if we've generated once OR if we have a preview
   useEffect(() => {
-    console.log('🔔 useBlinking - Hook sees state change:', {
-      previewUrl: previewUrl ? 'EXISTS' : 'NULL',
-      previewUrlValue: previewUrl ? previewUrl.substring(0, 50) + '...' : 'null',
-      currentBlinkingState: isBlinking,
-      isGenerating,
-      timestamp: new Date().toISOString()
-    });
-  }, [previewUrl, isBlinking, isGenerating]);
+    if (hasGeneratedOnce || previewUrl) {
+      console.log('🛑 Style has been generated before or has preview, permanently stopping blinking');
+      setIsBlinking(false);
+      return;
+    }
 
-  // STEP 2 & 3: Single source of truth with proper cleanup
-  useEffect(() => {
-    console.log('🎯 useBlinking - Effect triggered:', {
-      previewUrl: previewUrl ? 'EXISTS' : 'NULL',
-      isGenerating,
-      shouldStartBlinking: !previewUrl && isGenerating
-    });
-
-    // Only start blinking if we don't have a preview AND we're actively generating
-    if (!previewUrl && isGenerating) {
-      // Start blinking - use setInterval for controlled animation
-      console.log('🚀 Starting blink animation');
+    // Only start blinking if we don't have a preview AND we're actively generating AND we haven't generated before
+    if (!previewUrl && isGenerating && !hasGeneratedOnce) {
+      console.log('🚀 Starting blink animation for generation');
       setIsBlinking(true);
       
       const blinkInterval = setInterval(() => {
-        setIsBlinking(prev => {
-          const newState = !prev;
-          console.log('🔄 Blink toggle:', { from: prev, to: newState });
-          return newState;
-        });
+        setIsBlinking(prev => !prev);
       }, 500);
 
-      // Cleanup function
       return () => {
         console.log('🧹 Clearing blink interval');
         clearInterval(blinkInterval);
       };
     } else {
-      // Preview is ready OR we're not generating - STOP BLINKING IMMEDIATELY
-      console.log('🛑 Preview ready or not generating - STOPPING blink animation');
+      // Stop blinking in all other cases
       setIsBlinking(false);
     }
-  }, [previewUrl, isGenerating]); // Include isGenerating in dependency array
+  }, [previewUrl, isGenerating, hasGeneratedOnce]);
 
-  // ENHANCED: Double-check to force stop when preview becomes available
-  useEffect(() => {
-    if (previewUrl && isBlinking) {
-      console.log('🚨 DOUBLE-CHECK FORCE STOP - Preview exists but still blinking, forcing stop');
-      setIsBlinking(false);
-    }
-  }, [previewUrl, isBlinking]);
-
-  console.log('🔔 useBlinking returning:', { isBlinking, hasPreview: !!previewUrl, isGenerating });
+  console.log('🔔 useBlinking returning:', { 
+    isBlinking: hasGeneratedOnce || previewUrl ? false : isBlinking, 
+    hasPreview: !!previewUrl, 
+    isGenerating,
+    hasGeneratedOnce
+  });
   
-  return { isBlinking };
+  // NEVER return true for blinking if we have a preview OR if we've generated once before
+  return { 
+    isBlinking: (hasGeneratedOnce || previewUrl) ? false : isBlinking,
+    hasGeneratedOnce
+  };
 };

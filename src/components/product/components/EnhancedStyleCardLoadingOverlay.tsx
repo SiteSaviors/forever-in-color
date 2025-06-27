@@ -78,7 +78,7 @@ const EnhancedStyleCardLoadingOverlay = ({
         aria-live="assertive"
         aria-label={`Generation failed for ${styleName}`}
       >
-        <div className="text-white text-center space-y-4 px-4 animate-fade-in">
+        <div className="text-white text-center space-y-4 px-4 animate-fade-in max-w-[90%]">
           <div className="relative">
             <AlertCircle className="w-10 h-10 mx-auto text-red-300 animate-pulse" />
             <div className="absolute inset-0 w-10 h-10 mx-auto border-2 border-red-300/30 rounded-full animate-ping"></div>
@@ -112,13 +112,13 @@ const EnhancedStyleCardLoadingOverlay = ({
   if (showSuccess) {
     return (
       <div className="absolute inset-0 bg-gradient-to-br from-green-500/90 to-emerald-600/90 backdrop-blur-sm flex items-center justify-center z-20 rounded-2xl animate-scale-in">
-        <div className="text-white text-center space-y-4 px-4 animate-bounce">
+        <div className="text-white text-center space-y-4 px-4 animate-bounce max-w-[90%]">
           <div className="relative">
             <CheckCircle className="w-12 h-12 mx-auto text-green-200 animate-pulse" />
             <div className="absolute inset-0 w-12 h-12 mx-auto border-2 border-green-200/50 rounded-full animate-ping"></div>
           </div>
           <div className="space-y-1">
-            <p className="text-lg font-bold">{styleName} Ready!</p>
+            <p className="text-base font-bold truncate">{styleName} Ready!</p>
             <p className="text-xs text-green-100">Your masterpiece is complete</p>
           </div>
         </div>
@@ -141,31 +141,33 @@ const EnhancedStyleCardLoadingOverlay = ({
       aria-live="polite"
       aria-label={`Generating ${styleName}: ${Math.round(progress)}% complete`}
     >
-      <div className="text-white text-center space-y-5 px-4 max-w-xs">
+      <div className="text-white text-center space-y-4 px-3 max-w-[90%] w-full">
         {/* Animated Icon */}
         <div className="relative">
-          <div className="w-16 h-16 mx-auto relative">
-            <StepIcon className={`w-16 h-16 ${currentStepData.color} animate-pulse z-10 relative`} />
+          <div className="w-12 h-12 mx-auto relative">
+            <StepIcon className={`w-12 h-12 ${currentStepData.color} animate-pulse z-10 relative`} />
             <div className="absolute inset-0 animate-spin">
-              <div className="w-16 h-16 border-3 border-transparent border-t-white/40 border-r-white/20 rounded-full"></div>
+              <div className="w-12 h-12 border-3 border-transparent border-t-white/40 border-r-white/20 rounded-full"></div>
             </div>
             <div className="absolute inset-2 animate-ping">
-              <div className="w-12 h-12 border border-white/20 rounded-full"></div>
+              <div className="w-8 h-8 border border-white/20 rounded-full"></div>
             </div>
           </div>
         </div>
 
-        {/* Progress Info */}
-        <div className="space-y-3">
+        {/* Progress Info - FIXED TEXT CUTOFF */}
+        <div className="space-y-3 w-full">
           <div className="space-y-1">
-            <p className="text-lg font-bold animate-pulse">Creating {styleName}...</p>
-            <p className="text-sm text-purple-200 animate-fade-in" key={currentStep}>
+            <p className="text-sm font-bold animate-pulse truncate px-1">
+              Creating {styleName}...
+            </p>
+            <p className="text-xs text-purple-200 animate-fade-in truncate px-1" key={currentStep}>
               {currentStepData.label}
             </p>
           </div>
           
           {/* Enhanced Progress Bar */}
-          <div className="w-full max-w-48 mx-auto space-y-2">
+          <div className="w-full max-w-40 mx-auto space-y-2">
             <div className="h-2 bg-white/20 rounded-full overflow-hidden relative">
               <div 
                 className="h-full bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 rounded-full transition-all duration-700 ease-out relative"
@@ -197,7 +199,7 @@ const EnhancedStyleCardLoadingOverlay = ({
           ))}
         </div>
 
-        <p className="text-xs text-purple-300 animate-fade-in">
+        <p className="text-xs text-purple-300 animate-fade-in truncate px-1">
           ✨ This usually takes 10-15 seconds
         </p>
       </div>
