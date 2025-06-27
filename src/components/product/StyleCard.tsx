@@ -5,7 +5,7 @@ import StyleCardActions from "./components/StyleCardActions";
 import StyleCardMain from "./components/StyleCard/StyleCardMain";
 import StyleCardLightboxContainer from "./components/StyleCard/StyleCardLightboxContainer";
 import { useStyleCardLogic } from "./hooks/useStyleCardLogic";
-import { useStylePreview } from "./contexts/StylePreviewContext";
+import { useStylePreview } from "./contexts/StylePreviewContextOptimized";
 
 interface StyleCardProps {
   style: {
@@ -40,7 +40,7 @@ const StyleCard = memo(({
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isCanvasLightboxOpen, setIsCanvasLightboxOpen] = useState(false);
   
-  // Get preview generation functionality from context
+  // Get preview generation functionality from the correct context
   const { 
     generatePreview, 
     getPreviewUrl, 
@@ -74,11 +74,8 @@ const StyleCard = memo(({
     shouldBlur,
     onStyleClick,
     onContinue,
-    // Fix: Wrap the generatePreview to return the expected type
-    generatePreview: async () => {
-      await generatePreview(style.id, style.name);
-      return getPreviewUrl(style.id) || '';
-    },
+    // Use the context methods directly
+    generatePreview: () => generatePreview(style.id, style.name),
     getPreviewUrl: () => getPreviewUrl(style.id),
     isLoading: isLoading(style.id),
     hasPreview: hasPreview(style.id),
@@ -109,24 +106,6 @@ const StyleCard = memo(({
 
   // Calculate interaction states
   const canAccess = !shouldShowBlur || isPopular || style.id === 1;
-
-  // Fix: Wrap event handlers to match expected signatures
-  const handleGenerateClickWrapper = () => {
-    handleGenerateStyle();
-  };
-
-  const handleRetryClickWrapper = () => {
-    handleRetry();
-  };
-
-  const handleContinueClickWrapper = (e?: React.MouseEvent) => {
-    // Create a mock event if none provided
-    const mockEvent = e || {
-      stopPropagation: () => {},
-      preventDefault: () => {}
-    } as React.MouseEvent;
-    handleContinueClick(mockEvent);
-  };
 
   return (
     <>
@@ -162,10 +141,10 @@ const StyleCard = memo(({
           onExpandClick={handleExpandClick}
           onCanvasPreviewClick={handleCanvasPreviewClick}
           onGenerateStyle={handleGenerateStyle}
-          onRetry={handleRetryClickWrapper}
-          onContinueClick={handleContinueClickWrapper}
-          onGenerateClick={handleGenerateClickWrapper}
-          onRetryClick={handleRetryClickWrapper}
+          onRetry={handleRetry}
+          onContinueClick={handleContinueClick}
+          onGenerateClick={handleGenerateStyle}
+          onRetryClick={handleRetry}
         />
       </StyleCardContainer>
 

@@ -1,227 +1,82 @@
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 
-export type InteractionState = 
-  | 'idle'
-  | 'hovering' 
-  | 'selected'
-  | 'animating'
-  | 'loading'
-  | 'error'
-  | 'disabled';
+export type InteractionState = 'idle' | 'loading' | 'success' | 'error' | 'selected';
 
 export type InteractionEvent = 
-  | 'HOVER_START'
-  | 'HOVER_END' 
-  | 'SELECT'
-  | 'DESELECT'
-  | 'START_LOADING'
-  | 'FINISH_LOADING'
-  | 'ERROR'
-  | 'RESET'
-  | 'DISABLE'
-  | 'ENABLE';
-
-interface InteractionStateMachineOptions {
-  initialState?: InteractionState;
-  debounceDelay?: number;
-  animationDuration?: number;
-}
+  | 'SELECT' 
+  | 'LOAD' 
+  | 'SUCCESS' 
+  | 'ERROR' 
+  | 'RETRY'
+  | 'RESET';
 
 const stateTransitions: Record<InteractionState, Partial<Record<InteractionEvent, InteractionState>>> = {
   idle: {
-    HOVER_START: 'hovering',
     SELECT: 'selected',
-    START_LOADING: 'loading',
-    ERROR: 'error',
-    DISABLE: 'disabled'
-  },
-  hovering: {
-    HOVER_END: 'idle',
-    SELECT: 'selected',
-    START_LOADING: 'loading',
-    ERROR: 'error',
-    DISABLE: 'disabled'
-  },
-  selected: {
-    HOVER_START: 'selected', // Stay selected when hovering
-    HOVER_END: 'selected',
-    DESELECT: 'idle',
-    START_LOADING: 'loading',
-    ERROR: 'error',
-    DISABLE: 'disabled'
-  },
-  animating: {
-    // During animation, only allow critical state changes
-    ERROR: 'error',
-    DISABLE: 'disabled',
-    RESET: 'idle'
+    LOAD: 'loading'
   },
   loading: {
-    FINISH_LOADING: 'selected',
+    SUCCESS: 'success',
     ERROR: 'error',
-    DISABLE: 'disabled'
+    RESET: 'idle'
+  },
+  success: {
+    SELECT: 'selected',
+    LOAD: 'loading',
+    RESET: 'idle'
   },
   error: {
+    RETRY: 'loading',
     RESET: 'idle',
-    START_LOADING: 'loading',
-    DISABLE: 'disabled'
+    SELECT: 'loading' // Allow selecting from error state (triggers retry)
   },
-  disabled: {
-    ENABLE: 'idle'
+  selected: {
+    LOAD: 'loading',
+    RESET: 'idle'
   }
 };
 
-export const useInteractionStateMachine = (options: InteractionStateMachineOptions = {}) => {
-  const {
-    initialState = 'idle',
-    debounceDelay = 100,
-    animationDuration = 300
-  } = options;
-
+export const useInteractionStateMachine = (initialState: InteractionState = 'idle') => {
   const [state, setState] = useState<InteractionState>(initialState);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  
-  // Animation queue to prevent conflicts
-  const animationQueue = useRef<Array<() => void>>([]);
-  const isProcessingQueue = useRef(false);
-  const debounceTimer = useRef<NodeJS.Timeout>();
-  const animationTimer = useRef<NodeJS.Timeout>();
+  const [actionQueue, setActionQueue] = useState<InteractionEvent[]>([]);
 
-  // Process animation queue sequentially
-  const processAnimationQueue = useCallback(() => {
-    if (isProcessingQueue.current || animationQueue.current.length === 0) {
-      return;
-    }
-
-    isProcessingQueue.current = true;
-    const nextAnimation = animationQueue.current.shift();
-    
-    if (nextAnimation) {
-      setIsTransitioning(true);
-      nextAnimation();
+  const transition = useCallback((event: InteractionEvent) => {
+    setState(currentState => {
+      const nextState = stateTransitions[currentState]?.[event];
       
-      // Clear after animation duration
-      animationTimer.current = setTimeout(() => {
-        setIsTransitioning(false);
-        isProcessingQueue.current = false;
-        processAnimationQueue(); // Process next in queue
-      }, animationDuration);
-    } else {
-      isProcessingQueue.current = false;
-    }
-  }, [animationDuration]);
-
-  // Queue an animation to prevent conflicts
-  const queueAnimation = useCallback((animation: () => void) => {
-    animationQueue.current.push(animation);
-    processAnimationQueue();
-  }, [processAnimationQueue]);
-
-  // Transition between states with validation
-  const transition = useCallback((event: InteractionEvent, immediate = false) => {
-    const currentTransitions = stateTransitions[state];
-    const nextState = currentTransitions?.[event];
-
-    if (!nextState) {
-      console.warn(`Invalid transition: ${event} from state ${state}`);
-      return false;
-    }
-
-    const performTransition = () => {
-      setState(nextState);
-      console.log(`State transition: ${state} -> ${nextState} (${event})`);
-    };
-
-    if (immediate || nextState === 'error' || nextState === 'disabled') {
-      // Critical state changes happen immediately
-      performTransition();
-    } else {
-      // Queue non-critical transitions
-      queueAnimation(performTransition);
-    }
-
-    return true;
-  }, [state, queueAnimation]);
-
-  // Debounced hover start
-  const debouncedHoverStart = useCallback(() => {
-    if (debounceTimer.current) {
-      clearTimeout(debounceTimer.current);
-    }
-    
-    debounceTimer.current = setTimeout(() => {
-      transition('HOVER_START');
-    }, debounceDelay);
-  }, [transition, debounceDelay]);
-
-  // Immediate hover end (no debounce needed for leaving)
-  const hoverEnd = useCallback(() => {
-    if (debounceTimer.current) {
-      clearTimeout(debounceTimer.current);
-    }
-    transition('HOVER_END');
-  }, [transition]);
-
-  // Cleanup timers
-  useEffect(() => {
-    return () => {
-      if (debounceTimer.current) {
-        clearTimeout(debounceTimer.current);
+      if (nextState) {
+        console.log(`State transition: ${currentState} -> ${nextState} (${event})`);
+        return nextState;
+      } else {
+        // Instead of warning, allow the transition for error recovery
+        if (currentState === 'error' && event === 'SELECT') {
+          console.log(`Error recovery: ${currentState} -> loading (${event})`);
+          return 'loading';
+        }
+        console.warn(`Invalid transition: ${event} from state ${currentState}`);
+        return currentState;
       }
-      if (animationTimer.current) {
-        clearTimeout(animationTimer.current);
-      }
-    };
+    });
   }, []);
 
-  // State helper functions
-  const isIdle = state === 'idle';
-  const isHovering = state === 'hovering';
-  const isSelected = state === 'selected';
-  const isAnimating = state === 'animating' || isTransitioning;
-  const isLoading = state === 'loading';
-  const hasError = state === 'error';
-  const isDisabled = state === 'disabled';
-  
-  // Interactive states (can respond to user input)
-  const isInteractive = !isDisabled && !isLoading && !hasError;
-  
-  // Visual states for styling
-  const shouldShowHover = isHovering && isInteractive;
-  const shouldShowSelected = isSelected;
-  const shouldShowLoading = isLoading;
-  const shouldShowError = hasError;
-  const shouldShowDisabled = isDisabled;
+  const queueAction = useCallback((event: InteractionEvent) => {
+    setActionQueue(prev => [...prev, event]);
+  }, []);
+
+  const processQueue = useCallback(() => {
+    if (actionQueue.length > 0) {
+      const nextAction = actionQueue[0];
+      setActionQueue(prev => prev.slice(1));
+      transition(nextAction);
+    }
+  }, [actionQueue, transition]);
 
   return {
-    // Current state
     state,
-    
-    // State checks
-    isIdle,
-    isHovering,
-    isSelected,
-    isAnimating,
-    isLoading,
-    hasError,
-    isDisabled,
-    isInteractive,
-    
-    // Visual states
-    shouldShowHover,
-    shouldShowSelected,
-    shouldShowLoading,
-    shouldShowError,
-    shouldShowDisabled,
-    
-    // Actions
     transition,
-    debouncedHoverStart,
-    hoverEnd,
-    
-    // Animation queue management
-    queueAnimation,
-    animationQueueLength: animationQueue.current.length
+    queueAction,
+    processQueue,
+    queueLength: actionQueue.length
   };
 };

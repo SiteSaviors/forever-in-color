@@ -1,5 +1,6 @@
-import { useState, useCallback, useEffect } from "react";
-import { useBlinking } from "./useBlinking";
+
+import { useState, useCallback, useMemo } from "react";
+import { useInteractionStateMachine } from "./useInteractionStateMachine";
 
 interface UseStyleCardLogicProps {
   style: {
@@ -10,11 +11,10 @@ interface UseStyleCardLogicProps {
   };
   croppedImage: string | null;
   selectedStyle: number | null;
-  shouldBlur?: boolean;
+  shouldBlur: boolean;
   onStyleClick: (style: { id: number; name: string; description: string; image: string }) => void;
   onContinue?: () => void;
-  // Add preview generation functions from context
-  generatePreview: () => Promise<string | null>;
+  generatePreview: () => Promise<void>;
   getPreviewUrl: () => string | undefined;
   isLoading: boolean;
   hasPreview: boolean;
@@ -26,10 +26,9 @@ export const useStyleCardLogic = ({
   style,
   croppedImage,
   selectedStyle,
-  shouldBlur = false,
+  shouldBlur,
   onStyleClick,
   onContinue,
-  // Preview generation functions
   generatePreview,
   getPreviewUrl,
   isLoading,
@@ -37,78 +36,81 @@ export const useStyleCardLogic = ({
   hasError,
   getError
 }: UseStyleCardLogicProps) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const { state, transition } = useInteractionStateMachine('idle');
   
+  // Derived states
   const isSelected = selectedStyle === style.id;
   const isGenerating = isLoading;
   const hasGeneratedPreview = hasPreview;
   const previewUrl = getPreviewUrl();
   const error = getError();
   const showError = hasError;
-  
-  // Determine what image to show
-  const imageToShow = previewUrl || croppedImage || style.image;
-  
-  // Show continue button logic - show for Original Image OR when style has generated preview
-  const showContinueInCard = style.id === 1 || hasGeneratedPreview;
-  const hasPreviewOrCropped = !!(previewUrl || croppedImage);
-  
-  // Show generated badge for styles that have previews (but not Original Image)
-  const showGeneratedBadge = hasGeneratedPreview && style.id !== 1;
 
-  // CRITICAL FIX: Determine blur state properly
-  const shouldShowBlur = shouldBlur && !hasGeneratedPreview && !isGenerating && !showError && style.id !== 1;
+  // Image to show logic
+  const imageToShow = useMemo(() => {
+    if (previewUrl) return previewUrl;
+    if (croppedImage && isSelected) return croppedImage;
+    return style.image;
+  }, [previewUrl, croppedImage, isSelected, style.image]);
 
-  // Use the blinking hook for loading animation
-  const { isBlinking } = useBlinking(previewUrl, {
-    isGenerating: isGenerating
-  });
+  // UI state calculations
+  const showContinueInCard = isSelected && !!previewUrl;
+  const hasPreviewOrCropped = !!previewUrl || (!!croppedImage && isSelected);
+  const showGeneratedBadge = !!previewUrl;
+  const shouldShowBlur = shouldBlur && !hasPreviewOrCropped && style.id !== 1;
+  const isBlinking = isGenerating;
 
-  // MAIN CARD CLICK HANDLER
+  // Handlers
   const handleClick = useCallback(() => {
-    console.log(`🎯 MAIN CARD CLICK ▶️ ${style.name} (ID: ${style.id}), shouldBlur: ${shouldBlur}, isGenerating: ${isGenerating}`);
+    console.log(`🎯 Style clicked: ${style.name} (ID: ${style.id})`);
     onStyleClick(style);
     
-    // Auto-generate if conditions are met (and not already generating or in error state)
-    if (croppedImage && !hasGeneratedPreview && !isGenerating && !showError && style.id !== 1) {
-      console.log(`🚀 Auto-generating preview for clicked style: ${style.name}`);
-      generatePreview();
+    // If there's an error, clicking should retry
+    if (hasError) {
+      transition('RETRY');
+      generatePreview().catch(err => {
+        console.error('Generation failed:', err);
+        transition('ERROR');
+      });
+    } else if (croppedImage && !hasPreview && !isLoading && style.id !== 1) {
+      // Auto-generate preview for new selections
+      transition('LOAD');
+      generatePreview().then(() => {
+        transition('SUCCESS');
+      }).catch(err => {
+        console.error('Generation failed:', err);
+        transition('ERROR');
+      });
     }
-  }, [style, croppedImage, hasGeneratedPreview, isGenerating, showError, shouldBlur, onStyleClick, generatePreview]);
+  }, [style, onStyleClick, hasError, croppedImage, hasPreview, isLoading, transition, generatePreview]);
 
-  // Handle manual generation button click (for blurred cards)
-  const handleGenerateStyle = useCallback(async (e?: React.MouseEvent) => {
-    if (e) {
-      e.stopPropagation();
-    }
-    console.log(`🎨 MANUAL GENERATE CLICKED ▶️ ${style.name} (ID: ${style.id})`);
+  const handleGenerateStyle = useCallback(async () => {
+    if (!croppedImage || style.id === 1) return;
     
-    onStyleClick(style);
-    await generatePreview();
-  }, [style, onStyleClick, generatePreview]);
+    transition('LOAD');
+    try {
+      await generatePreview();
+      transition('SUCCESS');
+    } catch (err) {
+      console.error('Generation failed:', err);
+      transition('ERROR');
+    }
+  }, [croppedImage, style.id, transition, generatePreview]);
 
-  // Handle retry button click
-  const handleRetry = useCallback(async (e?: React.MouseEvent) => {
+  const handleRetry = useCallback(() => {
+    transition('RETRY');
+    handleGenerateStyle();
+  }, [transition, handleGenerateStyle]);
+
+  const handleContinueClick = useCallback((e?: React.MouseEvent) => {
     if (e) {
       e.stopPropagation();
+      e.preventDefault();
     }
-    console.log(`🔄 RETRY CLICKED ▶️ ${style.name} (ID: ${style.id})`);
-    await generatePreview();
-  }, [style, generatePreview]);
-
-  // Handle preview expansion
-  const handleExpandClick = useCallback(() => {
-    setIsExpanded(true);
-  }, []);
-
-  // Handle continue click - UPDATED TO GO TO STEP 2
-  const handleContinueClick = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
     if (onContinue) {
-      console.log(`Continue clicked for ${style.name} - going to Step 2`);
       onContinue();
     }
-  }, [style.name, onContinue]);
+  }, [onContinue]);
 
   return {
     isSelected,
@@ -123,12 +125,9 @@ export const useStyleCardLogic = ({
     showGeneratedBadge,
     shouldShowBlur,
     isBlinking,
-    isExpanded,
-    setIsExpanded,
     handleClick,
     handleGenerateStyle,
     handleRetry,
-    handleExpandClick,
     handleContinueClick
   };
 };
