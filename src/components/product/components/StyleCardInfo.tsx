@@ -1,6 +1,7 @@
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Sparkles, ArrowRight, Zap, RefreshCw } from "lucide-react";
+import { Sparkles, ArrowRight, Zap, RefreshCw, CheckCircle } from "lucide-react";
 
 interface StyleCardInfoProps {
   style: {
@@ -193,7 +194,8 @@ const StyleCardInfo = ({
 
   // Determine which button to show based on state
   const showGenerateButton = !hasGeneratedPreview && !showError && style.id !== 1;
-  const showContinueButton = showContinueInCard && isSelected && !shouldBlur && !showError;
+  const showContinueButton = hasGeneratedPreview && !showError; // Show for any generated style
+  const showOriginalContinueButton = style.id === 1 && isSelected;
   const showRetryButton = showError;
 
   return (
@@ -250,19 +252,20 @@ const StyleCardInfo = ({
           </Button>
         )}
 
-        {/* Continue button for completed styles */}
+        {/* Continue with This Style Button - After generation */}
         {showContinueButton && (
           <Button 
             onClick={onContinueClick} 
-            className="flex-1 bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 font-poppins"
+            className="flex-1 bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 font-poppins ring-2 ring-emerald-200 ring-offset-1"
           >
-            Continue
+            <CheckCircle className="w-4 h-4 mr-2" />
+            Continue with This Style
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
         )}
 
         {/* Original Image Continue Button */}
-        {style.id === 1 && isSelected && (
+        {showOriginalContinueButton && (
           <Button 
             onClick={onContinueClick} 
             className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 font-poppins"
