@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 
 interface UseBlinkingOptions {
@@ -8,10 +9,9 @@ interface UseBlinkingOptions {
 export const useBlinking = (previewUrl: string | null, options: UseBlinkingOptions = {}) => {
   const [isBlinking, setIsBlinking] = useState(false);
 
-  // Only start blinking if we're actually generating something
   const { isGenerating = false } = options;
 
-  // CRITICAL FIX: Immediate stop when preview becomes available
+  // CRITICAL FIX: Immediate stop when preview becomes available - highest priority
   useEffect(() => {
     if (previewUrl) {
       console.log('🚨 IMMEDIATE STOP - Preview detected, forcing stop:', {
@@ -20,64 +20,51 @@ export const useBlinking = (previewUrl: string | null, options: UseBlinkingOptio
         timestamp: new Date().toISOString()
       });
       setIsBlinking(false);
-      return; // Exit early
+      return;
     }
-  }, [previewUrl]); // Run this first and separately
+  }, [previewUrl]);
 
-  // STEP 1: Verify hook updates are immediate - log inside the hook
+  // Main blinking logic with cleanup
   useEffect(() => {
-    console.log('🔔 useBlinking - Hook sees state change:', {
-      previewUrl: previewUrl ? 'EXISTS' : 'NULL',
-      previewUrlValue: previewUrl ? previewUrl.substring(0, 50) + '...' : 'null',
-      currentBlinkingState: isBlinking,
-      isGenerating,
-      timestamp: new Date().toISOString()
-    });
-  }, [previewUrl, isBlinking, isGenerating]);
-
-  // STEP 2 & 3: Single source of truth with proper cleanup
-  useEffect(() => {
-    console.log('🎯 useBlinking - Effect triggered:', {
-      previewUrl: previewUrl ? 'EXISTS' : 'NULL',
-      isGenerating,
-      shouldStartBlinking: !previewUrl && isGenerating
-    });
+    let blinkInterval: NodeJS.Timeout | null = null;
 
     // Only start blinking if we don't have a preview AND we're actively generating
     if (!previewUrl && isGenerating) {
-      // Start blinking - use setInterval for controlled animation
-      console.log('🚀 Starting blink animation');
+      console.log('🚀 Starting blink animation for generation');
       setIsBlinking(true);
       
-      const blinkInterval = setInterval(() => {
-        setIsBlinking(prev => {
-          const newState = !prev;
-          console.log('🔄 Blink toggle:', { from: prev, to: newState });
-          return newState;
-        });
+      blinkInterval = setInterval(() => {
+        setIsBlinking(prev => !prev);
       }, 500);
-
-      // Cleanup function
-      return () => {
-        console.log('🧹 Clearing blink interval');
-        clearInterval(blinkInterval);
-      };
     } else {
       // Preview is ready OR we're not generating - STOP BLINKING IMMEDIATELY
-      console.log('🛑 Preview ready or not generating - STOPPING blink animation');
+      console.log('🛑 Stopping blink animation - preview ready or not generating');
       setIsBlinking(false);
     }
-  }, [previewUrl, isGenerating]); // Include isGenerating in dependency array
 
-  // ENHANCED: Double-check to force stop when preview becomes available
+    // Cleanup function
+    return () => {
+      if (blinkInterval) {
+        console.log('🧹 Clearing blink interval');
+        clearInterval(blinkInterval);
+      }
+    };
+  }, [previewUrl, isGenerating]);
+
+  // Additional safety check - force stop if preview exists but still blinking
   useEffect(() => {
     if (previewUrl && isBlinking) {
-      console.log('🚨 DOUBLE-CHECK FORCE STOP - Preview exists but still blinking, forcing stop');
+      console.log('🚨 SAFETY CHECK - Preview exists but still blinking, forcing stop');
       setIsBlinking(false);
     }
   }, [previewUrl, isBlinking]);
 
-  console.log('🔔 useBlinking returning:', { isBlinking, hasPreview: !!previewUrl, isGenerating });
+  console.log('🔔 useBlinking returning:', { 
+    isBlinking: !previewUrl ? isBlinking : false, // Force false if preview exists
+    hasPreview: !!previewUrl, 
+    isGenerating 
+  });
   
-  return { isBlinking };
+  // Always return false if we have a preview, regardless of internal state
+  return { isBlinking: !previewUrl ? isBlinking : false };
 };

@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useStylePreview } from './hooks/useStylePreview';
 import StyleCardContainer from './components/StyleCardContainer';
 import StyleCardInfo from './components/StyleCardInfo';
@@ -40,6 +40,7 @@ const StyleCard = ({
   shouldBlur = false
 }: StyleCardProps) => {
   const [showError, setShowError] = useState(false);
+  const [localIsLoading, setLocalIsLoading] = useState(false);
 
   const {
     isLoading,
@@ -58,6 +59,17 @@ const StyleCard = ({
     onStyleClick
   });
 
+  // CRITICAL FIX: Stop loading immediately when preview is available
+  useEffect(() => {
+    if (previewUrl) {
+      console.log(`🛑 StyleCard: Preview available for ${style.name}, stopping loading state`);
+      setLocalIsLoading(false);
+    }
+  }, [previewUrl, style.name]);
+
+  // Combine loading states - stop loading if we have a preview
+  const effectiveIsLoading = previewUrl ? false : (isLoading || localIsLoading);
+
   const isSelected = selectedStyle === style.id;
   const showGeneratedBadge = hasGeneratedPreview && isStyleGenerated;
   const showContinueInCard = showContinueButton && isSelected && isStyleGenerated;
@@ -71,21 +83,39 @@ const StyleCard = ({
     onContinue();
   };
 
-  const handleGenerateClick = useCallback((e: React.MouseEvent) => {
+  const handleGenerateClick = useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation();
     setShowError(false);
-    generatePreview().catch(() => {
+    setLocalIsLoading(true);
+    
+    try {
+      await generatePreview();
+    } catch (error) {
       setShowError(true);
-    });
-  }, [generatePreview]);
+    } finally {
+      // Only set loading to false if we don't have a preview yet
+      if (!previewUrl) {
+        setLocalIsLoading(false);
+      }
+    }
+  }, [generatePreview, previewUrl]);
 
-  const handleRetryClick = useCallback((e: React.MouseEvent) => {
+  const handleRetryClick = useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation();
     setShowError(false);
-    generatePreview().catch(() => {
+    setLocalIsLoading(true);
+    
+    try {
+      await generatePreview();
+    } catch (error) {
       setShowError(true);
-    });
-  }, [generatePreview]);
+    } finally {
+      // Only set loading to false if we don't have a preview yet
+      if (!previewUrl) {
+        setLocalIsLoading(false);
+      }
+    }
+  }, [generatePreview, previewUrl]);
 
   return (
     <StyleCardContainer
@@ -93,7 +123,7 @@ const StyleCard = ({
       styleId={style.id}
       styleName={style.name}
       shouldBlur={shouldBlur}
-      isGenerating={isLoading}
+      isGenerating={effectiveIsLoading}
       hasError={!!hasError}
       canAccess={!!croppedImage}
       onClick={handleClick}
@@ -109,7 +139,7 @@ const StyleCard = ({
         
         {/* Enhanced Loading Overlay */}
         <EnhancedStyleCardLoadingOverlay
-          isBlinking={isLoading}
+          isBlinking={effectiveIsLoading}
           styleName={style.name}
           error={hasError ? (validationError || 'Generation failed') : null}
           onRetry={() => handleRetryClick({} as React.MouseEvent)}
