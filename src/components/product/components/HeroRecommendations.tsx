@@ -71,8 +71,8 @@ const HeroRecommendations = ({
               <div className="absolute -inset-2 bg-gradient-to-r from-amber-400 via-pink-500 to-purple-600 rounded-3xl blur-md opacity-30 group-hover:opacity-60 transition duration-500"></div>
               
               <div className="relative style-card-hover style-card-press">
-                {/* Modified StyleCard container to allow for image overlay positioning */}
-                <div className="relative">
+                {/* StyleCard with overlay positioning */}
+                <div className="relative overflow-hidden">
                   <StyleCard
                     style={style}
                     croppedImage={croppedImage}
@@ -86,30 +86,36 @@ const HeroRecommendations = ({
                     shouldBlur={false}
                   />
 
-                  {/* AI Recommendation Overlay - Now positioned over the image area */}
+                  {/* Subtle AI Match Overlay - Positioned over bottom of image only */}
                   <div className="absolute inset-0 pointer-events-none">
-                    {/* This div will contain our overlay positioned over the image */}
-                    <div className="relative w-full h-full">
-                      {/* Image area overlay - positioned to cover bottom of image */}
-                      <div className="absolute bottom-16 left-4 right-4 bg-black/95 backdrop-blur-sm rounded-xl p-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-20">
-                        <div className="flex items-center justify-between mb-2">
-                          <p className="text-white text-sm font-semibold">
-                            {Math.round(rec.confidence * 100)}% Match
-                          </p>
-                          <div className="flex">
-                            {[...Array(5)].map((_, i) => (
-                              <div
-                                key={i}
-                                className={`w-2 h-2 rounded-full mx-0.5 ${
-                                  i < Math.round(rec.confidence * 5)
-                                    ? 'bg-amber-400'
-                                    : 'bg-gray-600'
-                                }`}
-                              />
-                            ))}
+                    {/* Image-specific overlay container */}
+                    <div className="relative w-full" style={{ height: `${100 * cropAspectRatio}%` }}>
+                      {/* Compact overlay at bottom of image */}
+                      <div className={`absolute bottom-3 left-3 right-3 bg-black/85 backdrop-blur-md rounded-lg px-3 py-2 transition-all duration-300 ease-out ${
+                        hoveredStyle === rec.styleId 
+                          ? 'opacity-100 translate-y-0' 
+                          : 'opacity-0 translate-y-2'
+                      }`}>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-white text-xs font-medium">
+                              {Math.round(rec.confidence * 100)}% Match
+                            </span>
+                            <div className="flex gap-0.5">
+                              {[...Array(5)].map((_, i) => (
+                                <div
+                                  key={i}
+                                  className={`w-1.5 h-1.5 rounded-full ${
+                                    i < Math.round(rec.confidence * 5)
+                                      ? 'bg-amber-400'
+                                      : 'bg-gray-500'
+                                  }`}
+                                />
+                              ))}
+                            </div>
                           </div>
                         </div>
-                        <p className="text-white/90 text-xs leading-relaxed">
+                        <p className="text-white/80 text-xs mt-1 leading-tight font-light">
                           {rec.reason}
                         </p>
                       </div>
