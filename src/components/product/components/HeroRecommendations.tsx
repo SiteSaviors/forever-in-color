@@ -71,18 +71,51 @@ const HeroRecommendations = ({
               <div className="absolute -inset-2 bg-gradient-to-r from-amber-400 via-pink-500 to-purple-600 rounded-3xl blur-md opacity-30 group-hover:opacity-60 transition duration-500"></div>
               
               <div className="relative style-card-hover style-card-press">
-                <StyleCard
-                  style={style}
-                  croppedImage={croppedImage}
-                  selectedStyle={selectedStyle}
-                  isPopular={true}
-                  cropAspectRatio={cropAspectRatio}
-                  selectedOrientation={selectedOrientation}
-                  showContinueButton={false}
-                  onStyleClick={() => handleStyleSelect(rec.styleId, rec.styleName)}
-                  onContinue={onComplete}
-                  shouldBlur={false}
-                />
+                {/* Modified StyleCard container to allow for image overlay positioning */}
+                <div className="relative">
+                  <StyleCard
+                    style={style}
+                    croppedImage={croppedImage}
+                    selectedStyle={selectedStyle}
+                    isPopular={true}
+                    cropAspectRatio={cropAspectRatio}
+                    selectedOrientation={selectedOrientation}
+                    showContinueButton={false}
+                    onStyleClick={() => handleStyleSelect(rec.styleId, rec.styleName)}
+                    onContinue={onComplete}
+                    shouldBlur={false}
+                  />
+
+                  {/* AI Recommendation Overlay - Now positioned over the image area */}
+                  <div className="absolute inset-0 pointer-events-none">
+                    {/* This div will contain our overlay positioned over the image */}
+                    <div className="relative w-full h-full">
+                      {/* Image area overlay - positioned to cover bottom of image */}
+                      <div className="absolute bottom-16 left-4 right-4 bg-black/95 backdrop-blur-sm rounded-xl p-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-20">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-white text-sm font-semibold">
+                            {Math.round(rec.confidence * 100)}% Match
+                          </p>
+                          <div className="flex">
+                            {[...Array(5)].map((_, i) => (
+                              <div
+                                key={i}
+                                className={`w-2 h-2 rounded-full mx-0.5 ${
+                                  i < Math.round(rec.confidence * 5)
+                                    ? 'bg-amber-400'
+                                    : 'bg-gray-600'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        <p className="text-white/90 text-xs leading-relaxed">
+                          {rec.reason}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
                 {/* Enhanced AI Recommendation Badge */}
                 <div className="absolute -top-3 -right-3 z-20">
@@ -90,30 +123,6 @@ const HeroRecommendations = ({
                     <Zap className="w-3 h-3 mr-1 animate-pulse" />
                     AI Pick
                   </Badge>
-                </div>
-
-                {/* Enhanced Confidence & Reason Overlay */}
-                <div className="absolute bottom-4 left-4 right-4 bg-black/90 backdrop-blur-sm rounded-xl p-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-white text-sm font-semibold">
-                      {Math.round(rec.confidence * 100)}% Match
-                    </p>
-                    <div className="flex">
-                      {[...Array(5)].map((_, i) => (
-                        <div
-                          key={i}
-                          className={`w-2 h-2 rounded-full mx-0.5 ${
-                            i < Math.round(rec.confidence * 5)
-                              ? 'bg-amber-400'
-                              : 'bg-gray-600'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                  <p className="text-white/90 text-xs leading-relaxed">
-                    {rec.reason}
-                  </p>
                 </div>
               </div>
             </div>
