@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { AccordionItem, AccordionContent } from "@/components/ui/accordion";
 import { MobileTypography } from "@/components/ui/mobile-typography";
 import ErrorBoundary from "./ErrorBoundary";
