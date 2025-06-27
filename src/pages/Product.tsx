@@ -1,3 +1,4 @@
+
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProductHeader from "@/components/product/ProductHeader";
@@ -25,6 +26,17 @@ const Product = () => {
     handleCustomizationChange
   } = useProductState();
 
+  const handleUploadClick = () => {
+    // Scroll to upload section and ensure we're on step 1
+    setCurrentStep(1);
+    setTimeout(() => {
+      const uploadSection = document.querySelector('[data-step="1"]');
+      if (uploadSection) {
+        uploadSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -35,6 +47,7 @@ const Product = () => {
             completedSteps={completedSteps}
             totalSteps={4}
             currentStep={currentStep}
+            onUploadClick={handleUploadClick}
           />
           
           <TrustElements />
