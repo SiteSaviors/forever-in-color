@@ -52,7 +52,18 @@ export const useStyleCardLogic = ({
   const showGeneratedBadge = hasGeneratedPreview && isStyleGenerated;
   const hasError = showError || validationError;
   const imageToShow = previewUrl || croppedImage || style.image;
+  
+  // CRITICAL: Once permanently generated, NEVER allow any loading states
   const effectiveIsLoading = isPermanentlyGenerated ? false : (isLoading || localIsLoading);
+
+  // CRITICAL: Reset all loading states immediately when permanently generated
+  useEffect(() => {
+    if (isPermanentlyGenerated) {
+      console.log(`🛑 StyleCard: ${style.name} is permanently generated, forcing all loading states to false`);
+      setLocalIsLoading(false);
+      setShowError(false);
+    }
+  }, [isPermanentlyGenerated, style.name]);
 
   return {
     // State

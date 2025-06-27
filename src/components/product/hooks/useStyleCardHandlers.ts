@@ -86,24 +86,16 @@ export const useStyleCardHandlers = ({
     
     console.log(`🎨 Starting generation for ${style.name}`);
     setShowError(false);
-    
-    // CRITICAL: Never set loading state if permanently generated
-    if (!isPermanentlyGenerated) {
-      setLocalIsLoading(true);
-    }
+    setLocalIsLoading(true);
     
     try {
       await generatePreview();
       console.log(`✅ Generation completed for ${style.name}`);
     } catch (error) {
       console.log(`❌ Generation failed for ${style.name}:`, error);
-      if (!isPermanentlyGenerated) {
-        setShowError(true);
-      }
+      setShowError(true);
     } finally {
-      if (!isPermanentlyGenerated) {
-        setLocalIsLoading(false);
-      }
+      setLocalIsLoading(false);
     }
   }, [generatePreview, isPermanentlyGenerated, effectiveIsLoading, style.name, setShowError, setLocalIsLoading]);
 
@@ -124,24 +116,16 @@ export const useStyleCardHandlers = ({
     
     console.log(`🔄 Retrying generation for ${style.name}`);
     setShowError(false);
-    
-    // CRITICAL: Never set loading state if permanently generated
-    if (!isPermanentlyGenerated) {
-      setLocalIsLoading(true);
-    }
+    setLocalIsLoading(true);
     
     try {
       await generatePreview();
       console.log(`✅ Retry completed for ${style.name}`);
     } catch (error) {
       console.log(`❌ Retry failed for ${style.name}:`, error);
-      if (!isPermanentlyGenerated) {
-        setShowError(true);
-      }
+      setShowError(true);
     } finally {
-      if (!isPermanentlyGenerated) {
-        setLocalIsLoading(false);
-      }
+      setLocalIsLoading(false);
     }
   }, [generatePreview, isPermanentlyGenerated, effectiveIsLoading, style.name, setShowError, setLocalIsLoading]);
 
