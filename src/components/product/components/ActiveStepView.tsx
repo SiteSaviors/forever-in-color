@@ -1,11 +1,11 @@
 
 import React, { useState, useCallback } from "react";
-import { AccordionItem, AccordionContent } from "@/components/ui/accordion";
-import { MobileTypography } from "@/components/ui/mobile-typography";
+import { AccordionItem } from "@/components/ui/accordion";
 import ErrorBoundary from "./ErrorBoundary";
 import StepContainer from "./ActiveStepView/StepContainer";
 import StepOverlays from "./ActiveStepView/StepOverlays";
-import StepTrigger from "./ActiveStepView/StepTrigger";
+import StepHeader from "./ActiveStepView/StepHeader";
+import StepFooter from "./ActiveStepView/StepFooter";
 import { useInteractionStateMachine } from "../hooks/useInteractionStateMachine";
 import "../styles/activeStepOptimized.css";
 
@@ -101,7 +101,7 @@ const ActiveStepView = React.memo(({
             isCompleted={isCompleted}
           />
           
-          <StepTrigger
+          <StepHeader
             stepNumber={stepNumber}
             title={title}
             description={description}
@@ -112,21 +112,9 @@ const ActiveStepView = React.memo(({
             selectedStyle={selectedStyle}
           />
           
-          <AccordionContent className="px-4 pb-4 sm:px-6 sm:pb-6 md:px-8 md:pb-8 accordion-content-optimized">
-            <div className="border-t border-gradient-to-r from-purple-100 to-pink-100 pt-4 sm:pt-6 relative">
-              <div className="bg-gradient-to-r from-gray-50/80 to-purple-50/40 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-8 border border-gray-100/50 shadow-inner animate-fade-in content-container-optimized">
-                <ErrorBoundary fallback={
-                  <div className="text-center py-4">
-                    <MobileTypography variant="body" className="text-gray-600">
-                      Unable to load step content. Please refresh the page.
-                    </MobileTypography>
-                  </div>
-                }>
-                  {children}
-                </ErrorBoundary>
-              </div>
-            </div>
-          </AccordionContent>
+          <StepFooter>
+            {children}
+          </StepFooter>
         </StepContainer>
       </AccordionItem>
     </ErrorBoundary>

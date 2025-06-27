@@ -1,12 +1,12 @@
 
-import React, { useCallback } from "react";
+import React from "react";
 import { AccordionTrigger } from "@/components/ui/accordion";
-import { triggerHapticFeedback } from "../ProductStepUtils";
 import StepIcon from "./StepIcon";
 import StepContent from "./StepContent";
 import StepActions from "./StepActions";
+import { triggerHapticFeedback } from "../ProductStepUtils";
 
-interface StepTriggerProps {
+interface StepHeaderProps {
   stepNumber: number;
   title: string;
   description: string;
@@ -17,7 +17,7 @@ interface StepTriggerProps {
   selectedStyle?: { id: number; name: string } | null;
 }
 
-const StepTrigger = ({
+const StepHeader = React.memo(({
   stepNumber,
   title,
   description,
@@ -26,8 +26,8 @@ const StepTrigger = ({
   canAccess,
   onStepClick,
   selectedStyle
-}: StepTriggerProps) => {
-  const handleStepClick = useCallback(() => {
+}: StepHeaderProps) => {
+  const handleStepClick = React.useCallback(() => {
     try {
       if (canAccess) {
         triggerHapticFeedback();
@@ -70,6 +70,8 @@ const StepTrigger = ({
       </div>
     </AccordionTrigger>
   );
-};
+});
 
-export default StepTrigger;
+StepHeader.displayName = 'StepHeader';
+
+export default StepHeader;
