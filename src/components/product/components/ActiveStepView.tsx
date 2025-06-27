@@ -6,7 +6,7 @@ import ErrorBoundary from "./ErrorBoundary";
 import StepContainer from "./ActiveStepView/StepContainer";
 import StepOverlays from "./ActiveStepView/StepOverlays";
 import StepTrigger from "./ActiveStepView/StepTrigger";
-import "./styles/activeStepOptimized.css";
+import "../styles/activeStepOptimized.css";
 
 interface ActiveStepViewProps {
   stepNumber: number;
