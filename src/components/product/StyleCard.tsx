@@ -119,8 +119,13 @@ const StyleCard = memo(({
     handleRetry();
   };
 
-  const handleContinueClickWrapper = () => {
-    handleContinueClick();
+  const handleContinueClickWrapper = (e?: React.MouseEvent) => {
+    // Create a mock event if none provided
+    const mockEvent = e || {
+      stopPropagation: () => {},
+      preventDefault: () => {}
+    } as React.MouseEvent;
+    handleContinueClick(mockEvent);
   };
 
   return (
