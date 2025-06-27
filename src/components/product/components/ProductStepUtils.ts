@@ -54,3 +54,21 @@ export const getStepDescription = (step: number): string => {
       return '';
   }
 };
+
+// Add missing functions that are imported by other components
+export const getLockStatus = (isCompleted: boolean, canAccess: boolean): 'completed' | 'accessible' | 'locked' => {
+  if (isCompleted) return 'completed';
+  if (canAccess) return 'accessible';
+  return 'locked';
+};
+
+export const triggerHapticFeedback = () => {
+  try {
+    // Check if the device supports haptic feedback
+    if ('vibrate' in navigator) {
+      navigator.vibrate(50); // Light haptic feedback
+    }
+  } catch (error) {
+    console.log('Haptic feedback not supported:', error);
+  }
+};

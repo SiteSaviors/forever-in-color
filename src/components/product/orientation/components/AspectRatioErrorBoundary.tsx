@@ -4,6 +4,13 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+// Extend Window interface to include gtag
+declare global {
+  interface Window {
+    gtag?: (...args: any[]) => void;
+  }
+}
+
 interface Props {
   children: ReactNode;
   onRetry?: () => void;
