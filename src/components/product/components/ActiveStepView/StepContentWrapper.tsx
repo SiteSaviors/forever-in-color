@@ -9,10 +9,10 @@ interface StepContentWrapperProps {
 
 const StepContentWrapper = React.memo(({ children }: StepContentWrapperProps) => {
   return (
-    <div className="bg-gradient-to-r from-gray-50/80 to-purple-50/40 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-8 border border-gray-100/50 shadow-inner animate-fade-in content-container-optimized">
+    <div className="bg-gradient-to-br from-slate-50 via-purple-50/60 to-indigo-100/40 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-10 border border-purple-100/60 shadow-lg backdrop-blur-sm animate-fade-in content-container-optimized">
       <ErrorBoundary fallback={
-        <div className="text-center py-4">
-          <MobileTypography variant="body" className="text-gray-600">
+        <div className="text-center py-6">
+          <MobileTypography variant="body" className="text-gray-600 font-poppins">
             Unable to load step content. Please refresh the page.
           </MobileTypography>
         </div>

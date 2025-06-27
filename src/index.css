@@ -1,4 +1,5 @@
 
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -114,6 +115,19 @@
   /* Mobile-first spacing */
   .container {
     @apply px-4 sm:px-6 lg:px-8;
+  }
+}
+
+/* Poppins font with extra-tight letter spacing */
+@layer components {
+  .font-poppins {
+    font-family: 'Poppins', sans-serif;
+    letter-spacing: -0.05em;
+  }
+  
+  .font-poppins-tight {
+    font-family: 'Poppins', sans-serif;
+    letter-spacing: -0.075em;
   }
 }
 

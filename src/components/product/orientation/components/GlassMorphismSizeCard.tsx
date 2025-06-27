@@ -54,31 +54,32 @@ const GlassMorphismSizeCard = memo(({
 
   const cardState = getCardState();
 
-  // Enhanced card styling with state-based transitions
+  // Enhanced card styling with state-based transitions and modern design
   const cardStyles = useMemo(() => ({
-    transform: isSelected ? 'scale(1.05)' : 'scale(1)',
+    transform: isSelected ? 'scale(1.03) translateY(-8px)' : 'scale(1)',
     background: cardState === "selected"
-      ? 'rgba(255, 255, 255, 0.98)' 
+      ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.95) 100%)' 
       : cardState === "recommended"
-      ? 'rgba(255, 251, 235, 0.95)'
-      : 'rgba(255, 255, 255, 0.85)',
+      ? 'linear-gradient(135deg, rgba(255, 251, 235, 0.95) 0%, rgba(254, 249, 195, 0.90) 100%)'
+      : 'linear-gradient(135deg, rgba(255, 255, 255, 0.90) 0%, rgba(248, 250, 252, 0.85) 100%)',
     borderColor: cardState === "selected" 
-      ? 'rgb(168, 85, 247)' 
+      ? 'rgb(147, 51, 234)' 
       : cardState === "recommended"
       ? 'rgb(245, 158, 11)'
-      : 'rgba(255, 255, 255, 0.6)',
+      : 'rgba(203, 213, 225, 0.6)',
     boxShadow: cardState === "selected"
-      ? '0 25px 50px -12px rgba(168, 85, 247, 0.35), 0 0 0 1px rgba(168, 85, 247, 0.2)' 
+      ? '0 25px 50px -12px rgba(147, 51, 234, 0.4), 0 20px 25px -5px rgba(147, 51, 234, 0.1), 0 0 0 1px rgba(147, 51, 234, 0.2)' 
       : cardState === "recommended"
-      ? '0 25px 50px -12px rgba(245, 158, 11, 0.25), 0 0 0 1px rgba(245, 158, 11, 0.1)'
-      : '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+      ? '0 25px 50px -12px rgba(245, 158, 11, 0.3), 0 15px 25px -5px rgba(245, 158, 11, 0.1), 0 0 0 1px rgba(245, 158, 11, 0.15)'
+      : '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
   }), [cardState]);
 
   return (
     <div 
       className={`
-        relative group cursor-pointer transition-all duration-500 will-change-transform min-w-[280px] touch-manipulation
-        ${cardState === "selected" ? 'z-10 animate-pulse' : ''}
+        relative group cursor-pointer transition-all duration-500 will-change-transform min-w-[300px] touch-manipulation font-poppins
+        ${cardState === "selected" ? 'z-20' : 'hover:z-10'}
+        hover:scale-105 hover:-translate-y-2
       `}
       style={cardStyles}
       onClick={handleCardClick}
@@ -94,19 +95,19 @@ const GlassMorphismSizeCard = memo(({
         }
       }}
     >
-      {/* Enhanced background with state transitions */}
+      {/* Enhanced background with modern gradients */}
       <div 
-        className="absolute inset-0 rounded-3xl border-2 transition-all duration-500 backdrop-blur-md"
+        className="absolute inset-0 rounded-3xl border-2 transition-all duration-500 backdrop-blur-xl"
         style={{
-          background: `linear-gradient(135deg, ${cardStyles.background}, rgba(255, 255, 255, 0.7))`,
+          background: cardStyles.background,
           borderColor: cardStyles.borderColor,
           boxShadow: cardStyles.boxShadow
         }}
       />
 
-      {/* Content Container with improved spacing and animations */}
+      {/* Content Container with enhanced spacing */}
       <div className="relative p-6 md:p-8 space-y-6">
-        {/* Enhanced Top Badges */}
+        {/* Enhanced Top Badges with modern styling */}
         <CardBadges 
           popular={option.popular}
           isRecommended={isRecommended}
@@ -114,10 +115,10 @@ const GlassMorphismSizeCard = memo(({
           originalPrice={option.originalPrice}
         />
 
-        {/* Enhanced Canvas Preview with state transitions */}
+        {/* Enhanced Canvas Preview with hover effects */}
         <div className={`
           flex justify-center transition-all duration-500
-          ${cardState === "selected" ? 'scale-110 drop-shadow-2xl' : 'group-hover:scale-105'}
+          ${cardState === "selected" ? 'scale-110 drop-shadow-2xl' : 'group-hover:scale-105 group-hover:drop-shadow-xl'}
         `}>
           <CanvasPreview 
             orientation={orientation}
@@ -125,28 +126,35 @@ const GlassMorphismSizeCard = memo(({
           />
         </div>
 
-        {/* Size Information with enhanced typography */}
-        <SizeInfo size={option.size} />
+        {/* Size Information with enhanced typography and drop shadow */}
+        <div className="text-center">
+          <h3 className={`
+            text-2xl md:text-3xl font-bold tracking-tight font-poppins transition-colors duration-300 drop-shadow-sm
+            ${cardState === "selected" ? 'text-purple-800' : cardState === "recommended" ? 'text-amber-800' : 'text-gray-800'}
+          `}>
+            {option.size}
+          </h3>
+        </div>
 
-        {/* Enhanced Pricing Display with state awareness */}
+        {/* Enhanced Pricing Display with modern styling */}
         <PricingDisplay 
           salePrice={option.salePrice}
           originalPrice={option.originalPrice}
         />
 
-        {/* Description with state-based styling */}
+        {/* Description with enhanced styling and drop shadow */}
         <div className={`
-          rounded-2xl p-4 text-center border backdrop-blur-sm transition-all duration-300
+          rounded-2xl p-5 text-center border backdrop-blur-sm transition-all duration-300 shadow-sm
           ${cardState === "selected"
-            ? 'bg-gradient-to-r from-purple-50/95 to-pink-50/80 border-purple-200/70'
+            ? 'bg-gradient-to-r from-purple-50/95 to-violet-50/80 border-purple-200/70 shadow-purple-100'
             : cardState === "recommended"
-            ? 'bg-gradient-to-r from-amber-50/95 to-orange-50/80 border-amber-200/70'
-            : 'bg-gradient-to-r from-gray-50/95 to-purple-50/80 border-white/50'
+            ? 'bg-gradient-to-r from-amber-50/95 to-yellow-50/80 border-amber-200/70 shadow-amber-100'
+            : 'bg-gradient-to-r from-slate-50/95 to-gray-50/80 border-slate-200/50 shadow-gray-100'
           }
         `}>
           <p className={`
-            text-sm md:text-base leading-relaxed font-medium transition-colors duration-300
-            ${cardState === "selected" ? 'text-purple-700' : 'text-gray-700'}
+            text-sm md:text-base leading-relaxed font-medium transition-colors duration-300 tracking-tight font-poppins drop-shadow-sm
+            ${cardState === "selected" ? 'text-purple-700' : cardState === "recommended" ? 'text-amber-700' : 'text-gray-700'}
           `}>
             {option.description}
           </p>
@@ -165,26 +173,26 @@ const GlassMorphismSizeCard = memo(({
         </div>
       </div>
 
-      {/* Enhanced selection effects with multiple layers */}
+      {/* Enhanced selection effects with modern glow */}
       {isSelected && (
         <>
           <div className="absolute inset-0 rounded-3xl border-3 border-purple-400/70 pointer-events-none animate-pulse"></div>
-          <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-purple-400/20 to-pink-400/20 blur-md pointer-events-none animate-pulse"></div>
+          <div className="absolute -inset-2 rounded-3xl bg-gradient-to-r from-purple-400/20 via-violet-400/15 to-purple-400/20 blur-xl pointer-events-none animate-pulse"></div>
         </>
       )}
       
-      {/* Recommended glow effect */}
+      {/* Enhanced recommended glow effect */}
       {isRecommended && !isSelected && (
-        <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-amber-400/15 to-orange-400/15 blur-sm pointer-events-none"></div>
+        <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-amber-400/20 via-yellow-400/15 to-amber-400/20 blur-lg pointer-events-none opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
       )}
       
-      {/* Hover enhancement for non-selected cards */}
+      {/* Enhanced hover effect for non-selected cards */}
       {!isSelected && (
         <div className={`
           absolute inset-0 rounded-3xl border-2 border-transparent transition-all duration-500 pointer-events-none
           ${cardState === "recommended" 
-            ? 'group-hover:border-amber-300/60' 
-            : 'group-hover:border-purple-200/60'
+            ? 'group-hover:border-amber-300/70 group-hover:shadow-amber-200/50' 
+            : 'group-hover:border-purple-200/70 group-hover:shadow-purple-200/50'
           }
         `}></div>
       )}

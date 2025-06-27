@@ -26,6 +26,10 @@ export default {
 				'playfair': ['Playfair Display', 'serif'],
 				'inter': ['Inter', 'sans-serif'],
 			},
+			letterSpacing: {
+				'extra-tight': '-0.05em',
+				'ultra-tight': '-0.075em',
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',

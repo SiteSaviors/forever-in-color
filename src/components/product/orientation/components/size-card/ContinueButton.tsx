@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check, Sparkles } from "lucide-react";
 import { useCallback } from "react";
 
 interface ContinueButtonProps {
@@ -20,12 +20,15 @@ const ContinueButton = ({ size, isSelected, onContinue }: ContinueButtonProps) =
   return (
     <Button 
       onClick={handleContinueClick} 
-      className="w-full min-h-[56px] bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 px-6 transition-all duration-300 border-0 rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] text-base md:text-lg" 
+      className="w-full min-h-[60px] bg-gradient-to-r from-purple-600 via-violet-600 to-purple-700 hover:from-purple-700 hover:via-violet-700 hover:to-purple-800 text-white font-bold py-4 px-8 transition-all duration-300 border-0 rounded-2xl shadow-xl hover:shadow-2xl transform hover:scale-[1.02] active:scale-[0.98] text-base md:text-lg font-poppins tracking-tight drop-shadow-lg" 
       size="lg"
     >
-      <Check className="w-5 h-5 mr-3" />
-      Continue with {size}
-      <ArrowRight className="w-5 h-5 ml-3" />
+      <div className="flex items-center justify-center gap-3">
+        <Sparkles className="w-5 h-5 animate-pulse" />
+        <Check className="w-5 h-5" />
+        <span className="font-bold">Continue with {size}</span>
+        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" />
+      </div>
     </Button>
   );
 };
