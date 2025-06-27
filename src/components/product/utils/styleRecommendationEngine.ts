@@ -101,54 +101,81 @@ export const generateStyleRecommendations = (analysis: ImageAnalysis): StyleReco
 
   // Hero recommendations (top 3 most relevant)
   if (analysis.hasPortrait) {
-    recommendations.push({
-      styleId: 5,
-      styleName: "Pastel Bliss",
-      confidence: 0.9,
-      reason: "Perfect for portraits with soft, flattering tones",
-      category: 'hero'
-    });
-    recommendations.push({
-      styleId: 2,
-      styleName: "Classic Oil Painting",
-      confidence: 0.85,
-      reason: "Traditional portrait style with rich depth",
-      category: 'hero'
-    });
+    recommendations.push(
+      {
+        styleId: 5,
+        styleName: "Pastel Bliss",
+        confidence: 0.9,
+        reason: "Perfect for portraits with soft, flattering tones",
+        category: 'hero'
+      },
+      {
+        styleId: 2,
+        styleName: "Classic Oil Painting",
+        confidence: 0.85,
+        reason: "Traditional portrait style with rich depth",
+        category: 'hero'
+      },
+      {
+        styleId: 7,
+        styleName: "Artisan Charcoal",
+        confidence: 0.82,
+        reason: "Elegant charcoal style perfect for portrait definition",
+        category: 'hero'
+      }
+    );
   }
 
   if (analysis.isLandscape) {
-    recommendations.push({
-      styleId: 4,
-      styleName: "Watercolor Dreams",
-      confidence: 0.88,
-      reason: "Ideal for landscapes with flowing, natural effects",
-      category: 'hero'
-    });
-    recommendations.push({
-      styleId: 13,
-      styleName: "Abstract Fusion",
-      confidence: 0.82,
-      reason: "Perfect for wide compositions",
-      category: 'hero'
-    });
+    recommendations.push(
+      {
+        styleId: 4,
+        styleName: "Watercolor Dreams",
+        confidence: 0.88,
+        reason: "Ideal for landscapes with flowing, natural effects",
+        category: 'hero'
+      },
+      {
+        styleId: 13,
+        styleName: "Abstract Fusion",
+        confidence: 0.82,
+        reason: "Perfect for wide compositions",
+        category: 'hero'
+      },
+      {
+        styleId: 2,
+        styleName: "Classic Oil Painting",
+        confidence: 0.80,
+        reason: "Classic landscape treatment with rich textures",
+        category: 'hero'
+      }
+    );
   }
 
   if (analysis.hasHighContrast) {
-    recommendations.push({
-      styleId: 9,
-      styleName: "Pop Art Burst",
-      confidence: 0.9,
-      reason: "High contrast photos shine with bold pop art colors",
-      category: 'hero'
-    });
-    recommendations.push({
-      styleId: 10,
-      styleName: "Neon Splash",
-      confidence: 0.85,
-      reason: "Dynamic contrast creates stunning neon effects",
-      category: 'hero'
-    });
+    recommendations.push(
+      {
+        styleId: 9,
+        styleName: "Pop Art Burst",
+        confidence: 0.9,
+        reason: "High contrast photos shine with bold pop art colors",
+        category: 'hero'
+      },
+      {
+        styleId: 10,
+        styleName: "Neon Splash",
+        confidence: 0.85,
+        reason: "Dynamic contrast creates stunning neon effects",
+        category: 'hero'
+      },
+      {
+        styleId: 11,
+        styleName: "Electric Bloom",
+        confidence: 0.83,
+        reason: "Vibrant electric style amplifies high contrast beautifully",
+        category: 'hero'
+      }
+    );
   }
 
   // Fallback hero recommendations for square/neutral images
