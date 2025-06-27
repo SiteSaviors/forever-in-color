@@ -111,8 +111,9 @@ const StyleCard = ({
 
   const showContinueInCard = showContinueButton && isSelected && (isStyleGenerated || isPermanentlyGenerated);
 
-  // Convert hasError to boolean for props that expect boolean
+  // Convert hasError to boolean for all prop usage
   const hasErrorBoolean = !!hasError;
+  const errorMessage = typeof hasError === 'string' ? hasError : (validationError || 'Generation failed');
 
   return (
     <>
@@ -141,7 +142,7 @@ const StyleCard = ({
             isBlinking={false}
             styleName={style.name}
             isLoading={effectiveIsLoading}
-            error={hasErrorBoolean ? (validationError || 'Generation failed') : null}
+            error={hasErrorBoolean ? errorMessage : null}
             onRetry={() => handleRetryClick({} as React.MouseEvent)}
           />
         </div>
