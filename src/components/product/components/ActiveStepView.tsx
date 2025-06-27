@@ -1,8 +1,9 @@
-
-import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Check, Lock, ChevronRight } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { getStepIcon, getStepTitle, getStepDescription, getLockStatus, triggerHapticFeedback } from "./ProductStepUtils";
+import React from "react";
+import { LucideIcon, Check, ChevronRight, Sparkles, Lock } from "lucide-react";
+import { AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
+import { getStepIcon, getLockStatus, triggerHapticFeedback } from "./ProductStepUtils";
+import ErrorBoundary from "./ErrorBoundary";
 
 interface ActiveStepViewProps {
   stepNumber: number;
@@ -27,139 +28,161 @@ const ActiveStepView = ({
   selectedStyle,
   children
 }: ActiveStepViewProps) => {
-  const Icon = getStepIcon(stepNumber);
+  // Safely get the icon with error handling
+  const Icon = React.useMemo(() => {
+    try {
+      return getStepIcon(stepNumber);
+    } catch (error) {
+      console.error('Error getting step icon:', error);
+      return ChevronRight; // fallback icon
+    }
+  }, [stepNumber]);
+
+  const isNextStep = !isCompleted && canAccess && !isActive;
   const lockStatus = getLockStatus(isCompleted, canAccess);
 
   const handleStepClick = () => {
-    if (canAccess) {
-      triggerHapticFeedback();
-      onStepClick();
+    try {
+      if (canAccess) {
+        triggerHapticFeedback();
+        onStepClick();
+      }
+    } catch (error) {
+      console.error('Error in step click handler:', error);
     }
   };
 
-  // Enhanced step header with better visual hierarchy
-  const StepHeader = () => (
-    <div className="flex items-center justify-between w-full py-6">
-      <div className="flex items-center space-x-4">
-        {/* Step number with enhanced states */}
-        <div className={cn(
-          "flex items-center justify-center w-12 h-12 rounded-full border-2 transition-all duration-300",
-          isCompleted && "bg-green-500 border-green-500 text-white",
-          isActive && !isCompleted && "bg-blue-500 border-blue-500 text-white shadow-lg",
-          !isActive && !isCompleted && canAccess && "border-gray-300 text-gray-600 hover:border-blue-400 hover:text-blue-600",
-          !canAccess && "border-gray-200 text-gray-400"
-        )}>
-          {isCompleted ? (
-            <Check className="w-6 h-6" />
-          ) : lockStatus === 'locked' ? (
-            <Lock className="w-5 h-5" />
-          ) : (
-            <Icon className="w-6 h-6" />
-          )}
-        </div>
-
-        {/* Step content with improved typography */}
-        <div className="flex-1">
-          <div className="flex items-center space-x-3">
-            <h3 className={cn(
-              "text-lg font-semibold transition-colors duration-200",
-              isActive && "text-blue-600",
-              isCompleted && "text-green-600",
-              !canAccess && "text-gray-400"
-            )}>
-              {title}
-            </h3>
-            
-            {/* Enhanced step badges */}
-            {isCompleted && (
-              <span className="px-3 py-1 text-xs font-medium bg-green-100 text-green-700 rounded-full">
-                Completed
-              </span>
-            )}
-            {isActive && !isCompleted && (
-              <span className="px-3 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded-full animate-pulse">
-                Current Step
-              </span>
-            )}
-            {selectedStyle && stepNumber === 1 && (
-              <span className="px-3 py-1 text-xs font-medium bg-purple-100 text-purple-700 rounded-full">
-                {selectedStyle.name}
-              </span>
-            )}
-          </div>
-          
-          <p className={cn(
-            "text-sm mt-1 transition-colors duration-200",
-            isActive && "text-gray-700",
-            !isActive && "text-gray-500"
-          )}>
-            {description}
-          </p>
-        </div>
-      </div>
-
-      {/* Interactive step indicator */}
-      <div className="flex items-center space-x-2">
-        {canAccess && !isActive && (
-          <ChevronRight className={cn(
-            "w-5 h-5 transition-all duration-200",
-            "text-gray-400 group-hover:text-blue-500 group-hover:translate-x-1"
-          )} />
-        )}
-      </div>
-    </div>
-  );
+  // Safely render style name
+  const renderStyleName = () => {
+    if (stepNumber === 1 && selectedStyle?.name) {
+      return (
+        <span className={`ml-3 font-medium text-lg md:text-xl transition-colors duration-300 ${
+          isActive ? 'text-purple-600' : 'text-gray-600'
+        }`}>
+          - {selectedStyle.name}
+        </span>
+      );
+    }
+    return null;
+  };
 
   return (
-    <AccordionItem 
-      value={`step-${stepNumber}`} 
-      className={cn(
-        "border rounded-lg transition-all duration-300 mb-6",
-        isActive && "border-blue-200 bg-blue-50/30 shadow-md",
-        isCompleted && "border-green-200 bg-green-50/20",
-        !canAccess && "border-gray-100 bg-gray-50/50"
-      )}
-      data-step={stepNumber}
-    >
-      <AccordionTrigger
-        onClick={handleStepClick}
-        className={cn(
-          "hover:no-underline px-6 group transition-all duration-200",
-          canAccess && "hover:bg-white/50 cursor-pointer",
-          !canAccess && "cursor-not-allowed opacity-60",
-          "[&[data-state=open]>div>div:last-child>svg]:rotate-90"
-        )}
-        disabled={!canAccess}
+    <ErrorBoundary>
+      <AccordionItem 
+        value={`step-${stepNumber}`}
+        data-step={stepNumber}
+        className={`
+          relative bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden 
+          transition-all duration-500 ease-out hover:shadow-xl
+          ${isActive && canAccess ? 'ring-2 ring-purple-200 shadow-xl transform scale-[1.01] animate-fade-in' : ''}
+          ${isNextStep && canAccess ? 'ring-1 ring-purple-100 hover:ring-2 hover:ring-purple-200 animate-pulse' : ''}
+        `}
       >
-        <StepHeader />
-      </AccordionTrigger>
+        {/* Premium gradient overlay for active state */}
+        {isActive && canAccess && (
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-pink-500/5 pointer-events-none animate-fade-in" />
+        )}
+        
+        {/* Success sparkle effect */}
+        {isCompleted && (
+          <div className="absolute top-4 right-4 text-green-500 animate-pulse">
+            <Sparkles className="w-5 h-5" />
+          </div>
+        )}
 
-      <AccordionContent className="px-6 pb-6">
-        {/* Enhanced content wrapper with better spacing */}
-        <div className={cn(
-          "transition-all duration-300",
-          isActive && "animate-in slide-in-from-top-2 fade-in duration-500"
-        )}>
-          {/* Step progress indicator for multi-part steps */}
-          {stepNumber === 1 && (
-            <div className="mb-6 p-4 bg-white/80 rounded-lg border border-gray-100">
-              <div className="text-sm text-gray-600 mb-2">Step Progress:</div>
-              <div className="flex items-center space-x-2 text-xs">
-                <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded">Upload</span>
-                <ChevronRight className="w-3 h-3 text-gray-400" />
-                <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded">Smart Crop</span>
-                <ChevronRight className="w-3 h-3 text-gray-400" />
-                <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded">Orientation</span>
-                <ChevronRight className="w-3 h-3 text-gray-400" />
-                <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded">Style</span>
+        <AccordionTrigger 
+          className={`px-6 md:px-8 py-6 md:py-8 hover:no-underline group min-h-[80px] transition-all duration-300 ${!canAccess ? 'cursor-default' : ''}`}
+          disabled={!canAccess}
+          onClick={handleStepClick}
+        >
+          <div className="flex items-center gap-4 md:gap-6 w-full">
+            {/* Enhanced Step Icon with smooth transitions */}
+            <div className="relative flex-shrink-0">
+              <div className={`
+                relative w-14 h-14 md:w-16 md:h-16 rounded-2xl flex items-center justify-center 
+                transition-all duration-500 shadow-lg transform
+                ${isCompleted 
+                  ? 'bg-gradient-to-r from-green-400 to-emerald-500 text-white shadow-green-200/50 scale-105' 
+                  : isActive && canAccess
+                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-purple-200/50 scale-105 animate-pulse'
+                  : !canAccess
+                  ? 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-400'
+                  : 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-500 group-hover:from-purple-100 group-hover:to-pink-100 group-hover:text-purple-500 group-hover:scale-105'}
+              `}>
+                {isCompleted ? (
+                  <Check className="w-6 h-6 md:w-7 md:h-7 animate-in zoom-in duration-500" />
+                ) : (
+                  <Icon className="w-6 h-6 md:w-7 md:h-7 transition-transform duration-300" />
+                )}
               </div>
             </div>
-          )}
-          
-          {children}
-        </div>
-      </AccordionContent>
-    </AccordionItem>
+            
+            {/* Enhanced Step Content with better visual hierarchy */}
+            <div className="flex-1 text-left min-w-0">
+              <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 mb-2">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <h3 className={`
+                    text-xl md:text-2xl font-bold transition-colors duration-300 font-poppins tracking-tight
+                    ${isCompleted || (isActive && canAccess) ? 'text-gray-900' 
+                      : !canAccess ? 'text-gray-500'
+                      : 'text-gray-600 group-hover:text-gray-800'}
+                  `}>
+                    {title}
+                    {renderStyleName()}
+                  </h3>
+                  
+                  {/* Enhanced Status Indicators with smooth transitions */}
+                  {lockStatus === "locked" && (
+                    <div className="transition-all duration-300 opacity-60">
+                      <Lock className="w-5 h-5 text-gray-400" />
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Context-aware description visibility */}
+              <p className={`text-base md:text-lg leading-relaxed transition-all duration-300 ${
+                !canAccess ? 'text-gray-400' : 'text-gray-600'
+              } ${isActive ? 'block' : 'hidden md:block'}`}>
+                {description}
+              </p>
+            </div>
+            
+            {/* Enhanced Status Badges and Actions with smooth animations */}
+            <div className="flex items-center gap-3 flex-shrink-0">
+              {isNextStep && canAccess && !isActive && (
+                <Badge variant="outline" className="bg-gradient-to-r from-amber-50 to-orange-50 text-amber-700 border-amber-200 px-3 py-1 text-sm font-medium rounded-full hidden md:inline-flex animate-pulse">
+                  Next Step
+                </Badge>
+              )}
+              
+              {/* Enhanced chevron with smooth transitions */}
+              <ChevronRight className={`
+                w-6 h-6 transition-all duration-500 ease-out
+                ${isActive && canAccess ? 'rotate-90 text-purple-500 scale-110' 
+                  : !canAccess ? 'text-gray-300'
+                  : 'text-gray-400 group-hover:text-gray-600 group-hover:translate-x-1 group-hover:scale-110'}
+              `} />
+            </div>
+          </div>
+        </AccordionTrigger>
+        
+        <AccordionContent className="px-6 md:px-8 pb-6 md:pb-8 animate-accordion-down">
+          <div className="border-t border-gradient-to-r from-purple-100 to-pink-100 pt-6 relative">
+            {/* Enhanced content area with premium styling and animations */}
+            <div className="bg-gradient-to-r from-gray-50/80 to-purple-50/40 rounded-2xl p-4 md:p-8 border border-gray-100/50 shadow-inner animate-fade-in">
+              <ErrorBoundary fallback={
+                <div className="text-center py-4">
+                  <p className="text-gray-600">Unable to load step content. Please refresh the page.</p>
+                </div>
+              }>
+                {children}
+              </ErrorBoundary>
+            </div>
+          </div>
+        </AccordionContent>
+      </AccordionItem>
+    </ErrorBoundary>
   );
 };
 
