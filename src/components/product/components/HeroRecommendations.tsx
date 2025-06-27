@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Crown, Zap } from "lucide-react";
+import { Crown, Zap, Image } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import StyleCard from "../StyleCard";
 import { artStyles } from "@/data/artStyles";
@@ -27,13 +27,21 @@ const HeroRecommendations = ({
 }: HeroRecommendationsProps) => {
   const [hoveredStyle, setHoveredStyle] = useState<number | null>(null);
   
-  const heroRecommendations = recommendations.filter(r => r.category === 'hero').slice(0, 3);
+  const heroRecommendations = recommendations.filter(r => r.category === 'hero').slice(0, 2); // Reduced to 2 to make room for original
 
   if (heroRecommendations.length === 0) return null;
 
   const handleStyleSelect = (styleId: number, styleName: string) => {
     console.log('🎯 HeroRecommendations handleStyleSelect:', styleId, styleName);
     onStyleSelect(styleId, styleName);
+  };
+
+  // Create original style object for the first card
+  const originalStyle = {
+    id: 1, // Using ID 1 which corresponds to "Original Image" in artStyles
+    name: "Original Image",
+    description: "Your photo as uploaded - perfect as is",
+    image: croppedImage
   };
 
   return (
@@ -47,12 +55,68 @@ const HeroRecommendations = ({
           <Crown className="w-6 h-6 text-amber-500" />
         </div>
         <p className="text-gray-600 max-w-2xl mx-auto">
-          Our AI analyzed your image and selected these styles that will create stunning results
+          Your original photo or our AI-selected styles that will create stunning results
         </p>
       </div>
 
-      {/* Hero Grid - Enhanced with Pulsing */}
+      {/* Hero Grid - Enhanced with Original Photo First */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
+        {/* Original Photo Card - Always First */}
+        <div
+          className={`relative group transform transition-all duration-500 hover:scale-105 ${
+            hoveredStyle === 1 ? 'z-10' : ''
+          }`}
+          onMouseEnter={() => setHoveredStyle(1)}
+          onMouseLeave={() => setHoveredStyle(null)}
+        >
+          {/* Original Photo Glow Effect */}
+          <div className="absolute -inset-2 bg-gradient-to-r from-blue-400 via-cyan-500 to-teal-600 rounded-3xl blur-md opacity-30 group-hover:opacity-60 transition duration-500"></div>
+          
+          <div className="relative style-card-hover style-card-press">
+            <StyleCard
+              style={originalStyle}
+              croppedImage={croppedImage}
+              selectedStyle={selectedStyle}
+              isPopular={true}
+              cropAspectRatio={cropAspectRatio}
+              selectedOrientation={selectedOrientation}
+              showContinueButton={false}
+              onStyleClick={() => handleStyleSelect(1, "Original Image")}
+              onContinue={onComplete}
+              shouldBlur={false}
+            />
+
+            {/* Original Photo Badge */}
+            <div className="absolute -top-3 -right-3 z-20">
+              <Badge className="bg-gradient-to-r from-blue-500 to-cyan-600 text-white font-semibold px-3 py-1 shadow-lg">
+                <Image className="w-3 h-3 mr-1" />
+                Original
+              </Badge>
+            </div>
+
+            {/* Original Photo Confidence Overlay */}
+            <div className="absolute bottom-4 left-4 right-4 bg-black/90 backdrop-blur-sm rounded-xl p-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-white text-sm font-semibold">
+                  Your Upload
+                </p>
+                <div className="flex">
+                  {[...Array(5)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="w-2 h-2 rounded-full mx-0.5 bg-cyan-400"
+                    />
+                  ))}
+                </div>
+              </div>
+              <p className="text-white/90 text-xs leading-relaxed">
+                Keep your photo exactly as uploaded - sometimes perfection needs no transformation
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* AI Recommended Styles */}
         {heroRecommendations.map((rec, index) => {
           const style = artStyles.find(s => s.id === rec.styleId);
           if (!style) return null;
@@ -63,7 +127,7 @@ const HeroRecommendations = ({
               className={`relative group transform transition-all duration-500 hover:scale-105 recommended-pulse ${
                 hoveredStyle === rec.styleId ? 'z-10' : ''
               }`}
-              style={{ animationDelay: `${index * 200}ms` }}
+              style={{ animationDelay: `${(index + 1) * 200}ms` }}
               onMouseEnter={() => setHoveredStyle(rec.styleId)}
               onMouseLeave={() => setHoveredStyle(null)}
             >
