@@ -28,36 +28,34 @@ const StreamlinedProgress = ({ currentStep, completedSteps, totalSteps }: Stream
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto">
-      {/* Simplified Progress Bar - Only show when progress > 0 */}
-      {progressPercentage > 0 && (
-        <div className="mb-6">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-sm text-gray-600">Your Progress</span>
-            <span className="text-sm font-semibold text-purple-600">
-              {Math.round(progressPercentage)}% Complete
-            </span>
-          </div>
-          <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-700 shadow-sm"
-              style={{ width: `${progressPercentage}%` }}
-            />
-          </div>
+    <div className="w-full max-w-4xl mx-auto">
+      {/* Clean Progress Bar */}
+      <div className="mb-6">
+        <div className="flex justify-between items-center mb-3">
+          <span className="text-sm font-medium text-gray-700">Your Progress</span>
+          <span className="text-sm font-bold text-purple-600">
+            {Math.round(progressPercentage)}% Complete
+          </span>
         </div>
-      )}
+        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+          <div 
+            className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-700"
+            style={{ width: `${progressPercentage}%` }}
+          />
+        </div>
+      </div>
 
-      {/* Clean Step Indicators */}
+      {/* Minimalist Step Indicators */}
       <div className="relative">
         {/* Connection Line */}
-        <div className="absolute top-6 left-0 w-full h-0.5 bg-gray-200 hidden lg:block" />
+        <div className="absolute top-6 left-0 w-full h-0.5 bg-gray-200 hidden md:block" />
         <div 
-          className="absolute top-6 left-0 h-0.5 bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-700 hidden lg:block"
+          className="absolute top-6 left-0 h-0.5 bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-700 hidden md:block"
           style={{ width: `${(completedSteps.length / totalSteps) * 100}%` }}
         />
         
         {/* Step Circles */}
-        <div className="relative flex justify-between lg:justify-start lg:space-x-32">
+        <div className="relative flex justify-between">
           {Array.from({ length: totalSteps }, (_, index) => {
             const stepNumber = index + 1;
             const isCompleted = completedSteps.includes(stepNumber);
@@ -67,17 +65,17 @@ const StreamlinedProgress = ({ currentStep, completedSteps, totalSteps }: Stream
               <div key={stepNumber} className="flex flex-col items-center">
                 {/* Circle */}
                 <div className={`
-                  w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 border-4 relative z-10
+                  w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 border-3 relative z-10
                   ${isCompleted 
                     ? 'bg-green-500 border-green-400 shadow-lg' 
                     : isCurrent
-                    ? 'bg-white border-purple-500 shadow-lg ring-4 ring-purple-100 animate-pulse'
+                    ? 'bg-white border-purple-500 shadow-lg ring-4 ring-purple-100'
                     : 'bg-white border-gray-300'}
                 `}>
                   {isCompleted ? (
-                    <Check className="w-6 h-6 text-white" />
+                    <Check className="w-5 h-5 text-white" />
                   ) : (
-                    <span className={`text-lg font-bold ${
+                    <span className={`text-sm font-bold ${
                       isCurrent ? 'text-purple-600' : 'text-gray-400'
                     }`}>
                       {stepNumber}
@@ -85,9 +83,9 @@ const StreamlinedProgress = ({ currentStep, completedSteps, totalSteps }: Stream
                   )}
                 </div>
                 
-                {/* Step Label - Desktop Only */}
-                <div className="mt-3 text-center hidden lg:block">
-                  <div className={`text-sm font-semibold mb-1 ${
+                {/* Step Label - Hidden on mobile for cleaner look */}
+                <div className="mt-3 text-center hidden md:block">
+                  <div className={`text-xs font-medium mb-1 ${
                     isCompleted ? 'text-green-600' : 
                     isCurrent ? 'text-purple-600' : 
                     'text-gray-400'
@@ -95,14 +93,14 @@ const StreamlinedProgress = ({ currentStep, completedSteps, totalSteps }: Stream
                     {stepNames[index]}
                   </div>
                   
-                  {/* Status Badge */}
+                  {/* Minimal Status Badge */}
                   {isCompleted && (
-                    <Badge className="bg-green-100 text-green-700 text-xs">
-                      ✓ Done
+                    <Badge className="bg-green-100 text-green-700 text-xs py-0 px-2">
+                      Done
                     </Badge>
                   )}
                   {isCurrent && (
-                    <Badge className="bg-purple-100 text-purple-700 text-xs">
+                    <Badge className="bg-purple-100 text-purple-700 text-xs py-0 px-2">
                       Active
                     </Badge>
                   )}
@@ -113,17 +111,12 @@ const StreamlinedProgress = ({ currentStep, completedSteps, totalSteps }: Stream
         </div>
       </div>
 
-      {/* Current Step Focus - Mobile & Desktop */}
-      <div className="mt-8 text-center">
-        <div className="inline-flex items-center gap-3 bg-white/80 backdrop-blur-sm rounded-2xl px-6 py-4 border border-purple-100 shadow-sm">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
-            <span className="text-sm font-medium text-purple-700">
-              Step {currentStep}:
-            </span>
-          </div>
-          <span className="text-sm text-gray-700 font-medium">
-            {getNextStepMessage()}
+      {/* Current Step Focus - Simplified */}
+      <div className="mt-6 text-center">
+        <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-xl px-4 py-3 border border-purple-100">
+          <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
+          <span className="text-sm font-medium text-purple-700">
+            Step {currentStep}: {getNextStepMessage()}
           </span>
           <ArrowRight className="w-4 h-4 text-purple-500" />
         </div>
