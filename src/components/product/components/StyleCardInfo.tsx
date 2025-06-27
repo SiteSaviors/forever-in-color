@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Sparkles, ArrowRight, Zap, RefreshCw } from "lucide-react";
+import { Sparkles, ArrowRight, Zap, RefreshCw, Star } from "lucide-react";
 
 interface StyleCardInfoProps {
   style: {
@@ -163,31 +163,21 @@ const StyleCardInfo = ({
       [key: number]: string;
     } = {
       1: "📸",
-      // Original Image
       2: "🎨",
-      // Classic Oil Painting
       4: "🌊",
-      // Watercolor Dreams
       5: "🌸",
-      // Pastel Bliss
       6: "💎",
-      // Gemstone Poly
       7: "📚",
-      // 3D Storybook
       8: "✏️",
-      // Artisan Charcoal
       9: "💥",
-      // Pop Art Burst
       10: "⚡",
-      // Neon Splash
       11: "🌸",
-      // Electric Bloom
       13: "🔮",
-      // Abstract Fusion
-      15: "✨" // Deco Luxe
+      15: "✨"
     };
     return emojiMap[styleId] || "🎨";
   };
+
   const styleConfig = getStylePills(style.id);
   const styleEmoji = getStyleEmoji(style.id);
 
@@ -210,7 +200,7 @@ const StyleCardInfo = ({
         ))}
       </div>
 
-      {/* Header with badges */}
+      {/* Header with badges - Removed AI Pick and Popular badges from here */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <h3 className="font-poppins font-semibold text-gray-900 truncate text-sm md:text-base">
@@ -222,12 +212,6 @@ const StyleCardInfo = ({
         </div>
         
         <div className="flex flex-col gap-1 flex-shrink-0">
-          {isPopular && (
-            <Badge className="bg-gradient-to-r from-blue-500 to-cyan-600 text-white text-xs px-2 py-0.5">
-              <Sparkles className="w-3 h-3 mr-1" />
-              Popular
-            </Badge>
-          )}
           {showGeneratedBadge && (
             <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs px-2 py-0.5">
               <Zap className="w-3 h-3 mr-1" />
