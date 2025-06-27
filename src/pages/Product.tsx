@@ -6,7 +6,7 @@ import ProductContent from "@/components/product/ProductContent";
 import TrustElements from "@/components/product/TrustElements";
 import BottomMomentumPopup from "@/components/product/components/BottomMomentumPopup";
 import ProductTestimonials from "@/components/product/ProductTestimonials";
-import SocialProofFeed from "@/components/product/social/SocialProofFeed";
+import UnifiedSocialMomentumWidget from "@/components/product/components/UnifiedSocialMomentumWidget";
 import { useProductState } from "@/components/product/ProductStateManager";
 import { ProgressOrchestrator } from "@/components/product/progress/ProgressOrchestrator";
 
@@ -72,8 +72,12 @@ const Product = () => {
           <ProductTestimonials />
         </div>
 
-        {/* Fixed floating components - rendered at page level */}
-        <SocialProofFeed />
+        {/* Unified Social Momentum Widget - Only show when user reaches styles section */}
+        <UnifiedSocialMomentumWidget
+          currentStep={currentStep}
+          uploadedImage={uploadedImage}
+          showWidget={currentStep === 1 && !!uploadedImage && !!selectedStyle}
+        />
         
         <BottomMomentumPopup
           currentStep={currentStep}

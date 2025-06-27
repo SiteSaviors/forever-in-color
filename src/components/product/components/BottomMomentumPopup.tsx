@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -165,60 +164,9 @@ const BottomMomentumPopup = ({
   if (currentStep === 1 && !uploadedImage) return null;
   if (currentStep >= 2 && !selectedSize) return null;
 
-  // Step 1: Show momentum tracker
+  // Step 1: Don't show momentum tracker anymore (handled by unified widget)
   if (currentStep === 1) {
-    return (
-      <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 animate-fade-in">
-        <Card className="bg-white/95 backdrop-blur-md shadow-xl border border-purple-200 max-w-sm">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3 mb-3">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                momentum.color === 'green' ? 'bg-green-500' :
-                momentum.color === 'yellow' ? 'bg-yellow-500' :
-                momentum.color === 'blue' ? 'bg-blue-500' :
-                'bg-gray-500'
-              } text-white`}>
-                <MomentumIcon className="w-5 h-5" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-gray-900">Momentum</h4>
-                <div className={`text-xs px-2 py-1 rounded-full ${
-                  momentum.color === 'green' ? 'bg-green-100 text-green-700' :
-                  momentum.color === 'yellow' ? 'bg-yellow-100 text-yellow-700' :
-                  momentum.color === 'blue' ? 'bg-blue-100 text-blue-700' :
-                  'bg-gray-100 text-gray-700'
-                }`}>
-                  {momentum.level}
-                </div>
-              </div>
-            </div>
-
-            <div className="mb-3">
-              <div className="flex justify-between text-sm mb-1">
-                <span className="text-gray-600">Progress</span>
-                <span className="font-medium">{state?.conversionElements?.momentumScore || 0}%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className={`h-2 rounded-full transition-all duration-500 ${
-                    momentum.color === 'green' ? 'bg-green-500' :
-                    momentum.color === 'yellow' ? 'bg-yellow-500' :
-                    momentum.color === 'blue' ? 'bg-blue-500' :
-                    'bg-gray-500'
-                  }`}
-                  style={{ width: `${state?.conversionElements?.momentumScore || 0}%` }}
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center gap-1 text-xs text-gray-500">
-              <Clock className="w-3 h-3" />
-              <span>{Math.floor((state?.conversionElements?.timeSpentOnPlatform || 0) / 60)}m active</span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    return null;
   }
 
   // Step 2+: Show pricing calculator
