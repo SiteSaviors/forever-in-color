@@ -69,8 +69,16 @@ const StyleCardContainer = memo(({
     console.log(`StyleCard ${styleId} - State: ${currentState}, Queue: ${animationQueueLength}, Visual:`, visualState);
   }
 
+  // Check if this is NOT the Original Image card (styleId !== 1)
+  const shouldShowPinkGradient = styleId !== 1;
+
   return (
     <div className="relative p-1 sm:p-2 md:p-3 group w-full will-change-transform transform-gpu">
+      {/* Pink gradient glow effect for non-Original cards */}
+      {shouldShowPinkGradient && (
+        <div className="absolute -inset-2 bg-gradient-to-r from-amber-400 via-pink-500 to-purple-600 rounded-3xl blur-md opacity-30 group-hover:opacity-60 transition duration-500"></div>
+      )}
+
       {/* Enhanced background with mobile-optimized spacing */}
       <div className={`
         absolute inset-0 rounded-2xl sm:rounded-3xl transition-all duration-500 opacity-60 will-change-opacity transform-gpu
