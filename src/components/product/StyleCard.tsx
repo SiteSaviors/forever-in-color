@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import StyleCardImage from "./components/StyleCardImage";
 import StyleCardInfo from "./components/StyleCardInfo";
@@ -76,8 +77,11 @@ const StyleCard = ({
     shouldBlur,
     onStyleClick,
     onContinue,
-    // Pass the preview generation functions from context
-    generatePreview: () => generatePreview(style.id, style.name),
+    // Fix: Wrap the generatePreview to return the expected type
+    generatePreview: async () => {
+      await generatePreview(style.id, style.name);
+      return getPreviewUrl(style.id) || '';
+    },
     getPreviewUrl: () => getPreviewUrl(style.id),
     isLoading: isLoading(style.id),
     hasPreview: hasPreview(style.id),
