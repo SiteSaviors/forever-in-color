@@ -1,15 +1,13 @@
-
 import { useCallback } from 'react';
 import { generateStylePreview } from '@/utils/stylePreviewApi';
 import { addWatermarkToImage } from '@/utils/watermarkUtils';
-import { StylePreviewAction } from './types';
 import { getAspectRatio, validateOrientationFlow } from '../orientation/utils';
 import { useAspectRatioValidator } from '../orientation/hooks/useAspectRatioValidator';
 
 interface UseStylePreviewLogicProps {
   croppedImage: string | null;
   selectedOrientation: string;
-  dispatch: React.Dispatch<StylePreviewAction>;
+  dispatch: React.Dispatch<any>;
 }
 
 export const useStylePreviewLogic = ({
@@ -101,7 +99,7 @@ export const useStylePreviewLogic = ({
       dispatch({ 
         type: 'GENERATION_ERROR', 
         styleId, 
-        error: error.message 
+        error: error.message || 'Failed to generate preview'
       });
     }
   }, [croppedImage, selectedOrientation, dispatch, validateWithRecovery, autoCorrect]);

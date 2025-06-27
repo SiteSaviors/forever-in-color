@@ -1,4 +1,3 @@
-
 import PhotoUploadSection from "./PhotoUploadSection";
 import StyleSelectionSection from "./StyleSelectionSection";
 import PhotoCropperSection from "./PhotoCropperSection";

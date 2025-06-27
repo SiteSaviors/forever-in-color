@@ -64,19 +64,6 @@ export const useStyleCardLogic = ({
     isGenerating: isGenerating
   });
 
-  // Enhanced aspect ratio calculation
-  const getCropAspectRatio = useCallback((selectedOrientation: string) => {
-    switch (selectedOrientation) {
-      case 'vertical':
-        return 3/4;
-      case 'horizontal':
-        return 4/3;
-      case 'square':
-      default:
-        return 1;
-    }
-  }, []);
-
   // MAIN CARD CLICK HANDLER
   const handleClick = useCallback(() => {
     console.log(`🎯 MAIN CARD CLICK ▶️ ${style.name} (ID: ${style.id}), shouldBlur: ${shouldBlur}, isGenerating: ${isGenerating}`);
@@ -138,7 +125,6 @@ export const useStyleCardLogic = ({
     isBlinking,
     isExpanded,
     setIsExpanded,
-    getCropAspectRatio,
     handleClick,
     handleGenerateStyle,
     handleRetry,

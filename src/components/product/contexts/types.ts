@@ -1,4 +1,3 @@
-
 export interface PreviewState {
   status: 'idle' | 'loading' | 'success' | 'error';
   url?: string;

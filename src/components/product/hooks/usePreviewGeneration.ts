@@ -7,6 +7,7 @@ export const usePreviewGeneration = (uploadedImage: string | null, selectedOrien
   const [previewUrls, setPreviewUrls] = useState<{ [key: number]: string }>({});
   const [autoGenerationComplete, setAutoGenerationComplete] = useState(false);
   const [generationErrors, setGenerationErrors] = useState<{ [key: number]: string }>({});
+  const [isGenerating, setIsGenerating] = useState(false);
 
   // Remove the auto-generation useEffect entirely
   // Users will now need to manually click on styles to generate previews
@@ -27,10 +28,13 @@ export const usePreviewGeneration = (uploadedImage: string | null, selectedOrien
       return null;
     }
 
+    setIsGenerating(true);
+
     try {
       // Skip generation for Original Image style
       if (styleId === 1) {
         console.log('Skipping generation for Original Image style');
+        setIsGenerating(false);
         return uploadedImage;
       }
 
@@ -40,49 +44,67 @@ export const usePreviewGeneration = (uploadedImage: string | null, selectedOrien
       const aspectRatio = convertOrientationToAspectRatio(selectedOrientation);
       
       const tempPhotoId = `temp_${Date.now()}_${styleId}`;
-      const previewUrl = await generateStylePreview(uploadedImage, styleName, tempPhotoId, aspectRatio);
       
-      if (previewUrl) {
-        try {
-          // Apply client-side watermark
-          const watermarkedUrl = await addWatermarkToImage(previewUrl);
-          
-          // Update the preview URLs state
-          setPreviewUrls(prev => ({
-            ...prev,
-            [styleId]: watermarkedUrl
-          }));
-          
-          // Clear any previous errors for this style
-          setGenerationErrors(prev => {
-            const newErrors = {...prev};
-            delete newErrors[styleId];
-            return newErrors;
-          });
-          
-          return watermarkedUrl;
-        } catch (watermarkError) {
-          console.warn(`Watermark failed for ${styleName}, using original:`, watermarkError);
-          
-          // Update with unwatermarked URL as fallback
-          setPreviewUrls(prev => ({
-            ...prev,
-            [styleId]: previewUrl
-          }));
-          
-          return previewUrl;
+      try {
+        const previewUrl = await generateStylePreview(
+          uploadedImage, 
+          styleName, 
+          tempPhotoId, 
+          aspectRatio
+        );
+        
+        if (previewUrl) {
+          try {
+            // Apply client-side watermark
+            const watermarkedUrl = await addWatermarkToImage(previewUrl);
+            
+            // Update the preview URLs state
+            setPreviewUrls(prev => ({
+              ...prev,
+              [styleId]: watermarkedUrl
+            }));
+            
+            // Clear any previous errors for this style
+            setGenerationErrors(prev => {
+              const newErrors = {...prev};
+              delete newErrors[styleId];
+              return newErrors;
+            });
+            
+            setIsGenerating(false);
+            return watermarkedUrl;
+          } catch (watermarkError) {
+            console.warn(`Watermark failed for ${styleName}, using original:`, watermarkError);
+            
+            // Update with unwatermarked URL as fallback
+            setPreviewUrls(prev => ({
+              ...prev,
+              [styleId]: previewUrl
+            }));
+            
+            setIsGenerating(false);
+            return previewUrl;
+          }
         }
+      } catch (error) {
+        console.error(`❌ Error generating preview for ${styleName}:`, error);
+        
+        // Store the error message
+        setGenerationErrors(prev => ({
+          ...prev,
+          [styleId]: error.message || 'Failed to generate preview'
+        }));
+        
+        setIsGenerating(false);
+        return null;
       }
-      return null;
     } catch (error) {
-      console.error(`❌ Error generating preview for ${styleName}:`, error);
-      
-      // Store the error message
+      console.error(`❌ Error in generation process for ${styleName}:`, error);
       setGenerationErrors(prev => ({
         ...prev,
         [styleId]: error.message || 'Failed to generate preview'
       }));
-      
+      setIsGenerating(false);
       return null;
     }
   }, [uploadedImage, selectedOrientation]);
@@ -91,6 +113,7 @@ export const usePreviewGeneration = (uploadedImage: string | null, selectedOrien
     previewUrls,
     autoGenerationComplete,
     generationErrors,
+    isGenerating,
     setPreviewUrls,
     setAutoGenerationComplete,
     generatePreviewForStyle

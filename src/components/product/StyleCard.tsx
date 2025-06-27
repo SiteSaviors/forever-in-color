@@ -43,7 +43,14 @@ const StyleCard = ({
   const [isCanvasLightboxOpen, setIsCanvasLightboxOpen] = useState(false);
   
   // Get preview generation functionality from context
-  const { generatePreview, getPreviewUrl, isLoading, hasPreview, hasError, getError } = useStylePreview();
+  const { 
+    generatePreview, 
+    getPreviewUrl, 
+    isLoading, 
+    hasPreview, 
+    hasError, 
+    getError 
+  } = useStylePreview();
 
   const {
     isSelected,
@@ -57,6 +64,7 @@ const StyleCard = ({
     hasPreviewOrCropped,
     showGeneratedBadge,
     shouldShowBlur,
+    isBlinking,
     handleClick,
     handleGenerateStyle,
     handleRetry,
