@@ -5,6 +5,7 @@ export interface ReplicateGenerationRequest {
     strength?: number;
     num_inference_steps?: number;
     guidance_scale?: number;
+    negative_prompt?: string;
   };
 }
 
@@ -12,10 +13,13 @@ export interface ReplicateGenerationResponse {
   ok: boolean;
   output?: string | string[];
   error?: string;
+  errorType?: string;
+  technicalError?: string;
   status?: string;
   id?: string;
   urls?: {
     get?: string;
+    cancel?: string;
   };
 }
 

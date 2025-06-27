@@ -25,7 +25,6 @@ export class ReplicateService {
   async generateImageToImage(imageData: string, prompt: string, aspectRatio: string = "1:1", quality: string = "medium"): Promise<ReplicateGenerationResponse> {
     console.log('=== REPLICATE SERVICE GENERATION ===');
     console.log('Starting GPT-Image-1 generation with enhanced error handling');
-    console.log('🔥 CRITICAL: Replicate Service received aspect ratio:', aspectRatio);
     console.log('Prompt length:', prompt.length);
     
     // Validate inputs
@@ -37,17 +36,18 @@ export class ReplicateService {
       throw new Error('Invalid or missing OpenAI API key');
     }
 
+    // Enhance the prompt with identity preservation rules
+    const enhancedPrompt = PromptEnhancer.enhanceForIdentityPreservation(prompt);
+
+    // Prepare the request body for GPT-Image-1
     const requestBody = {
       input: {
-        prompt: prompt,
-        input_images: [imageData],
+        prompt: enhancedPrompt,
+        image: imageData,
         openai_api_key: this.openaiApiKey,
-        aspect_ratio: aspectRatio, // 🎯 CRITICAL: This must be the correct aspect ratio
-        quality: quality
+        negative_prompt: "deformed, distorted, disfigured, poorly drawn, bad anatomy, wrong anatomy, extra limb, missing limb, floating limbs, disconnected limbs, mutation, mutated, ugly, disgusting, amputation"
       }
     };
-
-    console.log('🎯 CRITICAL: Request body aspect_ratio before API call:', requestBody.input.aspect_ratio);
 
     try {
       // Execute with retry logic
@@ -59,37 +59,13 @@ export class ReplicateService {
           throw new Error(data.error || 'API call failed');
         }
 
-        // Handle immediate success
-        if (data.status === "succeeded" && data.output) {
-          console.log('GPT-Image-1 generation succeeded immediately');
-          return {
-            ok: true,
-            output: data.output
-          };
-        } 
-        
-        // Handle immediate failure
-        if (data.status === "failed") {
-          const errorMsg = data.error || "GPT-Image-1 generation failed";
-          console.error('GPT-Image-1 generation failed immediately:', errorMsg);
-          
-          // Check for specific error types
-          if (errorMsg.includes('high demand') || errorMsg.includes('E003')) {
-            const error = new Error(errorMsg);
-            error.name = 'ServiceUnavailable';
-            throw error;
-          }
-          
-          throw new Error(errorMsg);
-        }
-        
-        // Handle polling requirement
-        if (data.status === "processing" || data.status === "starting") {
+        // For Replicate, we need to poll for the result
+        if (data.id && data.urls?.get) {
           console.log('GPT-Image-1 requires polling, prediction ID:', data.id);
-          return await this.pollingService.pollForCompletion(data.id!, data.urls?.get!);
+          return await this.pollingService.pollForCompletion(data.id, data.urls.get);
         }
 
-        throw new Error(`Unexpected status: ${data.status}`);
+        throw new Error(`Unexpected response format: ${JSON.stringify(data)}`);
       }, 'GPT-Image-1 Generation');
 
       return result;

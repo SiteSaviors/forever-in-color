@@ -1,4 +1,3 @@
-
 import { useCallback } from 'react';
 
 interface UseStyleCardHandlersProps {
@@ -33,7 +32,6 @@ export const useStyleCardHandlers = ({
   onContinue,
   generatePreview
 }: UseStyleCardHandlersProps) => {
-  // Main card click handler
   const handleCardClick = useCallback(() => {
     console.log(`🎯 StyleCard clicked: ${style.name}, isPermanentlyGenerated: ${isPermanentlyGenerated}, isGenerating: ${effectiveIsLoading}`);
     
@@ -55,23 +53,22 @@ export const useStyleCardHandlers = ({
     }
   }, [style, previewUrl, isPermanentlyGenerated, effectiveIsLoading, hasError, onStyleClick]);
 
-  // Continue button handler
-  const handleContinueClick = (e: React.MouseEvent) => {
+  const handleContinueClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     console.log(`🎯 Continue clicked for style: ${style.name}`);
     onContinue();
-  };
+  }, [style.name, onContinue]);
 
-  // Image expand handler
-  const handleImageExpand = (e: React.MouseEvent) => {
+  const handleImageExpand = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     console.log(`🔍 Expanding image for style: ${style.name}`);
     setIsLightboxOpen(true);
-  };
+  }, [style.name, setIsLightboxOpen]);
 
-  // Generate click handler
   const handleGenerateClick = useCallback(async (e: React.MouseEvent) => {
-    e.stopPropagation();
+    if (e.stopPropagation) {
+      e.stopPropagation();
+    }
     
     // CRITICAL: Never generate if permanently generated
     if (isPermanentlyGenerated) {
@@ -92,16 +89,17 @@ export const useStyleCardHandlers = ({
       await generatePreview();
       console.log(`✅ Generation completed for ${style.name}`);
     } catch (error) {
-      console.log(`❌ Generation failed for ${style.name}:`, error);
+      console.error(`❌ Generation failed for ${style.name}:`, error);
       setShowError(true);
     } finally {
       setLocalIsLoading(false);
     }
   }, [generatePreview, isPermanentlyGenerated, effectiveIsLoading, style.name, setShowError, setLocalIsLoading]);
 
-  // Retry click handler
   const handleRetryClick = useCallback(async (e: React.MouseEvent) => {
-    e.stopPropagation();
+    if (e.stopPropagation) {
+      e.stopPropagation();
+    }
     
     // CRITICAL: Never retry if permanently generated
     if (isPermanentlyGenerated) {
@@ -122,7 +120,7 @@ export const useStyleCardHandlers = ({
       await generatePreview();
       console.log(`✅ Retry completed for ${style.name}`);
     } catch (error) {
-      console.log(`❌ Retry failed for ${style.name}:`, error);
+      console.error(`❌ Retry failed for ${style.name}:`, error);
       setShowError(true);
     } finally {
       setLocalIsLoading(false);

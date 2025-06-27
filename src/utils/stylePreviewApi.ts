@@ -60,7 +60,10 @@ export const generateStylePreview = async (
       sessionId
     };
 
-    console.log('FULL REQUEST BODY TO SUPABASE FUNCTION:', JSON.stringify(requestBody, null, 2));
+    console.log('FULL REQUEST BODY TO SUPABASE FUNCTION:', JSON.stringify({
+      ...requestBody,
+      imageUrl: '[IMAGE_DATA]' // Don't log the full image data
+    }, null, 2));
     console.log('🎯 CRITICAL: GPT-Image-1 compatible aspect ratio being sent to API:', correctedAspectRatio);
 
     // STEP 3: Enhanced error handling for the Supabase function call
