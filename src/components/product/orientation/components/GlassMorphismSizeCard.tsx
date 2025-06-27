@@ -1,11 +1,10 @@
 
 import { SizeOption } from "../types";
 import { memo, useCallback, useMemo } from "react";
-import CanvasPreview from "./size-card/CanvasPreview";
-import SizeInfo from "./size-card/SizeInfo";
-import PricingDisplay from "./size-card/PricingDisplay";
-import CardBadges from "./size-card/CardBadges";
-import ContinueButton from "./size-card/ContinueButton";
+import GlassMorphismCardHeader from "./size-card/GlassMorphismCardHeader";
+import GlassMorphismCardContent from "./size-card/GlassMorphismCardContent";
+import GlassMorphismCardActions from "./size-card/GlassMorphismCardActions";
+import GlassMorphismCardEffects from "./size-card/GlassMorphismCardEffects";
 
 interface GlassMorphismSizeCardProps {
   option: SizeOption;
@@ -108,94 +107,35 @@ const GlassMorphismSizeCard = memo(({
       {/* Content Container with enhanced spacing */}
       <div className="relative p-6 md:p-8 space-y-6">
         {/* Enhanced Top Badges with modern styling */}
-        <CardBadges 
+        <GlassMorphismCardHeader 
           popular={option.popular}
           isRecommended={isRecommended}
           salePrice={option.salePrice}
           originalPrice={option.originalPrice}
         />
 
-        {/* Enhanced Canvas Preview with hover effects */}
-        <div className={`
-          flex justify-center transition-all duration-500
-          ${cardState === "selected" ? 'scale-110 drop-shadow-2xl' : 'group-hover:scale-105 group-hover:drop-shadow-xl'}
-        `}>
-          <CanvasPreview 
-            orientation={orientation}
-            userImageUrl={userImageUrl}
-          />
-        </div>
-
-        {/* Size Information with enhanced typography and drop shadow */}
-        <div className="text-center">
-          <h3 className={`
-            text-2xl md:text-3xl font-bold tracking-tight font-poppins transition-colors duration-300 drop-shadow-sm
-            ${cardState === "selected" ? 'text-purple-800' : cardState === "recommended" ? 'text-amber-800' : 'text-gray-800'}
-          `}>
-            {option.size}
-          </h3>
-        </div>
-
-        {/* Enhanced Pricing Display with modern styling */}
-        <PricingDisplay 
-          salePrice={option.salePrice}
-          originalPrice={option.originalPrice}
+        {/* Card Content */}
+        <GlassMorphismCardContent
+          option={option}
+          orientation={orientation}
+          userImageUrl={userImageUrl}
+          cardState={cardState}
         />
 
-        {/* Description with enhanced styling and drop shadow */}
-        <div className={`
-          rounded-2xl p-5 text-center border backdrop-blur-sm transition-all duration-300 shadow-sm
-          ${cardState === "selected"
-            ? 'bg-gradient-to-r from-purple-50/95 to-violet-50/80 border-purple-200/70 shadow-purple-100'
-            : cardState === "recommended"
-            ? 'bg-gradient-to-r from-amber-50/95 to-yellow-50/80 border-amber-200/70 shadow-amber-100'
-            : 'bg-gradient-to-r from-slate-50/95 to-gray-50/80 border-slate-200/50 shadow-gray-100'
-          }
-        `}>
-          <p className={`
-            text-sm md:text-base leading-relaxed font-medium transition-colors duration-300 tracking-tight font-poppins drop-shadow-sm
-            ${cardState === "selected" ? 'text-purple-700' : cardState === "recommended" ? 'text-amber-700' : 'text-gray-700'}
-          `}>
-            {option.description}
-          </p>
-        </div>
-
         {/* Enhanced Continue Button with better visibility */}
-        <div className={`
-          transition-all duration-500 transform
-          ${isSelected ? 'scale-100 opacity-100' : 'scale-95 opacity-0 pointer-events-none'}
-        `}>
-          <ContinueButton 
-            size={option.size}
-            isSelected={isSelected}
-            onContinue={handleContinueClick}
-          />
-        </div>
+        <GlassMorphismCardActions
+          size={option.size}
+          isSelected={isSelected}
+          onContinue={handleContinueClick}
+        />
       </div>
 
-      {/* Enhanced selection effects with modern glow */}
-      {isSelected && (
-        <>
-          <div className="absolute inset-0 rounded-3xl border-3 border-purple-400/70 pointer-events-none animate-pulse"></div>
-          <div className="absolute -inset-2 rounded-3xl bg-gradient-to-r from-purple-400/20 via-violet-400/15 to-purple-400/20 blur-xl pointer-events-none animate-pulse"></div>
-        </>
-      )}
-      
-      {/* Enhanced recommended glow effect */}
-      {isRecommended && !isSelected && (
-        <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-amber-400/20 via-yellow-400/15 to-amber-400/20 blur-lg pointer-events-none opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
-      )}
-      
-      {/* Enhanced hover effect for non-selected cards */}
-      {!isSelected && (
-        <div className={`
-          absolute inset-0 rounded-3xl border-2 border-transparent transition-all duration-500 pointer-events-none
-          ${cardState === "recommended" 
-            ? 'group-hover:border-amber-300/70 group-hover:shadow-amber-200/50' 
-            : 'group-hover:border-purple-200/70 group-hover:shadow-purple-200/50'
-          }
-        `}></div>
-      )}
+      {/* Visual Effects */}
+      <GlassMorphismCardEffects
+        isSelected={isSelected}
+        isRecommended={isRecommended}
+        cardState={cardState}
+      />
     </div>
   );
 });
