@@ -1,4 +1,3 @@
-
 import { artStyles } from "@/data/artStyles";
 
 export interface StyleRecommendation {
@@ -99,9 +98,18 @@ export const analyzeImageForRecommendations = async (imageUrl: string): Promise<
 export const generateStyleRecommendations = (analysis: ImageAnalysis): StyleRecommendation[] => {
   const recommendations: StyleRecommendation[] = [];
 
-  // Hero recommendations (top 3 most relevant)
+  // Hero recommendations (top 3 most relevant) - Always include Watercolor Dreams as first recommendation
+  const baseWatercolorRecommendation = {
+    styleId: 4,
+    styleName: "Watercolor Dreams",
+    confidence: 0.92,
+    reason: "Perfect artistic style that enhances any photo with flowing, natural effects",
+    category: 'hero' as const
+  };
+
   if (analysis.hasPortrait) {
     recommendations.push(
+      baseWatercolorRecommendation,
       {
         styleId: 5,
         styleName: "Pastel Bliss",
@@ -115,25 +123,13 @@ export const generateStyleRecommendations = (analysis: ImageAnalysis): StyleReco
         confidence: 0.85,
         reason: "Traditional portrait style with rich depth",
         category: 'hero'
-      },
-      {
-        styleId: 7,
-        styleName: "Artisan Charcoal",
-        confidence: 0.82,
-        reason: "Elegant charcoal style perfect for portrait definition",
-        category: 'hero'
       }
     );
-  }
-
-  if (analysis.isLandscape) {
+  } else if (analysis.isLandscape) {
     recommendations.push(
       {
-        styleId: 4,
-        styleName: "Watercolor Dreams",
-        confidence: 0.88,
-        reason: "Ideal for landscapes with flowing, natural effects",
-        category: 'hero'
+        ...baseWatercolorRecommendation,
+        reason: "Ideal for landscapes with flowing, natural effects"
       },
       {
         styleId: 13,
@@ -150,10 +146,12 @@ export const generateStyleRecommendations = (analysis: ImageAnalysis): StyleReco
         category: 'hero'
       }
     );
-  }
-
-  if (analysis.hasHighContrast) {
+  } else if (analysis.hasHighContrast) {
     recommendations.push(
+      {
+        ...baseWatercolorRecommendation,
+        reason: "Softens high contrast while maintaining visual impact"
+      },
       {
         styleId: 9,
         styleName: "Pop Art Burst",
@@ -167,32 +165,17 @@ export const generateStyleRecommendations = (analysis: ImageAnalysis): StyleReco
         confidence: 0.85,
         reason: "Dynamic contrast creates stunning neon effects",
         category: 'hero'
-      },
-      {
-        styleId: 11,
-        styleName: "Electric Bloom",
-        confidence: 0.83,
-        reason: "Vibrant electric style amplifies high contrast beautifully",
-        category: 'hero'
       }
     );
-  }
-
-  // Fallback hero recommendations for square/neutral images
-  if (recommendations.filter(r => r.category === 'hero').length === 0) {
+  } else {
+    // Fallback hero recommendations for square/neutral images - Always start with Watercolor Dreams
     recommendations.push(
+      baseWatercolorRecommendation,
       {
         styleId: 2,
         styleName: "Classic Oil Painting",
         confidence: 0.8,
         reason: "Timeless classic that works beautifully with any photo",
-        category: 'hero'
-      },
-      {
-        styleId: 4,
-        styleName: "Watercolor Dreams",
-        confidence: 0.78,
-        reason: "Soft, artistic appeal perfect for your composition",
         category: 'hero'
       },
       {
