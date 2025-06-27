@@ -6,6 +6,7 @@ import ErrorBoundary from "./ErrorBoundary";
 import StepContainer from "./ActiveStepView/StepContainer";
 import StepOverlays from "./ActiveStepView/StepOverlays";
 import StepTrigger from "./ActiveStepView/StepTrigger";
+import "./styles/activeStepOptimized.css";
 
 interface ActiveStepViewProps {
   stepNumber: number;
@@ -19,7 +20,7 @@ interface ActiveStepViewProps {
   children: React.ReactNode;
 }
 
-const ActiveStepView = ({
+const ActiveStepView = React.memo(({
   stepNumber,
   title,
   description,
@@ -44,7 +45,7 @@ const ActiveStepView = ({
     <ErrorBoundary>
       <AccordionItem 
         value={`step-${stepNumber}`}
-        className="relative"
+        className="relative step-container-optimized"
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
@@ -71,9 +72,9 @@ const ActiveStepView = ({
             selectedStyle={selectedStyle}
           />
           
-          <AccordionContent className="px-4 pb-4 sm:px-6 sm:pb-6 md:px-8 md:pb-8 animate-accordion-down">
+          <AccordionContent className="px-4 pb-4 sm:px-6 sm:pb-6 md:px-8 md:pb-8 accordion-content-optimized">
             <div className="border-t border-gradient-to-r from-purple-100 to-pink-100 pt-4 sm:pt-6 relative">
-              <div className="bg-gradient-to-r from-gray-50/80 to-purple-50/40 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-8 border border-gray-100/50 shadow-inner animate-fade-in">
+              <div className="bg-gradient-to-r from-gray-50/80 to-purple-50/40 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-8 border border-gray-100/50 shadow-inner animate-fade-in content-container-optimized">
                 <ErrorBoundary fallback={
                   <div className="text-center py-4">
                     <MobileTypography variant="body" className="text-gray-600">
@@ -90,6 +91,8 @@ const ActiveStepView = ({
       </AccordionItem>
     </ErrorBoundary>
   );
-};
+});
+
+ActiveStepView.displayName = 'ActiveStepView';
 
 export default ActiveStepView;
