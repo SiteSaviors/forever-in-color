@@ -4,7 +4,7 @@ import Footer from "@/components/Footer";
 import ProductHeader from "@/components/product/ProductHeader";
 import ProductContent from "@/components/product/ProductContent";
 import TrustElements from "@/components/product/TrustElements";
-import PriceCalculator from "@/components/product/PriceCalculator";
+import BottomMomentumPopup from "@/components/product/components/BottomMomentumPopup";
 import ProductTestimonials from "@/components/product/ProductTestimonials";
 import { useProductState } from "@/components/product/ProductStateManager";
 
@@ -57,12 +57,15 @@ const Product = () => {
         <ProductTestimonials />
       </div>
 
-      <PriceCalculator
+      <BottomMomentumPopup
+        currentStep={currentStep}
+        completedSteps={completedSteps}
+        totalSteps={4}
         selectedSize={selectedSize}
         selectedOrientation={selectedOrientation}
         customizations={customizations}
-        completedSteps={completedSteps}
-        totalSteps={4}
+        selectedStyle={selectedStyle}
+        uploadedImage={uploadedImage}
       />
 
       <Footer />
