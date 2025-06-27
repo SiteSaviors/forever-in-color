@@ -63,6 +63,9 @@ const StyleCard = ({
   const showContinueInCard = showContinueButton && isSelected && isStyleGenerated;
   const hasError = showError || validationError;
 
+  // Determine what image to show - preview URL if available, otherwise cropped image, otherwise default style image
+  const imageToShow = previewUrl || croppedImage || style.image;
+
   const handleContinueClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onContinue();
@@ -100,7 +103,7 @@ const StyleCard = ({
       <div className="relative flex-1">
         <StyleCardImage
           style={style}
-          previewUrl={previewUrl}
+          imageToShow={imageToShow}
           cropAspectRatio={cropAspectRatio}
         />
         
