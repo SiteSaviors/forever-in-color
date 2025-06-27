@@ -80,14 +80,11 @@ const StyleCardImage = memo(({
         onCanvasPreviewClick={onCanvasPreviewClick}
       />
 
-      {/* AI Match Overlay - Semi-transparent with click-through */}
+      {/* Small AI Match indicator - only on recommended/selected cards on hover */}
       {isSelected && !hasGeneratedPreview && !isGenerating && !showError && style.id !== 1 && (
-        <div className="absolute inset-0 pointer-events-none group-hover:block hidden">
-          <div className="absolute bottom-4 left-4 right-4 bg-black/60 backdrop-blur-sm rounded-xl p-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 pointer-events-auto">
-            <div className="flex items-center justify-center gap-2">
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-              <span className="text-white text-sm font-semibold">AI Match: 92%</span>
-            </div>
+        <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-30">
+          <div className="bg-black/70 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm">
+            92% Match
           </div>
         </div>
       )}
