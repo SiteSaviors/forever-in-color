@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useMemo, useCallback, useState, useEffect } from "react";
 import { LucideIcon, Check, ChevronRight, Sparkles, Lock } from "lucide-react";
 import { AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
@@ -31,32 +31,82 @@ const ActiveStepView = ({
   selectedStyle,
   children
 }: ActiveStepViewProps) => {
-  // Safely get the icon with error handling
-  const Icon = React.useMemo(() => {
+  // Debounced hover state to prevent rapid re-renders
+  const [isHovered, setIsHovered] = useState(false);
+  const [debouncedHover, setDebouncedHover] = useState(false);
+
+  // Debounce hover state changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedHover(isHovered);
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [isHovered]);
+
+  // Memoized expensive calculations
+  const computedStyles = useMemo(() => {
+    const isNextStep = !isCompleted && canAccess && !isActive;
+    
+    const containerClasses = `
+      relative bg-white rounded-xl sm:rounded-2xl shadow-md border border-gray-100 overflow-hidden 
+      transition-all duration-500 ease-out hover:shadow-xl mx-2 sm:mx-0
+      ${isActive && canAccess ? 'ring-2 ring-purple-200 shadow-xl transform scale-[1.01] animate-fade-in' : ''}
+      ${isNextStep && canAccess ? 'ring-1 ring-purple-100 hover:ring-2 hover:ring-purple-200 animate-pulse' : ''}
+    `;
+
+    const iconClasses = `
+      relative w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center 
+      transition-all duration-500 shadow-lg transform
+      ${isCompleted 
+        ? 'bg-gradient-to-r from-green-400 to-emerald-500 text-white shadow-green-200/50 scale-105' 
+        : isActive && canAccess
+        ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-purple-200/50 scale-105 animate-pulse'
+        : !canAccess
+        ? 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-400'
+        : 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-500 group-hover:from-purple-100 group-hover:to-pink-100 group-hover:text-purple-500 group-hover:scale-105'}
+    `;
+
+    const titleClasses = `
+      font-bold transition-colors duration-300 font-poppins tracking-tight
+      ${isCompleted || (isActive && canAccess) ? 'text-gray-900' 
+        : !canAccess ? 'text-gray-500'
+        : 'text-gray-600 group-hover:text-gray-800'}
+    `;
+
+    const chevronClasses = `
+      w-5 h-5 sm:w-6 sm:h-6 transition-all duration-500 ease-out
+      ${isActive && canAccess ? 'rotate-90 text-purple-500 scale-110' 
+        : !canAccess ? 'text-gray-300'
+        : 'text-gray-400 group-hover:text-gray-600 group-hover:translate-x-1 group-hover:scale-110'}
+    `;
+
+    return {
+      containerClasses,
+      iconClasses,
+      titleClasses,
+      chevronClasses,
+      isNextStep
+    };
+  }, [isActive, isCompleted, canAccess, debouncedHover]);
+
+  // Memoized icon component
+  const Icon = useMemo(() => {
     try {
       return getStepIcon(stepNumber);
     } catch (error) {
       console.error('Error getting step icon:', error);
-      return ChevronRight; // fallback icon
+      return ChevronRight;
     }
   }, [stepNumber]);
 
-  const isNextStep = !isCompleted && canAccess && !isActive;
-  const lockStatus = getLockStatus(isCompleted, canAccess);
+  // Memoized lock status
+  const lockStatus = useMemo(() => {
+    return getLockStatus(isCompleted, canAccess);
+  }, [isCompleted, canAccess]);
 
-  const handleStepClick = () => {
-    try {
-      if (canAccess) {
-        triggerHapticFeedback();
-        onStepClick();
-      }
-    } catch (error) {
-      console.error('Error in step click handler:', error);
-    }
-  };
-
-  // Safely render style name
-  const renderStyleName = () => {
+  // Memoized style name rendering
+  const styleNameElement = useMemo(() => {
     if (stepNumber === 1 && selectedStyle?.name) {
       return (
         <span className={`ml-2 sm:ml-3 font-medium text-base sm:text-lg md:text-xl transition-colors duration-300 ${
@@ -67,19 +117,36 @@ const ActiveStepView = ({
       );
     }
     return null;
-  };
+  }, [stepNumber, selectedStyle?.name, isActive]);
+
+  // Optimized event handlers with useCallback
+  const handleStepClick = useCallback(() => {
+    try {
+      if (canAccess) {
+        triggerHapticFeedback();
+        onStepClick();
+      }
+    } catch (error) {
+      console.error('Error in step click handler:', error);
+    }
+  }, [canAccess, onStepClick]);
+
+  const handleMouseEnter = useCallback(() => {
+    setIsHovered(true);
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    setIsHovered(false);
+  }, []);
 
   return (
     <ErrorBoundary>
       <AccordionItem 
         value={`step-${stepNumber}`}
         data-step={stepNumber}
-        className={`
-          relative bg-white rounded-xl sm:rounded-2xl shadow-md border border-gray-100 overflow-hidden 
-          transition-all duration-500 ease-out hover:shadow-xl mx-2 sm:mx-0
-          ${isActive && canAccess ? 'ring-2 ring-purple-200 shadow-xl transform scale-[1.01] animate-fade-in' : ''}
-          ${isNextStep && canAccess ? 'ring-1 ring-purple-100 hover:ring-2 hover:ring-purple-200 animate-pulse' : ''}
-        `}
+        className={computedStyles.containerClasses}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       >
         {/* Premium gradient overlay for active state */}
         {isActive && canAccess && (
@@ -101,17 +168,7 @@ const ActiveStepView = ({
           <div className="flex items-center gap-3 sm:gap-4 md:gap-6 w-full">
             {/* Enhanced Step Icon with mobile-optimized sizing */}
             <TouchTarget size="lg" className="flex-shrink-0">
-              <div className={`
-                relative w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center 
-                transition-all duration-500 shadow-lg transform
-                ${isCompleted 
-                  ? 'bg-gradient-to-r from-green-400 to-emerald-500 text-white shadow-green-200/50 scale-105' 
-                  : isActive && canAccess
-                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-purple-200/50 scale-105 animate-pulse'
-                  : !canAccess
-                  ? 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-400'
-                  : 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-500 group-hover:from-purple-100 group-hover:to-pink-100 group-hover:text-purple-500 group-hover:scale-105'}
-              `}>
+              <div className={computedStyles.iconClasses}>
                 {isCompleted ? (
                   <Check className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 animate-in zoom-in duration-500" />
                 ) : (
@@ -126,15 +183,10 @@ const ActiveStepView = ({
                 <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 flex-wrap">
                   <MobileTypography
                     variant="h3"
-                    className={`
-                      font-bold transition-colors duration-300 font-poppins tracking-tight
-                      ${isCompleted || (isActive && canAccess) ? 'text-gray-900' 
-                        : !canAccess ? 'text-gray-500'
-                        : 'text-gray-600 group-hover:text-gray-800'}
-                    `}
+                    className={computedStyles.titleClasses}
                   >
                     {title}
-                    {renderStyleName()}
+                    {styleNameElement}
                   </MobileTypography>
                   
                   {/* Enhanced Status Indicators */}
@@ -159,7 +211,7 @@ const ActiveStepView = ({
             
             {/* Mobile-optimized status badges and actions */}
             <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-              {isNextStep && canAccess && !isActive && (
+              {computedStyles.isNextStep && canAccess && !isActive && (
                 <Badge variant="outline" className="bg-gradient-to-r from-amber-50 to-orange-50 text-amber-700 border-amber-200 px-2 py-1 text-xs sm:text-sm font-medium rounded-full hidden sm:inline-flex animate-pulse">
                   Next Step
                 </Badge>
@@ -167,12 +219,7 @@ const ActiveStepView = ({
               
               {/* Enhanced chevron with mobile-optimized sizing */}
               <TouchTarget size="sm" interactive={false}>
-                <ChevronRight className={`
-                  w-5 h-5 sm:w-6 sm:h-6 transition-all duration-500 ease-out
-                  ${isActive && canAccess ? 'rotate-90 text-purple-500 scale-110' 
-                    : !canAccess ? 'text-gray-300'
-                    : 'text-gray-400 group-hover:text-gray-600 group-hover:translate-x-1 group-hover:scale-110'}
-                `} />
+                <ChevronRight className={computedStyles.chevronClasses} />
               </TouchTarget>
             </div>
           </div>
