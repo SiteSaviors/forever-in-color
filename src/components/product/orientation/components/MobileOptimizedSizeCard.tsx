@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Crown, TrendingUp, Heart, Sparkles } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useHapticFeedback } from "../../progress/hooks/useHapticFeedback";
 
 interface MobileOptimizedSizeCardProps {
   option: SizeOption & { 
@@ -30,8 +29,14 @@ const MobileOptimizedSizeCard = memo(({
   onContinue
 }: MobileOptimizedSizeCardProps) => {
   const isMobile = useIsMobile();
-  const { triggerHaptic } = useHapticFeedback({ completedSteps: [] });
   const [isPressed, setIsPressed] = useState(false);
+
+  // Simple haptic feedback function that doesn't depend on progress state
+  const triggerHaptic = useCallback(() => {
+    if ('vibrate' in navigator && navigator.vibrate) {
+      navigator.vibrate(10); // Light haptic feedback
+    }
+  }, []);
 
   const handleCardPress = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
