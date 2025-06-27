@@ -94,7 +94,7 @@ const StyleCard = ({
     previewUrl,
     isPermanentlyGenerated,
     effectiveIsLoading,
-    hasError,
+    hasError: !!hasError, // Convert to boolean here
     setShowError,
     setLocalIsLoading,
     setIsLightboxOpen,
@@ -111,8 +111,8 @@ const StyleCard = ({
 
   const showContinueInCard = showContinueButton && isSelected && (isStyleGenerated || isPermanentlyGenerated);
 
-  // Convert hasError to boolean for all prop usage
-  const hasErrorBoolean = !!hasError;
+  // Properly convert hasError to boolean and extract error message
+  const hasErrorBoolean = Boolean(hasError);
   const errorMessage = typeof hasError === 'string' ? hasError : (validationError || 'Generation failed');
 
   return (
