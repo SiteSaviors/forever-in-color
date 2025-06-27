@@ -49,15 +49,11 @@ export const generateStylePreview = async (
     // Generate session ID for watermarking if not provided
     const sessionId = options.sessionId || `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    // STEP 2: Generate a proper UUID for photo_id to avoid database errors
-    const properPhotoId = photoId.includes('temp_') ? crypto.randomUUID() : photoId;
-    console.log('Using photo ID for database:', properPhotoId);
-
-    // STEP 3: Prepare the request body with corrected aspect ratio
+    // STEP 2: Prepare the request body with corrected aspect ratio
     const requestBody = { 
       imageUrl, 
       style,
-      photoId: properPhotoId,
+      photoId,
       isAuthenticated,
       aspectRatio: correctedAspectRatio, // Use the corrected aspect ratio
       watermark: options.watermark !== false, // Default to true
@@ -68,7 +64,7 @@ export const generateStylePreview = async (
     console.log('FULL REQUEST BODY TO SUPABASE FUNCTION:', JSON.stringify(requestBody, null, 2));
     console.log('🎯 CRITICAL: GPT-Image-1 compatible aspect ratio being sent to API:', correctedAspectRatio);
 
-    // STEP 4: Enhanced error handling for the Supabase function call
+    // STEP 3: Enhanced error handling for the Supabase function call
     try {
       const { data, error } = await supabase.functions.invoke('generate-style-preview', {
         body: requestBody
@@ -93,7 +89,7 @@ export const generateStylePreview = async (
         throw new Error(error.message || 'Failed to generate style preview. Please try again.');
       }
 
-      // STEP 5: Enhanced response validation
+      // STEP 4: Enhanced response validation
       if (!data) {
         throw new Error('No response received from AI service. Please try again.');
       }
@@ -105,20 +101,17 @@ export const generateStylePreview = async (
 
       console.log('GPT-Image-1 preview generated successfully with aspect ratio:', correctedAspectRatio, '-> URL:', data.preview_url.substring(0, 50) + '...');
       
-      // Only store the preview if user is authenticated and we have a valid UUID
-      if (isAuthenticated && properPhotoId.length === 36) { // UUID length check
+      // Only store the preview if user is authenticated
+      if (isAuthenticated) {
         try {
-          await createPreview(properPhotoId, style, data.preview_url);
+          await createPreview(photoId, style, data.preview_url);
           console.log('Preview stored successfully in database');
         } catch (storeError) {
-          console.warn('Could not store preview in database:', storeError);
-          // Continue anyway since image generation succeeded
+          console.warn('Could not store preview (user not authenticated or database error):', storeError);
+          // Continue anyway, just don't store
         }
-      } else {
-        console.log('Skipping database storage - user not authenticated or invalid photo ID format');
       }
       
-      // Return the preview URL as a string (maintaining backward compatibility)
       return data.preview_url;
     } catch (apiError) {
       console.error('API call error:', apiError);

@@ -1,4 +1,5 @@
-import { memo, useState, useEffect, useMemo, useCallback } from "react";
+
+import { memo, useState, useEffect, useMemo } from "react";
 import StyleGridContainer from "./components/StyleGrid/StyleGridContainer";
 import PlaceholderGrid from "./components/StyleGrid/PlaceholderGrid";
 import OptimizedActiveStyleGrid from "./components/StyleGrid/OptimizedActiveStyleGrid";

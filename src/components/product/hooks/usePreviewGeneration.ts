@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { generateStylePreview } from "@/utils/stylePreviewApi";
 import { addWatermarkToImage } from "@/utils/watermarkUtils";
@@ -44,14 +43,13 @@ export const usePreviewGeneration = (uploadedImage: string | null, selectedOrien
       // Use the correct aspect ratio format for the API
       const aspectRatio = convertOrientationToAspectRatio(selectedOrientation);
       
-      // Generate a proper UUID for the photo ID to avoid database errors
-      const properPhotoId = crypto.randomUUID();
+      const tempPhotoId = `temp_${Date.now()}_${styleId}`;
       
       try {
         const previewUrl = await generateStylePreview(
           uploadedImage, 
           styleName, 
-          properPhotoId, 
+          tempPhotoId, 
           aspectRatio
         );
         
