@@ -1,7 +1,6 @@
-
 export const REPLICATE_CONFIG = {
   baseUrl: "https://api.replicate.com/v1",
-  model: "openai/gpt-image-1",
+  model: "stability-ai/stable-diffusion-img2img",
   defaultOutputFormat: "jpg",
   maxPollAttempts: 30,
   pollIntervalMs: 2000,
