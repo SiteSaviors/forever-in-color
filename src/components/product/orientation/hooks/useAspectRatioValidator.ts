@@ -1,10 +1,9 @@
+
 import { useCallback, useMemo } from 'react';
 import { 
   validateOrientationFlow, 
-  isValidOrientation, 
   isValidAspectRatio,
-  getAspectRatio,
-  OrientationType 
+  getAspectRatio
 } from '../utils';
 import { useToast } from '@/hooks/use-toast';
 
@@ -74,7 +73,7 @@ export const useAspectRatioValidator = () => {
     validateWithRecovery,
     autoCorrect,
     isValidAspectRatio
-  }), [validateWithRecovery, autoCorrect, isValidAspectRatio]);
+  }), [validateWithRecovery, autoCorrect]);
 
   return memoizedValidator;
 };

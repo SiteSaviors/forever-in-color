@@ -1,3 +1,4 @@
+
 export const validateOrientationFlow = (orientation: string): string => {
   console.log(`Validating orientation flow for: ${orientation}`);
 
@@ -45,4 +46,24 @@ export const isValidAspectRatio = (aspectRatio: string): boolean => {
   console.log(`✅ Supported ratios: ${validRatios.join(', ')}`);
   
   return isValid;
+};
+
+// Add missing exports
+export type OrientationType = 'square' | 'landscape' | 'portrait';
+
+export const isValidOrientation = (orientation: string): boolean => {
+  const validOrientations: OrientationType[] = ['square', 'landscape', 'portrait'];
+  return validOrientations.includes(orientation.toLowerCase() as OrientationType);
+};
+
+export const detectOrientationFromDimensions = (width: number, height: number): OrientationType => {
+  const ratio = width / height;
+  
+  if (Math.abs(ratio - 1) < 0.1) {
+    return 'square';
+  } else if (ratio > 1) {
+    return 'landscape';
+  } else {
+    return 'portrait';
+  }
 };

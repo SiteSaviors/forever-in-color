@@ -76,8 +76,11 @@ const StyleCard = ({
     shouldBlur,
     onStyleClick,
     onContinue,
-    // Pass the preview generation functions from context
-    generatePreview: () => generatePreview(style.id, style.name),
+    // Fix the Promise<void> vs Promise<string> issue by wrapping the function
+    generatePreview: async () => {
+      await generatePreview(style.id, style.name);
+      return getPreviewUrl(style.id) || null;
+    },
     getPreviewUrl: () => getPreviewUrl(style.id),
     isLoading: isLoading(style.id),
     hasPreview: hasPreview(style.id),
