@@ -1,0 +1,40 @@
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-size: 16px; /* Mobile-first base font size */
+    line-height: 1.6; /* Optimal mobile reading */
+  }
+
+  /* Mobile-first touch optimization */
+  * {
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Ensure minimum touch targets */
+  button, 
+  [role="button"], 
+  input[type="submit"], 
+  input[type="button"] {
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
+  }
+
+  /* Improve mobile text readability */
+  h1, h2, h3, h4, h5, h6 {
+    line-height: 1.2;
+    font-weight: 600;
+  }
+
+  /* Mobile-first spacing */
+  .container {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+}
