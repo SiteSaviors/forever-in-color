@@ -80,11 +80,14 @@ const StyleCardImage = memo(({
         onCanvasPreviewClick={onCanvasPreviewClick}
       />
 
-      {/* Small AI Match indicator - only on recommended/selected cards on hover */}
-      {isSelected && !hasGeneratedPreview && !isGenerating && !showError && style.id !== 1 && (
-        <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-30">
-          <div className="bg-black/70 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm">
-            92% Match
+      {/* Small AI Match indicator - only on recommended cards on hover */}
+      {isPopular && !hasGeneratedPreview && !isGenerating && !showError && style.id !== 1 && (
+        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-30">
+          <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg backdrop-blur-sm border border-white/20">
+            <div className="flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
+              <span>92% Match</span>
+            </div>
           </div>
         </div>
       )}

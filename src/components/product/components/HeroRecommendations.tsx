@@ -93,26 +93,6 @@ const HeroRecommendations = ({
                 Original
               </Badge>
             </div>
-
-            {/* Original Photo Confidence Overlay */}
-            <div className="absolute bottom-4 left-4 right-4 bg-black/90 backdrop-blur-sm rounded-xl p-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-white text-sm font-semibold">
-                  Your Upload
-                </p>
-                <div className="flex">
-                  {[...Array(5)].map((_, i) => (
-                    <div
-                      key={i}
-                      className="w-2 h-2 rounded-full mx-0.5 bg-cyan-400"
-                    />
-                  ))}
-                </div>
-              </div>
-              <p className="text-white/90 text-xs leading-relaxed">
-                Keep your photo exactly as uploaded - sometimes perfection needs no transformation
-              </p>
-            </div>
           </div>
         </div>
 
@@ -154,30 +134,6 @@ const HeroRecommendations = ({
                     <Zap className="w-3 h-3 mr-1 animate-pulse" />
                     AI Pick
                   </Badge>
-                </div>
-
-                {/* Enhanced Confidence & Reason Overlay */}
-                <div className="absolute bottom-4 left-4 right-4 bg-black/90 backdrop-blur-sm rounded-xl p-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-white text-sm font-semibold">
-                      {Math.round(rec.confidence * 100)}% Match
-                    </p>
-                    <div className="flex">
-                      {[...Array(5)].map((_, i) => (
-                        <div
-                          key={i}
-                          className={`w-2 h-2 rounded-full mx-0.5 ${
-                            i < Math.round(rec.confidence * 5)
-                              ? 'bg-amber-400'
-                              : 'bg-gray-600'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                  <p className="text-white/90 text-xs leading-relaxed">
-                    {rec.reason}
-                  </p>
                 </div>
               </div>
             </div>
