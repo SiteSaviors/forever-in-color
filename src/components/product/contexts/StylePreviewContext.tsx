@@ -41,7 +41,7 @@ export const StylePreviewProvider = ({
     getError
   } = useStylePreviewHelpers(previews);
 
-  // Implement the generatePreview function that was missing
+  // Implement the generatePreview function using correct action types
   const generatePreview = useCallback(async (styleId: number, styleName: string) => {
     if (!croppedImage) {
       console.warn('No cropped image available for preview generation');
@@ -50,14 +50,13 @@ export const StylePreviewProvider = ({
 
     console.log(`🎨 Generating preview for style ${styleId} (${styleName})`);
     
-    dispatch({ type: 'SET_LOADING', styleId, loading: true });
-    dispatch({ type: 'CLEAR_ERROR', styleId });
+    dispatch({ type: 'START_GENERATION', styleId });
 
     try {
       const result = await generateStylePreview(croppedImage, styleName, selectedOrientation);
       
       if (result.success && result.imageUrl) {
-        dispatch({ type: 'SET_PREVIEW', styleId, url: result.imageUrl });
+        dispatch({ type: 'GENERATION_SUCCESS', styleId, url: result.imageUrl });
         console.log(`✅ Preview generated for style ${styleId}`);
       } else {
         throw new Error(result.error || 'Failed to generate preview');
@@ -65,12 +64,10 @@ export const StylePreviewProvider = ({
     } catch (error) {
       console.error(`❌ Error generating preview for style ${styleId}:`, error);
       dispatch({ 
-        type: 'SET_ERROR', 
+        type: 'GENERATION_ERROR', 
         styleId, 
         error: error instanceof Error ? error.message : 'Unknown error' 
       });
-    } finally {
-      dispatch({ type: 'SET_LOADING', styleId, loading: false });
     }
   }, [croppedImage, selectedOrientation]);
 
