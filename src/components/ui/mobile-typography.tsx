@@ -17,9 +17,26 @@ const typographyVariants = {
   overline: "text-xs sm:text-sm font-medium uppercase tracking-wider text-muted-foreground"
 }
 
+const getDefaultElement = (variant: keyof typeof typographyVariants): React.ElementType => {
+  switch (variant) {
+    case 'h1':
+    case 'h2':
+    case 'h3':
+    case 'h4':
+      return variant;
+    case 'body':
+      return 'p';
+    case 'caption':
+    case 'overline':
+      return 'span';
+    default:
+      return 'p';
+  }
+}
+
 const MobileTypography = React.forwardRef<HTMLElement, MobileTypographyProps>(
   ({ className, variant = 'body', component, children, ...props }, ref) => {
-    const Component = component || (variant === 'body' ? 'p' : variant)
+    const Component = component || getDefaultElement(variant)
     
     return (
       <Component
