@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import StyleCardImage from "./components/StyleCardImage";
 import StyleCardInfo from "./components/StyleCardInfo";
@@ -7,7 +8,6 @@ import StyleCardLightboxes from "./components/StyleCardLightboxes";
 import Lightbox from "@/components/ui/lightbox";
 import FullCanvasMockup from "./components/FullCanvasMockup";
 import { useStyleCardLogic } from "./hooks/useStyleCardLogic";
-import { useStylePreview } from "./contexts/StylePreviewContext";
 
 interface StyleCardProps {
   style: {
@@ -25,6 +25,13 @@ interface StyleCardProps {
   shouldBlur?: boolean;
   onStyleClick: (style: { id: number; name: string; description: string; image: string }) => void;
   onContinue?: () => void;
+  // Preview generation props passed from parent
+  generatePreview?: () => Promise<string | null>;
+  getPreviewUrl?: () => string | undefined;
+  isLoading?: boolean;
+  hasPreview?: boolean;
+  hasError?: boolean;
+  getError?: () => string | undefined;
 }
 
 const StyleCard = ({
@@ -37,20 +44,17 @@ const StyleCard = ({
   showContinueButton = true,
   shouldBlur = false,
   onStyleClick,
-  onContinue
+  onContinue,
+  // Preview generation props
+  generatePreview,
+  getPreviewUrl,
+  isLoading = false,
+  hasPreview = false,
+  hasError = false,
+  getError
 }: StyleCardProps) => {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isCanvasLightboxOpen, setIsCanvasLightboxOpen] = useState(false);
-  
-  // Get preview generation functionality from context
-  const { 
-    generatePreview, 
-    getPreviewUrl, 
-    isLoading, 
-    hasPreview, 
-    hasError, 
-    getError 
-  } = useStylePreview();
 
   const {
     isSelected,
@@ -76,16 +80,13 @@ const StyleCard = ({
     shouldBlur,
     onStyleClick,
     onContinue,
-    // Fix the Promise<void> vs Promise<string> issue by wrapping the function
-    generatePreview: async () => {
-      await generatePreview(style.id, style.name);
-      return getPreviewUrl(style.id) || null;
-    },
-    getPreviewUrl: () => getPreviewUrl(style.id),
-    isLoading: isLoading(style.id),
-    hasPreview: hasPreview(style.id),
-    hasError: hasError(style.id),
-    getError: () => getError(style.id)
+    // Use props-based preview functions if provided, otherwise provide defaults
+    generatePreview: generatePreview || (async () => null),
+    getPreviewUrl: getPreviewUrl || (() => undefined),
+    isLoading,
+    hasPreview,
+    hasError,
+    getError: getError || (() => undefined)
   });
 
   // Handle expand click for lightbox
