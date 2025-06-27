@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -59,7 +58,7 @@ const SocialProofFeed = () => {
   };
 
   return (
-    <div className="fixed bottom-6 left-6 z-40 max-w-sm animate-slide-in-left">
+    <div className="fixed bottom-6 left-6 z-50 max-w-sm animate-slide-in-left">
       <Card className="bg-white/95 backdrop-blur-md shadow-xl border border-gray-200/50 hover:shadow-2xl transition-all duration-300 cursor-pointer"
             onClick={handleExpand}>
         <div className="p-4">
