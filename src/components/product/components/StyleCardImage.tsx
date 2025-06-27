@@ -1,6 +1,10 @@
 
-import React from 'react';
-import { Maximize2 } from 'lucide-react';
+import { memo } from "react";
+import UnifiedImageDisplay from "./UnifiedImageDisplay";
+import StyleCardLoadingOverlay from "./StyleCardLoadingOverlay";
+import StyleCardBlurOverlay from "./StyleCardBlurOverlay";
+import StyleCardRetryOverlay from "./StyleCardRetryOverlay";
+import StyleCardIndicators from "./StyleCardIndicators";
 
 interface StyleCardImageProps {
   style: {
@@ -10,44 +14,116 @@ interface StyleCardImageProps {
     image: string;
   };
   imageToShow: string;
-  cropAspectRatio?: number;
-  onImageExpand?: (e: React.MouseEvent) => void;
+  cropAspectRatio: number;
+  showLoadingState?: boolean;
+  isPopular?: boolean;
+  showGeneratedBadge?: boolean;
+  isSelected?: boolean;
+  hasPreviewOrCropped?: boolean;
+  shouldBlur?: boolean;
+  isGenerating?: boolean;
+  showError?: boolean;
+  error?: string | null;
+  selectedOrientation?: string;
+  previewUrl?: string | null;
+  hasGeneratedPreview?: boolean;
+  onExpandClick?: () => void;
+  onCanvasPreviewClick?: () => void;
+  onGenerateStyle?: () => void;
+  onRetry?: () => void;
 }
 
-const StyleCardImage = ({
+const StyleCardImage = memo(({
   style,
   imageToShow,
   cropAspectRatio,
-  onImageExpand
+  showLoadingState = false,
+  isPopular = false,
+  showGeneratedBadge = false,
+  isSelected = false,
+  hasPreviewOrCropped = false,
+  shouldBlur = false,
+  isGenerating = false,
+  showError = false,
+  error = null,
+  selectedOrientation = 'square',
+  previewUrl = null,
+  hasGeneratedPreview = false,
+  onExpandClick,
+  onCanvasPreviewClick,
+  onGenerateStyle,
+  onRetry
 }: StyleCardImageProps) => {
-  const aspectRatio = cropAspectRatio || 1;
+
+  // Check if this is a recommended card (not original image and in the recommended styles)
+  const isRecommendedCard = style.id !== 1 && [2, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15].includes(style.id);
 
   return (
-    <div 
-      className="relative bg-gray-100 overflow-hidden group/image"
-      style={{ aspectRatio }}
-    >
-      <img
-        src={imageToShow}
-        alt={style.name}
-        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-        loading="lazy"
+    <div className="relative">
+      {/* Main image display */}
+      <UnifiedImageDisplay
+        imageUrl={imageToShow}
+        alt={`${style.name} preview`}
+        aspectRatio={cropAspectRatio}
+        showLoadingState={showLoadingState}
+        hasGeneratedPreview={hasGeneratedPreview}
+        selectedOrientation={selectedOrientation}
+        previewUrl={previewUrl}
+        onExpandClick={onExpandClick}
+        variant={hasGeneratedPreview ? 'mockup' : 'standard'}
       />
-      
-      {/* Expand button overlay - appears on hover */}
-      {onImageExpand && (
-        <div className="absolute inset-0 bg-black/0 group-hover/image:bg-black/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover/image:opacity-100">
-          <button
-            onClick={onImageExpand}
-            className="bg-white/90 hover:bg-white text-gray-800 rounded-full p-2 shadow-lg transition-all transform hover:scale-110"
-            title="View full size"
-          >
-            <Maximize2 className="w-5 h-5" />
-          </button>
+
+      {/* Indicators */}
+      <StyleCardIndicators
+        isPopular={isPopular}
+        showGeneratedBadge={showGeneratedBadge}
+        isSelected={isSelected}
+        hasPreviewOrCropped={hasPreviewOrCropped}
+        onExpandClick={onExpandClick || (() => {})}
+        onCanvasPreviewClick={onCanvasPreviewClick}
+      />
+
+      {/* Small AI Match indicator - only on recommended cards on hover */}
+      {isRecommendedCard && !hasGeneratedPreview && !isGenerating && !showError && (
+        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-30">
+          <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg backdrop-blur-sm border border-white/20">
+            <div className="flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
+              <span>92% Match</span>
+            </div>
+          </div>
         </div>
+      )}
+
+      {/* Loading overlay - only show when actively generating */}
+      <StyleCardLoadingOverlay
+        isBlinking={isGenerating && !previewUrl}
+        styleName={style.name}
+        error={error}
+      />
+
+      {/* Blur overlay */}
+      <StyleCardBlurOverlay
+        shouldBlur={shouldBlur}
+        isBlinking={false}
+        previewUrl={previewUrl}
+        styleName={style.name}
+        onGenerateStyle={onGenerateStyle || (() => {})}
+      />
+
+      {/* Error retry overlay */}
+      {showError && onRetry && (
+        <StyleCardRetryOverlay
+          hasError={showError}
+          error={error}
+          styleName={style.name}
+          onRetry={onRetry}
+        />
       )}
     </div>
   );
-};
+});
+
+StyleCardImage.displayName = 'StyleCardImage';
 
 export default StyleCardImage;
