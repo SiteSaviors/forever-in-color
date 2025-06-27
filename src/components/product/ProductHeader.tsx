@@ -1,7 +1,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import StepProgress from "./components/StepProgress";
+import StreamlinedProgress from "./components/StreamlinedProgress";
 import { Shield, Truck, Award, Upload, Sparkles, Users, Timer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
@@ -102,19 +102,19 @@ const ProductHeader = ({ completedSteps, totalSteps, currentStep = 1, onUploadCl
           )}
         </div>
 
-        {/* Enhanced Step Progress */}
-        <StepProgress 
+        {/* Streamlined Progress */}
+        <StreamlinedProgress 
           currentStep={currentStep}
           completedSteps={completedSteps}
           totalSteps={totalSteps}
         />
 
-        {/* Dynamic Trust Indicators */}
-        <div className="grid grid-cols-3 gap-2 md:gap-8 text-xs md:text-sm text-gray-600 mt-6 md:mt-8">
+        {/* Simplified Trust Indicators */}
+        <div className="grid grid-cols-3 gap-2 md:gap-8 text-xs md:text-sm text-gray-600 mt-8">
           <div className="flex items-center justify-center gap-1 md:gap-2 bg-white/50 backdrop-blur-sm rounded-lg p-2 md:p-3 border border-green-100">
             <Shield className="w-3 h-3 md:w-4 md:h-4 text-green-500" />
             <div className="text-center">
-              <div className="font-semibold text-green-700 hidden sm:inline">Secure Checkout</div>
+              <div className="font-semibold text-green-700 hidden sm:inline">Secure</div>
               <div className="font-semibold text-green-700 sm:hidden">Secure</div>
               <div className="text-xs text-green-600">SSL Protected</div>
             </div>
@@ -122,28 +122,28 @@ const ProductHeader = ({ completedSteps, totalSteps, currentStep = 1, onUploadCl
           <div className="flex items-center justify-center gap-1 md:gap-2 bg-white/50 backdrop-blur-sm rounded-lg p-2 md:p-3 border border-blue-100">
             <Truck className="w-3 h-3 md:w-4 md:h-4 text-blue-500" />
             <div className="text-center">
-              <div className="font-semibold text-blue-700 hidden sm:inline">Free Shipping $75+</div>
+              <div className="font-semibold text-blue-700 hidden sm:inline">Free Ship</div>
               <div className="font-semibold text-blue-700 sm:hidden">Free Ship</div>
-              <div className="text-xs text-blue-600">2-3 days</div>
+              <div className="text-xs text-blue-600">$75+</div>
             </div>
           </div>
           <div className="flex items-center justify-center gap-1 md:gap-2 bg-white/50 backdrop-blur-sm rounded-lg p-2 md:p-3 border border-purple-100">
             <Award className="w-3 h-3 md:w-4 md:h-4 text-purple-500" />
             <div className="text-center">
-              <div className="font-semibold text-purple-700 hidden sm:inline">Premium Quality</div>
+              <div className="font-semibold text-purple-700 hidden sm:inline">Premium</div>
               <div className="font-semibold text-purple-700 sm:hidden">Premium</div>
               <div className="text-xs text-purple-600">Museum grade</div>
             </div>
           </div>
         </div>
 
-        {/* Achievement Unlocked Animation */}
+        {/* Achievement Unlocked Animation - Only show when progress > 0 */}
         {progressPercentage > 0 && (
-          <div className="flex items-center justify-center mt-4">
-            <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-2 rounded-full shadow-lg animate-bounce">
+          <div className="flex items-center justify-center mt-6">
+            <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-6 py-3 rounded-full shadow-lg animate-bounce">
               <div className="flex items-center gap-2 text-sm font-medium">
                 <Award className="w-4 h-4" />
-                <span>Great start! Keep going to unlock your masterpiece</span>
+                <span>Great progress! Keep going to unlock your masterpiece</span>
               </div>
             </div>
           </div>
