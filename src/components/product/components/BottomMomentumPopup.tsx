@@ -45,7 +45,7 @@ const BottomMomentumPopup = ({
 
   // Momentum level calculation
   const getMomentumLevel = () => {
-    const score = state.conversionElements.momentumScore;
+    const score = state?.conversionElements?.momentumScore || 0;
     if (score >= 75) return { level: 'High', color: 'green', icon: Star };
     if (score >= 50) return { level: 'Medium', color: 'yellow', icon: TrendingUp };
     if (score >= 25) return { level: 'Building', color: 'blue', icon: Zap };
@@ -196,7 +196,7 @@ const BottomMomentumPopup = ({
             <div className="mb-3">
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-gray-600">Progress</span>
-                <span className="font-medium">{state.conversionElements.momentumScore}%</span>
+                <span className="font-medium">{state?.conversionElements?.momentumScore || 0}%</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div 
@@ -206,14 +206,14 @@ const BottomMomentumPopup = ({
                     momentum.color === 'blue' ? 'bg-blue-500' :
                     'bg-gray-500'
                   }`}
-                  style={{ width: `${state.conversionElements.momentumScore}%` }}
+                  style={{ width: `${state?.conversionElements?.momentumScore || 0}%` }}
                 />
               </div>
             </div>
 
             <div className="flex items-center gap-1 text-xs text-gray-500">
               <Clock className="w-3 h-3" />
-              <span>{Math.floor(state.conversionElements.timeSpentOnPlatform / 60)}m active</span>
+              <span>{Math.floor((state?.conversionElements?.timeSpentOnPlatform || 0) / 60)}m active</span>
             </div>
           </CardContent>
         </Card>
