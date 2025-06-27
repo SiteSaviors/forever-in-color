@@ -1,11 +1,11 @@
 
-import { useState, memo } from "react";
-import StyleCardContainer from "./components/StyleCardContainer";
-import StyleCardActions from "./components/StyleCardActions";
-import StyleCardMain from "./components/StyleCard/StyleCardMain";
-import StyleCardLightboxContainer from "./components/StyleCard/StyleCardLightboxContainer";
-import { useStyleCardLogic } from "./hooks/useStyleCardLogic";
-import { useStylePreview } from "./contexts/StylePreviewContext";
+import React, { useState, useCallback } from 'react';
+import { useStylePreview } from './hooks/useStylePreview';
+import StyleCardContainer from './components/StyleCardContainer';
+import StyleCardInfo from './components/StyleCardInfo';
+import StyleCardImage from './components/StyleCardImage';
+import EnhancedStyleCardLoadingOverlay from './components/EnhancedStyleCardLoadingOverlay';
+import StyleCardRetryOverlay from './components/StyleCardRetryOverlay';
 
 interface StyleCardProps {
   style: {
@@ -16,175 +16,120 @@ interface StyleCardProps {
   };
   croppedImage: string | null;
   selectedStyle: number | null;
-  isPopular: boolean;
-  cropAspectRatio: number;
+  isPopular?: boolean;
+  preGeneratedPreview?: string;
+  cropAspectRatio?: number;
   selectedOrientation?: string;
   showContinueButton?: boolean;
-  shouldBlur?: boolean;
   onStyleClick: (style: { id: number; name: string; description: string; image: string }) => void;
-  onContinue?: () => void;
+  onContinue: () => void;
+  shouldBlur?: boolean;
 }
 
-const StyleCard = memo(({
+const StyleCard = ({
   style,
   croppedImage,
   selectedStyle,
-  isPopular,
+  isPopular = false,
+  preGeneratedPreview,
   cropAspectRatio,
   selectedOrientation = "square",
   showContinueButton = true,
-  shouldBlur = false,
   onStyleClick,
-  onContinue
+  onContinue,
+  shouldBlur = false
 }: StyleCardProps) => {
-  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  const [isCanvasLightboxOpen, setIsCanvasLightboxOpen] = useState(false);
-  
-  // Get preview generation functionality from context
-  const { 
-    generatePreview, 
-    getPreviewUrl, 
-    isLoading, 
-    hasPreview, 
-    hasError, 
-    getError 
-  } = useStylePreview();
+  const [showError, setShowError] = useState(false);
 
   const {
-    isSelected,
-    isGenerating,
-    hasGeneratedPreview,
+    isLoading,
     previewUrl,
-    error,
-    showError,
-    imageToShow,
-    showContinueInCard,
-    hasPreviewOrCropped,
-    showGeneratedBadge,
-    shouldShowBlur,
-    isBlinking,
+    hasGeneratedPreview,
+    isStyleGenerated,
+    validationError,
     handleClick,
-    handleGenerateStyle,
-    handleRetry,
-    handleContinueClick
-  } = useStyleCardLogic({
+    generatePreview
+  } = useStylePreview({
     style,
     croppedImage,
-    selectedStyle,
-    shouldBlur,
-    onStyleClick,
-    onContinue,
-    // Fix: Wrap the generatePreview to return the expected type
-    generatePreview: async () => {
-      await generatePreview(style.id, style.name);
-      return getPreviewUrl(style.id) || '';
-    },
-    getPreviewUrl: () => getPreviewUrl(style.id),
-    isLoading: isLoading(style.id),
-    hasPreview: hasPreview(style.id),
-    hasError: hasError(style.id),
-    getError: () => getError(style.id)
+    isPopular,
+    preGeneratedPreview,
+    selectedOrientation,
+    onStyleClick
   });
 
-  // Handle expand click for lightbox
-  const handleExpandClick = () => {
-    if (previewUrl || croppedImage) {
-      setIsLightboxOpen(true);
-    }
+  const isSelected = selectedStyle === style.id;
+  const showGeneratedBadge = hasGeneratedPreview && isStyleGenerated;
+  const showContinueInCard = showContinueButton && isSelected && isStyleGenerated;
+  const hasError = showError || validationError;
+
+  const handleContinueClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onContinue();
   };
 
-  // Handle canvas preview click
-  const handleCanvasPreviewClick = () => {
-    if (previewUrl || croppedImage) {
-      setIsCanvasLightboxOpen(true);
-    }
-  };
+  const handleGenerateClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowError(false);
+    generatePreview().catch(() => {
+      setShowError(true);
+    });
+  }, [generatePreview]);
 
-  // Get action handlers
-  const actions = StyleCardActions({
-    style,
-    onStyleClick,
-    onContinue
-  });
-
-  // Calculate interaction states
-  const canAccess = !shouldShowBlur || isPopular || style.id === 1;
-
-  // Fix: Wrap event handlers to match expected signatures
-  const handleGenerateClickWrapper = () => {
-    handleGenerateStyle();
-  };
-
-  const handleRetryClickWrapper = () => {
-    handleRetry();
-  };
-
-  const handleContinueClickWrapper = (e?: React.MouseEvent) => {
-    // Create a mock event if none provided
-    const mockEvent = e || {
-      stopPropagation: () => {},
-      preventDefault: () => {}
-    } as React.MouseEvent;
-    handleContinueClick(mockEvent);
-  };
+  const handleRetryClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowError(false);
+    generatePreview().catch(() => {
+      setShowError(true);
+    });
+  }, [generatePreview]);
 
   return (
-    <>
-      <StyleCardContainer
-        isSelected={isSelected}
-        styleId={style.id}
-        styleName={style.name}
-        onClick={handleClick}
-        shouldBlur={shouldShowBlur}
-        hideBlurOverlay={shouldBlur && !isPopular && style.id !== 1}
-        isGenerating={isGenerating}
-        hasError={showError}
-        canAccess={canAccess}
-        onGenerateStyle={handleGenerateStyle}
-      >
-        <StyleCardMain
+    <StyleCardContainer
+      isSelected={isSelected}
+      styleId={style.id}
+      styleName={style.name}
+      shouldBlur={shouldBlur}
+      isGenerating={isLoading}
+      hasError={!!hasError}
+      canAccess={!!croppedImage}
+      onClick={handleClick}
+      onGenerateStyle={handleGenerateClick}
+    >
+      {/* Image Section */}
+      <div className="relative flex-1">
+        <StyleCardImage
           style={style}
-          imageToShow={imageToShow}
-          cropAspectRatio={cropAspectRatio}
-          showLoadingState={isGenerating}
-          isPopular={isPopular}
-          showGeneratedBadge={showGeneratedBadge}
-          isSelected={isSelected}
-          hasPreviewOrCropped={hasPreviewOrCropped}
-          shouldBlur={shouldShowBlur}
-          isGenerating={isGenerating}
-          showError={showError}
-          error={error}
-          selectedOrientation={selectedOrientation}
           previewUrl={previewUrl}
-          hasGeneratedPreview={hasGeneratedPreview}
-          showContinueInCard={showContinueInCard}
-          onExpandClick={handleExpandClick}
-          onCanvasPreviewClick={handleCanvasPreviewClick}
-          onGenerateStyle={handleGenerateStyle}
-          onRetry={handleRetryClickWrapper}
-          onContinueClick={handleContinueClickWrapper}
-          onGenerateClick={handleGenerateClickWrapper}
-          onRetryClick={handleRetryClickWrapper}
+          isLoading={isLoading}
+          aspectRatio={cropAspectRatio}
         />
-      </StyleCardContainer>
+        
+        {/* Enhanced Loading Overlay */}
+        <EnhancedStyleCardLoadingOverlay
+          isBlinking={isLoading}
+          styleName={style.name}
+          error={hasError ? (validationError || 'Generation failed') : null}
+          onRetry={handleRetryClick}
+        />
+      </div>
 
-      <StyleCardLightboxContainer
+      {/* Info Section */}
+      <StyleCardInfo
         style={style}
-        finalPreviewUrl={previewUrl}
-        croppedImage={croppedImage}
-        selectedOrientation={selectedOrientation}
-        isLightboxOpen={isLightboxOpen}
-        isCanvasLightboxOpen={isCanvasLightboxOpen}
-        onExpandClick={handleExpandClick}
-        onCanvasPreviewClick={handleCanvasPreviewClick}
-        onCloseLightbox={() => setIsLightboxOpen(false)}
-        onCloseCanvasLightbox={() => setIsCanvasLightboxOpen(false)}
+        hasGeneratedPreview={hasGeneratedPreview}
+        isPopular={isPopular}
+        isSelected={isSelected}
+        showGeneratedBadge={showGeneratedBadge}
+        showContinueInCard={showContinueInCard}
+        shouldBlur={shouldBlur}
+        showError={!!hasError}
+        onContinueClick={handleContinueClick}
+        onGenerateClick={handleGenerateClick}
+        onRetryClick={handleRetryClick}
       />
-    </>
+    </StyleCardContainer>
   );
-});
-
-StyleCard.displayName = 'StyleCard';
+};
 
 export default StyleCard;
