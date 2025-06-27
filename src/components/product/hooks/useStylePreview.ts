@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { generateStylePreview } from '@/utils/stylePreviewApi';
 import { addWatermarkToImage } from '@/utils/watermarkUtils';
@@ -36,83 +37,93 @@ export const useStylePreview = ({
   // Initialize with pre-generated preview if available
   useEffect(() => {
     if (preGeneratedPreview) {
-      setPreviewUrl(preGeneratedPreview);
-      setHasGeneratedPreview(true);
+      // Apply watermark to pre-generated preview
+      const applyWatermark = async () => {
+        try {
+          const watermarkedUrl = await addWatermarkToImage(preGeneratedPreview);
+          setPreviewUrl(watermarkedUrl);
+          setHasGeneratedPreview(true);
+          console.log(`✅ Watermark applied to pre-generated preview for ${style.name}`);
+        } catch (error) {
+          console.warn(`⚠️ Watermarking failed for ${style.name}, using original:`, error);
+          setPreviewUrl(preGeneratedPreview);
+          setHasGeneratedPreview(true);
+        }
+      };
+      
+      applyWatermark();
     }
-  }, [preGeneratedPreview]);
+  }, [preGeneratedPreview, style.name]);
 
   const isStyleGenerated = hasGeneratedPreview && !!(preGeneratedPreview || previewUrl);
 
   const generatePreview = useCallback(async () => {
-    if (!croppedImage || style.id === 1) {
-      console.log(`⏭️ Skipping generation for ${style.id === 1 ? 'Original Image style' : 'no cropped image'}`);
+    if (!croppedImage || style.id === 1 || preGeneratedPreview) {
+      console.log(`Cannot generate preview for ${style.name}: croppedImage=${!!croppedImage}, styleId=${style.id}, preGenerated=${!!preGeneratedPreview}`);
       return;
     }
 
-    try {
-      console.log(`🎨 Starting manual generation for ${style.name} (ID: ${style.id})`);
-      console.log(`🎯 Selected orientation: ${selectedOrientation}`);
-      setIsLoading(true);
-      setValidationError(null);
-      
-      // ENHANCED: Auto-correct orientation and get aspect ratio
-      const correctedOrientation = autoCorrect(selectedOrientation);
-      const aspectRatio = getAspectRatio(correctedOrientation);
-      
-      // ENHANCED: Validate with recovery and correction
-      const validation = validateWithRecovery(correctedOrientation, aspectRatio);
-      if (!validation.isValid && !validation.correctedValue) {
-        const errorMsg = `Aspect ratio validation failed: ${validation.error}`;
-        console.error(`❌ ${errorMsg}`);
-        setValidationError(errorMsg);
-        setIsLoading(false);
-        return;
-      }
+    console.log(`🎯 useStylePreview: Selected orientation is: ${selectedOrientation}`);
+    
+    // ENHANCED: Use validator with auto-correction
+    const correctedOrientation = autoCorrect(selectedOrientation);
+    const aspectRatio = getAspectRatio(correctedOrientation);
+    
+    console.log(`🎨 Starting preview generation for style: ${style.name} (ID: ${style.id}) with corrected orientation: ${correctedOrientation} -> aspect ratio: ${aspectRatio}`);
+    
+    // ENHANCED: Validate with recovery
+    const validation = validateWithRecovery(correctedOrientation, aspectRatio);
+    if (!validation.isValid && !validation.correctedValue) {
+      const errorMsg = `Aspect ratio validation failed: ${validation.error}`;
+      console.error(`❌ ${errorMsg}`);
+      setValidationError(errorMsg);
+      return;
+    }
 
-      // Use corrected value if available
-      const finalAspectRatio = validation.correctedValue || aspectRatio;
+    // Use corrected value if validation failed but correction is available
+    const finalAspectRatio = validation.correctedValue || aspectRatio;
+    
+    // Clear any previous validation errors
+    setValidationError(null);
+    setIsLoading(true);
+    
+    try {
+      console.log(`🔄 Generating preview for ${style.name} with validated aspect ratio: ${finalAspectRatio} (from orientation: ${correctedOrientation})`);
       
       const tempPhotoId = `temp_${Date.now()}_${style.id}`;
       
-      console.log(`📋 Generation parameters:`, {
-        styleName: style.name,
-        styleId: style.id,
-        originalOrientation: selectedOrientation,
-        correctedOrientation,
-        mappedAspectRatio: finalAspectRatio,
-        croppedImageLength: croppedImage.length,
-        validationPassed: validation.isValid || !!validation.correctedValue
-      });
-      
-      console.log(`🔥 CRITICAL DEBUG: Calling generateStylePreview with validated aspect ratio: ${finalAspectRatio} for orientation: ${correctedOrientation}`);
+      console.log(`🔥 CRITICAL DEBUG: About to call generateStylePreview with aspectRatio: ${finalAspectRatio}`);
       
       // ENHANCED: Generate with validated and potentially corrected aspect ratio
-      const previewUrl = await generateStylePreview(
-        croppedImage, 
-        style.name, 
-        tempPhotoId, 
-        finalAspectRatio // This is now validated and potentially corrected
-      );
+      const rawPreviewUrl = await generateStylePreview(croppedImage, style.name, tempPhotoId, finalAspectRatio, {
+        watermark: false // Disable server-side watermarking
+      });
 
-      if (previewUrl) {
+      if (rawPreviewUrl) {
+        console.log(`✅ Raw preview generated for ${style.name} with correct aspect ratio ${finalAspectRatio}, applying client-side watermark...`);
+        
         try {
-          const watermarkedUrl = await addWatermarkToImage(previewUrl);
+          // Apply client-side watermarking
+          const watermarkedUrl = await addWatermarkToImage(rawPreviewUrl);
+          console.log(`✅ Client-side watermark applied successfully for ${style.name}`);
           setPreviewUrl(watermarkedUrl);
-          setHasGeneratedPreview(true);
-          console.log(`✅ Manual generation completed for ${style.name} with validated aspect ratio: ${finalAspectRatio}`);
         } catch (watermarkError) {
-          console.warn(`⚠️ Watermark failed for ${style.name}, using original:`, watermarkError);
-          setPreviewUrl(previewUrl);
-          setHasGeneratedPreview(true);
+          console.warn(`⚠️ Client-side watermarking failed for ${style.name}, using original:`, watermarkError);
+          setPreviewUrl(rawPreviewUrl);
         }
+        
+        setHasGeneratedPreview(true);
+      } else {
+        console.error(`❌ Failed to generate preview for ${style.name}: No preview URL returned`);
       }
     } catch (error) {
       console.error(`❌ Error generating preview for ${style.name}:`, error);
-      setValidationError(error.message || 'Failed to generate preview');
+      setValidationError(`Generation failed: ${error.message}`);
     } finally {
       setIsLoading(false);
+      console.log(`🏁 Preview generation completed for ${style.name} (ID: ${style.id}) with aspect ratio: ${finalAspectRatio}`);
     }
-  }, [croppedImage, style, selectedOrientation, validateWithRecovery, autoCorrect]);
+  }, [croppedImage, style.id, style.name, preGeneratedPreview, selectedOrientation, validateWithRecovery, autoCorrect]);
 
   const handleClick = useCallback(() => {
     console.log(`🎯 Style clicked: ${style.name} (ID: ${style.id}) with orientation: ${selectedOrientation}`);

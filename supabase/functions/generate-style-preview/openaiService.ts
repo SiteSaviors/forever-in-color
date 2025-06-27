@@ -1,3 +1,4 @@
+
 import { ImageAnalysisService } from './imageAnalysisService.ts';
 import { StylePromptService } from './stylePromptService.ts';
 import { ReplicateService } from './replicateService.ts';
@@ -13,9 +14,10 @@ export class OpenAIService {
     this.replicateService = new ReplicateService(replicateApiToken, openaiApiKey);
   }
 
-  async generateImageToImage(imageData: string, styleName: string, aspectRatio: string = "1:1", quality: string = "medium"): Promise<{ ok: boolean; output?: string; error?: string; errorType?: string }> {
+  async generateImageToImage(imageData: string, styleName: string, aspectRatio: string = "1:1", quality: string = "medium"): Promise<{ ok: boolean; output?: string; error?: string }> {
     try {
       console.log('=== OPENAI SERVICE GENERATION ===');
+      console.log('🎯 CRITICAL: OpenAI Service received aspect ratio:', aspectRatio);
       console.log('Style name:', styleName);
       
       // Get the exact prompt from Supabase
@@ -30,8 +32,10 @@ export class OpenAIService {
       }
 
       console.log('Using exact prompt for style:', styleName, '- Prompt:', stylePrompt);
+      console.log('🔥 CRITICAL: Passing aspect ratio to Replicate Service:', aspectRatio);
 
-      // Generate the image using Replicate's GPT-Image-1 model
+      // Generate the image using Replicate's GPT-Image-1 model with specified aspect ratio
+      console.log('🎯 About to call ReplicateService.generateImageToImage with aspect ratio:', aspectRatio);
       return await this.replicateService.generateImageToImage(imageData, stylePrompt, aspectRatio, quality);
 
     } catch (error) {

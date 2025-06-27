@@ -1,3 +1,4 @@
+
 import { REPLICATE_CONFIG } from './config.ts';
 import { ReplicateGenerationRequest, ReplicateGenerationResponse } from './types.ts';
 
@@ -7,66 +8,48 @@ export class ReplicateApiClient {
   async createPrediction(requestBody: ReplicateGenerationRequest): Promise<ReplicateGenerationResponse> {
     try {
       console.log('=== REPLICATE API CLIENT ===');
-      console.log('Creating prediction with request body:', JSON.stringify({
-        ...requestBody,
-        input: {
-          ...requestBody.input,
-          // Don't log the full image data
-          image: requestBody.input?.image ? '[IMAGE_DATA]' : undefined
-        }
-      }, null, 2));
+      console.log('🔥 CRITICAL: API Client received request body with aspect_ratio:', requestBody.input?.aspect_ratio);
+      console.log('Creating prediction with request body:', JSON.stringify(requestBody, null, 2));
       
-      const response = await fetch(`${REPLICATE_CONFIG.baseUrl}/predictions`, {
+      const response = await fetch(`${REPLICATE_CONFIG.baseUrl}/models/${REPLICATE_CONFIG.model}/predictions`, {
         method: "POST",
         headers: {
-          "Authorization": `Token ${this.apiToken}`,
-          "Content-Type": "application/json"
+          "Authorization": `Bearer ${this.apiToken}`,
+          "Content-Type": "application/json",
+          "Prefer": "wait"
         },
-        body: JSON.stringify({
-          version: REPLICATE_CONFIG.model,
-          input: requestBody.input
-        })
+        body: JSON.stringify(requestBody),
       });
 
-      console.log('Replicate API response status:', response.status);
+      console.log('Replicate GPT-Image-1 API response status:', response.status);
       
       if (!response.ok) {
-        let errorData;
-        try {
-          errorData = await response.json();
-        } catch (e) {
-          errorData = await response.text();
-        }
-        
-        console.error('Replicate API error details:', {
+        const errorData = await response.text();
+        console.error('Replicate GPT-Image-1 API error details:', {
           status: response.status,
           statusText: response.statusText,
           errorData: errorData,
           headers: Object.fromEntries(response.headers.entries())
         });
-        
         return {
           ok: false,
-          error: `API request failed: ${response.status} - ${typeof errorData === 'string' ? errorData : JSON.stringify(errorData)}`
+          error: `GPT-Image-1 API request failed: ${response.status} - ${errorData}`
         };
       }
 
       const data = await response.json();
-      console.log('Replicate response:', {
-        id: data.id,
-        status: data.status,
-        urls: data.urls
-      });
-      
-      // For Replicate, we need to poll for the result
+      console.log('GPT-Image-1 generation completed with data:', data);
+      console.log('Response status:', data.status);
+      if (data.output) {
+        console.log('Generated image URL:', data.output);
+      }
+
       return {
         ok: true,
-        id: data.id,
-        status: data.status || 'processing',
-        urls: data.urls
+        ...data
       };
     } catch (error) {
-      console.error('Replicate API client error:', error);
+      console.error('GPT-Image-1 API client error:', error);
       return {
         ok: false,
         error: error.message
@@ -78,14 +61,14 @@ export class ReplicateApiClient {
     try {
       const response = await fetch(`${REPLICATE_CONFIG.baseUrl}/predictions/${predictionId}`, {
         headers: {
-          "Authorization": `Token ${this.apiToken}`,
+          "Authorization": `Bearer ${this.apiToken}`,
         },
       });
 
       if (!response.ok) {
         return {
           ok: false,
-          error: `Status check failed: ${response.status}`
+          error: `GPT-Image-1 status check failed: ${response.status}`
         };
       }
 
@@ -95,7 +78,7 @@ export class ReplicateApiClient {
         ...result
       };
     } catch (error) {
-      console.error('Error getting prediction status:', error);
+      console.error('Error getting GPT-Image-1 prediction status:', error);
       return {
         ok: false,
         error: error.message

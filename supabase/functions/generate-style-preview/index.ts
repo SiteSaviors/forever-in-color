@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 import { OpenAIService } from './openaiService.ts';
@@ -113,11 +114,6 @@ serve(async (req) => {
       return createSuccessResponse(finalOutput, requestId, duration);
     } else {
       console.error(`❌ [${requestId}] Generation failed:`, result.error);
-      
-      // Log the technical error details for debugging
-      if (result.technicalError) {
-        console.error(`🔍 [${requestId}] Technical error details:`, result.technicalError);
-      }
       
       // Determine appropriate status code based on error type
       let statusCode = 500;
