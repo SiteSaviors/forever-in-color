@@ -114,6 +114,11 @@ serve(async (req) => {
     } else {
       console.error(`❌ [${requestId}] Generation failed:`, result.error);
       
+      // Log the technical error details for debugging
+      if (result.technicalError) {
+        console.error(`🔍 [${requestId}] Technical error details:`, result.technicalError);
+      }
+      
       // Determine appropriate status code based on error type
       let statusCode = 500;
       let userMessage = 'Image generation failed. Please try again.';
