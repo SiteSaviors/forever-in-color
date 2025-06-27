@@ -101,7 +101,7 @@ const StyleCard = ({
         <StyleCardImage
           style={style}
           previewUrl={previewUrl}
-          aspectRatio={cropAspectRatio}
+          cropAspectRatio={cropAspectRatio}
         />
         
         {/* Enhanced Loading Overlay */}
