@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import StyleCardImage from "./components/StyleCardImage";
 import StyleCardInfo from "./components/StyleCardInfo";
@@ -8,6 +7,7 @@ import StyleCardLightboxes from "./components/StyleCardLightboxes";
 import Lightbox from "@/components/ui/lightbox";
 import FullCanvasMockup from "./components/FullCanvasMockup";
 import { useStyleCardLogic } from "./hooks/useStyleCardLogic";
+import { useStylePreview } from "./contexts/StylePreviewContext";
 
 interface StyleCardProps {
   style: {
@@ -41,6 +41,9 @@ const StyleCard = ({
 }: StyleCardProps) => {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isCanvasLightboxOpen, setIsCanvasLightboxOpen] = useState(false);
+  
+  // Get preview generation functionality from context
+  const { generatePreview, getPreviewUrl, isLoading, hasPreview, hasError, getError } = useStylePreview();
 
   const {
     isSelected,
@@ -64,7 +67,14 @@ const StyleCard = ({
     selectedStyle,
     shouldBlur,
     onStyleClick,
-    onContinue
+    onContinue,
+    // Pass the preview generation functions from context
+    generatePreview: () => generatePreview(style.id, style.name),
+    getPreviewUrl: () => getPreviewUrl(style.id),
+    isLoading: isLoading(style.id),
+    hasPreview: hasPreview(style.id),
+    hasError: hasError(style.id),
+    getError: () => getError(style.id)
   });
 
   // Handle expand click for lightbox
@@ -80,19 +90,6 @@ const StyleCard = ({
       setIsCanvasLightboxOpen(true);
     }
   };
-
-  console.log(`StyleCard ${style.name} (ID: ${style.id}):`, {
-    isSelected,
-    isGenerating,
-    hasGeneratedPreview,
-    showGeneratedBadge,
-    shouldBlur,
-    shouldShowBlur,
-    showError,
-    hasPreview: !!previewUrl,
-    croppedImage: !!croppedImage,
-    cropAspectRatio
-  });
 
   // Get action handlers
   const actions = StyleCardActions({

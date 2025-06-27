@@ -1,4 +1,3 @@
-
 import { corsHeaders } from './corsUtils.ts';
 import { logSecurityEvent } from './securityLogger.ts';
 
@@ -82,7 +81,7 @@ export async function validateEnvironment(req: Request, requestId: string): Prom
 
   return {
     isValid: true,
-    openaiApiKey,
-    replicateApiToken
+    openaiApiKey: openaiApiKey.trim(),
+    replicateApiToken: replicateApiToken.trim()
   };
 }

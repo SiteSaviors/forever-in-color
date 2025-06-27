@@ -1,4 +1,3 @@
-
 import { REPLICATE_CONFIG } from './replicate/config.ts';
 import { PromptEnhancer } from './replicate/promptEnhancer.ts';
 import { PollingService } from './replicate/pollingService.ts';
