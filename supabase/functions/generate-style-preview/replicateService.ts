@@ -39,7 +39,7 @@ export class ReplicateService {
     // Enhance the prompt with identity preservation rules
     const enhancedPrompt = PromptEnhancer.enhanceForIdentityPreservation(prompt);
 
-    // Prepare the request body for GPT-Image-1
+    // Prepare the request body for GPT-Image-1 (removed quality parameter as it's not supported)
     const requestBody = {
       input: {
         prompt: enhancedPrompt,
