@@ -13,70 +13,52 @@ export const useBlinking = (previewUrl: string | null, options: UseBlinkingOptio
 
   const { isGenerating = false } = options;
 
-  // Track if we've ever generated a preview - this should persist
+  // Track if we've ever generated a preview - this should persist permanently
   useEffect(() => {
     if (previewUrl && !hasGeneratedOnce) {
-      console.log('🎯 Style has been generated for the first time, marking as generated');
+      console.log('🎯 Style has been generated for the first time, marking as permanently generated');
       setHasGeneratedOnce(true);
+      setIsBlinking(false); // Immediately stop blinking when preview is available
     }
   }, [previewUrl, hasGeneratedOnce]);
 
-  // CRITICAL FIX: Never blink again if we've generated once
+  // CRITICAL FIX: Never allow blinking if we've generated once OR if we have a preview
   useEffect(() => {
-    if (hasGeneratedOnce) {
-      console.log('🛑 Style has been generated before, permanently stopping blinking');
+    if (hasGeneratedOnce || previewUrl) {
+      console.log('🛑 Style has been generated before or has preview, permanently stopping blinking');
       setIsBlinking(false);
       return;
     }
-
-    if (previewUrl) {
-      console.log('🚨 IMMEDIATE STOP - Preview detected, forcing stop:', {
-        previewUrl: previewUrl.substring(0, 50) + '...',
-        wasBlinking: isBlinking,
-        timestamp: new Date().toISOString()
-      });
-      setIsBlinking(false);
-      return;
-    }
-  }, [previewUrl, hasGeneratedOnce]);
-
-  // Main blinking logic with cleanup
-  useEffect(() => {
-    let blinkInterval: NodeJS.Timeout | null = null;
 
     // Only start blinking if we don't have a preview AND we're actively generating AND we haven't generated before
     if (!previewUrl && isGenerating && !hasGeneratedOnce) {
       console.log('🚀 Starting blink animation for generation');
       setIsBlinking(true);
       
-      blinkInterval = setInterval(() => {
+      const blinkInterval = setInterval(() => {
         setIsBlinking(prev => !prev);
       }, 500);
-    } else {
-      // Preview is ready OR we're not generating OR we've generated before - STOP BLINKING IMMEDIATELY
-      console.log('🛑 Stopping blink animation - preview ready, not generating, or already generated before');
-      setIsBlinking(false);
-    }
 
-    // Cleanup function
-    return () => {
-      if (blinkInterval) {
+      return () => {
         console.log('🧹 Clearing blink interval');
         clearInterval(blinkInterval);
-      }
-    };
+      };
+    } else {
+      // Stop blinking in all other cases
+      setIsBlinking(false);
+    }
   }, [previewUrl, isGenerating, hasGeneratedOnce]);
 
   console.log('🔔 useBlinking returning:', { 
-    isBlinking: !previewUrl && !hasGeneratedOnce ? isBlinking : false, 
+    isBlinking: hasGeneratedOnce || previewUrl ? false : isBlinking, 
     hasPreview: !!previewUrl, 
     isGenerating,
     hasGeneratedOnce
   });
   
-  // Always return false if we have a preview OR if we've generated once before
+  // NEVER return true for blinking if we have a preview OR if we've generated once before
   return { 
-    isBlinking: !previewUrl && !hasGeneratedOnce ? isBlinking : false,
+    isBlinking: (hasGeneratedOnce || previewUrl) ? false : isBlinking,
     hasGeneratedOnce
   };
 };

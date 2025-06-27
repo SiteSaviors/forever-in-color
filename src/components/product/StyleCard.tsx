@@ -63,30 +63,31 @@ const StyleCard = ({
     onStyleClick
   });
 
-  // Track if this style has been generated before
+  // Track if this style has been generated before - PERMANENT STATE
   useEffect(() => {
     if (previewUrl && !hasGeneratedOnce) {
-      console.log(`🎯 StyleCard: Marking ${style.name} as generated for the first time`);
+      console.log(`🎯 StyleCard: Marking ${style.name} as PERMANENTLY generated`);
       setHasGeneratedOnce(true);
+      setLocalIsLoading(false); // Stop any local loading immediately
     }
   }, [previewUrl, hasGeneratedOnce, style.name]);
 
-  // Use the updated blinking hook
+  // CRITICAL: Stop loading immediately when preview is available
+  useEffect(() => {
+    if (previewUrl || hasGeneratedOnce) {
+      console.log(`🛑 StyleCard: Preview available or already generated for ${style.name}, stopping all loading states`);
+      setLocalIsLoading(false);
+    }
+  }, [previewUrl, hasGeneratedOnce, style.name]);
+
+  // Use the updated blinking hook with permanent state tracking
   const { isBlinking } = useBlinking(previewUrl, {
-    isGenerating: isLoading || localIsLoading,
+    isGenerating: hasGeneratedOnce ? false : (isLoading || localIsLoading),
     hasPreview: !!previewUrl,
     hasGeneratedOnce
   });
 
-  // CRITICAL FIX: Stop loading immediately when preview is available
-  useEffect(() => {
-    if (previewUrl) {
-      console.log(`🛑 StyleCard: Preview available for ${style.name}, stopping loading state`);
-      setLocalIsLoading(false);
-    }
-  }, [previewUrl, style.name]);
-
-  // Combine loading states - stop loading if we have a preview OR if we've generated once
+  // NEVER show loading if we have a preview OR if we've generated once
   const effectiveIsLoading = (previewUrl || hasGeneratedOnce) ? false : (isLoading || localIsLoading);
 
   const isSelected = selectedStyle === style.id;
@@ -104,12 +105,16 @@ const StyleCard = ({
     // Always call onStyleClick to select the style
     onStyleClick(style);
     
+    // NEVER generate if we've already generated once OR if we have a preview
+    if (hasGeneratedOnce || previewUrl) {
+      console.log(`🛑 PERMANENT STOP - ${style.name} already generated, will never generate again`);
+      return;
+    }
+    
     // Only generate if we don't already have a preview AND haven't generated once AND not currently generating
     if (!previewUrl && !hasGeneratedOnce && !effectiveIsLoading && !hasError && style.id !== 1) {
-      console.log(`🚀 Auto-generating preview for ${style.name} (first time)`);
+      console.log(`🚀 Auto-generating preview for ${style.name} (first and only time)`);
       handleGenerateClick({} as React.MouseEvent);
-    } else if (hasGeneratedOnce || previewUrl) {
-      console.log(`🛑 Skipping generation for ${style.name} - already generated before`);
     }
   }, [style, previewUrl, hasGeneratedOnce, effectiveIsLoading, hasError, onStyleClick]);
 
@@ -130,9 +135,9 @@ const StyleCard = ({
   const handleGenerateClick = useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation();
     
-    // Don't generate if we've already generated once
+    // NEVER generate if we've already generated once OR have a preview
     if (hasGeneratedOnce || previewUrl) {
-      console.log(`🛑 Skipping generation for ${style.name} - already generated`);
+      console.log(`🛑 PERMANENT BLOCK - ${style.name} already generated, preventing regeneration`);
       return;
     }
     
@@ -141,7 +146,7 @@ const StyleCard = ({
     
     try {
       await generatePreview();
-      setHasGeneratedOnce(true);
+      setHasGeneratedOnce(true); // Mark as permanently generated
     } catch (error) {
       setShowError(true);
     } finally {
@@ -159,7 +164,7 @@ const StyleCard = ({
     
     try {
       await generatePreview();
-      setHasGeneratedOnce(true);
+      setHasGeneratedOnce(true); // Mark as permanently generated
     } catch (error) {
       setShowError(true);
     } finally {
