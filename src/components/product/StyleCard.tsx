@@ -80,7 +80,7 @@ const StyleCard = ({
     }
   }, [previewUrl, hasGeneratedOnce, style.name]);
 
-  // Use the updated blinking hook with permanent state tracking
+  // Use the updated blinking hook - no more blinking animation
   const { isBlinking } = useBlinking(previewUrl, {
     isGenerating: hasGeneratedOnce ? false : (isLoading || localIsLoading),
     hasPreview: !!previewUrl,
@@ -197,10 +197,11 @@ const StyleCard = ({
             onImageExpand={handleImageExpand}
           />
           
-          {/* Enhanced Loading Overlay */}
+          {/* Enhanced Loading Overlay - No blinking, but shows loading text */}
           <EnhancedStyleCardLoadingOverlay
-            isBlinking={isBlinking}
+            isBlinking={false} // Never blink
             styleName={style.name}
+            isLoading={effectiveIsLoading} // Show loading state
             error={hasError ? (validationError || 'Generation failed') : null}
             onRetry={() => handleRetryClick({} as React.MouseEvent)}
           />

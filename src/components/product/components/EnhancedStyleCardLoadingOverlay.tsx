@@ -3,7 +3,8 @@ import { Sparkles, AlertCircle, CheckCircle, Zap, Wand2 } from "lucide-react";
 import { useState, useEffect } from "react";
 
 interface EnhancedStyleCardLoadingOverlayProps {
-  isBlinking: boolean;
+  isBlinking: boolean; // Keep for compatibility but won't be used for blinking
+  isLoading?: boolean; // New prop to control loading display
   styleName: string;
   error?: string | null;
   onRetry?: () => void;
@@ -11,6 +12,7 @@ interface EnhancedStyleCardLoadingOverlayProps {
 
 const EnhancedStyleCardLoadingOverlay = ({ 
   isBlinking, 
+  isLoading = false,
   styleName, 
   error, 
   onRetry 
@@ -27,11 +29,14 @@ const EnhancedStyleCardLoadingOverlay = ({
     { label: "Almost ready!", icon: CheckCircle, color: "text-green-400" }
   ];
 
+  // Show loading state based on isLoading prop instead of isBlinking
+  const showLoadingState = isLoading && !error;
+
   useEffect(() => {
     let interval: NodeJS.Timeout;
     let stepInterval: NodeJS.Timeout;
 
-    if (isBlinking && !error) {
+    if (showLoadingState) {
       setProgress(0);
       setCurrentStep(0);
       setShowSuccess(false);
@@ -57,20 +62,20 @@ const EnhancedStyleCardLoadingOverlay = ({
       if (interval) clearInterval(interval);
       if (stepInterval) clearInterval(stepInterval);
     };
-  }, [isBlinking, error]);
+  }, [showLoadingState]);
 
   // Success state animation
   useEffect(() => {
-    if (!isBlinking && !error && progress > 0) {
+    if (!showLoadingState && !error && progress > 0) {
       setProgress(100);
       setShowSuccess(true);
       const timeout = setTimeout(() => setShowSuccess(false), 2000);
       return () => clearTimeout(timeout);
     }
-  }, [isBlinking, error, progress]);
+  }, [showLoadingState, error, progress]);
 
   // Error state
-  if (error && !isBlinking) {
+  if (error && !showLoadingState) {
     return (
       <div 
         className="absolute inset-0 bg-gradient-to-br from-red-900/90 to-red-800/90 backdrop-blur-sm flex items-center justify-center z-20 rounded-2xl animate-scale-in"
@@ -126,8 +131,8 @@ const EnhancedStyleCardLoadingOverlay = ({
     );
   }
 
-  // Loading state
-  if (!isBlinking) {
+  // Loading state - show based on isLoading instead of isBlinking
+  if (!showLoadingState) {
     return null;
   }
 
@@ -155,7 +160,7 @@ const EnhancedStyleCardLoadingOverlay = ({
           </div>
         </div>
 
-        {/* Progress Info - FIXED TEXT CUTOFF */}
+        {/* Progress Info - PRESERVED LOADING TEXT */}
         <div className="space-y-3 w-full">
           <div className="space-y-1">
             <p className="text-sm font-bold animate-pulse truncate px-1">
