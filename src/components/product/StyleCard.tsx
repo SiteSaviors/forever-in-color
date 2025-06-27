@@ -111,6 +111,9 @@ const StyleCard = ({
 
   const showContinueInCard = showContinueButton && isSelected && (isStyleGenerated || isPermanentlyGenerated);
 
+  // Convert hasError to boolean for props that expect boolean
+  const hasErrorBoolean = !!hasError;
+
   return (
     <>
       <StyleCardContainer
@@ -119,7 +122,7 @@ const StyleCard = ({
         styleName={style.name}
         shouldBlur={shouldBlur}
         isGenerating={effectiveIsLoading}
-        hasError={!!hasError}
+        hasError={hasErrorBoolean}
         canAccess={!!croppedImage}
         onClick={handleCardClick}
         onGenerateStyle={() => handleGenerateClick({} as React.MouseEvent)}
@@ -152,7 +155,7 @@ const StyleCard = ({
           showGeneratedBadge={showGeneratedBadge || isPermanentlyGenerated}
           showContinueInCard={showContinueInCard}
           shouldBlur={shouldBlur}
-          showError={!!hasError}
+          showError={hasErrorBoolean}
           onContinueClick={handleContinueClick}
           onGenerateClick={handleGenerateClick}
           onRetryClick={handleRetryClick}
