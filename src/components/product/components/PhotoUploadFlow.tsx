@@ -82,7 +82,7 @@ const PhotoUploadFlow = ({
   const cropAspectRatio = getAspectRatioFromOrientation(currentOrientation);
 
   return (
-    <div className="prevent-overflow w-full">
+    <div className="prevent-overflow">
       <MobileGestureHandler
         onSwipeLeft={() => {
           if (hasImage && !hasStyle) {
@@ -93,7 +93,7 @@ const PhotoUploadFlow = ({
         showGestureHints={true}
       >
         <MobileContainer size="lg" padding="sm">
-          <div className="space-y-3 sm:space-y-4 md:space-y-6 w-full">
+          <div className="mobile-spacing">
             {/* Progress State Manager */}
             <ProgressStateManager
               currentStep={currentStep}
@@ -102,59 +102,51 @@ const PhotoUploadFlow = ({
               selectedStyle={selectedStyle}
             />
 
-            {/* Smart Progress Indicator - Mobile optimized */}
-            <div className="w-full">
-              <SmartProgressIndicator uploadedImage={croppedImage} />
-            </div>
+            {/* Smart Progress Indicator - Always render but only show content when there's an image */}
+            <SmartProgressIndicator uploadedImage={croppedImage} />
 
-            {/* Main Content Area */}
-            <div className="w-full">
-              {/* Show cropper if user wants to recrop */}
-              {showCropper && (
-                <div className="w-full">
-                  <PhotoCropperSection
-                    showCropper={showCropper}
-                    originalImage={originalImage}
-                    currentOrientation={currentOrientation}
-                    onCropComplete={handleCropComplete}
-                    onOrientationChange={setCurrentOrientation}
-                  />
-                </div>
-              )}
+            {/* Show cropper if user wants to recrop */}
+            {showCropper && (
+              <div className="prevent-overflow">
+                <PhotoCropperSection
+                  showCropper={showCropper}
+                  originalImage={originalImage}
+                  currentOrientation={currentOrientation}
+                  onCropComplete={handleCropComplete}
+                  onOrientationChange={setCurrentOrientation}
+                />
+              </div>
+            )}
 
-              {/* Main Upload and Style Flow - Only show if not cropping */}
-              {!showCropper && (
-                <div className="space-y-4 sm:space-y-6 w-full">
-                  {/* Photo Upload Section */}
-                  <div className="w-full">
-                    <PhotoUploadSection
+            {/* Photo Upload Section - Only show if no image or not showing cropper */}
+            {!showCropper && (
+              <div className="prevent-overflow space-y-6 sm:space-y-8">
+                <PhotoUploadSection
+                  hasImage={hasImage}
+                  croppedImage={croppedImage}
+                  onImageUpload={handleEnhancedImageUpload}
+                />
+
+                {/* Style Selection Section - Only show after image is uploaded */}
+                {hasImage && (
+                  <div className="prevent-overflow">
+                    <StyleSelectionSection
                       hasImage={hasImage}
                       croppedImage={croppedImage}
-                      onImageUpload={handleEnhancedImageUpload}
+                      selectedStyle={selectedStyle}
+                      cropAspectRatio={cropAspectRatio}
+                      selectedOrientation={currentOrientation}
+                      onStyleSelect={handleEnhancedStyleSelect}
+                      onStyleComplete={handleStyleComplete}
+                      onRecropImage={handleRecropImage}
                     />
                   </div>
+                )}
+              </div>
+            )}
 
-                  {/* Style Selection Section - Only show after image is uploaded */}
-                  {hasImage && (
-                    <div className="w-full">
-                      <StyleSelectionSection
-                        hasImage={hasImage}
-                        croppedImage={croppedImage}
-                        selectedStyle={selectedStyle}
-                        cropAspectRatio={cropAspectRatio}
-                        selectedOrientation={currentOrientation}
-                        onStyleSelect={handleEnhancedStyleSelect}
-                        onStyleComplete={handleStyleComplete}
-                        onRecropImage={handleRecropImage}
-                      />
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Enhanced UX Components - Mobile optimized spacing */}
-            <div className="space-y-3 sm:space-y-4 w-full">
+            {/* Enhanced UX Components */}
+            <div className="prevent-overflow space-y-4 sm:space-y-6">
               <ContextualHelp />
               <SocialProofFeed />
               <ConversionMomentumTracker />
