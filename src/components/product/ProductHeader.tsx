@@ -36,10 +36,17 @@ const ProductHeader = ({ completedSteps, totalSteps, currentStep = 1, onUploadCl
     return "Order complete! Thank you";
   };
 
-  const scrollToUpload = () => {
-    const uploadSection = document.querySelector('[data-step="1"]');
-    if (uploadSection) {
-      uploadSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  const handleUploadClick = () => {
+    // Directly trigger the file input instead of scrolling
+    const fileInput = document.querySelector('input[type="file"][accept="image/*"]') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.click();
+    } else {
+      // Fallback: scroll to upload section if file input not found
+      const uploadSection = document.querySelector('[data-step="1"]');
+      if (uploadSection) {
+        uploadSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
     }
     onUploadClick?.();
   };
@@ -93,7 +100,7 @@ const ProductHeader = ({ completedSteps, totalSteps, currentStep = 1, onUploadCl
           {/* Primary CTA - Only show if not started */}
           {progressPercentage === 0 && (
             <Button
-              onClick={scrollToUpload}
+              onClick={handleUploadClick}
               className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-4 text-lg font-bold rounded-full shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 mb-6"
             >
               <Upload className="w-5 h-5 mr-2" />
