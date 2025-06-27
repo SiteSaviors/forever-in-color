@@ -36,7 +36,10 @@ export const convertOrientationToAspectRatio = (orientation: string) => {
   return getAspectRatio(orientation);
 };
 
-// Validation helper for API calls - fix function signature
-export const validateOrientationForGeneration = (selectedOrientation: string) => {
-  return validateOrientationFlow(selectedOrientation);
+// Validation helper for API calls
+export const validateOrientationForGeneration = (
+  selectedOrientation: string,
+  generationAspectRatio: string
+) => {
+  return validateOrientationFlow(selectedOrientation, generationAspectRatio);
 };
