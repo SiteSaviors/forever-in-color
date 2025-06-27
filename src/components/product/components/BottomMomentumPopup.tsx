@@ -56,16 +56,9 @@ const BottomMomentumPopup = ({
     await processPayment(items);
   };
 
-  // Don't show anything if no uploaded image in Step 1, or no size selected in Step 2+
-  if (currentStep === 1 && !uploadedImage) return null;
-  if (currentStep >= 2 && !selectedSize) return null;
+  // Only show if we have an uploaded image and are past step 1
+  if (!uploadedImage || currentStep < 2) return null;
 
-  // Step 1: Don't show momentum tracker anymore (handled by unified widget)
-  if (currentStep === 1) {
-    return null;
-  }
-
-  // Step 2+: Show premium horizontal pricing bar
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-t from-black/10 via-transparent to-transparent pointer-events-none">
       <div className="max-w-7xl mx-auto px-4 pb-4 pointer-events-auto">

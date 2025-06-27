@@ -79,6 +79,7 @@ const Product = () => {
           showWidget={currentStep === 1 && !!uploadedImage && !!selectedStyle}
         />
         
+        {/* Premium Horizontal Bottom Momentum Popup - Show from step 2 onwards */}
         <BottomMomentumPopup
           currentStep={currentStep}
           completedSteps={completedSteps}
