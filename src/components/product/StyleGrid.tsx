@@ -1,10 +1,12 @@
 
-import { memo } from "react";
+import { memo, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Upload, ImageIcon } from "lucide-react";
 import StyleCard from "./StyleCard";
+import StyleGridSkeleton from "./components/StyleGridSkeleton";
 import { useStylePreview } from "./contexts/StylePreviewContext";
 import { artStyles } from "@/data/artStyles";
+import { preloadCriticalImages, smartPreload } from "@/utils/performanceUtils";
 
 interface StyleGridProps {
   croppedImage: string | null;
@@ -23,8 +25,38 @@ const StyleGrid = memo(({
   onStyleSelect, 
   onComplete 
 }: StyleGridProps) => {
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [preloadProgress, setPreloadProgress] = useState(0);
+  
   // Popular styles that auto-generate: Classic Oil (2), Watercolor Dreams (4), Pastel Bliss (5)
   const popularStyleIds = [2, 4, 5];
+
+  // Preload critical images on component mount
+  useEffect(() => {
+    const initializeImages = async () => {
+      try {
+        // Preload critical images first
+        await preloadCriticalImages((progress) => {
+          setPreloadProgress(progress);
+        });
+
+        // Preload style images
+        const styleImages = artStyles.map(style => style.image);
+        await smartPreload(styleImages);
+
+        // Short delay to prevent flicker
+        setTimeout(() => {
+          setIsInitialLoading(false);
+        }, 150);
+      } catch (error) {
+        console.warn('Image preloading failed:', error);
+        // Still show content even if preloading fails
+        setIsInitialLoading(false);
+      }
+    };
+
+    initializeImages();
+  }, []);
 
   const handleStyleSelect = async (styleId: number, styleName: string) => {
     console.log('🎯 StyleGrid handleStyleSelect called:', styleId, styleName, 'with orientation:', selectedOrientation);
@@ -54,6 +86,23 @@ const StyleGrid = memo(({
     
     return gradients[styleIdToIndex[styleId]] || gradients[0];
   };
+
+  // Show skeleton loading on initial load
+  if (isInitialLoading) {
+    return (
+      <div className="space-y-6">
+        {preloadProgress > 0 && (
+          <div className="text-center text-sm text-gray-600 mb-4">
+            Loading styles... {Math.round(preloadProgress)}%
+          </div>
+        )}
+        <StyleGridSkeleton 
+          count={artStyles.length} 
+          aspectRatio={cropAspectRatio}
+        />
+      </div>
+    );
+  }
 
   // Show placeholder thumbnails when no photo is uploaded
   if (!croppedImage) {
