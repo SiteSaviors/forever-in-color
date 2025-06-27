@@ -141,7 +141,7 @@ const StyleCard = ({
             isBlinking={false}
             styleName={style.name}
             isLoading={effectiveIsLoading}
-            error={hasError ? (validationError || 'Generation failed') : null}
+            error={hasErrorBoolean ? (validationError || 'Generation failed') : null}
             onRetry={() => handleRetryClick({} as React.MouseEvent)}
           />
         </div>
