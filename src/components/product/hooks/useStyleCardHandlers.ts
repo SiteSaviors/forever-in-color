@@ -42,14 +42,16 @@ export const useStyleCardHandlers = ({
     
     // CRITICAL: Never generate if permanently generated
     if (isPermanentlyGenerated) {
-      console.log(`🚫 PERMANENT BLOCK - ${style.name} is permanently generated, no action taken`);
+      console.log(`🚫 PERMANENT BLOCK - ${style.name} is permanently generated, no generation will occur`);
       return;
     }
     
-    // Only generate if we don't have a preview AND not permanently generated AND not currently generating
+    // Only generate if we don't have a preview AND not permanently generated AND not currently generating AND not Original style
     if (!previewUrl && !effectiveIsLoading && !hasError && style.id !== 1) {
-      console.log(`🚀 Auto-generating preview for ${style.name} (first time)`);
+      console.log(`🚀 Auto-generating preview for ${style.name} (first time only)`);
       handleGenerateClick({} as React.MouseEvent);
+    } else {
+      console.log(`🔒 No generation needed - previewUrl: ${!!previewUrl}, isLoading: ${effectiveIsLoading}, hasError: ${hasError}, styleId: ${style.id}`);
     }
   }, [style, previewUrl, isPermanentlyGenerated, effectiveIsLoading, hasError, onStyleClick]);
 
@@ -73,23 +75,31 @@ export const useStyleCardHandlers = ({
     
     // CRITICAL: Never generate if permanently generated
     if (isPermanentlyGenerated) {
-      console.log(`🚫 PERMANENT BLOCK - ${style.name} cannot be regenerated`);
+      console.log(`🚫 PERMANENT BLOCK - ${style.name} cannot be regenerated (generate button)`);
       return;
     }
     
+    if (effectiveIsLoading) {
+      console.log(`🚫 BUSY BLOCK - ${style.name} is already generating`);
+      return;
+    }
+    
+    console.log(`🎨 Starting generation for ${style.name}`);
     setShowError(false);
     setLocalIsLoading(true);
     
     try {
       await generatePreview();
+      console.log(`✅ Generation completed for ${style.name}`);
     } catch (error) {
+      console.log(`❌ Generation failed for ${style.name}:`, error);
       setShowError(true);
     } finally {
       if (!isPermanentlyGenerated) {
         setLocalIsLoading(false);
       }
     }
-  }, [generatePreview, isPermanentlyGenerated, style.name, setShowError, setLocalIsLoading]);
+  }, [generatePreview, isPermanentlyGenerated, effectiveIsLoading, style.name, setShowError, setLocalIsLoading]);
 
   // Retry click handler
   const handleRetryClick = useCallback(async (e: React.MouseEvent) => {
@@ -101,19 +111,27 @@ export const useStyleCardHandlers = ({
       return;
     }
     
+    if (effectiveIsLoading) {
+      console.log(`🚫 BUSY BLOCK - ${style.name} is already generating`);
+      return;
+    }
+    
+    console.log(`🔄 Retrying generation for ${style.name}`);
     setShowError(false);
     setLocalIsLoading(true);
     
     try {
       await generatePreview();
+      console.log(`✅ Retry completed for ${style.name}`);
     } catch (error) {
+      console.log(`❌ Retry failed for ${style.name}:`, error);
       setShowError(true);
     } finally {
       if (!isPermanentlyGenerated) {
         setLocalIsLoading(false);
       }
     }
-  }, [generatePreview, isPermanentlyGenerated, style.name, setShowError, setLocalIsLoading]);
+  }, [generatePreview, isPermanentlyGenerated, effectiveIsLoading, style.name, setShowError, setLocalIsLoading]);
 
   return {
     handleCardClick,
