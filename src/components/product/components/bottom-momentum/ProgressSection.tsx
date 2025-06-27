@@ -1,5 +1,6 @@
 
-import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { CheckCircle, Circle } from "lucide-react";
 
 interface ProgressSectionProps {
   completedSteps: number[];
@@ -7,22 +8,39 @@ interface ProgressSectionProps {
 }
 
 const ProgressSection = ({ completedSteps, totalSteps }: ProgressSectionProps) => {
-  const progressPercentage = (completedSteps.length / totalSteps) * 100;
-
+  const progress = Math.round((completedSteps.length / totalSteps) * 100);
+  
   return (
-    <div className="mb-3 md:mb-4">
-      <div className="flex justify-between items-center mb-1">
-        <span className="text-xs font-medium text-gray-600">Your Progress</span>
-        <div className="flex items-center gap-1">
-          <span className="text-xs font-semibold text-purple-600">{Math.round(progressPercentage)}%</span>
-          <span className="text-xs text-gray-500 hidden md:inline">Complete</span>
+    <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-100">
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          {Array.from({ length: totalSteps }, (_, i) => {
+            const stepNumber = i + 1;
+            const isCompleted = completedSteps.includes(stepNumber);
+            
+            return (
+              <div key={stepNumber} className="flex items-center gap-1">
+                {isCompleted ? (
+                  <CheckCircle className="w-5 h-5 text-green-600" />
+                ) : (
+                  <Circle className="w-5 h-5 text-gray-300" />
+                )}
+                {i < totalSteps - 1 && (
+                  <div className={`w-8 h-0.5 ${isCompleted ? 'bg-green-600' : 'bg-gray-200'}`} />
+                )}
+              </div>
+            );
+          })}
         </div>
+        
+        <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200 font-medium">
+          {progress}% Complete
+        </Badge>
       </div>
-      <div className="relative">
-        <Progress value={progressPercentage} className="h-2 bg-gray-200" />
-        <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full opacity-20 animate-pulse" 
-             style={{ width: `${progressPercentage}%` }} />
-      </div>
+      
+      <p className="text-sm text-gray-600 font-medium">
+        Step {completedSteps.length} of {totalSteps} • Almost there!
+      </p>
     </div>
   );
 };

@@ -4,8 +4,7 @@ import { useStripePayment } from "../hooks/useStripePayment";
 import { usePricingCalculator } from "./bottom-momentum/PricingCalculator";
 import { buildPaymentItems } from "./bottom-momentum/PaymentItemsBuilder";
 import ProgressSection from "./bottom-momentum/ProgressSection";
-import MobileLayout from "./bottom-momentum/MobileLayout";
-import DesktopLayout from "./bottom-momentum/DesktopLayout";
+import PremiumHorizontalLayout from "./bottom-momentum/PremiumHorizontalLayout";
 
 interface CustomizationOptions {
   floatingFrame: {
@@ -66,33 +65,25 @@ const BottomMomentumPopup = ({
     return null;
   }
 
-  // Step 2+: Show pricing calculator
+  // Step 2+: Show premium horizontal pricing bar
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 p-2 md:p-4 bg-gradient-to-t from-white via-white to-transparent pointer-events-none">
-      <div className="max-w-4xl mx-auto pointer-events-auto">
-        <Card className="bg-white/95 backdrop-blur-sm border border-purple-200 shadow-xl">
-          <CardContent className="p-3 md:p-4">
-            <ProgressSection completedSteps={completedSteps} totalSteps={totalSteps} />
-
-            <MobileLayout
-              selectedSize={selectedSize}
-              basePrice={basePrice}
-              customizationPrice={customizationPrice}
-              totalPrice={totalPrice}
-              savings={savings}
-              isProcessing={isProcessing}
-              onQuickPurchase={handleQuickPurchase}
-            />
-
-            <DesktopLayout
-              selectedSize={selectedSize}
-              basePrice={basePrice}
-              customizationPrice={customizationPrice}
-              totalPrice={totalPrice}
-              savings={savings}
-              isProcessing={isProcessing}
-              onQuickPurchase={handleQuickPurchase}
-            />
+    <div className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-t from-black/10 via-transparent to-transparent pointer-events-none">
+      <div className="max-w-7xl mx-auto px-4 pb-4 pointer-events-auto">
+        <Card className="bg-white/98 backdrop-blur-xl border-0 shadow-2xl shadow-black/20">
+          <CardContent className="p-0">
+            <div className="px-6 py-4">
+              <ProgressSection completedSteps={completedSteps} totalSteps={totalSteps} />
+              
+              <PremiumHorizontalLayout
+                selectedSize={selectedSize}
+                basePrice={basePrice}
+                customizationPrice={customizationPrice}
+                totalPrice={totalPrice}
+                savings={savings}
+                isProcessing={isProcessing}
+                onQuickPurchase={handleQuickPurchase}
+              />
+            </div>
           </CardContent>
         </Card>
       </div>
