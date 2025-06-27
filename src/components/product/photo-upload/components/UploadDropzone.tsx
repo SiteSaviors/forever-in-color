@@ -29,7 +29,7 @@ const UploadDropzone = ({
   return (
     <div
       className={`
-        relative border-2 border-dashed rounded-xl sm:rounded-2xl p-6 sm:p-8 lg:p-16 text-center transition-all duration-500 cursor-pointer group
+        relative border-2 border-dashed rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 text-center transition-all duration-500 cursor-pointer group
         ${isDragOver 
           ? 'border-purple-400 bg-gradient-to-br from-purple-50 to-pink-50 scale-[1.02] shadow-xl' 
           : 'border-gray-200 hover:border-purple-300 hover:bg-gradient-to-br hover:from-purple-50/50 hover:to-pink-50/50 hover:shadow-lg'
@@ -50,11 +50,11 @@ const UploadDropzone = ({
         className="hidden"
       />
       
-      <div className="space-y-6 sm:space-y-8">
-        {/* Icon Section with mobile-optimized sizing */}
+      <div className="space-y-4 sm:space-y-5">
+        {/* Icon Section - Reduced size */}
         <div className="flex justify-center">
           <div className={`
-            relative p-4 sm:p-6 rounded-full transition-all duration-500
+            relative p-3 sm:p-4 rounded-full transition-all duration-500
             ${isDragOver 
               ? 'bg-gradient-to-br from-purple-500 to-pink-500 scale-110 shadow-2xl' 
               : 'bg-gradient-to-br from-purple-100 to-pink-100 group-hover:scale-105 group-hover:shadow-xl'
@@ -62,11 +62,11 @@ const UploadDropzone = ({
           `}>
             {isUploading ? (
               <div className="relative">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 border-4 border-white/30 border-t-white rounded-full animate-spin" />
-                <Sparkles className="absolute inset-0 m-auto w-5 h-5 sm:w-6 sm:h-6 text-white animate-pulse" />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+                <Sparkles className="absolute inset-0 m-auto w-4 h-4 sm:w-5 sm:h-5 text-white animate-pulse" />
               </div>
             ) : (
-              <Upload className={`w-12 h-12 sm:w-16 sm:h-16 transition-colors duration-300 ${
+              <Upload className={`w-8 h-8 sm:w-10 sm:h-10 transition-colors duration-300 ${
                 isDragOver ? 'text-white' : 'text-purple-600 group-hover:text-purple-700'
               }`} />
             )}
@@ -82,10 +82,10 @@ const UploadDropzone = ({
           </div>
         </div>
         
-        {/* Content Section with mobile-first typography */}
-        <div className="space-y-3 sm:space-y-4">
-          <div className="space-y-2 sm:space-y-3">
-            <MobileTypography variant="h2" className="tracking-tight">
+        {/* Content Section - Reduced spacing */}
+        <div className="space-y-2 sm:space-y-3">
+          <div className="space-y-1 sm:space-y-2">
+            <MobileTypography variant="h2" className="tracking-tight text-xl sm:text-2xl lg:text-3xl">
               {isUploading ? (
                 <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
                   {processingStage || "Processing..."}
@@ -99,7 +99,7 @@ const UploadDropzone = ({
               )}
             </MobileTypography>
             
-            <MobileTypography variant="body" className="text-gray-600 max-w-md mx-auto">
+            <MobileTypography variant="body" className="text-gray-600 max-w-md mx-auto text-sm sm:text-base">
               {isUploading 
                 ? "AI is analyzing your photo for the perfect composition and canvas format"
                 : "Upload your favorite photo and our AI will instantly find the perfect crop and canvas orientation"
@@ -107,8 +107,8 @@ const UploadDropzone = ({
             </MobileTypography>
           </div>
           
-          {/* Mobile-optimized CTA button */}
-          <div className="pt-4 sm:pt-6">
+          {/* Mobile-optimized CTA button - Reduced top margin */}
+          <div className="pt-3 sm:pt-4">
             <MobileButton 
               size="lg" 
               className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 disabled:hover:scale-100 w-full sm:w-auto"

@@ -44,7 +44,7 @@ const PhotoUploadMain = ({
             }} />
           </div>
 
-          <div className="relative p-8 lg:p-12">
+          <div className="relative p-4 sm:p-6 lg:p-8">
             <UploadDropzone
               isDragOver={isDragOver}
               isUploading={isUploading}
@@ -60,8 +60,8 @@ const PhotoUploadMain = ({
             {/* Progress Bar */}
             <UploadProgress uploadProgress={uploadProgress} isUploading={isUploading} />
             
-            {/* Enhanced Features */}
-            <div className="mt-6">
+            {/* Enhanced Features - Reduced margin */}
+            <div className="mt-4">
               <UploadFeatures />
             </div>
             
