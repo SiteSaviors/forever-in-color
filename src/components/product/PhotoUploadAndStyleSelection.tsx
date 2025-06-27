@@ -1,6 +1,7 @@
 
 import { ProgressOrchestrator } from "./progress/ProgressOrchestrator";
 import PhotoUploadFlow from "./components/PhotoUploadFlow";
+import { AspectRatioErrorBoundary } from "./orientation/components/AspectRatioErrorBoundary";
 
 interface PhotoUploadAndStyleSelectionProps {
   selectedStyle: {
@@ -19,10 +20,20 @@ interface PhotoUploadAndStyleSelectionProps {
 }
 
 const PhotoUploadAndStyleSelection = (props: PhotoUploadAndStyleSelectionProps) => {
+  const handleRetry = () => {
+    // Reset any error states and allow user to retry
+    window.location.reload();
+  };
+
   return (
-    <ProgressOrchestrator>
-      <PhotoUploadFlow {...props} />
-    </ProgressOrchestrator>
+    <AspectRatioErrorBoundary 
+      onRetry={handleRetry}
+      fallbackOrientation="square"
+    >
+      <ProgressOrchestrator>
+        <PhotoUploadFlow {...props} />
+      </ProgressOrchestrator>
+    </AspectRatioErrorBoundary>
   );
 };
 

@@ -4,6 +4,7 @@ import { generateStylePreview } from '@/utils/stylePreviewApi';
 import { addWatermarkToImage } from '@/utils/watermarkUtils';
 import { StylePreviewAction } from './types';
 import { getAspectRatio, validateOrientationFlow } from '../orientation/utils';
+import { useAspectRatioValidator } from '../orientation/hooks/useAspectRatioValidator';
 
 interface UseStylePreviewLogicProps {
   croppedImage: string | null;
@@ -16,7 +17,9 @@ export const useStylePreviewLogic = ({
   selectedOrientation,
   dispatch
 }: UseStylePreviewLogicProps) => {
-  // Manual generation function
+  const { validateWithRecovery, autoCorrect } = useAspectRatioValidator();
+
+  // Manual generation function with enhanced validation
   const generatePreview = useCallback(async (styleId: number, styleName: string) => {
     if (!croppedImage) {
       console.error('❌ Cannot generate preview: no cropped image');
@@ -33,12 +36,13 @@ export const useStylePreviewLogic = ({
       console.log(`🎯 Selected orientation: ${selectedOrientation}`);
       dispatch({ type: 'START_GENERATION', styleId });
       
-      // STEP 1: Get aspect ratio using consolidated mapping
-      const aspectRatio = getAspectRatio(selectedOrientation);
+      // ENHANCED: Auto-correct orientation and get aspect ratio
+      const correctedOrientation = autoCorrect(selectedOrientation);
+      const aspectRatio = getAspectRatio(correctedOrientation);
       
-      // STEP 2: Validate the mapping before API call
-      const validation = validateOrientationFlow(selectedOrientation, aspectRatio);
-      if (!validation.isValid) {
+      // ENHANCED: Validate with recovery and correction
+      const validation = validateWithRecovery(correctedOrientation, aspectRatio);
+      if (!validation.isValid && !validation.correctedValue) {
         const errorMsg = `Aspect ratio validation failed: ${validation.error}`;
         console.error(`❌ ${errorMsg}`);
         dispatch({ 
@@ -48,26 +52,30 @@ export const useStylePreviewLogic = ({
         });
         return;
       }
+
+      // Use corrected value if available
+      const finalAspectRatio = validation.correctedValue || aspectRatio;
       
       const tempPhotoId = `temp_${Date.now()}_${styleId}`;
       
       console.log(`📋 Generation parameters:`, {
         styleName,
         styleId,
-        selectedOrientation,
-        mappedAspectRatio: aspectRatio,
+        originalOrientation: selectedOrientation,
+        correctedOrientation,
+        mappedAspectRatio: finalAspectRatio,
         croppedImageLength: croppedImage.length,
-        validationPassed: validation.isValid
+        validationPassed: validation.isValid || !!validation.correctedValue
       });
       
-      console.log(`🔥 CRITICAL DEBUG: Calling generateStylePreview with validated aspect ratio: ${aspectRatio} for orientation: ${selectedOrientation}`);
+      console.log(`🔥 CRITICAL DEBUG: Calling generateStylePreview with validated aspect ratio: ${finalAspectRatio} for orientation: ${correctedOrientation}`);
       
-      // STEP 3: Generate with validated aspect ratio  
+      // ENHANCED: Generate with validated and potentially corrected aspect ratio
       const previewUrl = await generateStylePreview(
         croppedImage, 
         styleName, 
         tempPhotoId, 
-        aspectRatio // This is now validated to be correct
+        finalAspectRatio // This is now validated and potentially corrected
       );
 
       if (previewUrl) {
@@ -78,7 +86,7 @@ export const useStylePreviewLogic = ({
             styleId, 
             url: watermarkedUrl 
           });
-          console.log(`✅ Manual generation completed for ${styleName} with validated aspect ratio: ${aspectRatio}`);
+          console.log(`✅ Manual generation completed for ${styleName} with validated aspect ratio: ${finalAspectRatio}`);
         } catch (watermarkError) {
           console.warn(`⚠️ Watermark failed for ${styleName}, using original:`, watermarkError);
           dispatch({ 
@@ -96,7 +104,7 @@ export const useStylePreviewLogic = ({
         error: error.message 
       });
     }
-  }, [croppedImage, selectedOrientation, dispatch]);
+  }, [croppedImage, selectedOrientation, dispatch, validateWithRecovery, autoCorrect]);
 
   return { generatePreview };
 };
