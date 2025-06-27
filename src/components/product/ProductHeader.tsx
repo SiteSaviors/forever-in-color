@@ -1,14 +1,17 @@
+
 import { Badge } from "@/components/ui/badge";
 import StreamlinedProgress from "./components/StreamlinedProgress";
 import { Shield, Truck, Award, Upload, Sparkles, Timer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
+
 interface ProductHeaderProps {
   completedSteps: number[];
   totalSteps: number;
   currentStep?: number;
   onUploadClick?: () => void;
 }
+
 const ProductHeader = ({
   completedSteps,
   totalSteps,
@@ -29,12 +32,14 @@ const ProductHeader = ({
     }, 8000);
     return () => clearInterval(interval);
   }, []);
+
   const getMotivationalMessage = () => {
     if (progressPercentage === 0) return "Start your masterpiece in under 2 minutes";
     if (progressPercentage < 50) return "You're doing great! Keep going";
     if (progressPercentage < 100) return "Almost there! Complete your order";
     return "Order complete! Thank you";
   };
+
   const handleUploadClick = () => {
     // Directly trigger the file input instead of scrolling
     const fileInput = document.querySelector('input[type="file"][accept="image/*"]') as HTMLInputElement;
@@ -52,29 +57,29 @@ const ProductHeader = ({
     }
     onUploadClick?.();
   };
-  return <div className="bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 border-b border-purple-100">
+
+  return (
+    <div className="bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 border-b border-purple-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
-        {/* Urgency & Social Proof Bar - Only show most impactful */}
-        <div className="flex items-center justify-center gap-6 mb-6">
+        {/* Integrated Notification Bar */}
+        <div className="flex items-center justify-center gap-3 mb-6 flex-wrap">
           <div className="flex items-center gap-2 bg-green-100/80 backdrop-blur-sm px-4 py-2 rounded-full border border-green-200">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
             <span className="text-green-700 font-medium text-sm">{liveUsers} creating art now</span>
           </div>
           
+          <Badge variant="outline" className="bg-purple-100 text-purple-700 border-purple-200">
+            <Sparkles className="w-3 h-3 mr-1" />
+            AI-Powered Art Creation
+          </Badge>
+          
+          <Badge variant="outline" className={`border-2 transition-all duration-500 ${progressPercentage > 0 ? 'bg-green-100 text-green-700 border-green-300' : 'bg-orange-100 text-orange-700 border-orange-300'}`}>
+            {progressPercentage > 0 ? `${Math.round(progressPercentage)}% Complete` : 'Ready to Start'}
+          </Badge>
         </div>
 
         {/* Clean Header Content */}
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <Badge variant="outline" className="bg-purple-100 text-purple-700 border-purple-200">
-              <Sparkles className="w-3 h-3 mr-1" />
-              AI-Powered Art Creation
-            </Badge>
-            <Badge variant="outline" className={`border-2 transition-all duration-500 ${progressPercentage > 0 ? 'bg-green-100 text-green-700 border-green-300' : 'bg-orange-100 text-orange-700 border-orange-300'}`}>
-              {progressPercentage > 0 ? `${Math.round(progressPercentage)}% Complete` : 'Ready to Start'}
-            </Badge>
-          </div>
-          
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-4 bg-gradient-to-r from-purple-600 via-purple-500 to-pink-500 bg-clip-text text-transparent">
             Create Your Masterpiece
           </h1>
@@ -119,6 +124,8 @@ const ProductHeader = ({
           </div>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default ProductHeader;
