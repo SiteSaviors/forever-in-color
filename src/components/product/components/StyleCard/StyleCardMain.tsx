@@ -67,7 +67,22 @@ const StyleCardMain = React.memo(({
           style={style}
           imageToShow={imageToShow}
           cropAspectRatio={cropAspectRatio}
-          onImageExpand={onExpandClick}
+          showLoadingState={showLoadingState}
+          isPopular={isPopular}
+          showGeneratedBadge={showGeneratedBadge}
+          isSelected={isSelected}
+          hasPreviewOrCropped={hasPreviewOrCropped}
+          shouldBlur={shouldBlur}
+          isGenerating={isGenerating}
+          showError={showError}
+          error={error}
+          selectedOrientation={selectedOrientation}
+          previewUrl={previewUrl}
+          hasGeneratedPreview={hasGeneratedPreview}
+          onExpandClick={onExpandClick}
+          onCanvasPreviewClick={onCanvasPreviewClick}
+          onGenerateStyle={onGenerateStyle}
+          onRetry={onRetry}
         />
       </div>
 
