@@ -1,8 +1,9 @@
+
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Sparkles, ArrowLeft } from "lucide-react";
 import IntelligentStyleGrid from "./components/IntelligentStyleGrid";
-import { StylePreviewProvider } from "./contexts/StylePreviewContext";
+import { StylePreviewProvider } from "./contexts/StylePreviewContextOptimized";
 import { artStyles } from "@/data/artStyles";
 
 interface StyleSelectorProps {
