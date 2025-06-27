@@ -105,20 +105,26 @@ const ProductHeader = ({
         {/* Streamlined Progress - Only show when needed */}
         {progressPercentage > 0 && <StreamlinedProgress currentStep={currentStep} completedSteps={completedSteps} totalSteps={totalSteps} />}
 
-        {/* Trust Indicators - Simplified and integrated */}
+        {/* Trust Indicators - Enhanced with gradient styling */}
         <div className="grid grid-cols-3 gap-6 text-center mt-8">
           <div className="flex flex-col items-center gap-2 bg-white/60 backdrop-blur-sm rounded-lg p-4 border border-green-100">
-            <Shield className="w-5 h-5 text-green-500" />
+            <div className="p-2 sm:p-3 rounded-full bg-gradient-to-br from-green-500 to-green-600 shadow-lg">
+              <Shield className="w-5 h-5 text-white" />
+            </div>
             <div className="text-sm font-semibold text-green-700">Secure</div>
             <div className="text-xs text-green-600">SSL Protected</div>
           </div>
           <div className="flex flex-col items-center gap-2 bg-white/60 backdrop-blur-sm rounded-lg p-4 border border-blue-100">
-            <Truck className="w-5 h-5 text-blue-500" />
+            <div className="p-2 sm:p-3 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg">
+              <Truck className="w-5 h-5 text-white" />
+            </div>
             <div className="text-sm font-semibold text-blue-700">Free Shipping</div>
             <div className="text-xs text-blue-600">Orders $75+</div>
           </div>
           <div className="flex flex-col items-center gap-2 bg-white/60 backdrop-blur-sm rounded-lg p-4 border border-purple-100">
-            <Award className="w-5 h-5 text-purple-500" />
+            <div className="p-2 sm:p-3 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 shadow-lg">
+              <Award className="w-5 h-5 text-white" />
+            </div>
             <div className="text-sm font-semibold text-purple-700">Premium Quality</div>
             <div className="text-xs text-purple-600">Museum grade</div>
           </div>
