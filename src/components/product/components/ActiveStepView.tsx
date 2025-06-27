@@ -55,11 +55,11 @@ const ActiveStepView = ({
     }
   };
 
-  // Safely render style name
+  // Safely render style name with improved mobile typography
   const renderStyleName = () => {
     if (stepNumber === 1 && selectedStyle?.name) {
       return (
-        <span className={`ml-2 sm:ml-3 font-medium text-base sm:text-lg md:text-xl transition-colors duration-300 ${
+        <span className={`ml-1 sm:ml-2 font-medium text-sm sm:text-base transition-colors duration-300 ${
           isActive ? 'text-purple-600' : 'text-gray-600'
         }`}>
           - {selectedStyle.name}
@@ -75,59 +75,59 @@ const ActiveStepView = ({
         value={`step-${stepNumber}`}
         data-step={stepNumber}
         className={`
-          relative bg-white rounded-xl sm:rounded-2xl shadow-md border border-gray-100 overflow-hidden 
-          transition-all duration-500 ease-out hover:shadow-xl mx-2 sm:mx-0
-          ${isActive && canAccess ? 'ring-2 ring-purple-200 shadow-xl transform scale-[1.01] animate-fade-in' : ''}
-          ${isNextStep && canAccess ? 'ring-1 ring-purple-100 hover:ring-2 hover:ring-purple-200 animate-pulse' : ''}
+          relative bg-white rounded-lg sm:rounded-xl border border-gray-100 overflow-hidden 
+          transition-all duration-300 ease-out hover:shadow-lg mx-1 sm:mx-0 mb-2 sm:mb-4
+          ${isActive && canAccess ? 'ring-2 ring-purple-200 shadow-lg transform scale-[1.005] animate-fade-in' : ''}
+          ${isNextStep && canAccess ? 'ring-1 ring-purple-100 hover:ring-2 hover:ring-purple-200' : ''}
         `}
       >
         {/* Premium gradient overlay for active state */}
         {isActive && canAccess && (
-          <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-pink-500/5 pointer-events-none animate-fade-in" />
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-500/3 to-pink-500/3 pointer-events-none animate-fade-in" />
         )}
         
-        {/* Success sparkle effect */}
+        {/* Success indicator */}
         {isCompleted && (
-          <div className="absolute top-3 right-3 sm:top-4 sm:right-4 text-green-500 animate-pulse">
-            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
+          <div className="absolute top-2 right-2 sm:top-3 sm:right-3 text-green-500">
+            <Sparkles className="w-3 h-3 sm:w-4 sm:h-4" />
           </div>
         )}
 
         <AccordionTrigger 
-          className={`px-4 py-4 sm:px-6 sm:py-6 md:px-8 md:py-8 hover:no-underline group min-h-[60px] sm:min-h-[80px] transition-all duration-300 ${!canAccess ? 'cursor-default' : ''}`}
+          className={`px-3 py-3 sm:px-4 sm:py-4 md:px-6 md:py-6 hover:no-underline group min-h-[56px] transition-all duration-300 ${!canAccess ? 'cursor-default' : ''}`}
           disabled={!canAccess}
           onClick={handleStepClick}
         >
-          <div className="flex items-center gap-3 sm:gap-4 md:gap-6 w-full">
-            {/* Enhanced Step Icon with mobile-optimized sizing */}
-            <TouchTarget size="lg" className="flex-shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 md:gap-4 w-full">
+            {/* Mobile-optimized Step Icon */}
+            <TouchTarget size="sm" className="flex-shrink-0">
               <div className={`
-                relative w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center 
-                transition-all duration-500 shadow-lg transform
+                relative w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg sm:rounded-xl flex items-center justify-center 
+                transition-all duration-300 shadow-sm
                 ${isCompleted 
-                  ? 'bg-gradient-to-r from-green-400 to-emerald-500 text-white shadow-green-200/50 scale-105' 
+                  ? 'bg-gradient-to-r from-green-400 to-emerald-500 text-white shadow-green-200/30' 
                   : isActive && canAccess
-                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-purple-200/50 scale-105 animate-pulse'
+                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-purple-200/30'
                   : !canAccess
                   ? 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-400'
-                  : 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-500 group-hover:from-purple-100 group-hover:to-pink-100 group-hover:text-purple-500 group-hover:scale-105'}
+                  : 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-500 group-hover:from-purple-100 group-hover:to-pink-100 group-hover:text-purple-500'}
               `}>
                 {isCompleted ? (
-                  <Check className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 animate-in zoom-in duration-500" />
+                  <Check className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
                 ) : (
-                  <Icon className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 transition-transform duration-300" />
+                  <Icon className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
                 )}
               </div>
             </TouchTarget>
             
-            {/* Enhanced Step Content with mobile-first typography */}
+            {/* Mobile-first Step Content */}
             <div className="flex-1 text-left min-w-0">
-              <div className="flex flex-col gap-1 sm:gap-2 mb-2">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 flex-wrap">
+              <div className="flex flex-col gap-0.5 sm:gap-1">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-2">
                   <MobileTypography
-                    variant="h3"
+                    variant="h4"
                     className={`
-                      font-bold transition-colors duration-300 font-poppins tracking-tight
+                      font-semibold transition-colors duration-300 font-poppins tracking-tight leading-tight
                       ${isCompleted || (isActive && canAccess) ? 'text-gray-900' 
                         : !canAccess ? 'text-gray-500'
                         : 'text-gray-600 group-hover:text-gray-800'}
@@ -137,19 +137,19 @@ const ActiveStepView = ({
                     {renderStyleName()}
                   </MobileTypography>
                   
-                  {/* Enhanced Status Indicators */}
+                  {/* Lock Status Indicator */}
                   {lockStatus === "locked" && (
-                    <div className="transition-all duration-300 opacity-60 sm:self-center">
-                      <Lock className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
+                    <div className="transition-all duration-300 opacity-60 self-start sm:self-center">
+                      <Lock className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
                     </div>
                   )}
                 </div>
               </div>
               
-              {/* Mobile-optimized description */}
+              {/* Mobile-optimized description - only show when active or on larger screens */}
               <MobileTypography
-                variant="body"
-                className={`transition-all duration-300 ${
+                variant="caption"
+                className={`transition-all duration-300 mt-0.5 sm:mt-1 ${
                   !canAccess ? 'text-gray-400' : 'text-gray-600'
                 } ${isActive ? 'block' : 'hidden sm:block'}`}
               >
@@ -157,34 +157,33 @@ const ActiveStepView = ({
               </MobileTypography>
             </div>
             
-            {/* Mobile-optimized status badges and actions */}
-            <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+            {/* Mobile-optimized status and chevron */}
+            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
               {isNextStep && canAccess && !isActive && (
-                <Badge variant="outline" className="bg-gradient-to-r from-amber-50 to-orange-50 text-amber-700 border-amber-200 px-2 py-1 text-xs sm:text-sm font-medium rounded-full hidden sm:inline-flex animate-pulse">
-                  Next Step
+                <Badge variant="outline" className="bg-gradient-to-r from-amber-50 to-orange-50 text-amber-700 border-amber-200 px-1.5 py-0.5 text-xs font-medium rounded-full hidden sm:inline-flex">
+                  Next
                 </Badge>
               )}
               
-              {/* Enhanced chevron with mobile-optimized sizing */}
               <TouchTarget size="sm" interactive={false}>
                 <ChevronRight className={`
-                  w-5 h-5 sm:w-6 sm:h-6 transition-all duration-500 ease-out
-                  ${isActive && canAccess ? 'rotate-90 text-purple-500 scale-110' 
+                  w-4 h-4 sm:w-5 sm:h-5 transition-all duration-300 ease-out
+                  ${isActive && canAccess ? 'rotate-90 text-purple-500' 
                     : !canAccess ? 'text-gray-300'
-                    : 'text-gray-400 group-hover:text-gray-600 group-hover:translate-x-1 group-hover:scale-110'}
+                    : 'text-gray-400 group-hover:text-gray-600 group-hover:translate-x-0.5'}
                 `} />
               </TouchTarget>
             </div>
           </div>
         </AccordionTrigger>
         
-        <AccordionContent className="px-4 pb-4 sm:px-6 sm:pb-6 md:px-8 md:pb-8 animate-accordion-down">
-          <div className="border-t border-gradient-to-r from-purple-100 to-pink-100 pt-4 sm:pt-6 relative">
-            {/* Enhanced content area with mobile-optimized spacing */}
-            <div className="bg-gradient-to-r from-gray-50/80 to-purple-50/40 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-8 border border-gray-100/50 shadow-inner animate-fade-in">
+        <AccordionContent className="px-3 pb-3 sm:px-4 sm:pb-4 md:px-6 md:pb-6">
+          <div className="border-t border-gray-100 pt-3 sm:pt-4 relative">
+            {/* Mobile-optimized content area */}
+            <div className="bg-gradient-to-r from-gray-50/60 to-purple-50/30 rounded-lg sm:rounded-xl p-2 sm:p-3 md:p-4 border border-gray-100/30 shadow-inner">
               <ErrorBoundary fallback={
-                <div className="text-center py-4">
-                  <MobileTypography variant="body" className="text-gray-600">
+                <div className="text-center py-3 sm:py-4">
+                  <MobileTypography variant="caption" className="text-gray-600">
                     Unable to load step content. Please refresh the page.
                   </MobileTypography>
                 </div>

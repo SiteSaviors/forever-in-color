@@ -1,9 +1,12 @@
+
 import PhotoUploadContainer from "../photo-upload/PhotoUploadContainer";
+
 interface PhotoUploadSectionProps {
   hasImage: boolean;
   croppedImage: string | null;
   onImageUpload: (imageUrl: string, originalImageUrl?: string, orientation?: string) => void;
 }
+
 const PhotoUploadSection = ({
   hasImage,
   croppedImage,
@@ -13,13 +16,15 @@ const PhotoUploadSection = ({
   if (hasImage && croppedImage) {
     return null;
   }
-  return <div className="space-y-6">
-      <div className="text-center">
-        
-        
-      </div>
-      
-      <PhotoUploadContainer onImageUpload={onImageUpload} initialImage={croppedImage} />
-    </div>;
+
+  return (
+    <div className="w-full space-y-3 sm:space-y-4">
+      <PhotoUploadContainer 
+        onImageUpload={onImageUpload} 
+        initialImage={croppedImage} 
+      />
+    </div>
+  );
 };
+
 export default PhotoUploadSection;
