@@ -61,7 +61,7 @@ const StyleCard = ({
     onStyleClick
   });
 
-  // CRITICAL FIX: Stop loading immediately when preview is available
+  // Stop loading immediately when preview is available
   useEffect(() => {
     if (previewUrl) {
       console.log(`🛑 StyleCard: Preview available for ${style.name}, stopping loading state`);
@@ -80,7 +80,6 @@ const StyleCard = ({
   // Determine what image to show - preview URL if available, otherwise cropped image, otherwise default style image
   const imageToShow = previewUrl || croppedImage || style.image;
 
-  // SOLUTION 1: Prevent regeneration if style already has a preview
   const handleCardClick = useCallback(() => {
     console.log(`🎯 StyleCard clicked: ${style.name}, hasPreview: ${!!previewUrl}, isGenerating: ${effectiveIsLoading}`);
     
@@ -94,14 +93,12 @@ const StyleCard = ({
     }
   }, [style, previewUrl, effectiveIsLoading, hasError, onStyleClick]);
 
-  // SOLUTION 3: Make continue button navigate to next step
   const handleContinueClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     console.log(`🎯 Continue clicked for style: ${style.name}`);
     onContinue();
   };
 
-  // SOLUTION 2: Add image expansion functionality
   const handleImageExpand = (e: React.MouseEvent) => {
     e.stopPropagation();
     console.log(`🔍 Expanding image for style: ${style.name}`);
@@ -118,7 +115,6 @@ const StyleCard = ({
     } catch (error) {
       setShowError(true);
     } finally {
-      // Only set loading to false if we don't have a preview yet
       if (!previewUrl) {
         setLocalIsLoading(false);
       }
@@ -135,7 +131,6 @@ const StyleCard = ({
     } catch (error) {
       setShowError(true);
     } finally {
-      // Only set loading to false if we don't have a preview yet
       if (!previewUrl) {
         setLocalIsLoading(false);
       }
@@ -164,9 +159,9 @@ const StyleCard = ({
             onImageExpand={handleImageExpand}
           />
           
-          {/* Enhanced Loading Overlay */}
+          {/* Enhanced Loading Overlay - no blinking */}
           <EnhancedStyleCardLoadingOverlay
-            isBlinking={effectiveIsLoading}
+            isBlinking={false}
             styleName={style.name}
             error={hasError ? (validationError || 'Generation failed') : null}
             onRetry={() => handleRetryClick({} as React.MouseEvent)}
@@ -189,7 +184,6 @@ const StyleCard = ({
         />
       </StyleCardContainer>
 
-      {/* SOLUTION 2: Lightbox for image expansion */}
       <Lightbox
         isOpen={isLightboxOpen}
         onClose={() => setIsLightboxOpen(false)}
