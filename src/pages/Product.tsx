@@ -6,6 +6,7 @@ import ProductContent from "@/components/product/ProductContent";
 import TrustElements from "@/components/product/TrustElements";
 import PriceCalculator from "@/components/product/PriceCalculator";
 import ProductTestimonials from "@/components/product/ProductTestimonials";
+import { MobileProgress } from "@/components/ui/mobile-progress";
 import { useProductState } from "@/components/product/ProductStateManager";
 
 const Product = () => {
@@ -26,15 +27,27 @@ const Product = () => {
   } = useProductState();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 prevent-overflow">
       <Header />
       
-      <div className="pt-16">
+      <div className="pt-16 prevent-overflow">
         <ProductHeader 
           completedSteps={completedSteps}
           totalSteps={4}
           currentStep={currentStep}
         />
+        
+        {/* Mobile Progress Indicator */}
+        <div className="sticky top-16 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-100 py-3 px-4 sm:px-6">
+          <MobileProgress
+            currentStep={currentStep}
+            totalSteps={4}
+            completedSteps={completedSteps}
+            variant="steps"
+            size="sm"
+            showLabels={false}
+          />
+        </div>
         
         <TrustElements />
         

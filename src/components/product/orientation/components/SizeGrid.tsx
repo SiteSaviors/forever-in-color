@@ -1,5 +1,6 @@
 
 import GlassMorphismSizeCard from "./GlassMorphismSizeCard";
+import { MobileGrid } from "@/components/ui/mobile-grid";
 import { sizeOptions } from "../data/sizeOptions";
 import { useCallback } from "react";
 
@@ -27,14 +28,21 @@ const SizeGrid = ({
   }, [onContinueWithSize]);
 
   return (
-    <div 
-      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+    <MobileGrid
+      responsive={{
+        xs: 1,
+        sm: 2,
+        md: 2,
+        lg: 3
+      }}
+      gap="md"
+      className="prevent-overflow"
       data-size-section
       role="radiogroup"
       aria-label="Canvas size options"
     >
       {sizeOptions[selectedOrientation]?.map(option => (
-        <div key={option.size} className="transform transition-all duration-200 hover:-translate-y-1">
+        <div key={option.size} className="transform transition-all duration-200 hover:-translate-y-1 prevent-overflow">
           <GlassMorphismSizeCard 
             option={option} 
             orientation={selectedOrientation}
@@ -46,7 +54,7 @@ const SizeGrid = ({
           />
         </div>
       ))}
-    </div>
+    </MobileGrid>
   );
 };
 

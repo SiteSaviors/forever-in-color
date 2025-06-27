@@ -1,6 +1,7 @@
 
 import { StylePreviewProvider } from "./contexts/StylePreviewContext";
 import { Accordion } from "@/components/ui/accordion";
+import { MobileContainer } from "@/components/ui/mobile-grid";
 import { CustomizationOptions } from "./types/productState";
 import { useProductSteps } from "./hooks/useProductSteps";
 import { usePreviewGeneration } from "./hooks/usePreviewGeneration";
@@ -85,101 +86,113 @@ const ProductContent = ({
         croppedImage={uploadedImage} 
         selectedOrientation={selectedOrientation}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Accordion 
-            type="single" 
-            value={`step-${currentStep}`} 
-            className="space-y-8"
-            onValueChange={() => {
-              // Prevent default accordion scroll behavior
-            }}
-          >
-            <ErrorBoundary>
-              <PhotoUploadStep
-                currentStep={currentStep}
-                isActive={currentStep === 1}
-                isCompleted={completedSteps.includes(1)}
-                canAccess={canProceedToStep(1)}
-                selectedStyle={selectedStyle}
-                uploadedImage={uploadedImage}
-                selectedOrientation={selectedOrientation}
-                autoGenerationComplete={autoGenerationComplete}
-                onStepClick={() => {
-                  console.log('🐛 Clicked on step 1');
-                  onCurrentStepChange(1);
+        <div className="prevent-overflow">
+          <MobileContainer size="xl" padding="sm">
+            <div className="mobile-section">
+              <Accordion 
+                type="single" 
+                value={`step-${currentStep}`} 
+                className="mobile-spacing prevent-overflow"
+                onValueChange={() => {
+                  // Prevent default accordion scroll behavior
                 }}
-                onPhotoAndStyleComplete={onPhotoAndStyleComplete}
-                onContinue={handleContinueToStep2}
-                completedSteps={completedSteps}
-                onStepChange={onCurrentStepChange}
-              />
-            </ErrorBoundary>
+              >
+                <ErrorBoundary>
+                  <div className="prevent-overflow">
+                    <PhotoUploadStep
+                      currentStep={currentStep}
+                      isActive={currentStep === 1}
+                      isCompleted={completedSteps.includes(1)}
+                      canAccess={canProceedToStep(1)}
+                      selectedStyle={selectedStyle}
+                      uploadedImage={uploadedImage}
+                      selectedOrientation={selectedOrientation}
+                      autoGenerationComplete={autoGenerationComplete}
+                      onStepClick={() => {
+                        console.log('🐛 Clicked on step 1');
+                        onCurrentStepChange(1);
+                      }}
+                      onPhotoAndStyleComplete={onPhotoAndStyleComplete}
+                      onContinue={handleContinueToStep2}
+                      completedSteps={completedSteps}
+                      onStepChange={onCurrentStepChange}
+                    />
+                  </div>
+                </ErrorBoundary>
 
-            <ErrorBoundary>
-              <OrientationStep
-                currentStep={currentStep}
-                isActive={currentStep === 2}
-                isCompleted={completedSteps.includes(2)}
-                canAccess={canProceedToStep(2)}
-                selectedOrientation={selectedOrientation}
-                selectedSize={selectedSize}
-                uploadedImage={uploadedImage}
-                onStepClick={() => {
-                  console.log('🐛 Clicked on step 2, canAccess:', canProceedToStep(2));
-                  if (canProceedToStep(2)) {
-                    onCurrentStepChange(2);
-                  }
-                }}
-                onOrientationSelect={onOrientationSelect}
-                onSizeSelect={onSizeSelect}
-                onContinue={handleContinueToStep3}
-                completedSteps={completedSteps}
-                onStepChange={onCurrentStepChange}
-              />
-            </ErrorBoundary>
+                <ErrorBoundary>
+                  <div className="prevent-overflow">
+                    <OrientationStep
+                      currentStep={currentStep}
+                      isActive={currentStep === 2}
+                      isCompleted={completedSteps.includes(2)}
+                      canAccess={canProceedToStep(2)}
+                      selectedOrientation={selectedOrientation}
+                      selectedSize={selectedSize}
+                      uploadedImage={uploadedImage}
+                      onStepClick={() => {
+                        console.log('🐛 Clicked on step 2, canAccess:', canProceedToStep(2));
+                        if (canProceedToStep(2)) {
+                          onCurrentStepChange(2);
+                        }
+                      }}
+                      onOrientationSelect={onOrientationSelect}
+                      onSizeSelect={onSizeSelect}
+                      onContinue={handleContinueToStep3}
+                      completedSteps={completedSteps}
+                      onStepChange={onCurrentStepChange}
+                    />
+                  </div>
+                </ErrorBoundary>
 
-            <ErrorBoundary>
-              <CustomizationStep
-                currentStep={currentStep}
-                isActive={currentStep === 3}
-                isCompleted={completedSteps.includes(3)}
-                canAccess={canProceedToStep(3)}
-                selectedSize={selectedSize}
-                customizations={customizations}
-                selectedOrientation={selectedOrientation}
-                selectedStyle={selectedStyle}
-                previewUrls={previewUrls}
-                userArtworkUrl={uploadedImage}
-                onCustomizationChange={onCustomizationChange}
-                onStepClick={() => {
-                  console.log('🐛 Clicked on step 3, canAccess:', canProceedToStep(3));
-                  if (canProceedToStep(3)) {
-                    onCurrentStepChange(3);
-                  }
-                }}
-              />
-            </ErrorBoundary>
+                <ErrorBoundary>
+                  <div className="prevent-overflow">
+                    <CustomizationStep
+                      currentStep={currentStep}
+                      isActive={currentStep === 3}
+                      isCompleted={completedSteps.includes(3)}
+                      canAccess={canProceedToStep(3)}
+                      selectedSize={selectedSize}
+                      customizations={customizations}
+                      selectedOrientation={selectedOrientation}
+                      selectedStyle={selectedStyle}
+                      previewUrls={previewUrls}
+                      userArtworkUrl={uploadedImage}
+                      onCustomizationChange={onCustomizationChange}
+                      onStepClick={() => {
+                        console.log('🐛 Clicked on step 3, canAccess:', canProceedToStep(3));
+                        if (canProceedToStep(3)) {
+                          onCurrentStepChange(3);
+                        }
+                      }}
+                    />
+                  </div>
+                </ErrorBoundary>
 
-            <ErrorBoundary>
-              <ReviewOrderStep
-                currentStep={currentStep}
-                isActive={currentStep === 4}
-                isCompleted={completedSteps.includes(4)}
-                canAccess={canProceedToStep(4)}
-                uploadedImage={uploadedImage}
-                selectedStyle={selectedStyle}
-                selectedSize={selectedSize}
-                selectedOrientation={selectedOrientation}
-                customizations={customizations}
-                onStepClick={() => {
-                  console.log('🐛 Clicked on step 4, canAccess:', canProceedToStep(4));
-                  if (canProceedToStep(4)) {
-                    onCurrentStepChange(4);
-                  }
-                }}
-              />
-            </ErrorBoundary>
-          </Accordion>
+                <ErrorBoundary>
+                  <div className="prevent-overflow">
+                    <ReviewOrderStep
+                      currentStep={currentStep}
+                      isActive={currentStep === 4}
+                      isCompleted={completedSteps.includes(4)}
+                      canAccess={canProceedToStep(4)}
+                      uploadedImage={uploadedImage}
+                      selectedStyle={selectedStyle}
+                      selectedSize={selectedSize}
+                      selectedOrientation={selectedOrientation}
+                      customizations={customizations}
+                      onStepClick={() => {
+                        console.log('🐛 Clicked on step 4, canAccess:', canProceedToStep(4));
+                        if (canProceedToStep(4)) {
+                          onCurrentStepChange(4);
+                        }
+                      }}
+                    />
+                  </div>
+                </ErrorBoundary>
+              </Accordion>
+            </div>
+          </MobileContainer>
         </div>
       </StylePreviewProvider>
     </ErrorBoundary>

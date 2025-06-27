@@ -1,5 +1,6 @@
 
 import OrientationCard from "./OrientationCard";
+import { MobileGrid } from "@/components/ui/mobile-grid";
 import { orientationOptions } from "../data/orientationOptions";
 import { useCallback } from "react";
 
@@ -21,8 +22,14 @@ const OrientationGrid = ({
   }, [onOrientationSelect]);
 
   return (
-    <div 
-      className="grid grid-cols-1 md:grid-cols-3 gap-8"
+    <MobileGrid
+      responsive={{
+        xs: 1,
+        sm: 2,
+        md: 3
+      }}
+      gap="lg"
+      className="prevent-overflow"
       data-orientation-section
       role="radiogroup"
       aria-label="Canvas orientation options"
@@ -30,7 +37,7 @@ const OrientationGrid = ({
       {orientationOptions.map(orientation => (
         <div 
           key={orientation.id} 
-          className="transform transition-all duration-300 hover:-translate-y-1"
+          className="transform transition-all duration-300 hover:-translate-y-1 prevent-overflow"
         >
           <OrientationCard 
             orientation={orientation} 
@@ -41,7 +48,7 @@ const OrientationGrid = ({
           />
         </div>
       ))}
-    </div>
+    </MobileGrid>
   );
 };
 

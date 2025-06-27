@@ -8,6 +8,7 @@ import SocialProofFeed from "../social/SocialProofFeed";
 import MobileGestureHandler from "../mobile/MobileGestureHandler";
 import ConversionMomentumTracker from "../progress/ConversionMomentumTracker";
 import ProgressStateManager from "./ProgressStateManager";
+import { MobileContainer } from "@/components/ui/mobile-grid";
 import { useProgressOrchestrator } from "../progress/ProgressOrchestrator";
 import { usePhotoUploadState } from "../hooks/usePhotoUploadState";
 import { getAspectRatioFromOrientation } from "../cropper/data/orientationOptions";
@@ -81,69 +82,79 @@ const PhotoUploadFlow = ({
   const cropAspectRatio = getAspectRatioFromOrientation(currentOrientation);
 
   return (
-    <MobileGestureHandler
-      onSwipeLeft={() => {
-        if (hasImage && !hasStyle) {
-          showContextualHelp('hesitation', 'Swipe through the style gallery above to find your perfect match!');
-        }
-      }}
-      enableHaptic={true}
-      showGestureHints={true}
-    >
-      <div className="space-y-8">
-        {/* Progress State Manager */}
-        <ProgressStateManager
-          currentStep={currentStep}
-          completedSteps={completedSteps}
-          croppedImage={croppedImage}
-          selectedStyle={selectedStyle}
-        />
-
-        {/* Smart Progress Indicator - Always render but only show content when there's an image */}
-        <SmartProgressIndicator uploadedImage={croppedImage} />
-
-        {/* Show cropper if user wants to recrop */}
-        {showCropper && (
-          <PhotoCropperSection
-            showCropper={showCropper}
-            originalImage={originalImage}
-            currentOrientation={currentOrientation}
-            onCropComplete={handleCropComplete}
-            onOrientationChange={setCurrentOrientation}
-          />
-        )}
-
-        {/* Photo Upload Section - Only show if no image or not showing cropper */}
-        {!showCropper && (
-          <>
-            <PhotoUploadSection
-              hasImage={hasImage}
+    <div className="prevent-overflow">
+      <MobileGestureHandler
+        onSwipeLeft={() => {
+          if (hasImage && !hasStyle) {
+            showContextualHelp('hesitation', 'Swipe through the style gallery above to find your perfect match!');
+          }
+        }}
+        enableHaptic={true}
+        showGestureHints={true}
+      >
+        <MobileContainer size="lg" padding="sm">
+          <div className="mobile-spacing">
+            {/* Progress State Manager */}
+            <ProgressStateManager
+              currentStep={currentStep}
+              completedSteps={completedSteps}
               croppedImage={croppedImage}
-              onImageUpload={handleEnhancedImageUpload}
+              selectedStyle={selectedStyle}
             />
 
-            {/* Style Selection Section - Only show after image is uploaded */}
-            {hasImage && (
-              <StyleSelectionSection
-                hasImage={hasImage}
-                croppedImage={croppedImage}
-                selectedStyle={selectedStyle}
-                cropAspectRatio={cropAspectRatio}
-                selectedOrientation={currentOrientation}
-                onStyleSelect={handleEnhancedStyleSelect}
-                onStyleComplete={handleStyleComplete}
-                onRecropImage={handleRecropImage}
-              />
-            )}
-          </>
-        )}
+            {/* Smart Progress Indicator - Always render but only show content when there's an image */}
+            <SmartProgressIndicator uploadedImage={croppedImage} />
 
-        {/* Enhanced UX Components */}
-        <ContextualHelp />
-        <SocialProofFeed />
-        <ConversionMomentumTracker />
-      </div>
-    </MobileGestureHandler>
+            {/* Show cropper if user wants to recrop */}
+            {showCropper && (
+              <div className="prevent-overflow">
+                <PhotoCropperSection
+                  showCropper={showCropper}
+                  originalImage={originalImage}
+                  currentOrientation={currentOrientation}
+                  onCropComplete={handleCropComplete}
+                  onOrientationChange={setCurrentOrientation}
+                />
+              </div>
+            )}
+
+            {/* Photo Upload Section - Only show if no image or not showing cropper */}
+            {!showCropper && (
+              <div className="prevent-overflow space-y-6 sm:space-y-8">
+                <PhotoUploadSection
+                  hasImage={hasImage}
+                  croppedImage={croppedImage}
+                  onImageUpload={handleEnhancedImageUpload}
+                />
+
+                {/* Style Selection Section - Only show after image is uploaded */}
+                {hasImage && (
+                  <div className="prevent-overflow">
+                    <StyleSelectionSection
+                      hasImage={hasImage}
+                      croppedImage={croppedImage}
+                      selectedStyle={selectedStyle}
+                      cropAspectRatio={cropAspectRatio}
+                      selectedOrientation={currentOrientation}
+                      onStyleSelect={handleEnhancedStyleSelect}
+                      onStyleComplete={handleStyleComplete}
+                      onRecropImage={handleRecropImage}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Enhanced UX Components */}
+            <div className="prevent-overflow space-y-4 sm:space-y-6">
+              <ContextualHelp />
+              <SocialProofFeed />
+              <ConversionMomentumTracker />
+            </div>
+          </div>
+        </MobileContainer>
+      </MobileGestureHandler>
+    </div>
   );
 };
 
