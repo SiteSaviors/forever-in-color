@@ -1,5 +1,3 @@
-
-import { ProgressOrchestrator } from "./progress/ProgressOrchestrator";
 import PhotoUploadFlow from "./components/PhotoUploadFlow";
 import { AspectRatioErrorBoundary } from "./orientation/components/AspectRatioErrorBoundary";
 
@@ -30,9 +28,7 @@ const PhotoUploadAndStyleSelection = (props: PhotoUploadAndStyleSelectionProps) 
       onRetry={handleRetry}
       fallbackOrientation="square"
     >
-      <ProgressOrchestrator>
-        <PhotoUploadFlow {...props} />
-      </ProgressOrchestrator>
+      <PhotoUploadFlow {...props} />
     </AspectRatioErrorBoundary>
   );
 };
