@@ -1,3 +1,4 @@
+
 import { useCallback, useMemo } from 'react';
 import { useInteractionStateMachine } from './useInteractionStateMachine';
 
@@ -33,27 +34,27 @@ export const useStyleCardInteractions = ({
   // Sync external state with state machine
   const syncExternalState = useCallback(() => {
     if (!canAccess && !stateMachine.isDisabled) {
-      stateMachine.transition('DISABLE', true);
+      stateMachine.transition('DISABLE');
     } else if (canAccess && stateMachine.isDisabled) {
-      stateMachine.transition('ENABLE', true);
+      stateMachine.transition('ENABLE');
     }
     
     if (hasError && !stateMachine.hasError) {
-      stateMachine.transition('ERROR', true);
+      stateMachine.transition('ERROR');
     } else if (!hasError && stateMachine.hasError) {
-      stateMachine.transition('RESET', true);
+      stateMachine.transition('RESET');
     }
     
     if (isGenerating && !stateMachine.isLoading) {
-      stateMachine.transition('START_LOADING', true);
+      stateMachine.transition('START_LOADING');
     } else if (!isGenerating && stateMachine.isLoading) {
-      stateMachine.transition('FINISH_LOADING', true);
+      stateMachine.transition('FINISH_LOADING');
     }
     
     if (isSelected && !stateMachine.isSelected && !stateMachine.isLoading) {
-      stateMachine.transition('SELECT', true);
+      stateMachine.transition('SELECT');
     } else if (!isSelected && stateMachine.isSelected) {
-      stateMachine.transition('DESELECT', true);
+      stateMachine.transition('DESELECT');
     }
   }, [canAccess, hasError, isGenerating, isSelected, stateMachine]);
 

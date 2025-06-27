@@ -42,15 +42,15 @@ const ActiveStepView = React.memo(({
   // Sync external state with state machine
   React.useEffect(() => {
     if (!canAccess && !stepStateMachine.isDisabled) {
-      stepStateMachine.transition('DISABLE', true);
+      stepStateMachine.transition('DISABLE');
     } else if (canAccess && stepStateMachine.isDisabled) {
-      stepStateMachine.transition('ENABLE', true);
+      stepStateMachine.transition('ENABLE');
     }
     
     if (isActive && !stepStateMachine.isSelected) {
-      stepStateMachine.transition('SELECT', true);
+      stepStateMachine.transition('SELECT');
     } else if (!isActive && stepStateMachine.isSelected) {
-      stepStateMachine.transition('DESELECT', true);
+      stepStateMachine.transition('DESELECT');
     }
   }, [canAccess, isActive, stepStateMachine]);
 
