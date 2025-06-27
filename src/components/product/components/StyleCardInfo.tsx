@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sparkles, ArrowRight, Zap, RefreshCw } from "lucide-react";
+
 interface StyleCardInfoProps {
   style: {
     id: number;
@@ -18,6 +19,7 @@ interface StyleCardInfoProps {
   onGenerateClick: (e: React.MouseEvent) => void;
   onRetryClick: (e: React.MouseEvent) => void;
 }
+
 const StyleCardInfo = ({
   style,
   hasGeneratedPreview,
@@ -188,12 +190,24 @@ const StyleCardInfo = ({
   };
   const styleConfig = getStylePills(style.id);
   const styleEmoji = getStyleEmoji(style.id);
-  return <div className="p-4 space-y-3">
+
+  // Determine which button to show based on state
+  const showGenerateButton = !hasGeneratedPreview && !showError && style.id !== 1;
+  const showContinueButton = showContinueInCard && isSelected && !shouldBlur && !showError;
+  const showRetryButton = showError;
+
+  return (
+    <div className="p-4 space-y-3">
       {/* Gradient Pills */}
       <div className="flex flex-wrap gap-1.5">
-        {styleConfig.pills.map((pill, index) => <div key={index} className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium text-white bg-gradient-to-r ${pill.gradient} shadow-sm`}>
+        {styleConfig.pills.map((pill, index) => (
+          <div
+            key={index}
+            className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium text-white bg-gradient-to-r ${pill.gradient} shadow-sm`}
+          >
             {pill.text}
-          </div>)}
+          </div>
+        ))}
       </div>
 
       {/* Header with badges */}
@@ -208,34 +222,70 @@ const StyleCardInfo = ({
         </div>
         
         <div className="flex flex-col gap-1 flex-shrink-0">
-          {isPopular}
-          {showGeneratedBadge && <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs px-2 py-0.5">
+          {isPopular && (
+            <Badge className="bg-gradient-to-r from-blue-500 to-cyan-600 text-white text-xs px-2 py-0.5">
+              <Sparkles className="w-3 h-3 mr-1" />
+              Popular
+            </Badge>
+          )}
+          {showGeneratedBadge && (
+            <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs px-2 py-0.5">
               <Zap className="w-3 h-3 mr-1" />
               Ready
-            </Badge>}
+            </Badge>
+          )}
         </div>
       </div>
 
       {/* Action buttons */}
-      <div className="flex gap-2">
-        {/* Error state - show retry button */}
-        {showError && <Button onClick={onRetryClick} size="sm" variant="outline" className="flex-1 text-xs border-red-200 text-red-600 hover:bg-red-50 font-poppins">
-            <RefreshCw className="w-3 h-3 mr-1" />
-            Try Again
-          </Button>}
+      <div className="flex gap-2 mt-4">
+        {/* Generate This Style Button - Primary CTA */}
+        {showGenerateButton && (
+          <Button 
+            onClick={onGenerateClick} 
+            className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 font-poppins"
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            Generate This Style
+          </Button>
+        )}
 
         {/* Continue button for completed styles */}
-        {showContinueInCard && isSelected && !shouldBlur && !showError && <Button onClick={onContinueClick} size="sm" className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white text-xs font-poppins">
+        {showContinueButton && (
+          <Button 
+            onClick={onContinueClick} 
+            className="flex-1 bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 font-poppins"
+          >
             Continue
-            <ArrowRight className="w-3 h-3 ml-1" />
-          </Button>}
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </Button>
+        )}
 
-        {/* Generate button for blurred cards */}
-        {shouldBlur && !showError && <Button onClick={onGenerateClick} size="sm" variant="outline" className="flex-1 text-xs border-purple-200 text-purple-600 hover:bg-purple-50 font-poppins">
-            <Zap className="w-3 h-3 mr-1" />
-            Generate Preview
-          </Button>}
+        {/* Original Image Continue Button */}
+        {style.id === 1 && isSelected && (
+          <Button 
+            onClick={onContinueClick} 
+            className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 font-poppins"
+          >
+            Use Original
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </Button>
+        )}
+
+        {/* Retry button for error states */}
+        {showRetryButton && (
+          <Button 
+            onClick={onRetryClick} 
+            variant="outline" 
+            className="flex-1 text-sm border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 transition-all duration-200 font-poppins"
+          >
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Try Again
+          </Button>
+        )}
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default StyleCardInfo;
