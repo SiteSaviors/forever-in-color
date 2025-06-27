@@ -119,6 +119,10 @@ const StyleCard = memo(({
     handleRetry();
   };
 
+  const handleContinueClickWrapper = () => {
+    handleContinueClick();
+  };
+
   return (
     <>
       <StyleCardContainer
@@ -154,7 +158,7 @@ const StyleCard = memo(({
           onCanvasPreviewClick={handleCanvasPreviewClick}
           onGenerateStyle={handleGenerateStyle}
           onRetry={handleRetryClickWrapper}
-          onContinueClick={handleContinueClick}
+          onContinueClick={handleContinueClickWrapper}
           onGenerateClick={handleGenerateClickWrapper}
           onRetryClick={handleRetryClickWrapper}
         />
