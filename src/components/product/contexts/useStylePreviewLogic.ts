@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import { generateStylePreview } from '@/utils/stylePreviewApi';
 import { addWatermarkToImage } from '@/utils/watermarkUtils';
 import { StylePreviewAction } from './types';
-import { getAspectRatio } from '../orientation/utils';
+import { getAspectRatio, validateOrientationFlow } from '../orientation/utils';
 
 interface UseStylePreviewLogicProps {
   croppedImage: string | null;
@@ -33,8 +33,22 @@ export const useStylePreviewLogic = ({
       console.log(`🎯 Selected orientation: ${selectedOrientation}`);
       dispatch({ type: 'START_GENERATION', styleId });
       
-      // CRITICAL FIX: Map orientation to correct aspect ratio BEFORE API call
+      // STEP 1: Get aspect ratio using consolidated mapping
       const aspectRatio = getAspectRatio(selectedOrientation);
+      
+      // STEP 2: Validate the mapping before API call
+      const validation = validateOrientationFlow(selectedOrientation, aspectRatio);
+      if (!validation.isValid) {
+        const errorMsg = `Aspect ratio validation failed: ${validation.error}`;
+        console.error(`❌ ${errorMsg}`);
+        dispatch({ 
+          type: 'GENERATION_ERROR', 
+          styleId, 
+          error: errorMsg 
+        });
+        return;
+      }
+      
       const tempPhotoId = `temp_${Date.now()}_${styleId}`;
       
       console.log(`📋 Generation parameters:`, {
@@ -42,16 +56,18 @@ export const useStylePreviewLogic = ({
         styleId,
         selectedOrientation,
         mappedAspectRatio: aspectRatio,
-        croppedImageLength: croppedImage.length
+        croppedImageLength: croppedImage.length,
+        validationPassed: validation.isValid
       });
       
-      console.log(`🔥 CRITICAL DEBUG: Calling generateStylePreview with aspect ratio: ${aspectRatio} for orientation: ${selectedOrientation}`);
+      console.log(`🔥 CRITICAL DEBUG: Calling generateStylePreview with validated aspect ratio: ${aspectRatio} for orientation: ${selectedOrientation}`);
       
+      // STEP 3: Generate with validated aspect ratio  
       const previewUrl = await generateStylePreview(
         croppedImage, 
         styleName, 
         tempPhotoId, 
-        aspectRatio // This should now be "4:3", "3:4", or "1:1"
+        aspectRatio // This is now validated to be correct
       );
 
       if (previewUrl) {
@@ -62,7 +78,7 @@ export const useStylePreviewLogic = ({
             styleId, 
             url: watermarkedUrl 
           });
-          console.log(`✅ Manual generation completed for ${styleName} with aspect ratio: ${aspectRatio}`);
+          console.log(`✅ Manual generation completed for ${styleName} with validated aspect ratio: ${aspectRatio}`);
         } catch (watermarkError) {
           console.warn(`⚠️ Watermark failed for ${styleName}, using original:`, watermarkError);
           dispatch({ 

@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { generateStylePreview } from '@/utils/stylePreviewApi';
 import { addWatermarkToImage } from '@/utils/watermarkUtils';
-import { getAspectRatio } from '../orientation/utils';
+import { getAspectRatio, validateOrientationFlow } from '../orientation/utils';
 
 interface UseStylePreviewProps {
   style: {
@@ -29,6 +29,7 @@ export const useStylePreview = ({
   const [isLoading, setIsLoading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [hasGeneratedPreview, setHasGeneratedPreview] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   // Initialize with pre-generated preview if available
   useEffect(() => {
@@ -61,20 +62,31 @@ export const useStylePreview = ({
 
     console.log(`🎯 useStylePreview: Selected orientation is: ${selectedOrientation}`);
     
-    // CRITICAL FIX: Map orientation to correct aspect ratio BEFORE API call
+    // STEP 1: Get aspect ratio using consolidated mapping
     const aspectRatio = getAspectRatio(selectedOrientation);
     console.log(`🎨 Starting preview generation for style: ${style.name} (ID: ${style.id}) with orientation: ${selectedOrientation} -> aspect ratio: ${aspectRatio}`);
     
+    // STEP 2: Validate the mapping before proceeding
+    const validation = validateOrientationFlow(selectedOrientation, aspectRatio);
+    if (!validation.isValid) {
+      const errorMsg = `Aspect ratio validation failed: ${validation.error}`;
+      console.error(`❌ ${errorMsg}`);
+      setValidationError(errorMsg);
+      return;
+    }
+    
+    // Clear any previous validation errors
+    setValidationError(null);
     setIsLoading(true);
     
     try {
-      console.log(`🔄 Generating preview for ${style.name} with mapped aspect ratio: ${aspectRatio} (from orientation: ${selectedOrientation})`);
+      console.log(`🔄 Generating preview for ${style.name} with validated aspect ratio: ${aspectRatio} (from orientation: ${selectedOrientation})`);
       
       const tempPhotoId = `temp_${Date.now()}_${style.id}`;
       
       console.log(`🔥 CRITICAL DEBUG: About to call generateStylePreview with aspectRatio: ${aspectRatio}`);
       
-      // Generate the preview without server-side watermarking
+      // STEP 3: Generate the preview with validated aspect ratio
       const rawPreviewUrl = await generateStylePreview(croppedImage, style.name, tempPhotoId, aspectRatio, {
         watermark: false // Disable server-side watermarking
       });
@@ -98,6 +110,7 @@ export const useStylePreview = ({
       }
     } catch (error) {
       console.error(`❌ Error generating preview for ${style.name}:`, error);
+      setValidationError(`Generation failed: ${error.message}`);
     } finally {
       setIsLoading(false);
       console.log(`🏁 Preview generation completed for ${style.name} (ID: ${style.id}) with aspect ratio: ${aspectRatio}`);
@@ -119,6 +132,7 @@ export const useStylePreview = ({
     previewUrl,
     hasGeneratedPreview,
     isStyleGenerated,
+    validationError,
     handleClick,
     generatePreview
   };

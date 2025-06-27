@@ -1,37 +1,45 @@
 
-export const detectOrientationFromImage = (imageUrl: string): Promise<string> => {
-  return new Promise((resolve) => {
+import { 
+  detectOrientationFromDimensions, 
+  getAspectRatio, 
+  type OrientationType,
+  validateOrientationFlow
+} from '../orientation/utils';
+
+export const detectOrientationFromImage = (imageUrl: string): Promise<OrientationType> => {
+  return new Promise((resolve, reject) => {
     const img = new Image();
+    
     img.onload = () => {
-      const aspectRatio = img.width / img.height;
-      let detectedOrientation = 'square';
-      
-      if (aspectRatio > 1.2) {
-        detectedOrientation = 'horizontal';
-      } else if (aspectRatio < 0.8) {
-        detectedOrientation = 'vertical';
-      } else {
-        detectedOrientation = 'square';
+      try {
+        const detectedOrientation = detectOrientationFromDimensions(img.width, img.height);
+        console.log(`🎯 Auto-detected canvas orientation: ${detectedOrientation} from ${img.width}x${img.height}`);
+        resolve(detectedOrientation);
+      } catch (error) {
+        console.error('❌ Error in orientation detection:', error);
+        reject(error);
       }
-      
-      console.log(`🎯 Auto-detected canvas orientation: ${detectedOrientation} (aspect ratio: ${aspectRatio.toFixed(2)})`);
-      resolve(detectedOrientation);
     };
+    
+    img.onerror = (error) => {
+      console.error('❌ Error loading image for orientation detection:', error);
+      reject(new Error('Failed to load image for orientation detection'));
+    };
+    
     img.src = imageUrl;
   });
 };
 
+// Legacy function - now uses consolidated logic
 export const convertOrientationToAspectRatio = (orientation: string) => {
-  console.log('Converting orientation to GPT-Image-1 aspect ratio:', orientation);
-  
-  const orientationMap = {
-    'square': '1:1',
-    'horizontal': '4:3', 
-    'vertical': '3:4'
-  };
-  
-  const aspectRatio = orientationMap[orientation as keyof typeof orientationMap] || '1:1';
-  console.log(`FIXED MAPPING: ${orientation} -> ${aspectRatio} (was incorrectly using 2:3/3:2 before)`);
-  
-  return aspectRatio;
+  console.log('⚠️ DEPRECATED: convertOrientationToAspectRatio called. Use getAspectRatio instead.');
+  return getAspectRatio(orientation);
+};
+
+// Validation helper for API calls
+export const validateOrientationForGeneration = (
+  selectedOrientation: string,
+  generationAspectRatio: string
+) => {
+  return validateOrientationFlow(selectedOrientation, generationAspectRatio);
 };

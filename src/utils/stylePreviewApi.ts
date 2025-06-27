@@ -1,7 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { createPreview } from "./previewOperations";
-import { getAspectRatio } from "@/components/product/orientation/utils";
+import { getAspectRatio, validateOrientationFlow, isValidAspectRatio } from "@/components/product/orientation/utils";
 
 export const generateStylePreview = async (
   imageUrl: string, 
@@ -24,6 +24,13 @@ export const generateStylePreview = async (
       options
     });
     
+    // STEP 1: Validate aspect ratio format before API call
+    if (!isValidAspectRatio(aspectRatio)) {
+      const errorMsg = `Invalid aspect ratio format: ${aspectRatio}. Must be one of: 1:1, 4:3, 3:4`;
+      console.error(`❌ ${errorMsg}`);
+      throw new Error(errorMsg);
+    }
+    
     // Check if user is authenticated (optional now)
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
     const isAuthenticated = session && !sessionError;
@@ -33,22 +40,22 @@ export const generateStylePreview = async (
     // Generate session ID for watermarking if not provided
     const sessionId = options.sessionId || `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    // Prepare the request body with watermarking options
+    // STEP 2: Prepare the request body with validated aspect ratio
     const requestBody = { 
       imageUrl, 
       style,
       photoId,
       isAuthenticated,
-      aspectRatio, // This should now be the correctly mapped aspect ratio
+      aspectRatio, // This is now validated to be correct format
       watermark: options.watermark !== false, // Default to true
       quality: options.quality || 'preview',
       sessionId
     };
 
     console.log('FULL REQUEST BODY TO SUPABASE FUNCTION:', JSON.stringify(requestBody, null, 2));
-    console.log('🎯 CRITICAL: Aspect ratio being sent to API:', aspectRatio);
+    console.log('🎯 CRITICAL: Validated aspect ratio being sent to API:', aspectRatio);
 
-    // Enhanced error handling for the Supabase function call
+    // STEP 3: Enhanced error handling for the Supabase function call
     const { data, error } = await supabase.functions.invoke('generate-style-preview', {
       body: requestBody
     });
@@ -65,12 +72,14 @@ export const generateStylePreview = async (
         throw new Error('Too many requests. Please wait a moment before trying again.');
       } else if (error.message?.includes('Invalid')) {
         throw new Error('Invalid image or style selection. Please check your inputs and try again.');
+      } else if (error.message?.includes('aspect ratio')) {
+        throw new Error(`Aspect ratio error: ${error.message}`);
       }
       
       throw new Error(error.message || 'Failed to generate style preview. Please try again.');
     }
 
-    // Enhanced response validation
+    // STEP 4: Enhanced response validation
     if (!data) {
       throw new Error('No response received from AI service. Please try again.');
     }
