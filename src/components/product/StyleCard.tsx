@@ -82,6 +82,10 @@ const StyleCard = ({
     styleName: style.name
   });
 
+  // Convert hasError to boolean and extract error message before passing to handlers
+  const hasErrorBoolean = Boolean(hasError);
+  const errorMessage = typeof hasError === 'string' ? hasError : (validationError || 'Generation failed');
+
   // Use the handlers hook for event handling
   const {
     handleCardClick,
@@ -94,7 +98,7 @@ const StyleCard = ({
     previewUrl,
     isPermanentlyGenerated,
     effectiveIsLoading,
-    hasError: !!hasError, // Convert to boolean here
+    hasError: hasErrorBoolean, // Pass boolean here
     setShowError,
     setLocalIsLoading,
     setIsLightboxOpen,
@@ -111,9 +115,9 @@ const StyleCard = ({
 
   const showContinueInCard = showContinueButton && isSelected && (isStyleGenerated || isPermanentlyGenerated);
 
-  // Properly convert hasError to boolean and extract error message
-  const hasErrorBoolean = Boolean(hasError);
-  const errorMessage = typeof hasError === 'string' ? hasError : (validationError || 'Generation failed');
+  // Enhanced visual feedback for permanently generated state
+  const isLocked = isPermanentlyGenerated;
+  const showLockedFeedback = isLocked && !isSelected;
 
   return (
     <>
@@ -136,6 +140,13 @@ const StyleCard = ({
             cropAspectRatio={cropAspectRatio}
             onImageExpand={handleImageExpand}
           />
+          
+          {/* Subtle locked state indicator */}
+          {showLockedFeedback && (
+            <div className="absolute top-2 right-2 bg-green-500/90 text-white px-2 py-1 rounded-full text-xs font-medium shadow-lg">
+              ✓ Generated
+            </div>
+          )}
           
           {/* Loading Overlay - Never show if permanently generated */}
           <EnhancedStyleCardLoadingOverlay
