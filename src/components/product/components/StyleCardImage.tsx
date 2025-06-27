@@ -94,18 +94,11 @@ const StyleCardImage = memo(({
         variant={hasGeneratedPreview ? 'mockup' : 'standard'}
       />
 
-      {/* Top Indicators */}
+      {/* Top Indicators - Only Popular Badge, no AI Pick here */}
       <div className="absolute top-3 left-3 right-3 flex justify-between items-start z-20">
         <div className="flex flex-col gap-2">
-          {/* AI Pick Badge - Only show if this is a recommended style */}
-          {aiMatchScore >= 90 && showAIMatch && (
-            <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold shadow-lg animate-pulse">
-              <Crown className="w-3 h-3 mr-1" />
-              AI Pick
-            </Badge>
-          )}
-          {/* Popular Badge - Only show if popular and not AI Pick */}
-          {isPopular && !(aiMatchScore >= 90 && showAIMatch) && (
+          {/* Popular Badge */}
+          {isPopular && (
             <Badge className="bg-gradient-to-r from-blue-500 to-cyan-600 text-white font-semibold shadow-lg">
               <Sparkles className="w-3 h-3 mr-1" />
               Popular
@@ -114,32 +107,41 @@ const StyleCardImage = memo(({
         </div>
       </div>
 
-      {/* Bottom AI Match Indicator - Only show on hover and when not generated */}
+      {/* Bottom AI Match Overlay - Sleek and Modern Design */}
       {showAIMatch && (
-        <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-all duration-300 z-30 pointer-events-none">
-          <div className="bg-black/70 backdrop-blur-sm rounded-xl p-3 text-white">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <span className="text-lg font-bold">{aiMatchScore}% Match</span>
-                <div className="flex">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`w-3 h-3 ${
-                        i < Math.round(aiMatchScore / 20)
-                          ? 'text-amber-400 fill-current'
-                          : 'text-gray-400'
-                      }`}
-                    />
-                  ))}
+        <div className="absolute bottom-0 left-0 right-0 opacity-0 group-hover:opacity-100 transition-all duration-300 z-30 pointer-events-none">
+          <div className="mx-3 mb-3">
+            <div className="bg-black/80 backdrop-blur-md rounded-2xl px-4 py-3 text-white shadow-2xl border border-white/10">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="text-xl font-bold">{aiMatchScore}% Match</span>
+                  <div className="flex gap-1">
+                    {[...Array(5)].map((_, i) => (
+                      <div
+                        key={i}
+                        className={`w-2 h-2 rounded-full ${
+                          i < Math.round(aiMatchScore / 20)
+                            ? 'bg-yellow-400'
+                            : 'bg-gray-600'
+                        }`}
+                      />
+                    ))}
+                  </div>
                 </div>
+                {/* AI Pick Badge - Only for 90%+ scores */}
+                {aiMatchScore >= 90 && (
+                  <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold text-xs px-2 py-1">
+                    <Crown className="w-3 h-3 mr-1" />
+                    AI Pick
+                  </Badge>
+                )}
               </div>
+              <p className="text-sm text-gray-200 mt-2 leading-relaxed">
+                {aiMatchScore >= 90 ? "Softens high contrast while maintaining visual impact" :
+                 aiMatchScore >= 80 ? "Great match! This style works well with your photo" :
+                 "Good match! This style will enhance your photo"}
+              </p>
             </div>
-            <p className="text-xs text-gray-200 leading-relaxed">
-              {aiMatchScore >= 90 ? "Perfect match! This style complements your photo beautifully" :
-               aiMatchScore >= 80 ? "Great match! This style works well with your photo" :
-               "Good match! This style will enhance your photo"}
-            </p>
           </div>
         </div>
       )}
