@@ -1,8 +1,7 @@
-
 import { Frame, Image } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
-import OrientationSelector from "./OrientationSelector";
+import OrientationSelector from "./cropper/components/OrientationSelector";
 import SizeSelector from "./SizeSelector";
 import TrustElements from "./TrustElements";
 
