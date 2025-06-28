@@ -1,5 +1,4 @@
 
-import React, { useState, useRef, useImperativeHandle, forwardRef } from "react";
 import PhotoUploadAndStyleSelection from "../PhotoUploadAndStyleSelection";
 import ProductStepWrapper from "./ProductStepWrapper";
 
@@ -19,11 +18,7 @@ interface PhotoUploadStepProps {
   onStepChange: (step: number) => void;
 }
 
-export interface PhotoUploadStepRef {
-  triggerFileInput: () => boolean;
-}
-
-const PhotoUploadStep = forwardRef<PhotoUploadStepRef, PhotoUploadStepProps>(({
+const PhotoUploadStep = ({
   currentStep,
   isActive,
   isCompleted,
@@ -37,46 +32,19 @@ const PhotoUploadStep = forwardRef<PhotoUploadStepRef, PhotoUploadStepProps>(({
   onContinue,
   completedSteps,
   onStepChange
-}, ref) => {
-  const [isStep1Activated, setIsStep1Activated] = useState(false);
-  const fileInputTriggerRef = useRef<(() => boolean) | null>(null);
-  
-  // Expose triggerFileInput method to parent
-  useImperativeHandle(ref, () => ({
-    triggerFileInput: () => {
-      if (fileInputTriggerRef.current) {
-        return fileInputTriggerRef.current();
-      }
-      return false;
-    }
-  }), []);
-  
-  const shouldBeActive = currentStep === 1 && isActive && isStep1Activated;
-  
-  const handleStepClick = () => {
-    setIsStep1Activated(true);
-    onStepClick();
-  };
-
-  // Auto-activate when currentStep is 1 and isActive is true
-  React.useEffect(() => {
-    if (currentStep === 1 && isActive) {
-      setIsStep1Activated(true);
-    }
-  }, [currentStep, isActive]);
-  
+}: PhotoUploadStepProps) => {
   return (
     <ProductStepWrapper
       stepNumber={1}
       title="Upload Photo & Choose Style"
       description="Upload your photo and select an art style"
-      isActive={shouldBeActive}
+      isActive={isActive}
       isCompleted={isCompleted}
       canAccess={canAccess}
-      onStepClick={handleStepClick}
+      onStepClick={onStepClick}
       selectedStyle={selectedStyle}
     >
-      {shouldBeActive && (
+      {currentStep === 1 && (
         <PhotoUploadAndStyleSelection
           selectedStyle={selectedStyle}
           uploadedImage={uploadedImage}
@@ -88,15 +56,10 @@ const PhotoUploadStep = forwardRef<PhotoUploadStepRef, PhotoUploadStepProps>(({
           currentStep={currentStep}
           completedSteps={completedSteps}
           onStepChange={onStepChange}
-          onFileInputTriggerReady={(triggerFn) => {
-            fileInputTriggerRef.current = triggerFn;
-          }}
         />
       )}
     </ProductStepWrapper>
   );
-});
-
-PhotoUploadStep.displayName = 'PhotoUploadStep';
+};
 
 export default PhotoUploadStep;

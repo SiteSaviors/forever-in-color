@@ -11,10 +11,9 @@ import { Card, CardContent } from "@/components/ui/card";
 interface PhotoUploadContainerProps {
   onImageUpload: (imageUrl: string, originalImageUrl?: string, orientation?: string) => void;
   initialImage?: string | null;
-  onTriggerReady?: (triggerFn: () => boolean) => void;
 }
 
-const PhotoUploadContainer = ({ onImageUpload, initialImage, onTriggerReady }: PhotoUploadContainerProps) => {
+const PhotoUploadContainer = ({ onImageUpload, initialImage }: PhotoUploadContainerProps) => {
   const [showCropper, setShowCropper] = useState(false);
   const [showAutoCropPreview, setShowAutoCropPreview] = useState(false);
   const [recommendedOrientation, setRecommendedOrientation] = useState<string>("");
@@ -162,12 +161,12 @@ const PhotoUploadContainer = ({ onImageUpload, initialImage, onTriggerReady }: P
         isUploading={isUploading}
         uploadProgress={uploadProgress}
         processingStage={processingStage}
+        fileInputRef={fileInputRef}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onClick={handleClick}
         onFileChange={handleFileChange}
-        onTriggerReady={onTriggerReady}
       />
     </div>
   );

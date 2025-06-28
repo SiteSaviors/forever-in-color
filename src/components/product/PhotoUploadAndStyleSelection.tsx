@@ -1,4 +1,3 @@
-
 import PhotoUploadFlow from "./components/PhotoUploadFlow";
 import { AspectRatioErrorBoundary } from "./orientation/components/AspectRatioErrorBoundary";
 
@@ -16,7 +15,6 @@ interface PhotoUploadAndStyleSelectionProps {
   currentStep: number;
   completedSteps: number[];
   onStepChange: (step: number) => void;
-  onFileInputTriggerReady?: (triggerFn: () => boolean) => void;
 }
 
 const PhotoUploadAndStyleSelection = (props: PhotoUploadAndStyleSelectionProps) => {

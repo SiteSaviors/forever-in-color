@@ -1,20 +1,21 @@
 
-import { Upload, Image, Sparkles } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { useFileInputTrigger } from "../../hooks/useFileInputTrigger";
-import { useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import UploadDropzone from "./UploadDropzone";
+import UploadProgress from "./UploadProgress";
+import UploadFeatures from "./UploadFeatures";
+import UploadCTA from "./UploadCTA";
 
 interface PhotoUploadMainProps {
   isDragOver: boolean;
   isUploading: boolean;
   uploadProgress: number;
   processingStage: string;
+  fileInputRef: React.RefObject<HTMLInputElement>;
   onDrop: (e: React.DragEvent<HTMLDivElement>) => void;
   onDragOver: (e: React.DragEvent<HTMLDivElement>) => void;
   onDragLeave: (e: React.DragEvent<HTMLDivElement>) => void;
   onClick: () => void;
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onTriggerReady?: (triggerFn: () => boolean) => void;
 }
 
 const PhotoUploadMain = ({
@@ -22,88 +23,53 @@ const PhotoUploadMain = ({
   isUploading,
   uploadProgress,
   processingStage,
+  fileInputRef,
   onDrop,
   onDragOver,
   onDragLeave,
   onClick,
-  onFileChange,
-  onTriggerReady
+  onFileChange
 }: PhotoUploadMainProps) => {
-  const { fileInputRef, triggerFileInput } = useFileInputTrigger();
-
-  // Notify parent when trigger function is ready
-  useEffect(() => {
-    if (onTriggerReady) {
-      onTriggerReady(triggerFileInput);
-    }
-  }, [triggerFileInput, onTriggerReady]);
-
   return (
-    <Card className="w-full">
-      <div
-        data-upload-dropzone
-        className={`relative p-12 border-2 border-dashed rounded-lg transition-all duration-300 cursor-pointer
-          ${isDragOver 
-            ? 'border-purple-400 bg-purple-50' 
-            : 'border-gray-300 hover:border-purple-300 hover:bg-purple-25'
-          }
-          ${isUploading ? 'pointer-events-none' : ''}
-        `}
-        onDrop={onDrop}
-        onDragOver={onDragOver}
-        onDragLeave={onDragLeave}
-        onClick={onClick}
-      >
-        {/* Hidden file input */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          onChange={onFileChange}
-          className="hidden"
-        />
+    <Card className="w-full overflow-hidden border-0 shadow-2xl bg-gradient-to-br from-white to-gray-50">
+      <CardContent className="p-0">
+        <div className="relative">
+          {/* Premium Background Pattern */}
+          <div className="absolute inset-0 opacity-[0.02]">
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400" />
+            <div className="absolute inset-0" style={{
+              backgroundImage: `radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.1) 0%, transparent 50%), 
+                               radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.1) 0%, transparent 50%),
+                               radial-gradient(circle at 40% 80%, rgba(255, 204, 112, 0.1) 0%, transparent 50%)`
+            }} />
+          </div>
 
-        {isUploading ? (
-          <div className="text-center space-y-4">
-            <div className="w-16 h-16 mx-auto bg-purple-100 rounded-full flex items-center justify-center">
-              <Sparkles className="w-8 h-8 text-purple-600 animate-spin" />
+          <div className="relative p-4 sm:p-6 lg:p-8">
+            <UploadDropzone
+              isDragOver={isDragOver}
+              isUploading={isUploading}
+              processingStage={processingStage}
+              onDrop={onDrop}
+              onDragOver={onDragOver}
+              onDragLeave={onDragLeave}
+              onClick={onClick}
+              fileInputRef={fileInputRef}
+              onFileChange={onFileChange}
+            />
+            
+            {/* Progress Bar */}
+            <UploadProgress uploadProgress={uploadProgress} isUploading={isUploading} />
+            
+            {/* Enhanced Features - Reduced margin */}
+            <div className="mt-4">
+              <UploadFeatures />
             </div>
-            <div className="space-y-2">
-              <h3 className="text-lg font-semibold text-gray-900">
-                {processingStage || "Processing your photo..."}
-              </h3>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-purple-600 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${uploadProgress}%` }}
-                />
-              </div>
-              <p className="text-sm text-gray-600">{uploadProgress}% complete</p>
-            </div>
+            
+            {/* CTA Button */}
+            <UploadCTA isUploading={isUploading} onClick={onClick} />
           </div>
-        ) : (
-          <div className="text-center space-y-4">
-            <div className="w-16 h-16 mx-auto bg-purple-100 rounded-full flex items-center justify-center">
-              {isDragOver ? (
-                <Upload className="w-8 h-8 text-purple-600" />
-              ) : (
-                <Image className="w-8 h-8 text-purple-600" />
-              )}
-            </div>
-            <div className="space-y-2">
-              <h3 className="text-lg font-semibold text-gray-900">
-                {isDragOver ? "Drop your photo here" : "Upload Your Photo"}
-              </h3>
-              <p className="text-gray-600">
-                Drag and drop your image here, or click to browse
-              </p>
-              <p className="text-sm text-gray-500">
-                Supports JPG, PNG, WEBP • Max 10MB
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
+        </div>
+      </CardContent>
     </Card>
   );
 };
