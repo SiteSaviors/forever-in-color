@@ -41,6 +41,21 @@ const ProductHeader = ({
     // Dispatch custom event to notify Step 1 of hero button activation
     window.dispatchEvent(new CustomEvent('heroButtonClicked'));
     
+    // Trigger the photo upload interface directly
+    setTimeout(() => {
+      // Find and click the file input to open file picker
+      const fileInput = document.querySelector('input[type="file"][accept*="image"]') as HTMLInputElement;
+      if (fileInput) {
+        fileInput.click();
+      } else {
+        // If no file input found, try to find the upload dropzone and trigger it
+        const uploadDropzone = document.querySelector('[data-upload-dropzone]') as HTMLElement;
+        if (uploadDropzone) {
+          uploadDropzone.click();
+        }
+      }
+    }, 300); // Small delay to ensure Step 1 is expanded first
+    
     // Small delay to ensure state updates, then scroll to step 1
     setTimeout(() => {
       const step1Element = document.querySelector('[data-step="1"]');
