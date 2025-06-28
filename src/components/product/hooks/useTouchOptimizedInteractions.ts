@@ -1,5 +1,5 @@
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef, useState, useEffect } from 'react';
 
 interface TouchInteractionOptions {
   onTap?: () => void;
@@ -7,6 +7,8 @@ interface TouchInteractionOptions {
   onDoubleTap?: () => void;
   longPressDuration?: number;
   doubleTapDelay?: number;
+  debounceDelay?: number;
+  leading?: boolean;
 }
 
 export const useTouchOptimizedInteractions = (options: TouchInteractionOptions = {}) => {
@@ -15,19 +17,41 @@ export const useTouchOptimizedInteractions = (options: TouchInteractionOptions =
     onLongPress,
     onDoubleTap,
     longPressDuration = 500,
-    doubleTapDelay = 300
+    doubleTapDelay = 300,
+    debounceDelay = 100,
+    leading = false
   } = options;
 
   const [isPressed, setIsPressed] = useState(false);
+  const [immediateValue, setImmediateValue] = useState(false);
+  const [debouncedValue, setDebouncedValue] = useState(false);
+  
   const touchStartTime = useRef<number>(0);
   const longPressTimer = useRef<NodeJS.Timeout>();
   const lastTapTime = useRef<number>(0);
   const tapCount = useRef<number>(0);
 
+  // Debounced interaction handling
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(immediateValue);
+    }, debounceDelay);
+
+    // If leading is true, update immediately on first change
+    if (leading && immediateValue !== debouncedValue) {
+      setDebouncedValue(immediateValue);
+    }
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [immediateValue, debounceDelay, leading, debouncedValue]);
+
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     const now = Date.now();
     touchStartTime.current = now;
     setIsPressed(true);
+    setImmediateValue(true);
 
     // Clear any existing long press timer
     if (longPressTimer.current) {
@@ -39,6 +63,7 @@ export const useTouchOptimizedInteractions = (options: TouchInteractionOptions =
       longPressTimer.current = setTimeout(() => {
         onLongPress();
         setIsPressed(false);
+        setImmediateValue(false);
       }, longPressDuration);
     }
 
@@ -51,6 +76,7 @@ export const useTouchOptimizedInteractions = (options: TouchInteractionOptions =
     const touchDuration = now - touchStartTime.current;
     
     setIsPressed(false);
+    setImmediateValue(false);
     
     // Clear long press timer
     if (longPressTimer.current) {
@@ -81,13 +107,19 @@ export const useTouchOptimizedInteractions = (options: TouchInteractionOptions =
 
   const handleTouchCancel = useCallback(() => {
     setIsPressed(false);
+    setImmediateValue(false);
     if (longPressTimer.current) {
       clearTimeout(longPressTimer.current);
     }
   }, []);
 
+  const setValue = useCallback((value: boolean | ((prev: boolean) => boolean)) => {
+    setImmediateValue(value);
+  }, []);
+
   return {
     isPressed,
+    debouncedInteraction: [debouncedValue, setValue, immediateValue] as const,
     touchHandlers: {
       onTouchStart: handleTouchStart,
       onTouchEnd: handleTouchEnd,

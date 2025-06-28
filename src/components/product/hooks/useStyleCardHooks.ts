@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from 'react';
 import { useBlinking } from './useBlinking';
 import { useStyleCard } from './useStyleCard';
@@ -38,8 +37,10 @@ export const useStyleCardHooks = (props: UseStyleCardHooksProps) => {
     shouldBlur = false
   } = props;
 
-  // Performance monitoring
-  usePerformanceMonitor(`StyleCard-${style.name}`, process.env.NODE_ENV === 'development');
+  // Performance monitoring with consolidated hook
+  usePerformanceMonitor(`StyleCard-${style.name}`, { 
+    enabled: process.env.NODE_ENV === 'development' 
+  });
 
   // Use the consolidated style card hook
   const styleCardState = useStyleCard({
@@ -72,10 +73,11 @@ export const useStyleCardHooks = (props: UseStyleCardHooksProps) => {
   const handleTouchTap = () => styleCardState.handleCardClick();
   const handleTouchLongPress = () => styleCardState.handleImageExpand({} as React.MouseEvent);
 
-  // Touch-optimized interactions
+  // Touch-optimized interactions with integrated debouncing
   const { isPressed, touchHandlers } = useTouchOptimizedInteractions({
     onTap: handleTouchTap,
-    onLongPress: handleTouchLongPress
+    onLongPress: handleTouchLongPress,
+    debounceDelay: 150
   });
 
   const { isBlinking } = useBlinking(styleCardState.previewUrl, {
