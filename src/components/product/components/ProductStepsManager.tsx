@@ -1,7 +1,8 @@
 
-import { memo, lazy, Suspense } from 'react';
+import { memo, lazy, Suspense, RefObject } from 'react';
 import StepErrorBoundary from './StepErrorBoundary';
 import LoadingState from './LoadingState';
+import { PhotoUploadStepRef } from './PhotoUploadStep';
 
 // Lazy load step components for better code splitting
 const PhotoUploadStep = lazy(() => import('./PhotoUploadStep'));
@@ -27,6 +28,7 @@ interface ProductStepsManagerProps {
   handleContinueToStep2: () => void;
   handleContinueToStep3: () => void;
   handleContinueToStep4: () => void;
+  photoUploadStepRef?: RefObject<PhotoUploadStepRef>;
 }
 
 const ProductStepsManager = memo(({
@@ -46,7 +48,8 @@ const ProductStepsManager = memo(({
   canProceedToStep,
   handleContinueToStep2,
   handleContinueToStep3,
-  handleContinueToStep4
+  handleContinueToStep4,
+  photoUploadStepRef
 }: ProductStepsManagerProps) => {
 
   const handleNavigateHome = () => {
@@ -58,6 +61,7 @@ const ProductStepsManager = memo(({
       <StepErrorBoundary stepNumber={1} onNavigateHome={handleNavigateHome}>
         <Suspense fallback={<LoadingState message="Loading photo upload..." />}>
           <PhotoUploadStep
+            ref={photoUploadStepRef}
             currentStep={currentStep}
             isActive={currentStep === 1}
             isCompleted={completedSteps.includes(1)}

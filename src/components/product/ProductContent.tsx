@@ -8,6 +8,8 @@ import LoadingState from "./components/LoadingState";
 import ProductContentContainer from "./components/ProductContentContainer";
 import StepAccordion from "./components/StepAccordion";
 import ProductStepsManager from "./components/ProductStepsManager";
+import { PhotoUploadStepRef } from "./components/PhotoUploadStep";
+import { RefObject } from "react";
 
 interface ProductContentProps {
   currentStep: number;
@@ -23,6 +25,7 @@ interface ProductContentProps {
   onOrientationSelect: (orientation: string) => void;
   onSizeSelect: (size: string) => void;
   onCustomizationChange: (customizations: CustomizationOptions) => void;
+  photoUploadStepRef?: RefObject<PhotoUploadStepRef>;
 }
 
 const ProductContent = ({
@@ -38,7 +41,8 @@ const ProductContent = ({
   onPhotoAndStyleComplete,
   onOrientationSelect,
   onSizeSelect,
-  onCustomizationChange
+  onCustomizationChange,
+  photoUploadStepRef
 }: ProductContentProps) => {
   
   console.log('🐛 ProductContent Debug:', {
@@ -103,6 +107,7 @@ const ProductContent = ({
               handleContinueToStep2={handleContinueToStep2}
               handleContinueToStep3={handleContinueToStep3}
               handleContinueToStep4={handleContinueToStep4}
+              photoUploadStepRef={photoUploadStepRef}
             />
           </StepAccordion>
         </ProductContentContainer>
