@@ -97,10 +97,14 @@ export const useStyleCardHooks = (props: UseStyleCardHooksProps) => {
     handlers.handleRetryClick(mockEvent);
   };
 
+  // Create wrapper functions for touch handlers that accept events but ignore them
+  const handleTouchTap = () => handlers.handleCardClick();
+  const handleTouchLongPress = () => handlers.handleImageExpand({} as React.MouseEvent);
+
   // Touch-optimized interactions
   const { isPressed, touchHandlers } = useTouchOptimizedInteractions({
-    onTap: handlers.handleCardClick,
-    onLongPress: handlers.handleImageExpand
+    onTap: handleTouchTap,
+    onLongPress: handleTouchLongPress
   });
 
   const { isBlinking } = useBlinking(logicState.previewUrl, {
