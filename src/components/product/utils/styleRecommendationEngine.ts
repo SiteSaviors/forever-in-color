@@ -1,3 +1,4 @@
+
 import { artStyles } from "@/data/artStyles";
 
 export interface StyleRecommendation {
@@ -98,7 +99,7 @@ export const analyzeImageForRecommendations = async (imageUrl: string): Promise<
 export const generateStyleRecommendations = (analysis: ImageAnalysis): StyleRecommendation[] => {
   const recommendations: StyleRecommendation[] = [];
 
-  // Hero recommendations (top 3 most relevant) - Always include Watercolor Dreams as first recommendation
+  // Hero recommendations (top 5 most relevant) - Always include Watercolor Dreams as first recommendation
   const baseWatercolorRecommendation = {
     styleId: 4,
     styleName: "Watercolor Dreams",
@@ -123,6 +124,20 @@ export const generateStyleRecommendations = (analysis: ImageAnalysis): StyleReco
         confidence: 0.85,
         reason: "Traditional portrait style with rich depth",
         category: 'hero'
+      },
+      {
+        styleId: 8,
+        styleName: "Artisan Charcoal",
+        confidence: 0.82,
+        reason: "Elegant black and white portrait style",
+        category: 'hero'
+      },
+      {
+        styleId: 15,
+        styleName: "Deco Luxe",
+        confidence: 0.8,
+        reason: "Sophisticated artistic portrait treatment",
+        category: 'hero'
       }
     );
   } else if (analysis.isLandscape) {
@@ -134,15 +149,29 @@ export const generateStyleRecommendations = (analysis: ImageAnalysis): StyleReco
       {
         styleId: 13,
         styleName: "Abstract Fusion",
-        confidence: 0.82,
-        reason: "Perfect for wide compositions",
+        confidence: 0.88,
+        reason: "Perfect for wide compositions with dynamic effects",
         category: 'hero'
       },
       {
         styleId: 2,
         styleName: "Classic Oil Painting",
-        confidence: 0.80,
+        confidence: 0.85,
         reason: "Classic landscape treatment with rich textures",
+        category: 'hero'
+      },
+      {
+        styleId: 11,
+        styleName: "Electric Bloom",
+        confidence: 0.82,
+        reason: "Futuristic style that enhances landscape drama",
+        category: 'hero'
+      },
+      {
+        styleId: 6,
+        styleName: "Gemstone Poly",
+        confidence: 0.8,
+        reason: "Geometric style perfect for landscape compositions",
         category: 'hero'
       }
     );
@@ -162,8 +191,22 @@ export const generateStyleRecommendations = (analysis: ImageAnalysis): StyleReco
       {
         styleId: 10,
         styleName: "Neon Splash",
-        confidence: 0.85,
+        confidence: 0.87,
         reason: "Dynamic contrast creates stunning neon effects",
+        category: 'hero'
+      },
+      {
+        styleId: 11,
+        styleName: "Electric Bloom",
+        confidence: 0.84,
+        reason: "Cyberpunk aesthetic enhances high contrast images",
+        category: 'hero'
+      },
+      {
+        styleId: 7,
+        styleName: "3D Storybook",
+        confidence: 0.81,
+        reason: "Bold animated style works great with high contrast",
         category: 'hero'
       }
     );
@@ -174,15 +217,29 @@ export const generateStyleRecommendations = (analysis: ImageAnalysis): StyleReco
       {
         styleId: 2,
         styleName: "Classic Oil Painting",
-        confidence: 0.8,
+        confidence: 0.85,
         reason: "Timeless classic that works beautifully with any photo",
         category: 'hero'
       },
       {
         styleId: 5,
         styleName: "Pastel Bliss",
-        confidence: 0.76,
+        confidence: 0.82,
         reason: "Gentle, dreamy style that enhances your image",
+        category: 'hero'
+      },
+      {
+        styleId: 9,
+        styleName: "Pop Art Burst",
+        confidence: 0.79,
+        reason: "Vibrant pop art style adds energy to any photo",
+        category: 'hero'
+      },
+      {
+        styleId: 7,
+        styleName: "3D Storybook",
+        confidence: 0.76,
+        reason: "Fun, animated style that brings photos to life",
         category: 'hero'
       }
     );
