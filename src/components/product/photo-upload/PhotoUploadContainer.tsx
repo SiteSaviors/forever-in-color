@@ -1,7 +1,6 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { detectOrientationFromImage } from "../utils/orientationDetection";
-import { usePhotoUploadLogic } from "./hooks/usePhotoUploadLogic";
+import { useGlobalFileUpload } from "../hooks/useGlobalFileUpload";
 import UnifiedFlowProgress from "../components/UnifiedFlowProgress";
 import AutoCropPreview from "../components/AutoCropPreview";
 import PhotoCropper from "../PhotoCropper";
@@ -21,8 +20,11 @@ const PhotoUploadContainer = ({ onImageUpload, initialImage, onTriggerReady }: P
   const [analysisComplete, setAnalysisComplete] = useState(false);
   const [cropAccepted, setCropAccepted] = useState(false);
   const [currentFlowStage, setCurrentFlowStage] = useState<'upload' | 'analyzing' | 'crop-preview' | 'orientation' | 'complete'>('upload');
+  const [uploadedImage, setUploadedImage] = useState<string | null>(initialImage || null);
 
   const handleImageAnalysis = async (imageUrl: string) => {
+    console.log('🎯 PhotoUploadContainer: Starting image analysis for:', imageUrl);
+    setUploadedImage(imageUrl);
     setCurrentFlowStage('analyzing');
     
     try {
@@ -44,44 +46,19 @@ const PhotoUploadContainer = ({ onImageUpload, initialImage, onTriggerReady }: P
   };
 
   const {
-    isDragOver,
     isUploading,
     uploadProgress,
-    uploadedImage,
     processingStage,
-    fileInputRef,
-    handleDrop,
-    handleDragOver,
-    handleDragLeave,
-    handleClick,
-    handleFileChange,
-    handleChangePhoto,
-    setUploadedImage
-  } = usePhotoUploadLogic({
+    triggerFileInput
+  } = useGlobalFileUpload({
     onImageUpload,
-    initialImage,
     onImageAnalysis: handleImageAnalysis,
     onFlowStageChange: setCurrentFlowStage
   });
 
-  // Create the trigger function that directly accesses the file input
-  const triggerFileInput = useCallback(() => {
-    console.log('🎯 PhotoUploadContainer: Triggering file input', {
-      hasFileInputRef: !!fileInputRef.current
-    });
-    
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-      return true;
-    }
-    
-    console.log('❌ PhotoUploadContainer: File input ref not available');
-    return false;
-  }, [fileInputRef]);
-
   // Register the trigger function immediately when component mounts
   useEffect(() => {
-    console.log('🎯 PhotoUploadContainer: Registering trigger function');
+    console.log('🎯 PhotoUploadContainer: Registering global trigger function');
     onTriggerReady?.(triggerFileInput);
   }, [triggerFileInput, onTriggerReady]);
 
@@ -116,6 +93,35 @@ const PhotoUploadContainer = ({ onImageUpload, initialImage, onTriggerReady }: P
     setCurrentFlowStage('complete');
     onImageUpload(croppedImage, uploadedImage || undefined, orientation);
     setShowCropper(false);
+  };
+
+  const handleChangePhoto = () => {
+    console.log('🎯 User wants to change photo - triggering global file input');
+    triggerFileInput();
+  };
+
+  // Simplified drag and drop handlers for the UI (still functional but uses global system)
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    console.log('🎯 File dropped - but using global system handles file processing');
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+  };
+
+  const handleClick = () => {
+    console.log('🎯 Upload area clicked - triggering global file input');
+    triggerFileInput();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // This is handled by the global system now, but keeping for UI compatibility
+    console.log('🎯 File input change - handled by global system');
   };
 
   // Show auto-crop preview after analysis
@@ -179,7 +185,7 @@ const PhotoUploadContainer = ({ onImageUpload, initialImage, onTriggerReady }: P
       )}
 
       <PhotoUploadMain
-        isDragOver={isDragOver}
+        isDragOver={false}
         isUploading={isUploading}
         uploadProgress={uploadProgress}
         processingStage={processingStage}

@@ -1,7 +1,7 @@
-
 import { Button } from "@/components/ui/button";
 import { Upload, Sparkles, Shield, Star, Zap } from "lucide-react";
 import { useState } from "react";
+import { fileInputManager } from "@/utils/fileInputManager";
 
 interface ProductHeaderCTAProps {
   onUploadClick: () => void;
@@ -12,62 +12,37 @@ const ProductHeaderCTA = ({ onUploadClick, onTriggerFileInput }: ProductHeaderCT
   const [isActivating, setIsActivating] = useState(false);
 
   const handleUploadClick = async () => {
-    console.log('🎯 Hero button clicked - starting activation process');
+    console.log('🎯 Hero button clicked - direct global trigger approach');
     setIsActivating(true);
     
     // Activate Step 1 first
     onUploadClick();
     
-    // Try to trigger immediately, then with short delays
-    console.log('🎯 Attempting immediate file input trigger');
-    const immediateSuccess = onTriggerFileInput?.();
+    // Use direct global file input manager - no async waiting needed
+    console.log('🎯 Triggering global file input manager directly');
+    const success = fileInputManager.triggerFileInput();
     
-    if (immediateSuccess) {
-      console.log('✅ File input triggered immediately');
-      setIsActivating(false);
-      return;
+    if (success) {
+      console.log('✅ Global file input triggered successfully');
+      
+      // Scroll to step 1 after successful trigger
+      setTimeout(() => {
+        const step1Element = document.querySelector('[data-step="1"]');
+        if (step1Element) {
+          const elementTop = step1Element.getBoundingClientRect().top + window.pageYOffset;
+          const offsetTop = elementTop - 120;
+          
+          window.scrollTo({
+            top: offsetTop,
+            behavior: 'smooth'
+          });
+        }
+      }, 100);
+    } else {
+      console.log('❌ Global file input trigger failed');
     }
     
-    // If immediate trigger fails, try with very short delays
-    let attempts = 0;
-    const maxAttempts = 20;
-    const attemptTrigger = () => {
-      attempts++;
-      console.log(`🎯 Trigger attempt ${attempts}/${maxAttempts}`);
-      
-      const success = onTriggerFileInput?.();
-      
-      if (success) {
-        console.log(`✅ File input triggered successfully on attempt ${attempts}`);
-        setIsActivating(false);
-        
-        // Scroll to step 1 after successful trigger
-        setTimeout(() => {
-          const step1Element = document.querySelector('[data-step="1"]');
-          if (step1Element) {
-            const elementTop = step1Element.getBoundingClientRect().top + window.pageYOffset;
-            const offsetTop = elementTop - 120;
-            
-            window.scrollTo({
-              top: offsetTop,
-              behavior: 'smooth'
-            });
-          }
-        }, 100);
-        
-        return;
-      }
-      
-      if (attempts < maxAttempts) {
-        setTimeout(attemptTrigger, 10); // Very short 10ms delay
-      } else {
-        console.log('❌ File input trigger failed after all attempts');
-        setIsActivating(false);
-      }
-    };
-    
-    // Start attempting after a very short delay to allow component to mount
-    setTimeout(attemptTrigger, 50);
+    setIsActivating(false);
   };
 
   return (
