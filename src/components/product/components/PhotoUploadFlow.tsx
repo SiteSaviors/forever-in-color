@@ -42,9 +42,9 @@ const PhotoUploadFlow = (props: PhotoUploadFlowProps) => {
     croppedImage,
     hasValidImage,
     handleImageUpload,
-    handleStyleSelect
+    handleStyleSelect,
+    handleRecropImage
   } = usePhotoUploadState({
-    initialImage: uploadedImage,
     selectedStyle,
     onComplete: onPhotoAndStyleComplete
   });
@@ -60,17 +60,21 @@ const PhotoUploadFlow = (props: PhotoUploadFlowProps) => {
         onFileInputTriggerReady={handleFileInputTriggerReady}
       />
       
-      {hasValidImage && (
+      {hasValidImage && imageToDisplay && (
         <>
           <StyleSelectionSection
+            hasImage={hasValidImage}
             croppedImage={imageToDisplay}
             selectedStyle={selectedStyle}
+            cropAspectRatio={1}
             selectedOrientation={selectedOrientation}
             onStyleSelect={handleStyleSelect}
+            onStyleComplete={onPhotoAndStyleComplete}
+            onRecropImage={handleRecropImage}
           />
           
           <PopularChoices 
-            selectedStyle={selectedStyle}
+            selectedStyle={selectedStyle?.id || null}
             onStyleSelect={handleStyleSelect}
           />
         </>
