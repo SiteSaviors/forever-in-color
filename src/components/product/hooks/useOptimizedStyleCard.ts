@@ -1,6 +1,6 @@
 
 import { useMemo, useCallback } from 'react';
-import { useDebouncedInteraction } from './useDebouncedInteraction';
+import { useTouchOptimizedInteractions } from './useTouchOptimizedInteractions';
 
 interface UseOptimizedStyleCardProps {
   style: {
@@ -22,8 +22,12 @@ export const useOptimizedStyleCard = ({
   hasGeneratedPreview,
   canAccess
 }: UseOptimizedStyleCardProps) => {
-  // Debounced hover state to prevent rapid re-renders
-  const [isHovered, setIsHovered] = useDebouncedInteraction(false, { delay: 100 });
+  // Use touch-optimized interactions with debouncing built-in
+  const { debouncedInteraction } = useTouchOptimizedInteractions({
+    debounceDelay: 100
+  });
+  
+  const [isHovered, setIsHovered] = debouncedInteraction;
 
   // Memoized computed styles to prevent recalculation on every render
   const computedClasses = useMemo(() => {

@@ -1,4 +1,3 @@
-
 import React, { memo, useMemo, useState, useEffect } from "react";
 import { FixedSizeGrid as Grid } from 'react-window';
 import StyleCard from "../../StyleCard";
@@ -77,8 +76,10 @@ const ActiveStyleGrid = memo(({
   const [containerDimensions, setContainerDimensions] = useState({ width: 1200, height: 800 });
   const { preloadStyleImages } = useIntelligentPreloader();
   
-  // Performance monitoring
-  usePerformanceMonitor('ActiveStyleGrid', process.env.NODE_ENV === 'development');
+  // Performance monitoring with correct options object
+  usePerformanceMonitor('ActiveStyleGrid', { 
+    enabled: process.env.NODE_ENV === 'development' 
+  });
   
   // Popular styles that auto-generate: Classic Oil (2), Watercolor Dreams (4), Pastel Bliss (5)
   const popularStyleIds = useMemo(() => [2, 4, 5], []);
