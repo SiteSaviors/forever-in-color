@@ -103,7 +103,6 @@ const ProductStepsManager = (props: ProductStepsManagerProps) => {
         selectedSize={selectedSize}
         onStepClick={() => onCurrentStepChange(3)}
         onCustomizationChange={onCustomizationChange}
-        onContinue={handleContinueToStep4}
       />
 
       <ReviewOrderStep
