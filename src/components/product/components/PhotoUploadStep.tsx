@@ -1,14 +1,7 @@
 
-import React, { useImperativeHandle, forwardRef } from "react";
+import React, { useState, useRef, useImperativeHandle, forwardRef } from "react";
 import PhotoUploadAndStyleSelection from "../PhotoUploadAndStyleSelection";
 import ProductStepWrapper from "./ProductStepWrapper";
-import { fileInputManager } from "@/utils/fileInputManager";
-
-interface GlobalUploadState {
-  isUploading: boolean;
-  uploadProgress: number;
-  processingStage: string;
-}
 
 interface PhotoUploadStepProps {
   currentStep: number;
@@ -24,7 +17,6 @@ interface PhotoUploadStepProps {
   onContinue: () => void;
   completedSteps: number[];
   onStepChange: (step: number) => void;
-  globalUploadState?: GlobalUploadState;
 }
 
 export interface PhotoUploadStepRef {
@@ -44,25 +36,34 @@ const PhotoUploadStep = forwardRef<PhotoUploadStepRef, PhotoUploadStepProps>(({
   onPhotoAndStyleComplete,
   onContinue,
   completedSteps,
-  onStepChange,
-  globalUploadState
+  onStepChange
 }, ref) => {
+  const [isStep1Activated, setIsStep1Activated] = useState(false);
+  const fileInputTriggerRef = useRef<(() => boolean) | null>(null);
   
-  // Expose direct global trigger to parent - no complex registration needed
+  // Expose triggerFileInput method to parent
   useImperativeHandle(ref, () => ({
     triggerFileInput: () => {
-      console.log('🎯 PhotoUploadStep: Direct global trigger called');
-      return fileInputManager.triggerFileInput();
+      if (fileInputTriggerRef.current) {
+        return fileInputTriggerRef.current();
+      }
+      return false;
     }
   }), []);
   
-  // Step should be active when currentStep is 1
-  const shouldBeActive = currentStep === 1;
+  const shouldBeActive = currentStep === 1 && isActive && isStep1Activated;
   
   const handleStepClick = () => {
-    console.log('🎯 PhotoUploadStep clicked');
+    setIsStep1Activated(true);
     onStepClick();
   };
+
+  // Auto-activate when currentStep is 1 and isActive is true
+  React.useEffect(() => {
+    if (currentStep === 1 && isActive) {
+      setIsStep1Activated(true);
+    }
+  }, [currentStep, isActive]);
   
   return (
     <ProductStepWrapper
@@ -87,8 +88,9 @@ const PhotoUploadStep = forwardRef<PhotoUploadStepRef, PhotoUploadStepProps>(({
           currentStep={currentStep}
           completedSteps={completedSteps}
           onStepChange={onStepChange}
-          onFileInputTriggerReady={() => {}} // No longer needed with global system
-          globalUploadState={globalUploadState}
+          onFileInputTriggerReady={(triggerFn) => {
+            fileInputTriggerRef.current = triggerFn;
+          }}
         />
       )}
     </ProductStepWrapper>

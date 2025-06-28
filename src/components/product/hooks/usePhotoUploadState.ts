@@ -3,17 +3,31 @@ import { useState, useEffect } from "react";
 
 interface UsePhotoUploadStateProps {
   selectedStyle: { id: number; name: string } | null;
-  onComplete: (imageUrl: string, styleId: number, styleName: string) => void;
+  uploadedImage: string | null;
+  selectedOrientation: string;
+  onPhotoAndStyleComplete: (imageUrl: string, styleId: number, styleName: string) => void;
 }
 
 export const usePhotoUploadState = ({
   selectedStyle,
-  onComplete
+  uploadedImage,
+  selectedOrientation,
+  onPhotoAndStyleComplete
 }: UsePhotoUploadStateProps) => {
-  const [currentOrientation, setCurrentOrientation] = useState('square');
+  const [currentOrientation, setCurrentOrientation] = useState(selectedOrientation);
   const [showCropper, setShowCropper] = useState(false);
   const [originalImage, setOriginalImage] = useState<string | null>(null);
-  const [croppedImage, setCroppedImage] = useState<string | null>(null);
+  const [croppedImage, setCroppedImage] = useState<string | null>(uploadedImage);
+
+  // Update local orientation state when prop changes
+  useEffect(() => {
+    setCurrentOrientation(selectedOrientation);
+  }, [selectedOrientation]);
+
+  // Update cropped image when uploadedImage prop changes
+  useEffect(() => {
+    setCroppedImage(uploadedImage);
+  }, [uploadedImage]);
 
   const handleImageUpload = (imageUrl: string, originalImageUrl?: string, orientation?: string) => {
     console.log('🎨 Photo uploaded with unified canvas selection:', {
@@ -34,10 +48,10 @@ export const usePhotoUploadState = ({
 
     // Create a temporary style entry for state management
     if (selectedStyle) {
-      onComplete(imageUrl, selectedStyle.id, selectedStyle.name);
+      onPhotoAndStyleComplete(imageUrl, selectedStyle.id, selectedStyle.name);
     } else {
       // Create temporary style to maintain state flow
-      onComplete(imageUrl, 0, "temp-style");
+      onPhotoAndStyleComplete(imageUrl, 0, "temp-style");
     }
   };
 
@@ -50,9 +64,9 @@ export const usePhotoUploadState = ({
 
     // Update parent with new cropped image
     if (selectedStyle) {
-      onComplete(croppedImageUrl, selectedStyle.id, selectedStyle.name);
+      onPhotoAndStyleComplete(croppedImageUrl, selectedStyle.id, selectedStyle.name);
     } else {
-      onComplete(croppedImageUrl, 0, "temp-style");
+      onPhotoAndStyleComplete(croppedImageUrl, 0, "temp-style");
     }
   };
 
@@ -67,18 +81,15 @@ export const usePhotoUploadState = ({
       styleName
     });
     if (croppedImage) {
-      onComplete(croppedImage, styleId, styleName);
+      onPhotoAndStyleComplete(croppedImage, styleId, styleName);
     }
   };
-
-  const hasValidImage = !!croppedImage;
 
   return {
     currentOrientation,
     showCropper,
     originalImage,
     croppedImage,
-    hasValidImage,
     setCurrentOrientation,
     handleImageUpload,
     handleCropComplete,

@@ -1,7 +1,7 @@
+
 import { Button } from "@/components/ui/button";
 import { Upload, Sparkles, Shield, Star, Zap } from "lucide-react";
 import { useState } from "react";
-import { fileInputManager } from "@/utils/fileInputManager";
 
 interface ProductHeaderCTAProps {
   onUploadClick: () => void;
@@ -12,37 +12,35 @@ const ProductHeaderCTA = ({ onUploadClick, onTriggerFileInput }: ProductHeaderCT
   const [isActivating, setIsActivating] = useState(false);
 
   const handleUploadClick = async () => {
-    console.log('🎯 Hero button clicked - direct global trigger approach');
     setIsActivating(true);
     
     // Activate Step 1 first
     onUploadClick();
     
-    // Use direct global file input manager - no async waiting needed
-    console.log('🎯 Triggering global file input manager directly');
-    const success = fileInputManager.triggerFileInput();
+    // Small delay to allow Step 1 to render, then trigger file input
+    setTimeout(() => {
+      const success = onTriggerFileInput?.();
+      if (success) {
+        console.log('✅ File input triggered successfully');
+      } else {
+        console.log('❌ File input trigger failed');
+      }
+      setIsActivating(false);
+    }, 100);
     
-    if (success) {
-      console.log('✅ Global file input triggered successfully');
-      
-      // Scroll to step 1 after successful trigger
-      setTimeout(() => {
-        const step1Element = document.querySelector('[data-step="1"]');
-        if (step1Element) {
-          const elementTop = step1Element.getBoundingClientRect().top + window.pageYOffset;
-          const offsetTop = elementTop - 120;
-          
-          window.scrollTo({
-            top: offsetTop,
-            behavior: 'smooth'
-          });
-        }
-      }, 100);
-    } else {
-      console.log('❌ Global file input trigger failed');
-    }
-    
-    setIsActivating(false);
+    // Scroll to step 1
+    setTimeout(() => {
+      const step1Element = document.querySelector('[data-step="1"]');
+      if (step1Element) {
+        const elementTop = step1Element.getBoundingClientRect().top + window.pageYOffset;
+        const offsetTop = elementTop - 120;
+        
+        window.scrollTo({
+          top: offsetTop,
+          behavior: 'smooth'
+        });
+      }
+    }, 200);
   };
 
   return (
@@ -75,7 +73,7 @@ const ProductHeaderCTA = ({ onUploadClick, onTriggerFileInput }: ProductHeaderCT
           className="relative bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 hover:from-purple-700 hover:via-pink-700 hover:to-purple-700 text-white px-16 py-8 text-2xl font-black rounded-full shadow-2xl hover:shadow-purple-500/50 transform hover:scale-[1.02] transition-all duration-300 border-2 border-white/20 backdrop-blur-sm group-hover:border-white/40 disabled:opacity-75"
         >
           <Upload className="w-7 h-7 mr-4" />
-          {isActivating ? 'Opening File Picker...' : 'Upload Your Photo & Start Creating'}
+          {isActivating ? 'Opening...' : 'Upload Your Photo & Start Creating'}
           <Sparkles className={`w-6 h-6 ml-4 ${isActivating ? 'animate-spin' : ''}`} />
         </Button>
       </div>

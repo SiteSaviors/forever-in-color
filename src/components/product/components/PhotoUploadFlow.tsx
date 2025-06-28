@@ -1,19 +1,22 @@
 
-import React, { useState, useRef, useCallback } from "react";
-import { Card } from "@/components/ui/card";
 import PhotoUploadSection from "./PhotoUploadSection";
 import StyleSelectionSection from "./StyleSelectionSection";
-import PopularChoices from "./PopularChoices";
+import PhotoCropperSection from "./PhotoCropperSection";
+import SmartProgressIndicator from "../progress/SmartProgressIndicator";
+import ContextualHelp from "../help/ContextualHelp";
+import MobileGestureHandler from "../mobile/MobileGestureHandler";
+import ConversionMomentumTracker from "../progress/ConversionMomentumTracker";
+import ProgressStateManager from "./ProgressStateManager";
+import { useProgressOrchestrator } from "../progress/ProgressOrchestrator";
 import { usePhotoUploadState } from "../hooks/usePhotoUploadState";
-
-interface GlobalUploadState {
-  isUploading: boolean;
-  uploadProgress: number;
-  processingStage: string;
-}
+import { getAspectRatioFromOrientation } from "../cropper/data/orientationOptions";
+import { useEnhancedHandlers } from "./EnhancedHandlers";
 
 interface PhotoUploadFlowProps {
-  selectedStyle: { id: number; name: string } | null;
+  selectedStyle: {
+    id: number;
+    name: string;
+  } | null;
   uploadedImage: string | null;
   selectedOrientation: string;
   autoGenerationComplete: boolean;
@@ -23,87 +26,122 @@ interface PhotoUploadFlowProps {
   currentStep: number;
   completedSteps: number[];
   onStepChange: (step: number) => void;
-  onFileInputTriggerReady?: (triggerFn: () => boolean) => void;
-  globalUploadState?: GlobalUploadState;
 }
 
-const PhotoUploadFlow = (props: PhotoUploadFlowProps) => {
-  const { 
-    selectedStyle, 
-    uploadedImage, 
-    selectedOrientation,
-    onPhotoAndStyleComplete,
-    onFileInputTriggerReady,
-    globalUploadState
-  } = props;
-
-  const fileInputTriggerRef = useRef<(() => boolean) | null>(null);
-
-  // Register the trigger function when it becomes available (legacy support)
-  const handleFileInputTriggerReady = useCallback((triggerFn: () => boolean) => {
-    console.log('🎯 PhotoUploadFlow: File input trigger registered (legacy)');
-    fileInputTriggerRef.current = triggerFn;
-    onFileInputTriggerReady?.(triggerFn);
-  }, [onFileInputTriggerReady]);
-
+const PhotoUploadFlow = ({
+  selectedStyle,
+  uploadedImage,
+  selectedOrientation,
+  autoGenerationComplete,
+  onComplete,
+  onPhotoAndStyleComplete,
+  onContinue,
+  currentStep,
+  completedSteps,
+  onStepChange
+}: PhotoUploadFlowProps) => {
+  const { dispatch, showContextualHelp } = useProgressOrchestrator();
+  
   const {
+    currentOrientation,
+    showCropper,
+    originalImage,
     croppedImage,
-    hasValidImage,
+    setCurrentOrientation,
     handleImageUpload,
-    handleStyleSelect,
-    handleRecropImage
+    handleCropComplete,
+    handleRecropImage,
+    handleStyleSelect
   } = usePhotoUploadState({
     selectedStyle,
-    onComplete: onPhotoAndStyleComplete
+    uploadedImage,
+    selectedOrientation,
+    onPhotoAndStyleComplete
   });
 
-  // Use the uploaded image from props (from global state) if available, otherwise use cropped image
-  const imageToDisplay = uploadedImage || croppedImage;
-  const shouldShowImage = !!uploadedImage || hasValidImage;
+  const { handleEnhancedImageUpload, handleEnhancedStyleSelect } = useEnhancedHandlers(
+    handleImageUpload,
+    handleStyleSelect
+  );
 
-  console.log('🎯 PhotoUploadFlow Debug:', {
-    uploadedImage: !!uploadedImage,
-    croppedImage: !!croppedImage,
-    hasValidImage,
-    shouldShowImage,
-    imageToDisplay: !!imageToDisplay
-  });
+  const handleStyleComplete = (imageUrl: string, styleId: number, styleName: string) => {
+    console.log('🎨 Style selection completed:', {
+      imageUrl,
+      styleId,
+      styleName
+    });
+    dispatch({ type: 'COMPLETE_STEP', payload: 1 });
+    onComplete(imageUrl, styleId, styleName);
+    onContinue();
+  };
+
+  const hasImage = !!croppedImage;
+  const hasStyle = selectedStyle && selectedStyle.name !== "temp-style";
+  const cropAspectRatio = getAspectRatioFromOrientation(currentOrientation);
 
   return (
-    <div className="space-y-8">
-      <PhotoUploadSection
-        hasImage={shouldShowImage}
-        croppedImage={imageToDisplay}
-        onImageUpload={handleImageUpload}
-        onFileInputTriggerReady={handleFileInputTriggerReady}
-        globalUploadState={globalUploadState}
-      />
-      
-      {shouldShowImage && imageToDisplay && (
-        <>
-          <StyleSelectionSection
-            hasImage={shouldShowImage}
-            croppedImage={imageToDisplay}
-            selectedStyle={selectedStyle}
-            cropAspectRatio={1}
-            selectedOrientation={selectedOrientation}
-            onStyleSelect={handleStyleSelect}
-            onStyleComplete={onPhotoAndStyleComplete}
-            onRecropImage={handleRecropImage}
+    <MobileGestureHandler
+      onSwipeLeft={() => {
+        if (hasImage && !hasStyle) {
+          showContextualHelp('hesitation', 'Swipe through the style gallery above to find your perfect match!');
+        }
+      }}
+      enableHaptic={true}
+      showGestureHints={true}
+    >
+      <div className="space-y-8">
+        {/* Progress State Manager */}
+        <ProgressStateManager
+          currentStep={currentStep}
+          completedSteps={completedSteps}
+          croppedImage={croppedImage}
+          selectedStyle={selectedStyle}
+        />
+
+        {/* Smart Progress Indicator - Always render but only show content when there's an image */}
+        <SmartProgressIndicator uploadedImage={croppedImage} />
+
+        {/* Show cropper if user wants to recrop */}
+        {showCropper && (
+          <PhotoCropperSection
+            showCropper={showCropper}
+            originalImage={originalImage}
+            currentOrientation={currentOrientation}
+            onCropComplete={handleCropComplete}
+            onOrientationChange={setCurrentOrientation}
           />
-          
-          <PopularChoices 
-            recommendations={[]}
-            croppedImage={imageToDisplay}
-            selectedStyle={selectedStyle?.id || null}
-            cropAspectRatio={1}
-            selectedOrientation={selectedOrientation}
-            onStyleSelect={handleStyleSelect}
-            onComplete={() => {}}
-          />
-        </>
-      )}
-    </div>
+        )}
+
+        {/* Photo Upload Section - Only show if no image or not showing cropper */}
+        {!showCropper && (
+          <>
+            <PhotoUploadSection
+              hasImage={hasImage}
+              croppedImage={croppedImage}
+              onImageUpload={handleEnhancedImageUpload}
+            />
+
+            {/* Style Selection Section - Only show after image is uploaded */}
+            {hasImage && (
+              <StyleSelectionSection
+                hasImage={hasImage}
+                croppedImage={croppedImage}
+                selectedStyle={selectedStyle}
+                cropAspectRatio={cropAspectRatio}
+                selectedOrientation={currentOrientation}
+                onStyleSelect={handleEnhancedStyleSelect}
+                onStyleComplete={handleStyleComplete}
+                onRecropImage={handleRecropImage}
+              />
+            )}
+          </>
+        )}
+
+        {/* Enhanced UX Components - Removed SocialProofFeed from here */}
+        <ContextualHelp />
+        <ConversionMomentumTracker />
+      </div>
+    </MobileGestureHandler>
   );
 };
 

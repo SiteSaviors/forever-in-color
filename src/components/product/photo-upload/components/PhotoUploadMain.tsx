@@ -2,6 +2,7 @@
 import { Upload, Image, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useFileInputTrigger } from "../../hooks/useFileInputTrigger";
+import { useEffect } from "react";
 
 interface PhotoUploadMainProps {
   isDragOver: boolean;
@@ -13,6 +14,7 @@ interface PhotoUploadMainProps {
   onDragLeave: (e: React.DragEvent<HTMLDivElement>) => void;
   onClick: () => void;
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onTriggerReady?: (triggerFn: () => boolean) => void;
 }
 
 const PhotoUploadMain = ({
@@ -24,16 +26,17 @@ const PhotoUploadMain = ({
   onDragOver,
   onDragLeave,
   onClick,
-  onFileChange
+  onFileChange,
+  onTriggerReady
 }: PhotoUploadMainProps) => {
   const { fileInputRef, triggerFileInput } = useFileInputTrigger();
 
-  // Handle the onClick to ensure it works via normal clicking
-  const handleDropzoneClick = () => {
-    console.log('🎯 Dropzone clicked, triggering file input');
-    triggerFileInput();
-    onClick();
-  };
+  // Notify parent when trigger function is ready
+  useEffect(() => {
+    if (onTriggerReady) {
+      onTriggerReady(triggerFileInput);
+    }
+  }, [triggerFileInput, onTriggerReady]);
 
   return (
     <Card className="w-full">
@@ -49,7 +52,7 @@ const PhotoUploadMain = ({
         onDrop={onDrop}
         onDragOver={onDragOver}
         onDragLeave={onDragLeave}
-        onClick={handleDropzoneClick}
+        onClick={onClick}
       >
         {/* Hidden file input */}
         <input

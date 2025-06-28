@@ -12,7 +12,6 @@ import { useProductState } from "@/components/product/ProductStateManager";
 import { ProgressOrchestrator } from "@/components/product/progress/ProgressOrchestrator";
 import { preloadCriticalImages } from "@/utils/performanceUtils";
 import { PhotoUploadStepRef } from "@/components/product/components/PhotoUploadStep";
-import { useGlobalFileUpload } from "@/components/product/hooks/useGlobalFileUpload";
 
 const Product = () => {
   const photoUploadStepRef = useRef<PhotoUploadStepRef>(null);
@@ -32,41 +31,6 @@ const Product = () => {
     handleOrientationSelect,
     handleCustomizationChange
   } = useProductState();
-
-  // Global file upload handler - processes the file and updates state
-  const handleGlobalImageUpload = (imageUrl: string, originalImageUrl?: string, orientation?: string) => {
-    console.log('🎯 Global file upload handler triggered:', { imageUrl, orientation });
-    
-    // Ensure we're on step 1
-    if (currentStep !== 1) {
-      setCurrentStep(1);
-    }
-    
-    // Pass the uploaded image directly to the photo and style completion handler
-    // This will set the uploaded image in the state and trigger the flow
-    handlePhotoAndStyleComplete(imageUrl, 0, "temp-style");
-  };
-
-  const handleGlobalImageAnalysis = (imageUrl: string) => {
-    console.log('🎯 Global image analysis triggered:', imageUrl);
-    // The PhotoUploadContainer will handle the detailed analysis
-  };
-
-  const handleGlobalFlowStageChange = (stage: 'upload' | 'analyzing' | 'crop-preview' | 'orientation' | 'complete') => {
-    console.log('🎯 Global flow stage change:', stage);
-  };
-
-  // Initialize global file upload system immediately
-  const {
-    isUploading,
-    uploadProgress,
-    processingStage,
-    triggerFileInput
-  } = useGlobalFileUpload({
-    onImageUpload: handleGlobalImageUpload,
-    onImageAnalysis: handleGlobalImageAnalysis,
-    onFlowStageChange: handleGlobalFlowStageChange
-  });
 
   // Preload critical resources on page load
   useEffect(() => {
@@ -92,8 +56,8 @@ const Product = () => {
   };
 
   const handleTriggerFileInput = () => {
-    console.log('🎯 Attempting to trigger global file input...');
-    return triggerFileInput();
+    console.log('🎯 Attempting to trigger file input...');
+    return photoUploadStepRef.current?.triggerFileInput() || false;
   };
 
   return (
@@ -127,11 +91,6 @@ const Product = () => {
             onSizeSelect={handleSizeSelect}
             onCustomizationChange={handleCustomizationChange}
             photoUploadStepRef={photoUploadStepRef}
-            globalUploadState={{
-              isUploading,
-              uploadProgress,
-              processingStage
-            }}
           />
           
           <ProductTestimonials />
