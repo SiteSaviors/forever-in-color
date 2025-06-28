@@ -4,9 +4,12 @@ import { useBlinking } from './hooks/useBlinking';
 import { useStyleCardLogic } from './hooks/useStyleCardLogic';
 import { useStyleCardEffects } from './hooks/useStyleCardEffects';
 import { useStyleCardHandlers } from './hooks/useStyleCardHandlers';
+import { useTouchOptimizedInteractions } from './hooks/useTouchOptimizedInteractions';
+import { usePerformanceMonitor } from './hooks/usePerformanceMonitor';
 import StyleCardContainer from './components/StyleCardContainer';
 import StyleCardInfo from './components/StyleCardInfo';
-import StyleCardImage from './components/StyleCardImage';
+import StyleCardErrorBoundary from './components/StyleCardErrorBoundary';
+import ProgressiveStyleImage from './components/ProgressiveStyleImage';
 import EnhancedStyleCardLoadingOverlay from './components/EnhancedStyleCardLoadingOverlay';
 import Lightbox from '@/components/ui/lightbox';
 
@@ -42,6 +45,9 @@ const StyleCard = memo(({
   onContinue,
   shouldBlur = false
 }: StyleCardProps) => {
+  // Performance monitoring
+  usePerformanceMonitor(`StyleCard-${style.name}`, process.env.NODE_ENV === 'development');
+
   // Memoize style comparison for better performance
   const isSelected = useMemo(() => selectedStyle === style.id, [selectedStyle, style.id]);
   
@@ -109,6 +115,12 @@ const StyleCard = memo(({
     generatePreview
   });
 
+  // Touch-optimized interactions
+  const { isPressed, touchHandlers } = useTouchOptimizedInteractions({
+    onTap: handleCardClick,
+    onLongPress: handleImageExpand
+  });
+
   const { isBlinking } = useBlinking(previewUrl, {
     isGenerating: isPermanentlyGenerated ? false : (effectiveIsLoading),
     hasPreview: !!previewUrl,
@@ -122,7 +134,7 @@ const StyleCard = memo(({
   const showLockedFeedback = isLocked && !isSelected;
 
   return (
-    <>
+    <StyleCardErrorBoundary styleId={style.id} styleName={style.name}>
       <StyleCardContainer
         isSelected={isSelected}
         styleId={style.id}
@@ -134,48 +146,55 @@ const StyleCard = memo(({
         onClick={handleCardClick}
         onGenerateStyle={() => handleGenerateClick({} as React.MouseEvent)}
       >
-        {/* Image Section */}
-        <div className="relative flex-1">
-          <StyleCardImage
-            style={style}
-            imageToShow={imageToShow}
-            cropAspectRatio={cropAspectRatio}
-            onImageExpand={handleImageExpand}
-          />
-          
-          {/* Subtle locked state indicator */}
-          {showLockedFeedback && (
-            <div className="absolute top-2 right-2 bg-green-500/90 text-white px-2 py-1 rounded-full text-xs font-medium shadow-lg">
-              ✓ Generated
-            </div>
-          )}
-          
-          {/* Loading Overlay - CRITICAL: Never show if permanently generated */}
-          {!isPermanentlyGenerated && (
-            <EnhancedStyleCardLoadingOverlay
-              isBlinking={false}
-              styleName={style.name}
-              isLoading={effectiveIsLoading}
-              error={hasErrorBoolean ? errorMessage : null}
-              onRetry={() => handleRetryClick({} as React.MouseEvent)}
+        <div 
+          {...touchHandlers}
+          className={`performance-container ${isPressed ? 'scale-95' : ''} transition-transform duration-100`}
+        >
+          {/* Image Section with Progressive Loading */}
+          <div className="relative flex-1">
+            <ProgressiveStyleImage
+              src={imageToShow}
+              alt={style.name}
+              aspectRatio={cropAspectRatio || 1}
+              className="transition-transform duration-300 ease-out group-hover:scale-105 will-change-transform"
+              priority={isPopular || isSelected}
+              onLoad={() => console.log(`Image loaded: ${style.name}`)}
             />
-          )}
-        </div>
+            
+            {/* Subtle locked state indicator */}
+            {showLockedFeedback && (
+              <div className="absolute top-2 right-2 bg-green-500/90 text-white px-2 py-1 rounded-full text-xs font-medium shadow-lg">
+                ✓ Generated
+              </div>
+            )}
+            
+            {/* Loading Overlay - CRITICAL: Never show if permanently generated */}
+            {!isPermanentlyGenerated && (
+              <EnhancedStyleCardLoadingOverlay
+                isBlinking={false}
+                styleName={style.name}
+                isLoading={effectiveIsLoading}
+                error={hasErrorBoolean ? errorMessage : null}
+                onRetry={() => handleRetryClick({} as React.MouseEvent)}
+              />
+            )}
+          </div>
 
-        {/* Info Section */}
-        <StyleCardInfo
-          style={style}
-          hasGeneratedPreview={hasGeneratedPreview || isPermanentlyGenerated}
-          isPopular={isPopular}
-          isSelected={isSelected}
-          showGeneratedBadge={showGeneratedBadge || isPermanentlyGenerated}
-          showContinueInCard={showContinueInCard}
-          shouldBlur={shouldBlur}
-          showError={hasErrorBoolean}
-          onContinueClick={handleContinueClick}
-          onGenerateClick={handleGenerateClick}
-          onRetryClick={handleRetryClick}
-        />
+          {/* Info Section */}
+          <StyleCardInfo
+            style={style}
+            hasGeneratedPreview={hasGeneratedPreview || isPermanentlyGenerated}
+            isPopular={isPopular}
+            isSelected={isSelected}
+            showGeneratedBadge={showGeneratedBadge || isPermanentlyGenerated}
+            showContinueInCard={showContinueInCard}
+            shouldBlur={shouldBlur}
+            showError={hasErrorBoolean}
+            onContinueClick={handleContinueClick}
+            onGenerateClick={handleGenerateClick}
+            onRetryClick={handleRetryClick}
+          />
+        </div>
       </StyleCardContainer>
 
       {/* Lightbox for image expansion - always available */}
@@ -186,7 +205,7 @@ const StyleCard = memo(({
         imageAlt={`${style.name} preview`}
         title={style.name}
       />
-    </>
+    </StyleCardErrorBoundary>
   );
 });
 

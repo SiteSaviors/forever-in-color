@@ -4,6 +4,8 @@ import { FixedSizeGrid as Grid } from 'react-window';
 import StyleCard from "../../StyleCard";
 import { artStyles } from "@/data/artStyles";
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useIntelligentPreloader } from '../../hooks/useIntelligentPreloader';
+import { usePerformanceMonitor } from '../../hooks/usePerformanceMonitor';
 
 interface ActiveStyleGridProps {
   croppedImage: string;
@@ -44,7 +46,7 @@ const GridItem = memo(({ columnIndex, rowIndex, style, data }: GridItemProps) =>
   const shouldBlur = data.croppedImage && !isOriginalImage && !isPopularStyle;
 
   return (
-    <div style={{ ...style, padding: '8px' }}>
+    <div style={{ ...style, padding: '8px' }} className="performance-container">
       <StyleCard
         style={artStyle}
         croppedImage={data.croppedImage}
@@ -73,11 +75,21 @@ const ActiveStyleGrid = memo(({
 }: ActiveStyleGridProps) => {
   const isMobile = useIsMobile();
   const [containerDimensions, setContainerDimensions] = useState({ width: 1200, height: 800 });
+  const { preloadStyleImages } = useIntelligentPreloader();
+  
+  // Performance monitoring
+  usePerformanceMonitor('ActiveStyleGrid', process.env.NODE_ENV === 'development');
   
   // Popular styles that auto-generate: Classic Oil (2), Watercolor Dreams (4), Pastel Bliss (5)
   const popularStyleIds = useMemo(() => [2, 4, 5], []);
 
-  // Calculate grid dimensions based on screen size
+  // Preload style images intelligently
+  useEffect(() => {
+    const styleImages = artStyles.map(s => s.image);
+    preloadStyleImages(styleImages);
+  }, [preloadStyleImages]);
+
+  // Calculate grid dimensions based on screen size with performance optimization
   const { columnsPerRow, itemWidth, itemHeight, rowCount } = useMemo(() => {
     const cols = isMobile ? 1 : window.innerWidth < 768 ? 2 : 3;
     const width = Math.floor(containerDimensions.width / cols);
@@ -114,43 +126,52 @@ const ActiveStyleGrid = memo(({
     popularStyleIds
   ]);
 
-  // Update container dimensions on resize
+  // Update container dimensions on resize with debouncing for performance
   useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    
     const updateDimensions = () => {
-      setContainerDimensions({
-        width: window.innerWidth - 64, // Account for padding
-        height: Math.min(window.innerHeight - 200, 800)
-      });
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        setContainerDimensions({
+          width: window.innerWidth - 64, // Account for padding
+          height: Math.min(window.innerHeight - 200, 800)
+        });
+      }, 100); // Debounce for performance
     };
 
     updateDimensions();
     window.addEventListener('resize', updateDimensions);
-    return () => window.removeEventListener('resize', updateDimensions);
+    return () => {
+      window.removeEventListener('resize', updateDimensions);
+      clearTimeout(timeoutId);
+    };
   }, []);
 
   // For smaller lists, use regular grid to avoid virtualization overhead
   if (artStyles.length <= 12) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 md:gap-6 performance-container">
         {artStyles.map((style) => {
           const isPopularStyle = popularStyleIds.includes(style.id);
           const isOriginalImage = style.id === 1;
           const shouldBlur = croppedImage && !isOriginalImage && !isPopularStyle;
           
           return (
-            <StyleCard
-              key={style.id}
-              style={style}
-              croppedImage={croppedImage}
-              selectedStyle={selectedStyle}
-              isPopular={isPopularStyle}
-              cropAspectRatio={cropAspectRatio}
-              selectedOrientation={selectedOrientation}
-              showContinueButton={false}
-              onStyleClick={() => onStyleSelect(style.id, style.name)}
-              onContinue={onComplete}
-              shouldBlur={shouldBlur}
-            />
+            <div key={style.id} className="performance-container">
+              <StyleCard
+                style={style}
+                croppedImage={croppedImage}
+                selectedStyle={selectedStyle}
+                isPopular={isPopularStyle}
+                cropAspectRatio={cropAspectRatio}
+                selectedOrientation={selectedOrientation}
+                showContinueButton={false}
+                onStyleClick={() => onStyleSelect(style.id, style.name)}
+                onContinue={onComplete}
+                shouldBlur={shouldBlur}
+              />
+            </div>
           );
         })}
       </div>
@@ -158,7 +179,7 @@ const ActiveStyleGrid = memo(({
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full performance-container">
       <Grid
         columnCount={columnsPerRow}
         columnWidth={itemWidth}
