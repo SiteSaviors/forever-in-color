@@ -51,7 +51,7 @@ const PhotoUploadStep = forwardRef<PhotoUploadStepRef, PhotoUploadStepProps>(({
         isActive: shouldBeActive
       });
       
-      if (fileInputTriggerRef.current && isTriggerReady) {
+      if (fileInputTriggerRef.current) {
         const result = fileInputTriggerRef.current();
         console.log('🎯 File input trigger result:', result);
         return result;
@@ -62,7 +62,7 @@ const PhotoUploadStep = forwardRef<PhotoUploadStepRef, PhotoUploadStepProps>(({
     }
   }), [isTriggerReady]);
 
-  // Handle file input trigger registration with immediate readiness
+  // Handle file input trigger registration
   const handleFileInputTriggerReady = (triggerFn: () => boolean) => {
     console.log('🎯 File input trigger function registered and ready');
     fileInputTriggerRef.current = triggerFn;
@@ -72,6 +72,7 @@ const PhotoUploadStep = forwardRef<PhotoUploadStepRef, PhotoUploadStepProps>(({
   const shouldBeActive = currentStep === 1 && isActive && isStep1Activated;
   
   const handleStepClick = () => {
+    console.log('🎯 PhotoUploadStep clicked, activating step 1');
     setIsStep1Activated(true);
     onStepClick();
   };

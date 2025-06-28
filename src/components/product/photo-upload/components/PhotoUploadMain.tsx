@@ -2,7 +2,7 @@
 import { Upload, Image, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useFileInputTrigger } from "../../hooks/useFileInputTrigger";
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 
 interface PhotoUploadMainProps {
   isDragOver: boolean;
@@ -31,13 +31,37 @@ const PhotoUploadMain = ({
 }: PhotoUploadMainProps) => {
   const { fileInputRef, triggerFileInput } = useFileInputTrigger();
 
-  // Notify parent when trigger function is ready - run immediately and on every render
-  useEffect(() => {
-    console.log('🎯 PhotoUploadMain registering trigger function');
-    if (onTriggerReady) {
-      onTriggerReady(triggerFileInput);
+  // Create a stable trigger function that we can pass up
+  const stableTriggerFunction = useCallback(() => {
+    console.log('🎯 PhotoUploadMain stableTriggerFunction called', {
+      hasFileInputRef: !!fileInputRef.current,
+      triggerFileInput: typeof triggerFileInput
+    });
+    
+    if (fileInputRef.current) {
+      console.log('🎯 Clicking file input element directly');
+      fileInputRef.current.click();
+      return true;
     }
-  }); // No dependency array - run on every render to ensure it's always available
+    
+    console.log('❌ File input ref not available');
+    return false;
+  }, [fileInputRef, triggerFileInput]);
+
+  // Register the trigger function when component mounts and when ref is ready
+  useEffect(() => {
+    if (onTriggerReady && fileInputRef.current) {
+      console.log('🎯 PhotoUploadMain registering stable trigger function');
+      onTriggerReady(stableTriggerFunction);
+    }
+  }, [onTriggerReady, stableTriggerFunction, fileInputRef.current]);
+
+  // Also handle the onClick to ensure it works via normal clicking
+  const handleDropzoneClick = () => {
+    console.log('🎯 Dropzone clicked, triggering file input');
+    stableTriggerFunction();
+    onClick();
+  };
 
   return (
     <Card className="w-full">
@@ -53,7 +77,7 @@ const PhotoUploadMain = ({
         onDrop={onDrop}
         onDragOver={onDragOver}
         onDragLeave={onDragLeave}
-        onClick={onClick}
+        onClick={handleDropzoneClick}
       >
         {/* Hidden file input */}
         <input

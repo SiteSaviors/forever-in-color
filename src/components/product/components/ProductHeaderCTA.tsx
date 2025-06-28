@@ -12,22 +12,19 @@ const ProductHeaderCTA = ({ onUploadClick, onTriggerFileInput }: ProductHeaderCT
   const [isActivating, setIsActivating] = useState(false);
 
   const handleUploadClick = async () => {
+    console.log('🎯 Hero button clicked - starting activation process');
     setIsActivating(true);
     
     // Activate Step 1 first
     onUploadClick();
     
-    // Give a tiny moment for Step 1 to render and register trigger, then try immediately
-    let attempts = 0;
-    const maxAttempts = 10; // 50ms total wait time maximum
-    
-    const tryTrigger = () => {
-      attempts++;
+    // Wait a bit longer for the component to fully mount and register the trigger
+    setTimeout(() => {
+      console.log('🎯 Attempting to trigger file input after activation');
       const success = onTriggerFileInput?.();
       
       if (success) {
-        console.log('✅ File input triggered successfully on attempt', attempts);
-        setIsActivating(false);
+        console.log('✅ File input triggered successfully');
         
         // Scroll to step 1 after successful trigger
         setTimeout(() => {
@@ -42,17 +39,12 @@ const ProductHeaderCTA = ({ onUploadClick, onTriggerFileInput }: ProductHeaderCT
             });
           }
         }, 100);
-      } else if (attempts < maxAttempts) {
-        console.log(`⏳ File input not ready, attempt ${attempts}/${maxAttempts}, retrying...`);
-        setTimeout(tryTrigger, 5); // Very short retry interval
       } else {
-        console.log('❌ File input trigger failed after', maxAttempts, 'attempts');
-        setIsActivating(false);
+        console.log('❌ File input trigger failed - component may not be ready yet');
       }
-    };
-    
-    // Start trying after a minimal delay to allow component mounting
-    setTimeout(tryTrigger, 10);
+      
+      setIsActivating(false);
+    }, 200); // Increased timeout to allow proper component mounting
   };
 
   return (
