@@ -35,17 +35,36 @@ const ProductFlowDebugPanel = ({
     const snapshot = {
       timestamp: new Date().toISOString(),
       currentStep,
-      completedSteps,
+      completedSteps: [...completedSteps],
       state: {
         hasImage: !!uploadedImage,
-        imageUrl: uploadedImage ? uploadedImage.substring(0, 50) + '...' : null,
-        selectedStyle: selectedStyle ? `${selectedStyle.id}: ${selectedStyle.name}` : null,
-        selectedSize,
-        selectedOrientation,
-        customizations: Object.keys(customizations || {}).length
+        imageUrl: uploadedImage ? `${uploadedImage.substring(0, 50)}...` : null,
+        selectedStyle: selectedStyle ? `ID:${selectedStyle.id} - ${selectedStyle.name}` : null,
+        selectedSize: selectedSize || 'none',
+        selectedOrientation: selectedOrientation || 'none',
+        customizationsCount: customizations ? Object.keys(customizations).length : 0,
+        customizationsDetail: customizations
+      },
+      validation: {
+        canProceedStep2: !!uploadedImage && !!selectedStyle,
+        canProceedStep3: !!selectedSize && !!selectedOrientation,
+        canProceedStep4: true // customizations are optional
       }
     };
-    console.log('🔍 Product Flow State Snapshot:', snapshot);
+    
+    console.group('🔍 Product Flow State Snapshot');
+    console.log('Full State:', snapshot);
+    console.log('Current Step:', currentStep);
+    console.log('Completed Steps:', completedSteps);
+    console.log('Image Status:', uploadedImage ? '✅ Uploaded' : '❌ Missing');
+    console.log('Style Status:', selectedStyle ? `✅ ${selectedStyle.name}` : '❌ Not selected');
+    console.log('Size Status:', selectedSize ? `✅ ${selectedSize}` : '❌ Not selected');
+    console.log('Orientation:', selectedOrientation);
+    console.groupEnd();
+    
+    // Also show an alert to confirm the button worked
+    alert(`State captured! Check console for details.\nStep: ${currentStep}, Image: ${!!uploadedImage}, Style: ${selectedStyle?.name || 'none'}`);
+    
     return snapshot;
   };
 
@@ -149,7 +168,7 @@ const ProductFlowDebugPanel = ({
           <div className="border-t pt-2">
             <button
               onClick={captureStateSnapshot}
-              className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-2 rounded text-xs"
+              className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-2 rounded text-xs transition-colors"
             >
               📸 Capture State Snapshot
             </button>
