@@ -8,7 +8,16 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "lint:unused": "eslint . --ext .ts,.tsx --fix",
+    "preview": "vite preview",
+    "dead-code:check": "npm run dead-code:exports && npm run dead-code:files && npm run dead-code:deps",
+    "dead-code:exports": "ts-unused-exports tsconfig.json --excludePathsFromReport=src/main.tsx,src/App.tsx,src/pages",
+    "dead-code:files": "unimported --flow --init --update",
+    "dead-code:deps": "unimported --show-unresolved",
+    "dead-code:fix": "npm run lint:unused && npm run dead-code:clean",
+    "dead-code:clean": "unimported --remove-unused",
+    "deps:analyze": "madge --circular --extensions ts,tsx src/",
+    "prepare": "husky install"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -76,12 +85,24 @@
     "eslint": "^9.9.0",
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
     "eslint-plugin-react-refresh": "^0.4.9",
+    "eslint-plugin-unused-imports": "^4.0.0",
     "globals": "^15.9.0",
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.8",
     "lovable-tagger": "^1.1.7",
+    "madge": "^8.0.0",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.11",
+    "ts-unused-exports": "^10.1.0",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.0.1",
+    "unimported": "^1.31.1",
     "vite": "^5.4.1"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "git add"
+    ]
   }
 }
