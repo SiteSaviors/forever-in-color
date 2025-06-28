@@ -89,6 +89,8 @@ const ProductStepsManager = (props: ProductStepsManagerProps) => {
         onOrientationSelect={onOrientationSelect}
         onSizeSelect={onSizeSelect}
         onContinue={handleContinueToStep3}
+        completedSteps={completedSteps}
+        onStepChange={onCurrentStepChange}
       />
 
       <CustomizationStep
@@ -99,7 +101,6 @@ const ProductStepsManager = (props: ProductStepsManagerProps) => {
         customizations={customizations}
         selectedOrientation={selectedOrientation}
         selectedSize={selectedSize}
-        uploadedImage={uploadedImage}
         onStepClick={() => onCurrentStepChange(3)}
         onCustomizationChange={onCustomizationChange}
         onContinue={handleContinueToStep4}
