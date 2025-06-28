@@ -4,12 +4,22 @@ import LivingMemoryCard from "./LivingMemoryCard";
 import VoiceMatchCard from "./VoiceMatchCard";
 import CustomMessageCard from "./CustomMessageCard";
 import AIUpscaleCard from "./AIUpscaleCard";
-import { CustomizationOptions as CustomizationConfig, CustomizationUpdateHandler } from "../types/customizationTypes";
+
+interface CustomizationOptions {
+  floatingFrame: {
+    enabled: boolean;
+    color: 'white' | 'black' | 'espresso';
+  };
+  livingMemory: boolean;
+  voiceMatch: boolean;
+  customMessage: string;
+  aiUpscale: boolean;
+}
 
 interface CustomizationOptionsProps {
   selectedSize: string;
-  customizations: CustomizationConfig;
-  onCustomizationUpdate: CustomizationUpdateHandler;
+  customizations: CustomizationOptions;
+  onCustomizationUpdate: (updates: Partial<CustomizationOptions>) => void;
 }
 
 const CustomizationOptions = ({

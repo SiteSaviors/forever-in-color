@@ -19,22 +19,26 @@ interface PhotoAndStyleStepProps {
   } | null;
   uploadedImage: string | null;
   selectedOrientation: string;
+  autoGenerationComplete: boolean;
   onComplete: (imageUrl: string, styleId: number, styleName: string) => void;
   onPhotoAndStyleComplete: (imageUrl: string, styleId: number, styleName: string) => void;
   onContinue: () => void;
   currentStep: number;
   completedSteps: number[];
+  onStepChange: (step: number) => void;
 }
 
 const PhotoAndStyleStep = ({
   selectedStyle,
   uploadedImage,
   selectedOrientation,
+  autoGenerationComplete,
   onComplete,
   onPhotoAndStyleComplete,
   onContinue,
   currentStep,
-  completedSteps
+  completedSteps,
+  onStepChange
 }: PhotoAndStyleStepProps) => {
   const { dispatch, showContextualHelp } = useProgressOrchestrator();
   

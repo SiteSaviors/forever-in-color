@@ -1,73 +1,78 @@
 
-import { Card, CardContent } from '@/components/ui/card';
-import { Upload, Palette, Mic, Smartphone } from 'lucide-react';
+import React from 'react';
+import { Brain, Mic, Palette, Shield } from 'lucide-react';
 
 const ARHowItWorks = () => {
-  const steps = [
-    {
-      icon: Upload,
-      title: "Upload Your Photo",
-      description: "Choose your most precious memory - a family photo, beloved pet, or special moment.",
-      color: "from-blue-500 to-cyan-500"
-    },
-    {
-      icon: Palette,
-      title: "Select Art Style",
-      description: "Transform it with our AI into stunning art - oil painting, watercolor, or modern styles.",
-      color: "from-purple-500 to-pink-500"
-    },
-    {
-      icon: Mic,
-      title: "Record Voice Memory",
-      description: "Add their voice telling a story, singing, or just saying 'I love you' - up to 60 seconds.",
-      color: "from-orange-500 to-red-500"
-    },
-    {
-      icon: Smartphone,
-      title: "Scan & Experience",
-      description: "Point your phone at the canvas, and watch them come alive in augmented reality.",
-      color: "from-green-500 to-emerald-500"
-    }
-  ];
-
   return (
-    <section className="py-20 bg-gray-50">
+    <section className="py-20 bg-white">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-gray-900 mb-6">How AR Memory Canvas Works</h2>
+          <h2 className="text-4xl font-bold text-gray-900 mb-6">The Magic Behind the Memory</h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Four simple steps to transform a photo into a living, breathing memory that speaks to you.
+            You choose the video details — we bring it to life with heart. Our AI-powered technology creates authentic, emotional experiences.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {steps.map((step, index) => {
-            const Icon = step.icon;
-            return (
-              <Card key={index} className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
-                <CardContent className="p-8 text-center">
-                  <div className={`w-16 h-16 bg-gradient-to-r ${step.color} rounded-full flex items-center justify-center mx-auto mb-6`}>
-                    <Icon className="w-8 h-8 text-white" />
-                  </div>
-                  
-                  <div className="absolute top-4 right-4 bg-gray-100 text-gray-600 text-sm font-bold w-8 h-8 rounded-full flex items-center justify-center">
-                    {index + 1}
-                  </div>
-                  
-                  <h3 className="text-xl font-semibold text-gray-900 mb-4">{step.title}</h3>
-                  <p className="text-gray-600 leading-relaxed">{step.description}</p>
-                </CardContent>
-              </Card>
-            );
-          })}
+        <div className="grid md:grid-cols-2 gap-12 items-center mb-16">
+          <div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-6">Advanced AI Video Generation</h3>
+            <div className="space-y-6">
+              <div className="flex items-start space-x-4">
+                <Brain className="w-6 h-6 text-purple-600 mt-1" />
+                <div>
+                  <h4 className="font-semibold text-gray-900">Intelligent Motion Analysis</h4>
+                  <p className="text-gray-600">Our AI studies your photo to create natural, lifelike movement patterns</p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-4">
+                <Mic className="w-6 h-6 text-purple-600 mt-1" />
+                <div>
+                  <h4 className="font-semibold text-gray-900">Voice Recreation (Optional)</h4>
+                  <p className="text-gray-600">Upload a voice sample, and we'll recreate speech with emotional authenticity</p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-4">
+                <Palette className="w-6 h-6 text-purple-600 mt-1" />
+                <div>
+                  <h4 className="font-semibold text-gray-900">Sound Design</h4>
+                  <p className="text-gray-600">Ambient sounds and effects that match the mood and setting of your memory</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-8">
+            <div className="aspect-video bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl flex items-center justify-center mb-6">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Brain className="w-8 h-8 text-white" />
+                </div>
+                <p className="text-purple-700 font-medium">Sample Video Preview</p>
+                <p className="text-purple-600 text-sm">Interactive demo coming soon</p>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="text-center mt-12">
-          <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white p-6 rounded-2xl max-w-2xl mx-auto">
-            <h3 className="text-2xl font-bold mb-2">The Magic Happens When You Scan</h3>
-            <p className="text-purple-100">
-              Your canvas becomes a window to the past. Every scan brings back not just their image, but their presence.
-            </p>
+        {/* Privacy & Quality Assurance */}
+        <div className="bg-gray-50 rounded-2xl p-8">
+          <div className="flex items-center justify-center mb-6">
+            <Shield className="w-8 h-8 text-green-600 mr-3" />
+            <h3 className="text-2xl font-bold text-gray-900">Your Memories, Protected</h3>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6 text-center">
+            <div>
+              <h4 className="font-semibold text-gray-900 mb-2">Complete Privacy</h4>
+              <p className="text-gray-600 text-sm">Your photos and voice samples are processed securely and never shared</p>
+            </div>
+            <div>
+              <h4 className="font-semibold text-gray-900 mb-2">Quality Guaranteed</h4>
+              <p className="text-gray-600 text-sm">Every video is reviewed to ensure it honors your memory with dignity</p>
+            </div>
+            <div>
+              <h4 className="font-semibold text-gray-900 mb-2">Your Control</h4>
+              <p className="text-gray-600 text-sm">You approve every aspect before we create your final canvas</p>
+            </div>
           </div>
         </div>
       </div>

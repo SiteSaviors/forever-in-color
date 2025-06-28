@@ -1,90 +1,110 @@
-
-import { CheckCircle, Clock, AlertCircle } from "lucide-react";
-
+import { Badge } from "@/components/ui/badge";
+import { CheckCircle, Upload, Crop, Monitor, Sparkles, TrendingUp, Eye, ArrowDown } from "lucide-react";
 interface UnifiedFlowProgressProps {
-  currentStep: number;
-  completedSteps: number[];
-  totalSteps: number;
-  uploadedImage: string | null;
-  selectedStyle: { id: number; name: string } | null;
+  currentStage: 'upload' | 'analyzing' | 'crop-preview' | 'orientation' | 'complete';
+  hasImage: boolean;
+  analysisComplete: boolean;
+  cropAccepted: boolean;
+  orientationSelected: boolean;
 }
-
 const UnifiedFlowProgress = ({
-  currentStep,
-  completedSteps,
-  totalSteps,
-  uploadedImage,
-  selectedStyle
+  currentStage,
+  hasImage,
+  analysisComplete,
+  cropAccepted,
+  orientationSelected
 }: UnifiedFlowProgressProps) => {
-  const getStepStatus = (stepNumber: number) => {
-    if (completedSteps.includes(stepNumber)) return 'completed';
-    if (currentStep === stepNumber) return 'active';
-    if (currentStep > stepNumber) return 'completed';
-    return 'pending';
-  };
+  const stages = [{
+    id: 'upload',
+    icon: Upload,
+    title: 'Upload Photo',
+    description: 'Choose your image',
+    completed: hasImage,
+    active: currentStage === 'upload' || currentStage === 'analyzing'
+  }, {
+    id: 'crop',
+    icon: Crop,
+    title: 'Smart Crop',
+    description: 'AI finds perfect composition',
+    completed: cropAccepted,
+    active: currentStage === 'crop-preview',
+    processing: currentStage === 'analyzing'
+  }, {
+    id: 'orientation',
+    icon: Monitor,
+    title: 'Canvas Format',
+    description: 'Select optimal orientation',
+    completed: orientationSelected,
+    active: currentStage === 'orientation'
+  }];
+  const completedCount = stages.filter(stage => stage.completed).length;
+  const progressPercentage = Math.round(completedCount / stages.length * 100);
 
-  const getStepIcon = (stepNumber: number) => {
-    const status = getStepStatus(stepNumber);
-    
-    switch (status) {
-      case 'completed':
-        return <CheckCircle className="w-5 h-5 text-green-500" />;
-      case 'active':
-        return <Clock className="w-5 h-5 text-blue-500" />;
-      default:
-        return <AlertCircle className="w-5 h-5 text-gray-400" />;
-    }
-  };
+  // If no image uploaded yet, show minimal upload prompt
+  if (!hasImage) {
+    return <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-3 border border-purple-100 text-center">
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <Upload className="w-4 h-4 text-purple-600" />
+          <span className="text-sm font-medium text-purple-700">Ready to Start</span>
+        </div>
+        <p className="text-xs text-purple-600">Upload your photo to begin the AI transformation</p>
+      </div>;
+  }
 
-  const steps = [
-    { number: 1, title: "Upload & Style", description: "Photo and art style" },
-    { number: 2, title: "Canvas Size", description: "Orientation and dimensions" },
-    { number: 3, title: "Customization", description: "Personal touches" },
-    { number: 4, title: "Review & Order", description: "Final details" }
-  ];
-
-  return (
-    <div className="bg-white border border-gray-200 rounded-lg p-6 mb-8">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">Your Progress</h3>
-        <span className="text-sm text-gray-600">
-          Step {currentStep} of {totalSteps}
-        </span>
-      </div>
-      
-      <div className="space-y-4">
-        {steps.map((step) => (
-          <div key={step.number} className="flex items-center space-x-3">
-            {getStepIcon(step.number)}
-            <div className="flex-1">
-              <div className="flex items-center justify-between">
-                <span className={`font-medium ${
-                  getStepStatus(step.number) === 'completed' ? 'text-green-700' :
-                  getStepStatus(step.number) === 'active' ? 'text-blue-700' :
-                  'text-gray-500'
-                }`}>
-                  {step.title}
-                </span>
-                <span className="text-xs text-gray-500">
-                  {step.description}
-                </span>
-              </div>
+  // If image uploaded but user hasn't seen preview yet, show connection indicator
+  if (hasImage && !cropAccepted && currentStage !== 'crop-preview') {
+    return <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 border border-green-200">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
+              <CheckCircle className="w-4 h-4 text-white" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-green-800">Photo Uploaded Successfully!</h3>
+              <p className="text-xs text-green-600">AI is analyzing your image...</p>
             </div>
           </div>
-        ))}
-      </div>
+          <div className="animate-pulse">
+            <Sparkles className="w-5 h-5 text-green-600" />
+          </div>
+        </div>
+        
+        <div className="flex items-center justify-center gap-2 text-green-700 bg-green-100 rounded-md py-2 px-3">
+          <Eye className="w-4 h-4" />
+          <span className="text-xs font-medium">Check your preview below</span>
+          <ArrowDown className="w-4 h-4 animate-bounce" />
+        </div>
+      </div>;
+  }
 
-      {/* Progress Bar */}
-      <div className="mt-6">
-        <div className="w-full bg-gray-200 rounded-full h-2">
-          <div 
-            className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-500"
-            style={{ width: `${(completedSteps.length / totalSteps) * 100}%` }}
-          />
+  // Show full progress when actively working through steps
+  return <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
+      {/* Compact Header */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
+            <Sparkles className="w-3 h-3 text-white" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-gray-900">Creating Your Art</h3>
+            <p className="text-xs text-gray-500">AI-Powered Transformation</p>
+          </div>
+        </div>
+        
+        <div className="text-right">
+          <div className="text-sm font-bold text-purple-600">{progressPercentage}%</div>
+          <div className="flex items-center gap-1 text-xs text-green-600">
+            <TrendingUp className="w-3 h-3" />
+            <span>Progress</span>
+          </div>
         </div>
       </div>
-    </div>
-  );
-};
 
+      {/* Compact Progress Steps */}
+      
+
+      {/* Compact Progress Bar */}
+      
+    </div>;
+};
 export default UnifiedFlowProgress;

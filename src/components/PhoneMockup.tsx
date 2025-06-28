@@ -1,90 +1,49 @@
 
-import { motion } from "framer-motion";
-import { Sparkles } from "lucide-react";
+
+import { Play } from "lucide-react";
 
 const PhoneMockup = () => {
   return (
-    <div className="relative">
-      {/* Phone Frame */}
-      <div className="relative bg-black rounded-[2.5rem] p-2 shadow-2xl">
-        <div className="bg-gray-900 rounded-[2rem] overflow-hidden">
-          {/* Screen Content */}
-          <div className="aspect-[9/19.5] bg-gradient-to-br from-purple-100 via-pink-50 to-orange-50 relative overflow-hidden">
-            {/* Status Bar */}
-            <div className="flex justify-between items-center px-6 pt-4 pb-2">
-              <span className="text-xs font-medium">9:41</span>
-              <div className="flex space-x-1">
-                <div className="w-4 h-2 bg-green-500 rounded-sm"></div>
-                <div className="w-6 h-2 bg-gray-300 rounded-sm"></div>
+    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 z-30">
+      <div className="relative">
+        {/* Phone Frame - Better proportions on mobile and smaller on desktop */}
+        <div className="bg-gray-900 rounded-2xl sm:rounded-[3rem] p-1.5 sm:p-3 lg:p-2 shadow-2xl">
+          <div className="bg-black rounded-xl sm:rounded-[2.5rem] w-32 h-60 sm:w-64 sm:h-[520px] lg:w-52 lg:h-[420px] relative overflow-hidden">
+            {/* Screen Content */}
+            <div className="absolute inset-1 bg-gradient-to-br from-purple-900 via-pink-900 to-blue-900 rounded-lg sm:rounded-[2rem] flex items-center justify-center">
+              {/* Video Container */}
+              <div className="relative w-full h-full flex items-center justify-center">
+                
+                {/* Vimeo Video Embed */}
+                <div className="w-full h-full rounded-lg sm:rounded-[2rem] overflow-hidden relative">
+                  <div style={{ padding: '177.78% 0 0 0', position: 'relative', width: '100%', height: '100%' }}>
+                    <iframe 
+                      src="https://player.vimeo.com/video/1093921547?badge=0&autopause=0&player_id=0&app_id=58479&autoplay=1&loop=1&muted=1&background=1"
+                      frameBorder="0" 
+                      allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" 
+                      style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+                      title="Forever In Color Hero Video"
+                      className="rounded-lg sm:rounded-[2rem]"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
             
-            {/* App Content */}
-            <div className="px-6 space-y-4">
-              <h3 className="text-lg font-bold text-gray-800">Your Canvas Preview</h3>
-              
-              {/* Mock Canvas */}
-              <div className="aspect-square bg-white rounded-xl shadow-lg overflow-hidden">
-                <img 
-                  src="/lovable-uploads/f0fb638f-ed49-4e86-aeac-0b87e27de424.png"
-                  alt="Canvas preview"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              
-              {/* Action Buttons */}
-              <div className="space-y-2">
-                <motion.button
-                  whileTap={{ scale: 0.95 }}
-                  className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 rounded-lg font-medium"
-                >
-                  Add to Cart - $89.99
-                </motion.button>
-                <button className="w-full border border-gray-300 text-gray-700 py-3 rounded-lg font-medium">
-                  Try Another Style
-                </button>
-              </div>
-            </div>
-            
-            {/* Floating Sparkles */}
-            <motion.div
-              animate={{ 
-                y: [0, -10, 0],
-                rotate: [0, 180, 360]
-              }}
-              transition={{ 
-                duration: 3,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-              className="absolute top-20 right-4"
-            >
-              <Sparkles className="w-6 h-6 text-purple-500" />
-            </motion.div>
-            
-            <motion.div
-              animate={{ 
-                y: [0, -15, 0],
-                rotate: [0, -180, -360]
-              }}
-              transition={{ 
-                duration: 4,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: 1
-              }}
-              className="absolute bottom-32 left-4"
-            >
-              <Sparkles className="w-4 h-4 text-pink-500" />
-            </motion.div>
+            {/* Phone Details */}
+            <div className="absolute top-2 sm:top-8 lg:top-6 left-1/2 transform -translate-x-1/2 w-8 sm:w-20 lg:w-16 h-1 sm:h-1.5 lg:h-1 bg-gray-600 rounded-full"></div>
+            <div className="absolute bottom-1 sm:bottom-6 lg:bottom-4 left-1/2 transform -translate-x-1/2 w-16 sm:w-40 lg:w-32 h-1 sm:h-1.5 lg:h-1 bg-gray-600 rounded-full"></div>
           </div>
         </div>
+        
+        {/* Floating AR Badge */}
+        <div className="absolute -top-2 sm:-top-8 lg:-top-6 -right-1 sm:-right-6 lg:-right-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-2 py-1 sm:px-4 sm:py-2 lg:px-3 lg:py-1.5 rounded-full text-[10px] sm:text-base lg:text-sm font-semibold shadow-lg animate-pulse">
+          Live AR Demo
+        </div>
       </div>
-      
-      {/* Glow Effect */}
-      <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-[2.5rem] blur-xl -z-10"></div>
     </div>
   );
 };
 
 export default PhoneMockup;
+

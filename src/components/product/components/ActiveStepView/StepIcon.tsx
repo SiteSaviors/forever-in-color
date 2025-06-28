@@ -1,5 +1,5 @@
 
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import { Check, ChevronRight } from "lucide-react";
 import { TouchTarget } from "@/components/ui/mobile-touch-target";
 import { getStepIcon } from "../ProductStepUtils";

@@ -1,84 +1,98 @@
 import { useState, useEffect } from "react";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-
+import { useProgressOrchestrator } from "../progress/ProgressOrchestrator";
+import WidgetHeader from "./unified-momentum/WidgetHeader";
+import ActivityDisplay from "./unified-momentum/ActivityDisplay";
+import MomentumIndicator from "./unified-momentum/MomentumIndicator";
+import LiveStats from "./unified-momentum/LiveStats";
+import ExpandedContent from "./unified-momentum/ExpandedContent";
 interface UnifiedSocialMomentumWidgetProps {
   currentStep: number;
   uploadedImage: string | null;
   showWidget: boolean;
 }
-
 const UnifiedSocialMomentumWidget = ({
+  currentStep,
+  uploadedImage,
   showWidget
 }: UnifiedSocialMomentumWidgetProps) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const {
+    state,
+    trackClick
+  } = useProgressOrchestrator();
+  const [currentActivity, setCurrentActivity] = useState(0);
+  const [showExpanded, setShowExpanded] = useState(false);
+  const [liveUsers, setLiveUsers] = useState(238);
 
-  // Mock data for social proof
+  // Rotate through activities
+  useEffect(() => {
+    if (!showWidget || state.socialProof.recentActivity.length === 0) return;
+    const interval = setInterval(() => {
+      setCurrentActivity(prev => (prev + 1) % state.socialProof.recentActivity.length);
+    }, 8000);
+    return () => clearInterval(interval);
+  }, [showWidget, state.socialProof.recentActivity.length]);
+
+  // Simulate live user count fluctuations
   useEffect(() => {
     if (!showWidget) return;
-
     const interval = setInterval(() => {
-      // Update live statistics here
-    }, 5000);
-
+      setLiveUsers(prev => prev + Math.floor(Math.random() * 6) - 2);
+    }, 12000);
     return () => clearInterval(interval);
   }, [showWidget]);
 
-  if (!showWidget) {
-    return null;
-  }
+  // Auto-expand logic based on hesitation
+  useEffect(() => {
+    if (!showWidget) return;
+    const timeSinceLastInteraction = Date.now() - state.userBehavior.lastInteraction;
+    if (timeSinceLastInteraction > 20000 && !state.contextualHelp.showTooltip) {
+      setShowExpanded(true);
+    } else if (timeSinceLastInteraction < 8000) {
+      setShowExpanded(false);
+    }
+  }, [showWidget, state.userBehavior.lastInteraction, state.contextualHelp.showTooltip]);
+  if (!showWidget || !uploadedImage) return null;
+  const activity = state.socialProof.recentActivity[currentActivity];
+  const momentumScore = state?.conversionElements?.momentumScore || 0;
+  const getMomentumLevel = () => {
+    if (momentumScore >= 75) return {
+      level: 'High',
+      color: 'green',
+      bgColor: 'bg-green-500'
+    };
+    if (momentumScore >= 50) return {
+      level: 'Medium',
+      color: 'yellow',
+      bgColor: 'bg-yellow-500'
+    };
+    if (momentumScore >= 25) return {
+      level: 'Building',
+      color: 'blue',
+      bgColor: 'bg-blue-500'
+    };
+    return {
+      level: 'Starting',
+      color: 'gray',
+      bgColor: 'bg-gray-500'
+    };
+  };
+  const momentum = getMomentumLevel();
+  const handleToggleExpanded = () => {
+    setShowExpanded(!showExpanded);
+    trackClick('unified-widget-expand');
+  };
+  return <div className="fixed bottom-6 left-6 z-50 max-w-sm animate-slide-in-left">
+      <Card className="bg-white/95 backdrop-blur-md shadow-xl border border-gray-200/50 hover:shadow-2xl transition-all duration-300 cursor-pointer overflow-hidden" onClick={handleToggleExpanded}>
+        <CardContent className="p-0">
+          
 
-  return (
-    <div className="fixed bottom-4 right-4 z-40 max-w-sm">
-      <Card className="bg-white/95 backdrop-blur-sm border border-gray-200 shadow-xl">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-sm font-medium text-gray-900">Live Activity</span>
-            </div>
-            <Badge variant="secondary" className="text-xs">
-              Real-time
-            </Badge>
+          {/* Subtle expand indicator */}
+          <div className="bg-gray-50 px-4 py-2 text-center">
+            <div className={`w-8 h-1 bg-gray-300 rounded-full mx-auto transition-transform duration-300 ${showExpanded ? 'rotate-180' : ''}`} />
           </div>
-
-          {isExpanded ? (
-            <div className="space-y-3">
-              <div className="text-sm text-gray-600">
-                <div className="flex justify-between items-center">
-                  <span>People creating now:</span>
-                  <span className="font-semibold text-green-600">47</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span>Orders today:</span>
-                  <span className="font-semibold text-blue-600">183</span>
-                </div>
-              </div>
-              
-              <button
-                onClick={() => setIsExpanded(false)}
-                className="text-xs text-gray-500 hover:text-gray-700"
-              >
-                Show less
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              <div className="text-sm text-gray-600">
-                47 people are creating their canvas right now
-              </div>
-              <button
-                onClick={() => setIsExpanded(true)}
-                className="text-xs text-purple-600 hover:text-purple-700 font-medium"
-              >
-                View details
-              </button>
-            </div>
-          )}
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>;
 };
-
 export default UnifiedSocialMomentumWidget;
