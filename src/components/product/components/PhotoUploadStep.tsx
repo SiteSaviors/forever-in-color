@@ -72,7 +72,7 @@ const PhotoUploadStep = ({
       onStepClick={handleStepClick}
       selectedStyle={selectedStyle}
     >
-      {/* Only render content when step is truly active */}
+      {/* Only render content when step is truly active - no wrapper div */}
       {shouldBeActive && (
         <PhotoUploadAndStyleSelection
           selectedStyle={selectedStyle}
