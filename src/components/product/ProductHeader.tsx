@@ -1,4 +1,3 @@
-
 import { Badge } from "@/components/ui/badge";
 import StreamlinedProgress from "./components/StreamlinedProgress";
 import { Shield, Truck, Award, Upload, Sparkles, Timer, Zap, Crown, Star } from "lucide-react";
@@ -43,12 +42,6 @@ const ProductHeader = ({
     setTimeout(() => {
       const step1Element = document.querySelector('[data-step="1"]');
       if (step1Element) {
-        // Trigger step 1 to become active/expanded
-        const stepButton = step1Element.querySelector('button[role="button"]');
-        if (stepButton) {
-          (stepButton as HTMLButtonElement).click();
-        }
-        
         // Scroll to the step with proper offset
         const elementTop = step1Element.getBoundingClientRect().top + window.pageYOffset;
         const offsetTop = elementTop - 120; // Account for header height

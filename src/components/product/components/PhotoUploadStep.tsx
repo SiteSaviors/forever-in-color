@@ -33,19 +33,22 @@ const PhotoUploadStep = ({
   completedSteps,
   onStepChange
 }: PhotoUploadStepProps) => {
+  // Step 1 should only be active if currentStep is 1 AND isActive is true
+  const shouldBeActive = currentStep === 1 && isActive;
+  
   return (
     <ProductStepWrapper
       stepNumber={1}
       title="Upload Photo & Choose Style"
       description="Upload your photo and select an art style"
-      isActive={isActive && currentStep === 1}  // Only show as active when currentStep is 1
+      isActive={shouldBeActive}
       isCompleted={isCompleted}
       canAccess={canAccess}
       onStepClick={onStepClick}
       selectedStyle={selectedStyle}
     >
-      {/* Only render content when step is active (currentStep === 1) */}
-      {isActive && currentStep === 1 && (
+      {/* Only render content when step is truly active */}
+      {shouldBeActive && (
         <PhotoUploadAndStyleSelection
           selectedStyle={selectedStyle}
           uploadedImage={uploadedImage}
