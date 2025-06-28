@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useImperativeHandle, forwardRef } from "react";
+import React, { useState, useRef, useImperativeHandle, forwardRef, useEffect } from "react";
 import PhotoUploadAndStyleSelection from "../PhotoUploadAndStyleSelection";
 import ProductStepWrapper from "./ProductStepWrapper";
 
@@ -44,12 +44,22 @@ const PhotoUploadStep = forwardRef<PhotoUploadStepRef, PhotoUploadStepProps>(({
   // Expose triggerFileInput method to parent
   useImperativeHandle(ref, () => ({
     triggerFileInput: () => {
+      console.log('🎯 PhotoUploadStep triggerFileInput called', !!fileInputTriggerRef.current);
       if (fileInputTriggerRef.current) {
-        return fileInputTriggerRef.current();
+        const result = fileInputTriggerRef.current();
+        console.log('🎯 File input trigger result:', result);
+        return result;
       }
+      console.log('❌ No file input trigger available');
       return false;
     }
   }), []);
+
+  // Handle file input trigger registration
+  const handleFileInputTriggerReady = (triggerFn: () => boolean) => {
+    console.log('🎯 File input trigger function registered');
+    fileInputTriggerRef.current = triggerFn;
+  };
   
   const shouldBeActive = currentStep === 1 && isActive && isStep1Activated;
   
@@ -59,8 +69,9 @@ const PhotoUploadStep = forwardRef<PhotoUploadStepRef, PhotoUploadStepProps>(({
   };
 
   // Auto-activate when currentStep is 1 and isActive is true
-  React.useEffect(() => {
+  useEffect(() => {
     if (currentStep === 1 && isActive) {
+      console.log('🎯 Auto-activating Step 1');
       setIsStep1Activated(true);
     }
   }, [currentStep, isActive]);
@@ -88,9 +99,7 @@ const PhotoUploadStep = forwardRef<PhotoUploadStepRef, PhotoUploadStepProps>(({
           currentStep={currentStep}
           completedSteps={completedSteps}
           onStepChange={onStepChange}
-          onFileInputTriggerReady={(triggerFn) => {
-            fileInputTriggerRef.current = triggerFn;
-          }}
+          onFileInputTriggerReady={handleFileInputTriggerReady}
         />
       )}
     </ProductStepWrapper>

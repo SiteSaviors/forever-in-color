@@ -31,12 +31,13 @@ const PhotoUploadMain = ({
 }: PhotoUploadMainProps) => {
   const { fileInputRef, triggerFileInput } = useFileInputTrigger();
 
-  // Notify parent when trigger function is ready
+  // Notify parent when trigger function is ready - run immediately and on every render
   useEffect(() => {
+    console.log('🎯 PhotoUploadMain registering trigger function');
     if (onTriggerReady) {
       onTriggerReady(triggerFileInput);
     }
-  }, [triggerFileInput, onTriggerReady]);
+  }); // No dependency array - run on every render to ensure it's always available
 
   return (
     <Card className="w-full">
