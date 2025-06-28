@@ -1,7 +1,4 @@
 
-// Import the ProgressActionPayload type from progressTypes first
-import type { ProgressActionPayload } from './progressTypes';
-
 export interface ImageUploadHandler {
   (imageUrl: string, originalImageUrl?: string, orientation?: string): void;
 }
@@ -20,17 +17,17 @@ export interface ProgressDispatchHandler {
 }
 
 export interface ContextualHelpHandler {
-  (type: string, message: string, level?: 'minimal' | 'moderate' | 'detailed'): void;
+  (type: string, message: string, level?: 'minimal' | 'moderate' | 'detailed') => void;
 }
 
 export interface AIAnalysisHandler {
-  (stage: string): void;
+  (stage: string) => void;
 }
 
 export interface TrackingHandler {
-  (element: string): void;
+  (element: string) => void;
 }
 
 export interface HoverTrackingHandler {
-  (duration: number): void;
+  (duration: number) => void;
 }

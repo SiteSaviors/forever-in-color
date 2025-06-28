@@ -36,7 +36,8 @@ const ProductStepsManager = memo(({
   onCustomizationChange,
   canProceedToStep,
   handleContinueToStep2,
-  handleContinueToStep3
+  handleContinueToStep3,
+  handleContinueToStep4
 }: ProductStepsManagerProps) => {
 
   const handleNavigateHome = () => {
