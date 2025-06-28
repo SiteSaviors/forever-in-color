@@ -6,6 +6,12 @@ import StyleSelectionSection from "./StyleSelectionSection";
 import PopularChoices from "./PopularChoices";
 import { usePhotoUploadState } from "../hooks/usePhotoUploadState";
 
+interface GlobalUploadState {
+  isUploading: boolean;
+  uploadProgress: number;
+  processingStage: string;
+}
+
 interface PhotoUploadFlowProps {
   selectedStyle: { id: number; name: string } | null;
   uploadedImage: string | null;
@@ -18,6 +24,7 @@ interface PhotoUploadFlowProps {
   completedSteps: number[];
   onStepChange: (step: number) => void;
   onFileInputTriggerReady?: (triggerFn: () => boolean) => void;
+  globalUploadState?: GlobalUploadState;
 }
 
 const PhotoUploadFlow = (props: PhotoUploadFlowProps) => {
@@ -26,14 +33,15 @@ const PhotoUploadFlow = (props: PhotoUploadFlowProps) => {
     uploadedImage, 
     selectedOrientation,
     onPhotoAndStyleComplete,
-    onFileInputTriggerReady
+    onFileInputTriggerReady,
+    globalUploadState
   } = props;
 
   const fileInputTriggerRef = useRef<(() => boolean) | null>(null);
 
-  // Register the trigger function when it becomes available
+  // Register the trigger function when it becomes available (legacy support)
   const handleFileInputTriggerReady = useCallback((triggerFn: () => boolean) => {
-    console.log('🎯 PhotoUploadFlow: File input trigger registered');
+    console.log('🎯 PhotoUploadFlow: File input trigger registered (legacy)');
     fileInputTriggerRef.current = triggerFn;
     onFileInputTriggerReady?.(triggerFn);
   }, [onFileInputTriggerReady]);
@@ -58,6 +66,7 @@ const PhotoUploadFlow = (props: PhotoUploadFlowProps) => {
         croppedImage={imageToDisplay}
         onImageUpload={handleImageUpload}
         onFileInputTriggerReady={handleFileInputTriggerReady}
+        globalUploadState={globalUploadState}
       />
       
       {hasValidImage && imageToDisplay && (

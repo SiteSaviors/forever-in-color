@@ -1,18 +1,26 @@
 
 import PhotoUploadContainer from "../photo-upload/PhotoUploadContainer";
 
+interface GlobalUploadState {
+  isUploading: boolean;
+  uploadProgress: number;
+  processingStage: string;
+}
+
 interface PhotoUploadSectionProps {
   hasImage: boolean;
   croppedImage: string | null;
   onImageUpload: (imageUrl: string, originalImageUrl?: string, orientation?: string) => void;
   onFileInputTriggerReady?: (triggerFn: () => boolean) => void;
+  globalUploadState?: GlobalUploadState;
 }
 
 const PhotoUploadSection = ({
   hasImage,
   croppedImage,
   onImageUpload,
-  onFileInputTriggerReady
+  onFileInputTriggerReady,
+  globalUploadState
 }: PhotoUploadSectionProps) => {
   // Only show the upload interface if no image is present
   if (hasImage && croppedImage) {
@@ -29,6 +37,7 @@ const PhotoUploadSection = ({
         onImageUpload={onImageUpload} 
         initialImage={croppedImage} 
         onTriggerReady={onFileInputTriggerReady}
+        globalUploadState={globalUploadState}
       />
     </div>
   );

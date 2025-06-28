@@ -11,6 +11,12 @@ import ProductStepsManager from "./components/ProductStepsManager";
 import { PhotoUploadStepRef } from "./components/PhotoUploadStep";
 import { RefObject } from "react";
 
+interface GlobalUploadState {
+  isUploading: boolean;
+  uploadProgress: number;
+  processingStage: string;
+}
+
 interface ProductContentProps {
   currentStep: number;
   completedSteps: number[];
@@ -26,6 +32,7 @@ interface ProductContentProps {
   onSizeSelect: (size: string) => void;
   onCustomizationChange: (customizations: CustomizationOptions) => void;
   photoUploadStepRef?: RefObject<PhotoUploadStepRef>;
+  globalUploadState?: GlobalUploadState;
 }
 
 const ProductContent = ({
@@ -42,7 +49,8 @@ const ProductContent = ({
   onOrientationSelect,
   onSizeSelect,
   onCustomizationChange,
-  photoUploadStepRef
+  photoUploadStepRef,
+  globalUploadState
 }: ProductContentProps) => {
   
   console.log('🐛 ProductContent Debug:', {
@@ -52,7 +60,8 @@ const ProductContent = ({
     selectedSize,
     selectedOrientation,
     uploadedImage: !!uploadedImage,
-    autoGenerationComplete
+    autoGenerationComplete,
+    globalUploadState
   });
 
   // Get the actual preview URLs from the state management system
@@ -108,6 +117,7 @@ const ProductContent = ({
               handleContinueToStep3={handleContinueToStep3}
               handleContinueToStep4={handleContinueToStep4}
               photoUploadStepRef={photoUploadStepRef}
+              globalUploadState={globalUploadState}
             />
           </StepAccordion>
         </ProductContentContainer>

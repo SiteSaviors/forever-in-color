@@ -2,6 +2,12 @@
 import PhotoUploadFlow from "./components/PhotoUploadFlow";
 import { AspectRatioErrorBoundary } from "./orientation/components/AspectRatioErrorBoundary";
 
+interface GlobalUploadState {
+  isUploading: boolean;
+  uploadProgress: number;
+  processingStage: string;
+}
+
 interface PhotoUploadAndStyleSelectionProps {
   selectedStyle: {
     id: number;
@@ -17,6 +23,7 @@ interface PhotoUploadAndStyleSelectionProps {
   completedSteps: number[];
   onStepChange: (step: number) => void;
   onFileInputTriggerReady?: (triggerFn: () => boolean) => void;
+  globalUploadState?: GlobalUploadState;
 }
 
 const PhotoUploadAndStyleSelection = (props: PhotoUploadAndStyleSelectionProps) => {

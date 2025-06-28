@@ -4,6 +4,12 @@ import PhotoUploadAndStyleSelection from "../PhotoUploadAndStyleSelection";
 import ProductStepWrapper from "./ProductStepWrapper";
 import { fileInputManager } from "@/utils/fileInputManager";
 
+interface GlobalUploadState {
+  isUploading: boolean;
+  uploadProgress: number;
+  processingStage: string;
+}
+
 interface PhotoUploadStepProps {
   currentStep: number;
   isActive: boolean;
@@ -18,6 +24,7 @@ interface PhotoUploadStepProps {
   onContinue: () => void;
   completedSteps: number[];
   onStepChange: (step: number) => void;
+  globalUploadState?: GlobalUploadState;
 }
 
 export interface PhotoUploadStepRef {
@@ -37,7 +44,8 @@ const PhotoUploadStep = forwardRef<PhotoUploadStepRef, PhotoUploadStepProps>(({
   onPhotoAndStyleComplete,
   onContinue,
   completedSteps,
-  onStepChange
+  onStepChange,
+  globalUploadState
 }, ref) => {
   
   // Expose direct global trigger to parent - no complex registration needed
@@ -80,6 +88,7 @@ const PhotoUploadStep = forwardRef<PhotoUploadStepRef, PhotoUploadStepProps>(({
           completedSteps={completedSteps}
           onStepChange={onStepChange}
           onFileInputTriggerReady={() => {}} // No longer needed with global system
+          globalUploadState={globalUploadState}
         />
       )}
     </ProductStepWrapper>

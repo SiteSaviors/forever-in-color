@@ -1,19 +1,32 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { detectOrientationFromImage } from "../utils/orientationDetection";
-import { useGlobalFileUpload } from "../hooks/useGlobalFileUpload";
 import UnifiedFlowProgress from "../components/UnifiedFlowProgress";
 import AutoCropPreview from "../components/AutoCropPreview";
 import PhotoCropper from "../PhotoCropper";
 import PhotoUploadMain from "./components/PhotoUploadMain";
 import { Card, CardContent } from "@/components/ui/card";
+import { fileInputManager } from "@/utils/fileInputManager";
+
+interface GlobalUploadState {
+  isUploading: boolean;
+  uploadProgress: number;
+  processingStage: string;
+}
 
 interface PhotoUploadContainerProps {
   onImageUpload: (imageUrl: string, originalImageUrl?: string, orientation?: string) => void;
   initialImage?: string | null;
   onTriggerReady?: (triggerFn: () => boolean) => void;
+  globalUploadState?: GlobalUploadState;
 }
 
-const PhotoUploadContainer = ({ onImageUpload, initialImage, onTriggerReady }: PhotoUploadContainerProps) => {
+const PhotoUploadContainer = ({ 
+  onImageUpload, 
+  initialImage, 
+  onTriggerReady,
+  globalUploadState 
+}: PhotoUploadContainerProps) => {
   const [showCropper, setShowCropper] = useState(false);
   const [showAutoCropPreview, setShowAutoCropPreview] = useState(false);
   const [recommendedOrientation, setRecommendedOrientation] = useState<string>("");
@@ -21,6 +34,11 @@ const PhotoUploadContainer = ({ onImageUpload, initialImage, onTriggerReady }: P
   const [cropAccepted, setCropAccepted] = useState(false);
   const [currentFlowStage, setCurrentFlowStage] = useState<'upload' | 'analyzing' | 'crop-preview' | 'orientation' | 'complete'>('upload');
   const [uploadedImage, setUploadedImage] = useState<string | null>(initialImage || null);
+
+  // Use global upload state if available, otherwise fall back to local state
+  const isUploading = globalUploadState?.isUploading || false;
+  const uploadProgress = globalUploadState?.uploadProgress || 0;
+  const processingStage = globalUploadState?.processingStage || '';
 
   const handleImageAnalysis = async (imageUrl: string) => {
     console.log('🎯 PhotoUploadContainer: Starting image analysis for:', imageUrl);
@@ -45,22 +63,15 @@ const PhotoUploadContainer = ({ onImageUpload, initialImage, onTriggerReady }: P
     }
   };
 
-  const {
-    isUploading,
-    uploadProgress,
-    processingStage,
-    triggerFileInput
-  } = useGlobalFileUpload({
-    onImageUpload,
-    onImageAnalysis: handleImageAnalysis,
-    onFlowStageChange: setCurrentFlowStage
-  });
-
   // Register the trigger function immediately when component mounts
   useEffect(() => {
     console.log('🎯 PhotoUploadContainer: Registering global trigger function');
-    onTriggerReady?.(triggerFileInput);
-  }, [triggerFileInput, onTriggerReady]);
+    const triggerFn = () => {
+      console.log('🎯 PhotoUploadContainer: Trigger function called');
+      return fileInputManager.triggerFileInput();
+    };
+    onTriggerReady?.(triggerFn);
+  }, [onTriggerReady]);
 
   // Update uploadedImage and flow when initialImage changes
   useEffect(() => {
@@ -97,7 +108,7 @@ const PhotoUploadContainer = ({ onImageUpload, initialImage, onTriggerReady }: P
 
   const handleChangePhoto = () => {
     console.log('🎯 User wants to change photo - triggering global file input');
-    triggerFileInput();
+    fileInputManager.triggerFileInput();
   };
 
   // Simplified drag and drop handlers for the UI (still functional but uses global system)
@@ -116,7 +127,7 @@ const PhotoUploadContainer = ({ onImageUpload, initialImage, onTriggerReady }: P
 
   const handleClick = () => {
     console.log('🎯 Upload area clicked - triggering global file input');
-    triggerFileInput();
+    fileInputManager.triggerFileInput();
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
