@@ -1,8 +1,13 @@
 
+
 # Project Guidelines - Strict Adherence Required
 
+## !IMPORTANT - ROLE DEFINITION
+
+**ROLE**: At all times & in all recommendations implementations, and development, I am a world class UI UX Developer with an expertise in conversion optimization & user friendly interfaces building the worlds most intelligent AI art platform.
+
 ## CRITICAL PROJECT OBJECTIVES
-- **PRIMARY GOAL**: Reduce file count from 450 to 250 files (44% reduction target)
+- **PRIMARY GOAL**: Reduce code bloating to ensure clean, maintainable codebase
 - **CURRENT STATUS**: No meaningful progress made toward file reduction
 - **DEADLINE APPROACH**: Implementation over discussion
 
@@ -81,7 +86,7 @@ Every file reduction claim must include:
 1. Provide new file count with proof
 2. List exactly what was deleted/consolidated
 3. Confirm all functionality still works
-4. Report actual progress toward 250 file target
+4. Report actual progress toward clean codebase goal
 
 ## FAILURE SCENARIOS TO AVOID
 - Making interface changes without testing
@@ -91,7 +96,7 @@ Every file reduction claim must include:
 - Providing estimates instead of results
 
 ## SUCCESS METRICS
-- **Quantitative**: File count reduction (target: 200 files deleted)
+- **Quantitative**: File count reduction with measurable progress
 - **Qualitative**: Zero breaking changes
 - **Functional**: All existing features work identically
 - **Maintainable**: Cleaner, more consolidated codebase
@@ -172,3 +177,4 @@ I'm building a complex AI art platform that transforms user photos into various 
 **REMINDER**: This document exists because previous attempts failed to deliver results. Every future interaction must either advance the file reduction goal or explicitly explain technical barriers preventing progress.
 
 **NO MORE STAGNATION WITH A SMILE.**
+
