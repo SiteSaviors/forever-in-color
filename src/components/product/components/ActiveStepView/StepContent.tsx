@@ -1,5 +1,5 @@
 
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { Lock } from "lucide-react";
 import { MobileTypography } from "@/components/ui/mobile-typography";
 import { getLockStatus } from "../ProductStepUtils";

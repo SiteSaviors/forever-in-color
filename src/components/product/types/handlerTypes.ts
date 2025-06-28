@@ -1,4 +1,7 @@
 
+// Import the ProgressActionPayload type from progressTypes first
+import type { ProgressActionPayload } from './progressTypes';
+
 export interface ImageUploadHandler {
   (imageUrl: string, originalImageUrl?: string, orientation?: string): void;
 }
@@ -31,6 +34,3 @@ export interface TrackingHandler {
 export interface HoverTrackingHandler {
   (duration: number): void;
 }
-
-// Import the ProgressActionPayload type from progressTypes
-import type { ProgressActionPayload } from './progressTypes';
