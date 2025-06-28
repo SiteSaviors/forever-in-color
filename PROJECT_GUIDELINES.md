@@ -98,6 +98,77 @@ Every file reduction claim must include:
 
 ---
 
+# Lovable Collaboration Guidelines
+
+## 🎯 Project Overview
+
+I'm building a complex AI art platform that transforms user photos into various art styles and guides them through a purchase flow. The codebase is large (500+ files) and I need incremental improvements without breaking existing functionality.
+
+## 🚀 Key Goals
+
+**Maintain Stability**: Avoid regressions or large-scale rewrites that introduce new bugs.
+
+**Incremental Progress**: Propose small, testable changes in clear phases.
+
+**Clarity & Simplicity**: Use plain language and high-level descriptions; I'll handle any technical details under the hood.
+
+**Conversion-Focused**: All UI/UX suggestions should improve user flow and conversion rates.
+
+**Collaboration**: Communicate each proposal clearly, with rationale and next steps.
+
+## 🎯 Phase-Based Workflow
+
+### Phase 1: Audit & Report
+**What**: Analyze current project flow (upload → crop → style → customization → checkout).
+
+**Deliverable**: A short report listing:
+- Top 5 friction points
+- Which areas are most error-prone or confusing
+- Estimated impact on conversion
+
+### Phase 2: Quick Wins
+**What**: Fix 2–3 critical bugs or UX pain points that block the purchase flow.
+
+**Deliverable**: Actionable list of changes (e.g., "Make the 'Next' button sticky on mobile", "Add a fallback for failed image generation").
+
+### Phase 3: UX Polish & Optimization
+**What**: Refine style cards, refine hero section, improve accessibility and mobile responsiveness.
+
+**Deliverable**: High-level design suggestions (wireframe sketches or text descriptions) and prioritized list of improvements.
+
+### Phase 4: Performance & Testing
+**What**: Recommend any automated tests or monitoring to catch future regressions.
+
+**Deliverable**: Suggested test scenarios and simple performance checks (e.g., "Ensure upload step renders under 1 second").
+
+## ✅ Collaboration Do's
+
+**Ask Clarifying Questions**: If something is unclear, ask before making changes.
+
+**Keep It Small**: Propose limited-scope changes per phase.
+
+**Explain Rationale**: For each recommendation, share why it matters.
+
+**Use My Terminology**: Stick to the language I've used (e.g., "upload step", "style cards").
+
+## 🚫 Collaboration Don'ts
+
+**No Big Rewrites**: Don't suggest rewriting the entire codebase.
+
+**No Unsolicited Refactoring**: Avoid refactoring areas outside the current phase.
+
+**No Technical Jargon**: Use simple terms; I'll interpret technical details.
+
+## 📬 Communication & Checkpoints
+
+**Phase Kickoff**: Confirm and refine goals before starting.
+
+**Mid-Phase Check**: Share interim findings or drafts for feedback.
+
+**Final Review**: Deliver report or plan, then we schedule the next phase.
+
+---
+
 **REMINDER**: This document exists because previous attempts failed to deliver results. Every future interaction must either advance the file reduction goal or explicitly explain technical barriers preventing progress.
 
 **NO MORE STAGNATION WITH A SMILE.**
