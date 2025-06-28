@@ -25,11 +25,26 @@ export default tseslint.config(
         "warn",
         { allowConstantExport: true },
       ],
-      "@typescript-eslint/no-unused-vars": "off",
-      "unused-imports/no-unused-imports": "warn",
+      // Enable stricter unused variable detection
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        { 
+          vars: "all", 
+          varsIgnorePattern: "^_", 
+          args: "after-used", 
+          argsIgnorePattern: "^_",
+          ignoreRestSiblings: true
+        }
+      ],
+      "unused-imports/no-unused-imports": "error",
       "unused-imports/no-unused-vars": [
-        "warn",
-        { vars: "all", varsIgnorePattern: "^_", args: "after-used", argsIgnorePattern: "^_" },
+        "error",
+        { 
+          vars: "all", 
+          varsIgnorePattern: "^_", 
+          args: "after-used", 
+          argsIgnorePattern: "^_" 
+        },
       ],
     },
   }
