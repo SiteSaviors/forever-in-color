@@ -18,13 +18,28 @@ const ProductHeaderCTA = ({ onUploadClick, onTriggerFileInput }: ProductHeaderCT
     // Activate Step 1 first
     onUploadClick();
     
-    // Wait for the component to fully mount and trigger registration
-    setTimeout(() => {
-      console.log('🎯 Attempting to trigger file input after activation');
+    // Try to trigger immediately, then with short delays
+    console.log('🎯 Attempting immediate file input trigger');
+    const immediateSuccess = onTriggerFileInput?.();
+    
+    if (immediateSuccess) {
+      console.log('✅ File input triggered immediately');
+      setIsActivating(false);
+      return;
+    }
+    
+    // If immediate trigger fails, try with very short delays
+    let attempts = 0;
+    const maxAttempts = 20;
+    const attemptTrigger = () => {
+      attempts++;
+      console.log(`🎯 Trigger attempt ${attempts}/${maxAttempts}`);
+      
       const success = onTriggerFileInput?.();
       
       if (success) {
-        console.log('✅ File input triggered successfully');
+        console.log(`✅ File input triggered successfully on attempt ${attempts}`);
+        setIsActivating(false);
         
         // Scroll to step 1 after successful trigger
         setTimeout(() => {
@@ -39,29 +54,20 @@ const ProductHeaderCTA = ({ onUploadClick, onTriggerFileInput }: ProductHeaderCT
             });
           }
         }, 100);
-      } else {
-        console.log('❌ File input trigger failed - retrying...');
         
-        // Retry mechanism - sometimes the component needs a bit more time
-        let retryCount = 0;
-        const maxRetries = 10;
-        const retryInterval = setInterval(() => {
-          const retrySuccess = onTriggerFileInput?.();
-          retryCount++;
-          
-          if (retrySuccess || retryCount >= maxRetries) {
-            clearInterval(retryInterval);
-            if (retrySuccess) {
-              console.log('✅ File input triggered successfully on retry', retryCount);
-            } else {
-              console.log('❌ File input trigger failed after all retries');
-            }
-          }
-        }, 50);
+        return;
       }
       
-      setIsActivating(false);
-    }, 300); // Increased timeout to ensure proper component mounting
+      if (attempts < maxAttempts) {
+        setTimeout(attemptTrigger, 10); // Very short 10ms delay
+      } else {
+        console.log('❌ File input trigger failed after all attempts');
+        setIsActivating(false);
+      }
+    };
+    
+    // Start attempting after a very short delay to allow component to mount
+    setTimeout(attemptTrigger, 50);
   };
 
   return (

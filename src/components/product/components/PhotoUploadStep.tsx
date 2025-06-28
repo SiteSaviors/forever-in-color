@@ -38,7 +38,6 @@ const PhotoUploadStep = forwardRef<PhotoUploadStepRef, PhotoUploadStepProps>(({
   completedSteps,
   onStepChange
 }, ref) => {
-  const [isStep1Activated, setIsStep1Activated] = useState(false);
   const fileInputTriggerRef = useRef<(() => boolean) | null>(null);
   
   // Expose triggerFileInput method to parent
@@ -46,7 +45,8 @@ const PhotoUploadStep = forwardRef<PhotoUploadStepRef, PhotoUploadStepProps>(({
     triggerFileInput: () => {
       console.log('🎯 PhotoUploadStep triggerFileInput called', {
         hasTrigger: !!fileInputTriggerRef.current,
-        isActive: shouldBeActive
+        currentStep,
+        isActive
       });
       
       if (fileInputTriggerRef.current) {
@@ -58,7 +58,7 @@ const PhotoUploadStep = forwardRef<PhotoUploadStepRef, PhotoUploadStepProps>(({
       console.log('❌ File input trigger not ready yet');
       return false;
     }
-  }), []);
+  }), [currentStep, isActive]);
 
   // Handle file input trigger registration from the upload container
   const handleFileInputTriggerReady = (triggerFn: () => boolean) => {
@@ -66,21 +66,13 @@ const PhotoUploadStep = forwardRef<PhotoUploadStepRef, PhotoUploadStepProps>(({
     fileInputTriggerRef.current = triggerFn;
   };
   
-  const shouldBeActive = currentStep === 1 && isActive && isStep1Activated;
+  // Component should be active when it's step 1 and either isActive is true OR currentStep is 1
+  const shouldBeActive = currentStep === 1 && (isActive || currentStep === 1);
   
   const handleStepClick = () => {
-    console.log('🎯 PhotoUploadStep clicked, activating step 1');
-    setIsStep1Activated(true);
+    console.log('🎯 PhotoUploadStep clicked');
     onStepClick();
   };
-
-  // Auto-activate when currentStep is 1 and isActive is true
-  useEffect(() => {
-    if (currentStep === 1 && isActive) {
-      console.log('🎯 Auto-activating Step 1');
-      setIsStep1Activated(true);
-    }
-  }, [currentStep, isActive]);
   
   return (
     <ProductStepWrapper
