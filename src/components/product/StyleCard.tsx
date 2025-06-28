@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo, useMemo } from 'react';
 import { useBlinking } from './hooks/useBlinking';
 import { useStyleCardLogic } from './hooks/useStyleCardLogic';
 import { useStyleCardEffects } from './hooks/useStyleCardEffects';
@@ -29,7 +29,7 @@ interface StyleCardProps {
   shouldBlur?: boolean;
 }
 
-const StyleCard = ({
+const StyleCard = memo(({
   style,
   croppedImage,
   selectedStyle,
@@ -42,6 +42,9 @@ const StyleCard = ({
   onContinue,
   shouldBlur = false
 }: StyleCardProps) => {
+  // Memoize style comparison for better performance
+  const isSelected = useMemo(() => selectedStyle === style.id, [selectedStyle, style.id]);
+  
   // Use the logic hook for state management
   const {
     showError,
@@ -57,7 +60,6 @@ const StyleCard = ({
     isStyleGenerated,
     validationError,
     generatePreview,
-    isSelected,
     showGeneratedBadge,
     hasError,
     imageToShow,
@@ -186,6 +188,8 @@ const StyleCard = ({
       />
     </>
   );
-};
+});
+
+StyleCard.displayName = 'StyleCard';
 
 export default StyleCard;

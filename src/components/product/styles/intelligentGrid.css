@@ -1,24 +1,24 @@
 
-/* Progressive Enhancement Animations */
+/* Optimized Progressive Enhancement Animations */
 @keyframes slideInUp {
   from {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translate3d(0, 30px, 0);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0);
   }
 }
 
 @keyframes fadeInScale {
   from {
     opacity: 0;
-    transform: scale(0.95);
+    transform: scale3d(0.95, 0.95, 1);
   }
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: scale3d(1, 1, 1);
   }
 }
 
@@ -31,19 +31,19 @@
   }
 }
 
-/* Enhanced recommended style pulse with amber glow */
+/* Optimized recommended style pulse with amber glow */
 @keyframes recommendedPulse {
   0%, 100% {
     box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.4), 0 4px 12px rgba(0, 0, 0, 0.1);
-    transform: scale(1);
+    transform: scale3d(1, 1, 1);
   }
   50% {
     box-shadow: 0 0 0 8px rgba(251, 191, 36, 0.2), 0 8px 24px rgba(0, 0, 0, 0.15);
-    transform: scale(1.02);
+    transform: scale3d(1.02, 1.02, 1);
   }
 }
 
-/* Enhanced hover glow with purple shadow */
+/* Optimized hover glow with purple shadow */
 @keyframes hoverGlow {
   0% {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -57,90 +57,95 @@
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translate3d(0, 20px, 0);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0);
   }
 }
 
-/* Hero Recommendations */
+/* Performance-optimized hero recommendations */
 .hero-recommendation {
-  animation: slideInUp 0.6s ease-out forwards;
+  animation: slideInUp 0.4s ease-out forwards;
+  will-change: transform, opacity;
 }
 
-.hero-recommendation:nth-child(1) { animation-delay: 0.1s; }
-.hero-recommendation:nth-child(2) { animation-delay: 0.2s; }
-.hero-recommendation:nth-child(3) { animation-delay: 0.3s; }
+.hero-recommendation:nth-child(1) { animation-delay: 0.05s; }
+.hero-recommendation:nth-child(2) { animation-delay: 0.1s; }
+.hero-recommendation:nth-child(3) { animation-delay: 0.15s; }
 
-/* Popular Choices */
+/* Optimized popular choices */
 .popular-choice {
-  animation: fadeInScale 0.5s ease-out forwards;
+  animation: fadeInScale 0.3s ease-out forwards;
+  will-change: transform, opacity;
 }
 
-.popular-choice:nth-child(1) { animation-delay: 0.4s; }
-.popular-choice:nth-child(2) { animation-delay: 0.5s; }
-.popular-choice:nth-child(3) { animation-delay: 0.6s; }
+.popular-choice:nth-child(1) { animation-delay: 0.2s; }
+.popular-choice:nth-child(2) { animation-delay: 0.25s; }
+.popular-choice:nth-child(3) { animation-delay: 0.3s; }
 
-/* Recommended Style Pulse Animation */
+/* Reduced complexity recommended pulse */
 .recommended-pulse {
-  animation: recommendedPulse 3s ease-in-out infinite;
+  animation: recommendedPulse 2s ease-in-out infinite;
+  will-change: transform, box-shadow;
 }
 
-/* Enhanced Hover States */
+/* Optimized hover states with GPU acceleration */
 .style-card-hover {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
 }
 
 .style-card-hover:hover {
-  transform: translateY(-6px) scale(1.03);
-  animation: hoverGlow 0.3s ease-out forwards;
+  transform: translate3d(0, -4px, 0) scale3d(1.02, 1.02, 1);
+  animation: hoverGlow 0.2s ease-out forwards;
 }
 
-/* Micro-interaction feedback */
+/* Optimized micro-interaction feedback */
 .style-card-press {
-  transition: transform 0.1s ease-out;
+  transition: transform 0.08s ease-out;
 }
 
 .style-card-press:active {
-  transform: scale(0.98);
+  transform: scale3d(0.98, 0.98, 1);
 }
 
-/* Optimized Grid Animation for Complete Collection */
+/* Optimized grid animation with reduced complexity */
 .grid-item {
   opacity: 0;
-  animation: fadeInScale 0.6s ease-out forwards;
+  animation: fadeInScale 0.4s ease-out forwards;
+  will-change: opacity, transform;
 }
 
-/* Staggered animation delays for better visual flow */
-.grid-item:nth-child(1) { animation-delay: 0.1s; }
-.grid-item:nth-child(2) { animation-delay: 0.15s; }
-.grid-item:nth-child(3) { animation-delay: 0.2s; }
-.grid-item:nth-child(4) { animation-delay: 0.25s; }
-.grid-item:nth-child(5) { animation-delay: 0.3s; }
-.grid-item:nth-child(6) { animation-delay: 0.35s; }
-.grid-item:nth-child(7) { animation-delay: 0.4s; }
-.grid-item:nth-child(8) { animation-delay: 0.45s; }
+/* Reduced staggered animation delays */
+.grid-item:nth-child(1) { animation-delay: 0.05s; }
+.grid-item:nth-child(2) { animation-delay: 0.08s; }
+.grid-item:nth-child(3) { animation-delay: 0.11s; }
+.grid-item:nth-child(4) { animation-delay: 0.14s; }
+.grid-item:nth-child(5) { animation-delay: 0.17s; }
+.grid-item:nth-child(6) { animation-delay: 0.2s; }
 
-/* Canvas Preview Overlay */
+/* Optimized canvas preview overlay */
 .canvas-overlay {
   backdrop-filter: blur(8px);
   background: rgba(0, 0, 0, 0.8);
-  transition: all 0.3s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  will-change: opacity, transform;
 }
 
 .canvas-overlay.entering {
   opacity: 0;
-  transform: scale(0.9);
+  transform: scale3d(0.9, 0.9, 1);
 }
 
 .canvas-overlay.entered {
   opacity: 1;
-  transform: scale(1);
+  transform: scale3d(1, 1, 1);
 }
 
-/* Loading skeleton animation */
+/* Optimized loading skeleton animation */
 @keyframes shimmer {
   0% {
     background-position: -200px 0;
@@ -153,10 +158,11 @@
 .loading-shimmer {
   background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
   background-size: 200px 100%;
-  animation: shimmer 1.5s infinite;
+  animation: shimmer 1.2s infinite;
+  will-change: background-position;
 }
 
-/* Mobile-friendly text utilities */
+/* Performance utilities */
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -164,37 +170,54 @@
   overflow: hidden;
 }
 
-/* Fade in animation class */
 .animate-fade-in {
-  animation: fadeIn 0.5s ease-out forwards;
+  animation: fadeIn 0.3s ease-out forwards;
 }
 
-/* Enhanced responsive design for Complete Collection */
+/* Mobile-first performance optimizations */
 @media (max-width: 768px) {
   .style-card-hover:hover {
-    transform: translateY(-3px) scale(1.02);
+    transform: translate3d(0, -2px, 0) scale3d(1.01, 1.01, 1);
   }
   
   .recommended-pulse {
-    animation-duration: 4s;
+    animation-duration: 3s;
   }
   
-  /* Improved mobile grid spacing */
   .grid-item {
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  /* Reduce animation complexity on mobile */
+  .hero-recommendation,
+  .popular-choice {
+    animation-duration: 0.2s;
   }
 }
 
 /* Tablet optimizations */
 @media (min-width: 768px) and (max-width: 1024px) {
   .grid-item:hover {
-    transform: translateY(-4px) scale(1.02);
+    transform: translate3d(0, -3px, 0) scale3d(1.015, 1.015, 1);
   }
 }
 
 /* Desktop enhancements */
 @media (min-width: 1024px) {
   .grid-item:hover {
-    transform: translateY(-6px) scale(1.03);
+    transform: translate3d(0, -4px, 0) scale3d(1.02, 1.02, 1);
   }
+}
+
+/* Performance containers */
+.performance-container {
+  contain: layout style paint;
+  will-change: auto;
+}
+
+/* Optimize frequently animated elements */
+.frequently-animated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
 }

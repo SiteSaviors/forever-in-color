@@ -14,7 +14,7 @@ const StepAccordion = memo(({ currentStep, children }: StepAccordionProps) => {
       value={`step-${currentStep}`} 
       className="space-y-8"
       onValueChange={() => {
-        // Prevent default accordion scroll behavior
+        // Prevent default accordion scroll behavior for performance
       }}
     >
       {children}
