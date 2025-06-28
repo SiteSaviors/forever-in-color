@@ -38,6 +38,9 @@ const ProductHeader = ({
       onUploadClick();
     }
     
+    // Dispatch custom event to notify Step 1 of hero button activation
+    window.dispatchEvent(new CustomEvent('heroButtonClicked'));
+    
     // Small delay to ensure state updates, then scroll to step 1
     setTimeout(() => {
       const step1Element = document.querySelector('[data-step="1"]');

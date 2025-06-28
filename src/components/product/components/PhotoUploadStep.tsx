@@ -1,4 +1,5 @@
 
+import React, { useState } from "react";
 import PhotoUploadAndStyleSelection from "../PhotoUploadAndStyleSelection";
 import ProductStepWrapper from "./ProductStepWrapper";
 
@@ -33,8 +34,32 @@ const PhotoUploadStep = ({
   completedSteps,
   onStepChange
 }: PhotoUploadStepProps) => {
-  // Step 1 should only be active if currentStep is 1 AND isActive is true
-  const shouldBeActive = currentStep === 1 && isActive;
+  // Track if step 1 has been explicitly activated (by hero button or step click)
+  const [isStep1Activated, setIsStep1Activated] = useState(false);
+  
+  // Step 1 should only be active if it's been explicitly activated AND currentStep is 1
+  const shouldBeActive = currentStep === 1 && isActive && isStep1Activated;
+  
+  const handleStepClick = () => {
+    setIsStep1Activated(true);
+    onStepClick();
+  };
+
+  // Listen for hero button activation
+  React.useEffect(() => {
+    const handleHeroActivation = () => {
+      if (currentStep === 1 && isActive) {
+        setIsStep1Activated(true);
+      }
+    };
+    
+    // Custom event listener for hero button click
+    window.addEventListener('heroButtonClicked', handleHeroActivation);
+    
+    return () => {
+      window.removeEventListener('heroButtonClicked', handleHeroActivation);
+    };
+  }, [currentStep, isActive]);
   
   return (
     <ProductStepWrapper
@@ -44,7 +69,7 @@ const PhotoUploadStep = ({
       isActive={shouldBeActive}
       isCompleted={isCompleted}
       canAccess={canAccess}
-      onStepClick={onStepClick}
+      onStepClick={handleStepClick}
       selectedStyle={selectedStyle}
     >
       {/* Only render content when step is truly active */}
