@@ -6,7 +6,6 @@ import { usePreviewGeneration } from "./hooks/usePreviewGeneration";
 import ErrorBoundary from "./components/ErrorBoundary";
 import LoadingState from "./components/LoadingState";
 import ProductContentContainer from "./components/ProductContentContainer";
-import StepAccordion from "./components/StepAccordion";
 import ProductStepsManager from "./components/ProductStepsManager";
 
 interface ProductContentProps {
@@ -84,27 +83,25 @@ const ProductContent = ({
         selectedOrientation={selectedOrientation}
       >
         <ProductContentContainer>
-          <StepAccordion currentStep={currentStep}>
-            <ProductStepsManager
-              currentStep={currentStep}
-              completedSteps={completedSteps}
-              selectedStyle={selectedStyle}
-              selectedSize={selectedSize}
-              selectedOrientation={selectedOrientation}
-              customizations={customizations}
-              uploadedImage={uploadedImage}
-              autoGenerationComplete={autoGenerationComplete}
-              onCurrentStepChange={onCurrentStepChange}
-              onPhotoAndStyleComplete={onPhotoAndStyleComplete}
-              onOrientationSelect={onOrientationSelect}
-              onSizeSelect={onSizeSelect}
-              onCustomizationChange={onCustomizationChange}
-              canProceedToStep={canProceedToStep}
-              handleContinueToStep2={handleContinueToStep2}
-              handleContinueToStep3={handleContinueToStep3}
-              handleContinueToStep4={handleContinueToStep4}
-            />
-          </StepAccordion>
+          <ProductStepsManager
+            currentStep={currentStep}
+            completedSteps={completedSteps}
+            selectedStyle={selectedStyle}
+            selectedSize={selectedSize}
+            selectedOrientation={selectedOrientation}
+            customizations={customizations}
+            uploadedImage={uploadedImage}
+            autoGenerationComplete={autoGenerationComplete}
+            onCurrentStepChange={onCurrentStepChange}
+            onPhotoAndStyleComplete={onPhotoAndStyleComplete}
+            onOrientationSelect={onOrientationSelect}
+            onSizeSelect={onSizeSelect}
+            onCustomizationChange={onCustomizationChange}
+            canProceedToStep={canProceedToStep}
+            handleContinueToStep2={handleContinueToStep2}
+            handleContinueToStep3={handleContinueToStep3}
+            handleContinueToStep4={handleContinueToStep4}
+          />
         </ProductContentContainer>
       </StylePreviewProvider>
     </ErrorBoundary>
