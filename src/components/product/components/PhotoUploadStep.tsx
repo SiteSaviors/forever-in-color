@@ -39,26 +39,34 @@ const PhotoUploadStep = forwardRef<PhotoUploadStepRef, PhotoUploadStepProps>(({
   onStepChange
 }, ref) => {
   const [isStep1Activated, setIsStep1Activated] = useState(false);
+  const [isTriggerReady, setIsTriggerReady] = useState(false);
   const fileInputTriggerRef = useRef<(() => boolean) | null>(null);
   
   // Expose triggerFileInput method to parent
   useImperativeHandle(ref, () => ({
     triggerFileInput: () => {
-      console.log('🎯 PhotoUploadStep triggerFileInput called', !!fileInputTriggerRef.current);
-      if (fileInputTriggerRef.current) {
+      console.log('🎯 PhotoUploadStep triggerFileInput called', {
+        hasTrigger: !!fileInputTriggerRef.current,
+        isReady: isTriggerReady,
+        isActive: shouldBeActive
+      });
+      
+      if (fileInputTriggerRef.current && isTriggerReady) {
         const result = fileInputTriggerRef.current();
         console.log('🎯 File input trigger result:', result);
         return result;
       }
-      console.log('❌ No file input trigger available');
+      
+      console.log('❌ File input trigger not ready yet');
       return false;
     }
-  }), []);
+  }), [isTriggerReady]);
 
-  // Handle file input trigger registration
+  // Handle file input trigger registration with immediate readiness
   const handleFileInputTriggerReady = (triggerFn: () => boolean) => {
-    console.log('🎯 File input trigger function registered');
+    console.log('🎯 File input trigger function registered and ready');
     fileInputTriggerRef.current = triggerFn;
+    setIsTriggerReady(true);
   };
   
   const shouldBeActive = currentStep === 1 && isActive && isStep1Activated;

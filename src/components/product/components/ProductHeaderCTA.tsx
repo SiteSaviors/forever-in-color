@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Upload, Sparkles, Shield, Star, Zap } from "lucide-react";
 import { useState } from "react";
@@ -16,30 +17,42 @@ const ProductHeaderCTA = ({ onUploadClick, onTriggerFileInput }: ProductHeaderCT
     // Activate Step 1 first
     onUploadClick();
     
-    // Small delay to allow Step 1 to render, then trigger file input
-    setTimeout(() => {
-      const success = onTriggerFileInput?.();
-      if (success) {
-        console.log('✅ File input triggered successfully');
-      } else {
-        console.log('❌ File input trigger failed');
-      }
-      setIsActivating(false);
-    }, 100);
+    // Give a tiny moment for Step 1 to render and register trigger, then try immediately
+    let attempts = 0;
+    const maxAttempts = 10; // 50ms total wait time maximum
     
-    // Scroll to step 1
-    setTimeout(() => {
-      const step1Element = document.querySelector('[data-step="1"]');
-      if (step1Element) {
-        const elementTop = step1Element.getBoundingClientRect().top + window.pageYOffset;
-        const offsetTop = elementTop - 120;
+    const tryTrigger = () => {
+      attempts++;
+      const success = onTriggerFileInput?.();
+      
+      if (success) {
+        console.log('✅ File input triggered successfully on attempt', attempts);
+        setIsActivating(false);
         
-        window.scrollTo({
-          top: offsetTop,
-          behavior: 'smooth'
-        });
+        // Scroll to step 1 after successful trigger
+        setTimeout(() => {
+          const step1Element = document.querySelector('[data-step="1"]');
+          if (step1Element) {
+            const elementTop = step1Element.getBoundingClientRect().top + window.pageYOffset;
+            const offsetTop = elementTop - 120;
+            
+            window.scrollTo({
+              top: offsetTop,
+              behavior: 'smooth'
+            });
+          }
+        }, 100);
+      } else if (attempts < maxAttempts) {
+        console.log(`⏳ File input not ready, attempt ${attempts}/${maxAttempts}, retrying...`);
+        setTimeout(tryTrigger, 5); // Very short retry interval
+      } else {
+        console.log('❌ File input trigger failed after', maxAttempts, 'attempts');
+        setIsActivating(false);
       }
-    }, 200);
+    };
+    
+    // Start trying after a minimal delay to allow component mounting
+    setTimeout(tryTrigger, 10);
   };
 
   return (
@@ -72,7 +85,7 @@ const ProductHeaderCTA = ({ onUploadClick, onTriggerFileInput }: ProductHeaderCT
           className="relative bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 hover:from-purple-700 hover:via-pink-700 hover:to-purple-700 text-white px-16 py-8 text-2xl font-black rounded-full shadow-2xl hover:shadow-purple-500/50 transform hover:scale-[1.02] transition-all duration-300 border-2 border-white/20 backdrop-blur-sm group-hover:border-white/40 disabled:opacity-75"
         >
           <Upload className="w-7 h-7 mr-4" />
-          {isActivating ? 'Opening...' : 'Upload Your Photo & Start Creating'}
+          {isActivating ? 'Opening File Picker...' : 'Upload Your Photo & Start Creating'}
           <Sparkles className={`w-6 h-6 ml-4 ${isActivating ? 'animate-spin' : ''}`} />
         </Button>
       </div>
