@@ -60,8 +60,8 @@ const HeroRecommendations = ({
         </p>
       </div>
 
-      {/* Hero Grid - Enhanced with 6 cards total (1 original + 5 AI recommendations) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6 mb-8">
+      {/* Hero Grid - Changed to rows of 3 cards each */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mb-8">
         {/* Original Photo Card - Always First */}
         <div
           className={`relative group transform transition-all duration-500 hover:scale-105 ${
@@ -97,7 +97,7 @@ const HeroRecommendations = ({
           </div>
         </div>
 
-        {/* AI Recommended Styles - Now 5 cards */}
+        {/* AI Recommended Styles - Now 5 cards in rows of 3 */}
         {heroRecommendations.map((rec, index) => {
           const style = artStyles.find(s => s.id === rec.styleId);
           if (!style) return null;
