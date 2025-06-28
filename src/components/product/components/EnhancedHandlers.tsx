@@ -1,20 +1,25 @@
 
 import { useProgressOrchestrator } from "../progress/ProgressOrchestrator";
+import { 
+  ImageUploadHandler, 
+  StyleSelectHandler, 
+  EnhancedHandlers 
+} from "../types/handlerTypes";
 
 export const useEnhancedHandlers = (
-  handleImageUpload: (imageUrl: string, originalImageUrl?: string, orientation?: string) => void,
-  handleStyleSelect: (styleId: number, styleName: string) => void
-) => {
+  handleImageUpload: ImageUploadHandler,
+  handleStyleSelect: StyleSelectHandler
+): EnhancedHandlers => {
   const { dispatch, showContextualHelp, startAIAnalysis, completeAIAnalysis, trackClick } = useProgressOrchestrator();
 
   // Enhanced image upload handler with AI analysis
-  const handleEnhancedImageUpload = (imageUrl: string, originalImageUrl?: string, orientation?: string) => {
-    dispatch({ type: 'SET_SUB_STEP', payload: 'analyzing' });
+  const handleEnhancedImageUpload: ImageUploadHandler = (imageUrl: string, originalImageUrl?: string, orientation?: string) => {
+    dispatch({ type: 'SET_SUB_STEP', payload: { subStep: 'analyzing' } });
     startAIAnalysis("Analyzing your photo composition and lighting...");
     
     dispatch({ 
       type: 'ADD_PERSONALIZED_MESSAGE', 
-      payload: "AI is analyzing your photo to find the perfect artistic matches..."
+      payload: { message: "AI is analyzing your photo to find the perfect artistic matches..." }
     });
 
     // Simulate AI analysis with realistic timing
@@ -36,12 +41,12 @@ export const useEnhancedHandlers = (
   };
 
   // Enhanced style selection with confidence scoring
-  const handleEnhancedStyleSelect = (styleId: number, styleName: string) => {
+  const handleEnhancedStyleSelect: StyleSelectHandler = (styleId: number, styleName: string) => {
     trackClick(`style-select-${styleName.toLowerCase().replace(/\s+/g, '-')}`);
     
     dispatch({ 
       type: 'ADD_PERSONALIZED_MESSAGE', 
-      payload: `Excellent choice! ${styleName} is perfect for your photo composition.`
+      payload: { message: `Excellent choice! ${styleName} is perfect for your photo composition.` }
     });
     
     showContextualHelp(

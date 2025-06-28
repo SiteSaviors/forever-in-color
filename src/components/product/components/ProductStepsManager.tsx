@@ -2,6 +2,7 @@
 import { memo, lazy, Suspense } from 'react';
 import StepErrorBoundary from './StepErrorBoundary';
 import LoadingState from './LoadingState';
+import { ProductStepData, StepHandlers, CustomizationConfig } from '../types/stepTypes';
 
 // Lazy load step components for better code splitting
 const PhotoUploadStep = lazy(() => import('./PhotoUploadStep'));
@@ -9,24 +10,14 @@ const CanvasConfigurationStep = lazy(() => import('./CanvasConfigurationStep'));
 const CustomizationStep = lazy(() => import('./CustomizationStep'));
 const ReviewOrderStep = lazy(() => import('./ReviewOrderStep'));
 
-interface ProductStepsManagerProps {
+interface ProductStepsManagerProps extends ProductStepData, StepHandlers {
   currentStep: number;
   completedSteps: number[];
-  selectedStyle: {id: number, name: string} | null;
-  selectedSize: string;
-  selectedOrientation: string;
-  customizations: any;
-  uploadedImage: string | null;
-  autoGenerationComplete: boolean;
   onCurrentStepChange: (step: number) => void;
   onPhotoAndStyleComplete: (imageUrl: string, styleId: number, styleName: string) => void;
   onOrientationSelect: (orientation: string) => void;
   onSizeSelect: (size: string) => void;
-  onCustomizationChange: (customizations: any) => void;
-  canProceedToStep: (step: number) => boolean;
-  handleContinueToStep2: () => void;
-  handleContinueToStep3: () => void;
-  handleContinueToStep4: () => void;
+  onCustomizationChange: (customizations: CustomizationConfig) => void;
 }
 
 const ProductStepsManager = memo(({
