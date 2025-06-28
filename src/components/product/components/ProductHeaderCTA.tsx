@@ -1,54 +1,34 @@
 
 import { Button } from "@/components/ui/button";
 import { Upload, Sparkles, Shield, Star, Zap } from "lucide-react";
+import { useState } from "react";
 
 interface ProductHeaderCTAProps {
   onUploadClick: () => void;
+  onTriggerFileInput?: () => boolean;
 }
 
-const ProductHeaderCTA = ({ onUploadClick }: ProductHeaderCTAProps) => {
-  const handleUploadClick = () => {
-    // First, ensure we're on step 1 and that it gets activated
-    if (onUploadClick) {
-      onUploadClick();
-    }
-    
-    // Dispatch custom event to notify Step 1 of hero button activation
-    window.dispatchEvent(new CustomEvent('heroButtonClicked'));
-    
-    // Wait for Step 1 to fully render and mount, then trigger file picker
-    const waitForStepAndTriggerUpload = () => {
-      // Try to find the file input with a longer delay to ensure Step 1 is fully rendered
-      setTimeout(() => {
-        const fileInput = document.querySelector('input[type="file"][accept*="image"]') as HTMLInputElement;
-        if (fileInput) {
-          console.log('✅ Found file input, clicking it');
-          fileInput.click();
-        } else {
-          // If still not found, try to find and click the upload dropzone
-          const uploadDropzone = document.querySelector('[data-upload-dropzone]') as HTMLElement;
-          if (uploadDropzone) {
-            console.log('✅ Found upload dropzone, clicking it');
-            uploadDropzone.click();
-          } else {
-            console.log('❌ Neither file input nor dropzone found, retrying...');
-            // Retry once more with a longer delay
-            setTimeout(() => {
-              const retryFileInput = document.querySelector('input[type="file"][accept*="image"]') as HTMLInputElement;
-              if (retryFileInput) {
-                console.log('✅ Found file input on retry, clicking it');
-                retryFileInput.click();
-              }
-            }, 500);
-          }
-        }
-      }, 800); // Increased delay to ensure Step 1 is fully mounted
-    };
+const ProductHeaderCTA = ({ onUploadClick, onTriggerFileInput }: ProductHeaderCTAProps) => {
+  const [isActivating, setIsActivating] = useState(false);
 
-    // Start the upload process
-    waitForStepAndTriggerUpload();
+  const handleUploadClick = async () => {
+    setIsActivating(true);
     
-    // Scroll to step 1 after a delay to ensure proper positioning
+    // Activate Step 1 first
+    onUploadClick();
+    
+    // Small delay to allow Step 1 to render, then trigger file input
+    setTimeout(() => {
+      const success = onTriggerFileInput?.();
+      if (success) {
+        console.log('✅ File input triggered successfully');
+      } else {
+        console.log('❌ File input trigger failed');
+      }
+      setIsActivating(false);
+    }, 100);
+    
+    // Scroll to step 1
     setTimeout(() => {
       const step1Element = document.querySelector('[data-step="1"]');
       if (step1Element) {
@@ -89,11 +69,12 @@ const ProductHeaderCTA = ({ onUploadClick }: ProductHeaderCTAProps) => {
         {/* The Button - Conversion Optimized */}
         <Button 
           onClick={handleUploadClick} 
-          className="relative bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 hover:from-purple-700 hover:via-pink-700 hover:to-purple-700 text-white px-16 py-8 text-2xl font-black rounded-full shadow-2xl hover:shadow-purple-500/50 transform hover:scale-[1.02] transition-all duration-300 border-2 border-white/20 backdrop-blur-sm group-hover:border-white/40"
+          disabled={isActivating}
+          className="relative bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 hover:from-purple-700 hover:via-pink-700 hover:to-purple-700 text-white px-16 py-8 text-2xl font-black rounded-full shadow-2xl hover:shadow-purple-500/50 transform hover:scale-[1.02] transition-all duration-300 border-2 border-white/20 backdrop-blur-sm group-hover:border-white/40 disabled:opacity-75"
         >
           <Upload className="w-7 h-7 mr-4" />
-          Upload Your Photo & Start Creating
-          <Sparkles className="w-6 h-6 ml-4 animate-spin" />
+          {isActivating ? 'Opening...' : 'Upload Your Photo & Start Creating'}
+          <Sparkles className={`w-6 h-6 ml-4 ${isActivating ? 'animate-spin' : ''}`} />
         </Button>
       </div>
       

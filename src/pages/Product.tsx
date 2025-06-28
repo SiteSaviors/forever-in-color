@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProductHeader from "@/components/product/ProductHeader";
@@ -11,8 +11,11 @@ import UnifiedSocialMomentumWidget from "@/components/product/components/Unified
 import { useProductState } from "@/components/product/ProductStateManager";
 import { ProgressOrchestrator } from "@/components/product/progress/ProgressOrchestrator";
 import { preloadCriticalImages } from "@/utils/performanceUtils";
+import { PhotoUploadStepRef } from "@/components/product/components/PhotoUploadStep";
 
 const Product = () => {
+  const photoUploadStepRef = useRef<PhotoUploadStepRef>(null);
+  
   const {
     currentStep,
     completedSteps,
@@ -49,20 +52,12 @@ const Product = () => {
 
   const handleUploadClick = () => {
     console.log('🎯 Hero button clicked - activating Step 1');
-    
-    // Ensure we're on step 1 and it becomes active
     setCurrentStep(1);
-    
-    // Small delay to ensure DOM updates before scrolling
-    setTimeout(() => {
-      const uploadSection = document.querySelector('[data-step="1"]');
-      if (uploadSection) {
-        uploadSection.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'center' 
-        });
-      }
-    }, 150);
+  };
+
+  const handleTriggerFileInput = () => {
+    console.log('🎯 Attempting to trigger file input...');
+    return photoUploadStepRef.current?.triggerFileInput() || false;
   };
 
   return (
@@ -76,6 +71,7 @@ const Product = () => {
             totalSteps={4}
             currentStep={currentStep}
             onUploadClick={handleUploadClick}
+            onTriggerFileInput={handleTriggerFileInput}
           />
           
           <TrustElements />
@@ -94,6 +90,7 @@ const Product = () => {
             onOrientationSelect={handleOrientationSelect}
             onSizeSelect={handleSizeSelect}
             onCustomizationChange={handleCustomizationChange}
+            photoUploadStepRef={photoUploadStepRef}
           />
           
           <ProductTestimonials />

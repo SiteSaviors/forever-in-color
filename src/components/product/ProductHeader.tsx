@@ -13,13 +13,15 @@ interface ProductHeaderProps {
   totalSteps: number;
   currentStep?: number;
   onUploadClick?: () => void;
+  onTriggerFileInput?: () => boolean;
 }
 
 const ProductHeader = ({
   completedSteps,
   totalSteps,
   currentStep = 1,
-  onUploadClick
+  onUploadClick,
+  onTriggerFileInput
 }: ProductHeaderProps) => {
   const progressPercentage = completedSteps.length / totalSteps * 100;
 
@@ -36,7 +38,10 @@ const ProductHeader = ({
         <ProductHeaderHero />
 
         {/* Mega CTA Section - The Conversion Powerhouse */}
-        <ProductHeaderCTA onUploadClick={onUploadClick} />
+        <ProductHeaderCTA 
+          onUploadClick={onUploadClick} 
+          onTriggerFileInput={onTriggerFileInput}
+        />
 
         {/* Streamlined Progress - Only show when needed */}
         {progressPercentage > 0 && <StreamlinedProgress currentStep={currentStep} completedSteps={completedSteps} totalSteps={totalSteps} />}

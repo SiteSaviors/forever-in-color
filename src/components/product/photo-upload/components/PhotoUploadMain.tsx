@@ -1,18 +1,20 @@
 
 import { Upload, Image, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { useFileInputTrigger } from "../../hooks/useFileInputTrigger";
+import { useEffect } from "react";
 
 interface PhotoUploadMainProps {
   isDragOver: boolean;
   isUploading: boolean;
   uploadProgress: number;
   processingStage: string;
-  fileInputRef: React.RefObject<HTMLInputElement>;
   onDrop: (e: React.DragEvent<HTMLDivElement>) => void;
   onDragOver: (e: React.DragEvent<HTMLDivElement>) => void;
   onDragLeave: (e: React.DragEvent<HTMLDivElement>) => void;
   onClick: () => void;
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onTriggerReady?: (triggerFn: () => boolean) => void;
 }
 
 const PhotoUploadMain = ({
@@ -20,13 +22,22 @@ const PhotoUploadMain = ({
   isUploading,
   uploadProgress,
   processingStage,
-  fileInputRef,
   onDrop,
   onDragOver,
   onDragLeave,
   onClick,
-  onFileChange
+  onFileChange,
+  onTriggerReady
 }: PhotoUploadMainProps) => {
+  const { fileInputRef, triggerFileInput } = useFileInputTrigger();
+
+  // Notify parent when trigger function is ready
+  useEffect(() => {
+    if (onTriggerReady) {
+      onTriggerReady(triggerFileInput);
+    }
+  }, [triggerFileInput, onTriggerReady]);
+
   return (
     <Card className="w-full">
       <div

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useRef, useImperativeHandle, forwardRef } from "react";
 import PhotoUploadAndStyleSelection from "../PhotoUploadAndStyleSelection";
 import ProductStepWrapper from "./ProductStepWrapper";
 
@@ -19,7 +19,11 @@ interface PhotoUploadStepProps {
   onStepChange: (step: number) => void;
 }
 
-const PhotoUploadStep = ({
+export interface PhotoUploadStepRef {
+  triggerFileInput: () => boolean;
+}
+
+const PhotoUploadStep = forwardRef<PhotoUploadStepRef, PhotoUploadStepProps>(({
   currentStep,
   isActive,
   isCompleted,
@@ -33,12 +37,20 @@ const PhotoUploadStep = ({
   onContinue,
   completedSteps,
   onStepChange
-}: PhotoUploadStepProps) => {
-  // Track if step 1 has been explicitly activated (by hero button or step click)
+}, ref) => {
   const [isStep1Activated, setIsStep1Activated] = useState(false);
-  const [shouldTriggerFileInput, setShouldTriggerFileInput] = useState(false);
+  const fileInputTriggerRef = useRef<(() => boolean) | null>(null);
   
-  // Step 1 should only be active if it's been explicitly activated AND currentStep is 1
+  // Expose triggerFileInput method to parent
+  useImperativeHandle(ref, () => ({
+    triggerFileInput: () => {
+      if (fileInputTriggerRef.current) {
+        return fileInputTriggerRef.current();
+      }
+      return false;
+    }
+  }), []);
+  
   const shouldBeActive = currentStep === 1 && isActive && isStep1Activated;
   
   const handleStepClick = () => {
@@ -46,44 +58,12 @@ const PhotoUploadStep = ({
     onStepClick();
   };
 
-  // Listen for hero button activation
-  useEffect(() => {
-    const handleHeroActivation = () => {
-      console.log('🎯 Hero button activated - setting up Step 1');
-      if (currentStep === 1 && isActive) {
-        setIsStep1Activated(true);
-        setShouldTriggerFileInput(true);
-      }
-    };
-    
-    // Custom event listener for hero button click
-    window.addEventListener('heroButtonClicked', handleHeroActivation);
-    
-    return () => {
-      window.removeEventListener('heroButtonClicked', handleHeroActivation);
-    };
-  }, [currentStep, isActive]);
-
-  // Trigger file input when step becomes active via hero button
-  useEffect(() => {
-    if (shouldBeActive && shouldTriggerFileInput) {
-      console.log('🎯 Step 1 is now active, triggering file input...');
-      
-      // Wait a bit for the component to fully render
-      const timer = setTimeout(() => {
-        const fileInput = document.querySelector('input[type="file"][accept*="image"]') as HTMLInputElement;
-        if (fileInput) {
-          console.log('✅ Found and clicking file input');
-          fileInput.click();
-          setShouldTriggerFileInput(false); // Reset flag
-        } else {
-          console.log('❌ File input not found yet');
-        }
-      }, 200);
-
-      return () => clearTimeout(timer);
+  // Auto-activate when currentStep is 1 and isActive is true
+  React.useEffect(() => {
+    if (currentStep === 1 && isActive) {
+      setIsStep1Activated(true);
     }
-  }, [shouldBeActive, shouldTriggerFileInput]);
+  }, [currentStep, isActive]);
   
   return (
     <ProductStepWrapper
@@ -96,7 +76,6 @@ const PhotoUploadStep = ({
       onStepClick={handleStepClick}
       selectedStyle={selectedStyle}
     >
-      {/* Only render content when step is truly active */}
       {shouldBeActive && (
         <PhotoUploadAndStyleSelection
           selectedStyle={selectedStyle}
@@ -109,10 +88,15 @@ const PhotoUploadStep = ({
           currentStep={currentStep}
           completedSteps={completedSteps}
           onStepChange={onStepChange}
+          onFileInputTriggerReady={(triggerFn) => {
+            fileInputTriggerRef.current = triggerFn;
+          }}
         />
       )}
     </ProductStepWrapper>
   );
-};
+});
+
+PhotoUploadStep.displayName = 'PhotoUploadStep';
 
 export default PhotoUploadStep;
