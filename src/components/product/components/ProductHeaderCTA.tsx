@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Upload, Sparkles, Shield, Star, Zap } from "lucide-react";
 import { useState } from "react";
