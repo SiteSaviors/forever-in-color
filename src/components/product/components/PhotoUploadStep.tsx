@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import PhotoUploadAndStyleSelection from "../PhotoUploadAndStyleSelection";
 import ProductStepWrapper from "./ProductStepWrapper";
 
@@ -36,6 +36,7 @@ const PhotoUploadStep = ({
 }: PhotoUploadStepProps) => {
   // Track if step 1 has been explicitly activated (by hero button or step click)
   const [isStep1Activated, setIsStep1Activated] = useState(false);
+  const [shouldTriggerFileInput, setShouldTriggerFileInput] = useState(false);
   
   // Step 1 should only be active if it's been explicitly activated AND currentStep is 1
   const shouldBeActive = currentStep === 1 && isActive && isStep1Activated;
@@ -46,10 +47,12 @@ const PhotoUploadStep = ({
   };
 
   // Listen for hero button activation
-  React.useEffect(() => {
+  useEffect(() => {
     const handleHeroActivation = () => {
+      console.log('🎯 Hero button activated - setting up Step 1');
       if (currentStep === 1 && isActive) {
         setIsStep1Activated(true);
+        setShouldTriggerFileInput(true);
       }
     };
     
@@ -60,6 +63,27 @@ const PhotoUploadStep = ({
       window.removeEventListener('heroButtonClicked', handleHeroActivation);
     };
   }, [currentStep, isActive]);
+
+  // Trigger file input when step becomes active via hero button
+  useEffect(() => {
+    if (shouldBeActive && shouldTriggerFileInput) {
+      console.log('🎯 Step 1 is now active, triggering file input...');
+      
+      // Wait a bit for the component to fully render
+      const timer = setTimeout(() => {
+        const fileInput = document.querySelector('input[type="file"][accept*="image"]') as HTMLInputElement;
+        if (fileInput) {
+          console.log('✅ Found and clicking file input');
+          fileInput.click();
+          setShouldTriggerFileInput(false); // Reset flag
+        } else {
+          console.log('❌ File input not found yet');
+        }
+      }, 200);
+
+      return () => clearTimeout(timer);
+    }
+  }, [shouldBeActive, shouldTriggerFileInput]);
   
   return (
     <ProductStepWrapper
@@ -72,7 +96,7 @@ const PhotoUploadStep = ({
       onStepClick={handleStepClick}
       selectedStyle={selectedStyle}
     >
-      {/* Only render content when step is truly active - no wrapper div */}
+      {/* Only render content when step is truly active */}
       {shouldBeActive && (
         <PhotoUploadAndStyleSelection
           selectedStyle={selectedStyle}

@@ -16,35 +16,51 @@ const ProductHeaderCTA = ({ onUploadClick }: ProductHeaderCTAProps) => {
     // Dispatch custom event to notify Step 1 of hero button activation
     window.dispatchEvent(new CustomEvent('heroButtonClicked'));
     
-    // Trigger the photo upload interface directly
-    setTimeout(() => {
-      // Find and click the file input to open file picker
-      const fileInput = document.querySelector('input[type="file"][accept*="image"]') as HTMLInputElement;
-      if (fileInput) {
-        fileInput.click();
-      } else {
-        // If no file input found, try to find the upload dropzone and trigger it
-        const uploadDropzone = document.querySelector('[data-upload-dropzone]') as HTMLElement;
-        if (uploadDropzone) {
-          uploadDropzone.click();
+    // Wait for Step 1 to fully render and mount, then trigger file picker
+    const waitForStepAndTriggerUpload = () => {
+      // Try to find the file input with a longer delay to ensure Step 1 is fully rendered
+      setTimeout(() => {
+        const fileInput = document.querySelector('input[type="file"][accept*="image"]') as HTMLInputElement;
+        if (fileInput) {
+          console.log('✅ Found file input, clicking it');
+          fileInput.click();
+        } else {
+          // If still not found, try to find and click the upload dropzone
+          const uploadDropzone = document.querySelector('[data-upload-dropzone]') as HTMLElement;
+          if (uploadDropzone) {
+            console.log('✅ Found upload dropzone, clicking it');
+            uploadDropzone.click();
+          } else {
+            console.log('❌ Neither file input nor dropzone found, retrying...');
+            // Retry once more with a longer delay
+            setTimeout(() => {
+              const retryFileInput = document.querySelector('input[type="file"][accept*="image"]') as HTMLInputElement;
+              if (retryFileInput) {
+                console.log('✅ Found file input on retry, clicking it');
+                retryFileInput.click();
+              }
+            }, 500);
+          }
         }
-      }
-    }, 300); // Small delay to ensure Step 1 is expanded first
+      }, 800); // Increased delay to ensure Step 1 is fully mounted
+    };
+
+    // Start the upload process
+    waitForStepAndTriggerUpload();
     
-    // Small delay to ensure state updates, then scroll to step 1
+    // Scroll to step 1 after a delay to ensure proper positioning
     setTimeout(() => {
       const step1Element = document.querySelector('[data-step="1"]');
       if (step1Element) {
-        // Scroll to the step with proper offset
         const elementTop = step1Element.getBoundingClientRect().top + window.pageYOffset;
-        const offsetTop = elementTop - 120; // Account for header height
+        const offsetTop = elementTop - 120;
         
         window.scrollTo({
           top: offsetTop,
           behavior: 'smooth'
         });
       }
-    }, 100);
+    }, 200);
   };
 
   return (
