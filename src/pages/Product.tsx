@@ -44,7 +44,7 @@ const Product = () => {
     
     // Pass the uploaded image directly to the photo and style completion handler
     // This will set the uploaded image in the state and trigger the flow
-    handlePhotoAndStyleComplete(imageUrl, 0, "temp-style", orientation);
+    handlePhotoAndStyleComplete(imageUrl, 0, "temp-style");
   };
 
   const handleGlobalImageAnalysis = (imageUrl: string) => {

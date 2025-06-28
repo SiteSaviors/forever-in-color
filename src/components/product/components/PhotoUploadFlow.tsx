@@ -59,7 +59,7 @@ const PhotoUploadFlow = (props: PhotoUploadFlowProps) => {
 
   // Use the uploaded image from props (from global state) if available, otherwise use cropped image
   const imageToDisplay = uploadedImage || croppedImage;
-  const shouldShowImage = uploadedImage || hasValidImage;
+  const shouldShowImage = !!uploadedImage || hasValidImage;
 
   console.log('🎯 PhotoUploadFlow Debug:', {
     uploadedImage: !!uploadedImage,
