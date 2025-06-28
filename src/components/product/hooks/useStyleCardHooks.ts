@@ -20,6 +20,7 @@ interface UseStyleCardHooksProps {
   preGeneratedPreview?: string;
   cropAspectRatio?: number;
   selectedOrientation?: string;
+  showContinueButton?: boolean;
   onStyleClick: (style: { id: number; name: string; description: string; image: string }) => void;
   onContinue: () => void;
   shouldBlur?: boolean;
@@ -33,6 +34,7 @@ export const useStyleCardHooks = (props: UseStyleCardHooksProps) => {
     isPopular = false,
     preGeneratedPreview,
     selectedOrientation = "square",
+    showContinueButton = true,
     onStyleClick,
     onContinue,
     shouldBlur = false
@@ -84,9 +86,16 @@ export const useStyleCardHooks = (props: UseStyleCardHooksProps) => {
     generatePreview: logicState.generatePreview
   });
 
-  // Create wrapper functions that match the expected signatures (no parameters)
-  const handleGenerateWrapper = () => handlers.handleGenerateClick({} as React.MouseEvent);
-  const handleRetryWrapper = () => handlers.handleRetryClick({} as React.MouseEvent);
+  // Create wrapper functions that don't require parameters
+  const handleGenerateWrapper = () => {
+    const mockEvent = { stopPropagation: () => {} } as React.MouseEvent;
+    handlers.handleGenerateClick(mockEvent);
+  };
+  
+  const handleRetryWrapper = () => {
+    const mockEvent = { stopPropagation: () => {} } as React.MouseEvent;
+    handlers.handleRetryClick(mockEvent);
+  };
 
   // Touch-optimized interactions
   const { isPressed, touchHandlers } = useTouchOptimizedInteractions({
@@ -117,7 +126,7 @@ export const useStyleCardHooks = (props: UseStyleCardHooksProps) => {
     touchHandlers,
     
     // Computed values
-    showContinueInCard: props.showContinueButton && isSelected && (logicState.isStyleGenerated || logicState.isPermanentlyGenerated),
+    showContinueInCard: showContinueButton && isSelected && (logicState.isStyleGenerated || logicState.isPermanentlyGenerated),
     isLocked: logicState.isPermanentlyGenerated,
     showLockedFeedback: logicState.isPermanentlyGenerated && !isSelected
   };
