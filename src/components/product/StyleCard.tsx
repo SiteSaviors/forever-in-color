@@ -115,6 +115,10 @@ const StyleCard = memo(({
     generatePreview
   });
 
+  // Create wrapper functions that match the expected signatures (no parameters)
+  const handleGenerateWrapper = () => handleGenerateClick({} as React.MouseEvent);
+  const handleRetryWrapper = () => handleRetryClick({} as React.MouseEvent);
+
   // Touch-optimized interactions
   const { isPressed, touchHandlers } = useTouchOptimizedInteractions({
     onTap: handleCardClick,
@@ -144,7 +148,7 @@ const StyleCard = memo(({
         hasError={hasErrorBoolean}
         canAccess={!!croppedImage}
         onClick={handleCardClick}
-        onGenerateStyle={() => handleGenerateClick({} as React.MouseEvent)}
+        onGenerateStyle={handleGenerateWrapper}
       >
         <div 
           {...touchHandlers}
@@ -175,7 +179,7 @@ const StyleCard = memo(({
                 styleName={style.name}
                 isLoading={effectiveIsLoading}
                 error={hasErrorBoolean ? errorMessage : null}
-                onRetry={() => handleRetryClick({} as React.MouseEvent)}
+                onRetry={handleRetryWrapper}
               />
             )}
           </div>
@@ -191,8 +195,8 @@ const StyleCard = memo(({
             shouldBlur={shouldBlur}
             showError={hasErrorBoolean}
             onContinueClick={handleContinueClick}
-            onGenerateClick={handleGenerateClick}
-            onRetryClick={handleRetryClick}
+            onGenerateClick={handleGenerateWrapper}
+            onRetryClick={handleRetryWrapper}
           />
         </div>
       </StyleCardContainer>
