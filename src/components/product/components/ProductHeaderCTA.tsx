@@ -18,7 +18,7 @@ const ProductHeaderCTA = ({ onUploadClick, onTriggerFileInput }: ProductHeaderCT
     // Activate Step 1 first
     onUploadClick();
     
-    // Wait a bit longer for the component to fully mount and register the trigger
+    // Wait for the component to fully mount and trigger registration
     setTimeout(() => {
       console.log('🎯 Attempting to trigger file input after activation');
       const success = onTriggerFileInput?.();
@@ -40,11 +40,28 @@ const ProductHeaderCTA = ({ onUploadClick, onTriggerFileInput }: ProductHeaderCT
           }
         }, 100);
       } else {
-        console.log('❌ File input trigger failed - component may not be ready yet');
+        console.log('❌ File input trigger failed - retrying...');
+        
+        // Retry mechanism - sometimes the component needs a bit more time
+        let retryCount = 0;
+        const maxRetries = 10;
+        const retryInterval = setInterval(() => {
+          const retrySuccess = onTriggerFileInput?.();
+          retryCount++;
+          
+          if (retrySuccess || retryCount >= maxRetries) {
+            clearInterval(retryInterval);
+            if (retrySuccess) {
+              console.log('✅ File input triggered successfully on retry', retryCount);
+            } else {
+              console.log('❌ File input trigger failed after all retries');
+            }
+          }
+        }, 50);
       }
       
       setIsActivating(false);
-    }, 200); // Increased timeout to allow proper component mounting
+    }, 300); // Increased timeout to ensure proper component mounting
   };
 
   return (

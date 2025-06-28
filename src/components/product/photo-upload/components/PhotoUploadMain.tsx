@@ -2,7 +2,6 @@
 import { Upload, Image, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useFileInputTrigger } from "../../hooks/useFileInputTrigger";
-import { useEffect, useCallback } from "react";
 
 interface PhotoUploadMainProps {
   isDragOver: boolean;
@@ -14,7 +13,6 @@ interface PhotoUploadMainProps {
   onDragLeave: (e: React.DragEvent<HTMLDivElement>) => void;
   onClick: () => void;
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onTriggerReady?: (triggerFn: () => boolean) => void;
 }
 
 const PhotoUploadMain = ({
@@ -26,40 +24,14 @@ const PhotoUploadMain = ({
   onDragOver,
   onDragLeave,
   onClick,
-  onFileChange,
-  onTriggerReady
+  onFileChange
 }: PhotoUploadMainProps) => {
   const { fileInputRef, triggerFileInput } = useFileInputTrigger();
 
-  // Create a stable trigger function that we can pass up
-  const stableTriggerFunction = useCallback(() => {
-    console.log('🎯 PhotoUploadMain stableTriggerFunction called', {
-      hasFileInputRef: !!fileInputRef.current,
-      triggerFileInput: typeof triggerFileInput
-    });
-    
-    if (fileInputRef.current) {
-      console.log('🎯 Clicking file input element directly');
-      fileInputRef.current.click();
-      return true;
-    }
-    
-    console.log('❌ File input ref not available');
-    return false;
-  }, [fileInputRef, triggerFileInput]);
-
-  // Register the trigger function when component mounts and when ref is ready
-  useEffect(() => {
-    if (onTriggerReady && fileInputRef.current) {
-      console.log('🎯 PhotoUploadMain registering stable trigger function');
-      onTriggerReady(stableTriggerFunction);
-    }
-  }, [onTriggerReady, stableTriggerFunction, fileInputRef.current]);
-
-  // Also handle the onClick to ensure it works via normal clicking
+  // Handle the onClick to ensure it works via normal clicking
   const handleDropzoneClick = () => {
     console.log('🎯 Dropzone clicked, triggering file input');
-    stableTriggerFunction();
+    triggerFileInput();
     onClick();
   };
 

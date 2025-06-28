@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { detectOrientationFromImage } from "../utils/orientationDetection";
 import { usePhotoUploadLogic } from "./hooks/usePhotoUploadLogic";
 import UnifiedFlowProgress from "../components/UnifiedFlowProgress";
@@ -63,6 +63,27 @@ const PhotoUploadContainer = ({ onImageUpload, initialImage, onTriggerReady }: P
     onImageAnalysis: handleImageAnalysis,
     onFlowStageChange: setCurrentFlowStage
   });
+
+  // Create the trigger function that directly accesses the file input
+  const triggerFileInput = useCallback(() => {
+    console.log('🎯 PhotoUploadContainer: Triggering file input', {
+      hasFileInputRef: !!fileInputRef.current
+    });
+    
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+      return true;
+    }
+    
+    console.log('❌ PhotoUploadContainer: File input ref not available');
+    return false;
+  }, [fileInputRef]);
+
+  // Register the trigger function immediately when component mounts
+  useEffect(() => {
+    console.log('🎯 PhotoUploadContainer: Registering trigger function');
+    onTriggerReady?.(triggerFileInput);
+  }, [triggerFileInput, onTriggerReady]);
 
   // Update uploadedImage and flow when initialImage changes
   useEffect(() => {
@@ -167,7 +188,6 @@ const PhotoUploadContainer = ({ onImageUpload, initialImage, onTriggerReady }: P
         onDragLeave={handleDragLeave}
         onClick={handleClick}
         onFileChange={handleFileChange}
-        onTriggerReady={onTriggerReady}
       />
     </div>
   );
