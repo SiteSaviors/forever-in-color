@@ -1,4 +1,5 @@
-import PhotoUploadFlow from "./components/PhotoUploadFlow";
+
+import PhotoAndStyleStep from "./components/PhotoAndStyleStep";
 import { AspectRatioErrorBoundary } from "./orientation/components/AspectRatioErrorBoundary";
 
 interface PhotoUploadAndStyleSelectionProps {
@@ -28,7 +29,7 @@ const PhotoUploadAndStyleSelection = (props: PhotoUploadAndStyleSelectionProps) 
       onRetry={handleRetry}
       fallbackOrientation="square"
     >
-      <PhotoUploadFlow {...props} />
+      <PhotoAndStyleStep {...props} />
     </AspectRatioErrorBoundary>
   );
 };

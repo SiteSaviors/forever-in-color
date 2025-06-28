@@ -1,6 +1,6 @@
 
-import PhotoUploadSection from "./PhotoUploadSection";
-import StyleSelectionSection from "./StyleSelectionSection";
+import PhotoUploadContainer from "../photo-upload/PhotoUploadContainer";
+import StyleSelector from "../StyleSelector";
 import PhotoCropperSection from "./PhotoCropperSection";
 import SmartProgressIndicator from "../progress/SmartProgressIndicator";
 import ContextualHelp from "../help/ContextualHelp";
@@ -12,7 +12,7 @@ import { usePhotoUploadState } from "../hooks/usePhotoUploadState";
 import { getAspectRatioFromOrientation } from "../cropper/data/orientationOptions";
 import { useEnhancedHandlers } from "./EnhancedHandlers";
 
-interface PhotoUploadFlowProps {
+interface PhotoAndStyleStepProps {
   selectedStyle: {
     id: number;
     name: string;
@@ -28,7 +28,7 @@ interface PhotoUploadFlowProps {
   onStepChange: (step: number) => void;
 }
 
-const PhotoUploadFlow = ({
+const PhotoAndStyleStep = ({
   selectedStyle,
   uploadedImage,
   selectedOrientation,
@@ -39,7 +39,7 @@ const PhotoUploadFlow = ({
   currentStep,
   completedSteps,
   onStepChange
-}: PhotoUploadFlowProps) => {
+}: PhotoAndStyleStepProps) => {
   const { dispatch, showContextualHelp } = useProgressOrchestrator();
   
   const {
@@ -113,31 +113,39 @@ const PhotoUploadFlow = ({
         )}
 
         {/* Photo Upload Section - Only show if no image or not showing cropper */}
-        {!showCropper && (
-          <>
-            <PhotoUploadSection
-              hasImage={hasImage}
-              croppedImage={croppedImage}
-              onImageUpload={handleEnhancedImageUpload}
+        {!showCropper && !hasImage && (
+          <div className="space-y-6">
+            <div className="text-center">
+              {/* Upload section header content can be added here if needed */}
+            </div>
+            
+            <PhotoUploadContainer 
+              onImageUpload={handleEnhancedImageUpload} 
+              initialImage={croppedImage} 
             />
-
-            {/* Style Selection Section - Only show after image is uploaded */}
-            {hasImage && (
-              <StyleSelectionSection
-                hasImage={hasImage}
-                croppedImage={croppedImage}
-                selectedStyle={selectedStyle}
-                cropAspectRatio={cropAspectRatio}
-                selectedOrientation={currentOrientation}
-                onStyleSelect={handleEnhancedStyleSelect}
-                onStyleComplete={handleStyleComplete}
-                onRecropImage={handleRecropImage}
-              />
-            )}
-          </>
+          </div>
         )}
 
-        {/* Enhanced UX Components - Removed SocialProofFeed from here */}
+        {/* Style Selection Section - Only show after image is uploaded */}
+        {!showCropper && hasImage && (
+          <div className="space-y-6">
+            <div className="text-center">
+              {/* Style selection header content can be added here if needed */}
+            </div>
+            
+            <StyleSelector 
+              croppedImage={croppedImage} 
+              selectedStyle={selectedStyle?.id || null} 
+              cropAspectRatio={cropAspectRatio} 
+              selectedOrientation={currentOrientation} 
+              onStyleSelect={handleEnhancedStyleSelect} 
+              onComplete={handleStyleComplete} 
+              onRecropImage={handleRecropImage} 
+            />
+          </div>
+        )}
+
+        {/* Enhanced UX Components */}
         <ContextualHelp />
         <ConversionMomentumTracker />
       </div>
@@ -145,4 +153,4 @@ const PhotoUploadFlow = ({
   );
 };
 
-export default PhotoUploadFlow;
+export default PhotoAndStyleStep;
