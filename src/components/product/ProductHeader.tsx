@@ -84,22 +84,25 @@ const ProductHeader = ({
             Create Your Masterpiece
           </h1>
           
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-6">
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-8">
             Transform your precious memories into stunning canvas art with AI-powered artistic styles
           </p>
 
-          {/* Motivational Progress Message */}
-          <div className="bg-white/70 backdrop-blur-sm rounded-full px-6 py-3 inline-block mb-8 border border-purple-100">
-            <span className="text-purple-700 font-medium">
+          {/* Primary CTA Button - Enhanced for conversion optimization */}
+          <div className="flex flex-col items-center gap-4 mb-8">
+            <Button 
+              onClick={handleUploadClick} 
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-12 py-6 text-xl font-bold rounded-full shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300 animate-pulse hover:animate-none min-w-fit whitespace-nowrap"
+            >
+              <Upload className="w-6 h-6 mr-3" />
+              Upload Your Photo & Start Creating
+            </Button>
+            
+            {/* Motivational message moved below button */}
+            <div className="text-purple-600 font-medium text-sm opacity-80">
               ✨ {getMotivationalMessage()}
-            </span>
+            </div>
           </div>
-
-          {/* Primary CTA - Always visible but changes based on progress */}
-          <Button onClick={handleUploadClick} className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-4 text-lg font-bold rounded-full shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 mb-8">
-            <Upload className="w-5 h-5 mr-2" />
-            {progressPercentage === 0 ? 'Upload Your Photo & Start Creating' : 'Continue Your Masterpiece'}
-          </Button>
         </div>
 
         {/* Streamlined Progress - Only show when needed */}
