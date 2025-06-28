@@ -1,4 +1,3 @@
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sparkles, ArrowRight, Zap, RefreshCw, CheckCircle } from "lucide-react";
@@ -189,6 +188,28 @@ const StyleCardInfo = ({
     };
     return emojiMap[styleId] || "🎨";
   };
+
+  // Enhanced continue handler to ensure proper step progression
+  const handleContinueClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    console.log(`🎯 Continue clicked for style: ${style.name} - Advancing to next step`);
+    
+    // Call the original handler which should trigger step progression
+    onContinueClick(e);
+    
+    // Add a small delay to ensure smooth transition
+    setTimeout(() => {
+      const nextStepElement = document.querySelector('[data-step="2"]');
+      if (nextStepElement) {
+        nextStepElement.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start',
+          inline: 'nearest'
+        });
+      }
+    }, 100);
+  };
+
   const styleConfig = getStylePills(style.id);
   const styleEmoji = getStyleEmoji(style.id);
 
@@ -252,10 +273,10 @@ const StyleCardInfo = ({
           </Button>
         )}
 
-        {/* Continue with This Style Button - After generation */}
+        {/* Continue with This Style Button - After generation with enhanced navigation */}
         {showContinueButton && (
           <Button 
-            onClick={onContinueClick} 
+            onClick={handleContinueClick} 
             className="flex-1 bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 font-poppins ring-2 ring-emerald-200 ring-offset-1"
           >
             <CheckCircle className="w-4 h-4 mr-2" />
@@ -267,7 +288,7 @@ const StyleCardInfo = ({
         {/* Original Image Continue Button */}
         {showOriginalContinueButton && (
           <Button 
-            onClick={onContinueClick} 
+            onClick={handleContinueClick} 
             className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 font-poppins"
           >
             Use Original
