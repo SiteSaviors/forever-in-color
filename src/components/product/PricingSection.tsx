@@ -1,3 +1,4 @@
+
 import { Frame, Image } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
@@ -35,8 +36,8 @@ const PricingSection = () => {
     ]
   };
 
-  const handleOrientationChange = (orientation: string) => {
-    setSelectedOrientation(orientation);
+  const handleOrientationChange = (ratio: number, orientationId: string) => {
+    setSelectedOrientation(orientationId);
     setSelectedSize(""); // Reset size when orientation changes
   };
 
@@ -76,10 +77,9 @@ const PricingSection = () => {
 
       {/* Orientation Selection */}
       <OrientationSelector 
-        selectedOrientation={selectedOrientation}
-        selectedSize={selectedSize}
+        cropAspect={1.0}
+        recommendedOrientation={selectedOrientation || "square"}
         onOrientationChange={handleOrientationChange}
-        onSizeChange={handleSizeChange}
       />
 
       {/* Size & Price Selection */}
