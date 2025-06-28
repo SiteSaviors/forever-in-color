@@ -33,24 +33,22 @@ const Product = () => {
     handleCustomizationChange
   } = useProductState();
 
-  // Global file upload handler - registers immediately on page load
+  // Global file upload handler - processes the file and updates state
   const handleGlobalImageUpload = (imageUrl: string, originalImageUrl?: string, orientation?: string) => {
     console.log('🎯 Global file upload handler triggered:', { imageUrl, orientation });
     
-    // Ensure we're on step 1 and pass the image to the photo upload flow
+    // Ensure we're on step 1
     if (currentStep !== 1) {
       setCurrentStep(1);
     }
     
-    // Route the uploaded image to the photo and style completion handler
-    // This will trigger the crop preview flow
-    handlePhotoAndStyleComplete(imageUrl, 0, "temp-style");
+    // Pass the uploaded image directly to the photo and style completion handler
+    // This will set the uploaded image in the state and trigger the flow
+    handlePhotoAndStyleComplete(imageUrl, 0, "temp-style", orientation);
   };
 
   const handleGlobalImageAnalysis = (imageUrl: string) => {
     console.log('🎯 Global image analysis triggered:', imageUrl);
-    
-    // This will trigger the analysis and crop preview flow
     // The PhotoUploadContainer will handle the detailed analysis
   };
 

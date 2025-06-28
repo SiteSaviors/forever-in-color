@@ -73,14 +73,15 @@ const PhotoUploadContainer = ({
     onTriggerReady?.(triggerFn);
   }, [onTriggerReady]);
 
-  // Update uploadedImage and flow when initialImage changes
+  // Handle when initialImage changes (from global upload)
   useEffect(() => {
-    if (initialImage) {
+    if (initialImage && initialImage !== uploadedImage) {
+      console.log('🎯 PhotoUploadContainer: Received new initialImage:', initialImage);
       setUploadedImage(initialImage);
       setCurrentFlowStage('analyzing');
       handleImageAnalysis(initialImage);
     }
-  }, [initialImage]);
+  }, [initialImage, uploadedImage]);
 
   const handleAcceptAutoCrop = (croppedImageUrl: string) => {
     console.log('✅ Accepting auto crop with URL:', croppedImageUrl);

@@ -57,22 +57,32 @@ const PhotoUploadFlow = (props: PhotoUploadFlowProps) => {
     onComplete: onPhotoAndStyleComplete
   });
 
-  const imageToDisplay = croppedImage || uploadedImage;
+  // Use the uploaded image from props (from global state) if available, otherwise use cropped image
+  const imageToDisplay = uploadedImage || croppedImage;
+  const shouldShowImage = uploadedImage || hasValidImage;
+
+  console.log('🎯 PhotoUploadFlow Debug:', {
+    uploadedImage: !!uploadedImage,
+    croppedImage: !!croppedImage,
+    hasValidImage,
+    shouldShowImage,
+    imageToDisplay: !!imageToDisplay
+  });
 
   return (
     <div className="space-y-8">
       <PhotoUploadSection
-        hasImage={hasValidImage}
+        hasImage={shouldShowImage}
         croppedImage={imageToDisplay}
         onImageUpload={handleImageUpload}
         onFileInputTriggerReady={handleFileInputTriggerReady}
         globalUploadState={globalUploadState}
       />
       
-      {hasValidImage && imageToDisplay && (
+      {shouldShowImage && imageToDisplay && (
         <>
           <StyleSelectionSection
-            hasImage={hasValidImage}
+            hasImage={shouldShowImage}
             croppedImage={imageToDisplay}
             selectedStyle={selectedStyle}
             cropAspectRatio={1}
