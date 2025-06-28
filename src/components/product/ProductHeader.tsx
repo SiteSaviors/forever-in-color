@@ -34,19 +34,31 @@ const ProductHeader = ({
   }, []);
 
   const handleUploadClick = () => {
-    const fileInput = document.querySelector('input[type="file"][accept="image/*"]') as HTMLInputElement;
-    if (fileInput) {
-      fileInput.click();
-    } else {
-      const uploadSection = document.querySelector('[data-step="1"]');
-      if (uploadSection) {
-        uploadSection.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center'
+    // First, ensure we're on step 1 and that it gets activated
+    if (onUploadClick) {
+      onUploadClick();
+    }
+    
+    // Small delay to ensure state updates, then scroll to step 1
+    setTimeout(() => {
+      const step1Element = document.querySelector('[data-step="1"]');
+      if (step1Element) {
+        // Trigger step 1 to become active/expanded
+        const stepButton = step1Element.querySelector('button[role="button"]');
+        if (stepButton) {
+          (stepButton as HTMLButtonElement).click();
+        }
+        
+        // Scroll to the step with proper offset
+        const elementTop = step1Element.getBoundingClientRect().top + window.pageYOffset;
+        const offsetTop = elementTop - 120; // Account for header height
+        
+        window.scrollTo({
+          top: offsetTop,
+          behavior: 'smooth'
         });
       }
-    }
-    onUploadClick?.();
+    }, 100);
   };
 
   return (
@@ -224,7 +236,7 @@ const ProductHeader = ({
       </div>
 
       {/* Custom CSS for advanced animations */}
-      <style jsx>{`
+      <style>{`
         @keyframes float {
           0%, 100% { transform: translateY(0px); }
           50% { transform: translateY(-20px); }

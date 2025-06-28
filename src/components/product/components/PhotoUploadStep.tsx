@@ -38,13 +38,14 @@ const PhotoUploadStep = ({
       stepNumber={1}
       title="Upload Photo & Choose Style"
       description="Upload your photo and select an art style"
-      isActive={isActive}
+      isActive={isActive && currentStep === 1}  // Only show as active when currentStep is 1
       isCompleted={isCompleted}
       canAccess={canAccess}
       onStepClick={onStepClick}
       selectedStyle={selectedStyle}
     >
-      {currentStep === 1 && (
+      {/* Only render content when step is active (currentStep === 1) */}
+      {isActive && currentStep === 1 && (
         <PhotoUploadAndStyleSelection
           selectedStyle={selectedStyle}
           uploadedImage={uploadedImage}
