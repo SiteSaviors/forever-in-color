@@ -5,7 +5,7 @@ import { CustomizationOptions } from "../types/productState";
 import { detectOrientationFromImage } from "../utils/orientationDetection";
 import { usePreviewGeneration } from "./usePreviewGeneration";
 
-export const useProductStateLogic = () => {
+export const useProductFlow = () => {
   const location = useLocation();
   const [currentStep, setCurrentStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
@@ -43,7 +43,7 @@ export const useProductStateLogic = () => {
   }, [location.state]);
 
   const handlePhotoAndStyleComplete = async (imageUrl: string, styleId: number, styleName: string, orientation?: string) => {
-    console.log('🐛 ProductStateManager handlePhotoAndStyleComplete called with:', { imageUrl, styleId, styleName, orientation });
+    console.log('🐛 ProductFlow handlePhotoAndStyleComplete called with:', { imageUrl, styleId, styleName, orientation });
     
     setUploadedImage(imageUrl);
     
