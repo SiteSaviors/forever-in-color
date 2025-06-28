@@ -8,15 +8,25 @@ import CanvasPreviewSection from "./customization/CanvasPreviewSection";
 import CustomizationOptionsComponent from "./customization/CustomizationOptions";
 import PricingSummary from "./customization/PricingSummary";
 import { useCanvasPreview } from "./customization/hooks/useCanvasPreview";
-import { CustomizationOptions, PremiumVideoOptions as PremiumVideoConfig } from "./types/customizationTypes";
+
+interface CustomizationConfig {
+  floatingFrame: {
+    enabled: boolean;
+    color: 'white' | 'black' | 'espresso';
+  };
+  livingMemory: boolean;
+  voiceMatch: boolean;
+  customMessage: string;
+  aiUpscale: boolean;
+}
 
 interface CustomizationSelectorProps {
   selectedSize: string;
-  customizations: CustomizationOptions;
-  onCustomizationChange: (customizations: CustomizationOptions) => void;
+  customizations: CustomizationConfig;
+  onCustomizationChange: (customizations: CustomizationConfig) => void;
   userArtworkUrl?: string | null;
   selectedOrientation?: string;
-  previewUrls?: Record<number, string>;
+  previewUrls?: { [key: number]: string };
   selectedStyle?: { id: number; name: string } | null;
   isGeneratingPreviews?: boolean;
   previewError?: string | null;
@@ -34,12 +44,6 @@ const CustomizationSelector = ({
   previewError = null
 }: CustomizationSelectorProps) => {
   const [hasInteracted, setHasInteracted] = useState(false);
-  const [premiumVideoOptions, setPremiumVideoOptions] = useState<PremiumVideoConfig>({
-    voiceMatching: false,
-    backgroundAudio: 'none',
-    videoLength: 30,
-    voiceEnhancement: false
-  });
   const { canvasFrame, artworkPosition } = useCanvasPreview(selectedOrientation);
 
   /**
@@ -98,7 +102,7 @@ const CustomizationSelector = ({
     });
   }, [getArtworkUrl, selectedStyle, previewUrls, canvasFrame, artworkPosition, isGeneratingPreviews]);
 
-  const handleCustomizationUpdate = (updates: Partial<CustomizationOptions>) => {
+  const handleCustomizationUpdate = (updates: Partial<CustomizationConfig>) => {
     if (!hasInteracted) setHasInteracted(true);
     const newCustomizations = {
       ...customizations,
@@ -106,10 +110,6 @@ const CustomizationSelector = ({
     };
     onCustomizationChange(newCustomizations);
     console.log('🎨 Customizations updated:', newCustomizations);
-  };
-
-  const handlePremiumVideoOptionsChange = (options: PremiumVideoConfig) => {
-    setPremiumVideoOptions(options);
   };
 
   return (
@@ -159,8 +159,13 @@ const CustomizationSelector = ({
         <SocialProofGallery />
         <PremiumVideoOptions 
           livingMemoryEnabled={customizations.livingMemory} 
-          options={premiumVideoOptions} 
-          onOptionsChange={handlePremiumVideoOptionsChange} 
+          options={{
+            voiceMatching: false,
+            backgroundAudio: 'none',
+            videoLength: 30,
+            voiceEnhancement: false
+          }} 
+          onOptionsChange={() => {}} 
         />
       </div>
 
