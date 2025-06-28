@@ -88,15 +88,28 @@ const ProductHeader = ({
             Transform your precious memories into stunning canvas art with AI-powered artistic styles
           </p>
 
-          {/* Primary CTA Button - Enhanced for conversion optimization */}
+          {/* Primary CTA Button - Magical Animation */}
           <div className="flex flex-col items-center gap-4 mb-8">
-            <Button 
-              onClick={handleUploadClick} 
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-12 py-6 text-xl font-bold rounded-full shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300 animate-pulse hover:animate-none min-w-fit whitespace-nowrap"
-            >
-              <Upload className="w-6 h-6 mr-3" />
-              Upload Your Photo & Start Creating
-            </Button>
+            <div className="relative group">
+              {/* Magical glow background */}
+              <div className="absolute -inset-1 bg-gradient-to-r from-pink-400 via-purple-400 to-pink-400 rounded-full blur opacity-60 group-hover:opacity-80 animate-[glow-pulse_3s_ease-in-out_infinite] transition duration-1000"></div>
+              
+              {/* Floating particles */}
+              <div className="absolute inset-0 overflow-hidden rounded-full">
+                <div className="absolute w-1 h-1 bg-yellow-300 rounded-full animate-[floating-particles_4s_ease-in-out_infinite] opacity-70" style={{ top: '20%', left: '15%', animationDelay: '0s' }}></div>
+                <div className="absolute w-1 h-1 bg-yellow-200 rounded-full animate-[floating-particles_4s_ease-in-out_infinite] opacity-70" style={{ top: '60%', right: '20%', animationDelay: '1s' }}></div>
+                <div className="absolute w-0.5 h-0.5 bg-yellow-400 rounded-full animate-[floating-particles_4s_ease-in-out_infinite] opacity-70" style={{ top: '40%', left: '80%', animationDelay: '2s' }}></div>
+                <div className="absolute w-0.5 h-0.5 bg-yellow-300 rounded-full animate-[floating-particles_4s_ease-in-out_infinite] opacity-70" style={{ top: '80%', left: '30%', animationDelay: '3s' }}></div>
+              </div>
+              
+              <Button 
+                onClick={handleUploadClick} 
+                className="relative bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-12 py-6 text-xl font-bold rounded-full shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300 min-w-fit whitespace-nowrap group-hover:shadow-purple-500/25"
+              >
+                <Upload className="w-6 h-6 mr-3" />
+                Upload Your Photo & Start Creating
+              </Button>
+            </div>
             
             {/* Motivational message moved below button */}
             <div className="text-purple-600 font-medium text-sm opacity-80">
