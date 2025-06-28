@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useBlinking } from './hooks/useBlinking';
 import { useStyleCardLogic } from './hooks/useStyleCardLogic';
 import { useStyleCardEffects } from './hooks/useStyleCardEffects';
 import { useStyleCardHandlers } from './hooks/useStyleCardHandlers';
@@ -104,6 +105,12 @@ const StyleCard = ({
     onStyleClick,
     onContinue,
     generatePreview
+  });
+
+  const { isBlinking } = useBlinking(previewUrl, {
+    isGenerating: isPermanentlyGenerated ? false : (effectiveIsLoading),
+    hasPreview: !!previewUrl,
+    hasGeneratedOnce: isPermanentlyGenerated
   });
 
   const showContinueInCard = showContinueButton && isSelected && (isStyleGenerated || isPermanentlyGenerated);

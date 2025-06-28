@@ -27,7 +27,7 @@ const HeroRecommendations = ({
 }: HeroRecommendationsProps) => {
   const [hoveredStyle, setHoveredStyle] = useState<number | null>(null);
   
-  // Show 5 AI recommendations
+  // Show 5 AI recommendations instead of 2
   const heroRecommendations = recommendations.filter(r => r.category === 'hero').slice(0, 5);
 
   if (heroRecommendations.length === 0) return null;
@@ -39,7 +39,7 @@ const HeroRecommendations = ({
 
   // Create original style object for the first card
   const originalStyle = {
-    id: 1,
+    id: 1, // Using ID 1 which corresponds to "Original Image" in artStyles
     name: "Original Image",
     description: "Your photo as uploaded - perfect as is",
     image: croppedImage
@@ -60,7 +60,7 @@ const HeroRecommendations = ({
         </p>
       </div>
 
-      {/* Hero Grid - 3 cards per row */}
+      {/* Hero Grid - Changed to rows of 3 cards each */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mb-8">
         {/* Original Photo Card - Always First */}
         <div
@@ -70,6 +70,7 @@ const HeroRecommendations = ({
           onMouseEnter={() => setHoveredStyle(1)}
           onMouseLeave={() => setHoveredStyle(null)}
         >
+          {/* Original Photo Glow Effect */}
           <div className="absolute -inset-2 bg-gradient-to-r from-blue-400 via-cyan-500 to-teal-600 rounded-3xl blur-md opacity-30 group-hover:opacity-60 transition duration-500"></div>
           
           <div className="relative style-card-hover style-card-press">
@@ -86,6 +87,7 @@ const HeroRecommendations = ({
               shouldBlur={false}
             />
 
+            {/* Original Photo Badge */}
             <div className="absolute -top-3 -right-3 z-20">
               <Badge className="bg-gradient-to-r from-blue-500 to-cyan-600 text-white font-semibold px-3 py-1 shadow-lg">
                 <Image className="w-3 h-3 mr-1" />
@@ -95,7 +97,7 @@ const HeroRecommendations = ({
           </div>
         </div>
 
-        {/* AI Recommended Styles - 5 cards in rows of 3 */}
+        {/* AI Recommended Styles - Now 5 cards in rows of 3 */}
         {heroRecommendations.map((rec, index) => {
           const style = artStyles.find(s => s.id === rec.styleId);
           if (!style) return null;
@@ -110,6 +112,7 @@ const HeroRecommendations = ({
               onMouseEnter={() => setHoveredStyle(rec.styleId)}
               onMouseLeave={() => setHoveredStyle(null)}
             >
+              {/* Enhanced Premium Glow Effect */}
               <div className="absolute -inset-2 bg-gradient-to-r from-amber-400 via-pink-500 to-purple-600 rounded-3xl blur-md opacity-30 group-hover:opacity-60 transition duration-500"></div>
               
               <div className="relative style-card-hover style-card-press">
@@ -126,6 +129,7 @@ const HeroRecommendations = ({
                   shouldBlur={false}
                 />
 
+                {/* Enhanced AI Recommendation Badge */}
                 <div className="absolute -top-3 -right-3 z-20">
                   <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold px-3 py-1 shadow-lg">
                     <Zap className="w-3 h-3 mr-1 animate-pulse" />

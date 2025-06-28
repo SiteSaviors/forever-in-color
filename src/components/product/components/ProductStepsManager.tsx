@@ -2,9 +2,9 @@
 import { memo, lazy, Suspense } from 'react';
 import StepErrorBoundary from './StepErrorBoundary';
 import LoadingState from './LoadingState';
-import PhotoUploadFlow from './PhotoUploadFlow';
 
 // Lazy load step components for better code splitting
+const PhotoUploadStep = lazy(() => import('./PhotoUploadStep'));
 const OrientationStep = lazy(() => import('./OrientationStep'));
 const CustomizationStep = lazy(() => import('./CustomizationStep'));
 const ReviewOrderStep = lazy(() => import('./ReviewOrderStep'));
@@ -57,20 +57,21 @@ const ProductStepsManager = memo(({
     <>
       <StepErrorBoundary stepNumber={1} onNavigateHome={handleNavigateHome}>
         <Suspense fallback={<LoadingState message="Loading photo upload..." />}>
-          <div data-step="1">
-            <PhotoUploadFlow
-              selectedStyle={selectedStyle}
-              uploadedImage={uploadedImage}
-              selectedOrientation={selectedOrientation}
-              autoGenerationComplete={autoGenerationComplete}
-              onComplete={onPhotoAndStyleComplete}
-              onPhotoAndStyleComplete={onPhotoAndStyleComplete}
-              onContinue={handleContinueToStep2}
-              currentStep={currentStep}
-              completedSteps={completedSteps}
-              onStepChange={onCurrentStepChange}
-            />
-          </div>
+          <PhotoUploadStep
+            currentStep={currentStep}
+            isActive={currentStep === 1}
+            isCompleted={completedSteps.includes(1)}
+            canAccess={canProceedToStep(1)}
+            selectedStyle={selectedStyle}
+            uploadedImage={uploadedImage}
+            selectedOrientation={selectedOrientation}
+            autoGenerationComplete={autoGenerationComplete}
+            onStepClick={() => onCurrentStepChange(1)}
+            onPhotoAndStyleComplete={onPhotoAndStyleComplete}
+            onContinue={handleContinueToStep2}
+            completedSteps={completedSteps}
+            onStepChange={onCurrentStepChange}
+          />
         </Suspense>
       </StepErrorBoundary>
 

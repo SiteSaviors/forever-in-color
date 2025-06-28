@@ -5,6 +5,7 @@ import PhotoCropperSection from "./PhotoCropperSection";
 import SmartProgressIndicator from "../progress/SmartProgressIndicator";
 import ContextualHelp from "../help/ContextualHelp";
 import MobileGestureHandler from "../mobile/MobileGestureHandler";
+import ConversionMomentumTracker from "../progress/ConversionMomentumTracker";
 import ProgressStateManager from "./ProgressStateManager";
 import { useProgressOrchestrator } from "../progress/ProgressOrchestrator";
 import { usePhotoUploadState } from "../hooks/usePhotoUploadState";
@@ -136,8 +137,9 @@ const PhotoUploadFlow = ({
           </>
         )}
 
-        {/* Enhanced UX Components */}
+        {/* Enhanced UX Components - Removed SocialProofFeed from here */}
         <ContextualHelp />
+        <ConversionMomentumTracker />
       </div>
     </MobileGestureHandler>
   );
