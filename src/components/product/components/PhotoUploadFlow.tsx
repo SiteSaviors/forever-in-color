@@ -74,8 +74,13 @@ const PhotoUploadFlow = (props: PhotoUploadFlowProps) => {
           />
           
           <PopularChoices 
+            recommendations={[]}
+            croppedImage={imageToDisplay}
             selectedStyle={selectedStyle?.id || null}
+            cropAspectRatio={1}
+            selectedOrientation={selectedOrientation}
             onStyleSelect={handleStyleSelect}
+            onComplete={() => {}}
           />
         </>
       )}
