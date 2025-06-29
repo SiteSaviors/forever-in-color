@@ -14,7 +14,7 @@ const ArtStylesCarousel = () => {
   const { sectionRef, parallaxOffset } = useCarouselParallax();
   const { currentIndex, handlePrevious, handleNext, handleIndicatorClick } = useCarouselAutoplay();
 
-  const handleStyleClick = (style: ArtStyle) => {
+  const handleStyleClick = () => {
     // Navigate to product configurator
     window.location.href = '/product';
   };
