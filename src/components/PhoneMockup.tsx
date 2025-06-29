@@ -1,6 +1,5 @@
 
 
-import { Play } from "lucide-react";
 
 const PhoneMockup = () => {
   return (
@@ -46,4 +45,5 @@ const PhoneMockup = () => {
 };
 
 export default PhoneMockup;
+
 
