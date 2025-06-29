@@ -1,16 +1,18 @@
-
+import { Truck, Shield, Award } from "lucide-react";
 const TrustElements = () => {
-  return (
-    <div className="bg-green-50 border-l-4 border-green-400 p-4 mb-6">
-      <div className="flex">
-        <div className="ml-3">
-          <p className="text-sm text-green-700">
-            <strong>Trusted by 50,000+ customers</strong> - Fast delivery, premium quality, 100% satisfaction guaranteed
-          </p>
+  return <div className="mt-6 mb-4 my-[11px]">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+          {/* Free Shipping */}
+          
+
+          {/* Satisfaction Guarantee */}
+          
+
+          {/* Premium Canvas */}
+          
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default TrustElements;

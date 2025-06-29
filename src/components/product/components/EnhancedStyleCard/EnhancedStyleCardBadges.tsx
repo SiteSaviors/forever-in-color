@@ -1,47 +1,44 @@
 
-import { memo } from "react";
+import React from 'react';
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Crown, Zap } from "lucide-react";
+import { Crown, Users, Star } from "lucide-react";
 
 interface EnhancedStyleCardBadgesProps {
-  isPopular?: boolean;
-  isGenerated?: boolean;
-  isSelected?: boolean;
-  hasPreview?: boolean;
+  isRecommended: boolean;
+  isPopular: boolean;
+  confidence?: number;
 }
 
-const EnhancedStyleCardBadges = memo(({
-  isPopular = false,
-  isGenerated = false,
-  isSelected = false,
-  hasPreview = false
+const EnhancedStyleCardBadges = ({
+  isRecommended,
+  isPopular,
+  confidence
 }: EnhancedStyleCardBadgesProps) => {
   return (
-    <div className="absolute top-2 left-2 flex flex-col gap-1">
-      {isPopular && (
-        <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0 shadow-md">
-          <Crown className="w-3 h-3 mr-1" />
-          Popular
-        </Badge>
-      )}
-      
-      {isGenerated && hasPreview && (
-        <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 shadow-md">
-          <Sparkles className="w-3 h-3 mr-1" />
-          Generated
-        </Badge>
-      )}
-      
-      {isSelected && (
-        <Badge className="bg-gradient-to-r from-purple-500 to-pink-600 text-white border-0 shadow-md">
-          <Zap className="w-3 h-3 mr-1" />
-          Selected
+    <div className="absolute top-3 left-3 right-3 flex justify-between items-start z-20">
+      <div className="flex flex-col gap-2">
+        {isRecommended && (
+          <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold shadow-lg animate-pulse">
+            <Crown className="w-3 h-3 mr-1" />
+            AI Pick
+          </Badge>
+        )}
+        {isPopular && !isRecommended && (
+          <Badge className="bg-gradient-to-r from-blue-500 to-cyan-600 text-white font-semibold shadow-lg">
+            <Users className="w-3 h-3 mr-1" />
+            Popular
+          </Badge>
+        )}
+      </div>
+
+      {confidence && (
+        <Badge variant="secondary" className="bg-black/80 text-white border-0 backdrop-blur-sm">
+          <Star className="w-3 h-3 mr-1 text-amber-400" />
+          {Math.round(confidence * 100)}% Match
         </Badge>
       )}
     </div>
   );
-});
-
-EnhancedStyleCardBadges.displayName = 'EnhancedStyleCardBadges';
+};
 
 export default EnhancedStyleCardBadges;

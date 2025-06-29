@@ -2,6 +2,8 @@
 import React from "react";
 import { AccordionTrigger } from "@/components/ui/accordion";
 import StepIcon from "./StepIcon";
+import StepContent from "./StepContent";
+import StepActions from "./StepActions";
 import { triggerHapticFeedback } from "../ProductStepUtils";
 
 interface StepHeaderProps {
@@ -44,18 +46,27 @@ const StepHeader = React.memo(({
     >
       <div className="flex items-center gap-3 sm:gap-4 md:gap-6 w-full">
         <StepIcon
+          stepNumber={stepNumber}
           isCompleted={isCompleted}
-        >
-          {stepNumber}
-        </StepIcon>
+          isActive={isActive}
+          canAccess={canAccess}
+        />
         
-        <div className="flex-1 text-left">
-          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-          <p className="text-sm text-gray-600">{description}</p>
-          {selectedStyle && (
-            <p className="text-xs text-purple-600 mt-1">Style: {selectedStyle.name}</p>
-          )}
-        </div>
+        <StepContent
+          title={title}
+          description={description}
+          isCompleted={isCompleted}
+          canAccess={canAccess}
+          isActive={isActive}
+          stepNumber={stepNumber}
+          selectedStyle={selectedStyle}
+        />
+        
+        <StepActions
+          isActive={isActive}
+          canAccess={canAccess}
+          isCompleted={isCompleted}
+        />
       </div>
     </AccordionTrigger>
   );

@@ -1,42 +1,52 @@
 
 import { useState, useCallback } from "react";
+import { getAspectRatioFromOrientation } from "../data/orientationOptions";
 
-interface CropState {
-  crop: { x: number; y: number };
-  zoom: number;
-  aspectRatio: number;
-  croppedAreaPixels: any | null;
+interface UseCropStateProps {
+  selectedOrientation: string;
+  onOrientationChange?: (orientation: string) => void;
 }
 
-export const useCropState = (initialAspectRatio: number = 1) => {
-  const [cropState, setCropState] = useState<CropState>({
-    crop: { x: 0, y: 0 },
-    zoom: 1,
-    aspectRatio: initialAspectRatio,
-    croppedAreaPixels: null,
-  });
+export const useCropState = ({ selectedOrientation, onOrientationChange }: UseCropStateProps) => {
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+  const [cropAspect, setCropAspect] = useState(getAspectRatioFromOrientation(selectedOrientation));
+  const [recommendedOrientation, setRecommendedOrientation] = useState<string>("");
 
-  const setCrop = useCallback((crop: { x: number; y: number }) => {
-    setCropState(prev => ({ ...prev, crop }));
+  const onCropCompleteHandler = useCallback((croppedArea: any, croppedAreaPixels: any) => {
+    setCroppedAreaPixels(croppedAreaPixels);
   }, []);
 
-  const setZoom = useCallback((zoom: number) => {
-    setCropState(prev => ({ ...prev, zoom }));
-  }, []);
+  const handleOrientationChange = (newAspect: number, orientationId: string) => {
+    console.log('PhotoCropper: Orientation changed to:', orientationId, 'with aspect ratio:', newAspect);
+    setCropAspect(newAspect);
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
 
-  const setAspectRatio = useCallback((aspectRatio: number) => {
-    setCropState(prev => ({ ...prev, aspectRatio }));
-  }, []);
+    if (onOrientationChange) {
+      console.log('PhotoCropper: Notifying parent of orientation change:', orientationId);
+      onOrientationChange(orientationId);
+    }
+  };
 
-  const onCropComplete = useCallback((_: any, croppedAreaPixels: any) => {
-    setCropState(prev => ({ ...prev, croppedAreaPixels }));
-  }, []);
+  const handleAutoCenterCrop = () => {
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+  };
 
   return {
-    cropState,
+    crop,
+    zoom,
+    cropAspect,
+    croppedAreaPixels,
+    recommendedOrientation,
     setCrop,
     setZoom,
-    setAspectRatio,
-    onCropComplete,
+    setCropAspect,
+    setRecommendedOrientation,
+    onCropCompleteHandler,
+    handleOrientationChange,
+    handleAutoCenterCrop
   };
 };

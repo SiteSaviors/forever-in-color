@@ -1,7 +1,8 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
-interface CustomizationConfig {
+interface CustomizationOptions {
   floatingFrame: {
     enabled: boolean;
     color: 'white' | 'black' | 'espresso';
@@ -14,77 +15,77 @@ interface CustomizationConfig {
 
 interface PricingSummaryProps {
   selectedSize: string;
-  customizations: CustomizationConfig;
+  customizations: CustomizationOptions;
 }
 
 const PricingSummary = ({ selectedSize, customizations }: PricingSummaryProps) => {
-  const getSizePrice = (size: string) => {
-    switch (size) {
-      case "8x10": return 49;
-      case "12x16": return 89;
-      case "16x20": return 129;
-      case "20x24": return 169;
-      default: return 49;
-    }
+  const calculateTotalPrice = () => {
+    let basePrice = 149; // Base canvas price
+    let total = basePrice;
+    
+    if (customizations.floatingFrame.enabled) total += 79;
+    if (customizations.livingMemory) total += 29;
+    if (customizations.voiceMatch) total += 19;
+    if (customizations.aiUpscale) total += 15;
+    
+    return {
+      basePrice,
+      total
+    };
   };
 
-  const basePrice = getSizePrice(selectedSize);
-  const framePrice = customizations.floatingFrame.enabled ? 29 : 0;
-  const livingMemoryPrice = customizations.livingMemory ? 59.99 : 0;
-  const voiceMatchPrice = customizations.voiceMatch ? 19.99 : 0;
-  const aiUpscalePrice = customizations.aiUpscale ? 9 : 0;
-  
-  const subtotal = basePrice + framePrice + livingMemoryPrice + voiceMatchPrice + aiUpscalePrice;
-  const shipping = subtotal > 75 ? 0 : 9.99;
-  const total = subtotal + shipping;
+  const { basePrice, total } = calculateTotalPrice();
+  const savings = total > basePrice ? Math.round((total - basePrice) * 0.2) : 0;
 
   return (
-    <Card>
+    <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200">
       <CardHeader>
-        <CardTitle>Order Summary</CardTitle>
+        <CardTitle className="flex items-center justify-between">
+          <span className="text-gray-900">Your Custom Canvas</span>
+          <Badge className="bg-green-500 text-white">
+            {savings > 0 ? `Save $${savings}` : 'Premium Quality'}
+          </Badge>
+        </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="flex justify-between">
-          <span>{selectedSize} Canvas</span>
-          <span>${basePrice}</span>
+      <CardContent className="space-y-4">
+        <div className="flex justify-between items-center">
+          <span className="text-gray-600">Canvas ({selectedSize})</span>
+          <span className="font-semibold">${basePrice}</span>
         </div>
+        
         {customizations.floatingFrame.enabled && (
-          <div className="flex justify-between">
-            <span>Floating Frame ({customizations.floatingFrame.color})</span>
-            <span>${framePrice}</span>
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600">Floating Frame</span>
+            <span className="font-semibold">+$79</span>
           </div>
         )}
+        
         {customizations.livingMemory && (
-          <div className="flex justify-between">
-            <span>Living Memory</span>
-            <span>${livingMemoryPrice}</span>
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600">Living Memory</span>
+            <span className="font-semibold">+$29</span>
           </div>
         )}
+        
         {customizations.voiceMatch && (
-          <div className="flex justify-between">
-            <span>Voice Match</span>
-            <span>${voiceMatchPrice}</span>
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600">Voice Match</span>
+            <span className="font-semibold">+$19</span>
           </div>
         )}
+        
         {customizations.aiUpscale && (
-          <div className="flex justify-between">
-            <span>AI Upscale</span>
-            <span>${aiUpscalePrice}</span>
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600">AI Upscale</span>
+            <span className="font-semibold">+$15</span>
           </div>
         )}
-        <hr />
-        <div className="flex justify-between">
-          <span>Subtotal</span>
-          <span>${subtotal.toFixed(2)}</span>
-        </div>
-        <div className="flex justify-between">
-          <span>Shipping</span>
-          <span>{shipping === 0 ? 'FREE' : `$${shipping}`}</span>
-        </div>
-        <hr />
-        <div className="flex justify-between font-bold text-lg">
-          <span>Total</span>
-          <span>${total.toFixed(2)}</span>
+        
+        <div className="border-t pt-4">
+          <div className="flex justify-between items-center text-lg font-bold">
+            <span>Total</span>
+            <span className="text-purple-600">${total}</span>
+          </div>
         </div>
       </CardContent>
     </Card>

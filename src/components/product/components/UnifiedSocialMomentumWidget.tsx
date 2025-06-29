@@ -1,104 +1,98 @@
-
-import { useState, useEffect, memo } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronUp, Users, TrendingUp, Clock } from "lucide-react";
-
+import { useProgressOrchestrator } from "../progress/ProgressOrchestrator";
+import WidgetHeader from "./unified-momentum/WidgetHeader";
+import ActivityDisplay from "./unified-momentum/ActivityDisplay";
+import MomentumIndicator from "./unified-momentum/MomentumIndicator";
+import LiveStats from "./unified-momentum/LiveStats";
+import ExpandedContent from "./unified-momentum/ExpandedContent";
 interface UnifiedSocialMomentumWidgetProps {
   currentStep: number;
   uploadedImage: string | null;
   showWidget: boolean;
 }
-
-const UnifiedSocialMomentumWidget = memo(({
+const UnifiedSocialMomentumWidget = ({
+  currentStep,
+  uploadedImage,
   showWidget
 }: UnifiedSocialMomentumWidgetProps) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [recentActivity] = useState([
-    { user: "Sarah", action: "ordered Classic Oil style", time: "2 min ago" },
-    { user: "Mike", action: "generated Watercolor Dreams", time: "5 min ago" },
-    { user: "Emma", action: "selected Pop Art Burst", time: "8 min ago" }
-  ]);
+  const {
+    state,
+    trackClick
+  } = useProgressOrchestrator();
+  const [currentActivity, setCurrentActivity] = useState(0);
+  const [showExpanded, setShowExpanded] = useState(false);
+  const [liveUsers, setLiveUsers] = useState(238);
 
-  // Mock live statistics
-  const [stats, setStats] = useState({
-    activeUsers: 47,
-    recentOrders: 12,
-    popularStyle: "Neon Splash"
-  });
-
+  // Rotate through activities
   useEffect(() => {
+    if (!showWidget || state.socialProof.recentActivity.length === 0) return;
     const interval = setInterval(() => {
-      setStats(prev => ({
-        ...prev,
-        activeUsers: prev.activeUsers + Math.floor(Math.random() * 3) - 1,
-        recentOrders: prev.recentOrders + Math.floor(Math.random() * 2)
-      }));
-    }, 5000);
-
+      setCurrentActivity(prev => (prev + 1) % state.socialProof.recentActivity.length);
+    }, 8000);
     return () => clearInterval(interval);
-  }, []);
+  }, [showWidget, state.socialProof.recentActivity.length]);
 
-  if (!showWidget) return null;
+  // Simulate live user count fluctuations
+  useEffect(() => {
+    if (!showWidget) return;
+    const interval = setInterval(() => {
+      setLiveUsers(prev => prev + Math.floor(Math.random() * 6) - 2);
+    }, 12000);
+    return () => clearInterval(interval);
+  }, [showWidget]);
 
-  return (
-    <div className="fixed bottom-4 right-4 z-40 w-80">
-      <Card className="shadow-lg border-purple-200">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-sm font-medium text-gray-700">Live Activity</span>
-            </div>
-            
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsExpanded(!isExpanded)}
-            >
-              {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
-            </Button>
+  // Auto-expand logic based on hesitation
+  useEffect(() => {
+    if (!showWidget) return;
+    const timeSinceLastInteraction = Date.now() - state.userBehavior.lastInteraction;
+    if (timeSinceLastInteraction > 20000 && !state.contextualHelp.showTooltip) {
+      setShowExpanded(true);
+    } else if (timeSinceLastInteraction < 8000) {
+      setShowExpanded(false);
+    }
+  }, [showWidget, state.userBehavior.lastInteraction, state.contextualHelp.showTooltip]);
+  if (!showWidget || !uploadedImage) return null;
+  const activity = state.socialProof.recentActivity[currentActivity];
+  const momentumScore = state?.conversionElements?.momentumScore || 0;
+  const getMomentumLevel = () => {
+    if (momentumScore >= 75) return {
+      level: 'High',
+      color: 'green',
+      bgColor: 'bg-green-500'
+    };
+    if (momentumScore >= 50) return {
+      level: 'Medium',
+      color: 'yellow',
+      bgColor: 'bg-yellow-500'
+    };
+    if (momentumScore >= 25) return {
+      level: 'Building',
+      color: 'blue',
+      bgColor: 'bg-blue-500'
+    };
+    return {
+      level: 'Starting',
+      color: 'gray',
+      bgColor: 'bg-gray-500'
+    };
+  };
+  const momentum = getMomentumLevel();
+  const handleToggleExpanded = () => {
+    setShowExpanded(!showExpanded);
+    trackClick('unified-widget-expand');
+  };
+  return <div className="fixed bottom-6 left-6 z-50 max-w-sm animate-slide-in-left">
+      <Card className="bg-white/95 backdrop-blur-md shadow-xl border border-gray-200/50 hover:shadow-2xl transition-all duration-300 cursor-pointer overflow-hidden" onClick={handleToggleExpanded}>
+        <CardContent className="p-0">
+          
+
+          {/* Subtle expand indicator */}
+          <div className="bg-gray-50 px-4 py-2 text-center">
+            <div className={`w-8 h-1 bg-gray-300 rounded-full mx-auto transition-transform duration-300 ${showExpanded ? 'rotate-180' : ''}`} />
           </div>
-
-          <div className="space-y-2 text-sm">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Users className="w-4 h-4 text-purple-600" />
-                <span>{stats.activeUsers} users browsing</span>
-              </div>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <TrendingUp className="w-4 h-4 text-green-600" />
-                <span>{stats.recentOrders} recent orders</span>
-              </div>
-            </div>
-          </div>
-
-          {isExpanded && (
-            <div className="mt-4 pt-3 border-t border-gray-200">
-              <h4 className="text-sm font-medium text-gray-700 mb-2">Recent Activity</h4>
-              <div className="space-y-2">
-                {recentActivity.slice(0, 3).map((activity, index) => (
-                  <div key={index} className="flex items-start space-x-2 text-xs">
-                    <Clock className="w-3 h-3 text-gray-400 mt-0.5" />
-                    <div>
-                      <span className="font-medium">{activity.user}</span>
-                      <span className="text-gray-600"> {activity.action}</span>
-                      <div className="text-gray-400">{activity.time}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </CardContent>
       </Card>
-    </div>
-  );
-});
-
-UnifiedSocialMomentumWidget.displayName = 'UnifiedSocialMomentumWidget';
-
+    </div>;
+};
 export default UnifiedSocialMomentumWidget;

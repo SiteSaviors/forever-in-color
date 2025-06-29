@@ -1,72 +1,48 @@
 
-import { memo } from "react";
-import { CardContent } from "@/components/ui/card";
+import React from 'react';
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Play } from "lucide-react";
+import { Star } from "lucide-react";
 
 interface EnhancedStyleCardContentProps {
   styleName: string;
-  description: string;
   isSelected: boolean;
-  hasPreview: boolean;
-  onSelect: () => void;
-  onGenerate?: () => void;
+  onContinue?: () => void;
 }
 
-const EnhancedStyleCardContent = memo(({
+const EnhancedStyleCardContent = ({
   styleName,
-  description,
   isSelected,
-  hasPreview,
-  onSelect,
-  onGenerate
+  onContinue
 }: EnhancedStyleCardContentProps) => {
   return (
-    <CardContent className="p-4">
-      <div className="space-y-3">
-        <div>
-          <h3 className="font-semibold text-lg text-gray-900">{styleName}</h3>
-          <p className="text-sm text-gray-600 line-clamp-2">{description}</p>
+    <div className="p-4 bg-gradient-to-r from-white to-gray-50">
+      <div className="flex items-center justify-between">
+        <div className="flex-1 min-w-0">
+          <h4 className="font-semibold text-gray-900 truncate">{styleName}</h4>
+          {isSelected && (
+            <Badge className="mt-2 bg-purple-600 text-white shadow-lg">
+              <Star className="w-3 h-3 mr-1" />
+              Selected
+            </Badge>
+          )}
         </div>
         
-        <div className="flex gap-2">
+        {isSelected && onContinue && (
           <Button
             size="sm"
-            variant={isSelected ? "default" : "outline"}
-            onClick={onSelect}
-            className="flex-1"
+            className="bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg hover:shadow-xl transform transition-all duration-200 hover:scale-105 ml-3"
+            onClick={(e) => {
+              e.stopPropagation();
+              onContinue();
+            }}
           >
-            {isSelected ? "Selected" : "Select"}
+            Continue
           </Button>
-          
-          {!hasPreview && onGenerate && (
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={onGenerate}
-              className="flex-1"
-            >
-              <Sparkles className="w-4 h-4 mr-1" />
-              Generate
-            </Button>
-          )}
-          
-          {hasPreview && (
-            <Button
-              size="sm"
-              variant="secondary"
-              className="flex-1"
-            >
-              <Play className="w-4 h-4 mr-1" />
-              Preview
-            </Button>
-          )}
-        </div>
+        )}
       </div>
-    </CardContent>
+    </div>
   );
-});
-
-EnhancedStyleCardContent.displayName = 'EnhancedStyleCardContent';
+};
 
 export default EnhancedStyleCardContent;
