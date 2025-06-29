@@ -1,5 +1,4 @@
 
-import React from 'react';
 import Lightbox from '@/components/ui/lightbox';
 import FullCanvasMockup from '../FullCanvasMockup';
 
