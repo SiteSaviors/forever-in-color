@@ -24,7 +24,7 @@ class StyleCardErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error(`StyleCard Error (${this.props.styleName}):`, error, errorInfo);
+    // Error logged internally
   }
 
   handleRetry = () => {
