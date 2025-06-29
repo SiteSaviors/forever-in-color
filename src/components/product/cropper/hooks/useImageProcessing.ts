@@ -1,65 +1,26 @@
 
-import { useState } from "react";
+import { useCallback } from "react";
+import { getCroppedImg } from "@/utils/photoOperations";
 
 export const useImageProcessing = () => {
-  const createImage = (url: string): Promise<HTMLImageElement> => 
-    new Promise((resolve, reject) => {
-      const image = new Image();
-      image.addEventListener('load', () => resolve(image));
-      image.addEventListener('error', error => reject(error));
-      image.setAttribute('crossOrigin', 'anonymous');
-      image.src = url;
-    });
-
-  const getCroppedImg = async (imageSrc: string, pixelCrop: any): Promise<string> => {
-    const image = await createImage(imageSrc);
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    
-    if (!ctx) {
-      throw new Error('Could not get canvas context');
+  const processCroppedImage = useCallback(async (imageUrl: string, croppedAreaPixels: any, aspectRatio: number) => {
+    if (!croppedAreaPixels) {
+      throw new Error('No crop area specified');
     }
-    
-    canvas.width = pixelCrop.width;
-    canvas.height = pixelCrop.height;
-    
-    ctx.drawImage(
-      image,
-      pixelCrop.x,
-      pixelCrop.y,
-      pixelCrop.width,
-      pixelCrop.height,
-      0,
-      0,
-      pixelCrop.width,
-      pixelCrop.height
-    );
-    
-    return canvas.toDataURL('image/jpeg');
-  };
 
-  const detectRecommendedOrientation = (imageUrl: string, setRecommendedOrientation: (orientation: string) => void) => {
-    const img = new Image();
-    img.onload = () => {
-      const aspectRatio = img.width / img.height;
-      let detected = 'square';
-      
-      if (aspectRatio > 1.2) {
-        detected = 'horizontal';
-      } else if (aspectRatio < 0.8) {
-        detected = 'vertical';
-      } else {
-        detected = 'square';
-      }
-      
-      setRecommendedOrientation(detected);
-      console.log('🎯 Auto-detected recommended orientation:', detected, 'from aspect ratio:', aspectRatio.toFixed(2));
-    };
-    img.src = imageUrl;
-  };
+    try {
+      const croppedImage = await getCroppedImg(imageUrl, croppedAreaPixels);
+      return {
+        croppedImageUrl: croppedImage,
+        aspectRatio: aspectRatio
+      };
+    } catch (error) {
+      console.error('Error processing cropped image:', error);
+      throw error;
+    }
+  }, []);
 
   return {
-    getCroppedImg,
-    detectRecommendedOrientation
+    processCroppedImage
   };
 };

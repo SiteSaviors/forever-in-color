@@ -1,53 +1,27 @@
 
-import { Star, Quote } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
-const OrderTestimonials = () => {
-  const testimonials = [
-    {
-      name: "Sarah M.",
-      rating: 5,
-      text: "The quality exceeded my expectations! The colors are so vibrant and the canvas feels premium.",
-      location: "New York, NY"
-    },
-    {
-      name: "Michael R.",
-      rating: 5,
-      text: "Perfect gift for my wife's birthday. She was in tears (happy ones!) when she saw our wedding photo transformed.",
-      location: "Austin, TX"
-    },
-    {
-      name: "Jennifer L.",
-      rating: 5,
-      text: "Fast shipping and amazing customer service. The AR feature is incredible - felt like magic!",
-      location: "Los Angeles, CA"
-    }
-  ];
+const testimonials = [
+  {
+    name: "Jennifer Davis",
+    content: "The ordering process was so smooth and the final product exceeded my expectations!",
+    rating: 5
+  }
+];
 
+const OrderTestimonials = () => {
   return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-gray-900 text-center mb-4">
+    <div className="py-8">
+      <h3 className="text-2xl font-bold text-center mb-6">
         What Our Customers Say
       </h3>
-      <div className="space-y-3">
-        {testimonials.map((testimonial, index) => (
-          <Card key={index} className="bg-gray-50 border-gray-200">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-1 mb-2">
-                {[...Array(testimonial.rating)].map((_, i) => (
-                  <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                ))}
-              </div>
-              <p className="text-sm text-gray-700 mb-2 italic">
-                "{testimonial.text}"
-              </p>
-              <div className="text-xs text-gray-500">
-                <span className="font-medium">{testimonial.name}</span> • {testimonial.location}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      
+      <Card>
+        <CardContent className="p-6 text-center">
+          <p className="text-lg italic mb-4">"{testimonials[0].content}"</p>
+          <p className="font-semibold">- {testimonials[0].name}</p>
+        </CardContent>
+      </Card>
     </div>
   );
 };

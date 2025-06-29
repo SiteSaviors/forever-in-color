@@ -1,95 +1,123 @@
 
+import { memo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Truck, Shield, Clock } from "lucide-react";
 
-interface CustomizationOptions {
-  floatingFrame: {
-    enabled: boolean;
-    color: 'white' | 'black' | 'espresso';
-  };
-  livingMemory: boolean;
-  voiceMatch: boolean;
-  customMessage: string;
-  aiUpscale: boolean;
+interface PricingSummaryItem {
+  label: string;
+  price: number;
+  isIncluded?: boolean;
 }
 
 interface PricingSummaryProps {
-  selectedSize: string;
-  customizations: CustomizationOptions;
+  items: PricingSummaryItem[];
+  subtotal: number;
+  shipping?: number;
+  total: number;
+  size?: string;
+  styleName?: string;
 }
 
-const PricingSummary = ({ selectedSize, customizations }: PricingSummaryProps) => {
-  const calculateTotalPrice = () => {
-    let basePrice = 149; // Base canvas price
-    let total = basePrice;
-    
-    if (customizations.floatingFrame.enabled) total += 79;
-    if (customizations.livingMemory) total += 29;
-    if (customizations.voiceMatch) total += 19;
-    if (customizations.aiUpscale) total += 15;
-    
-    return {
-      basePrice,
-      total
-    };
-  };
-
-  const { basePrice, total } = calculateTotalPrice();
-  const savings = total > basePrice ? Math.round((total - basePrice) * 0.2) : 0;
+const PricingSummary = memo(({
+  items,
+  subtotal,
+  shipping = 0,
+  total,
+  size,
+  styleName
+}: PricingSummaryProps) => {
+  const trustFeatures = [
+    { icon: Truck, text: "Free shipping", subtext: "5-7 business days" },
+    { icon: Shield, text: "Satisfaction guaranteed", subtext: "30-day returns" },
+    { icon: Clock, text: "Fast production", subtext: "Ships within 2 days" }
+  ];
 
   return (
-    <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200">
+    <Card className="sticky top-4">
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <span className="text-gray-900">Your Custom Canvas</span>
-          <Badge className="bg-green-500 text-white">
-            {savings > 0 ? `Save $${savings}` : 'Premium Quality'}
+          Order Summary
+          <Badge variant="secondary" className="bg-green-100 text-green-800">
+            Fast Delivery
           </Badge>
         </CardTitle>
+        {(size || styleName) && (
+          <div className="text-sm text-gray-600">
+            {styleName && <span>{styleName}</span>}
+            {size && styleName && <span> • </span>}
+            {size && <span>{size}</span>}
+          </div>
+        )}
       </CardHeader>
+      
       <CardContent className="space-y-4">
-        <div className="flex justify-between items-center">
-          <span className="text-gray-600">Canvas ({selectedSize})</span>
-          <span className="font-semibold">${basePrice}</span>
+        <div className="space-y-2">
+          {items.map((item, index) => (
+            <div key={index} className="flex justify-between items-center">
+              <span className="text-sm text-gray-700">{item.label}</span>
+              <span className="text-sm font-medium">
+                {item.isIncluded ? (
+                  <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
+                    Included
+                  </Badge>
+                ) : (
+                  `$${item.price.toFixed(2)}`
+                )}
+              </span>
+            </div>
+          ))}
         </div>
         
-        {customizations.floatingFrame.enabled && (
-          <div className="flex justify-between items-center">
-            <span className="text-gray-600">Floating Frame</span>
-            <span className="font-semibold">+$79</span>
-          </div>
-        )}
+        <Separator />
         
-        {customizations.livingMemory && (
-          <div className="flex justify-between items-center">
-            <span className="text-gray-600">Living Memory</span>
-            <span className="font-semibold">+$29</span>
+        <div className="space-y-2">
+          <div className="flex justify-between">
+            <span className="text-sm">Subtotal</span>
+            <span className="text-sm font-medium">${subtotal.toFixed(2)}</span>
           </div>
-        )}
+          
+          <div className="flex justify-between">
+            <span className="text-sm">Shipping</span>
+            <span className="text-sm font-medium">
+              {shipping === 0 ? (
+                <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
+                  Free
+                </Badge>
+              ) : (
+                `$${shipping.toFixed(2)}`
+              )}
+            </span>
+          </div>
+        </div>
         
-        {customizations.voiceMatch && (
-          <div className="flex justify-between items-center">
-            <span className="text-gray-600">Voice Match</span>
-            <span className="font-semibold">+$19</span>
-          </div>
-        )}
+        <Separator />
         
-        {customizations.aiUpscale && (
-          <div className="flex justify-between items-center">
-            <span className="text-gray-600">AI Upscale</span>
-            <span className="font-semibold">+$15</span>
-          </div>
-        )}
+        <div className="flex justify-between items-center">
+          <span className="text-base font-semibold">Total</span>
+          <span className="text-xl font-bold text-purple-600">${total.toFixed(2)}</span>
+        </div>
         
-        <div className="border-t pt-4">
-          <div className="flex justify-between items-center text-lg font-bold">
-            <span>Total</span>
-            <span className="text-purple-600">${total}</span>
-          </div>
+        <div className="space-y-2 pt-4 border-t border-gray-100">
+          {trustFeatures.map((feature, index) => {
+            const IconComponent = feature.icon;
+            return (
+              <div key={index} className="flex items-center gap-3">
+                <IconComponent className="w-4 h-4 text-green-600" />
+                <div>
+                  <div className="text-xs font-medium text-gray-700">{feature.text}</div>
+                  <div className="text-xs text-gray-500">{feature.subtext}</div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </CardContent>
     </Card>
   );
-};
+});
+
+PricingSummary.displayName = 'PricingSummary';
 
 export default PricingSummary;

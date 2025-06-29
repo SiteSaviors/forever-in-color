@@ -1,68 +1,53 @@
 
+import { useState, useRef } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { artStyles } from "@/data/artStyles";
-import { ArtStyle } from "@/types/artStyle";
-import CarouselHeader from "@/components/carousel/CarouselHeader";
-import CarouselNavigation from "@/components/carousel/CarouselNavigation";
-import StyleIndicators from "@/components/carousel/StyleIndicators";
-import CarouselCTA from "@/components/carousel/CarouselCTA";
-import CarouselBackground from "@/components/carousel/CarouselBackground";
-import InfiniteCarouselContainer from "@/components/carousel/InfiniteCarouselContainer";
-import { useCarouselParallax } from "@/hooks/useCarouselParallax";
-import { useCarouselAutoplay } from "@/hooks/useCarouselAutoplay";
 
 const ArtStylesCarousel = () => {
-  const { sectionRef, parallaxOffset } = useCarouselParallax();
-  const { currentIndex, handlePrevious, handleNext, handleIndicatorClick } = useCarouselAutoplay();
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const carouselRef = useRef<HTMLDivElement>(null);
 
-  const handleStyleClick = (style: ArtStyle) => {
-    // Navigate to product configurator
-    window.location.href = '/product';
+  const nextSlide = () => {
+    setCurrentIndex((prev) => (prev + 1) % artStyles.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentIndex((prev) => (prev - 1 + artStyles.length) % artStyles.length);
   };
 
   return (
-    <section ref={sectionRef} className="relative py-16 overflow-hidden">
-      <CarouselBackground parallaxOffset={parallaxOffset} />
-
-      {/* Content with enhanced backdrop and parallax */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div
-          style={{
-            transform: `translateY(${parallaxOffset.header}px)`,
-            transition: 'transform 0.1s ease-out'
-          }}
-        >
-          <CarouselHeader />
-        </div>
-
-        {/* Infinite 3D Carousel with enhanced container shadow and parallax */}
-        <InfiniteCarouselContainer 
-          currentIndex={currentIndex}
-          parallaxOffset={parallaxOffset}
-          onStyleClick={handleStyleClick}
-        />
-
-        <CarouselNavigation 
-          onPrevious={handlePrevious}
-          onNext={handleNext}
-        />
-
-        <div
-          className="-mt-2"
-          style={{
-            transform: `translateY(${parallaxOffset.header * 0.5}px)`,
-            transition: 'transform 0.1s ease-out'
-          }}
-        >
-          <StyleIndicators
-            totalCount={artStyles.length}
-            currentIndex={currentIndex}
-            onIndicatorClick={handleIndicatorClick}
-          />
-
-          <CarouselCTA />
-        </div>
+    <div className="relative overflow-hidden">
+      <div 
+        ref={carouselRef}
+        className="flex transition-transform duration-300 ease-in-out"
+        style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+      >
+        {artStyles.map((_, index) => (
+          <div key={index} className="w-full flex-shrink-0">
+            <div className="aspect-square bg-gray-200 rounded-lg"></div>
+          </div>
+        ))}
       </div>
-    </section>
+      
+      <Button
+        variant="outline"
+        size="icon"
+        className="absolute left-2 top-1/2 -translate-y-1/2"
+        onClick={prevSlide}
+      >
+        <ChevronLeft className="h-4 w-4" />
+      </Button>
+      
+      <Button
+        variant="outline"
+        size="icon"
+        className="absolute right-2 top-1/2 -translate-y-1/2"
+        onClick={nextSlide}
+      >
+        <ChevronRight className="h-4 w-4" />
+      </Button>
+    </div>
   );
 };
 

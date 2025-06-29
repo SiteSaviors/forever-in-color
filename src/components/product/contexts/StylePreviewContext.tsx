@@ -1,80 +1,70 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import { useAuthStore } from '@/hooks/useAuthStore';
-import { 
-  StylePreviewContextType, 
-  StylePreviewProviderProps 
-} from './types';
-import { 
-  stylePreviewReducer, 
-  initialState 
-} from './stylePreviewReducer';
-import { useStylePreviewLogic } from './useStylePreviewLogic';
-import { useStylePreviewHelpers } from './stylePreviewHelpers';
 
-const StylePreviewContext = createContext<StylePreviewContextType | null>(null);
+import { createContext, useContext, useReducer, useCallback } from "react";
+import { stylePreviewReducer, initialState } from "./stylePreviewReducer";
+import { StylePreviewState, StylePreviewAction } from "./types";
 
-export const StylePreviewProvider = ({ 
-  children, 
-  croppedImage, 
-  selectedOrientation 
-}: StylePreviewProviderProps) => {
-  const [previews, dispatch] = useReducer(stylePreviewReducer, initialState);
-  const { user } = useAuthStore();
+interface StylePreviewContextType {
+  state: StylePreviewState;
+  dispatch: React.Dispatch<StylePreviewAction>;
+  generatePreview: (styleId: number, styleName: string) => Promise<void>;
+}
 
-  // Custom hooks for logic separation
-  const { generatePreview } = useStylePreviewLogic({
-    croppedImage,
-    selectedOrientation,
-    dispatch
-  });
+const StylePreviewContext = createContext<StylePreviewContextType | undefined>(undefined);
 
-  const {
-    getPreviewStatus,
-    isLoading,
-    hasPreview,
-    hasError,
-    getPreviewUrl,
-    getError
-  } = useStylePreviewHelpers(previews);
+interface StylePreviewProviderProps {
+  children: React.ReactNode;
+  croppedImage: string | null;
+  selectedOrientation: string;
+}
 
-  // Retry generation function
-  const retryGeneration = async (styleId: number, styleName: string) => {
-    dispatch({ type: 'RETRY_GENERATION', styleId });
-    await generatePreview(styleId, styleName);
-  };
+export const StylePreviewProvider = ({ children, croppedImage, selectedOrientation }: StylePreviewProviderProps) => {
+  const [state, dispatch] = useReducer(stylePreviewReducer, initialState);
 
-  // Reset previews when cropped image changes
-  useEffect(() => {
-    if (!croppedImage) {
-      dispatch({ type: 'RESET_ALL' });
+  const generatePreview = useCallback(async (styleId: number, styleName: string) => {
+    if (!croppedImage) return;
+    
+    dispatch({ type: 'START_GENERATION', payload: { styleId } });
+    
+    try {
+      // Mock preview generation - replace with actual API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      const mockPreviewUrl = croppedImage; // For now, use the cropped image
+      
+      dispatch({ 
+        type: 'GENERATION_SUCCESS', 
+        payload: { 
+          styleId, 
+          previewUrl: mockPreviewUrl 
+        } 
+      });
+    } catch (error) {
+      dispatch({ 
+        type: 'GENERATION_ERROR', 
+        payload: { 
+          styleId, 
+          error: error.message || 'Generation failed' 
+        } 
+      });
     }
   }, [croppedImage]);
 
-  const contextValue: StylePreviewContextType = {
-    previews,
-    croppedImage,
-    selectedOrientation,
-    generatePreview,
-    retryGeneration,
-    getPreviewStatus,
-    isLoading,
-    hasPreview,
-    hasError,
-    getPreviewUrl,
-    getError
+  const value = {
+    state,
+    dispatch,
+    generatePreview
   };
 
   return (
-    <StylePreviewContext.Provider value={contextValue}>
+    <StylePreviewContext.Provider value={value}>
       {children}
     </StylePreviewContext.Provider>
   );
 };
 
-export const useStylePreview = (): StylePreviewContextType => {
+export const useStylePreviewContext = () => {
   const context = useContext(StylePreviewContext);
-  if (!context) {
-    throw new Error('useStylePreview must be used within a StylePreviewProvider');
+  if (context === undefined) {
+    throw new Error('useStylePreviewContext must be used within a StylePreviewProvider');
   }
   return context;
 };

@@ -1,77 +1,53 @@
 
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, Shield, Truck } from "lucide-react";
 
 interface StickyOrderCTAProps {
-  total: number;
-  isVisible: boolean;
-  onPlaceOrder: () => void;
+  selectedStyle: number | null;
+  selectedSize: string | null;
+  price: number;
+  onOrder: () => void;
 }
 
-const StickyOrderCTA = ({ total, isVisible, onPlaceOrder }: StickyOrderCTAProps) => {
-  if (!isVisible) return null;
+const StickyOrderCTA = ({ selectedStyle, selectedSize, price, onOrder }: StickyOrderCTAProps) => {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsVisible(window.scrollY > 200);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  if (!selectedStyle || !selectedSize || !isVisible) {
+    return null;
+  }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 p-3 sm:p-4">
-      <div className="max-w-4xl mx-auto">
-        {/* Mobile Layout */}
-        <div className="flex sm:hidden items-center justify-between gap-3">
-          <div className="flex-1">
-            <div className="text-xs text-gray-600">Total</div>
-            <div className="text-lg font-bold text-gray-900">${total.toFixed(2)}</div>
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50 shadow-lg">
+      <div className="max-w-4xl mx-auto flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <div>
+            <p className="font-semibold">{selectedSize} Canvas</p>
+            <p className="text-sm text-gray-600">Style Selected</p>
           </div>
+        </div>
+        
+        <div className="flex items-center space-x-4">
+          <div className="text-right">
+            <p className="text-2xl font-bold text-purple-600">${price}</p>
+            <p className="text-sm text-gray-600">Free Shipping</p>
+          </div>
+          
           <Button 
-            onClick={onPlaceOrder}
-            className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 font-semibold flex-shrink-0"
-            size="lg"
+            size="lg" 
+            onClick={onOrder}
+            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
           >
-            <ShoppingCart className="w-4 h-4 mr-2" />
             Order Now
           </Button>
-        </div>
-
-        {/* Desktop Layout */}
-        <div className="hidden sm:flex items-center justify-between gap-4">
-          {/* Trust Elements */}
-          <div className="hidden md:flex items-center gap-4 text-xs text-gray-600">
-            <div className="flex items-center gap-1">
-              <Shield className="w-3 h-3 text-green-600" />
-              <span>30-Day Guarantee</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Truck className="w-3 h-3 text-blue-600" />
-              <span>Free Shipping</span>
-            </div>
-          </div>
-
-          {/* Order Total & CTA */}
-          <div className="flex items-center gap-4">
-            <div className="text-right">
-              <div className="text-sm text-gray-600">Total</div>
-              <div className="text-lg font-bold text-gray-900">${total.toFixed(2)}</div>
-            </div>
-            <Button 
-              onClick={onPlaceOrder}
-              className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 text-base font-semibold"
-              size="lg"
-            >
-              <ShoppingCart className="w-4 h-4 mr-2" />
-              Place Order
-            </Button>
-          </div>
-        </div>
-
-        {/* Mobile Trust Elements */}
-        <div className="flex sm:hidden justify-center gap-4 mt-2 text-xs text-gray-500">
-          <div className="flex items-center gap-1">
-            <Shield className="w-3 h-3 text-green-600" />
-            <span>30-Day Guarantee</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <Truck className="w-3 h-3 text-blue-600" />
-            <span>4-7 Day Delivery</span>
-          </div>
         </div>
       </div>
     </div>

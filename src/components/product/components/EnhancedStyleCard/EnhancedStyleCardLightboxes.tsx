@@ -1,55 +1,48 @@
 
-import React from 'react';
-import Lightbox from '@/components/ui/lightbox';
-import FullCanvasMockup from '../FullCanvasMockup';
+import { memo } from "react";
+import Lightbox from "@/components/ui/lightbox";
 
 interface EnhancedStyleCardLightboxesProps {
-  showCanvasPreview: boolean;
-  showLightbox: boolean;
-  imageToShow: string;
+  isImageLightboxOpen: boolean;
+  isCanvasLightboxOpen: boolean;
+  onImageLightboxClose: () => void;
+  onCanvasLightboxClose: () => void;
+  imageUrl: string;
   styleName: string;
-  selectedOrientation: string;
-  onCloseCanvasPreview: () => void;
-  onCloseLightbox: () => void;
+  canvasPreviewContent?: React.ReactNode;
 }
 
-const EnhancedStyleCardLightboxes = ({
-  showCanvasPreview,
-  showLightbox,
-  imageToShow,
+const EnhancedStyleCardLightboxes = memo(({
+  isImageLightboxOpen,
+  isCanvasLightboxOpen,
+  onImageLightboxClose,
+  onCanvasLightboxClose,
+  imageUrl,
   styleName,
-  selectedOrientation,
-  onCloseCanvasPreview,
-  onCloseLightbox
+  canvasPreviewContent
 }: EnhancedStyleCardLightboxesProps) => {
   return (
     <>
-      {/* Canvas Preview Lightbox */}
       <Lightbox
-        isOpen={showCanvasPreview}
-        onClose={onCloseCanvasPreview}
-        imageSrc=""
-        imageAlt={`${styleName} canvas preview`}
-        title={`${styleName} on Canvas`}
-        customContent={
-          <FullCanvasMockup
-            imageUrl={imageToShow}
-            orientation={selectedOrientation}
-            styleName={styleName}
-          />
-        }
-      />
-
-      {/* Full Size Lightbox */}
-      <Lightbox
-        isOpen={showLightbox}
-        onClose={onCloseLightbox}
-        imageSrc={imageToShow}
+        isOpen={isImageLightboxOpen}
+        onClose={onImageLightboxClose}
+        imageSrc={imageUrl}
         imageAlt={`${styleName} preview`}
         title={styleName}
       />
+      
+      <Lightbox
+        isOpen={isCanvasLightboxOpen}
+        onClose={onCanvasLightboxClose}
+        imageSrc=""
+        imageAlt="Canvas preview"
+        title="Canvas Preview"
+        customContent={canvasPreviewContent}
+      />
     </>
   );
-};
+});
+
+EnhancedStyleCardLightboxes.displayName = 'EnhancedStyleCardLightboxes';
 
 export default EnhancedStyleCardLightboxes;
