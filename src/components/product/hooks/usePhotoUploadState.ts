@@ -49,7 +49,7 @@ export const usePhotoUploadState = ({
     }
   };
 
-  const handleCropComplete = (croppedImageUrl: string, aspectRatio: number, orientation: string) => {
+  const handleCropComplete = (croppedImageUrl: string, orientation: string) => {
     setCroppedImage(croppedImageUrl);
     setCurrentOrientation(orientation);
     setShowCropper(false);

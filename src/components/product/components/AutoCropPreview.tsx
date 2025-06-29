@@ -83,6 +83,7 @@ const AutoCropPreview = memo(({
                 src={originalImage}
                 alt="Original"
                 className="w-full h-48 object-cover"
+                style={{ aspectRatio: aspectRatio }}
               />
             </div>
           </div>
@@ -106,6 +107,7 @@ const AutoCropPreview = memo(({
                   src={croppedImage || originalImage}
                   alt="AI Cropped"
                   className="w-full h-48 object-cover"
+                  style={{ aspectRatio: aspectRatio }}
                 />
               )}
             </div>

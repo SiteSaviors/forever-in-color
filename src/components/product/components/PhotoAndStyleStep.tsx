@@ -32,13 +32,11 @@ const PhotoAndStyleStep = ({
   selectedStyle,
   uploadedImage,
   selectedOrientation,
-  autoGenerationComplete,
   onComplete,
   onPhotoAndStyleComplete,
   onContinue,
   currentStep,
-  completedSteps,
-  onStepChange
+  completedSteps
 }: PhotoAndStyleStepProps) => {
   const { dispatch, showContextualHelp } = useProgressOrchestrator();
   
