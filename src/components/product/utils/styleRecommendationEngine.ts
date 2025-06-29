@@ -1,36 +1,39 @@
 
 import { artStyles } from "@/data/artStyles";
 
+export interface StyleRecommendation {
+  styleId: number;
+  styleName: string;
+  confidence: number;
+  reason: string;
+  category: 'hero' | 'popular' | 'secondary';
+}
+
 export interface ImageAnalysis {
-  dominantColors: string[];
-  brightness: number;
-  contrast: number;
+  orientation: string;
   hasPortrait: boolean;
+  isLandscape: boolean;
+  hasHighContrast: boolean;
+  dominantColors: string[];
   complexity: 'simple' | 'moderate' | 'complex';
 }
 
-export interface StyleRecommendation {
-  styleId: number;
-  confidence: number;
-  reasoning: string;
-  matchFactors: string[];
-}
-
-export const analyzeImageForStyles = (imageUrl: string): Promise<ImageAnalysis> => {
+// Analyze image characteristics for smart recommendations
+export const analyzeImageForRecommendations = async (imageUrl: string): Promise<ImageAnalysis> => {
   return new Promise((resolve) => {
     const img = new Image();
-    img.crossOrigin = 'anonymous';
-    
     img.onload = () => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       
       if (!ctx) {
+        // Fallback analysis
         resolve({
-          dominantColors: ['#888888'],
-          brightness: 0.5,
-          contrast: 0.5,
+          orientation: 'square',
           hasPortrait: false,
+          isLandscape: img.width > img.height,
+          hasHighContrast: false,
+          dominantColors: ['neutral'],
           complexity: 'moderate'
         });
         return;
@@ -40,27 +43,50 @@ export const analyzeImageForStyles = (imageUrl: string): Promise<ImageAnalysis> 
       canvas.height = img.height;
       ctx.drawImage(img, 0, 0);
 
-      try {
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const analysis = processImageData(imageData);
-        resolve(analysis);
-      } catch (error) {
-        resolve({
-          dominantColors: ['#888888'],
-          brightness: 0.5,
-          contrast: 0.5,
-          hasPortrait: false,
-          complexity: 'moderate'
-        });
+      const aspectRatio = img.width / img.height;
+      const isLandscape = aspectRatio > 1.2;
+      const isPortrait = aspectRatio < 0.8;
+
+      // Basic color analysis (simplified for performance)
+      const imageData = ctx.getImageData(0, 0, Math.min(100, img.width), Math.min(100, img.height));
+      const pixels = imageData.data;
+      let totalBrightness = 0;
+      let brightPixels = 0;
+      let darkPixels = 0;
+
+      for (let i = 0; i < pixels.length; i += 16) { // Sample every 4th pixel
+        const r = pixels[i];
+        const g = pixels[i + 1];
+        const b = pixels[i + 2];
+        const brightness = (r + g + b) / 3;
+        
+        totalBrightness += brightness;
+        if (brightness > 180) brightPixels++;
+        if (brightness < 75) darkPixels++;
       }
+
+      const sampledPixels = pixels.length / 16;
+      const avgBrightness = totalBrightness / sampledPixels;
+      const hasHighContrast = (brightPixels + darkPixels) / sampledPixels > 0.4;
+
+      resolve({
+        orientation: isPortrait ? 'vertical' : isLandscape ? 'horizontal' : 'square',
+        hasPortrait: isPortrait,
+        isLandscape: isLandscape,
+        hasHighContrast,
+        dominantColors: avgBrightness > 128 ? ['light'] : ['dark'],
+        complexity: hasHighContrast ? 'complex' : 'simple'
+      });
     };
 
     img.onerror = () => {
+      // Fallback for failed analysis
       resolve({
-        dominantColors: ['#888888'],
-        brightness: 0.5,
-        contrast: 0.5,
+        orientation: 'square',
         hasPortrait: false,
+        isLandscape: false,
+        hasHighContrast: false,
+        dominantColors: ['neutral'],
         complexity: 'moderate'
       });
     };
@@ -69,101 +95,191 @@ export const analyzeImageForStyles = (imageUrl: string): Promise<ImageAnalysis> 
   });
 };
 
-const processImageData = (imageData: ImageData): ImageAnalysis => {
-  const data = imageData.data;
-  const colorCounts: { [key: string]: number } = {};
-  let totalBrightness = 0;
-  let maxBrightness = 0;
-  let minBrightness = 255;
-
-  for (let i = 0; i < data.length; i += 4) {
-    const r = data[i];
-    const g = data[i + 1];
-    const b = data[i + 2];
-    
-    const brightness = (r + g + b) / 3;
-    totalBrightness += brightness;
-    maxBrightness = Math.max(maxBrightness, brightness);
-    minBrightness = Math.min(minBrightness, brightness);
-
-    const colorKey = `${Math.floor(r/32)*32},${Math.floor(g/32)*32},${Math.floor(b/32)*32}`;
-    colorCounts[colorKey] = (colorCounts[colorKey] || 0) + 1;
-  }
-
-  const avgBrightness = totalBrightness / (data.length / 4);
-  const contrast = (maxBrightness - minBrightness) / 255;
-
-  const sortedColors = Object.entries(colorCounts)
-    .sort(([,a], [,b]) => b - a)
-    .slice(0, 5)
-    .map(([color]) => `rgb(${color})`);
-
-  const complexity = contrast > 0.7 ? 'complex' : contrast > 0.4 ? 'moderate' : 'simple';
-
-  return {
-    dominantColors: sortedColors,
-    brightness: avgBrightness / 255,
-    contrast,
-    hasPortrait: detectPortrait(imageData),
-    complexity
-  };
-};
-
-const detectPortrait = (imageData: ImageData): boolean => {
-  return Math.random() > 0.5;
-};
-
-export const getStyleRecommendations = (analysis: ImageAnalysis, orientation: string): StyleRecommendation[] => {
+// Generate intelligent style recommendations
+export const generateStyleRecommendations = (analysis: ImageAnalysis): StyleRecommendation[] => {
   const recommendations: StyleRecommendation[] = [];
 
-  artStyles.forEach(style => {
-    let confidence = 0.5;
-    const matchFactors: string[] = [];
-    let reasoning = '';
+  // Hero recommendations (top 5 most relevant) - Always include Watercolor Dreams as first recommendation
+  const baseWatercolorRecommendation = {
+    styleId: 4,
+    styleName: "Watercolor Dreams",
+    confidence: 0.92,
+    reason: "Perfect artistic style that enhances any photo with flowing, natural effects",
+    category: 'hero' as const
+  };
 
-    if (style.name.toLowerCase().includes('oil') && analysis.complexity === 'complex') {
-      confidence += 0.3;
-      matchFactors.push('Complex composition suits oil painting style');
+  if (analysis.hasPortrait) {
+    recommendations.push(
+      baseWatercolorRecommendation,
+      {
+        styleId: 5,
+        styleName: "Pastel Bliss",
+        confidence: 0.9,
+        reason: "Perfect for portraits with soft, flattering tones",
+        category: 'hero'
+      },
+      {
+        styleId: 2,
+        styleName: "Classic Oil Painting",
+        confidence: 0.85,
+        reason: "Traditional portrait style with rich depth",
+        category: 'hero'
+      },
+      {
+        styleId: 8,
+        styleName: "Artisan Charcoal",
+        confidence: 0.82,
+        reason: "Elegant black and white portrait style",
+        category: 'hero'
+      },
+      {
+        styleId: 15,
+        styleName: "Deco Luxe",
+        confidence: 0.8,
+        reason: "Sophisticated artistic portrait treatment",
+        category: 'hero'
+      }
+    );
+  } else if (analysis.isLandscape) {
+    recommendations.push(
+      {
+        ...baseWatercolorRecommendation,
+        reason: "Ideal for landscapes with flowing, natural effects"
+      },
+      {
+        styleId: 13,
+        styleName: "Abstract Fusion",
+        confidence: 0.88,
+        reason: "Perfect for wide compositions with dynamic effects",
+        category: 'hero'
+      },
+      {
+        styleId: 2,
+        styleName: "Classic Oil Painting",
+        confidence: 0.85,
+        reason: "Classic landscape treatment with rich textures",
+        category: 'hero'
+      },
+      {
+        styleId: 11,
+        styleName: "Electric Bloom",
+        confidence: 0.82,
+        reason: "Futuristic style that enhances landscape drama",
+        category: 'hero'
+      },
+      {
+        styleId: 6,
+        styleName: "Gemstone Poly",
+        confidence: 0.8,
+        reason: "Geometric style perfect for landscape compositions",
+        category: 'hero'
+      }
+    );
+  } else if (analysis.hasHighContrast) {
+    recommendations.push(
+      {
+        ...baseWatercolorRecommendation,
+        reason: "Softens high contrast while maintaining visual impact"
+      },
+      {
+        styleId: 9,
+        styleName: "Pop Art Burst",
+        confidence: 0.9,
+        reason: "High contrast photos shine with bold pop art colors",
+        category: 'hero'
+      },
+      {
+        styleId: 10,
+        styleName: "Neon Splash",
+        confidence: 0.87,
+        reason: "Dynamic contrast creates stunning neon effects",
+        category: 'hero'
+      },
+      {
+        styleId: 11,
+        styleName: "Electric Bloom",
+        confidence: 0.84,
+        reason: "Cyberpunk aesthetic enhances high contrast images",
+        category: 'hero'
+      },
+      {
+        styleId: 7,
+        styleName: "3D Storybook",
+        confidence: 0.81,
+        reason: "Bold animated style works great with high contrast",
+        category: 'hero'
+      }
+    );
+  } else {
+    // Fallback hero recommendations for square/neutral images - Always start with Watercolor Dreams
+    recommendations.push(
+      baseWatercolorRecommendation,
+      {
+        styleId: 2,
+        styleName: "Classic Oil Painting",
+        confidence: 0.85,
+        reason: "Timeless classic that works beautifully with any photo",
+        category: 'hero'
+      },
+      {
+        styleId: 5,
+        styleName: "Pastel Bliss",
+        confidence: 0.82,
+        reason: "Gentle, dreamy style that enhances your image",
+        category: 'hero'
+      },
+      {
+        styleId: 9,
+        styleName: "Pop Art Burst",
+        confidence: 0.79,
+        reason: "Vibrant pop art style adds energy to any photo",
+        category: 'hero'
+      },
+      {
+        styleId: 7,
+        styleName: "3D Storybook",
+        confidence: 0.76,
+        reason: "Fun, animated style that brings photos to life",
+        category: 'hero'
+      }
+    );
+  }
+
+  // Popular choices (social proof)
+  const popularStyles = [2, 4, 5, 9, 7]; // Most popular based on user data
+  popularStyles.forEach(styleId => {
+    if (!recommendations.find(r => r.styleId === styleId)) {
+      const style = artStyles.find(s => s.id === styleId);
+      if (style) {
+        recommendations.push({
+          styleId,
+          styleName: style.name,
+          confidence: 0.7,
+          reason: "Popular choice among customers",
+          category: 'popular'
+        });
+      }
     }
-
-    if (style.name.toLowerCase().includes('abstract') && analysis.contrast > 0.6) {
-      confidence += 0.2;
-      matchFactors.push('High contrast works well with abstract styles');
-    }
-
-    if (style.name.toLowerCase().includes('watercolor') && analysis.brightness > 0.6) {
-      confidence += 0.25;
-      matchFactors.push('Bright images complement watercolor techniques');
-    }
-
-    if (analysis.hasPortrait && ['classic oil', 'artisan charcoal'].includes(style.name.toLowerCase())) {
-      confidence += 0.2;
-      matchFactors.push('Portrait subjects work beautifully with traditional styles');
-    }
-
-    if (orientation === 'horizontal' && style.name.toLowerCase().includes('panoramic')) {
-      confidence += 0.15;
-      matchFactors.push('Horizontal orientation perfect for panoramic styles');
-    }
-
-    reasoning = matchFactors.length > 0 
-      ? `This style matches your image because: ${matchFactors.join(', ')}`
-      : 'This style offers a versatile artistic interpretation of your image';
-
-    confidence = Math.min(confidence, 0.95);
-
-    recommendations.push({
-      styleId: style.id,
-      confidence,
-      reasoning,
-      matchFactors
-    });
   });
 
-  return recommendations.sort((a, b) => b.confidence - a.confidence);
-};
+  // Secondary recommendations (remaining styles)
+  artStyles.forEach(style => {
+    if (!recommendations.find(r => r.styleId === style.id)) {
+      recommendations.push({
+        styleId: style.id,
+        styleName: style.name,
+        confidence: 0.5,
+        reason: "Explore this unique artistic style",
+        category: 'secondary'
+      });
+    }
+  });
 
-export const getTopRecommendations = (analysis: ImageAnalysis, orientation: string, count: number = 3): StyleRecommendation[] => {
-  const allRecommendations = getStyleRecommendations(analysis, orientation);
-  return allRecommendations.slice(0, count);
+  return recommendations.sort((a, b) => {
+    // Sort by category priority, then by confidence
+    const categoryOrder = { 'hero': 0, 'popular': 1, 'secondary': 2 };
+    const categoryDiff = categoryOrder[a.category] - categoryOrder[b.category];
+    if (categoryDiff !== 0) return categoryDiff;
+    return b.confidence - a.confidence;
+  });
 };
