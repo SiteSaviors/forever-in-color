@@ -3,25 +3,13 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
 interface StickyOrderCTAProps {
-  selectedStyle: number | null;
-  selectedSize: string | null;
-  price: number;
-  onOrder: () => void;
+  total: number;
+  isVisible: boolean;
+  onPlaceOrder: () => void;
 }
 
-const StickyOrderCTA = ({ selectedStyle, selectedSize, price, onOrder }: StickyOrderCTAProps) => {
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsVisible(window.scrollY > 200);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  if (!selectedStyle || !selectedSize || !isVisible) {
+const StickyOrderCTA = ({ total, isVisible, onPlaceOrder }: StickyOrderCTAProps) => {
+  if (!isVisible) {
     return null;
   }
 
@@ -30,20 +18,20 @@ const StickyOrderCTA = ({ selectedStyle, selectedSize, price, onOrder }: StickyO
       <div className="max-w-4xl mx-auto flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <div>
-            <p className="font-semibold">{selectedSize} Canvas</p>
-            <p className="text-sm text-gray-600">Style Selected</p>
+            <p className="font-semibold">Canvas Ready</p>
+            <p className="text-sm text-gray-600">Review your order</p>
           </div>
         </div>
         
         <div className="flex items-center space-x-4">
           <div className="text-right">
-            <p className="text-2xl font-bold text-purple-600">${price}</p>
+            <p className="text-2xl font-bold text-purple-600">${total}</p>
             <p className="text-sm text-gray-600">Free Shipping</p>
           </div>
           
           <Button 
             size="lg" 
-            onClick={onOrder}
+            onClick={onPlaceOrder}
             className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
           >
             Order Now

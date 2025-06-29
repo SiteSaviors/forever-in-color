@@ -1,68 +1,36 @@
 
-import { supabase } from "@/integrations/supabase/client";
-
-export const uploadPhoto = async (imageUrl: string, orientation: string) => {
-  const { data: { user } } = await supabase.auth.getUser();
+export const getCroppedImg = async (imageSrc: string, pixelCrop: any): Promise<string> => {
+  const image = new Image();
+  image.src = imageSrc;
   
-  if (!user) {
-    throw new Error('User must be authenticated to upload photos');
-  }
-
-  const { data, error } = await supabase
-    .from('Photos')
-    .insert({
-      image_url: imageUrl,
-      orientation,
-      user_id: user.id,
-      status: 'Uploaded'
-    })
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error uploading photo:', error);
-    throw error;
-  }
-
-  return data;
-};
-
-export const getUserPhotos = async () => {
-  const { data: { user } } = await supabase.auth.getUser();
-  
-  if (!user) {
-    throw new Error('User must be authenticated to view photos');
-  }
-
-  const { data, error } = await supabase
-    .from('Photos')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.error('Error fetching user photos:', error);
-    throw error;
-  }
-
-  return data;
-};
-
-export const deletePhoto = async (photoId: string) => {
-  const { data: { user } } = await supabase.auth.getUser();
-  
-  if (!user) {
-    throw new Error('User must be authenticated to delete photos');
-  }
-
-  const { error } = await supabase
-    .from('Photos')
-    .delete()
-    .eq('id', photoId)
-    .eq('user_id', user.id);
-
-  if (error) {
-    console.error('Error deleting photo:', error);
-    throw error;
-  }
+  return new Promise((resolve, reject) => {
+    image.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      if (!ctx) {
+        reject(new Error('Could not get canvas context'));
+        return;
+      }
+      
+      canvas.width = pixelCrop.width;
+      canvas.height = pixelCrop.height;
+      
+      ctx.drawImage(
+        image,
+        pixelCrop.x,
+        pixelCrop.y,
+        pixelCrop.width,
+        pixelCrop.height,
+        0,
+        0,
+        pixelCrop.width,
+        pixelCrop.height
+      );
+      
+      resolve(canvas.toDataURL('image/jpeg', 0.9));
+    };
+    
+    image.onerror = () => reject(new Error('Failed to load image'));
+  });
 };

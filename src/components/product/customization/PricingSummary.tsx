@@ -1,123 +1,94 @@
 
-import { memo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Truck, Shield, Clock } from "lucide-react";
 
-interface PricingSummaryItem {
-  label: string;
-  price: number;
-  isIncluded?: boolean;
+interface CustomizationConfig {
+  floatingFrame: {
+    enabled: boolean;
+    color: 'white' | 'black' | 'espresso';
+  };
+  livingMemory: boolean;
+  voiceMatch: boolean;
+  customMessage: string;
+  aiUpscale: boolean;
 }
 
 interface PricingSummaryProps {
-  items: PricingSummaryItem[];
-  subtotal: number;
-  shipping?: number;
-  total: number;
-  size?: string;
-  styleName?: string;
+  selectedSize: string;
+  customizations: CustomizationConfig;
 }
 
-const PricingSummary = memo(({
-  items,
-  subtotal,
-  shipping = 0,
-  total,
-  size,
-  styleName
-}: PricingSummaryProps) => {
-  const trustFeatures = [
-    { icon: Truck, text: "Free shipping", subtext: "5-7 business days" },
-    { icon: Shield, text: "Satisfaction guaranteed", subtext: "30-day returns" },
-    { icon: Clock, text: "Fast production", subtext: "Ships within 2 days" }
-  ];
+const PricingSummary = ({ selectedSize, customizations }: PricingSummaryProps) => {
+  const getSizePrice = (size: string) => {
+    switch (size) {
+      case "8x10": return 49;
+      case "12x16": return 89;
+      case "16x20": return 129;
+      case "20x24": return 169;
+      default: return 49;
+    }
+  };
+
+  const basePrice = getSizePrice(selectedSize);
+  const framePrice = customizations.floatingFrame.enabled ? 29 : 0;
+  const livingMemoryPrice = customizations.livingMemory ? 59.99 : 0;
+  const voiceMatchPrice = customizations.voiceMatch ? 19.99 : 0;
+  const aiUpscalePrice = customizations.aiUpscale ? 9 : 0;
+  
+  const subtotal = basePrice + framePrice + livingMemoryPrice + voiceMatchPrice + aiUpscalePrice;
+  const shipping = subtotal > 75 ? 0 : 9.99;
+  const total = subtotal + shipping;
 
   return (
-    <Card className="sticky top-4">
+    <Card>
       <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          Order Summary
-          <Badge variant="secondary" className="bg-green-100 text-green-800">
-            Fast Delivery
-          </Badge>
-        </CardTitle>
-        {(size || styleName) && (
-          <div className="text-sm text-gray-600">
-            {styleName && <span>{styleName}</span>}
-            {size && styleName && <span> • </span>}
-            {size && <span>{size}</span>}
+        <CardTitle>Order Summary</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="flex justify-between">
+          <span>{selectedSize} Canvas</span>
+          <span>${basePrice}</span>
+        </div>
+        {customizations.floatingFrame.enabled && (
+          <div className="flex justify-between">
+            <span>Floating Frame ({customizations.floatingFrame.color})</span>
+            <span>${framePrice}</span>
           </div>
         )}
-      </CardHeader>
-      
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          {items.map((item, index) => (
-            <div key={index} className="flex justify-between items-center">
-              <span className="text-sm text-gray-700">{item.label}</span>
-              <span className="text-sm font-medium">
-                {item.isIncluded ? (
-                  <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
-                    Included
-                  </Badge>
-                ) : (
-                  `$${item.price.toFixed(2)}`
-                )}
-              </span>
-            </div>
-          ))}
-        </div>
-        
-        <Separator />
-        
-        <div className="space-y-2">
+        {customizations.livingMemory && (
           <div className="flex justify-between">
-            <span className="text-sm">Subtotal</span>
-            <span className="text-sm font-medium">${subtotal.toFixed(2)}</span>
+            <span>Living Memory</span>
+            <span>${livingMemoryPrice}</span>
           </div>
-          
+        )}
+        {customizations.voiceMatch && (
           <div className="flex justify-between">
-            <span className="text-sm">Shipping</span>
-            <span className="text-sm font-medium">
-              {shipping === 0 ? (
-                <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
-                  Free
-                </Badge>
-              ) : (
-                `$${shipping.toFixed(2)}`
-              )}
-            </span>
+            <span>Voice Match</span>
+            <span>${voiceMatchPrice}</span>
           </div>
+        )}
+        {customizations.aiUpscale && (
+          <div className="flex justify-between">
+            <span>AI Upscale</span>
+            <span>${aiUpscalePrice}</span>
+          </div>
+        )}
+        <hr />
+        <div className="flex justify-between">
+          <span>Subtotal</span>
+          <span>${subtotal.toFixed(2)}</span>
         </div>
-        
-        <Separator />
-        
-        <div className="flex justify-between items-center">
-          <span className="text-base font-semibold">Total</span>
-          <span className="text-xl font-bold text-purple-600">${total.toFixed(2)}</span>
+        <div className="flex justify-between">
+          <span>Shipping</span>
+          <span>{shipping === 0 ? 'FREE' : `$${shipping}`}</span>
         </div>
-        
-        <div className="space-y-2 pt-4 border-t border-gray-100">
-          {trustFeatures.map((feature, index) => {
-            const IconComponent = feature.icon;
-            return (
-              <div key={index} className="flex items-center gap-3">
-                <IconComponent className="w-4 h-4 text-green-600" />
-                <div>
-                  <div className="text-xs font-medium text-gray-700">{feature.text}</div>
-                  <div className="text-xs text-gray-500">{feature.subtext}</div>
-                </div>
-              </div>
-            );
-          })}
+        <hr />
+        <div className="flex justify-between font-bold text-lg">
+          <span>Total</span>
+          <span>${total.toFixed(2)}</span>
         </div>
       </CardContent>
     </Card>
   );
-});
-
-PricingSummary.displayName = 'PricingSummary';
+};
 
 export default PricingSummary;

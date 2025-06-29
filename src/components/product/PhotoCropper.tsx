@@ -1,9 +1,9 @@
+
 import { useState, useEffect, useCallback } from "react";
 import Cropper from "react-easy-crop";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { getCroppedImg } from "@/utils/photoOperations";
-import { detectRecommendedOrientation } from "@/utils/smartCropUtils";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface PhotoCropperProps {
@@ -29,18 +29,24 @@ const PhotoCropper = ({
     setCrop(crop);
   };
 
-  const onCropCompleteCallback = useCallback((croppedArea: any, croppedAreaPixels: any) => {
+  const onCropCompleteCallback = useCallback((_croppedArea: any, croppedAreaPixels: any) => {
     setCroppedAreaPixels(croppedAreaPixels);
   }, []);
 
-  // Detect recommended orientation based on image analysis
+  // Auto-detect recommended orientation based on image analysis
   useEffect(() => {
     const analyzeImage = async () => {
       try {
-        const recommendedOrientation = await detectRecommendedOrientation(imageUrl);
-        if (setRecommendedOrientation) {
-          setRecommendedOrientation(recommendedOrientation);
-        }
+        // Simple orientation detection based on image dimensions
+        const img = new Image();
+        img.onload = () => {
+          const recommendedOrientation = img.width > img.height ? 'horizontal' : 
+                                       img.height > img.width ? 'vertical' : 'square';
+          if (setRecommendedOrientation) {
+            setRecommendedOrientation(recommendedOrientation);
+          }
+        };
+        img.src = imageUrl;
       } catch (error) {
         console.error('Error detecting orientation:', error);
       }

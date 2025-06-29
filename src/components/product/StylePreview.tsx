@@ -1,106 +1,57 @@
 
-import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Sparkles, Loader2 } from "lucide-react";
+import { useState } from "react";
 
 interface StylePreviewProps {
-  style: {
-    id: number;
-    name: string;
-    description: string;
-    image: string;
-  };
-  isSelected: boolean;
-  isGenerating: boolean;
-  previewUrl?: string;
+  originalImage: string;
+  previewUrl: string;
+  styleName: string;
   onSelect: () => void;
-  onGenerate: () => void;
+  isSelected: boolean;
+  isLoading?: boolean;
 }
 
 const StylePreview = ({ 
-  style, 
-  isSelected, 
-  isGenerating, 
+  originalImage, 
   previewUrl, 
+  styleName, 
   onSelect, 
-  onGenerate 
+  isSelected,
+  isLoading = false 
 }: StylePreviewProps) => {
   const [imageLoaded, setImageLoaded] = useState(false);
 
-  const imageToShow = previewUrl || style.image;
-
   return (
-    <Card className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
-      isSelected ? 'ring-2 ring-purple-500 shadow-lg' : ''
-    }`}>
-      <CardContent className="p-0">
-        <div className="relative aspect-square">
-          <img
-            src={imageToShow}
-            alt={style.name}
-            className={`w-full h-full object-cover rounded-t-lg transition-opacity duration-300 ${
-              imageLoaded ? 'opacity-100' : 'opacity-0'
-            }`}
-            onLoad={() => setImageLoaded(true)}
-            onClick={onSelect}
-          />
-          
-          {!imageLoaded && (
-            <div className="absolute inset-0 bg-gray-200 animate-pulse rounded-t-lg" />
-          )}
-
-          {isGenerating && (
-            <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-t-lg">
-              <div className="text-center text-white">
-                <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" />
-                <p className="text-sm">Generating...</p>
-              </div>
-            </div>
-          )}
-
-          {previewUrl && (
-            <Badge className="absolute top-2 right-2 bg-green-500 hover:bg-green-600">
-              <Sparkles className="w-3 h-3 mr-1" />
-              Generated
-            </Badge>
-          )}
-        </div>
-
-        <div className="p-4">
-          <h3 className="font-semibold text-lg mb-2">{style.name}</h3>
-          <p className="text-gray-600 text-sm mb-3">{style.description}</p>
-          
-          <div className="flex gap-2">
-            <Button
-              size="sm"
-              variant={isSelected ? "default" : "outline"}
-              onClick={onSelect}
-              className="flex-1"
-            >
-              {isSelected ? "Selected" : "Select"}
-            </Button>
-            
-            {!previewUrl && (
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={onGenerate}
-                disabled={isGenerating}
-                className="flex-1"
-              >
-                {isGenerating ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  "Generate"
-                )}
-              </Button>
-            )}
+    <div 
+      className={`relative cursor-pointer rounded-lg overflow-hidden transition-all duration-200 ${
+        isSelected ? 'ring-2 ring-purple-500 shadow-lg' : 'hover:shadow-md'
+      }`}
+      onClick={onSelect}
+    >
+      <div className="aspect-square bg-gray-100">
+        {isLoading ? (
+          <div className="w-full h-full flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
           </div>
+        ) : (
+          <img 
+            src={previewUrl || originalImage}
+            alt={styleName}
+            className="w-full h-full object-cover"
+            onLoad={() => setImageLoaded(true)}
+          />
+        )}
+      </div>
+      
+      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
+        <p className="text-white text-sm font-medium">{styleName}</p>
+      </div>
+      
+      {isSelected && (
+        <div className="absolute top-2 right-2 bg-purple-500 text-white rounded-full w-6 h-6 flex items-center justify-center">
+          ✓
         </div>
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
 };
 

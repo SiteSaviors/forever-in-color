@@ -18,7 +18,7 @@ const testimonials = [
 ];
 
 const Testimonials = () => {
-  const [currentTestimonial, setCurrentTestimonial] = useState(0);
+  const [currentTestimonial] = useState(0);
 
   return (
     <div className="space-y-6">

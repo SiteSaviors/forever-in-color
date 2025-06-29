@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Upload, Sparkles, Palette, Package } from "lucide-react";
@@ -12,16 +12,6 @@ interface ProductHeaderProps {
 }
 
 const ProductHeader = ({ completedSteps, totalSteps, currentStep, onUploadClick }: ProductHeaderProps) => {
-  const [currentTime, setCurrentTime] = useState(new Date());
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
-
   const stepIcons = [Upload, Sparkles, Palette, Package];
   const stepLabels = ["Upload", "Style", "Size", "Order"];
 

@@ -11,32 +11,48 @@ interface ActiveStepViewProps {
   stepNumber: number;
   title: string;
   description: string;
+  isActive: boolean;
   isCompleted: boolean;
+  canAccess: boolean;
+  onStepClick: () => void;
   children: React.ReactNode;
   actions?: React.ReactNode;
   icon?: React.ReactNode;
   className?: string;
+  selectedStyle?: { id: number; name: string } | null;
 }
 
 const ActiveStepView = memo(({
   stepNumber,
   title,
   description,
+  isActive,
   isCompleted,
+  canAccess,
+  onStepClick,
   children,
   actions,
   icon,
-  className = ""
+  className = "",
+  selectedStyle
 }: ActiveStepViewProps) => {
   return (
     <Accordion type="single" collapsible defaultValue={`step-${stepNumber}`} className={className}>
-      <StepContainer stepNumber={stepNumber} isCompleted={isCompleted}>
+      <StepContainer 
+        stepNumber={stepNumber} 
+        isCompleted={isCompleted}
+        isActive={isActive}
+        canAccess={canAccess}
+      >
         <StepHeader
           stepNumber={stepNumber}
           title={title}
           description={description}
           isCompleted={isCompleted}
-          icon={icon}
+          isActive={isActive}
+          canAccess={canAccess}
+          onStepClick={onStepClick}
+          selectedStyle={selectedStyle}
         />
         
         <StepContent>
