@@ -1,6 +1,4 @@
 
-import { AspectRatio } from "@/components/ui/aspect-ratio";
-
 interface CanvasWallMockupProps {
   imageUrl: string;
   selectedSize: string;
