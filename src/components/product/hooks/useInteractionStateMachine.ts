@@ -124,13 +124,11 @@ export const useInteractionStateMachine = (options: InteractionStateMachineOptio
     const nextState = currentTransitions?.[event];
 
     if (!nextState) {
-      console.warn(`Invalid transition: ${event} from state ${state}`);
       return false;
     }
 
     const performTransition = () => {
       setState(nextState);
-      console.log(`State transition: ${state} -> ${nextState} (${event})`);
     };
 
     if (immediate || nextState === 'error' || nextState === 'disabled') {
