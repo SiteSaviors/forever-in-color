@@ -1,5 +1,4 @@
 
-import React from 'react';
 import { Star, Sparkles } from "lucide-react";
 
 interface EnhancedStyleCardInfoOverlayProps {
