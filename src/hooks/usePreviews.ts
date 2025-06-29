@@ -22,7 +22,6 @@ export const usePreviews = (photoId?: string) => {
       const userPreviews = await getUserPreviews(photoId);
       setPreviews(userPreviews);
     } catch (err) {
-      console.error('Error fetching previews:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch previews');
     } finally {
       setIsLoading(false);
