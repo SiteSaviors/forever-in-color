@@ -54,7 +54,7 @@ const PhotoCropper = ({
         const currentOrientation = getCurrentOrientation().id;
         onCropComplete(croppedImage, cropAspect, currentOrientation);
       } catch (e) {
-        console.error(e);
+        // Error handled silently
       }
     }
   };
@@ -62,7 +62,6 @@ const PhotoCropper = ({
   const handleChangePhotoFile = (file: File) => {
     // Create object URL for the uploaded file and trigger the change photo callback
     const imageUrl = URL.createObjectURL(file);
-    console.log('New photo selected in cropper:', imageUrl);
     
     // If there's a change photo callback, call it to handle the new image
     if (onChangePhoto) {

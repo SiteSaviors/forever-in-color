@@ -41,25 +41,8 @@ const ProductContent = ({
   onCustomizationChange
 }: ProductContentProps) => {
   
-  console.log('🐛 ProductContent Debug:', {
-    currentStep,
-    completedSteps,
-    selectedStyle,
-    selectedSize,
-    selectedOrientation,
-    uploadedImage: !!uploadedImage,
-    autoGenerationComplete
-  });
-
   // Get the actual preview URLs from the state management system
   const { previewUrls, autoGenerationComplete: previewGenerationComplete } = usePreviewGeneration(uploadedImage, selectedOrientation);
-  
-  console.log('🖼️ ProductContent Preview Debug:', {
-    previewUrls,
-    previewUrlsKeys: Object.keys(previewUrls || {}),
-    previewGenerationComplete,
-    selectedStyleId: selectedStyle?.id
-  });
 
   const {
     canProceedToStep,
