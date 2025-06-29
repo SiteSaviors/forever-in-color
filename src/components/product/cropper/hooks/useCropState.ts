@@ -14,16 +14,18 @@ export const useCropState = ({ selectedOrientation, onOrientationChange }: UseCr
   const [cropAspect, setCropAspect] = useState(getAspectRatioFromOrientation(selectedOrientation));
   const [recommendedOrientation, setRecommendedOrientation] = useState<string>("");
 
-  const onCropCompleteHandler = useCallback((_croppedArea: any, croppedAreaPixels: any) => {
+  const onCropCompleteHandler = useCallback((croppedArea: any, croppedAreaPixels: any) => {
     setCroppedAreaPixels(croppedAreaPixels);
   }, []);
 
   const handleOrientationChange = (newAspect: number, orientationId: string) => {
+    console.log('PhotoCropper: Orientation changed to:', orientationId, 'with aspect ratio:', newAspect);
     setCropAspect(newAspect);
     setCrop({ x: 0, y: 0 });
     setZoom(1);
 
     if (onOrientationChange) {
+      console.log('PhotoCropper: Notifying parent of orientation change:', orientationId);
       onOrientationChange(orientationId);
     }
   };

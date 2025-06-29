@@ -45,6 +45,7 @@ const StyleGrid = memo(({
           setIsInitialLoading(false);
         }, 150);
       } catch (error) {
+        console.warn('Image preloading failed:', error);
         // Still show content even if preloading fails
         setIsInitialLoading(false);
       }
@@ -54,6 +55,7 @@ const StyleGrid = memo(({
   }, []);
 
   const handleStyleSelect = async (styleId: number, styleName: string) => {
+    console.log('🎯 StyleGrid handleStyleSelect called:', styleId, styleName, 'with orientation:', selectedOrientation);
     onStyleSelect(styleId, styleName);
   };
 

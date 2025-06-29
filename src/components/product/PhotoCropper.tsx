@@ -11,6 +11,7 @@ import { orientationOptions } from "./cropper/data/orientationOptions";
 
 interface PhotoCropperProps {
   imageUrl: string;
+  initialAspectRatio?: number;
   selectedOrientation?: string;
   onCropComplete: (croppedImage: string, aspectRatio: number, orientation: string) => void;
   onOrientationChange?: (orientation: string) => void;
@@ -19,6 +20,7 @@ interface PhotoCropperProps {
 
 const PhotoCropper = ({
   imageUrl,
+  initialAspectRatio = 1,
   selectedOrientation = "square",
   onCropComplete,
   onOrientationChange,
@@ -40,6 +42,7 @@ const PhotoCropper = ({
 
   const { getCroppedImg, detectRecommendedOrientation } = useImageProcessing();
 
+  // Auto-detect recommended orientation when image loads
   useEffect(() => {
     detectRecommendedOrientation(imageUrl, setRecommendedOrientation);
   }, [imageUrl]);
@@ -51,14 +54,24 @@ const PhotoCropper = ({
         const currentOrientation = getCurrentOrientation().id;
         onCropComplete(croppedImage, cropAspect, currentOrientation);
       } catch (e) {
-        // Error handled silently
+        console.error(e);
       }
     }
   };
 
-  const handleChangePhotoFile = () => {
+  const handleChangePhotoFile = (file: File) => {
+    // Create object URL for the uploaded file and trigger the change photo callback
+    const imageUrl = URL.createObjectURL(file);
+    console.log('New photo selected in cropper:', imageUrl);
+    
+    // If there's a change photo callback, call it to handle the new image
     if (onChangePhoto) {
+      // We need to pass the new image URL back to the parent component
+      // For now, we'll just call the existing callback
       onChangePhoto();
+      
+      // In a real implementation, you might want to update the imageUrl prop
+      // or have a more specific callback that accepts the new image URL
     }
   };
 
@@ -68,6 +81,7 @@ const PhotoCropper = ({
 
   return (
     <div className="relative">
+      {/* Premium Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 opacity-60" />
       <div className="absolute inset-0" style={{
         backgroundImage: `radial-gradient(circle at 25% 25%, rgba(120, 119, 198, 0.08) 0%, transparent 50%), 
@@ -86,6 +100,7 @@ const PhotoCropper = ({
             />
 
             <div className="relative">
+              {/* Crop area with premium styling */}
               <div className="rounded-2xl overflow-hidden shadow-2xl bg-white p-2">
                 <CropArea
                   imageUrl={imageUrl}
@@ -98,6 +113,7 @@ const PhotoCropper = ({
                 />
               </div>
               
+              {/* Premium glow effect */}
               <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-400/10 to-pink-400/10 blur-xl -z-10" />
             </div>
 

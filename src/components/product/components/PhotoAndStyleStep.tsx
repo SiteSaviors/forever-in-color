@@ -32,11 +32,13 @@ const PhotoAndStyleStep = ({
   selectedStyle,
   uploadedImage,
   selectedOrientation,
+  autoGenerationComplete,
   onComplete,
   onPhotoAndStyleComplete,
   onContinue,
   currentStep,
-  completedSteps
+  completedSteps,
+  onStepChange
 }: PhotoAndStyleStepProps) => {
   const { dispatch, showContextualHelp } = useProgressOrchestrator();
   
@@ -63,6 +65,11 @@ const PhotoAndStyleStep = ({
   );
 
   const handleStyleComplete = (imageUrl: string, styleId: number, styleName: string) => {
+    console.log('🎨 Style selection completed:', {
+      imageUrl,
+      styleId,
+      styleName
+    });
     dispatch({ type: 'COMPLETE_STEP', payload: 1 });
     onComplete(imageUrl, styleId, styleName);
     onContinue();

@@ -13,13 +13,16 @@ export const detectOrientationFromImage = (imageUrl: string): Promise<Orientatio
     img.onload = () => {
       try {
         const detectedOrientation = detectOrientationFromDimensions(img.width, img.height);
+        console.log(`🎯 Auto-detected canvas orientation: ${detectedOrientation} from ${img.width}x${img.height}`);
         resolve(detectedOrientation);
       } catch (error) {
+        console.error('❌ Error in orientation detection:', error);
         reject(error);
       }
     };
     
     img.onerror = (error) => {
+      console.error('❌ Error loading image for orientation detection:', error);
       reject(new Error('Failed to load image for orientation detection'));
     };
     
@@ -29,6 +32,7 @@ export const detectOrientationFromImage = (imageUrl: string): Promise<Orientatio
 
 // Legacy function - now uses consolidated logic
 export const convertOrientationToAspectRatio = (orientation: string) => {
+  console.log('⚠️ DEPRECATED: convertOrientationToAspectRatio called. Use getAspectRatio instead.');
   return getAspectRatio(orientation);
 };
 

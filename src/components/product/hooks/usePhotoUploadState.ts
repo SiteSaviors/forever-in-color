@@ -30,6 +30,11 @@ export const usePhotoUploadState = ({
   }, [uploadedImage]);
 
   const handleImageUpload = (imageUrl: string, originalImageUrl?: string, orientation?: string) => {
+    console.log('🎨 Photo uploaded with unified canvas selection:', {
+      imageUrl,
+      orientation
+    });
+
     // Store the original image for potential re-cropping
     setOriginalImage(originalImageUrl || imageUrl);
     setCroppedImage(imageUrl);
@@ -37,6 +42,7 @@ export const usePhotoUploadState = ({
 
     // If orientation was selected during cropping, update it
     if (orientation && orientation !== currentOrientation) {
+      console.log('🎯 Canvas orientation selected during cropping:', orientation);
       setCurrentOrientation(orientation);
     }
 
@@ -49,7 +55,9 @@ export const usePhotoUploadState = ({
     }
   };
 
-  const handleCropComplete = (croppedImageUrl: string, orientation: string) => {
+  const handleCropComplete = (croppedImageUrl: string, aspectRatio: number, orientation: string) => {
+    console.log('🎨 Crop completed:', { croppedImageUrl, aspectRatio, orientation });
+    
     setCroppedImage(croppedImageUrl);
     setCurrentOrientation(orientation);
     setShowCropper(false);
@@ -63,10 +71,15 @@ export const usePhotoUploadState = ({
   };
 
   const handleRecropImage = () => {
+    console.log('🎨 User wants to recrop image');
     setShowCropper(true);
   };
 
   const handleStyleSelect = (styleId: number, styleName: string) => {
+    console.log('🎨 Style selected:', {
+      styleId,
+      styleName
+    });
     if (croppedImage) {
       onPhotoAndStyleComplete(croppedImage, styleId, styleName);
     }

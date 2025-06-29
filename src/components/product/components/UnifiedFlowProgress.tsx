@@ -1,8 +1,5 @@
-
-import { Card } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { CheckCircle, Upload, Crop, Palette, Eye } from "lucide-react";
-
+import { Badge } from "@/components/ui/badge";
+import { CheckCircle, Upload, Crop, Monitor, Sparkles, TrendingUp, Eye, ArrowDown } from "lucide-react";
 interface UnifiedFlowProgressProps {
   currentStage: 'upload' | 'analyzing' | 'crop-preview' | 'orientation' | 'complete';
   hasImage: boolean;
@@ -10,92 +7,104 @@ interface UnifiedFlowProgressProps {
   cropAccepted: boolean;
   orientationSelected: boolean;
 }
-
-const UnifiedFlowProgress = ({ 
-  currentStage, 
-  hasImage, 
-  analysisComplete, 
-  cropAccepted, 
-  orientationSelected 
+const UnifiedFlowProgress = ({
+  currentStage,
+  hasImage,
+  analysisComplete,
+  cropAccepted,
+  orientationSelected
 }: UnifiedFlowProgressProps) => {
-  const getProgressValue = () => {
-    switch (currentStage) {
-      case 'upload': return hasImage ? 25 : 0;
-      case 'analyzing': return 50;
-      case 'crop-preview': return analysisComplete ? 75 : 50;
-      case 'orientation': return 85;
-      case 'complete': return 100;
-      default: return 0;
-    }
-  };
+  const stages = [{
+    id: 'upload',
+    icon: Upload,
+    title: 'Upload Photo',
+    description: 'Choose your image',
+    completed: hasImage,
+    active: currentStage === 'upload' || currentStage === 'analyzing'
+  }, {
+    id: 'crop',
+    icon: Crop,
+    title: 'Smart Crop',
+    description: 'AI finds perfect composition',
+    completed: cropAccepted,
+    active: currentStage === 'crop-preview',
+    processing: currentStage === 'analyzing'
+  }, {
+    id: 'orientation',
+    icon: Monitor,
+    title: 'Canvas Format',
+    description: 'Select optimal orientation',
+    completed: orientationSelected,
+    active: currentStage === 'orientation'
+  }];
+  const completedCount = stages.filter(stage => stage.completed).length;
+  const progressPercentage = Math.round(completedCount / stages.length * 100);
 
-  const getStageText = () => {
-    switch (currentStage) {
-      case 'upload': return hasImage ? 'Photo uploaded' : 'Upload your photo';
-      case 'analyzing': return 'AI analyzing your photo...';
-      case 'crop-preview': return analysisComplete ? 'Smart crop ready' : 'Processing...';
-      case 'orientation': return 'Adjusting crop';
-      case 'complete': return 'Ready for styling';
-      default: return 'Starting...';
-    }
-  };
+  // If no image uploaded yet, show minimal upload prompt
+  if (!hasImage) {
+    return <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-3 border border-purple-100 text-center">
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <Upload className="w-4 h-4 text-purple-600" />
+          <span className="text-sm font-medium text-purple-700">Ready to Start</span>
+        </div>
+        <p className="text-xs text-purple-600">Upload your photo to begin the AI transformation</p>
+      </div>;
+  }
 
-  const steps = [
-    { id: 'upload', icon: Upload, label: 'Upload', completed: hasImage },
-    { id: 'analyze', icon: Eye, label: 'Analyze', completed: analysisComplete },
-    { id: 'crop', icon: Crop, label: 'Crop', completed: cropAccepted },
-    { id: 'style', icon: Palette, label: 'Style', completed: orientationSelected }
-  ];
-
-  return (
-    <Card className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200">
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-gray-900">Creating Your Art</h3>
-          <span className="text-sm text-gray-600">{getProgressValue()}%</span>
+  // If image uploaded but user hasn't seen preview yet, show connection indicator
+  if (hasImage && !cropAccepted && currentStage !== 'crop-preview') {
+    return <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 border border-green-200">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
+              <CheckCircle className="w-4 h-4 text-white" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-green-800">Photo Uploaded Successfully!</h3>
+              <p className="text-xs text-green-600">AI is analyzing your image...</p>
+            </div>
+          </div>
+          <div className="animate-pulse">
+            <Sparkles className="w-5 h-5 text-green-600" />
+          </div>
         </div>
         
-        <Progress value={getProgressValue()} className="h-2" />
-        
-        <div className="flex items-center justify-between">
-          {steps.map((step, index) => {
-            const Icon = step.icon;
-            const isActive = currentStage === step.id || 
-                           (step.id === 'analyze' && currentStage === 'analyzing') ||
-                           (step.id === 'crop' && currentStage === 'crop-preview') ||
-                           (step.id === 'style' && currentStage === 'orientation');
-            
-            return (
-              <div key={step.id} className="flex flex-col items-center gap-1">
-                <div className={`p-2 rounded-full transition-all duration-300 ${
-                  step.completed 
-                    ? 'bg-green-100 text-green-600' 
-                    : isActive 
-                      ? 'bg-purple-100 text-purple-600 animate-pulse' 
-                      : 'bg-gray-100 text-gray-400'
-                }`}>
-                  {step.completed ? (
-                    <CheckCircle className="w-4 h-4" />
-                  ) : (
-                    <Icon className="w-4 h-4" />
-                  )}
-                </div>
-                <span className={`text-xs font-medium ${
-                  step.completed ? 'text-green-600' : isActive ? 'text-purple-600' : 'text-gray-400'
-                }`}>
-                  {step.label}
-                </span>
-              </div>
-            );
-          })}
+        <div className="flex items-center justify-center gap-2 text-green-700 bg-green-100 rounded-md py-2 px-3">
+          <Eye className="w-4 h-4" />
+          <span className="text-xs font-medium">Check your preview below</span>
+          <ArrowDown className="w-4 h-4 animate-bounce" />
+        </div>
+      </div>;
+  }
+
+  // Show full progress when actively working through steps
+  return <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
+      {/* Compact Header */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
+            <Sparkles className="w-3 h-3 text-white" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-gray-900">Creating Your Art</h3>
+            <p className="text-xs text-gray-500">AI-Powered Transformation</p>
+          </div>
         </div>
         
-        <div className="text-center">
-          <p className="text-sm text-gray-600">{getStageText()}</p>
+        <div className="text-right">
+          <div className="text-sm font-bold text-purple-600">{progressPercentage}%</div>
+          <div className="flex items-center gap-1 text-xs text-green-600">
+            <TrendingUp className="w-3 h-3" />
+            <span>Progress</span>
+          </div>
         </div>
       </div>
-    </Card>
-  );
-};
 
+      {/* Compact Progress Steps */}
+      
+
+      {/* Compact Progress Bar */}
+      
+    </div>;
+};
 export default UnifiedFlowProgress;

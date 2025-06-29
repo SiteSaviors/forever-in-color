@@ -1,5 +1,5 @@
 
-import { memo } from 'react';
+import React, { memo } from 'react';
 import { useStyleCardHooks } from './hooks/useStyleCardHooks';
 import StyleCardContainer from './components/StyleCardContainer';
 import StyleCardContent from './components/StyleCardContent';
@@ -50,7 +50,9 @@ const StyleCard = memo((props: StyleCardProps) => {
     isPermanentlyGenerated,
     isLightboxOpen,
     setIsLightboxOpen,
+    previewUrl,
     hasGeneratedPreview,
+    isStyleGenerated,
     showGeneratedBadge,
     imageToShow,
     showContinueInCard,

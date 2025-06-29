@@ -65,7 +65,7 @@ const StyleCardContent = memo(({
           aspectRatio={cropAspectRatio || 1}
           className="transition-transform duration-300 ease-out group-hover:scale-105 will-change-transform"
           priority={isPopular || isSelected}
-          onLoad={() => {}}
+          onLoad={() => console.log(`Image loaded: ${style.name}`)}
         />
         
         {/* Subtle locked state indicator */}

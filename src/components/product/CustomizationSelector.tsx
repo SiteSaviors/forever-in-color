@@ -51,32 +51,55 @@ const CustomizationSelector = ({
    * PRIORITY: Generated AI artwork > Original uploaded photo (only as absolute fallback)
    */
   const getArtworkUrl = useMemo(() => {
+    console.log('🖼️ CustomizationSelector - Artwork URL Resolution:', {
+      selectedStyleId: selectedStyle?.id,
+      previewUrls,
+      previewUrlsKeys: Object.keys(previewUrls || {}),
+      previewUrlsLength: Object.keys(previewUrls || {}).length,
+      isGeneratingPreviews,
+      userArtworkUrl: userArtworkUrl ? userArtworkUrl.substring(0, 50) + '...' : null
+    });
+
     // PRIORITY 1: Generated preview URL for selected style (AI-generated artwork)
     if (selectedStyle?.id && previewUrls && typeof previewUrls === 'object') {
       // Try both number and string keys
       const previewUrl = previewUrls[selectedStyle.id] || previewUrls[String(selectedStyle.id)];
       if (previewUrl && typeof previewUrl === 'string') {
+        console.log('✅ Using AI-generated preview URL for style:', selectedStyle.id, '->', previewUrl.substring(0, 50) + '...');
         return previewUrl;
+      } else {
+        console.log('⚠️ No AI-generated preview URL found for selected style:', selectedStyle.id);
+        console.log('Available preview URLs:', Object.entries(previewUrls));
       }
     }
 
     // PRIORITY 2: First available preview URL (any generated artwork)
     const availableUrls = Object.values(previewUrls || {}).filter(url => url && typeof url === 'string');
     if (availableUrls.length > 0) {
+      console.log('⚠️ Using first available AI-generated preview URL as fallback:', availableUrls[0].substring(0, 50) + '...');
       return availableUrls[0];
     }
 
     // ONLY as absolute last resort: Direct user artwork URL (original uploaded photo)
     if (userArtworkUrl && typeof userArtworkUrl === 'string') {
+      console.log('⚠️ Falling back to original uploaded photo (no AI artwork available):', userArtworkUrl.substring(0, 50) + '...');
       return userArtworkUrl;
     }
 
+    console.log('❌ No artwork URL available');
     return null;
   }, [selectedStyle, previewUrls, userArtworkUrl, isGeneratingPreviews]);
 
   // Log state changes for debugging
   useEffect(() => {
-    // State tracking without console logging
+    console.log('🖼️ CustomizationSelector State Update:', {
+      finalArtworkUrl: getArtworkUrl ? getArtworkUrl.substring(0, 50) + '...' : null,
+      selectedStyle: selectedStyle,
+      previewUrlsCount: Object.keys(previewUrls || {}).length,
+      canvasFrame,
+      artworkPosition,
+      isGeneratingPreviews
+    });
   }, [getArtworkUrl, selectedStyle, previewUrls, canvasFrame, artworkPosition, isGeneratingPreviews]);
 
   const handleCustomizationUpdate = (updates: Partial<CustomizationConfig>) => {
@@ -86,6 +109,7 @@ const CustomizationSelector = ({
       ...updates
     };
     onCustomizationChange(newCustomizations);
+    console.log('🎨 Customizations updated:', newCustomizations);
   };
 
   return (

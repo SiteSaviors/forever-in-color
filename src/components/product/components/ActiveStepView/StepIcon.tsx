@@ -16,6 +16,7 @@ const StepIcon = ({ stepNumber, isCompleted, isActive, canAccess }: StepIconProp
     try {
       return getStepIcon(stepNumber);
     } catch (error) {
+      console.error('Error getting step icon:', error);
       return ChevronRight;
     }
   }, [stepNumber]);

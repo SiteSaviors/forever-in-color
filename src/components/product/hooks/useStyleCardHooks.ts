@@ -1,7 +1,8 @@
-
-import { useState, useCallback, useMemo } from 'react';
-import { useToast } from "@/hooks/use-toast";
-import { useStylePreview } from './useStylePreview';
+import { useState, useMemo } from 'react';
+import { useBlinking } from './useBlinking';
+import { useStyleCard } from './useStyleCard';
+import { useTouchOptimizedInteractions } from './useTouchOptimizedInteractions';
+import { usePerformanceMonitor } from './usePerformanceMonitor';
 
 interface UseStyleCardHooksProps {
   style: {
@@ -19,6 +20,7 @@ interface UseStyleCardHooksProps {
   showContinueButton?: boolean;
   onStyleClick: (style: { id: number; name: string; description: string; image: string }) => void;
   onContinue: () => void;
+  shouldBlur?: boolean;
 }
 
 export const useStyleCardHooks = (props: UseStyleCardHooksProps) => {
@@ -26,109 +28,81 @@ export const useStyleCardHooks = (props: UseStyleCardHooksProps) => {
     style,
     croppedImage,
     selectedStyle,
+    isPopular = false,
     preGeneratedPreview,
-    cropAspectRatio,
     selectedOrientation = "square",
     showContinueButton = true,
     onStyleClick,
-    onContinue
+    onContinue,
+    shouldBlur = false
   } = props;
 
-  const { toast } = useToast();
-  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  const [isPressed, setIsPressed] = useState(false);
-
-  // Style preview hook
-  const {
-    previewUrl,
-    isLoading: isStyleLoading,
-    hasError,
-    errorMessage,
-    isGenerated: isPermanentlyGenerated,
-    generatePreview,
-    retryGeneration
-  } = useStylePreview({
-    styleId: style.id,
-    croppedImage,
-    preGeneratedPreview,
-    cropAspectRatio,
-    selectedOrientation
+  // Performance monitoring with consolidated hook
+  usePerformanceMonitor(`StyleCard-${style.name}`, { 
+    enabled: process.env.NODE_ENV === 'development' 
   });
 
-  // Computed state
-  const isSelected = selectedStyle === style.id;
-  const hasErrorBoolean = hasError;
-  const effectiveIsLoading = isStyleLoading;
-  const hasGeneratedPreview = !!previewUrl;
-  const showGeneratedBadge = hasGeneratedPreview && !isStyleLoading;
-  const imageToShow = previewUrl || style.image;
-  const showContinueInCard = isSelected && showContinueButton && hasGeneratedPreview;
-  const showLockedFeedback = !croppedImage;
+  // Use the consolidated style card hook
+  const styleCardState = useStyleCard({
+    style,
+    croppedImage,
+    selectedStyle,
+    isPopular,
+    preGeneratedPreview,
+    selectedOrientation,
+    onStyleClick,
+    onContinue
+  });
 
-  // Handlers
-  const handleCardClick = useCallback(() => {
-    if (!croppedImage) {
-      toast({
-        title: "Upload a photo first",
-        description: "Please upload your photo before selecting a style",
-        variant: "destructive"
-      });
-      return;
-    }
+  // Convert hasError to boolean and extract error message before passing to handlers
+  const hasErrorBoolean = Boolean(styleCardState.hasError);
+  const errorMessage = typeof styleCardState.hasError === 'string' ? styleCardState.hasError : (styleCardState.validationError || 'Generation failed');
 
-    onStyleClick(style);
-  }, [croppedImage, onStyleClick, style, toast]);
+  // Create wrapper functions that don't require parameters
+  const handleGenerateWrapper = () => {
+    const mockEvent = { stopPropagation: () => {} } as React.MouseEvent;
+    styleCardState.handleGenerateClick(mockEvent);
+  };
+  
+  const handleRetryWrapper = () => {
+    const mockEvent = { stopPropagation: () => {} } as React.MouseEvent;
+    styleCardState.handleRetryClick(mockEvent);
+  };
 
-  const handleContinueClick = useCallback(() => {
-    onContinue();
-  }, [onContinue]);
+  // Create wrapper functions for touch handlers that accept events but ignore them
+  const handleTouchTap = () => styleCardState.handleCardClick();
+  const handleTouchLongPress = () => styleCardState.handleImageExpand({} as React.MouseEvent);
 
-  const handleGenerateWrapper = useCallback(() => {
-    if (!croppedImage) {
-      toast({
-        title: "Upload required",
-        description: "Please upload your photo first",
-        variant: "destructive"
-      });
-      return;
-    }
-    generatePreview();
-  }, [croppedImage, generatePreview, toast]);
+  // Touch-optimized interactions with integrated debouncing
+  const { isPressed, touchHandlers } = useTouchOptimizedInteractions({
+    onTap: handleTouchTap,
+    onLongPress: handleTouchLongPress,
+    debounceDelay: 150
+  });
 
-  const handleRetryWrapper = useCallback(() => {
-    retryGeneration();
-  }, [retryGeneration]);
-
-  // Touch handlers
-  const touchHandlers = useMemo(() => ({
-    onTouchStart: () => setIsPressed(true),
-    onTouchEnd: () => setIsPressed(false),
-    onTouchCancel: () => setIsPressed(false)
-  }), []);
+  const { isBlinking } = useBlinking(styleCardState.previewUrl, {
+    isGenerating: styleCardState.isPermanentlyGenerated ? false : (styleCardState.effectiveIsLoading),
+    hasPreview: !!styleCardState.previewUrl,
+    hasGeneratedOnce: styleCardState.isPermanentlyGenerated
+  });
 
   return {
-    // State
-    isSelected,
+    // State from consolidated hook
+    ...styleCardState,
     hasErrorBoolean,
     errorMessage,
-    effectiveIsLoading,
-    isPermanentlyGenerated,
-    isLightboxOpen,
-    setIsLightboxOpen,
-    hasGeneratedPreview,
-    showGeneratedBadge,
-    imageToShow,
-    showContinueInCard,
-    showLockedFeedback,
     
-    // Handlers
-    handleCardClick,
-    handleContinueClick,
+    // Wrapper handlers
     handleGenerateWrapper,
     handleRetryWrapper,
     
     // Interactions
     isPressed,
-    touchHandlers
+    touchHandlers,
+    
+    // Computed values
+    showContinueInCard: showContinueButton && styleCardState.isSelected && (styleCardState.isStyleGenerated || styleCardState.isPermanentlyGenerated),
+    isLocked: styleCardState.isPermanentlyGenerated,
+    showLockedFeedback: styleCardState.isPermanentlyGenerated && !styleCardState.isSelected
   };
 };

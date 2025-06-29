@@ -3,25 +3,30 @@ interface MockupCanvasProps {
   previewUrl: string | null;
   orientation: 'square' | 'horizontal' | 'vertical';
   className?: string;
+  isBlinking?: boolean;
 }
 
-export function MockupCanvas({ previewUrl, orientation, className = "" }: MockupCanvasProps) {
+export function MockupCanvas({ previewUrl, orientation, className = "", isBlinking }: MockupCanvasProps) {
+  // Map orientation to canvas assets
   const blankSrc = {
     square: '/lovable-uploads/1308e62b-7d30-4d01-bad3-ef128e25924b.png',
     horizontal: '/lovable-uploads/5e67d281-e2f5-4b6b-942d-32f66511851e.png',
     vertical: '/lovable-uploads/79613d9d-74f9-4f65-aec0-50fd2346a131.png',
   }[orientation];
 
+  // Only show loading when no preview exists
   const shouldShowLoading = !previewUrl;
 
   return (
     <div className={`relative w-full max-w-md mx-auto ${className}`}>
+      {/* Base canvas mockup */}
       <img 
         src={blankSrc} 
         alt={`Blank ${orientation} canvas`} 
         className="block w-full h-auto"
       />
 
+      {/* Overlay actual preview when ready */}
       {previewUrl && (
         <img
           src={previewUrl}
@@ -43,6 +48,7 @@ export function MockupCanvas({ previewUrl, orientation, className = "" }: Mockup
         />
       )}
 
+      {/* Loading state - only show when no preview exists */}
       {shouldShowLoading && (
         <div 
           className="

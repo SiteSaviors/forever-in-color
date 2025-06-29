@@ -44,7 +44,7 @@ const UnifiedImageDisplay = ({
   };
 
   const handleImageError = () => {
-    // Error handled silently
+    console.warn('Failed to load image:', imageUrl);
   };
 
   if (shouldUseMockup) {

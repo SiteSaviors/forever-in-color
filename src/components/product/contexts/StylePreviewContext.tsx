@@ -1,5 +1,4 @@
-
-import { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { useAuthStore } from '@/hooks/useAuthStore';
 import { 
   StylePreviewContextType, 
@@ -20,6 +19,7 @@ export const StylePreviewProvider = ({
   selectedOrientation 
 }: StylePreviewProviderProps) => {
   const [previews, dispatch] = useReducer(stylePreviewReducer, initialState);
+  const { user } = useAuthStore();
 
   // Custom hooks for logic separation
   const { generatePreview } = useStylePreviewLogic({

@@ -1,4 +1,5 @@
-import { useEffect, useRef, useCallback } from 'react';
+
+import { useEffect, useRef, useCallback, useMemo } from 'react';
 import { debounce } from '@/utils/performanceUtils';
 
 interface PerformanceMetrics {

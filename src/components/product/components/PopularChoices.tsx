@@ -30,6 +30,7 @@ const PopularChoices = ({
   if (allRemainingStyles.length === 0) return null;
 
   const handleStyleSelect = (styleId: number, styleName: string) => {
+    console.log('🎯 PopularChoices handleStyleSelect:', styleId, styleName);
     onStyleSelect(styleId, styleName);
   };
 
