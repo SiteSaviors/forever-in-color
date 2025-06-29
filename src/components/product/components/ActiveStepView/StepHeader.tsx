@@ -34,7 +34,7 @@ const StepHeader = React.memo(({
         onStepClick();
       }
     } catch (error) {
-      console.error('Error in step click handler:', error);
+      // Error handled silently
     }
   }, [canAccess, onStepClick]);
 
