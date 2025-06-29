@@ -1,6 +1,4 @@
 
-import { useState } from "react";
-
 export const useImageProcessing = () => {
   const createImage = (url: string): Promise<HTMLImageElement> => 
     new Promise((resolve, reject) => {
@@ -53,7 +51,6 @@ export const useImageProcessing = () => {
       }
       
       setRecommendedOrientation(detected);
-      console.log('🎯 Auto-detected recommended orientation:', detected, 'from aspect ratio:', aspectRatio.toFixed(2));
     };
     img.src = imageUrl;
   };
