@@ -1,5 +1,4 @@
 
-import React, { memo } from 'react';
 import { useStyleCardHooks } from './hooks/useStyleCardHooks';
 import StyleCardContainer from './components/StyleCardContainer';
 import StyleCardContent from './components/StyleCardContent';
