@@ -7,7 +7,6 @@ import TrustElements from "@/components/product/TrustElements";
 import BottomMomentumPopup from "@/components/product/components/BottomMomentumPopup";
 import ProductTestimonials from "@/components/product/ProductTestimonials";
 import UnifiedSocialMomentumWidget from "@/components/product/components/UnifiedSocialMomentumWidget";
-import ProductFlowDebugPanel from "@/components/product/debug/ProductFlowDebugPanel";
 import { useProductState } from "@/components/product/ProductStateManager";
 import { ProgressOrchestrator } from "@/components/product/progress/ProgressOrchestrator";
 import { preloadCriticalImages } from "@/utils/performanceUtils";
