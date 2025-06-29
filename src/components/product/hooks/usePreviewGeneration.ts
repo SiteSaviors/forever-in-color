@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { generateStylePreview } from "@/utils/stylePreviewApi";
 import { addWatermarkToImage } from "@/utils/watermarkUtils";
@@ -8,9 +9,6 @@ export const usePreviewGeneration = (uploadedImage: string | null, selectedOrien
   const [autoGenerationComplete, setAutoGenerationComplete] = useState(false);
   const [generationErrors, setGenerationErrors] = useState<{ [key: number]: string }>({});
   const [isGenerating, setIsGenerating] = useState(false);
-
-  // Remove the auto-generation useEffect entirely
-  // Users will now need to manually click on styles to generate previews
 
   // Reset states when uploaded image changes but preserve previews within session
   useEffect(() => {
@@ -24,7 +22,6 @@ export const usePreviewGeneration = (uploadedImage: string | null, selectedOrien
   // Add a manual generation function that can be called for specific styles
   const generatePreviewForStyle = useCallback(async (styleId: number, styleName: string) => {
     if (!uploadedImage) {
-      console.error('Cannot generate preview: no image uploaded');
       return null;
     }
 
@@ -33,13 +30,10 @@ export const usePreviewGeneration = (uploadedImage: string | null, selectedOrien
     try {
       // Skip generation for Original Image style
       if (styleId === 1) {
-        console.log('Skipping generation for Original Image style');
         setIsGenerating(false);
         return uploadedImage;
       }
 
-      console.log(`Generating preview for ${styleName} with orientation ${selectedOrientation}`);
-      
       // Use the correct aspect ratio format for the API
       const aspectRatio = convertOrientationToAspectRatio(selectedOrientation);
       
@@ -74,8 +68,6 @@ export const usePreviewGeneration = (uploadedImage: string | null, selectedOrien
             setIsGenerating(false);
             return watermarkedUrl;
           } catch (watermarkError) {
-            console.warn(`Watermark failed for ${styleName}, using original:`, watermarkError);
-            
             // Update with unwatermarked URL as fallback
             setPreviewUrls(prev => ({
               ...prev,
@@ -87,8 +79,6 @@ export const usePreviewGeneration = (uploadedImage: string | null, selectedOrien
           }
         }
       } catch (error) {
-        console.error(`❌ Error generating preview for ${styleName}:`, error);
-        
         // Store the error message
         setGenerationErrors(prev => ({
           ...prev,
@@ -99,7 +89,6 @@ export const usePreviewGeneration = (uploadedImage: string | null, selectedOrien
         return null;
       }
     } catch (error) {
-      console.error(`❌ Error in generation process for ${styleName}:`, error);
       setGenerationErrors(prev => ({
         ...prev,
         [styleId]: error.message || 'Failed to generate preview'

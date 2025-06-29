@@ -56,9 +56,7 @@ const PhotoCropper = ({
     }
   };
 
-  const handleChangePhotoFile = (file: File) => {
-    const newImageUrl = URL.createObjectURL(file);
-    
+  const handleChangePhotoFile = () => {
     if (onChangePhoto) {
       onChangePhoto();
     }
