@@ -1,6 +1,4 @@
 
-import React from 'react';
-
 interface MockupCanvasProps {
   previewUrl: string | null;
   orientation: 'square' | 'horizontal' | 'vertical';
