@@ -39,54 +39,6 @@ const FloatingFrameCard = ({
   onEnabledChange, 
   onColorChange 
 }: FloatingFrameCardProps) => {
-  const getFramePreview = (frameColor: string) => {
-    const baseClasses = "rounded-md shadow-md flex items-center justify-center";
-    const textClasses = "text-gray-700 font-medium text-xs";
-  
-    switch (frameColor) {
-      case 'white':
-        return (
-          <div className="bg-white p-1">
-            <div className={`${baseClasses} bg-gray-50 h-12 md:h-16 w-16 md:w-24`}>
-              <span className={textClasses}>
-                {selectedSize.replace(/"/g, '')}
-              </span>
-            </div>
-          </div>
-        );
-      case 'black':
-        return (
-          <div className="bg-black p-1">
-            <div className={`${baseClasses} bg-gray-50 h-12 md:h-16 w-16 md:w-24`}>
-              <span className={textClasses}>
-                {selectedSize.replace(/"/g, '')}
-              </span>
-            </div>
-          </div>
-        );
-      case 'espresso':
-        return (
-          <div className="bg-gradient-to-br from-amber-800 to-amber-600 p-1">
-            <div className={`${baseClasses} bg-gray-50 h-12 md:h-16 w-16 md:w-24`}>
-              <span className={textClasses}>
-                {selectedSize.replace(/"/g, '')}
-              </span>
-            </div>
-          </div>
-        );
-      default:
-        return (
-          <div className="bg-white p-1">
-            <div className={`${baseClasses} bg-gray-50 h-12 md:h-16 w-16 md:w-24`}>
-              <span className={textClasses}>
-                {selectedSize.replace(/"/g, '')}
-              </span>
-            </div>
-          </div>
-        );
-    }
-  };
-
   return (
     <Card className={`group transition-all duration-500 hover:shadow-2xl hover:-translate-y-1 ${
       enabled 
