@@ -1,6 +1,4 @@
 
-import React from 'react';
-
 interface FullCanvasMockupProps {
   imageUrl: string;
   orientation: string;
