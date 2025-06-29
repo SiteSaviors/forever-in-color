@@ -1,6 +1,4 @@
-
 import { artStyles } from "@/data/artStyles";
-import { ArtStyle } from "@/types/artStyle";
 import CarouselHeader from "@/components/carousel/CarouselHeader";
 import CarouselNavigation from "@/components/carousel/CarouselNavigation";
 import StyleIndicators from "@/components/carousel/StyleIndicators";
