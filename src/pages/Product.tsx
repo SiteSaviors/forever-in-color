@@ -110,17 +110,6 @@ const Product = () => {
           uploadedImage={uploadedImage}
         />
 
-        {/* Debug Panel - Development Only */}
-        <ProductFlowDebugPanel
-          currentStep={currentStep}
-          completedSteps={completedSteps}
-          uploadedImage={uploadedImage}
-          selectedStyle={selectedStyle}
-          selectedSize={selectedSize}
-          selectedOrientation={selectedOrientation}
-          customizations={customizations}
-          onJumpToStep={setCurrentStep}
-        />
       </ProgressOrchestrator>
 
       <Footer />
