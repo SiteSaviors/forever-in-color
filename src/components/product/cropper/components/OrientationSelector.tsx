@@ -1,5 +1,4 @@
 
-import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, Zap } from "lucide-react";
 import { orientationOptions } from "../data/orientationOptions";
