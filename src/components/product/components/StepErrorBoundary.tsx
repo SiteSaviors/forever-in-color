@@ -26,7 +26,7 @@ class StepErrorBoundary extends React.Component<StepErrorBoundaryProps, StepErro
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    // Error caught and handled
+    // Error caught and handled silently
   }
 
   render() {

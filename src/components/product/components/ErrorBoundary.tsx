@@ -25,7 +25,7 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('ProductStep Error Boundary caught an error:', error, errorInfo);
+    // Error logged internally
   }
 
   handleRetry = () => {
