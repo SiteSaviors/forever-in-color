@@ -73,16 +73,6 @@ export const detectOrientationFromDimensions = (width: number, height: number): 
   }
 };
 
-// Function to get orientation configuration
-export const getOrientationConfig = (orientation: string) => {
-  if (!isValidOrientation(orientation)) {
-    console.warn(`⚠️ Invalid orientation "${orientation}", returning square config`);
-    return ORIENTATION_CONFIG.square;
-  }
-  
-  return ORIENTATION_CONFIG[orientation];
-};
-
 // Function to validate orientation → aspect ratio → generation flow
 export const validateOrientationFlow = (
   selectedOrientation: string,
@@ -126,12 +116,3 @@ export const validateOrientationFlow = (
     error: isValid ? undefined : `Aspect ratio mismatch: expected ${expectedRatio}, got ${generationAspectRatio}`
   };
 };
-
-// Export all orientation options for UI components
-export const ORIENTATION_OPTIONS = Object.entries(ORIENTATION_CONFIG).map(([key, config]) => ({
-  value: key as OrientationType,
-  label: config.label,
-  description: config.description,
-  aspectRatio: config.aspectRatio,
-  displayRatio: config.displayRatio
-}));
