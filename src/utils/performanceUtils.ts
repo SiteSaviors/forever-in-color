@@ -1,59 +1,6 @@
 
 import { lazy } from 'react';
 
-// Lazy load heavy components to improve initial bundle size
-export const LazyPhotoFrames = lazy(() => import('@/components/PhotoFrames'));
-export const LazyPhoneMockup = lazy(() => import('@/components/PhoneMockup'));
-export const LazyMorphingCanvasPreview = lazy(() => import('@/components/product/orientation/components/MorphingCanvasPreview'));
-
-// Enhanced image preloading utility with progress tracking
-export const preloadImage = (src: string, priority: 'high' | 'low' = 'low'): Promise<HTMLImageElement> => {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    
-    // Set loading priority for modern browsers
-    if ('loading' in img) {
-      img.loading = priority === 'high' ? 'eager' : 'lazy';
-    }
-    
-    // Add performance hints
-    if ('fetchPriority' in img) {
-      (img as any).fetchPriority = priority;
-    }
-    
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-    img.src = src;
-  });
-};
-
-// Batch preload images with progress tracking
-export const preloadImages = async (
-  urls: string[], 
-  onProgress?: (loaded: number, total: number) => void
-): Promise<HTMLImageElement[]> => {
-  const results: HTMLImageElement[] = [];
-  let loaded = 0;
-  
-  const promises = urls.map(async (url) => {
-    try {
-      const img = await preloadImage(url, 'high');
-      results.push(img);
-      loaded++;
-      onProgress?.(loaded, urls.length);
-      return img;
-    } catch (error) {
-      console.warn(`Failed to preload image: ${url}`, error);
-      loaded++;
-      onProgress?.(loaded, urls.length);
-      throw error;
-    }
-  });
-  
-  const settled = await Promise.allSettled(promises);
-  return results;
-};
-
 // Critical resource preloader with enhanced performance
 export const preloadCriticalImages = async (onProgress?: (progress: number) => void) => {
   const criticalImages = [
@@ -75,21 +22,6 @@ export const preloadCriticalImages = async (onProgress?: (progress: number) => v
   }
 };
 
-// Smart preloader that respects connection speed
-export const smartPreload = async (urls: string[]) => {
-  // Check connection speed if available
-  const connection = (navigator as any).connection;
-  const isSlowConnection = connection && (
-    connection.effectiveType === 'slow-2g' || 
-    connection.effectiveType === '2g' ||
-    connection.saveData
-  );
-  
-  if (isSlowConnection) {
-    console.log('🐌 Slow connection detected, skipping preload');
-    return;
-  }
-  
   // Preload in chunks to avoid overwhelming the network
   const chunkSize = 3;
   for (let i = 0; i < urls.length; i += chunkSize) {
@@ -112,18 +44,6 @@ export const debounce = <T extends (...args: any[]) => any>(
     clearTimeout(timeout);
     timeout = setTimeout(() => func(...args), wait);
   };
-};
-
-// Enhanced intersection observer for lazy loading with loading states
-export const createIntersectionObserver = (
-  callback: IntersectionObserverCallback,
-  options?: IntersectionObserverInit
-): IntersectionObserver => {
-  return new IntersectionObserver(callback, {
-    rootMargin: '100px', // Increased for better preloading
-    threshold: 0.1,
-    ...options
-  });
 };
 
 // Image dimension cache to prevent layout shifts
