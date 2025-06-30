@@ -25,21 +25,6 @@ export const getStepIcon = (step: number) => {
   }
 };
 
-export const getStepTitle = (step: number): string => {
-  switch (step) {
-    case 1:
-      return 'Upload & Style';
-    case 2:
-      return 'Size & Format';
-    case 3:
-      return 'Customize';
-    case 4:
-      return 'Review Order';
-    default:
-      return `Step ${step}`;
-  }
-};
-
 export const getStepDescription = (step: number): string => {
   switch (step) {
     case 1:
