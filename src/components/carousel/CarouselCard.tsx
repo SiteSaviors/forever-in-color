@@ -1,4 +1,5 @@
 
+import { Button } from "@/components/ui/button";
 import { ArtStyle } from "@/types/artStyle";
 import { Sparkles } from "lucide-react";
 
