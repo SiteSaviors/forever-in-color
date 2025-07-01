@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { useAuthStore } from "@/hooks/useAuthStore";
 

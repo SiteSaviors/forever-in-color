@@ -1,6 +1,4 @@
 
-import { Button } from "@/components/ui/button";
-
 const CarouselCTA = () => {
   return (
     <div className="text-center mt-12">
