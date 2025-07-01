@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Menu, X, User, LogOut } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/hooks/useAuthStore";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const {
