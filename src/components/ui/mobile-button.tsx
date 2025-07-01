@@ -55,4 +55,4 @@ const MobileButton = React.forwardRef<HTMLButtonElement, MobileButtonProps>(
 )
 MobileButton.displayName = "MobileButton"
 
-export { MobileButton, mobileButtonVariants }
+export { MobileButton, }
