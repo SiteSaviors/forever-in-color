@@ -1,13 +1,3 @@
-// Security event logging utility for monitoring authentication and security events
-export interface SecurityEvent {
-  event_type: 'auth_failure' | 'rate_limit_violation' | 'suspicious_upload' | 'session_timeout' | 'invalid_origin' | 'malicious_content_detected';
-  user_id?: string;
-  ip_address?: string;
-  user_agent?: string;
-  details: Record<string, any>;
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  timestamp: string;
-}
 
 class SecurityLogger {
   private events: SecurityEvent[] = [];
