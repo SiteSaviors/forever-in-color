@@ -1,11 +1,4 @@
 
-// File validation utilities for secure image uploads
-export interface FileValidationResult {
-  isValid: boolean;
-  error?: string;
-  warnings?: string[];
-}
-
 // Known file signatures (magic numbers) for image types
 const FILE_SIGNATURES = {
   jpeg: [0xFF, 0xD8, 0xFF],
