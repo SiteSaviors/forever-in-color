@@ -7,6 +7,6 @@ module.exports = {
   "scripts": {
     "knip": "knip",
     "knip:fix": "knip --fix",
-    "knip:ci": "knip --no-progress --reporter compact",
+    "knip:ci": "knip --no-progress --reporter compact"
   }
 };
