@@ -1,17 +1,4 @@
 
-export interface CropRegion {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
-export interface DetectionResult {
-  region: CropRegion;
-  confidence: number;
-  method: 'face' | 'saliency' | 'center-fallback';
-}
-
 // Enhanced face detection using Canvas API for better accuracy
 const detectSubjectRegion = async (imageUrl: string): Promise<DetectionResult> => {
   return new Promise((resolve) => {
