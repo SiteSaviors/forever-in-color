@@ -9,15 +9,6 @@ export interface StyleRecommendation {
   category: 'hero' | 'popular' | 'secondary';
 }
 
-export interface ImageAnalysis {
-  orientation: string;
-  hasPortrait: boolean;
-  isLandscape: boolean;
-  hasHighContrast: boolean;
-  dominantColors: string[];
-  complexity: 'simple' | 'moderate' | 'complex';
-}
-
 // Analyze image characteristics for smart recommendations
 export const analyzeImageForRecommendations = async (imageUrl: string): Promise<ImageAnalysis> => {
   return new Promise((resolve) => {
