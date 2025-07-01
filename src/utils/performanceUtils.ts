@@ -71,20 +71,3 @@ export const debounce = <T extends (...args: any[]) => any>(
 
 // Image dimension cache to prevent layout shifts
 const imageDimensionCache = new Map<string, { width: number; height: number }>();
-
-export const getImageDimensions = async (src: string): Promise<{ width: number; height: number }> => {
-  if (imageDimensionCache.has(src)) {
-    return imageDimensionCache.get(src)!;
-  }
-  
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => {
-      const dimensions = { width: img.width, height: img.height };
-      imageDimensionCache.set(src, dimensions);
-      resolve(dimensions);
-    };
-    img.onerror = () => resolve({ width: 0, height: 0 });
-    img.src = src;
-  });
-};
