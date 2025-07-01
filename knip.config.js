@@ -9,4 +9,4 @@ module.exports = {
     "knip:fix": "knip --fix",
     "knip:ci": "knip --no-progress --reporter compact"
   }
-}
+};
