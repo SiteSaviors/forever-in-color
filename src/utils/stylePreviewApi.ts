@@ -128,18 +128,3 @@ export const generateStylePreview = async (
     throw error;
   }
 };
-
-// New function for generating clean, unwatermarked images (post-purchase)
-export const generateFinalImage = async (
-  imageUrl: string, 
-  style: string, 
-  photoId: string, 
-  aspectRatio: string = "1:1",
-  sessionId?: string
-) => {
-  return generateStylePreview(imageUrl, style, photoId, aspectRatio, {
-    watermark: false,
-    quality: 'final',
-    sessionId
-  });
-};
