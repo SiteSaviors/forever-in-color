@@ -2,7 +2,6 @@
 // Single source of truth for all orientation and aspect ratio mappings
 
 export type OrientationType = 'square' | 'horizontal' | 'vertical';
-export type AspectRatioString = '1:1' | '3:2' | '2:3';
 
 // Core mapping configuration - updated for GPT-Image-1 compatibility
 const ORIENTATION_CONFIG = {
