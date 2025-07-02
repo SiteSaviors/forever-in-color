@@ -4,6 +4,7 @@ import { lazy } from 'react';
 // Lazy load heavy components to improve initial bundle size
 export const LazyPhotoFrames = lazy(() => import('@/components/PhotoFrames'));
 export const LazyPhoneMockup = lazy(() => import('@/components/PhoneMockup'));
+export const LazyMorphingCanvasPreview = lazy(() => import('@/components/product/orientation/components/MorphingCanvasPreview'));
 
 // Enhanced image preloading utility with progress tracking
 export const preloadImage = (src: string, priority: 'high' | 'low' = 'low'): Promise<HTMLImageElement> => {
