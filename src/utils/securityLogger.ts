@@ -1,3 +1,13 @@
+// Security event logging utility for monitoring authentication and security events
+export interface SecurityEvent {
+  event_type: 'auth_failure' | 'rate_limit_violation' | 'suspicious_upload' | 'session_timeout' | 'invalid_origin' | 'malicious_content_detected';
+  user_id?: string;
+  ip_address?: string;
+  user_agent?: string;
+  details: Record<string, any>;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  timestamp: string;
+}
 
 class SecurityLogger {
   private events: SecurityEvent[] = [];
@@ -100,6 +110,8 @@ class SecurityLogger {
   }
 }
 
+export const securityLogger = new SecurityLogger();
+
 // Helper functions for common security events
 export const logAuthFailure = (email: string, reason: string, userId?: string) => {
   securityLogger.logEvent({
@@ -107,6 +119,42 @@ export const logAuthFailure = (email: string, reason: string, userId?: string) =
     user_id: userId,
     details: { email, reason, attempt_count: getFailedAttemptCount(email) },
     severity: getFailedAttemptCount(email) > 3 ? 'high' : 'medium'
+  });
+};
+
+export const logRateLimitViolation = (userId: string, endpoint: string, attemptCount: number) => {
+  securityLogger.logEvent({
+    event_type: 'rate_limit_violation',
+    user_id: userId,
+    details: { endpoint, attempt_count: attemptCount },
+    severity: attemptCount > 10 ? 'high' : 'medium'
+  });
+};
+
+export const logSuspiciousUpload = (userId: string, fileName: string, reason: string) => {
+  securityLogger.logEvent({
+    event_type: 'suspicious_upload',
+    user_id: userId,
+    details: { file_name: fileName, reason },
+    severity: 'high'
+  });
+};
+
+export const logMaliciousContent = (userId: string, contentType: string, reason: string) => {
+  securityLogger.logEvent({
+    event_type: 'malicious_content_detected',
+    user_id: userId,
+    details: { content_type: contentType, reason },
+    severity: 'critical'
+  });
+};
+
+export const logInvalidOrigin = (origin: string, userId?: string) => {
+  securityLogger.logEvent({
+    event_type: 'invalid_origin',
+    user_id: userId,
+    details: { origin },
+    severity: 'high'
   });
 };
 

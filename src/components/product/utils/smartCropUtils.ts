@@ -1,4 +1,17 @@
 
+export interface CropRegion {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface DetectionResult {
+  region: CropRegion;
+  confidence: number;
+  method: 'face' | 'saliency' | 'center-fallback';
+}
+
 // Enhanced face detection using Canvas API for better accuracy
 const detectSubjectRegion = async (imageUrl: string): Promise<DetectionResult> => {
   return new Promise((resolve) => {
@@ -227,6 +240,43 @@ const expandToAspectRatio = (
   console.log('✅ Final crop region:', finalRegion);
   
   return finalRegion;
+};
+
+export const applyCropToImage = async (imageUrl: string, cropRegion: CropRegion): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      if (!ctx) {
+        reject(new Error('Could not get canvas context'));
+        return;
+      }
+      
+      canvas.width = cropRegion.width;
+      canvas.height = cropRegion.height;
+      
+      ctx.drawImage(
+        img,
+        cropRegion.x,
+        cropRegion.y,
+        cropRegion.width,
+        cropRegion.height,
+        0,
+        0,
+        cropRegion.width,
+        cropRegion.height
+      );
+      
+      resolve(canvas.toDataURL('image/jpeg', 0.9));
+    };
+    
+    img.onerror = () => reject(new Error('Failed to load image'));
+    img.src = imageUrl;
+  });
 };
 
 export const generateSmartCrop = async (imageUrl: string, orientation: string): Promise<string> => {

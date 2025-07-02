@@ -51,4 +51,4 @@ const MobileTypography = React.forwardRef<HTMLElement, MobileTypographyProps>(
 )
 MobileTypography.displayName = "MobileTypography"
 
-export { MobileTypography,}
+export { MobileTypography, typographyVariants }

@@ -35,3 +35,11 @@ export const convertOrientationToAspectRatio = (orientation: string) => {
   console.log('⚠️ DEPRECATED: convertOrientationToAspectRatio called. Use getAspectRatio instead.');
   return getAspectRatio(orientation);
 };
+
+// Validation helper for API calls
+export const validateOrientationForGeneration = (
+  selectedOrientation: string,
+  generationAspectRatio: string
+) => {
+  return validateOrientationFlow(selectedOrientation, generationAspectRatio);
+};

@@ -1,6 +1,27 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 
+export type InteractionState = 
+  | 'idle'
+  | 'hovering' 
+  | 'selected'
+  | 'animating'
+  | 'loading'
+  | 'error'
+  | 'disabled';
+
+export type InteractionEvent = 
+  | 'HOVER_START'
+  | 'HOVER_END' 
+  | 'SELECT'
+  | 'DESELECT'
+  | 'START_LOADING'
+  | 'FINISH_LOADING'
+  | 'ERROR'
+  | 'RESET'
+  | 'DISABLE'
+  | 'ENABLE';
+
 interface InteractionStateMachineOptions {
   initialState?: InteractionState;
   debounceDelay?: number;

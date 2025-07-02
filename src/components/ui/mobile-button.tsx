@@ -35,6 +35,12 @@ const mobileButtonVariants = cva(
   }
 )
 
+export interface MobileButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof mobileButtonVariants> {
+  asChild?: boolean
+}
+
 const MobileButton = React.forwardRef<HTMLButtonElement, MobileButtonProps>(
   ({ className, variant, size, touchOptimized, asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : "button"
@@ -49,4 +55,4 @@ const MobileButton = React.forwardRef<HTMLButtonElement, MobileButtonProps>(
 )
 MobileButton.displayName = "MobileButton"
 
-export { MobileButton, }
+export { MobileButton, mobileButtonVariants }
