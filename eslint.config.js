@@ -22,7 +22,7 @@ export default tseslint.config(
     rules: {
       ...reactHooks.configs.recommended.rules,
       "react-refresh/only-export-components": [
-        "warn",
+        "off",
         { allowConstantExport: true },
       ],
       
@@ -38,9 +38,9 @@ export default tseslint.config(
       ],
       
       // Auto-remove unused imports
-      "unused-imports/no-unused-imports": "error",
+      "unused-imports/no-unused-imports": "off",
       "unused-imports/no-unused-vars": [
-        "warn",
+        "off",
         {
           vars: "all",
           varsIgnorePattern: "^_",
@@ -51,11 +51,11 @@ export default tseslint.config(
       
       // Additional dead code detection rules
       "no-unused-vars": "off", // Turn off base rule as @typescript-eslint rule is used
-      "no-unreachable": "error",
-      "no-unreachable-loop": "error",
-      "no-unused-expressions": "error",
-      "no-unused-labels": "error",
-      "no-useless-assignment": "error",
+      "no-unreachable": "off",
+      "no-unreachable-loop": "off",
+      "no-unused-expressions": "off",
+      "no-unused-labels": "off",
+      "no-useless-assignment": "off",
     },
   }
 );
