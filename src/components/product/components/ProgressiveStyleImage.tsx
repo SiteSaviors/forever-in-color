@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
+import ImageExpandButton from './ImageExpandButton';
 
 interface ProgressiveStyleImageProps {
   src: string;
@@ -12,6 +13,8 @@ interface ProgressiveStyleImageProps {
   onLoad?: () => void;
   onError?: () => void;
   priority?: boolean;
+  showExpandButton?: boolean;
+  onExpand?: (e: React.MouseEvent) => void;
 }
 
 const ProgressiveStyleImage = ({
@@ -22,11 +25,14 @@ const ProgressiveStyleImage = ({
   className = '',
   onLoad,
   onError,
-  priority = false
+  priority = false,
+  showExpandButton = false,
+  onExpand
 }: ProgressiveStyleImageProps) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [currentSrc, setCurrentSrc] = useState<string | null>(null);
+  const [isHovered, setIsHovered] = useState(false);
   
   const { elementRef, hasIntersected } = useIntersectionObserver({
     triggerOnce: true,
@@ -50,8 +56,19 @@ const ProgressiveStyleImage = ({
     img.src = src;
   }, [src, hasIntersected, priority, onLoad, onError]);
 
+  const handleImageClick = (e: React.MouseEvent) => {
+    if (onExpand && isLoaded) {
+      onExpand(e);
+    }
+  };
+
   return (
-    <div ref={elementRef} className="relative overflow-hidden">
+    <div 
+      ref={elementRef} 
+      className="relative overflow-hidden group"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       <AspectRatio ratio={aspectRatio}>
         {/* Placeholder/blur background */}
         {placeholder && !isLoaded && (
@@ -73,9 +90,10 @@ const ProgressiveStyleImage = ({
             alt={alt}
             className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
               isLoaded ? 'opacity-100' : 'opacity-0'
-            } ${className}`}
+            } ${onExpand ? 'cursor-pointer' : ''} ${className}`}
             loading={priority ? 'eager' : 'lazy'}
             decoding="async"
+            onClick={handleImageClick}
           />
         )}
         
@@ -87,6 +105,15 @@ const ProgressiveStyleImage = ({
               <p className="text-xs">Failed to load</p>
             </div>
           </div>
+        )}
+
+        {/* Expand Button */}
+        {showExpandButton && onExpand && isLoaded && (
+          <ImageExpandButton
+            onExpand={onExpand}
+            isVisible={isHovered}
+            className="md:opacity-0 md:group-hover:opacity-100"
+          />
         )}
       </AspectRatio>
     </div>

@@ -29,6 +29,7 @@ interface StyleCardContentProps {
   onContinueClick: (e: React.MouseEvent) => void;
   onGenerateClick: () => void;
   onRetryClick: () => void;
+  onImageExpand?: (e: React.MouseEvent) => void;
 }
 
 const StyleCardContent = memo(({
@@ -50,7 +51,8 @@ const StyleCardContent = memo(({
   isPressed,
   onContinueClick,
   onGenerateClick,
-  onRetryClick
+  onRetryClick,
+  onImageExpand
 }: StyleCardContentProps) => {
   return (
     <div 
@@ -66,6 +68,8 @@ const StyleCardContent = memo(({
           className="transition-transform duration-300 ease-out group-hover:scale-105 will-change-transform"
           priority={isPopular || isSelected}
           onLoad={() => console.log(`Image loaded: ${style.name}`)}
+          showExpandButton={true}
+          onExpand={onImageExpand}
         />
         
         {/* Subtle locked state indicator */}

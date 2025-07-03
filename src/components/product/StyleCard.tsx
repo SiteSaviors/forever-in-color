@@ -63,6 +63,7 @@ const StyleCard = memo((props: StyleCardProps) => {
     handleContinueClick,
     handleGenerateWrapper,
     handleRetryWrapper,
+    handleImageExpand,
     
     // Interactions
     isPressed,
@@ -102,6 +103,7 @@ const StyleCard = memo((props: StyleCardProps) => {
           onContinueClick={handleContinueClick}
           onGenerateClick={handleGenerateWrapper}
           onRetryClick={handleRetryWrapper}
+          onImageExpand={handleImageExpand}
         />
       </StyleCardContainer>
 
