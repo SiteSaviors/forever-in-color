@@ -18,6 +18,8 @@ export const useTokenBalance = () => {
     }
 
     try {
+      console.log('Fetching token balance for user:', user.id);
+      
       const { data, error } = await supabase
         .from('user_tokens')
         .select('balance')
@@ -25,9 +27,16 @@ export const useTokenBalance = () => {
         .single();
 
       if (error) {
-        console.error('Error fetching token balance:', error);
-        setBalance(0);
+        if (error.code === 'PGRST116') {
+          // No token record exists, create one with 0 balance
+          console.log('No token record found, user may be new');
+          setBalance(0);
+        } else {
+          console.error('Error fetching token balance:', error);
+          setBalance(0);
+        }
       } else {
+        console.log('Token balance fetched:', data?.balance || 0);
         setBalance(data?.balance || 0);
       }
     } catch (error) {
@@ -39,6 +48,7 @@ export const useTokenBalance = () => {
   };
 
   const refreshBalance = () => {
+    console.log('Refreshing token balance...');
     fetchBalance();
   };
 
@@ -46,6 +56,8 @@ export const useTokenBalance = () => {
     if (!user) return false;
 
     try {
+      console.log(`Attempting to spend ${amount} tokens for user:`, user.id);
+      
       const { data } = await supabase.rpc('update_token_balance', {
         p_user_id: user.id,
         p_amount: -amount,
@@ -54,9 +66,11 @@ export const useTokenBalance = () => {
       });
 
       if (data && data[0]?.success) {
+        console.log('Tokens spent successfully, new balance:', data[0].new_balance);
         setBalance(data[0].new_balance);
         return true;
       } else {
+        console.log('Failed to spend tokens - insufficient balance');
         toast({
           title: "Insufficient Tokens",
           description: "You don't have enough tokens for this action.",

@@ -69,7 +69,7 @@ const tokenPackages: TokenPackage[] = [
 
 const TokenPurchaseModal: React.FC<TokenPurchaseModalProps> = ({ isOpen, onClose }) => {
   const [selectedPackage, setSelectedPackage] = useState<string>('popular');
-  const { processPayment, isProcessing } = useStripePayment();
+  const { processTokenPurchase, isProcessing } = useStripePayment();
   const { user } = useAuthStore();
   const { refreshBalance } = useTokenBalance();
 
@@ -77,14 +77,11 @@ const TokenPurchaseModal: React.FC<TokenPurchaseModalProps> = ({ isOpen, onClose
     const packageData = tokenPackages.find(pkg => pkg.id === selectedPackage);
     if (!packageData || !user) return;
 
-    const items = [{
-      name: `${packageData.tokens} Tokens - ${packageData.name} Package`,
-      description: `${packageData.description} | Remove watermarks from ${packageData.tokens} generated images`,
-      amount: Math.round(packageData.price * 100), // Convert to cents
-      quantity: 1
-    }];
-
-    await processPayment(items);
+    await processTokenPurchase({
+      tokens: packageData.tokens,
+      amount: packageData.price,
+      packageName: packageData.name
+    });
     
     // Refresh balance after successful payment
     setTimeout(() => {
@@ -180,7 +177,7 @@ const TokenPurchaseModal: React.FC<TokenPurchaseModalProps> = ({ isOpen, onClose
             </Button>
             <Button 
               onClick={handlePurchase}
-              disabled={isProcessing}
+              disabled={isProcessing || !user}
               className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
             >
               <CreditCard className="w-4 h-4 mr-2" />

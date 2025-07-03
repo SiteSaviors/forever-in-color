@@ -14,7 +14,7 @@ const TokenBalance: React.FC<TokenBalanceProps> = ({ onPurchaseClick, className 
   const { balance, isLoading } = useTokenBalance();
   const { user } = useAuthStore();
 
-  if (!user || isLoading) {
+  if (!user) {
     return null;
   }
 
@@ -22,7 +22,9 @@ const TokenBalance: React.FC<TokenBalanceProps> = ({ onPurchaseClick, className 
     <div className={`flex items-center gap-2 ${className}`}>
       <div className="flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-full">
         <Zap className="w-4 h-4 text-yellow-600 fill-yellow-500" />
-        <span className="text-sm font-semibold text-yellow-800">{balance}</span>
+        <span className="text-sm font-semibold text-yellow-800">
+          {isLoading ? '...' : balance}
+        </span>
       </div>
       <Button
         onClick={onPurchaseClick}
