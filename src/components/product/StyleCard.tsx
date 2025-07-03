@@ -92,6 +92,7 @@ const StyleCard = memo((props: StyleCardProps) => {
           showLockedFeedback={showLockedFeedback}
           touchHandlers={touchHandlers}
           isPressed={isPressed}
+          originalImageUrl={croppedImage} // Pass the cropped image as original URL
           onContinueClick={handleContinueClick}
           onGenerateClick={handleGenerateWrapper}
           onRetryClick={handleRetryWrapper}

@@ -1,7 +1,7 @@
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sparkles, ArrowRight, Zap, RefreshCw, CheckCircle } from "lucide-react";
+import WatermarkRemovalButton from "./WatermarkRemovalButton";
 
 interface StyleCardInfoProps {
   style: {
@@ -13,9 +13,9 @@ interface StyleCardInfoProps {
   isPopular: boolean;
   isSelected: boolean;
   showGeneratedBadge: boolean;
-  showContinueInCard: boolean;
   shouldBlur: boolean;
   showError: boolean;
+  originalImageUrl?: string;
   onContinueClick: (e: React.MouseEvent) => void;
   onGenerateClick: (e: React.MouseEvent) => void;
   onRetryClick: (e: React.MouseEvent) => void;
@@ -27,9 +27,9 @@ const StyleCardInfo = ({
   isPopular,
   isSelected,
   showGeneratedBadge,
-  showContinueInCard,
   shouldBlur,
   showError,
+  originalImageUrl,
   onContinueClick,
   onGenerateClick,
   onRetryClick
@@ -240,7 +240,7 @@ const StyleCardInfo = ({
       </div>
 
       {/* Action buttons */}
-      <div className="flex gap-2 mt-4">
+      <div className="flex flex-col gap-2 mt-4">
         {/* Generate This Style Button - Primary CTA */}
         {showGenerateButton && (
           <Button 
@@ -285,6 +285,17 @@ const StyleCardInfo = ({
             <RefreshCw className="w-4 h-4 mr-2" />
             Try Again
           </Button>
+        )}
+
+        {/* Watermark Removal Button - Shows after generation */}
+        {hasGeneratedPreview && originalImageUrl && (
+          <WatermarkRemovalButton
+            styleId={style.id}
+            styleName={style.name}
+            originalImageUrl={originalImageUrl}
+            hasGeneratedPreview={hasGeneratedPreview}
+            className="mt-2"
+          />
         )}
       </div>
     </div>
