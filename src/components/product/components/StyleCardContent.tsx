@@ -1,3 +1,4 @@
+
 import React, { memo } from 'react';
 import ProgressiveStyleImage from './ProgressiveStyleImage';
 import EnhancedStyleCardLoadingOverlay from './EnhancedStyleCardLoadingOverlay';
@@ -25,7 +26,6 @@ interface StyleCardContentProps {
   showLockedFeedback: boolean;
   touchHandlers: any;
   isPressed: boolean;
-  originalImageUrl?: string;
   onContinueClick: (e: React.MouseEvent) => void;
   onGenerateClick: () => void;
   onRetryClick: () => void;
@@ -49,7 +49,6 @@ const StyleCardContent = memo(({
   showLockedFeedback,
   touchHandlers,
   isPressed,
-  originalImageUrl,
   onContinueClick,
   onGenerateClick,
   onRetryClick,
@@ -102,7 +101,6 @@ const StyleCardContent = memo(({
         showContinueInCard={showContinueInCard}
         shouldBlur={shouldBlur}
         showError={hasErrorBoolean}
-        originalImageUrl={originalImageUrl}
         onContinueClick={onContinueClick}
         onGenerateClick={onGenerateClick}
         onRetryClick={onRetryClick}

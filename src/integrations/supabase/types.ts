@@ -9,51 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      download_purchases: {
-        Row: {
-          clean_image_url: string
-          created_at: string
-          download_count: number
-          id: string
-          last_downloaded_at: string | null
-          original_image_url: string
-          resolution_tier: string
-          style_id: number
-          style_name: string
-          tokens_spent: number
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          clean_image_url: string
-          created_at?: string
-          download_count?: number
-          id?: string
-          last_downloaded_at?: string | null
-          original_image_url: string
-          resolution_tier: string
-          style_id: number
-          style_name: string
-          tokens_spent: number
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          clean_image_url?: string
-          created_at?: string
-          download_count?: number
-          id?: string
-          last_downloaded_at?: string | null
-          original_image_url?: string
-          resolution_tier?: string
-          style_id?: number
-          style_name?: string
-          tokens_spent?: number
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       Photos: {
         Row: {
           created_at: string
@@ -167,86 +122,12 @@ export type Database = {
         }
         Relationships: []
       }
-      token_transactions: {
-        Row: {
-          amount: number
-          balance_after: number
-          created_at: string
-          description: string | null
-          id: string
-          metadata: Json | null
-          stripe_session_id: string | null
-          type: string
-          user_id: string
-        }
-        Insert: {
-          amount: number
-          balance_after: number
-          created_at?: string
-          description?: string | null
-          id?: string
-          metadata?: Json | null
-          stripe_session_id?: string | null
-          type: string
-          user_id: string
-        }
-        Update: {
-          amount?: number
-          balance_after?: number
-          created_at?: string
-          description?: string | null
-          id?: string
-          metadata?: Json | null
-          stripe_session_id?: string | null
-          type?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      user_tokens: {
-        Row: {
-          balance: number
-          created_at: string
-          id: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          balance?: number
-          created_at?: string
-          id?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          balance?: number
-          created_at?: string
-          id?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      update_token_balance: {
-        Args: {
-          p_user_id: string
-          p_amount: number
-          p_type: string
-          p_description?: string
-          p_stripe_session_id?: string
-          p_metadata?: Json
-        }
-        Returns: {
-          success: boolean
-          new_balance: number
-          transaction_id: string
-        }[]
-      }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never
