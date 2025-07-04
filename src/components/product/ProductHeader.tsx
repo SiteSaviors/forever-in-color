@@ -1,5 +1,4 @@
 
-
 import { Badge } from "@/components/ui/badge";
 import StreamlinedProgress from "./components/StreamlinedProgress";
 import CustomerPhotoMarquee from "./components/CustomerPhotoMarquee";
@@ -129,23 +128,29 @@ const ProductHeader = ({
           </Badge>
         </div>
 
-        {/* Compact rotating testimonial bar */}
+        {/* Compact Horizontal Inline Testimonial - Phase 2 Implementation */}
         <div className="flex justify-center mb-3 md:mb-4">
-          <div className="bg-gradient-to-r from-white/15 to-white/10 backdrop-blur-xl rounded-2xl px-3 md:px-6 py-2 md:py-3 border border-white/20 shadow-2xl max-w-md mx-auto hover:scale-105 transition-all duration-300">
-            <div className="flex items-center gap-2.5 justify-center">
-              <div className="flex gap-0.5">
+          <div className="bg-gradient-to-r from-white/15 to-white/10 backdrop-blur-xl rounded-xl px-3 md:px-4 py-2 border border-white/20 shadow-xl max-w-lg mx-auto hover:scale-105 transition-all duration-300">
+            <div className="flex items-center gap-3 justify-between">
+              {/* Stars on the left */}
+              <div className="flex gap-0.5 flex-shrink-0">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-3 h-3 md:w-4 md:h-4 fill-yellow-400 text-yellow-400 animate-pulse" style={{animationDelay: `${i * 0.1}s`}} />
+                  <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400 animate-pulse" style={{animationDelay: `${i * 0.1}s`}} />
                 ))}
               </div>
-              <div className="text-center">
-                <p className="text-white font-semibold text-xs md:text-sm mb-0.5">
+              
+              {/* Testimonial text in center */}
+              <div className="text-center flex-grow min-w-0">
+                <p className="text-white font-semibold text-xs md:text-sm mb-0.5 truncate">
                   "{liveTestimonials[currentTestimonial].text}"
                 </p>
                 <p className="text-white/80 text-xs">
                   - {liveTestimonials[currentTestimonial].name}
                 </p>
               </div>
+              
+              {/* Small indicator on the right */}
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse flex-shrink-0"></div>
             </div>
           </div>
         </div>
@@ -303,4 +308,3 @@ const ProductHeader = ({
 };
 
 export default ProductHeader;
-
