@@ -6,6 +6,7 @@ import { Zap, Download, Plus, AlertCircle, CheckCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import ResolutionSelector from './ResolutionSelector';
 import { useTokenBalance } from '@/hooks/useTokenBalance';
+import { useDownloadPurchases } from '@/hooks/useDownloadPurchases';
 import TokenPurchaseModal from '@/components/ui/TokenPurchaseModal';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -33,6 +34,7 @@ const WatermarkRemovalModal: React.FC<WatermarkRemovalModalProps> = ({
   const [cleanImageUrl, setCleanImageUrl] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const { balance, refreshBalance } = useTokenBalance();
+  const { refreshPurchases } = useDownloadPurchases();
   const { toast } = useToast();
 
   const getTokensForResolution = (resolution: string): number => {
@@ -77,6 +79,7 @@ const WatermarkRemovalModal: React.FC<WatermarkRemovalModalProps> = ({
       setCleanImageUrl(data.cleanImageUrl);
       setIsSuccess(true);
       refreshBalance();
+      refreshPurchases(); // Refresh purchase history to show new purchase
 
       toast({
         title: "Watermark Removed!",
@@ -220,14 +223,12 @@ const WatermarkRemovalModal: React.FC<WatermarkRemovalModalProps> = ({
                   </div>
                 </div>
 
-                {/* Resolution Selector */}
                 <ResolutionSelector
                   selectedResolution={selectedResolution}
                   onResolutionSelect={setSelectedResolution}
                   userTokenBalance={balance}
                 />
 
-                {/* Insufficient Tokens Warning */}
                 {!hasEnoughTokens && (
                   <Alert className="border-orange-200 bg-orange-50">
                     <AlertCircle className="h-4 w-4 text-orange-600" />
@@ -238,7 +239,6 @@ const WatermarkRemovalModal: React.FC<WatermarkRemovalModalProps> = ({
                   </Alert>
                 )}
 
-                {/* Action Buttons */}
                 <div className="flex gap-3 pt-4">
                   <Button
                     variant="outline"

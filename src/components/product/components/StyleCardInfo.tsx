@@ -1,8 +1,9 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Sparkles, ArrowRight, Zap, RefreshCw, CheckCircle } from "lucide-react";
+import { Sparkles, ArrowRight, Zap, RefreshCw, CheckCircle, Download } from "lucide-react";
 import { useState } from "react";
 import WatermarkRemovalModal from "./WatermarkRemovalModal";
+import { useDownloadPurchases } from "@/hooks/useDownloadPurchases";
 
 interface StyleCardInfoProps {
   style: {
@@ -38,6 +39,11 @@ const StyleCardInfo = ({
   imageUrl
 }: StyleCardInfoProps) => {
   const [isWatermarkModalOpen, setIsWatermarkModalOpen] = useState(false);
+  const { getPurchaseForStyleAndImage, redownloadPurchase } = useDownloadPurchases();
+
+  // Check if user has already purchased this style/image combination
+  const existingPurchase = imageUrl && hasGeneratedPreview ? 
+    getPurchaseForStyleAndImage(style.id, imageUrl) : null;
 
   const getStylePills = (styleId: number) => {
     const pillConfigs: {
@@ -189,10 +195,18 @@ const StyleCardInfo = ({
   const showContinueButton = hasGeneratedPreview && !showError;
   const showOriginalContinueButton = style.id === 1 && isSelected;
   const showRetryButton = showError;
-  const showWatermarkRemovalButton = hasGeneratedPreview && !showError && imageUrl && style.id !== 1;
+  const showWatermarkRemovalButton = hasGeneratedPreview && !showError && imageUrl && style.id !== 1 && !existingPurchase;
+  const showRedownloadButton = hasGeneratedPreview && !showError && imageUrl && style.id !== 1 && existingPurchase;
 
   const handleRemoveWatermark = async (resolution: string, tokens: number) => {
     console.log('Removing watermark for:', { style: style.id, resolution, tokens });
+  };
+
+  const handleRedownload = async () => {
+    if (existingPurchase) {
+      const fileName = `${style.name.replace(/\s+/g, '_')}_${existingPurchase.resolution_tier}.png`;
+      await redownloadPurchase(existingPurchase.id, fileName);
+    }
   };
 
   return (
@@ -230,6 +244,12 @@ const StyleCardInfo = ({
               <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs px-2 py-0.5">
                 <Zap className="w-3 h-3 mr-1" />
                 Ready
+              </Badge>
+            )}
+            {existingPurchase && (
+              <Badge className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white text-xs px-2 py-0.5">
+                <Download className="w-3 h-3 mr-1" />
+                Purchased
               </Badge>
             )}
           </div>
@@ -289,6 +309,21 @@ const StyleCardInfo = ({
               <Zap className="w-4 h-4 mr-2" />
               Remove Watermark & Download
             </Button>
+          )}
+
+          {showRedownloadButton && (
+            <div className="space-y-2">
+              <Button
+                onClick={handleRedownload}
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-sm font-semibold shadow-md hover:shadow-lg transition-all duration-200 font-poppins"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Re-download ({existingPurchase.resolution_tier})
+              </Button>
+              <p className="text-xs text-gray-500 text-center">
+                Downloaded {existingPurchase.download_count} time(s) • {existingPurchase.tokens_spent} tokens spent
+              </p>
+            </div>
           )}
         </div>
       </div>
