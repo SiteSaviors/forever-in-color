@@ -1,3 +1,4 @@
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sparkles, ArrowRight, Zap, RefreshCw, CheckCircle, Download } from "lucide-react";
@@ -222,28 +223,30 @@ const StyleCardInfo = ({
   // Get orientation-specific text sizing
   const getDescriptionClasses = () => {
     if (isHorizontalOrientation) {
-      return "text-xs text-gray-600 line-clamp-1 mt-0.5 font-poppins leading-relaxed"; // Single line for horizontal
+      return "text-xs text-gray-600 line-clamp-1 mt-0.5 font-poppins leading-relaxed transition-colors duration-200"; // Single line for horizontal
     }
-    return "text-xs text-gray-600 line-clamp-2 mt-0.5 font-poppins leading-relaxed"; // Two lines for others
+    return "text-xs text-gray-600 line-clamp-2 mt-0.5 font-poppins leading-relaxed transition-colors duration-200"; // Two lines for others
   };
 
   return (
     <>
       <div className={getOrientationSpacing()}>
-        <div className="flex flex-wrap gap-1">
+        {/* Enhanced Pills Section with better spacing and transitions */}
+        <div className="flex flex-wrap gap-1.5 mb-2">
           {styleConfig.pills.map((pill, index) => (
             <div
               key={index}
-              className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium text-white bg-gradient-to-r ${pill.gradient} shadow-sm`}
+              className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium text-white bg-gradient-to-r ${pill.gradient} shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.02]`}
             >
               {pill.text}
             </div>
           ))}
         </div>
 
-        <div className="flex items-start justify-between gap-2">
+        {/* Header Section with improved badge positioning */}
+        <div className="flex items-start justify-between gap-2 mb-2">
           <div className="flex-1 min-w-0">
-            <h3 className="font-poppins font-semibold text-gray-900 truncate text-sm leading-tight">
+            <h3 className="font-poppins font-semibold text-gray-900 truncate text-sm leading-tight transition-colors duration-200 hover:text-gray-700">
               {styleEmoji} {style.name}
             </h3>
             <p className={getDescriptionClasses()}>
@@ -251,21 +254,22 @@ const StyleCardInfo = ({
             </p>
           </div>
           
-          <div className="flex flex-col gap-0.5 flex-shrink-0">
+          {/* Enhanced Badge Section with better positioning and animations */}
+          <div className="flex flex-col gap-1 flex-shrink-0 items-end">
             {isPopular && (
-              <Badge className="bg-gradient-to-r from-blue-500 to-cyan-600 text-white text-xs px-1.5 py-0.5">
+              <Badge className="bg-gradient-to-r from-blue-500 to-cyan-600 text-white text-xs px-2 py-0.5 shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
                 <Sparkles className="w-3 h-3 mr-1" />
                 Popular
               </Badge>
             )}
             {showGeneratedBadge && (
-              <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs px-1.5 py-0.5">
+              <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs px-2 py-0.5 shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
                 <Zap className="w-3 h-3 mr-1" />
                 Ready
               </Badge>
             )}
             {existingPurchase && (
-              <Badge className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white text-xs px-1.5 py-0.5">
+              <Badge className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white text-xs px-2 py-0.5 shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
                 <Download className="w-3 h-3 mr-1" />
                 Purchased
               </Badge>
@@ -273,14 +277,15 @@ const StyleCardInfo = ({
           </div>
         </div>
 
-        <div className="flex flex-col gap-1 mt-1.5">
-          <div className="flex gap-1">
+        {/* Enhanced Button Section with professional polish */}
+        <div className="flex flex-col gap-1.5 mt-2">
+          <div className="flex gap-1.5">
             {showGenerateButton && (
               <Button 
                 onClick={onGenerateClick} 
-                className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-xs font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] font-poppins h-8 px-2"
+                className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-xs font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] hover:-translate-y-0.5 font-poppins h-8 px-3"
               >
-                <Sparkles className="w-3.5 h-3.5 mr-1" />
+                <Sparkles className="w-3.5 h-3.5 mr-1.5" />
                 Generate This Style
               </Button>
             )}
@@ -288,21 +293,21 @@ const StyleCardInfo = ({
             {showContinueButton && (
               <Button 
                 onClick={onContinueClick} 
-                className="flex-1 bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white text-xs font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] font-poppins ring-2 ring-emerald-200 ring-offset-1 h-8 px-2"
+                className="flex-1 bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white text-xs font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] hover:-translate-y-0.5 font-poppins ring-2 ring-emerald-200 ring-offset-1 h-8 px-3"
               >
-                <CheckCircle className="w-3.5 h-3.5 mr-1" />
+                <CheckCircle className="w-3.5 h-3.5 mr-1.5" />
                 Continue with This Style
-                <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
               </Button>
             )}
 
             {showOriginalContinueButton && (
               <Button 
                 onClick={onContinueClick} 
-                className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white text-xs font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] font-poppins h-8 px-2"
+                className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white text-xs font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] hover:-translate-y-0.5 font-poppins h-8 px-3"
               >
                 Use Original
-                <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
               </Button>
             )}
 
@@ -310,9 +315,9 @@ const StyleCardInfo = ({
               <Button 
                 onClick={onRetryClick} 
                 variant="outline" 
-                className="flex-1 text-xs border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 transition-all duration-200 font-poppins h-8 px-2"
+                className="flex-1 text-xs border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 transition-all duration-300 transform hover:scale-[1.02] hover:-translate-y-0.5 font-poppins h-8 px-3"
               >
-                <RefreshCw className="w-3.5 h-3.5 mr-1" />
+                <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
                 Try Again
               </Button>
             )}
@@ -322,23 +327,23 @@ const StyleCardInfo = ({
             <Button
               onClick={() => setIsWatermarkModalOpen(true)}
               variant="outline"
-              className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white border-0 text-xs font-semibold shadow-md hover:shadow-lg transition-all duration-200 font-poppins h-8 px-2"
+              className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white border-0 text-xs font-semibold shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-[1.02] hover:-translate-y-0.5 font-poppins h-8 px-3"
             >
-              <Zap className="w-3.5 h-3.5 mr-1" />
+              <Zap className="w-3.5 h-3.5 mr-1.5" />
               Remove Watermark & Download
             </Button>
           )}
 
           {showRedownloadButton && (
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <Button
                 onClick={handleRedownload}
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-xs font-semibold shadow-md hover:shadow-lg transition-all duration-200 font-poppins h-8 px-2"
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-xs font-semibold shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-[1.02] hover:-translate-y-0.5 font-poppins h-8 px-3"
               >
-                <Download className="w-3.5 h-3.5 mr-1" />
+                <Download className="w-3.5 h-3.5 mr-1.5" />
                 Re-download ({existingPurchase.resolution_tier})
               </Button>
-              <p className="text-xs text-gray-500 text-center leading-tight">
+              <p className="text-xs text-gray-500 text-center leading-tight transition-colors duration-200">
                 Downloaded {existingPurchase.download_count} time(s) • {existingPurchase.tokens_spent} tokens spent
               </p>
             </div>
