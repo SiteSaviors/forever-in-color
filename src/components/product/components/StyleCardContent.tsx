@@ -71,7 +71,8 @@ const StyleCardContent = memo(({
         {effectiveIsLoading && !isPermanentlyGenerated && (
           <EnhancedStyleCardLoadingOverlay
             styleName={style.name}
-            isPressed={isPressed}
+            isBlinking={false}
+            isLoading={effectiveIsLoading}
           />
         )}
       </div>
