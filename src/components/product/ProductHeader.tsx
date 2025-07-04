@@ -155,9 +155,9 @@ const ProductHeader = ({
           </div>
         </div>
 
-        {/* Enhanced Header Content with better mobile spacing */}
-        <div className="text-center mb-8 md:mb-12">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight mb-4 md:mb-6 leading-[0.85] md:leading-[0.9]">
+        {/* Enhanced Header Content with Phase 3 compression - Tighter spacing */}
+        <div className="text-center mb-6 md:mb-8">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight mb-2 md:mb-3 leading-[0.8] md:leading-[0.85]">
             <span className="bg-gradient-to-r from-cyan-300 via-violet-300 to-fuchsia-300 bg-clip-text text-transparent drop-shadow-2xl hover:scale-105 transition-transform duration-300 inline-block">
               Create Your
             </span>
@@ -167,15 +167,15 @@ const ProductHeader = ({
             </span>
           </h1>
           
-          <p className="text-lg sm:text-xl md:text-2xl text-violet-100 max-w-4xl mx-auto mb-8 md:mb-12 leading-relaxed font-medium px-4">
+          <p className="text-lg sm:text-xl md:text-2xl text-violet-100 max-w-4xl mx-auto mb-4 md:mb-6 leading-relaxed font-medium px-4">
             Transform your precious memories into <span className="text-cyan-300 font-bold hover:text-cyan-200 transition-colors">stunning canvas art</span> with 
             <span className="text-fuchsia-300 font-bold hover:text-fuchsia-200 transition-colors"> AI-powered artistic styles</span>
           </p>
 
-          {/* Enhanced Primary CTA with micro-interactions - Larger and more prominent */}
+          {/* Enhanced Primary CTA with micro-interactions - Phase 3 spacing optimization */}
           <Button 
             onClick={handleUploadClick} 
-            className="bg-gradient-to-r from-fuchsia-500 via-pink-500 to-rose-500 hover:from-fuchsia-600 hover:via-pink-600 hover:to-rose-600 text-white px-12 md:px-20 py-6 md:py-8 text-xl md:text-2xl lg:text-3xl font-black rounded-2xl shadow-2xl hover:shadow-fuchsia-500/30 transform hover:scale-110 active:scale-95 transition-all duration-300 border-2 border-white/25 backdrop-blur-sm mb-4 md:mb-6 group relative overflow-hidden"
+            className="bg-gradient-to-r from-fuchsia-500 via-pink-500 to-rose-500 hover:from-fuchsia-600 hover:via-pink-600 hover:to-rose-600 text-white px-12 md:px-20 py-6 md:py-8 text-xl md:text-2xl lg:text-3xl font-black rounded-2xl shadow-2xl hover:shadow-fuchsia-500/30 transform hover:scale-110 active:scale-95 transition-all duration-300 border-2 border-white/25 backdrop-blur-sm mb-2 md:mb-3 group relative overflow-hidden"
           >
             {/* Animated background shine */}
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
@@ -187,7 +187,7 @@ const ProductHeader = ({
             <Sparkles className="w-6 h-6 md:w-8 md:h-8 ml-3 animate-pulse group-hover:animate-spin" />
           </Button>
 
-          {/* Static Social Proof Message - Moved below CTA */}
+          {/* Static Social Proof Message - Phase 3 optimization */}
           <p className="text-sm md:text-base text-white/80 text-center font-medium">
             ✨ Join 50K+ customers creating their masterpieces
           </p>
