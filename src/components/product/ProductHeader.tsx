@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import StreamlinedProgress from "./components/StreamlinedProgress";
+import CustomerPhotoMarquee from "./components/CustomerPhotoMarquee";
 import { Shield, Truck, Award, Upload, Sparkles, Timer, Users, Star, Zap, Globe, CheckCircle, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
@@ -145,6 +146,11 @@ const ProductHeader = ({
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Customer Photo Marquee - Social Proof */}
+        <div className="mb-8 md:mb-12">
+          <CustomerPhotoMarquee />
         </div>
 
         {/* Enhanced Header Content with better mobile spacing */}

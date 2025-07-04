@@ -1,4 +1,3 @@
-
 /* Advanced Hero Animations for Premium Experience */
 
 /* Floating animation with different speeds */
@@ -245,4 +244,56 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Customer Photo Marquee Animations */
+@keyframes marquee-right {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes marquee-left {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(0%);
+  }
+}
+
+/* Marquee animation classes */
+.animate-marquee-right {
+  animation: marquee-right 30s linear infinite;
+}
+
+.animate-marquee-left {
+  animation: marquee-left 25s linear infinite;
+}
+
+/* Pause animations on hover for accessibility */
+.animate-marquee-right:hover,
+.animate-marquee-left:hover {
+  animation-play-state: paused;
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee-right,
+  .animate-marquee-left {
+    animation: none;
+  }
+}
+
+/* Photo hover effects for marquee */
+.marquee-photo {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.marquee-photo:hover {
+  transform: scale(1.1);
+  z-index: 10;
 }
