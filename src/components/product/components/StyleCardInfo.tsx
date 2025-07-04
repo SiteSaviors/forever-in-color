@@ -255,14 +255,14 @@ const StyleCardInfo = ({
           </div>
         </div>
 
-        <div className="flex flex-col gap-1.5 mt-3">
-          <div className="flex gap-1.5">
+        <div className="flex flex-col gap-1 mt-2">
+          <div className="flex gap-1">
             {showGenerateButton && (
               <Button 
                 onClick={onGenerateClick} 
-                className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 font-poppins h-9"
+                className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-xs font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] font-poppins h-8 px-2"
               >
-                <Sparkles className="w-4 h-4 mr-1.5" />
+                <Sparkles className="w-3.5 h-3.5 mr-1" />
                 Generate This Style
               </Button>
             )}
@@ -270,21 +270,21 @@ const StyleCardInfo = ({
             {showContinueButton && (
               <Button 
                 onClick={onContinueClick} 
-                className="flex-1 bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 font-poppins ring-2 ring-emerald-200 ring-offset-1 h-9"
+                className="flex-1 bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white text-xs font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] font-poppins ring-2 ring-emerald-200 ring-offset-1 h-8 px-2"
               >
-                <CheckCircle className="w-4 h-4 mr-1.5" />
+                <CheckCircle className="w-3.5 h-3.5 mr-1" />
                 Continue with This Style
-                <ArrowRight className="w-4 h-4 ml-1.5" />
+                <ArrowRight className="w-3.5 h-3.5 ml-1" />
               </Button>
             )}
 
             {showOriginalContinueButton && (
               <Button 
                 onClick={onContinueClick} 
-                className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 font-poppins h-9"
+                className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white text-xs font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] font-poppins h-8 px-2"
               >
                 Use Original
-                <ArrowRight className="w-4 h-4 ml-1.5" />
+                <ArrowRight className="w-3.5 h-3.5 ml-1" />
               </Button>
             )}
 
@@ -292,9 +292,9 @@ const StyleCardInfo = ({
               <Button 
                 onClick={onRetryClick} 
                 variant="outline" 
-                className="flex-1 text-sm border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 transition-all duration-200 font-poppins h-9"
+                className="flex-1 text-xs border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 transition-all duration-200 font-poppins h-8 px-2"
               >
-                <RefreshCw className="w-4 h-4 mr-1.5" />
+                <RefreshCw className="w-3.5 h-3.5 mr-1" />
                 Try Again
               </Button>
             )}
@@ -304,20 +304,20 @@ const StyleCardInfo = ({
             <Button
               onClick={() => setIsWatermarkModalOpen(true)}
               variant="outline"
-              className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white border-0 text-sm font-semibold shadow-md hover:shadow-lg transition-all duration-200 font-poppins h-9"
+              className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white border-0 text-xs font-semibold shadow-md hover:shadow-lg transition-all duration-200 font-poppins h-8 px-2"
             >
-              <Zap className="w-4 h-4 mr-1.5" />
+              <Zap className="w-3.5 h-3.5 mr-1" />
               Remove Watermark & Download
             </Button>
           )}
 
           {showRedownloadButton && (
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <Button
                 onClick={handleRedownload}
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-sm font-semibold shadow-md hover:shadow-lg transition-all duration-200 font-poppins h-9"
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-xs font-semibold shadow-md hover:shadow-lg transition-all duration-200 font-poppins h-8 px-2"
               >
-                <Download className="w-4 h-4 mr-1.5" />
+                <Download className="w-3.5 h-3.5 mr-1" />
                 Re-download ({existingPurchase.resolution_tier})
               </Button>
               <p className="text-xs text-gray-500 text-center leading-tight">
