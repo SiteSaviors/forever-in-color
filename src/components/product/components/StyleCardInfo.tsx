@@ -211,12 +211,12 @@ const StyleCardInfo = ({
 
   return (
     <>
-      <div className="p-4 space-y-3">
-        <div className="flex flex-wrap gap-1.5">
+      <div className="p-3 space-y-2">
+        <div className="flex flex-wrap gap-1">
           {styleConfig.pills.map((pill, index) => (
             <div
               key={index}
-              className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium text-white bg-gradient-to-r ${pill.gradient} shadow-sm`}
+              className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium text-white bg-gradient-to-r ${pill.gradient} shadow-sm`}
             >
               {pill.text}
             </div>
@@ -225,29 +225,29 @@ const StyleCardInfo = ({
 
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
-            <h3 className="font-poppins font-semibold text-gray-900 truncate text-sm md:text-base">
+            <h3 className="font-poppins font-semibold text-gray-900 truncate text-sm leading-tight">
               {styleEmoji} {style.name}
             </h3>
-            <p className="text-xs text-gray-600 line-clamp-2 mt-1 font-poppins">
+            <p className="text-xs text-gray-600 line-clamp-2 mt-0.5 font-poppins leading-relaxed">
               {style.description}
             </p>
           </div>
           
-          <div className="flex flex-col gap-1 flex-shrink-0">
+          <div className="flex flex-col gap-0.5 flex-shrink-0">
             {isPopular && (
-              <Badge className="bg-gradient-to-r from-blue-500 to-cyan-600 text-white text-xs px-2 py-0.5">
+              <Badge className="bg-gradient-to-r from-blue-500 to-cyan-600 text-white text-xs px-1.5 py-0.5">
                 <Sparkles className="w-3 h-3 mr-1" />
                 Popular
               </Badge>
             )}
             {showGeneratedBadge && (
-              <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs px-2 py-0.5">
+              <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs px-1.5 py-0.5">
                 <Zap className="w-3 h-3 mr-1" />
                 Ready
               </Badge>
             )}
             {existingPurchase && (
-              <Badge className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white text-xs px-2 py-0.5">
+              <Badge className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white text-xs px-1.5 py-0.5">
                 <Download className="w-3 h-3 mr-1" />
                 Purchased
               </Badge>
@@ -255,14 +255,14 @@ const StyleCardInfo = ({
           </div>
         </div>
 
-        <div className="flex flex-col gap-2 mt-4">
-          <div className="flex gap-2">
+        <div className="flex flex-col gap-1.5 mt-3">
+          <div className="flex gap-1.5">
             {showGenerateButton && (
               <Button 
                 onClick={onGenerateClick} 
-                className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 font-poppins"
+                className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 font-poppins h-9"
               >
-                <Sparkles className="w-4 h-4 mr-2" />
+                <Sparkles className="w-4 h-4 mr-1.5" />
                 Generate This Style
               </Button>
             )}
@@ -270,21 +270,21 @@ const StyleCardInfo = ({
             {showContinueButton && (
               <Button 
                 onClick={onContinueClick} 
-                className="flex-1 bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 font-poppins ring-2 ring-emerald-200 ring-offset-1"
+                className="flex-1 bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 font-poppins ring-2 ring-emerald-200 ring-offset-1 h-9"
               >
-                <CheckCircle className="w-4 h-4 mr-2" />
+                <CheckCircle className="w-4 h-4 mr-1.5" />
                 Continue with This Style
-                <ArrowRight className="w-4 h-4 ml-2" />
+                <ArrowRight className="w-4 h-4 ml-1.5" />
               </Button>
             )}
 
             {showOriginalContinueButton && (
               <Button 
                 onClick={onContinueClick} 
-                className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 font-poppins"
+                className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 font-poppins h-9"
               >
                 Use Original
-                <ArrowRight className="w-4 h-4 ml-2" />
+                <ArrowRight className="w-4 h-4 ml-1.5" />
               </Button>
             )}
 
@@ -292,9 +292,9 @@ const StyleCardInfo = ({
               <Button 
                 onClick={onRetryClick} 
                 variant="outline" 
-                className="flex-1 text-sm border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 transition-all duration-200 font-poppins"
+                className="flex-1 text-sm border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 transition-all duration-200 font-poppins h-9"
               >
-                <RefreshCw className="w-4 h-4 mr-2" />
+                <RefreshCw className="w-4 h-4 mr-1.5" />
                 Try Again
               </Button>
             )}
@@ -304,23 +304,23 @@ const StyleCardInfo = ({
             <Button
               onClick={() => setIsWatermarkModalOpen(true)}
               variant="outline"
-              className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white border-0 text-sm font-semibold shadow-md hover:shadow-lg transition-all duration-200 font-poppins"
+              className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white border-0 text-sm font-semibold shadow-md hover:shadow-lg transition-all duration-200 font-poppins h-9"
             >
-              <Zap className="w-4 h-4 mr-2" />
+              <Zap className="w-4 h-4 mr-1.5" />
               Remove Watermark & Download
             </Button>
           )}
 
           {showRedownloadButton && (
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Button
                 onClick={handleRedownload}
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-sm font-semibold shadow-md hover:shadow-lg transition-all duration-200 font-poppins"
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-sm font-semibold shadow-md hover:shadow-lg transition-all duration-200 font-poppins h-9"
               >
-                <Download className="w-4 h-4 mr-2" />
+                <Download className="w-4 h-4 mr-1.5" />
                 Re-download ({existingPurchase.resolution_tier})
               </Button>
-              <p className="text-xs text-gray-500 text-center">
+              <p className="text-xs text-gray-500 text-center leading-tight">
                 Downloaded {existingPurchase.download_count} time(s) • {existingPurchase.tokens_spent} tokens spent
               </p>
             </div>
