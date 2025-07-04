@@ -68,12 +68,12 @@ const StyleCardContent = memo(({
     return "relative aspect-square overflow-hidden"; // Default square
   };
 
-  // Get orientation-specific padding for the info section
+  // Get orientation-specific padding for the info section with enhanced spacing
   const getInfoPadding = () => {
     if (isHorizontal) {
-      return "p-2.5"; // Slightly reduced padding for horizontal to compensate for wider image
+      return "p-3.5"; // Enhanced padding for horizontal to give more breathing room
     }
-    return "p-3"; // Standard padding for square and vertical
+    return "p-4"; // Enhanced standard padding for better spacing
   };
 
   return (
@@ -99,7 +99,7 @@ const StyleCardContent = memo(({
         )}
       </div>
 
-      {/* Info Section - Flexible height to fill remaining space */}
+      {/* Info Section - Flexible height to fill remaining space with enhanced padding */}
       <div className={`${getInfoPadding()} flex-1 flex flex-col justify-between min-h-0`}>
         <StyleCardInfo
           style={style}

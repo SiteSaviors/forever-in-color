@@ -1,4 +1,3 @@
-
 interface StyleCardPillsProps {
   styleId: number;
   isHorizontalOrientation?: boolean;
@@ -131,11 +130,11 @@ const StyleCardPills = ({ styleId, isHorizontalOrientation = false }: StyleCardP
   const styleConfig = getStylePills(styleId);
 
   return (
-    <div className="flex flex-wrap gap-1.5 mb-2">
+    <div className="flex flex-wrap gap-2 mb-2.5">
       {styleConfig.pills.map((pill, index) => (
         <div
           key={index}
-          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium text-white bg-gradient-to-r ${pill.gradient} shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.02]`}
+          className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium text-white bg-gradient-to-r ${pill.gradient} shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.02]`}
         >
           {pill.text}
         </div>

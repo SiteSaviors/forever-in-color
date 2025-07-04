@@ -42,18 +42,19 @@ const StyleCardHeader = ({
 
   const getDescriptionClasses = () => {
     if (isHorizontalOrientation) {
-      return "text-xs text-gray-600 line-clamp-1 mt-0.5 font-poppins leading-relaxed transition-colors duration-200";
+      return "text-sm text-gray-600 line-clamp-2 mt-1.5 font-poppins leading-normal transition-colors duration-200";
     }
-    return "text-xs text-gray-600 line-clamp-2 mt-0.5 font-poppins leading-relaxed transition-colors duration-200";
+    return "text-sm text-gray-600 line-clamp-3 mt-1.5 font-poppins leading-normal transition-colors duration-200";
   };
 
   const styleEmoji = getStyleEmoji(style.id);
 
   return (
-    <div className="flex items-start justify-between gap-2 mb-2">
+    <div className="flex items-start justify-between gap-3 mb-3">
       <div className="flex-1 min-w-0">
-        <h3 className="font-poppins font-semibold text-gray-900 truncate text-sm leading-tight transition-colors duration-200 hover:text-gray-700">
-          {styleEmoji} {style.name}
+        <h3 className="font-poppins font-bold text-gray-900 truncate text-base leading-tight transition-colors duration-200 hover:text-gray-700 mb-1">
+          <span className="mr-2">{styleEmoji}</span>
+          {style.name}
         </h3>
         <p className={getDescriptionClasses()}>
           {style.description}

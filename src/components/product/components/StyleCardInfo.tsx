@@ -52,12 +52,12 @@ const StyleCardInfo = ({
     }
   };
 
-  // Get orientation-specific spacing
+  // Get orientation-specific spacing with enhanced padding
   const getOrientationSpacing = () => {
     if (isHorizontalOrientation) {
-      return "space-y-1.5"; // Tighter spacing for horizontal orientation
+      return "space-y-2.5"; // Enhanced spacing for horizontal orientation
     }
-    return "space-y-2"; // Standard spacing
+    return "space-y-3"; // Enhanced standard spacing
   };
 
   return (
