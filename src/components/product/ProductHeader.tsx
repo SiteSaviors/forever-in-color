@@ -1,4 +1,5 @@
 
+
 import { Badge } from "@/components/ui/badge";
 import StreamlinedProgress from "./components/StreamlinedProgress";
 import CustomerPhotoMarquee from "./components/CustomerPhotoMarquee";
@@ -93,55 +94,55 @@ const ProductHeader = ({
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10 lg:py-12 relative z-10">
-        {/* Enhanced Live Activity Bar */}
-        <div className="flex items-center justify-center gap-3 md:gap-6 mb-6 md:mb-8 flex-wrap">
-          {/* Live Users with enhanced animation */}
-          <div className="flex items-center gap-2 bg-gradient-to-r from-emerald-500/25 to-green-500/25 backdrop-blur-xl px-4 md:px-6 py-2 md:py-3 rounded-full border border-emerald-400/40 shadow-lg hover:shadow-emerald-500/25 transition-all duration-300 hover:scale-105 group">
+        {/* Compact Live Activity Bar - Phase 1 Optimizations */}
+        <div className="flex items-center justify-center gap-2 md:gap-4 mb-3 md:mb-4 flex-wrap">
+          {/* Live Users with compact styling */}
+          <div className="flex items-center gap-2 bg-gradient-to-r from-emerald-500/25 to-green-500/25 backdrop-blur-xl px-2 md:px-3 py-1 md:py-1.5 rounded-full border border-emerald-400/40 shadow-lg hover:shadow-emerald-500/25 transition-all duration-300 hover:scale-105 group">
             <div className="relative">
-              <div className="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-pulse shadow-lg shadow-emerald-400/60"></div>
-              <div className="absolute inset-0 w-2.5 h-2.5 bg-emerald-400 rounded-full animate-ping opacity-75"></div>
+              <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse shadow-lg shadow-emerald-400/60"></div>
+              <div className="absolute inset-0 w-2 h-2 bg-emerald-400 rounded-full animate-ping opacity-75"></div>
             </div>
-            <span className="text-emerald-100 font-bold text-sm md:text-base tracking-wide group-hover:text-emerald-50 transition-colors">
+            <span className="text-emerald-100 font-bold text-xs md:text-sm tracking-wide group-hover:text-emerald-50 transition-colors">
               {liveUsers} creating now
             </span>
           </div>
           
-          {/* AI Badge with glow effect */}
+          {/* AI Badge with compact styling */}
           <div className="relative">
-            <Badge className="bg-gradient-to-r from-violet-500/25 to-purple-500/25 backdrop-blur-xl text-violet-100 border-violet-300/40 px-3 md:px-5 py-2 md:py-2.5 shadow-lg hover:shadow-violet-500/25 transition-all duration-300 hover:scale-105 group">
-              <Sparkles className="w-4 h-4 mr-2 animate-pulse group-hover:animate-spin" />
-              <span className="font-bold text-sm md:text-base">AI-Powered Magic</span>
+            <Badge className="bg-gradient-to-r from-violet-500/25 to-purple-500/25 backdrop-blur-xl text-violet-100 border-violet-300/40 px-2 md:px-3 py-1 md:py-1.5 shadow-lg hover:shadow-violet-500/25 transition-all duration-300 hover:scale-105 group">
+              <Sparkles className="w-3 h-3 md:w-4 md:h-4 mr-1.5 animate-pulse group-hover:animate-spin" />
+              <span className="font-bold text-xs md:text-sm">AI-Powered Magic</span>
             </Badge>
             <div className="absolute inset-0 bg-gradient-to-r from-violet-500/20 to-purple-500/20 rounded-full blur-md -z-10 animate-pulse"></div>
           </div>
           
-          {/* Dynamic Progress Badge */}
-          <Badge className={`border-2 transition-all duration-500 px-3 md:px-5 py-2 md:py-2.5 backdrop-blur-xl shadow-lg hover:scale-105 group ${
+          {/* Dynamic Progress Badge with compact styling */}
+          <Badge className={`border-2 transition-all duration-500 px-2 md:px-3 py-1 md:py-1.5 backdrop-blur-xl shadow-lg hover:scale-105 group ${
             progressPercentage > 0 
               ? 'bg-gradient-to-r from-emerald-500/30 to-green-500/30 text-emerald-100 border-emerald-300/60 hover:shadow-emerald-500/25' 
               : 'bg-gradient-to-r from-amber-500/30 to-orange-500/30 text-amber-100 border-amber-300/60 hover:shadow-amber-500/25'
           }`}>
-            <TrendingUp className="w-4 h-4 mr-2 group-hover:animate-pulse" />
-            <span className="font-bold text-sm md:text-base">
+            <TrendingUp className="w-3 h-3 md:w-4 md:h-4 mr-1.5 group-hover:animate-pulse" />
+            <span className="font-bold text-xs md:text-sm">
               {progressPercentage > 0 ? `${Math.round(progressPercentage)}% Complete` : 'Ready to Start'}
             </span>
           </Badge>
         </div>
 
-        {/* Rotating testimonial bar */}
-        <div className="flex justify-center mb-6 md:mb-8">
-          <div className="bg-gradient-to-r from-white/15 to-white/10 backdrop-blur-xl rounded-2xl px-4 md:px-8 py-3 md:py-4 border border-white/20 shadow-2xl max-w-md mx-auto hover:scale-105 transition-all duration-300">
-            <div className="flex items-center gap-3 justify-center">
-              <div className="flex gap-1">
+        {/* Compact rotating testimonial bar */}
+        <div className="flex justify-center mb-3 md:mb-4">
+          <div className="bg-gradient-to-r from-white/15 to-white/10 backdrop-blur-xl rounded-2xl px-3 md:px-6 py-2 md:py-3 border border-white/20 shadow-2xl max-w-md mx-auto hover:scale-105 transition-all duration-300">
+            <div className="flex items-center gap-2.5 justify-center">
+              <div className="flex gap-0.5">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400 animate-pulse" style={{animationDelay: `${i * 0.1}s`}} />
+                  <Star key={i} className="w-3 h-3 md:w-4 md:h-4 fill-yellow-400 text-yellow-400 animate-pulse" style={{animationDelay: `${i * 0.1}s`}} />
                 ))}
               </div>
               <div className="text-center">
-                <p className="text-white font-semibold text-sm md:text-base mb-1">
+                <p className="text-white font-semibold text-xs md:text-sm mb-0.5">
                   "{liveTestimonials[currentTestimonial].text}"
                 </p>
-                <p className="text-white/80 text-xs md:text-sm">
+                <p className="text-white/80 text-xs">
                   - {liveTestimonials[currentTestimonial].name}
                 </p>
               </div>
@@ -302,3 +303,4 @@ const ProductHeader = ({
 };
 
 export default ProductHeader;
+
