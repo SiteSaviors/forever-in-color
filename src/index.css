@@ -129,6 +129,28 @@
     font-family: 'Poppins', sans-serif;
     letter-spacing: -0.075em;
   }
+
+  /* Orientation-specific style card optimizations */
+  .style-card-horizontal {
+    @apply min-h-[280px] max-h-[320px];
+  }
+
+  .style-card-vertical {
+    @apply min-h-[320px] max-h-[380px];
+  }
+
+  .style-card-square {
+    @apply min-h-[300px] max-h-[360px];
+  }
+
+  /* Consistent card height utilities */
+  .style-grid-consistent {
+    @apply grid gap-4 md:gap-6;
+  }
+
+  .style-grid-consistent > * {
+    @apply h-full;
+  }
 }
 
 /* Logo Marquee Animation */

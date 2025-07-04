@@ -22,6 +22,7 @@ interface StyleCardInfoProps {
   onGenerateClick: (e: React.MouseEvent) => void;
   onRetryClick: (e: React.MouseEvent) => void;
   imageUrl?: string;
+  isHorizontalOrientation?: boolean;
 }
 
 const StyleCardInfo = ({
@@ -36,7 +37,8 @@ const StyleCardInfo = ({
   onContinueClick,
   onGenerateClick,
   onRetryClick,
-  imageUrl
+  imageUrl,
+  isHorizontalOrientation = false
 }: StyleCardInfoProps) => {
   const [isWatermarkModalOpen, setIsWatermarkModalOpen] = useState(false);
   const { getPurchaseForStyleAndImage, redownloadPurchase } = useDownloadPurchases();
@@ -209,9 +211,25 @@ const StyleCardInfo = ({
     }
   };
 
+  // Get orientation-specific spacing
+  const getOrientationSpacing = () => {
+    if (isHorizontalOrientation) {
+      return "space-y-1.5"; // Tighter spacing for horizontal orientation
+    }
+    return "space-y-2"; // Standard spacing
+  };
+
+  // Get orientation-specific text sizing
+  const getDescriptionClasses = () => {
+    if (isHorizontalOrientation) {
+      return "text-xs text-gray-600 line-clamp-1 mt-0.5 font-poppins leading-relaxed"; // Single line for horizontal
+    }
+    return "text-xs text-gray-600 line-clamp-2 mt-0.5 font-poppins leading-relaxed"; // Two lines for others
+  };
+
   return (
     <>
-      <div className="p-3 space-y-2">
+      <div className={getOrientationSpacing()}>
         <div className="flex flex-wrap gap-1">
           {styleConfig.pills.map((pill, index) => (
             <div
@@ -228,7 +246,7 @@ const StyleCardInfo = ({
             <h3 className="font-poppins font-semibold text-gray-900 truncate text-sm leading-tight">
               {styleEmoji} {style.name}
             </h3>
-            <p className="text-xs text-gray-600 line-clamp-2 mt-0.5 font-poppins leading-relaxed">
+            <p className={getDescriptionClasses()}>
               {style.description}
             </p>
           </div>
@@ -255,7 +273,7 @@ const StyleCardInfo = ({
           </div>
         </div>
 
-        <div className="flex flex-col gap-1 mt-2">
+        <div className="flex flex-col gap-1 mt-1.5">
           <div className="flex gap-1">
             {showGenerateButton && (
               <Button 
