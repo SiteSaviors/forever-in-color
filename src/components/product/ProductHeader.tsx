@@ -26,10 +26,30 @@ const ProductHeader = ({
 
   // Live testimonials for social proof rotation
   const liveTestimonials = [
-    { name: "Sarah M.", text: "Just received my canvas - absolutely stunning!", rating: 5 },
-    { name: "Mike R.", text: "The AI style transformation exceeded my expectations!", rating: 5 },
-    { name: "Emma L.", text: "Customer service was incredible, delivery was fast!", rating: 5 },
-    { name: "David K.", text: "Museum quality - looks amazing in our living room!", rating: 5 }
+    { 
+      name: "Sarah M.", 
+      text: "Just received my canvas - absolutely stunning!", 
+      mobileText: "Canvas looks amazing!",
+      rating: 5 
+    },
+    { 
+      name: "Mike R.", 
+      text: "The AI style transformation exceeded my expectations!", 
+      mobileText: "AI results exceeded expectations!",
+      rating: 5 
+    },
+    { 
+      name: "Emma L.", 
+      text: "Customer service was incredible, delivery was fast!", 
+      mobileText: "Great service & fast delivery!",
+      rating: 5 
+    },
+    { 
+      name: "David K.", 
+      text: "Museum quality - looks amazing in our living room!", 
+      mobileText: "Museum quality results!",
+      rating: 5 
+    }
   ];
 
   // Enhanced live activity simulation
@@ -144,21 +164,27 @@ const ProductHeader = ({
           </Badge>
         </div>
 
-        {/* Optimized Horizontal Inline Testimonial */}
+        {/* Phase 3: Mobile-Optimized Horizontal Inline Testimonial */}
         <div className="flex justify-center mb-2 md:mb-3">
-          <div className="bg-gradient-to-r from-white/15 to-white/10 backdrop-blur-xl rounded-xl px-3 md:px-4 py-1.5 border border-white/20 shadow-xl max-w-lg mx-auto hover:scale-105 transition-all duration-200">
-            <div className="flex items-center gap-2.5 justify-between">
+          <div className="bg-gradient-to-r from-white/15 to-white/10 backdrop-blur-xl rounded-xl px-2 md:px-4 py-1 md:py-1.5 border border-white/20 shadow-xl max-w-xs md:max-w-lg mx-auto hover:scale-105 transition-all duration-200">
+            <div className="flex items-center gap-1.5 md:gap-2.5 justify-between">
               {/* Stars on the left */}
               <div className="flex gap-0.5 flex-shrink-0">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400 animate-pulse" style={{animationDelay: `${i * 0.1}s`}} />
+                  <Star key={i} className="w-2.5 h-2.5 md:w-3 md:h-3 fill-yellow-400 text-yellow-400 animate-pulse" style={{animationDelay: `${i * 0.1}s`}} />
                 ))}
               </div>
               
-              {/* Testimonial text in center */}
+              {/* Testimonial text in center with mobile optimization */}
               <div className="text-center flex-grow min-w-0">
                 <p className="text-white font-semibold text-xs md:text-sm mb-0.5 truncate">
-                  "{liveTestimonials[currentTestimonial].text}"
+                  {/* Mobile-specific shorter testimonials */}
+                  <span className="md:hidden">
+                    "{liveTestimonials[currentTestimonial].mobileText}"
+                  </span>
+                  <span className="hidden md:inline">
+                    "{liveTestimonials[currentTestimonial].text}"
+                  </span>
                 </p>
                 <p className="text-white/80 text-xs">
                   - {liveTestimonials[currentTestimonial].name}
@@ -166,7 +192,7 @@ const ProductHeader = ({
               </div>
               
               {/* Small indicator on the right */}
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse flex-shrink-0"></div>
+              <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-green-400 rounded-full animate-pulse flex-shrink-0"></div>
             </div>
           </div>
         </div>
