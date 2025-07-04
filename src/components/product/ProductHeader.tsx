@@ -1,4 +1,3 @@
-
 import { Badge } from "@/components/ui/badge";
 import StreamlinedProgress from "./components/StreamlinedProgress";
 import { Shield, Truck, Award, Upload, Sparkles, Timer, Users, Star, Zap, Globe, CheckCircle, TrendingUp } from "lucide-react";
@@ -49,13 +48,6 @@ const ProductHeader = ({
     }, 5000);
     return () => clearInterval(testimonialInterval);
   }, []);
-
-  const getMotivationalMessage = () => {
-    if (progressPercentage === 0) return "✨ Join 50K+ customers creating their masterpieces";
-    if (progressPercentage < 50) return "🎨 You're making incredible progress!";
-    if (progressPercentage < 100) return "🚀 Almost there! Your masterpiece awaits";
-    return "🎉 Order complete! Thank you for choosing us";
-  };
 
   const handleUploadClick = () => {
     // Add subtle haptic feedback for mobile
@@ -167,32 +159,30 @@ const ProductHeader = ({
             </span>
           </h1>
           
-          <p className="text-lg sm:text-xl md:text-2xl text-violet-100 max-w-4xl mx-auto mb-6 md:mb-8 leading-relaxed font-medium px-4">
+          <p className="text-lg sm:text-xl md:text-2xl text-violet-100 max-w-4xl mx-auto mb-8 md:mb-12 leading-relaxed font-medium px-4">
             Transform your precious memories into <span className="text-cyan-300 font-bold hover:text-cyan-200 transition-colors">stunning canvas art</span> with 
             <span className="text-fuchsia-300 font-bold hover:text-fuchsia-200 transition-colors"> AI-powered artistic styles</span>
           </p>
 
-          {/* Enhanced Motivational Progress Message */}
-          <div className="bg-gradient-to-r from-white/15 to-white/10 backdrop-blur-xl rounded-2xl px-6 md:px-10 py-3 md:py-5 inline-block mb-8 md:mb-12 border border-white/25 shadow-2xl hover:shadow-white/10 hover:scale-105 transition-all duration-300 group">
-            <span className="text-white font-bold text-base md:text-lg lg:text-xl tracking-wide group-hover:text-white/90 transition-colors">
-              {getMotivationalMessage()}
-            </span>
-          </div>
-
-          {/* Enhanced Primary CTA with micro-interactions */}
+          {/* Enhanced Primary CTA with micro-interactions - Larger and more prominent */}
           <Button 
             onClick={handleUploadClick} 
-            className="bg-gradient-to-r from-fuchsia-500 via-pink-500 to-rose-500 hover:from-fuchsia-600 hover:via-pink-600 hover:to-rose-600 text-white px-8 md:px-16 py-4 md:py-6 text-lg md:text-xl lg:text-2xl font-black rounded-2xl shadow-2xl hover:shadow-fuchsia-500/30 transform hover:scale-110 active:scale-95 transition-all duration-300 border-2 border-white/25 backdrop-blur-sm mb-8 md:mb-12 group relative overflow-hidden"
+            className="bg-gradient-to-r from-fuchsia-500 via-pink-500 to-rose-500 hover:from-fuchsia-600 hover:via-pink-600 hover:to-rose-600 text-white px-12 md:px-20 py-6 md:py-8 text-xl md:text-2xl lg:text-3xl font-black rounded-2xl shadow-2xl hover:shadow-fuchsia-500/30 transform hover:scale-110 active:scale-95 transition-all duration-300 border-2 border-white/25 backdrop-blur-sm mb-4 md:mb-6 group relative overflow-hidden"
           >
             {/* Animated background shine */}
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
             
-            <Upload className="w-5 h-5 md:w-7 md:h-7 mr-3 group-hover:animate-bounce" />
+            <Upload className="w-6 h-6 md:w-8 md:h-8 mr-3 group-hover:animate-bounce" />
             <span className="relative z-10">
               {progressPercentage === 0 ? 'Upload Photo & Start Creating' : 'Continue Your Masterpiece'}
             </span>
-            <Sparkles className="w-5 h-5 md:w-7 md:h-7 ml-3 animate-pulse group-hover:animate-spin" />
+            <Sparkles className="w-6 h-6 md:w-8 md:h-8 ml-3 animate-pulse group-hover:animate-spin" />
           </Button>
+
+          {/* Static Social Proof Message - Moved below CTA */}
+          <p className="text-sm md:text-base text-white/80 text-center font-medium">
+            ✨ Join 50K+ customers creating their masterpieces
+          </p>
         </div>
 
         {/* Progress - Only show when needed */}
