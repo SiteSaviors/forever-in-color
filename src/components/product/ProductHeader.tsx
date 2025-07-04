@@ -1,4 +1,3 @@
-
 import { Badge } from "@/components/ui/badge";
 import StreamlinedProgress from "./components/StreamlinedProgress";
 import CustomerPhotoMarquee from "./components/CustomerPhotoMarquee";
@@ -155,7 +154,7 @@ const ProductHeader = ({
           </div>
         </div>
 
-        {/* Enhanced Header Content with Phase 5 compression - Tighter spacing */}
+        {/* Enhanced Header Content with Phase 1 Mobile CTA Optimization */}
         <div className="text-center mb-5 md:mb-7">
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight mb-1.5 md:mb-2.5 leading-[0.8] md:leading-[0.85]">
             <span className="bg-gradient-to-r from-cyan-300 via-violet-300 to-fuchsia-300 bg-clip-text text-transparent drop-shadow-2xl hover:scale-105 transition-transform duration-200 inline-block">
@@ -172,17 +171,23 @@ const ProductHeader = ({
             <span className="text-fuchsia-300 font-bold hover:text-fuchsia-200 transition-colors"> AI-powered artistic styles</span>
           </p>
 
-          {/* Enhanced Primary CTA with optimized micro-interactions */}
+          {/* Phase 1: Mobile-Optimized CTA Button */}
           <Button 
             onClick={handleUploadClick} 
-            className="bg-gradient-to-r from-fuchsia-500 via-pink-500 to-rose-500 hover:from-fuchsia-600 hover:via-pink-600 hover:to-rose-600 text-white px-12 md:px-20 py-6 md:py-8 text-xl md:text-2xl lg:text-3xl font-black rounded-2xl shadow-2xl hover:shadow-fuchsia-500/30 transform hover:scale-110 active:scale-95 transition-all duration-200 border-2 border-white/25 backdrop-blur-sm mb-1.5 md:mb-2.5 group relative overflow-hidden"
+            className="bg-gradient-to-r from-fuchsia-500 via-pink-500 to-rose-500 hover:from-fuchsia-600 hover:via-pink-600 hover:to-rose-600 text-white px-6 md:px-20 py-6 md:py-8 text-lg md:text-2xl lg:text-3xl font-black rounded-2xl shadow-2xl hover:shadow-fuchsia-500/30 transform hover:scale-110 active:scale-95 transition-all duration-200 border-2 border-white/25 backdrop-blur-sm mb-1.5 md:mb-2.5 group relative overflow-hidden"
           >
             {/* Optimized animated background shine */}
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-800"></div>
             
             <Upload className="w-6 h-6 md:w-8 md:h-8 mr-3 group-hover:animate-bounce" />
             <span className="relative z-10">
-              {progressPercentage === 0 ? 'Upload Photo & Start Creating' : 'Continue Your Masterpiece'}
+              {/* Mobile-optimized text */}
+              <span className="hidden md:inline">
+                {progressPercentage === 0 ? 'Upload Photo & Start Creating' : 'Continue Your Masterpiece'}
+              </span>
+              <span className="md:hidden">
+                {progressPercentage === 0 ? 'Upload & Create' : 'Continue'}
+              </span>
             </span>
             <Sparkles className="w-6 h-6 md:w-8 md:h-8 ml-3 animate-pulse group-hover:animate-spin" />
           </Button>
