@@ -1,3 +1,4 @@
+
 import { Badge } from "@/components/ui/badge";
 import StreamlinedProgress from "./components/StreamlinedProgress";
 import CustomerPhotoMarquee from "./components/CustomerPhotoMarquee";
@@ -148,11 +149,6 @@ const ProductHeader = ({
           </div>
         </div>
 
-        {/* Customer Photo Marquee - Social Proof */}
-        <div className="mb-8 md:mb-12">
-          <CustomerPhotoMarquee />
-        </div>
-
         {/* Enhanced Header Content with better mobile spacing */}
         <div className="text-center mb-8 md:mb-12">
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight mb-4 md:mb-6 leading-[0.85] md:leading-[0.9]">
@@ -189,6 +185,11 @@ const ProductHeader = ({
           <p className="text-sm md:text-base text-white/80 text-center font-medium">
             ✨ Join 50K+ customers creating their masterpieces
           </p>
+        </div>
+
+        {/* Customer Photo Marquee - Social Proof */}
+        <div className="mb-8 md:mb-12">
+          <CustomerPhotoMarquee />
         </div>
 
         {/* Progress - Only show when needed */}
