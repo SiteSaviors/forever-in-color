@@ -36,7 +36,7 @@ const HeaderContent = ({ progressPercentage, onUploadClick }: HeaderContentProps
           Create Your
         </span>
         <br />
-        <span className="bg-gradient-to-r from-fuchsia-300 via-pink-300 to-rose-300 bg-clip-text text-transparent drop-shadow-2xl animate-pulse hover:animate-none hover:scale-105 transition-all duration-200 inline-block">
+        <span className="bg-gradient-to-r from-fuchsia-300 via-pink-300 to-rose-300 bg-clip-text text-transparent drop-shadow-2xl premium-pulse hover:animate-none hover:scale-105 transition-all duration-200 inline-block">
           MASTERPIECE
         </span>
       </h1>
