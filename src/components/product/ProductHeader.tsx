@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import StreamlinedProgress from "./components/StreamlinedProgress";
 import CustomerPhotoMarquee from "./components/CustomerPhotoMarquee";
@@ -7,6 +6,7 @@ import TestimonialSection from "./ProductHeader/TestimonialSection";
 import HeaderContent from "./ProductHeader/HeaderContent";
 import TrustIndicators from "./ProductHeader/TrustIndicators";
 import AnimatedBackground from "./ProductHeader/AnimatedBackground";
+import "./styles/heroAnimations.css";
 
 interface ProductHeaderProps {
   completedSteps: number[];
