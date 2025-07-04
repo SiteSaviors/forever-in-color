@@ -41,7 +41,7 @@ const HeaderContent = ({ progressPercentage, onUploadClick }: HeaderContentProps
         </span>
       </h1>
       
-      <p className="text-lg sm:text-xl md:text-2xl text-violet-100 max-w-4xl mx-auto mb-3 md:mb-5 leading-relaxed font-medium px-4">
+      <p className="font-poppins text-base sm:text-lg md:text-xl lg:text-2xl text-violet-100 max-w-4xl mx-auto mb-3 md:mb-5 leading-snug md:leading-relaxed font-semibold tracking-tight px-3 md:px-4 text-shadow-sm">
         Transform your precious memories into <span className="text-cyan-300 font-bold hover:text-cyan-200 transition-colors">stunning canvas art</span> with 
         <span className="text-fuchsia-300 font-bold hover:text-fuchsia-200 transition-colors"> AI-powered artistic styles</span>
       </p>
