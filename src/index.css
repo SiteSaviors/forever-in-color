@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
 @tailwind base;
 @tailwind components;
@@ -131,22 +132,8 @@
   }
 }
 
-/* Header shimmer animation */
-@keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
-}
-
 .premium-pulse {
   animation: premium-pulse 3.5s ease-in-out infinite;
-}
-
-.animate-shimmer {
-  animation: shimmer 3s ease-in-out infinite;
 }
 
 /* Poppins font with extra-tight letter spacing */
