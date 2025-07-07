@@ -123,17 +123,27 @@ const AutoCropPreview = ({
         </div>
 
         <div className="space-y-2">
-          <h3 className="text-2xl font-bold text-gray-900">
+          <h3 className="font-montserrat font-black text-3xl sm:text-4xl lg:text-5xl tracking-tight drop-shadow-2xl">
             {analysisComplete && !isGeneratingCrop ? (
-              <>AI Analysis Complete! <span className="text-green-600">✨</span></>
+              <>
+                <span className="text-white block mb-2">AI Analysis</span>
+                <span className="bg-gradient-to-r from-cyan-300 via-violet-300 to-fuchsia-300 bg-clip-text text-transparent font-oswald">
+                  COMPLETE! ✨
+                </span>
+              </>
             ) : (
-              <>Analyzing Your Photo... <span className="animate-pulse">🧠</span></>
+              <>
+                <span className="text-white block mb-2">Analyzing</span>
+                <span className="bg-gradient-to-r from-cyan-300 via-violet-300 to-fuchsia-300 bg-clip-text text-transparent font-oswald animate-pulse">
+                  YOUR PHOTO 🧠
+                </span>
+              </>
             )}
           </h3>
-          <p className="text-gray-600 max-w-md mx-auto">
+          <p className="font-poppins text-white/90 max-w-xl mx-auto text-base sm:text-lg lg:text-xl drop-shadow-lg">
             {analysisComplete && !isGeneratingCrop
-              ? "We've found the perfect crop and canvas orientation for your image"
-              : "Our AI is detecting the best composition and canvas format"
+              ? "We've discovered the perfect crop and premium canvas orientation for your treasured image"
+              : "Our AI is detecting the optimal composition and artistic canvas format for maximum impact"
             }
           </p>
         </div>

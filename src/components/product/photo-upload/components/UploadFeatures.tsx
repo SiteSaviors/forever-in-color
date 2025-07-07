@@ -8,25 +8,25 @@ const UploadFeatures = () => {
       icon: Camera,
       title: "Smart Crop",
       subtitle: "AI-powered framing",
-      color: "from-purple-500 to-purple-600"
+      color: "from-cyan-500 to-cyan-600"
     },
     {
       icon: CheckCircle,
       title: "Any Format", 
       subtitle: "JPG, PNG, HEIC",
-      color: "from-blue-500 to-blue-600"
+      color: "from-violet-500 to-violet-600"
     },
     {
       icon: Sparkles,
       title: "AI Enhanced",
       subtitle: "Professional quality",
-      color: "from-pink-500 to-pink-600"
+      color: "from-fuchsia-500 to-fuchsia-600"
     },
     {
       icon: Shield,
       title: "Secure",
       subtitle: "Private & safe",
-      color: "from-green-500 to-green-600"
+      color: "from-rose-500 to-rose-600"
     }
   ];
 
@@ -41,8 +41,8 @@ const UploadFeatures = () => {
                 <IconComponent className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
               <div>
-                <div className="font-semibold text-gray-800 text-xs sm:text-sm">{feature.title}</div>
-                <div className="text-gray-500 text-xs">{feature.subtitle}</div>
+                <div className="font-montserrat font-black text-white text-sm sm:text-base drop-shadow-lg">{feature.title}</div>
+                <div className="font-poppins text-white/80 text-xs sm:text-sm drop-shadow-sm">{feature.subtitle}</div>
               </div>
             </div>
           </div>
