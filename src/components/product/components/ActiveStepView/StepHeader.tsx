@@ -40,7 +40,7 @@ const StepHeader = React.memo(({
 
   return (
     <AccordionTrigger 
-      className={`px-6 py-6 sm:px-8 sm:py-8 md:px-12 md:py-12 hover:no-underline group min-h-[100px] sm:min-h-[120px] md:min-h-[140px] premium-hover premium-focus ${!canAccess ? 'cursor-default' : 'hover:shadow-3xl hover:shadow-cyan-500/30'}`}
+      className={`px-6 py-6 sm:px-8 sm:py-8 md:px-12 md:py-12 hover:no-underline group min-h-[100px] sm:min-h-[120px] md:min-h-[140px] transition-all duration-500 hover:scale-105 hover:backdrop-blur-sm ${!canAccess ? 'cursor-default' : 'hover:shadow-2xl hover:shadow-cyan-500/20'}`}
       disabled={!canAccess}
       onClick={handleStepClick}
     >
