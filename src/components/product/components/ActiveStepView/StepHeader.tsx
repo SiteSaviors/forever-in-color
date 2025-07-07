@@ -40,11 +40,11 @@ const StepHeader = React.memo(({
 
   return (
     <AccordionTrigger 
-      className={`px-4 py-4 sm:px-6 sm:py-6 md:px-8 md:py-8 hover:no-underline group min-h-[60px] sm:min-h-[80px] transition-all duration-300 ${!canAccess ? 'cursor-default' : ''}`}
+      className={`px-4 py-6 sm:px-6 sm:py-8 md:px-8 md:py-10 hover:no-underline group min-h-[68px] sm:min-h-[88px] transition-all duration-300 touch-manipulation ${!canAccess ? 'cursor-default' : ''}`}
       disabled={!canAccess}
       onClick={handleStepClick}
     >
-      <div className="flex items-center gap-3 sm:gap-4 md:gap-6 w-full">
+      <div className="flex items-center gap-4 sm:gap-5 md:gap-6 w-full">
         <StepIcon
           stepNumber={stepNumber}
           isCompleted={isCompleted}
