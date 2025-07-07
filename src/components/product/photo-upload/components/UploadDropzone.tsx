@@ -82,47 +82,8 @@ const UploadDropzone = ({
           </div>
         </div>
         
-        {/* Content Section - Reduced spacing */}
-        <div className="space-y-2 sm:space-y-3">
-          <div className="space-y-1 sm:space-y-2">
-            <div className="space-y-2">
-              {isUploading ? (
-                <h2 className="font-montserrat font-black text-3xl sm:text-4xl lg:text-5xl xl:text-6xl tracking-tight drop-shadow-2xl">
-                  <span className="bg-gradient-to-r from-cyan-300 via-violet-300 to-fuchsia-300 bg-clip-text text-transparent">
-                    {processingStage || "PROCESSING MAGIC"}
-                  </span>
-                </h2>
-              ) : isDragOver ? (
-                <h2 className="font-oswald font-black text-3xl sm:text-4xl lg:text-5xl xl:text-6xl tracking-tight drop-shadow-2xl">
-                  <span className="bg-gradient-to-r from-cyan-300 via-violet-300 to-fuchsia-300 bg-clip-text text-transparent">
-                    DROP TO CREATE
-                  </span>
-                  <div className="font-montserrat text-2xl sm:text-3xl lg:text-4xl xl:text-5xl mt-2">
-                    <span className="bg-gradient-to-r from-fuchsia-300 via-rose-300 to-cyan-300 bg-clip-text text-transparent">
-                      PURE MAGIC ✨
-                    </span>
-                  </div>
-                </h2>
-              ) : (
-                <h2 className="font-montserrat font-black text-3xl sm:text-4xl lg:text-5xl xl:text-6xl tracking-tight drop-shadow-2xl">
-                  <span className="text-white mb-2 block">Your Memories</span>
-                  <span className="bg-gradient-to-r from-cyan-300 via-violet-300 to-fuchsia-300 bg-clip-text text-transparent font-oswald">
-                    REIMAGINED
-                  </span>
-                </h2>
-              )}
-            </div>
-            
-            <p className="font-poppins text-white/90 max-w-xl mx-auto text-base sm:text-lg lg:text-xl drop-shadow-lg">
-              {isUploading 
-                ? "AI is analyzing your photo for the perfect composition and premium canvas format"
-                : "Upload your treasured photo and our AI will create the perfect artistic composition"
-              }
-            </p>
-          </div>
-          
           {/* Mobile-optimized CTA button with proper touch targets */}
-          <div className="pt-3 sm:pt-4">
+          <div className="pt-2">
             <MobileButton 
               size="lg" 
               className="bg-gradient-to-r from-cyan-600 via-violet-600 to-fuchsia-600 hover:from-cyan-700 hover:via-violet-700 hover:to-fuchsia-700 text-white font-black font-montserrat shadow-2xl hover:shadow-2xl hover:shadow-cyan-500/30 transition-all duration-300 transform hover:scale-105 disabled:hover:scale-100 w-full sm:w-auto min-h-[48px] px-8 py-4 text-lg sm:text-xl backdrop-blur-sm"
@@ -142,7 +103,6 @@ const UploadDropzone = ({
               )}
             </MobileButton>
           </div>
-        </div>
       </div>
 
       {/* Premium glow effect */}
