@@ -20,11 +20,11 @@ const StepContainer = React.memo(({
     const isNextStep = !isCompleted && canAccess && !isActive;
     
     return `
-      relative bg-gradient-to-br from-white via-white to-violet-50/30 rounded-xl sm:rounded-2xl shadow-lg border border-violet-100/50 overflow-hidden 
-      transition-all duration-500 ease-out hover:shadow-2xl hover:shadow-violet-500/10 mx-2 sm:mx-0 will-change-transform transform-gpu contain-layout contain-style
-      ${isActive && canAccess ? 'ring-2 ring-violet-300/50 shadow-2xl shadow-violet-500/20 transform3d(0,0,0) scale-[1.02] animate-fade-in bg-gradient-to-br from-white to-violet-50/50' : ''}
-      ${isNextStep && canAccess ? 'ring-1 ring-violet-200/50 hover:ring-2 hover:ring-violet-300/50 hover:shadow-violet-400/15 animate-pulse' : ''}
-      backdrop-blur-sm
+      relative bg-gradient-to-br from-cyan-950/90 via-violet-900/90 to-fuchsia-950/90 rounded-2xl sm:rounded-3xl shadow-2xl border-2 overflow-hidden 
+      transition-all duration-700 ease-out hover:shadow-3xl mx-2 sm:mx-0 will-change-transform transform-gpu contain-layout contain-style
+      ${isActive && canAccess ? 'ring-4 ring-gradient-to-r ring-cyan-400/60 shadow-3xl shadow-fuchsia-500/30 transform3d(0,0,0) scale-[1.05] animate-fade-in bg-gradient-to-br from-cyan-900/95 via-violet-800/95 to-fuchsia-900/95 premium-pulse' : 'border-gradient-to-r border-cyan-500/30 border-violet-500/30 border-fuchsia-500/30'}
+      ${isNextStep && canAccess ? 'ring-2 ring-cyan-300/50 hover:ring-4 hover:ring-fuchsia-400/60 hover:shadow-cyan-400/20 animate-pulse glow-pulse' : ''}
+      backdrop-blur-xl float-gentle
     `;
   }, [isActive, canAccess, isCompleted]);
 
@@ -37,9 +37,13 @@ const StepContainer = React.memo(({
         transform: 'translate3d(0,0,0)' // Force GPU layer
       }}
     >
-      {/* Premium overlay effects */}
-      <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-violet-100/20 opacity-50" />
-      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500 opacity-75" />
+      {/* Premium hero-style overlay effects */}
+      <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-violet-500/10 to-fuchsia-500/10 opacity-70" />
+      <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-cyan-400 via-violet-500 via-fuchsia-500 to-rose-400 opacity-90 shadow-lg" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
+      
+      {/* Hero-style floating shine effect */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-50" />
       
       <div className="relative z-10">
         {children}
