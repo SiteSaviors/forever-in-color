@@ -1,0 +1,153 @@
+/* Premium Hover States - Hero-level Interactive Animations */
+
+/* Sophisticated Transform Animations */
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 40px rgba(168, 85, 247, 0.3), 0 0 80px rgba(168, 85, 247, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 60px rgba(236, 72, 153, 0.4), 0 0 120px rgba(236, 72, 153, 0.2);
+  }
+}
+
+@keyframes premium-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 20px 60px rgba(6, 182, 212, 0.3);
+  }
+  50% {
+    transform: scale(1.01);
+    box-shadow: 0 25px 80px rgba(236, 72, 153, 0.4);
+  }
+}
+
+@keyframes shimmer-shine {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Premium Hover Classes */
+.premium-hover {
+  position: relative;
+  transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, box-shadow, backdrop-filter;
+}
+
+.premium-hover::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.6s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.premium-hover:hover::before {
+  left: 100%;
+}
+
+.premium-hover:hover {
+  transform: scale(1.02) translateY(-8px);
+  backdrop-filter: blur(20px);
+  box-shadow: 
+    0 25px 80px rgba(6, 182, 212, 0.3),
+    0 0 40px rgba(236, 72, 153, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Focus States for Accessibility */
+.premium-focus:focus-visible {
+  outline: none;
+  transform: scale(1.01) translateY(-4px);
+  box-shadow: 
+    0 0 0 3px rgba(6, 182, 212, 0.5),
+    0 20px 60px rgba(6, 182, 212, 0.3);
+}
+
+/* Hero-level Button Hover */
+.hero-button-hover {
+  background: linear-gradient(135deg, #06b6d4, #8b5cf6, #ec4899);
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-button-hover::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.5s ease;
+}
+
+.hero-button-hover:hover::after {
+  left: 100%;
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Sophisticated Scale Transforms */
+.scale-gentle {
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.scale-gentle:hover {
+  transform: scale(1.01) translateY(-2px);
+}
+
+.scale-medium {
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.scale-medium:hover {
+  transform: scale(1.02) translateY(-4px);
+}
+
+.scale-bold {
+  transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.scale-bold:hover {
+  transform: scale(1.03) translateY(-6px);
+}
+
+/* Utility Classes */
+.glow-pulse {
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+.premium-pulse {
+  animation: premium-pulse 4s ease-in-out infinite;
+}
+
+.shimmer-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer-effect::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  animation: shimmer-shine 2s ease-in-out infinite;
+}
