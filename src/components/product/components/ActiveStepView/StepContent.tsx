@@ -28,17 +28,17 @@ const StepContent = ({
   }, [isCompleted, canAccess]);
 
   const titleClasses = useMemo(() => `
-    font-bold transition-colors duration-300 font-poppins-tight
-    ${isCompleted || (isActive && canAccess) ? 'text-foreground' 
-      : !canAccess ? 'text-muted-foreground'
-      : 'text-foreground/80 group-hover:text-foreground'}
+    font-bold transition-colors duration-300 font-poppins tracking-tight
+    ${isCompleted || (isActive && canAccess) ? 'text-gray-900' 
+      : !canAccess ? 'text-gray-500'
+      : 'text-gray-600 group-hover:text-gray-800'}
   `, [isCompleted, isActive, canAccess]);
 
   const styleNameElement = useMemo(() => {
     if (stepNumber === 1 && selectedStyle?.name) {
       return (
-        <span className={`ml-2 sm:ml-3 font-medium font-poppins-tight text-sm sm:text-base md:text-lg transition-colors duration-300 ${
-          isActive ? 'text-primary' : 'text-muted-foreground'
+        <span className={`ml-2 sm:ml-3 font-medium text-base sm:text-lg md:text-xl transition-colors duration-300 ${
+          isActive ? 'text-purple-600' : 'text-gray-600'
         }`}>
           - {selectedStyle.name}
         </span>
@@ -49,8 +49,8 @@ const StepContent = ({
 
   return (
     <div className="flex-1 text-left min-w-0">
-      <div className="flex flex-col gap-2 sm:gap-3 mb-3 sm:mb-4">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 flex-wrap">
+      <div className="flex flex-col gap-1 sm:gap-2 mb-2">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 flex-wrap">
           <MobileTypography
             variant="h3"
             className={titleClasses}
@@ -61,7 +61,7 @@ const StepContent = ({
           
           {lockStatus === "locked" && (
             <div className="transition-all duration-300 opacity-60 sm:self-center">
-              <Lock className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
+              <Lock className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
             </div>
           )}
         </div>
@@ -69,8 +69,8 @@ const StepContent = ({
       
       <MobileTypography
         variant="body"
-        className={`transition-all duration-300 font-poppins ${
-          !canAccess ? 'text-muted-foreground/60' : 'text-muted-foreground'
+        className={`transition-all duration-300 ${
+          !canAccess ? 'text-gray-400' : 'text-gray-600'
         } ${isActive ? 'block' : 'hidden sm:block'}`}
       >
         {description}
