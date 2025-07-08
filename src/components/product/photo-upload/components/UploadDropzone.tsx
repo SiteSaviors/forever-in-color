@@ -51,6 +51,38 @@ const UploadDropzone = ({
       />
       
       <div className="space-y-4 sm:space-y-5">
+        {/* Icon Section - Reduced size */}
+        <div className="flex justify-center">
+          <div className={`
+            relative p-3 sm:p-4 rounded-full transition-all duration-500
+            ${isDragOver 
+              ? 'bg-gradient-to-br from-cyan-500 to-fuchsia-500 scale-110 shadow-2xl shadow-cyan-400/50' 
+              : 'bg-gradient-to-br from-cyan-100/80 to-fuchsia-100/80 group-hover:scale-105 group-hover:shadow-xl group-hover:shadow-violet-400/30'
+            }
+          `}>
+            {isUploading ? (
+              <div className="relative">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+                <Sparkles className="absolute inset-0 m-auto w-4 h-4 sm:w-5 sm:h-5 text-white animate-pulse" />
+              </div>
+            ) : (
+              <Upload className={`w-8 h-8 sm:w-10 sm:h-10 transition-colors duration-300 ${
+                isDragOver ? 'text-white' : 'text-cyan-600 group-hover:text-fuchsia-600'
+              }`} />
+            )}
+            
+            {/* Hero-style floating particles effect */}
+            {(isDragOver || isUploading) && (
+              <>
+                <div className="absolute -top-2 -right-2 w-3 h-3 bg-fuchsia-400 rounded-full animate-bounce hidden sm:block shadow-lg shadow-fuchsia-500/50" />
+                <div className="absolute -bottom-1 -left-2 w-2 h-2 bg-cyan-400 rounded-full animate-bounce delay-150 hidden sm:block shadow-lg shadow-cyan-500/50" />
+                <div className="absolute top-1/2 -right-3 w-1.5 h-1.5 bg-violet-400 rounded-full animate-bounce delay-300 hidden sm:block shadow-lg shadow-violet-500/50" />
+                <div className="absolute -top-1 -left-3 w-2 h-2 bg-rose-400 rounded-full animate-bounce delay-500 hidden sm:block shadow-lg shadow-rose-500/50" />
+              </>
+            )}
+          </div>
+        </div>
+        
           {/* Mobile-optimized CTA button with proper touch targets */}
           <div className="pt-2">
             <MobileButton 
