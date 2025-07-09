@@ -58,29 +58,42 @@ export const useStyleCardHooks = (props: UseStyleCardHooksProps) => {
   const hasErrorBoolean = Boolean(styleCardState.hasError);
   const errorMessage = typeof styleCardState.hasError === 'string' ? styleCardState.hasError : (styleCardState.validationError || 'Generation failed');
 
-  // Create proper mock events to prevent JavaScript runtime errors
+  // Create minimal mock event for handlers that require it
   const createMockEvent = (): React.MouseEvent => ({
     stopPropagation: () => {},
-    preventDefault: () => {},
-    currentTarget: null,
-    target: null,
-    bubbles: false,
-    cancelable: false,
-    defaultPrevented: false,
-    eventPhase: 0,
-    isTrusted: false,
-    nativeEvent: {} as Event,
-    timeStamp: Date.now(),
-    type: 'click'
+    preventDefault: () => {}
   } as React.MouseEvent);
 
-  // Create wrapper functions that don't require parameters
+  // Simplified direct handlers without mock events
   const handleGenerateWrapper = () => {
-    styleCardState.handleGenerateClick(createMockEvent());
+    if (styleCardState.isPermanentlyGenerated) {
+      console.log(`🚫 PERMANENT BLOCK - ${style.name} cannot be regenerated`);
+      return;
+    }
+    
+    if (styleCardState.effectiveIsLoading) {
+      console.log(`🚫 BUSY BLOCK - ${style.name} is already generating`);
+      return;
+    }
+    
+    console.log(`🎨 Direct generate call for ${style.name}`);
+    styleCardState.generatePreview();
   };
   
   const handleRetryWrapper = () => {
-    styleCardState.handleRetryClick(createMockEvent());
+    if (styleCardState.isPermanentlyGenerated) {
+      console.log(`🚫 PERMANENT BLOCK - ${style.name} cannot be retried`);
+      return;
+    }
+    
+    if (styleCardState.effectiveIsLoading) {
+      console.log(`🚫 BUSY BLOCK - ${style.name} is already generating`);
+      return;
+    }
+    
+    console.log(`🔄 Direct retry call for ${style.name}`);
+    styleCardState.setShowError(false);
+    styleCardState.generatePreview();
   };
 
   // Create wrapper functions for touch handlers that accept events but ignore them

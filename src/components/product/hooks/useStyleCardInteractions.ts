@@ -61,11 +61,14 @@ export const useStyleCardInteractions = ({
     }
     
     if (needsSelectTransition) {
-      // If in error state and trying to select, reset first
+      // If in error state and trying to select, reset first then select
       if (stateMachine.hasError) {
         stateMachine.transition('RESET', true);
+        // Allow a frame for state to settle before selecting
+        setTimeout(() => stateMachine.transition('SELECT', true), 0);
+      } else {
+        stateMachine.transition('SELECT', true);
       }
-      stateMachine.transition('SELECT', true);
     } else if (needsDeselectTransition) {
       stateMachine.transition('DESELECT', true);
     }
@@ -111,16 +114,27 @@ export const useStyleCardInteractions = ({
       e.stopPropagation();
     }
     
-    if (!stateMachine.isInteractive || stateMachine.isAnimating || !onGenerateStyle) {
+    if (!onGenerateStyle) {
+      console.log(`🚫 NO GENERATE FUNCTION - ${styleName} (ID: ${styleId})`);
       return;
     }
 
-    console.log(`🎨 GENERATE CLICK ▶️ ${styleName} (ID: ${styleId})`);
+    // Allow generation even in error state by resetting first
+    if (stateMachine.hasError) {
+      console.log(`🔄 RESETTING ERROR STATE before generation - ${styleName} (ID: ${styleId})`);
+      stateMachine.transition('RESET', true);
+    }
     
-    stateMachine.queueAnimation(() => {
-      stateMachine.transition('START_LOADING');
-      onGenerateStyle();
-    });
+    if (!stateMachine.isInteractive && !stateMachine.hasError) {
+      console.log(`🚫 NOT INTERACTIVE - ${styleName} (ID: ${styleId}) - State: ${stateMachine.state}`);
+      return;
+    }
+
+    console.log(`🎨 GENERATE CLICK ▶️ ${styleName} (ID: ${styleId}) - State: ${stateMachine.state}`);
+    
+    // Direct call without animation queue to prevent conflicts
+    stateMachine.transition('START_LOADING', true);
+    onGenerateStyle();
   }, [stateMachine, styleName, styleId, onGenerateStyle]);
 
   const handleRetryClick = useCallback((e?: React.MouseEvent) => {
@@ -128,17 +142,17 @@ export const useStyleCardInteractions = ({
       e.stopPropagation();
     }
     
-    if (!stateMachine.isInteractive || !onGenerateStyle) {
+    if (!onGenerateStyle) {
+      console.log(`🚫 NO GENERATE FUNCTION for retry - ${styleName} (ID: ${styleId})`);
       return;
     }
 
-    console.log(`🔄 RETRY CLICK ▶️ ${styleName} (ID: ${styleId})`);
+    console.log(`🔄 RETRY CLICK ▶️ ${styleName} (ID: ${styleId}) - State: ${stateMachine.state}`);
     
-    stateMachine.queueAnimation(() => {
-      stateMachine.transition('RESET');
-      stateMachine.transition('START_LOADING');
-      onGenerateStyle();
-    });
+    // Reset error state and start generation immediately
+    stateMachine.transition('RESET', true);
+    stateMachine.transition('START_LOADING', true);
+    onGenerateStyle();
   }, [stateMachine, styleName, styleId, onGenerateStyle]);
 
   // Computed visual states for styling
