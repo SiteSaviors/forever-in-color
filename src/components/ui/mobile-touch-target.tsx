@@ -10,7 +10,7 @@ interface TouchTargetProps extends React.HTMLAttributes<HTMLDivElement> {
 const touchTargetVariants = {
   sm: "min-h-[44px] min-w-[44px] p-2",
   md: "min-h-[48px] min-w-[48px] p-3", 
-  lg: "min-h-[52px] min-w-[52px] p-4"
+  lg: "min-h-[56px] min-w-[56px] p-4"
 }
 
 const TouchTarget = React.forwardRef<HTMLDivElement, TouchTargetProps>(

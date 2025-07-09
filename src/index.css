@@ -1,5 +1,5 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+/* Inter font loaded via HTML link tag for better performance */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -17,8 +17,9 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222.2 47.4% 11.2%;
+    --primary: 258 90% 66%;
     --primary-foreground: 210 40% 98%;
+    --primary-glow: 258 90% 76%;
 
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -26,8 +27,18 @@
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 258 90% 66%;
+    --accent-foreground: 210 40% 98%;
+    
+    /* Semantic UI tokens */
+    --surface-primary: 0 0% 100%;
+    --surface-secondary: 210 40% 96.1%;
+    --surface-elevated: 0 0% 100%;
+    --text-primary: 222.2 84% 4.9%;
+    --text-secondary: 215.4 16.3% 46.9%;
+    --text-accent: 258 90% 66%;
+    --border-subtle: 214.3 31.8% 91.4%;
+    --border-strong: 220 13% 80%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
@@ -55,14 +66,25 @@
     --card-foreground: 210 40% 98%;
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 258 90% 66%;
+    --primary-foreground: 210 40% 98%;
+    --primary-glow: 258 90% 76%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
+    --accent: 258 90% 66%;
     --accent-foreground: 210 40% 98%;
+    
+    /* Dark mode semantic tokens */
+    --surface-primary: 222.2 84% 4.9%;
+    --surface-secondary: 217.2 32.6% 17.5%;
+    --surface-elevated: 217.2 32.6% 20%;
+    --text-primary: 210 40% 98%;
+    --text-secondary: 215 20.2% 65.1%;
+    --text-accent: 258 90% 76%;
+    --border-subtle: 217.2 32.6% 17.5%;
+    --border-strong: 215 20.2% 30%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
@@ -118,34 +140,37 @@
   }
 }
 
-/* Premium Text Animations */
-@keyframes premium-pulse {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-    filter: drop-shadow(0 0 8px rgba(236, 72, 153, 0.3));
-  }
-  50% {
-    opacity: 0.85;
-    transform: scale(1.015);
-    filter: drop-shadow(0 0 16px rgba(236, 72, 153, 0.5));
-  }
-}
+/* Import unified animations */
+@import './components/product/styles/animations/unified.css';
 
-.premium-pulse {
-  animation: premium-pulse 3.5s ease-in-out infinite;
-}
-
-/* Poppins font with extra-tight letter spacing */
+/* Unified Inter font system with semantic weights */
 @layer components {
-  .font-poppins {
-    font-family: 'Poppins', sans-serif;
-    letter-spacing: -0.05em;
+  .font-display {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
   }
   
-  .font-poppins-tight {
-    font-family: 'Poppins', sans-serif;
-    letter-spacing: -0.075em;
+  .font-heading {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    line-height: 1.2;
+  }
+  
+  .font-body {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    line-height: 1.6;
+  }
+  
+  .font-caption {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    letter-spacing: 0.005em;
+    line-height: 1.4;
   }
 
   /* Orientation-specific style card optimizations */
@@ -181,43 +206,7 @@
   }
 }
 
-/* Optimized Marquee Animations for CustomerPhotoMarquee */
-@keyframes marquee-right {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
-}
-
-@keyframes marquee-left {
-  0% {
-    transform: translateX(-50%);
-  }
-  100% {
-    transform: translateX(0);
-  }
-}
-
-.animate-scroll {
-  animation: scroll 30s linear infinite;
-}
-
-.animate-scroll:hover {
-  animation-play-state: paused;
-}
-
-/* Phase 5: Optimized marquee animations with improved performance */
-.animate-marquee-right {
-  animation: marquee-right 45s linear infinite;
-  will-change: transform;
-}
-
-.animate-marquee-left {
-  animation: marquee-left 40s linear infinite;
-  will-change: transform;
-}
+/* Marquee animations moved to unified.css */
 
 /* 3D Carousel Styles */
 .perspective-1000 {
@@ -265,20 +254,7 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Phase 5: Optimized Floating Animation with improved performance */
-@keyframes float-gentle {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-1.5px);
-  }
-}
-
-.float-gentle {
-  animation: float-gentle 3.5s ease-in-out infinite;
-  will-change: transform;
-}
+/* Floating animations moved to unified.css */
 
 /* Mobile-specific utilities */
 @layer utilities {
