@@ -51,6 +51,10 @@ export const useStyleCardInteractions = ({
     }
     
     if (isSelected && !stateMachine.isSelected && !stateMachine.isLoading) {
+      // If in error state and trying to select, reset first
+      if (stateMachine.hasError) {
+        stateMachine.transition('RESET', true);
+      }
       stateMachine.transition('SELECT', true);
     } else if (!isSelected && stateMachine.isSelected) {
       stateMachine.transition('DESELECT', true);
