@@ -58,34 +58,20 @@ export const useStyleCardHooks = (props: UseStyleCardHooksProps) => {
   const hasErrorBoolean = Boolean(styleCardState.hasError);
   const errorMessage = typeof styleCardState.hasError === 'string' ? styleCardState.hasError : (styleCardState.validationError || 'Generation failed');
 
-  // Create proper mock events to prevent JavaScript runtime errors
-  const createMockEvent = (): React.MouseEvent => ({
-    stopPropagation: () => {},
-    preventDefault: () => {},
-    currentTarget: null,
-    target: null,
-    bubbles: false,
-    cancelable: false,
-    defaultPrevented: false,
-    eventPhase: 0,
-    isTrusted: false,
-    nativeEvent: {} as Event,
-    timeStamp: Date.now(),
-    type: 'click'
-  } as React.MouseEvent);
-
   // Create wrapper functions that don't require parameters
   const handleGenerateWrapper = () => {
-    styleCardState.handleGenerateClick(createMockEvent());
+    const mockEvent = { stopPropagation: () => {} } as React.MouseEvent;
+    styleCardState.handleGenerateClick(mockEvent);
   };
   
   const handleRetryWrapper = () => {
-    styleCardState.handleRetryClick(createMockEvent());
+    const mockEvent = { stopPropagation: () => {} } as React.MouseEvent;
+    styleCardState.handleRetryClick(mockEvent);
   };
 
   // Create wrapper functions for touch handlers that accept events but ignore them
   const handleTouchTap = () => styleCardState.handleCardClick();
-  const handleTouchLongPress = () => styleCardState.handleImageExpand(createMockEvent());
+  const handleTouchLongPress = () => styleCardState.handleImageExpand({} as React.MouseEvent);
 
   // Touch-optimized interactions with integrated debouncing
   const { isPressed, touchHandlers } = useTouchOptimizedInteractions({
