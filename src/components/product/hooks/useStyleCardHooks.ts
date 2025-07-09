@@ -58,47 +58,20 @@ export const useStyleCardHooks = (props: UseStyleCardHooksProps) => {
   const hasErrorBoolean = Boolean(styleCardState.hasError);
   const errorMessage = typeof styleCardState.hasError === 'string' ? styleCardState.hasError : (styleCardState.validationError || 'Generation failed');
 
-  // Create minimal mock event for handlers that require it
-  const createMockEvent = (): React.MouseEvent => ({
-    stopPropagation: () => {},
-    preventDefault: () => {}
-  } as React.MouseEvent);
-
-  // Simplified direct handlers without mock events
+  // Create wrapper functions that don't require parameters
   const handleGenerateWrapper = () => {
-    if (styleCardState.isPermanentlyGenerated) {
-      console.log(`🚫 PERMANENT BLOCK - ${style.name} cannot be regenerated`);
-      return;
-    }
-    
-    if (styleCardState.effectiveIsLoading) {
-      console.log(`🚫 BUSY BLOCK - ${style.name} is already generating`);
-      return;
-    }
-    
-    console.log(`🎨 Direct generate call for ${style.name}`);
-    styleCardState.generatePreview();
+    const mockEvent = { stopPropagation: () => {} } as React.MouseEvent;
+    styleCardState.handleGenerateClick(mockEvent);
   };
   
   const handleRetryWrapper = () => {
-    if (styleCardState.isPermanentlyGenerated) {
-      console.log(`🚫 PERMANENT BLOCK - ${style.name} cannot be retried`);
-      return;
-    }
-    
-    if (styleCardState.effectiveIsLoading) {
-      console.log(`🚫 BUSY BLOCK - ${style.name} is already generating`);
-      return;
-    }
-    
-    console.log(`🔄 Direct retry call for ${style.name}`);
-    styleCardState.setShowError(false);
-    styleCardState.generatePreview();
+    const mockEvent = { stopPropagation: () => {} } as React.MouseEvent;
+    styleCardState.handleRetryClick(mockEvent);
   };
 
   // Create wrapper functions for touch handlers that accept events but ignore them
   const handleTouchTap = () => styleCardState.handleCardClick();
-  const handleTouchLongPress = () => styleCardState.handleImageExpand(createMockEvent());
+  const handleTouchLongPress = () => styleCardState.handleImageExpand({} as React.MouseEvent);
 
   // Touch-optimized interactions with integrated debouncing
   const { isPressed, touchHandlers } = useTouchOptimizedInteractions({
