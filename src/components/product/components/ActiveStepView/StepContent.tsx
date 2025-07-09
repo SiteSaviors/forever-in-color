@@ -28,17 +28,17 @@ const StepContent = ({
   }, [isCompleted, canAccess]);
 
   const titleClasses = useMemo(() => `
-    font-display transition-all duration-500 tracking-tight animate-premium-pulse
+    font-black transition-all duration-500 font-montserrat tracking-tight drop-shadow-2xl premium-pulse
     ${isCompleted || (isActive && canAccess) ? 'bg-gradient-to-r from-cyan-300 via-violet-300 to-fuchsia-300 bg-clip-text text-transparent' 
-      : !canAccess ? 'text-muted-foreground'
-      : 'text-primary group-hover:bg-gradient-to-r group-hover:from-pink-400 group-hover:via-purple-400 group-hover:to-cyan-400 group-hover:bg-clip-text group-hover:text-transparent'}
+      : !canAccess ? 'text-gray-400'
+      : 'text-white group-hover:bg-gradient-to-r group-hover:from-pink-400 group-hover:via-purple-400 group-hover:to-cyan-400 group-hover:bg-clip-text group-hover:text-transparent'}
   `, [isCompleted, isActive, canAccess]);
 
   const styleNameElement = useMemo(() => {
     if (stepNumber === 1 && selectedStyle?.name) {
       return (
-        <span className={`ml-2 sm:ml-3 font-heading text-lg sm:text-xl md:text-2xl transition-all duration-500 ${
-          isActive ? 'bg-gradient-to-r from-rose-400 via-fuchsia-500 to-cyan-400 bg-clip-text text-transparent' : 'text-primary/90'
+        <span className={`ml-2 sm:ml-3 font-bold text-lg sm:text-xl md:text-2xl transition-all duration-500 font-oswald tracking-tight ${
+          isActive ? 'bg-gradient-to-r from-rose-400 via-fuchsia-500 to-cyan-400 bg-clip-text text-transparent drop-shadow-lg' : 'text-white/90'
         }`}>
           - {selectedStyle.name}
         </span>
@@ -53,7 +53,7 @@ const StepContent = ({
         <div className="flex flex-row items-center gap-1 sm:gap-3 flex-wrap">
           <MobileTypography
             variant="h3"
-            className={`${titleClasses} text-lg sm:text-2xl md:text-4xl lg:text-5xl animate-fade-in animate-float-gentle`}
+            className={`${titleClasses} text-lg sm:text-2xl md:text-4xl lg:text-5xl animate-fade-in float-gentle`}
           >
             {title}
             {styleNameElement}
@@ -69,8 +69,8 @@ const StepContent = ({
       
       <MobileTypography
         variant="body"
-        className={`transition-all duration-500 font-body text-base sm:text-lg leading-relaxed ${
-          !canAccess ? 'text-muted-foreground' : 'text-foreground/90'
+        className={`transition-all duration-500 font-poppins text-base sm:text-lg leading-relaxed font-semibold ${
+          !canAccess ? 'text-white/40' : 'text-white/90'
         } ${isActive ? 'block' : 'hidden sm:block'}`}
       >
         {description}

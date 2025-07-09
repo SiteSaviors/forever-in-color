@@ -21,17 +21,9 @@ export default {
     extend: {
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
-        display: ['Inter', 'system-ui', 'sans-serif'],
-        body: ['Inter', 'system-ui', 'sans-serif'],
-      },
-      fontWeight: {
-        light: '300',
-        normal: '400',
-        medium: '500',
-        semibold: '600',
-        bold: '700',
-        extrabold: '800',
-        black: '900',
+        poppins: ['Poppins', 'sans-serif'],
+        montserrat: ['Montserrat', 'sans-serif'],
+        oswald: ['Oswald', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -42,21 +34,6 @@ export default {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
-          glow: "hsl(var(--primary-glow))",
-        },
-        surface: {
-          primary: "hsl(var(--surface-primary))",
-          secondary: "hsl(var(--surface-secondary))",
-          elevated: "hsl(var(--surface-elevated))",
-        },
-        text: {
-          primary: "hsl(var(--text-primary))",
-          secondary: "hsl(var(--text-secondary))",
-          accent: "hsl(var(--text-accent))",
-        },
-        border: {
-          subtle: "hsl(var(--border-subtle))",
-          strong: "hsl(var(--border-strong))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
