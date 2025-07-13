@@ -1,5 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+import { StylePromptService } from './stylePromptService.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -67,8 +69,30 @@ serve(async (req) => {
 
     console.log(`🎨 [${requestId}] Starting generation with:`, { style, aspectRatio, quality });
 
-    // Create style prompt that maintains the subject
-    const stylePrompt = `Transform this image into ${style} style while keeping the exact same subject, composition, and scene. Apply only the artistic style transformation. Do not change what is depicted in the image - only change how it looks artistically.`;
+    // Initialize Supabase client and StylePromptService
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const stylePromptService = new StylePromptService(supabase);
+
+    // Get the tested, specific prompt for this style
+    let stylePrompt: string;
+    try {
+      const fetchedPrompt = await stylePromptService.getStylePrompt(style);
+      if (fetchedPrompt) {
+        stylePrompt = fetchedPrompt;
+        console.log(`✅ [${requestId}] Using tested prompt for style: ${style}`);
+      } else {
+        // Fallback to a basic prompt if database lookup fails
+        stylePrompt = `Transform this image into ${style} style while keeping the exact same subject, composition, and scene. Apply only the artistic style transformation. Do not change what is depicted in the image - only change how it looks artistically.`;
+        console.warn(`⚠️ [${requestId}] No prompt found for style ${style}, using fallback`);
+      }
+    } catch (error) {
+      console.error(`❌ [${requestId}] Error fetching style prompt:`, error);
+      stylePrompt = `Transform this image into ${style} style while keeping the exact same subject, composition, and scene. Apply only the artistic style transformation. Do not change what is depicted in the image - only change how it looks artistically.`;
+    }
+
+    console.log(`🎯 [${requestId}] Using prompt:`, stylePrompt.substring(0, 100) + '...');
 
     // Convert aspect ratio to size
     let size = '1024x1024'; // default square
