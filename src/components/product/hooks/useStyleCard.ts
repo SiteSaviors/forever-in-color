@@ -73,15 +73,10 @@ export const useStyleCard = ({
     setLastError(null);
   }, [style.name]);
 
-  // Simplified state validation
+  // FIXED: Simplified validation - only check for essential requirements
   const validateGenerationState = useCallback(() => {
     if (!croppedImage) {
-      console.log(`❌ Validation failed for ${style.name}: No cropped image`);
-      return false;
-    }
-    
-    if (isPermanentlyGenerated) {
-      console.log(`❌ Validation failed for ${style.name}: Already permanently generated`);
+      console.log(`❌ Validation failed for ${style.name}: No image available`);
       return false;
     }
     
@@ -90,8 +85,12 @@ export const useStyleCard = ({
       return false;
     }
     
+    // REMOVED: isPermanentlyGenerated check that was causing immediate "Try Again"
+    // Allow regeneration even if previously generated
+    
+    console.log(`✅ Validation passed for ${style.name}`);
     return true;
-  }, [croppedImage, isPermanentlyGenerated, isLoading, style.name]);
+  }, [croppedImage, isLoading, style.name]);
 
   const handleGenerateClick = useCallback(async (e: React.MouseEvent) => {
     e?.stopPropagation();

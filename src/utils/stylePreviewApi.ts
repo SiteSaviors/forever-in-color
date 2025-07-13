@@ -25,20 +25,25 @@ export const generateStylePreview = async (
       options
     });
     
-    // Essential validation only
-    if (!imageUrl?.trim()) throw new Error('Image URL is required');
-    if (!style?.trim()) throw new Error('Style name is required');
-    if (!photoId?.trim()) throw new Error('Photo ID is required');
+    // FIXED: Minimal validation to prevent edge function crashes
+    if (!imageUrl?.trim()) {
+      console.error('❌ Missing imageUrl');
+      throw new Error('Image is required');
+    }
+    if (!style?.trim()) {
+      console.error('❌ Missing style');
+      throw new Error('Style is required');
+    }
+    if (!photoId?.trim()) {
+      console.error('❌ Missing photoId'); 
+      throw new Error('Photo ID is required');
+    }
     
-    // Simple aspect ratio correction for GPT-Image-1 compatibility
+    // FIXED: Simple aspect ratio validation - no complex mapping
     let correctedAspectRatio = aspectRatio;
-    if (!isValidAspectRatio(aspectRatio)) {
-      const ratioMap: { [key: string]: string } = {
-        '4:3': '3:2',
-        '3:4': '2:3'
-      };
-      correctedAspectRatio = ratioMap[aspectRatio] || '1:1';
-      console.log(`📐 Aspect ratio corrected: ${aspectRatio} → ${correctedAspectRatio}`);
+    if (!['1:1', '16:9', '9:16', '3:2', '2:3'].includes(aspectRatio)) {
+      correctedAspectRatio = '1:1';
+      console.log(`📐 Aspect ratio simplified: ${aspectRatio} → ${correctedAspectRatio}`);
     }
     
     // Check authentication
