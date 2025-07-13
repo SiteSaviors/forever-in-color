@@ -107,11 +107,11 @@ const UploadDropzone = ({
             </MobileTypography>
           </div>
           
-          {/* Mobile-optimized CTA button with proper touch targets */}
+          {/* Mobile-optimized CTA button - Reduced top margin */}
           <div className="pt-3 sm:pt-4">
             <MobileButton 
               size="lg" 
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 disabled:hover:scale-100 w-full sm:w-auto min-h-[48px] px-6 py-3 text-base sm:text-lg font-poppins-tight"
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 disabled:hover:scale-100 w-full sm:w-auto"
               disabled={isUploading}
               onClick={onClick}
             >

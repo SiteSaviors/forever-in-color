@@ -49,11 +49,11 @@ const StepContent = ({
 
   return (
     <div className="flex-1 text-left min-w-0">
-      <div className="flex flex-col gap-2 sm:gap-3 mb-3 sm:mb-4">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 flex-wrap">
+      <div className="flex flex-col gap-1 sm:gap-2 mb-2">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 flex-wrap">
           <MobileTypography
             variant="h3"
-            className={`${titleClasses} font-poppins-tight text-lg sm:text-xl md:text-2xl`}
+            className={titleClasses}
           >
             {title}
             {styleNameElement}
@@ -69,7 +69,7 @@ const StepContent = ({
       
       <MobileTypography
         variant="body"
-        className={`transition-all duration-300 font-poppins text-sm sm:text-base leading-relaxed ${
+        className={`transition-all duration-300 ${
           !canAccess ? 'text-gray-400' : 'text-gray-600'
         } ${isActive ? 'block' : 'hidden sm:block'}`}
       >
