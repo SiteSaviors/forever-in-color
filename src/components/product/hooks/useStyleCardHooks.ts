@@ -78,7 +78,7 @@ const createMockEvent = (): React.MouseEvent => {
     isDefaultPrevented: () => false,
     isPropagationStopped: () => false,
     persist: () => {}
-  } as React.MouseEvent;
+  } as unknown as React.MouseEvent;
 };
 
 export const useStyleCardHooks = (props: UseStyleCardHooksProps) => {
