@@ -53,8 +53,8 @@ const StyleCard = memo((props: StyleCardProps) => {
     // Handlers
     handleCardClick,
     handleContinueClick,
-    handleGenerateWrapper,
-    handleRetryWrapper,
+    handleGenerateClick,
+    handleRetryClick,
     handleImageExpand,
     
     // Interactions
@@ -73,7 +73,7 @@ const StyleCard = memo((props: StyleCardProps) => {
         hasError={hasErrorBoolean}
         canAccess={!!croppedImage}
         onClick={handleCardClick}
-        onGenerateStyle={handleGenerateWrapper}
+        onGenerateStyle={handleGenerateClick}
       >
         <StyleCardContent
           style={style}
@@ -93,8 +93,8 @@ const StyleCard = memo((props: StyleCardProps) => {
           touchHandlers={touchHandlers}
           isPressed={isPressed}
           onContinueClick={handleContinueClick}
-          onGenerateClick={handleGenerateWrapper}
-          onRetryClick={handleRetryWrapper}
+          onGenerateClick={handleGenerateClick}
+          onRetryClick={handleRetryClick}
           onImageExpand={handleImageExpand}
         />
       </StyleCardContainer>

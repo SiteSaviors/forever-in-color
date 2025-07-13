@@ -29,6 +29,7 @@ export const useStyleCard = ({
   onStyleClick,
   onContinue
 }: UseStyleCardProps) => {
+  // Simplified state management - idle → loading → success/error
   const [isLoading, setIsLoading] = useState(false);
   const [isStyleGenerated, setIsStyleGenerated] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(preGeneratedPreview || null);
@@ -36,7 +37,7 @@ export const useStyleCard = ({
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
-  // Enhanced error handling state
+  // Simplified error tracking
   const [retryCount, setRetryCount] = useState(0);
   const [lastError, setLastError] = useState<string | null>(null);
 
@@ -64,55 +65,80 @@ export const useStyleCard = ({
     setIsLightboxOpen(true);
   };
 
+  // Reset all error states before attempting generation
+  const resetErrorState = useCallback(() => {
+    console.log(`🔄 Resetting error state for ${style.name}`);
+    setHasError(false);
+    setValidationError(null);
+    setLastError(null);
+  }, [style.name]);
+
+  // Simplified state validation
+  const validateGenerationState = useCallback(() => {
+    if (!croppedImage) {
+      console.log(`❌ Validation failed for ${style.name}: No cropped image`);
+      return false;
+    }
+    
+    if (isPermanentlyGenerated) {
+      console.log(`❌ Validation failed for ${style.name}: Already permanently generated`);
+      return false;
+    }
+    
+    if (isLoading) {
+      console.log(`❌ Validation failed for ${style.name}: Already loading`);
+      return false;
+    }
+    
+    return true;
+  }, [croppedImage, isPermanentlyGenerated, isLoading, style.name]);
+
   const handleGenerateClick = useCallback(async (e: React.MouseEvent) => {
     e?.stopPropagation();
     console.log(`🎨 Generate clicked for style: ${style.id} (${style.name})`);
     
-    if (!croppedImage || isPermanentlyGenerated) {
-      console.log('❌ Generate blocked: No image or already generated');
+    // Validate state before proceeding
+    if (!validateGenerationState()) {
       return;
     }
 
-    // Clear previous errors and start generation
-    setHasError(false);
-    setValidationError(null);
-    setLastError(null);
+    // Reset errors and start loading - simple state flow
+    resetErrorState();
     setIsLoading(true);
     setRetryCount(prev => prev + 1);
     
+    console.log(`🚀 Starting generation attempt ${retryCount + 1} for ${style.name}`);
+    
     try {
-      console.log('🚀 Starting style preview generation...', {
-        imageUrl: croppedImage.substring(0, 50) + '...',
-        styleName: style.name,
-        orientation: selectedOrientation,
-        retryAttempt: retryCount + 1
-      });
-
       const photoId = `photo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       const aspectRatio = getAspectRatio(selectedOrientation);
       
-      const previewUrl = await generateStylePreview(
+      console.log('📋 Generation parameters:', {
+        styleName: style.name,
+        orientation: selectedOrientation,
+        aspectRatio,
+        photoId,
+        hasImage: !!croppedImage
+      });
+      
+      const generatedPreviewUrl = await generateStylePreview(
         croppedImage,
         style.name,
         photoId,
         aspectRatio
       );
 
-      if (previewUrl) {
-        console.log('✅ Style preview generated successfully:', previewUrl.substring(0, 50) + '...');
-        setPreviewUrl(previewUrl);
+      if (generatedPreviewUrl) {
+        console.log('✅ Generation successful for', style.name);
+        setPreviewUrl(generatedPreviewUrl);
         setIsStyleGenerated(true);
-        setHasError(false);
-        setValidationError(null);
-        setLastError(null);
-        
         // Auto-select the style after successful generation
         onStyleClick(style);
       } else {
         throw new Error('No preview URL returned from generation service');
       }
     } catch (error) {
-      console.error('❌ Style preview generation failed:', error);
+      console.error('❌ Generation failed for', style.name, ':', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to generate style preview';
       setHasError(errorMessage);
       setValidationError(errorMessage);
@@ -120,32 +146,30 @@ export const useStyleCard = ({
     } finally {
       setIsLoading(false);
     }
-  }, [style, croppedImage, selectedOrientation, isPermanentlyGenerated, onStyleClick, retryCount]);
+  }, [style, croppedImage, selectedOrientation, onStyleClick, retryCount, validateGenerationState, resetErrorState]);
 
   const handleRetryClick = useCallback(async (e: React.MouseEvent) => {
     e?.stopPropagation();
-    console.log(`🔄 Retry clicked for style: ${style.id} (${style.name}), attempt: ${retryCount + 1}`);
+    console.log(`🔄 Retry clicked for style: ${style.id} (${style.name})`);
     
-    // Reset error state and try again
-    setHasError(false);
-    setValidationError(null);
-    
-    // Call the generate function again
+    // Simple retry - just call generate again (it will reset state internally)
     await handleGenerateClick(e);
-  }, [handleGenerateClick, style, retryCount]);
+  }, [handleGenerateClick, style]);
 
   const imageToShow = previewUrl || style.image;
 
-  // Enhanced logging for debugging
-  console.log(`🔍 StyleCard State Debug [${style.name}]:`, {
+  // Comprehensive state logging for debugging
+  console.log(`🔍 StyleCard State [${style.name}]:`, {
+    state: isLoading ? 'loading' : hasError ? 'error' : isStyleGenerated ? 'generated' : 'idle',
     isSelected,
     hasError: !!hasError,
+    errorMessage: hasError,
     isLoading,
     isPermanentlyGenerated,
     isStyleGenerated,
-    previewUrl: previewUrl ? previewUrl.substring(0, 50) + '...' : null,
+    hasPreviewUrl: !!previewUrl,
     retryCount,
-    lastError
+    canGenerate: !!croppedImage && !isPermanentlyGenerated && !isLoading
   });
 
   return {

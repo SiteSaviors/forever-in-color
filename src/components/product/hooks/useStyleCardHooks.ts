@@ -1,5 +1,5 @@
 
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useBlinking } from './useBlinking';
 import { useStyleCard } from './useStyleCard';
 import { useTouchOptimizedInteractions } from './useTouchOptimizedInteractions';
@@ -24,63 +24,6 @@ interface UseStyleCardHooksProps {
   shouldBlur?: boolean;
 }
 
-// Create a proper mock event object with all required methods
-const createMockEvent = (): React.MouseEvent => {
-  const mockNativeEvent = new MouseEvent('click', {
-    bubbles: true,
-    cancelable: true,
-    view: window,
-    detail: 1,
-    screenX: 0,
-    screenY: 0,
-    clientX: 0,
-    clientY: 0,
-    ctrlKey: false,
-    altKey: false,
-    shiftKey: false,
-    metaKey: false,
-    button: 0,
-    buttons: 1,
-    relatedTarget: null
-  });
-
-  return {
-    stopPropagation: () => {},
-    preventDefault: () => {},
-    currentTarget: null,
-    target: null,
-    bubbles: true,
-    cancelable: true,
-    defaultPrevented: false,
-    eventPhase: 2,
-    isTrusted: false,
-    nativeEvent: mockNativeEvent,
-    timeStamp: Date.now(),
-    type: 'click',
-    detail: 1,
-    view: window,
-    altKey: false,
-    button: 0,
-    buttons: 1,
-    clientX: 0,
-    clientY: 0,
-    ctrlKey: false,
-    metaKey: false,
-    movementX: 0,
-    movementY: 0,
-    pageX: 0,
-    pageY: 0,
-    relatedTarget: null,
-    screenX: 0,
-    screenY: 0,
-    shiftKey: false,
-    getModifierState: () => false,
-    isDefaultPrevented: () => false,
-    isPropagationStopped: () => false,
-    persist: () => {}
-  } as unknown as React.MouseEvent;
-};
-
 export const useStyleCardHooks = (props: UseStyleCardHooksProps) => {
   const {
     style,
@@ -94,6 +37,13 @@ export const useStyleCardHooks = (props: UseStyleCardHooksProps) => {
     onContinue,
     shouldBlur = false
   } = props;
+
+  console.log(`🔧 StyleCardHooks initialized for ${style.name}:`, {
+    styleId: style.id,
+    hasImage: !!croppedImage,
+    isSelected: selectedStyle === style.id,
+    hasPreGenerated: !!preGeneratedPreview
+  });
 
   // Performance monitoring with consolidated hook
   usePerformanceMonitor(`StyleCard-${style.name}`, { 
@@ -116,44 +66,48 @@ export const useStyleCardHooks = (props: UseStyleCardHooksProps) => {
   const hasErrorBoolean = Boolean(styleCardState.hasError);
   const errorMessage = typeof styleCardState.hasError === 'string' ? styleCardState.hasError : (styleCardState.validationError || 'Generation failed');
 
-  // Create proper wrapper functions with real event handling
-  const handleGenerateWrapper = (e?: React.MouseEvent) => {
-    const event = e || createMockEvent();
-    console.log('🎯 Generate wrapper called for style:', style.name);
-    try {
-      styleCardState.handleGenerateClick(event);
-    } catch (error) {
-      console.error('Error in generate wrapper:', error);
+  // Direct event handlers - no mock objects or wrappers
+  const handleGenerateClick = (e?: React.MouseEvent) => {
+    console.log(`🎯 Direct generate click for ${style.name}`);
+    if (e) {
+      styleCardState.handleGenerateClick(e);
+    } else {
+      // Create a minimal synthetic event for programmatic calls
+      const syntheticEvent = {
+        stopPropagation: () => {},
+        preventDefault: () => {}
+      } as React.MouseEvent;
+      styleCardState.handleGenerateClick(syntheticEvent);
     }
   };
   
-  const handleRetryWrapper = (e?: React.MouseEvent) => {
-    const event = e || createMockEvent();
-    console.log('🔄 Retry wrapper called for style:', style.name);
-    try {
-      styleCardState.handleRetryClick(event);
-    } catch (error) {
-      console.error('Error in retry wrapper:', error);
+  const handleRetryClick = (e?: React.MouseEvent) => {
+    console.log(`🔄 Direct retry click for ${style.name}`);
+    if (e) {
+      styleCardState.handleRetryClick(e);
+    } else {
+      // Create a minimal synthetic event for programmatic calls  
+      const syntheticEvent = {
+        stopPropagation: () => {},
+        preventDefault: () => {}
+      } as React.MouseEvent;
+      styleCardState.handleRetryClick(syntheticEvent);
     }
   };
 
-  // Create wrapper functions for touch handlers
+  // Simplified touch handlers
   const handleTouchTap = () => {
-    console.log('👆 Touch tap for style:', style.name);
-    try {
-      styleCardState.handleCardClick();
-    } catch (error) {
-      console.error('Error in touch tap:', error);
-    }
+    console.log(`👆 Touch tap for ${style.name}`);
+    styleCardState.handleCardClick();
   };
 
   const handleTouchLongPress = () => {
-    console.log('👆 Touch long press for style:', style.name);
-    try {
-      styleCardState.handleImageExpand(createMockEvent());
-    } catch (error) {
-      console.error('Error in touch long press:', error);
-    }
+    console.log(`👆 Touch long press for ${style.name}`);
+    const syntheticEvent = {
+      stopPropagation: () => {},
+      preventDefault: () => {}
+    } as React.MouseEvent;
+    styleCardState.handleImageExpand(syntheticEvent);
   };
 
   // Touch-optimized interactions with integrated debouncing
@@ -169,15 +123,22 @@ export const useStyleCardHooks = (props: UseStyleCardHooksProps) => {
     hasGeneratedOnce: styleCardState.isPermanentlyGenerated
   });
 
+  console.log(`📊 StyleCardHooks state for ${style.name}:`, {
+    isLoading: styleCardState.isLoading,
+    hasError: hasErrorBoolean,
+    isSelected: styleCardState.isSelected,
+    hasPreview: !!styleCardState.previewUrl
+  });
+
   return {
     // State from consolidated hook
     ...styleCardState,
     hasErrorBoolean,
     errorMessage,
     
-    // Wrapper handlers
-    handleGenerateWrapper,
-    handleRetryWrapper,
+    // Direct handlers (no wrappers)
+    handleGenerateClick,
+    handleRetryClick,
     
     // Interactions
     isPressed,
