@@ -118,6 +118,24 @@
   }
 }
 
+/* Premium Text Animations */
+@keyframes premium-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    filter: drop-shadow(0 0 8px rgba(236, 72, 153, 0.3));
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.015);
+    filter: drop-shadow(0 0 16px rgba(236, 72, 153, 0.5));
+  }
+}
+
+.premium-pulse {
+  animation: premium-pulse 3.5s ease-in-out infinite;
+}
+
 /* Poppins font with extra-tight letter spacing */
 @layer components {
   .font-poppins {
@@ -163,12 +181,42 @@
   }
 }
 
+/* Optimized Marquee Animations for CustomerPhotoMarquee */
+@keyframes marquee-right {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes marquee-left {
+  0% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
 .animate-scroll {
   animation: scroll 30s linear infinite;
 }
 
 .animate-scroll:hover {
   animation-play-state: paused;
+}
+
+/* Phase 5: Optimized marquee animations with improved performance */
+.animate-marquee-right {
+  animation: marquee-right 45s linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee-left {
+  animation: marquee-left 40s linear infinite;
+  will-change: transform;
 }
 
 /* 3D Carousel Styles */
@@ -217,18 +265,19 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Floating Animation */
+/* Phase 5: Optimized Floating Animation with improved performance */
 @keyframes float-gentle {
   0%, 100% {
     transform: translateY(0px);
   }
   50% {
-    transform: translateY(-2px);
+    transform: translateY(-1.5px);
   }
 }
 
 .float-gentle {
-  animation: float-gentle 4s ease-in-out infinite;
+  animation: float-gentle 3.5s ease-in-out infinite;
+  will-change: transform;
 }
 
 /* Mobile-specific utilities */
