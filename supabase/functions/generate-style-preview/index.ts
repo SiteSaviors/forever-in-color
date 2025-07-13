@@ -2,34 +2,25 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 import { StylePromptService } from './stylePromptService.ts';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-// Convert base64 to blob for OpenAI API
-async function base64ToBlob(base64String: string): Promise<Blob> {
-  const response = await fetch(base64String);
-  return response.blob();
-}
+import { corsHeaders, handleCorsPreflightRequest, createCorsResponse } from './corsUtils.ts';
+import { base64ToBlob, getImageSize } from './imageUtils.ts';
+import { validateRequest } from './requestValidator.ts';
+import { OpenAIService } from './openaiService.ts';
+import { createSuccessResponse, createErrorResponse } from './responseUtils.ts';
 
 serve(async (req) => {
   console.log(`🔥 Edge Function Request: ${req.method} ${req.url}`);
   
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return handleCorsPreflightRequest();
   }
 
   // Only allow POST requests
   if (req.method !== 'POST') {
-    return new Response(
-      JSON.stringify({ error: 'Method not allowed' }), 
-      { 
-        status: 405, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
+    return createCorsResponse(
+      JSON.stringify(createErrorResponse('method_not_allowed', 'Method not allowed')), 
+      405
     );
   }
 
@@ -41,29 +32,23 @@ serve(async (req) => {
     const body = await req.json();
     console.log(`📝 [${requestId}] Request body:`, JSON.stringify({ ...body, imageUrl: 'BASE64_DATA_HIDDEN' }, null, 2));
 
-    const { 
-      imageUrl, 
-      style, 
-      photoId, 
-      aspectRatio = '1:1', 
-      watermark = true,
-      quality = 'preview'
-    } = body;
-
-    // Validate required fields
-    if (!imageUrl || !style) {
-      return new Response(
-        JSON.stringify({ error: 'Missing required fields: imageUrl and style' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    // Validate request
+    const validation = validateRequest(body);
+    if (!validation.isValid) {
+      return createCorsResponse(
+        JSON.stringify(createErrorResponse('invalid_request', validation.error!)),
+        400
       );
     }
+
+    const { imageUrl, style, aspectRatio, quality } = validation.data!;
 
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openaiApiKey) {
       console.error(`❌ [${requestId}] Missing OpenAI API key`);
-      return new Response(
-        JSON.stringify({ error: 'AI service configuration error' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      return createCorsResponse(
+        JSON.stringify(createErrorResponse('configuration_error', 'AI service configuration error')),
+        500
       );
     }
 
@@ -95,16 +80,7 @@ serve(async (req) => {
     console.log(`🎯 [${requestId}] Using prompt:`, stylePrompt.substring(0, 100) + '...');
 
     // Convert aspect ratio to size
-    let size = '1024x1024'; // default square
-    if (aspectRatio === '16:9') {
-      size = '1792x1024';
-    } else if (aspectRatio === '9:16') {
-      size = '1024x1792';
-    } else if (aspectRatio === '3:2') {
-      size = '1536x1024';
-    } else if (aspectRatio === '2:3') {
-      size = '1024x1536';
-    }
+    const size = getImageSize(aspectRatio);
 
     // Convert base64 image to blob
     let imageBlob: Blob;
@@ -113,163 +89,43 @@ serve(async (req) => {
       console.log(`📷 [${requestId}] Image converted to blob, size:`, imageBlob.size);
     } catch (error) {
       console.error(`❌ [${requestId}] Failed to convert image:`, error);
-      return new Response(
-        JSON.stringify({ error: 'Invalid image format' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      return createCorsResponse(
+        JSON.stringify(createErrorResponse('invalid_image', 'Invalid image format')),
+        400
       );
     }
 
+    // Initialize OpenAI service
+    const openaiService = new OpenAIService(openaiApiKey);
+
     // Try GPT-Image-1 with image variations (maintains subject better)
-    try {
-      console.log(`🔄 [${requestId}] Trying GPT-Image-1 variations...`);
-      
-      const formData = new FormData();
-      formData.append('image', imageBlob, 'image.jpg');
-      formData.append('prompt', stylePrompt);
-      formData.append('model', 'gpt-image-1');
-      formData.append('size', size);
-      formData.append('n', '1');
-
-      const openaiResponse = await fetch('https://api.openai.com/v1/images/variations', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${openaiApiKey}`,
-        },
-        body: formData,
-      });
-
-      if (openaiResponse.ok) {
-        const result = await openaiResponse.json();
-        if (result.data && result.data[0]?.url) {
-          const generatedImageUrl = result.data[0].url;
-          console.log(`✅ [${requestId}] Success with GPT-Image-1 variations`);
-          
-          const endTime = Date.now();
-          const duration = endTime - startTime;
-          console.log(`=== ✅ GPT-IMAGE-1 COMPLETED [${requestId}] in ${duration}ms ===`);
-
-          return new Response(
-            JSON.stringify({ 
-              preview_url: generatedImageUrl,
-              requestId,
-              duration,
-              timestamp: new Date().toISOString()
-            }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
-      } else {
-        const errorData = await openaiResponse.json().catch(() => ({}));
-        console.warn(`⚠️ [${requestId}] GPT-Image-1 variations failed:`, errorData.error?.message || 'Unknown error');
-      }
-    } catch (error) {
-      console.warn(`⚠️ [${requestId}] GPT-Image-1 variations error:`, error.message);
-    }
-
+    let generatedImageUrl = await openaiService.tryImageVariations(imageBlob, stylePrompt, size, requestId);
+    
     // Fallback to GPT-Image-1 edits
-    try {
-      console.log(`🔄 [${requestId}] Trying GPT-Image-1 edits...`);
-      
-      const formData = new FormData();
-      formData.append('image', imageBlob, 'image.jpg');
-      formData.append('prompt', stylePrompt);
-      formData.append('model', 'gpt-image-1');
-      formData.append('size', size);
-      formData.append('n', '1');
-
-      const openaiResponse = await fetch('https://api.openai.com/v1/images/edits', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${openaiApiKey}`,
-        },
-        body: formData,
-      });
-
-      if (openaiResponse.ok) {
-        const result = await openaiResponse.json();
-        if (result.data && result.data[0]?.url) {
-          const generatedImageUrl = result.data[0].url;
-          console.log(`✅ [${requestId}] Success with GPT-Image-1 edits`);
-          
-          const endTime = Date.now();
-          const duration = endTime - startTime;
-          console.log(`=== ✅ GPT-IMAGE-1 COMPLETED [${requestId}] in ${duration}ms ===`);
-
-          return new Response(
-            JSON.stringify({ 
-              preview_url: generatedImageUrl,
-              requestId,
-              duration,
-              timestamp: new Date().toISOString()
-            }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
-      } else {
-        const errorData = await openaiResponse.json().catch(() => ({}));
-        console.warn(`⚠️ [${requestId}] GPT-Image-1 edits failed:`, errorData.error?.message || 'Unknown error');
-      }
-    } catch (error) {
-      console.warn(`⚠️ [${requestId}] GPT-Image-1 edits error:`, error.message);
+    if (!generatedImageUrl) {
+      generatedImageUrl = await openaiService.tryImageEdits(imageBlob, stylePrompt, size, requestId);
     }
 
-    // All image-based approaches failed, fall back to text generation with strong prompts
-    try {
-      console.log(`🔄 [${requestId}] Trying DALL-E-3 with detailed prompt...`);
-      
-      const detailedPrompt = `A dolphin in ${style} style. The image should show a dolphin with the artistic characteristics of ${style}. Maintain the dolphin as the main subject while applying the visual style transformation.`;
-      
-      const dalleResponse = await fetch('https://api.openai.com/v1/images/generations', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${openaiApiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'dall-e-3',
-          prompt: detailedPrompt,
-          size: size === '1536x1024' ? '1792x1024' : size === '1024x1536' ? '1024x1792' : size,
-          quality: quality === 'preview' ? 'standard' : 'hd',
-          n: 1
-        }),
-      });
+    // Final fallback to DALL-E-3
+    if (!generatedImageUrl) {
+      generatedImageUrl = await openaiService.tryDallE3Fallback(style, size, quality, requestId);
+    }
 
-      if (dalleResponse.ok) {
-        const result = await dalleResponse.json();
-        if (result.data && result.data[0]?.url) {
-          const generatedImageUrl = result.data[0].url;
-          console.log(`✅ [${requestId}] Success with DALL-E-3 fallback`);
-          
-          const endTime = Date.now();
-          const duration = endTime - startTime;
-          console.log(`=== ✅ DALL-E-3 COMPLETED [${requestId}] in ${duration}ms ===`);
+    if (generatedImageUrl) {
+      const endTime = Date.now();
+      const duration = endTime - startTime;
+      console.log(`=== ✅ GENERATION COMPLETED [${requestId}] in ${duration}ms ===`);
 
-          return new Response(
-            JSON.stringify({ 
-              preview_url: generatedImageUrl,
-              requestId,
-              duration,
-              timestamp: new Date().toISOString()
-            }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
-      } else {
-        const errorData = await dalleResponse.json().catch(() => ({}));
-        console.warn(`⚠️ [${requestId}] DALL-E-3 failed:`, errorData.error?.message || 'Unknown error');
-      }
-    } catch (error) {
-      console.warn(`⚠️ [${requestId}] DALL-E-3 error:`, error.message);
+      return createCorsResponse(
+        JSON.stringify(createSuccessResponse(generatedImageUrl, requestId, duration))
+      );
     }
 
     // All models failed
     console.error(`❌ [${requestId}] All models failed`);
-    return new Response(
-      JSON.stringify({ 
-        error: 'generation_failed',
-        message: 'AI service is temporarily unavailable. Please try again.'
-      }),
-      { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    return createCorsResponse(
+      JSON.stringify(createErrorResponse('generation_failed', 'AI service is temporarily unavailable. Please try again.')),
+      503
     );
 
   } catch (error) {
@@ -279,14 +135,9 @@ serve(async (req) => {
     console.error('💥 Unexpected error:', error);
     console.error('📍 Error stack:', error.stack);
     
-    return new Response(
-      JSON.stringify({ 
-        error: 'internal_error',
-        message: 'Internal server error. Please try again.',
-        requestId,
-        timestamp: new Date().toISOString()
-      }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    return createCorsResponse(
+      JSON.stringify(createErrorResponse('internal_error', 'Internal server error. Please try again.', requestId)),
+      500
     );
   }
 });

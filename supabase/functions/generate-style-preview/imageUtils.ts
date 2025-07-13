@@ -1,39 +1,21 @@
+// Convert base64 to blob for OpenAI API
+export async function base64ToBlob(base64String: string): Promise<Blob> {
+  const response = await fetch(base64String);
+  return response.blob();
+}
 
-export const convertBase64ToBlob = (imageData: string): Blob => {
-  const base64Data = imageData.replace(/^data:image\/[a-z]+;base64,/, '');
-  const binaryString = atob(base64Data);
-  const bytes = new Uint8Array(binaryString.length);
-  for (let i = 0; i < binaryString.length; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
+// Convert aspect ratio to OpenAI size format
+export function getImageSize(aspectRatio: string): string {
+  switch (aspectRatio) {
+    case '16:9':
+      return '1792x1024';
+    case '9:16':
+      return '1024x1792';
+    case '3:2':
+      return '1536x1024';
+    case '2:3':
+      return '1024x1536';
+    default:
+      return '1024x1024'; // default square
   }
-  return new Blob([bytes], { type: 'image/png' });
-};
-
-export const createImageEditFormData = (imageData: string, prompt: string): FormData => {
-  const formData = new FormData();
-  const blob = convertBase64ToBlob(imageData);
-  
-  formData.append('image', blob, 'image.png');
-  formData.append('prompt', prompt);
-  formData.append('n', '1');
-  formData.append('size', '1024x1024');
-  formData.append('response_format', 'b64_json');
-  
-  return formData;
-};
-
-export const extractGeneratedImage = (imageData_result: any): string | null => {
-  // Handle different response formats
-  if (imageData_result.data && imageData_result.data[0]?.b64_json) {
-    return `data:image/png;base64,${imageData_result.data[0].b64_json}`;
-  } else if (imageData_result.data && imageData_result.data[0]?.url) {
-    return imageData_result.data[0].url;
-  } else if (typeof imageData_result === 'string' && imageData_result.startsWith('http')) {
-    // Direct URL from Replicate
-    return imageData_result;
-  } else if (Array.isArray(imageData_result) && imageData_result[0]) {
-    // Array of URLs from Replicate
-    return imageData_result[0];
-  }
-  return null;
-};
+}
