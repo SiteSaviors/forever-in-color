@@ -52,28 +52,23 @@ const stateTransitions: Record<InteractionState, Partial<Record<InteractionEvent
     DISABLE: 'disabled'
   },
   animating: {
-    // During animation, allow critical state changes
+    // During animation, only allow critical state changes
     ERROR: 'error',
     DISABLE: 'disabled',
-    RESET: 'idle',
-    FINISH_LOADING: 'selected'
+    RESET: 'idle'
   },
   loading: {
     FINISH_LOADING: 'selected',
     ERROR: 'error',
-    DISABLE: 'disabled',
-    RESET: 'idle'
+    DISABLE: 'disabled'
   },
   error: {
     RESET: 'idle',
     START_LOADING: 'loading',
-    SELECT: 'selected', // Allow direct selection from error state
-    DISABLE: 'disabled',
-    HOVER_START: 'error' // Stay in error but allow hover feedback
+    DISABLE: 'disabled'
   },
   disabled: {
-    ENABLE: 'idle',
-    RESET: 'idle'
+    ENABLE: 'idle'
   }
 };
 
@@ -123,27 +118,19 @@ export const useInteractionStateMachine = (options: InteractionStateMachineOptio
     processAnimationQueue();
   }, [processAnimationQueue]);
 
-  // Transition between states with validation and improved error recovery
+  // Transition between states with validation
   const transition = useCallback((event: InteractionEvent, immediate = false) => {
     const currentTransitions = stateTransitions[state];
     const nextState = currentTransitions?.[event];
 
     if (!nextState) {
-      console.warn(`Invalid transition: ${event} from state ${state}. Available transitions:`, Object.keys(currentTransitions || {}));
-      
-      // For error recovery, allow RESET from any state
-      if (event === 'RESET') {
-        console.log('🔄 Force resetting state to idle from:', state);
-        setState('idle');
-        return true;
-      }
-      
+      console.warn(`Invalid transition: ${event} from state ${state}`);
       return false;
     }
 
     const performTransition = () => {
       setState(nextState);
-      console.log(`✅ State transition: ${state} -> ${nextState} (${event})`);
+      console.log(`State transition: ${state} -> ${nextState} (${event})`);
     };
 
     if (immediate || nextState === 'error' || nextState === 'disabled') {
@@ -197,8 +184,8 @@ export const useInteractionStateMachine = (options: InteractionStateMachineOptio
   const hasError = state === 'error';
   const isDisabled = state === 'disabled';
   
-  // Interactive states (can respond to user input) - allow interaction in error state for recovery
-  const isInteractive = !isDisabled && !isLoading;
+  // Interactive states (can respond to user input)
+  const isInteractive = !isDisabled && !isLoading && !hasError;
   
   // Visual states for styling
   const shouldShowHover = isHovering && isInteractive;

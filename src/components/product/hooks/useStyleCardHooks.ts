@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from 'react';
 import { useBlinking } from './useBlinking';
 import { useStyleCard } from './useStyleCard';
@@ -23,63 +22,6 @@ interface UseStyleCardHooksProps {
   onContinue: () => void;
   shouldBlur?: boolean;
 }
-
-// Create a proper mock event object with all required methods
-const createMockEvent = (): React.MouseEvent => {
-  const mockNativeEvent = new MouseEvent('click', {
-    bubbles: true,
-    cancelable: true,
-    view: window,
-    detail: 1,
-    screenX: 0,
-    screenY: 0,
-    clientX: 0,
-    clientY: 0,
-    ctrlKey: false,
-    altKey: false,
-    shiftKey: false,
-    metaKey: false,
-    button: 0,
-    buttons: 1,
-    relatedTarget: null
-  });
-
-  return {
-    stopPropagation: () => {},
-    preventDefault: () => {},
-    currentTarget: null,
-    target: null,
-    bubbles: true,
-    cancelable: true,
-    defaultPrevented: false,
-    eventPhase: 2,
-    isTrusted: false,
-    nativeEvent: mockNativeEvent,
-    timeStamp: Date.now(),
-    type: 'click',
-    detail: 1,
-    view: window,
-    altKey: false,
-    button: 0,
-    buttons: 1,
-    clientX: 0,
-    clientY: 0,
-    ctrlKey: false,
-    metaKey: false,
-    movementX: 0,
-    movementY: 0,
-    pageX: 0,
-    pageY: 0,
-    relatedTarget: null,
-    screenX: 0,
-    screenY: 0,
-    shiftKey: false,
-    getModifierState: () => false,
-    isDefaultPrevented: () => false,
-    isPropagationStopped: () => false,
-    persist: () => {}
-  } as React.MouseEvent;
-};
 
 export const useStyleCardHooks = (props: UseStyleCardHooksProps) => {
   const {
@@ -112,49 +54,51 @@ export const useStyleCardHooks = (props: UseStyleCardHooksProps) => {
     onContinue
   });
 
-  // Convert hasError to boolean and extract error message
+  // Convert hasError to boolean and extract error message before passing to handlers
   const hasErrorBoolean = Boolean(styleCardState.hasError);
   const errorMessage = typeof styleCardState.hasError === 'string' ? styleCardState.hasError : (styleCardState.validationError || 'Generation failed');
 
-  // Create proper wrapper functions with real event handling
-  const handleGenerateWrapper = (e?: React.MouseEvent) => {
-    const event = e || createMockEvent();
-    console.log('🎯 Generate wrapper called for style:', style.name);
-    try {
-      styleCardState.handleGenerateClick(event);
-    } catch (error) {
-      console.error('Error in generate wrapper:', error);
+  // Create minimal mock event for handlers that require it
+  const createMockEvent = (): React.MouseEvent => ({
+    stopPropagation: () => {},
+    preventDefault: () => {}
+  } as React.MouseEvent);
+
+  // Simplified direct handlers without mock events
+  const handleGenerateWrapper = () => {
+    if (styleCardState.isPermanentlyGenerated) {
+      console.log(`🚫 PERMANENT BLOCK - ${style.name} cannot be regenerated`);
+      return;
     }
+    
+    if (styleCardState.effectiveIsLoading) {
+      console.log(`🚫 BUSY BLOCK - ${style.name} is already generating`);
+      return;
+    }
+    
+    console.log(`🎨 Direct generate call for ${style.name}`);
+    styleCardState.generatePreview();
   };
   
-  const handleRetryWrapper = (e?: React.MouseEvent) => {
-    const event = e || createMockEvent();
-    console.log('🔄 Retry wrapper called for style:', style.name);
-    try {
-      styleCardState.handleRetryClick(event);
-    } catch (error) {
-      console.error('Error in retry wrapper:', error);
+  const handleRetryWrapper = () => {
+    if (styleCardState.isPermanentlyGenerated) {
+      console.log(`🚫 PERMANENT BLOCK - ${style.name} cannot be retried`);
+      return;
     }
+    
+    if (styleCardState.effectiveIsLoading) {
+      console.log(`🚫 BUSY BLOCK - ${style.name} is already generating`);
+      return;
+    }
+    
+    console.log(`🔄 Direct retry call for ${style.name}`);
+    styleCardState.setShowError(false);
+    styleCardState.generatePreview();
   };
 
-  // Create wrapper functions for touch handlers
-  const handleTouchTap = () => {
-    console.log('👆 Touch tap for style:', style.name);
-    try {
-      styleCardState.handleCardClick();
-    } catch (error) {
-      console.error('Error in touch tap:', error);
-    }
-  };
-
-  const handleTouchLongPress = () => {
-    console.log('👆 Touch long press for style:', style.name);
-    try {
-      styleCardState.handleImageExpand(createMockEvent());
-    } catch (error) {
-      console.error('Error in touch long press:', error);
-    }
-  };
+  // Create wrapper functions for touch handlers that accept events but ignore them
+  const handleTouchTap = () => styleCardState.handleCardClick();
+  const handleTouchLongPress = () => styleCardState.handleImageExpand(createMockEvent());
 
   // Touch-optimized interactions with integrated debouncing
   const { isPressed, touchHandlers } = useTouchOptimizedInteractions({
