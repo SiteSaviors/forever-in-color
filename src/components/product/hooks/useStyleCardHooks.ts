@@ -25,41 +25,61 @@ interface UseStyleCardHooksProps {
 }
 
 // Create a proper mock event object with all required methods
-const createMockEvent = (): React.MouseEvent => ({
-  stopPropagation: () => {},
-  preventDefault: () => {},
-  currentTarget: null,
-  target: null,
-  bubbles: false,
-  cancelable: false,
-  defaultPrevented: false,
-  eventPhase: 0,
-  isTrusted: false,
-  nativeEvent: {} as Event,
-  timeStamp: Date.now(),
-  type: 'click',
-  detail: 0,
-  view: null,
-  altKey: false,
-  button: 0,
-  buttons: 0,
-  clientX: 0,
-  clientY: 0,
-  ctrlKey: false,
-  metaKey: false,
-  movementX: 0,
-  movementY: 0,
-  pageX: 0,
-  pageY: 0,
-  relatedTarget: null,
-  screenX: 0,
-  screenY: 0,
-  shiftKey: false,
-  getModifierState: () => false,
-  isDefaultPrevented: () => false,
-  isPropagationStopped: () => false,
-  persist: () => {}
-} as React.MouseEvent);
+const createMockEvent = (): React.MouseEvent => {
+  const mockNativeEvent = new MouseEvent('click', {
+    bubbles: true,
+    cancelable: true,
+    view: window,
+    detail: 1,
+    screenX: 0,
+    screenY: 0,
+    clientX: 0,
+    clientY: 0,
+    ctrlKey: false,
+    altKey: false,
+    shiftKey: false,
+    metaKey: false,
+    button: 0,
+    buttons: 1,
+    relatedTarget: null
+  });
+
+  return {
+    stopPropagation: () => {},
+    preventDefault: () => {},
+    currentTarget: null,
+    target: null,
+    bubbles: true,
+    cancelable: true,
+    defaultPrevented: false,
+    eventPhase: 2,
+    isTrusted: false,
+    nativeEvent: mockNativeEvent,
+    timeStamp: Date.now(),
+    type: 'click',
+    detail: 1,
+    view: window,
+    altKey: false,
+    button: 0,
+    buttons: 1,
+    clientX: 0,
+    clientY: 0,
+    ctrlKey: false,
+    metaKey: false,
+    movementX: 0,
+    movementY: 0,
+    pageX: 0,
+    pageY: 0,
+    relatedTarget: null,
+    screenX: 0,
+    screenY: 0,
+    shiftKey: false,
+    getModifierState: () => false,
+    isDefaultPrevented: () => false,
+    isPropagationStopped: () => false,
+    persist: () => {}
+  } as React.MouseEvent;
+};
 
 export const useStyleCardHooks = (props: UseStyleCardHooksProps) => {
   const {

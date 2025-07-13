@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { generateStylePreview } from '@/utils/stylePreviewApi';
 import { useDebounce } from './useDebounce';
-import { getAspectRatioFromOrientation } from '../orientation/utils';
+import { getAspectRatio } from '../orientation/utils';
 
 interface UseStyleCardProps {
   style: {
@@ -43,6 +43,7 @@ export const useStyleCard = ({
   const isSelected = selectedStyle === style.id;
   const isPermanentlyGenerated = !!preGeneratedPreview;
   const showGeneratedBadge = isPopular && isStyleGenerated;
+  const hasGeneratedPreview = !!previewUrl && isStyleGenerated;
 
   // Use debounced loading state to prevent flickering
   const effectiveIsLoading = useDebounce(isLoading, 300);
@@ -88,7 +89,7 @@ export const useStyleCard = ({
       });
 
       const photoId = `photo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      const aspectRatio = getAspectRatioFromOrientation(selectedOrientation);
+      const aspectRatio = getAspectRatio(selectedOrientation);
       
       const previewUrl = await generateStylePreview(
         croppedImage,
@@ -166,6 +167,7 @@ export const useStyleCard = ({
     imageToShow,
     isPopular,
     showGeneratedBadge,
+    hasGeneratedPreview,
     retryCount,
     lastError
   };
