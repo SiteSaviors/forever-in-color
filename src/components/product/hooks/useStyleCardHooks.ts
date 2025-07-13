@@ -62,8 +62,9 @@ export const useStyleCardHooks = (props: UseStyleCardHooksProps) => {
     onContinue
   });
 
-  // Convert hasError to boolean and extract error message
-  const hasErrorBoolean = Boolean(styleCardState.hasError);
+  // Convert hasError to boolean and extract error message - Fix the "Try Again" issue
+  // Only show error if there's actually an error message (string) or explicit true
+  const hasErrorBoolean = (typeof styleCardState.hasError === 'string' && styleCardState.hasError.length > 0) || styleCardState.hasError === true;
   const errorMessage = typeof styleCardState.hasError === 'string' ? styleCardState.hasError : (styleCardState.validationError || 'Generation failed');
 
   // Direct event handlers - no mock objects or wrappers
@@ -126,6 +127,8 @@ export const useStyleCardHooks = (props: UseStyleCardHooksProps) => {
   console.log(`📊 StyleCardHooks state for ${style.name}:`, {
     isLoading: styleCardState.isLoading,
     hasError: hasErrorBoolean,
+    rawHasError: styleCardState.hasError,
+    hasErrorType: typeof styleCardState.hasError,
     isSelected: styleCardState.isSelected,
     hasPreview: !!styleCardState.previewUrl
   });
