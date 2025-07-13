@@ -106,11 +106,6 @@ serve(async (req) => {
       generatedImageUrl = await openaiService.tryImageEdits(imageBlob, stylePrompt, size, requestId);
     }
 
-    // Final fallback to DALL-E-3
-    if (!generatedImageUrl) {
-      generatedImageUrl = await openaiService.tryDallE3Fallback(style, size, quality, requestId);
-    }
-
     if (generatedImageUrl) {
       const endTime = Date.now();
       const duration = endTime - startTime;
