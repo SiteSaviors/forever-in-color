@@ -84,7 +84,7 @@ export const useStyleCard = ({
     // Auto-generate if no preview and conditions are met
     if (!previewUrl && !effectiveIsLoading && !hasError && style.id !== 1) {
       console.log(`🚀 Auto-generating preview for ${style.name}`);
-      handleGenerateClick({} as React.MouseEvent);
+      handleGenerateClick();
     } else {
       console.log(`📋 Generation check - previewUrl: ${!!previewUrl}, isLoading: ${effectiveIsLoading}, hasError: ${hasError}, styleId: ${style.id}`);
     }
@@ -105,8 +105,7 @@ export const useStyleCard = ({
   };
 
   // Generate click handler with enhanced logging
-  const handleGenerateClick = useCallback(async (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleGenerateClick = useCallback(async () => {
     
     console.log(`🎨 GENERATE BUTTON CLICKED - ${style.name} (ID: ${style.id})`);
     console.log(`  - isPermanentlyGenerated: ${isPermanentlyGenerated}`);
@@ -148,8 +147,7 @@ export const useStyleCard = ({
   }, [generatePreview, isPermanentlyGenerated, effectiveIsLoading, style.name, style.id, hasError, croppedImage]);
 
   // Retry click handler
-  const handleRetryClick = useCallback(async (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleRetryClick = useCallback(async () => {
     
     // Skip Original Image style
     if (style.id === 1) {

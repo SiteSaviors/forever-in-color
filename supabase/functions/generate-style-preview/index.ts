@@ -64,71 +64,120 @@ serve(async (req) => {
     // Create style prompt
     const stylePrompt = `Transform this image into ${style} style. Maintain the subject and composition while applying the artistic style transformation. Make it visually appealing and professionally rendered.`;
 
-    // GPT-Image-1 API call with progressive fallback
-    let generatedImageUrl = null;
-    const models = ['gpt-image-1', 'dall-e-3', 'dall-e-2'];
-    
-    for (const model of models) {
-      try {
-        console.log(`🔄 [${requestId}] Trying ${model}...`);
-        
-        const openaiResponse = await fetch('https://api.openai.com/v1/images/edits', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${openaiApiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            model,
-            image: imageUrl,
-            prompt: stylePrompt,
-            size: aspectRatio === '16:9' ? '1792x1024' : 
-                  aspectRatio === '9:16' ? '1024x1792' : '1024x1024',
-            quality: quality === 'preview' ? 'standard' : 'hd',
-            n: 1
-          }),
-        });
-
-        if (openaiResponse.ok) {
-          const result = await openaiResponse.json();
-          if (result.data && result.data[0]?.url) {
-            generatedImageUrl = result.data[0].url;
-            console.log(`✅ [${requestId}] Success with ${model}`);
-            break;
-          }
-        } else {
-          const errorData = await openaiResponse.json().catch(() => ({}));
-          console.warn(`⚠️ [${requestId}] ${model} failed:`, errorData.error?.message || 'Unknown error');
-        }
-      } catch (error) {
-        console.warn(`⚠️ [${requestId}] ${model} error:`, error.message);
-        continue;
-      }
+    // Convert aspect ratio to size
+    let size = '1024x1024'; // default square
+    if (aspectRatio === '16:9') {
+      size = '1792x1024';
+    } else if (aspectRatio === '9:16') {
+      size = '1024x1792';
+    } else if (aspectRatio === '3:2') {
+      size = '1536x1024';
+    } else if (aspectRatio === '2:3') {
+      size = '1024x1536';
     }
 
-    if (!generatedImageUrl) {
-      console.error(`❌ [${requestId}] All models failed`);
-      return new Response(
-        JSON.stringify({ 
-          error: 'generation_failed',
-          message: 'AI service is temporarily unavailable. Please try again.'
+    // Try GPT-Image-1 first (most powerful)
+    try {
+      console.log(`🔄 [${requestId}] Trying GPT-Image-1...`);
+      
+      const openaiResponse = await fetch('https://api.openai.com/v1/images/generations', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openaiApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-image-1',
+          prompt: `${stylePrompt}. Base this on the provided reference image.`,
+          size: size,
+          quality: quality === 'preview' ? 'standard' : 'hd',
+          n: 1
         }),
-        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      });
+
+      if (openaiResponse.ok) {
+        const result = await openaiResponse.json();
+        if (result.data && result.data[0]?.url) {
+          const generatedImageUrl = result.data[0].url;
+          console.log(`✅ [${requestId}] Success with GPT-Image-1`);
+          
+          const endTime = Date.now();
+          const duration = endTime - startTime;
+          console.log(`=== ✅ GPT-IMAGE-1 COMPLETED [${requestId}] in ${duration}ms ===`);
+
+          return new Response(
+            JSON.stringify({ 
+              preview_url: generatedImageUrl,
+              requestId,
+              duration,
+              timestamp: new Date().toISOString()
+            }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      } else {
+        const errorData = await openaiResponse.json().catch(() => ({}));
+        console.warn(`⚠️ [${requestId}] GPT-Image-1 failed:`, errorData.error?.message || 'Unknown error');
+      }
+    } catch (error) {
+      console.warn(`⚠️ [${requestId}] GPT-Image-1 error:`, error.message);
     }
 
-    const endTime = Date.now();
-    const duration = endTime - startTime;
-    console.log(`=== ✅ GPT-IMAGE-1 COMPLETED [${requestId}] in ${duration}ms ===`);
+    // Fallback to DALL-E-3
+    try {
+      console.log(`🔄 [${requestId}] Trying DALL-E-3...`);
+      
+      const dalleResponse = await fetch('https://api.openai.com/v1/images/generations', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openaiApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'dall-e-3',
+          prompt: stylePrompt,
+          size: size === '1536x1024' ? '1792x1024' : size === '1024x1536' ? '1024x1792' : size,
+          quality: quality === 'preview' ? 'standard' : 'hd',
+          n: 1
+        }),
+      });
 
+      if (dalleResponse.ok) {
+        const result = await dalleResponse.json();
+        if (result.data && result.data[0]?.url) {
+          const generatedImageUrl = result.data[0].url;
+          console.log(`✅ [${requestId}] Success with DALL-E-3`);
+          
+          const endTime = Date.now();
+          const duration = endTime - startTime;
+          console.log(`=== ✅ DALL-E-3 COMPLETED [${requestId}] in ${duration}ms ===`);
+
+          return new Response(
+            JSON.stringify({ 
+              preview_url: generatedImageUrl,
+              requestId,
+              duration,
+              timestamp: new Date().toISOString()
+            }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      } else {
+        const errorData = await dalleResponse.json().catch(() => ({}));
+        console.warn(`⚠️ [${requestId}] DALL-E-3 failed:`, errorData.error?.message || 'Unknown error');
+      }
+    } catch (error) {
+      console.warn(`⚠️ [${requestId}] DALL-E-3 error:`, error.message);
+    }
+
+    // All models failed
+    console.error(`❌ [${requestId}] All models failed`);
     return new Response(
       JSON.stringify({ 
-        preview_url: generatedImageUrl,
-        requestId,
-        duration,
-        timestamp: new Date().toISOString()
+        error: 'generation_failed',
+        message: 'AI service is temporarily unavailable. Please try again.'
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
