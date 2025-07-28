@@ -52,32 +52,65 @@ const PsychologyOptimizedSizeCard = memo(({
     onContinue(e);
   }, [onContinue]);
 
-  // Determine card styling based on tier and state
+  // Hero-level Premium Styling with Tier Psychology
   const cardStyles = useMemo(() => {
-    const baseStyles = "relative group cursor-pointer transition-all duration-500 will-change-transform min-w-[320px] font-poppins";
+    const baseStyles = "relative group cursor-pointer transition-all duration-700 will-change-transform min-w-[320px] font-poppins overflow-hidden";
     
     if (isSelected) {
-      return `${baseStyles} scale-105 -translate-y-2 z-30`;
+      return `${baseStyles} scale-110 -translate-y-6 z-50 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.25)]`;
+    }
+    
+    if (option.tier === 'best') {
+      return `${baseStyles} scale-105 -translate-y-3 z-40 hover:scale-110 hover:-translate-y-6 shadow-[0_30px_60px_-12px_rgba(147,51,234,0.35)]`;
     }
     
     if (option.tier === 'better' && option.isRecommended) {
-      return `${baseStyles} scale-102 -translate-y-1 z-20 ring-2 ring-amber-300/50`;
+      return `${baseStyles} scale-103 -translate-y-2 z-30 hover:scale-108 hover:-translate-y-4 shadow-[0_25px_50px_-12px_rgba(245,158,11,0.3)]`;
     }
     
-    return `${baseStyles} hover:scale-102 hover:-translate-y-1 z-10`;
+    return `${baseStyles} hover:scale-105 hover:-translate-y-3 z-20 shadow-[0_20px_40px_-8px_rgba(0,0,0,0.15)]`;
   }, [isSelected, option.tier, option.isRecommended]);
 
+  // Dynamic Multi-Layer Backgrounds with Tier Hierarchy
   const backgroundStyles = useMemo(() => {
     if (isSelected) {
-      return 'linear-gradient(135deg, rgba(147, 51, 234, 0.08) 0%, rgba(236, 72, 153, 0.05) 100%)';
+      return 'bg-gradient-to-br from-primary/15 via-secondary/10 to-accent/15';
+    }
+    
+    if (option.tier === 'best') {
+      return 'bg-gradient-to-br from-primary/12 via-purple-500/8 to-violet-500/12';
     }
     
     if (option.tier === 'better' && option.isRecommended) {
-      return 'linear-gradient(135deg, rgba(245, 158, 11, 0.06) 0%, rgba(251, 191, 36, 0.04) 100%)';
+      return 'bg-gradient-to-br from-amber-500/10 via-yellow-400/6 to-orange-500/10';
     }
     
-    return 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.90) 100%)';
+    return 'bg-gradient-to-br from-background via-muted/50 to-background';
   }, [isSelected, option.tier, option.isRecommended]);
+
+  // Tier-based border colors using semantic tokens
+  const borderStyles = useMemo(() => {
+    if (isSelected) {
+      return 'border-primary border-3';
+    }
+    
+    if (option.tier === 'best') {
+      return 'border-primary/60 border-2';
+    }
+    
+    if (option.tier === 'better' && option.isRecommended) {
+      return 'border-amber-500/60 border-2';
+    }
+    
+    return 'border-border/50 border';
+  }, [isSelected, option.tier, option.isRecommended]);
+
+  // Premium Floating Badges System
+  const FloatingBadge = ({ children, className }: { children: React.ReactNode; className?: string }) => (
+    <div className={`absolute -top-3 -right-3 z-10 animate-bounce ${className}`}>
+      {children}
+    </div>
+  );
 
   const getTierIcon = () => {
     switch (option.tier) {
@@ -101,23 +134,43 @@ const PsychologyOptimizedSizeCard = memo(({
       aria-pressed={isSelected} 
       aria-label={`Select ${option.size} size - ${option.label || option.tier}`}
     >
-      {/* Enhanced background with psychological styling */}
-      <div 
-        className="absolute inset-0 rounded-3xl border-2 backdrop-blur-xl transition-all duration-500"
-        style={{
-          background: backgroundStyles,
-          borderColor: isSelected 
-            ? 'rgb(147, 51, 234)' 
-            : option.isRecommended 
-              ? 'rgb(245, 158, 11)' 
-              : 'rgba(203, 213, 225, 0.4)',
-          boxShadow: isSelected
-            ? '0 25px 50px -12px rgba(147, 51, 234, 0.4), 0 0 0 1px rgba(147, 51, 234, 0.1)'
-            : option.isRecommended
-              ? '0 20px 40px -12px rgba(245, 158, 11, 0.3), 0 0 0 1px rgba(245, 158, 11, 0.1)'
-              : '0 10px 25px -5px rgba(0, 0, 0, 0.1)'
-        }}
-      />
+      {/* Hero-Level Premium Background with Multiple Layers */}
+      <div className={`absolute inset-0 rounded-3xl transition-all duration-700 backdrop-blur-xl ${backgroundStyles} ${borderStyles}`} />
+      
+      {/* Animated Glow Effects */}
+      {isSelected && (
+        <>
+          <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-primary/20 via-secondary/15 to-accent/20 blur-xl animate-pulse" />
+          <div className="absolute inset-0 rounded-3xl border-2 border-primary/50 animate-ping" style={{ animationDuration: '3s' }} />
+        </>
+      )}
+      
+      {option.tier === 'best' && !isSelected && (
+        <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-primary/15 via-purple-500/10 to-violet-500/15 blur-lg opacity-75 group-hover:opacity-100 transition-opacity duration-300" />
+      )}
+      
+      {option.isRecommended && option.tier === 'better' && !isSelected && (
+        <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-amber-500/15 via-yellow-400/10 to-orange-500/15 blur-lg opacity-75 group-hover:opacity-100 transition-opacity duration-300" />
+      )}
+
+      {/* Floating Badge System for Recommendations */}
+      {option.tier === 'best' && (
+        <FloatingBadge className="premium-pulse">
+          <Badge className="bg-gradient-to-r from-primary via-purple-600 to-violet-600 text-white font-bold shadow-2xl px-3 py-1">
+            <Crown className="w-4 h-4 mr-1" />
+            BEST VALUE
+          </Badge>
+        </FloatingBadge>
+      )}
+      
+      {option.isRecommended && option.tier === 'better' && (
+        <FloatingBadge className="glow-pulse">
+          <Badge className="bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 text-white font-bold shadow-2xl px-3 py-1">
+            <Sparkles className="w-4 h-4 mr-1 animate-pulse" />
+            AI PICK
+          </Badge>
+        </FloatingBadge>
+      )}
 
       {/* Content Container */}
       <div className="relative p-6 md:p-8 space-y-6">
