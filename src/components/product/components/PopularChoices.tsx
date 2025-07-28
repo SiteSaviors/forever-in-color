@@ -39,20 +39,24 @@ const PopularChoices = ({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-center gap-3">
-        <Users className="w-5 h-5 text-blue-600" />
-        <h3 className="text-xl font-semibold text-gray-900">
-          Popular Choices
+      <div className="text-center mb-8 p-6 md:p-8 bg-gradient-to-br from-violet-50 via-purple-50 to-pink-50 rounded-2xl border border-violet-100">
+        <div className="flex items-center justify-center mb-4">
+          <div className="relative p-3 bg-gradient-to-br from-violet-100/80 to-pink-100/80 rounded-xl shadow-lg backdrop-blur-sm">
+            <span className="text-2xl">🎨</span>
+            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-violet-400/10 to-pink-400/10 blur-sm -z-10" />
+          </div>
+        </div>
+        <h3 className="text-2xl md:text-3xl lg:text-4xl font-black text-gray-900 mb-3 font-poppins tracking-tight">
+          Explore More Artistic Styles
         </h3>
-        <Badge variant="secondary" className="bg-blue-100 text-blue-700 animate-pulse">
-          <Users className="w-3 h-3 mr-1" />
-          Trending
-        </Badge>
+        <p className="text-gray-700 max-w-2xl mx-auto text-lg leading-relaxed font-medium">
+          Discover trending styles loved by our community that could bring a unique flair to your canvas.
+        </p>
+        <div className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-white/50 rounded-full border border-violet-200">
+          <div className="w-2 h-2 bg-gradient-to-r from-violet-500 to-pink-500 rounded-full animate-pulse" />
+          <span className="text-sm text-violet-700 font-medium">Popular Choices</span>
+        </div>
       </div>
-      
-      <p className="text-center text-gray-600">
-        Explore all our artistic styles and find your perfect match
-      </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
         {allRemainingStyles.map((rec, index) => {

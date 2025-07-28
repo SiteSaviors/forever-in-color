@@ -47,17 +47,28 @@ const HeroRecommendations = ({
 
   return (
     <div className="space-y-6">
-      <div className="text-center space-y-2">
-        <div className="flex items-center justify-center gap-2">
-          <Crown className="w-6 h-6 text-amber-500" />
-          <h3 className="text-2xl font-bold text-gray-900">
-            Perfect for Your Photo
-          </h3>
-          <Crown className="w-6 h-6 text-amber-500" />
+      <div className="text-center mb-8 p-6 md:p-8 bg-gradient-to-br from-emerald-50 via-cyan-50 to-blue-50 rounded-2xl border border-emerald-100">
+        <div className="flex items-center justify-center mb-4">
+          <div className="relative p-3 bg-gradient-to-br from-emerald-100/80 to-cyan-100/80 rounded-xl shadow-lg backdrop-blur-sm">
+            <span className="text-2xl">✨</span>
+            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-emerald-400/10 to-cyan-400/10 blur-sm -z-10" />
+          </div>
         </div>
-        <p className="text-gray-600 max-w-2xl mx-auto">
-          Your original photo plus our AI-selected styles that will create stunning results
+        <h2 className="text-2xl md:text-3xl lg:text-4xl font-black text-gray-900 mb-3 font-poppins tracking-tight">
+          Step 1: Select Your Perfect Style
+        </h2>
+        <p className="text-gray-700 max-w-2xl mx-auto text-lg leading-relaxed font-medium">
+          Our AI has analyzed your image and curated these premium styles that will bring out the best in your photo.
         </p>
+        <div className="flex items-center justify-center gap-2 mt-4">
+          <div className="flex gap-1">
+            <div className="w-6 h-2 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full shadow-lg shadow-emerald-500/30" />
+            <div className="w-2 h-2 bg-gray-300 rounded-full" />
+            <div className="w-2 h-2 bg-gray-300 rounded-full" />
+            <div className="w-2 h-2 bg-gray-300 rounded-full" />
+          </div>
+          <span className="text-sm text-gray-600 ml-3 font-medium">Step 1 of 4</span>
+        </div>
       </div>
 
       {/* Hero Grid - Changed to rows of 3 cards each */}
