@@ -1,6 +1,5 @@
 
 import { useEffect } from "react";
-import { Card } from "@/components/ui/card";
 import CropperHeader from "./cropper/components/CropperHeader";
 import OrientationSelector from "./cropper/components/OrientationSelector";
 import CropArea from "./cropper/components/CropArea";
@@ -80,51 +79,32 @@ const PhotoCropper = ({
   };
 
   return (
-    <div className="relative">
-      {/* Premium Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 opacity-60" />
-      <div className="absolute inset-0" style={{
-        backgroundImage: `radial-gradient(circle at 25% 25%, rgba(120, 119, 198, 0.08) 0%, transparent 50%), 
-                         radial-gradient(circle at 75% 75%, rgba(255, 119, 198, 0.08) 0%, transparent 50%)`
-      }} />
-      
-      <div className="relative p-4 md:p-8">
-        <Card className="overflow-hidden border-0 shadow-2xl bg-white/80 backdrop-blur-sm">
-          <div className="p-6 md:p-8 space-y-8">
-            <CropperHeader />
+    <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-4 md:p-6">
+      <div className="space-y-6">
+        <CropperHeader />
 
-            <OrientationSelector
-              cropAspect={cropAspect}
-              recommendedOrientation={recommendedOrientation}
-              onOrientationChange={handleOrientationChange}
-            />
+        <OrientationSelector
+          cropAspect={cropAspect}
+          recommendedOrientation={recommendedOrientation}
+          onOrientationChange={handleOrientationChange}
+        />
 
-            <div className="relative">
-              {/* Crop area with premium styling */}
-              <div className="rounded-2xl overflow-hidden shadow-2xl bg-white p-2">
-                <CropArea
-                  imageUrl={imageUrl}
-                  crop={crop}
-                  zoom={zoom}
-                  cropAspect={cropAspect}
-                  onCropChange={setCrop}
-                  onZoomChange={setZoom}
-                  onCropComplete={onCropCompleteHandler}
-                />
-              </div>
-              
-              {/* Premium glow effect */}
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-400/10 to-pink-400/10 blur-xl -z-10" />
-            </div>
+        <CropArea
+          imageUrl={imageUrl}
+          crop={crop}
+          zoom={zoom}
+          cropAspect={cropAspect}
+          onCropChange={setCrop}
+          onZoomChange={setZoom}
+          onCropComplete={onCropCompleteHandler}
+        />
 
-            <CropperActions
-              onChangePhoto={onChangePhoto ? handleChangePhotoFile : undefined}
-              onAutoCenterCrop={handleAutoCenterCrop}
-              onCropSave={handleCropSave}
-              croppedAreaPixels={croppedAreaPixels}
-            />
-          </div>
-        </Card>
+        <CropperActions
+          onChangePhoto={onChangePhoto ? handleChangePhotoFile : undefined}
+          onAutoCenterCrop={handleAutoCenterCrop}
+          onCropSave={handleCropSave}
+          croppedAreaPixels={croppedAreaPixels}
+        />
       </div>
     </div>
   );

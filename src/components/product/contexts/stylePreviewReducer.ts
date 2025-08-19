@@ -1,3 +1,4 @@
+
 import { StylePreviewState, StylePreviewAction } from './types';
 
 export const initialState: StylePreviewState = {};

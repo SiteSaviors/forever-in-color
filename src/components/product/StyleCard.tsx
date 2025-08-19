@@ -25,13 +25,6 @@ interface StyleCardProps {
   shouldBlur?: boolean;
   onStyleClick: (style: { id: number; name: string; description: string; image: string }) => void;
   onContinue?: () => void;
-  // Preview generation props passed from parent
-  generatePreview?: () => Promise<string | null>;
-  getPreviewUrl?: () => string | undefined;
-  isLoading?: boolean;
-  hasPreview?: boolean;
-  hasError?: boolean;
-  getError?: () => string | undefined;
 }
 
 const StyleCard = ({
@@ -44,14 +37,7 @@ const StyleCard = ({
   showContinueButton = true,
   shouldBlur = false,
   onStyleClick,
-  onContinue,
-  // Preview generation props
-  generatePreview,
-  getPreviewUrl,
-  isLoading = false,
-  hasPreview = false,
-  hasError = false,
-  getError
+  onContinue
 }: StyleCardProps) => {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isCanvasLightboxOpen, setIsCanvasLightboxOpen] = useState(false);
@@ -68,7 +54,6 @@ const StyleCard = ({
     hasPreviewOrCropped,
     showGeneratedBadge,
     shouldShowBlur,
-    isBlinking,
     handleClick,
     handleGenerateStyle,
     handleRetry,
@@ -79,14 +64,7 @@ const StyleCard = ({
     selectedStyle,
     shouldBlur,
     onStyleClick,
-    onContinue,
-    // Use props-based preview functions if provided, otherwise provide defaults
-    generatePreview: generatePreview || (async () => null),
-    getPreviewUrl: getPreviewUrl || (() => undefined),
-    isLoading,
-    hasPreview,
-    hasError,
-    getError: getError || (() => undefined)
+    onContinue
   });
 
   // Handle expand click for lightbox
@@ -103,6 +81,19 @@ const StyleCard = ({
     }
   };
 
+  console.log(`StyleCard ${style.name} (ID: ${style.id}):`, {
+    isSelected,
+    isGenerating,
+    hasGeneratedPreview,
+    showGeneratedBadge,
+    shouldBlur,
+    shouldShowBlur,
+    showError,
+    hasPreview: !!previewUrl,
+    croppedImage: !!croppedImage,
+    cropAspectRatio
+  });
+
   // Get action handlers
   const actions = StyleCardActions({
     style,
@@ -117,7 +108,6 @@ const StyleCard = ({
         styleId={style.id}
         onClick={handleClick}
         shouldBlur={shouldShowBlur}
-        hideBlurOverlay={shouldBlur && !isPopular && style.id !== 1}
       >
         {/* Hero Image Section - Make this prominent on mobile */}
         <div className="flex-shrink-0 relative">

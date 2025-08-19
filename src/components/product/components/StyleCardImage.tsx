@@ -1,9 +1,10 @@
 
-import UnifiedImageDisplay from "./UnifiedImageDisplay";
+import StyleCardImageDisplay from "./StyleCardImageDisplay";
+import StyleCardIndicators from "./StyleCardIndicators";
 import StyleCardLoadingOverlay from "./StyleCardLoadingOverlay";
+import StyleCardSelectionOverlay from "./StyleCardSelectionOverlay";
 import StyleCardBlurOverlay from "./StyleCardBlurOverlay";
 import StyleCardRetryOverlay from "./StyleCardRetryOverlay";
-import StyleCardIndicators from "./StyleCardIndicators";
 
 interface StyleCardImageProps {
   style: {
@@ -14,96 +15,91 @@ interface StyleCardImageProps {
   };
   imageToShow: string;
   cropAspectRatio: number;
-  showLoadingState?: boolean;
-  isPopular?: boolean;
-  showGeneratedBadge?: boolean;
-  isSelected?: boolean;
-  hasPreviewOrCropped?: boolean;
-  shouldBlur?: boolean;
-  isGenerating?: boolean;
-  showError?: boolean;
-  error?: string | null;
+  showLoadingState: boolean;
+  isPopular: boolean;
+  showGeneratedBadge: boolean;
+  isSelected: boolean;
+  hasPreviewOrCropped: boolean;
+  shouldBlur: boolean;
+  isGenerating: boolean;
+  showError: boolean;
+  error?: string;
   selectedOrientation?: string;
   previewUrl?: string | null;
   hasGeneratedPreview?: boolean;
-  onExpandClick?: () => void;
-  onCanvasPreviewClick?: () => void;
-  onGenerateStyle?: () => void;
-  onRetry?: () => void;
+  onExpandClick: () => void;
+  onCanvasPreviewClick: () => void;
+  onGenerateStyle: (e?: React.MouseEvent) => void;
+  onRetry: (e?: React.MouseEvent) => void;
 }
 
 const StyleCardImage = ({
   style,
   imageToShow,
   cropAspectRatio,
-  showLoadingState = false,
-  isPopular = false,
-  showGeneratedBadge = false,
-  isSelected = false,
-  hasPreviewOrCropped = false,
-  shouldBlur = false,
-  isGenerating = false,
-  showError = false,
-  error = null,
-  selectedOrientation = 'square',
-  previewUrl = null,
+  showLoadingState,
+  isPopular,
+  showGeneratedBadge,
+  isSelected,
+  hasPreviewOrCropped,
+  shouldBlur,
+  isGenerating,
+  showError,
+  error,
+  selectedOrientation = "square",
+  previewUrl,
   hasGeneratedPreview = false,
   onExpandClick,
   onCanvasPreviewClick,
   onGenerateStyle,
   onRetry
 }: StyleCardImageProps) => {
-
   return (
-    <div className="relative">
-      {/* Main image display */}
-      <UnifiedImageDisplay
-        imageUrl={imageToShow}
-        alt={`${style.name} preview`}
-        aspectRatio={cropAspectRatio}
-        showLoadingState={showLoadingState}
-        hasGeneratedPreview={hasGeneratedPreview}
-        selectedOrientation={selectedOrientation}
-        previewUrl={previewUrl}
-        onExpandClick={onExpandClick}
-        variant={hasGeneratedPreview ? 'mockup' : 'standard'}
-      />
+    <div className="relative group/image">
+      {/* Main Image Display - Make this the priority on mobile */}
+      <div className="relative min-h-[200px] md:min-h-[250px]">
+        <StyleCardImageDisplay
+          style={style}
+          imageToShow={imageToShow}
+          cropAspectRatio={cropAspectRatio}
+          showLoadingState={showLoadingState}
+          selectedOrientation={selectedOrientation}
+          previewUrl={previewUrl}
+          hasGeneratedPreview={hasGeneratedPreview}
+          onExpandClick={onExpandClick}
+        />
+      </div>
 
-      {/* Indicators */}
+      {/* Overlays and Indicators */}
       <StyleCardIndicators
         isPopular={isPopular}
         showGeneratedBadge={showGeneratedBadge}
         isSelected={isSelected}
         hasPreviewOrCropped={hasPreviewOrCropped}
-        onExpandClick={onExpandClick || (() => {})}
+        onExpandClick={onExpandClick}
         onCanvasPreviewClick={onCanvasPreviewClick}
       />
 
-      {/* Loading overlay - only show when actively generating */}
       <StyleCardLoadingOverlay
-        isBlinking={isGenerating && !previewUrl}
+        isGenerating={isGenerating}
         styleName={style.name}
         error={error}
       />
 
-      {/* Blur overlay */}
-      <StyleCardBlurOverlay
-        shouldBlur={shouldBlur}
-        isBlinking={false}
-        previewUrl={previewUrl}
-        styleName={style.name}
-        onGenerateStyle={onGenerateStyle || (() => {})}
+      <StyleCardRetryOverlay
+        hasError={showError}
+        error={error}
+        onRetry={onRetry}
       />
 
-      {/* Error retry overlay */}
-      {showError && onRetry && (
-        <StyleCardRetryOverlay
-          hasError={showError}
-          error={error}
-          styleName={style.name}
-          onRetry={onRetry}
-        />
-      )}
+      <StyleCardSelectionOverlay isSelected={isSelected} />
+
+      <StyleCardBlurOverlay
+        shouldBlur={shouldBlur}
+        isGenerating={isGenerating}
+        styleName={style.name}
+        onGenerateStyle={onGenerateStyle}
+      />
     </div>
   );
 };

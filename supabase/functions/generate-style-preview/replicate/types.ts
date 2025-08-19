@@ -1,3 +1,4 @@
+
 export interface ReplicateGenerationRequest {
   input: {
     prompt: string;
@@ -12,8 +13,6 @@ export interface ReplicateGenerationResponse {
   ok: boolean;
   output?: string | string[];
   error?: string;
-  errorType?: string;
-  technicalError?: string;
   status?: string;
   id?: string;
   urls?: {

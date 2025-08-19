@@ -1,5 +1,6 @@
-import { useState, useCallback, useEffect } from "react";
-import { useBlinking } from "./useBlinking";
+
+import { useState, useCallback } from "react";
+import { useStylePreview } from "../contexts/StylePreviewContext";
 
 interface UseStyleCardLogicProps {
   style: {
@@ -13,13 +14,6 @@ interface UseStyleCardLogicProps {
   shouldBlur?: boolean;
   onStyleClick: (style: { id: number; name: string; description: string; image: string }) => void;
   onContinue?: () => void;
-  // Add preview generation functions from context
-  generatePreview: () => Promise<string | null>;
-  getPreviewUrl: () => string | undefined;
-  isLoading: boolean;
-  hasPreview: boolean;
-  hasError: boolean;
-  getError: () => string | undefined;
 }
 
 export const useStyleCardLogic = ({
@@ -28,23 +22,26 @@ export const useStyleCardLogic = ({
   selectedStyle,
   shouldBlur = false,
   onStyleClick,
-  onContinue,
-  // Preview generation functions
-  generatePreview,
-  getPreviewUrl,
-  isLoading,
-  hasPreview,
-  hasError,
-  getError
+  onContinue
 }: UseStyleCardLogicProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   
+  const { 
+    generatePreview, 
+    retryGeneration,
+    isLoading, 
+    hasPreview, 
+    hasError,
+    getPreviewUrl,
+    getError
+  } = useStylePreview();
+
   const isSelected = selectedStyle === style.id;
-  const isGenerating = isLoading;
-  const hasGeneratedPreview = hasPreview;
-  const previewUrl = getPreviewUrl();
-  const error = getError();
-  const showError = hasError;
+  const isGenerating = isLoading(style.id);
+  const hasGeneratedPreview = hasPreview(style.id);
+  const previewUrl = getPreviewUrl(style.id);
+  const error = getError(style.id);
+  const showError = hasError(style.id);
   
   // Determine what image to show
   const imageToShow = previewUrl || croppedImage || style.image;
@@ -59,10 +56,18 @@ export const useStyleCardLogic = ({
   // CRITICAL FIX: Determine blur state properly
   const shouldShowBlur = shouldBlur && !hasGeneratedPreview && !isGenerating && !showError && style.id !== 1;
 
-  // Use the blinking hook for loading animation
-  const { isBlinking } = useBlinking(previewUrl, {
-    isGenerating: isGenerating
-  });
+  // Enhanced aspect ratio calculation
+  const getCropAspectRatio = useCallback((selectedOrientation: string) => {
+    switch (selectedOrientation) {
+      case 'vertical':
+        return 3/4;
+      case 'horizontal':
+        return 4/3;
+      case 'square':
+      default:
+        return 1;
+    }
+  }, []);
 
   // MAIN CARD CLICK HANDLER
   const handleClick = useCallback(() => {
@@ -72,7 +77,7 @@ export const useStyleCardLogic = ({
     // Auto-generate if conditions are met (and not already generating or in error state)
     if (croppedImage && !hasGeneratedPreview && !isGenerating && !showError && style.id !== 1) {
       console.log(`🚀 Auto-generating preview for clicked style: ${style.name}`);
-      generatePreview();
+      generatePreview(style.id, style.name);
     }
   }, [style, croppedImage, hasGeneratedPreview, isGenerating, showError, shouldBlur, onStyleClick, generatePreview]);
 
@@ -84,7 +89,7 @@ export const useStyleCardLogic = ({
     console.log(`🎨 MANUAL GENERATE CLICKED ▶️ ${style.name} (ID: ${style.id})`);
     
     onStyleClick(style);
-    await generatePreview();
+    await generatePreview(style.id, style.name);
   }, [style, onStyleClick, generatePreview]);
 
   // Handle retry button click
@@ -93,8 +98,8 @@ export const useStyleCardLogic = ({
       e.stopPropagation();
     }
     console.log(`🔄 RETRY CLICKED ▶️ ${style.name} (ID: ${style.id})`);
-    await generatePreview();
-  }, [style, generatePreview]);
+    await retryGeneration(style.id, style.name);
+  }, [style, retryGeneration]);
 
   // Handle preview expansion
   const handleExpandClick = useCallback(() => {
@@ -122,9 +127,9 @@ export const useStyleCardLogic = ({
     hasPreviewOrCropped,
     showGeneratedBadge,
     shouldShowBlur,
-    isBlinking,
     isExpanded,
     setIsExpanded,
+    getCropAspectRatio,
     handleClick,
     handleGenerateStyle,
     handleRetry,
