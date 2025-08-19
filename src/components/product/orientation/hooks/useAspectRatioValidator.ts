@@ -1,10 +1,9 @@
+
 import { useCallback, useMemo } from 'react';
 import { 
   validateOrientationFlow, 
-  isValidOrientation, 
   isValidAspectRatio,
-  getAspectRatio,
-  OrientationType 
+  getAspectRatio
 } from '../utils';
 import { useToast } from '@/hooks/use-toast';
 
@@ -17,92 +16,63 @@ interface ValidationResult {
 export const useAspectRatioValidator = () => {
   const { toast } = useToast();
 
-  const validateWithRecovery = useCallback((
-    orientation: string,
-    aspectRatio?: string
-  ): ValidationResult => {
-    console.log('🔍 Running aspect ratio validation:', { orientation, aspectRatio });
-
-    // Step 1: Validate orientation
-    if (!isValidOrientation(orientation)) {
-      const corrected = 'square'; // Fallback to square
-      console.warn(`⚠️ Invalid orientation "${orientation}", correcting to "${corrected}"`);
-      
-      toast({
-        title: "Image Format Adjusted",
-        description: `We've adjusted your image to square format for the best results.`,
-        duration: 3000,
-      });
-
-      return {
-        isValid: false,
-        error: `Invalid orientation: ${orientation}`,
-        correctedValue: corrected
-      };
-    }
-
-    // Step 2: Validate aspect ratio if provided
-    if (aspectRatio && !isValidAspectRatio(aspectRatio)) {
-      const correctedAspectRatio = getAspectRatio(orientation as OrientationType);
-      console.warn(`⚠️ Invalid aspect ratio "${aspectRatio}", correcting to "${correctedAspectRatio}"`);
-      
-      return {
-        isValid: false,
-        error: `Invalid aspect ratio: ${aspectRatio}`,
-        correctedValue: correctedAspectRatio
-      };
-    }
-
-    // Step 3: Validate flow consistency
-    const expectedAspectRatio = getAspectRatio(orientation as OrientationType);
-    if (aspectRatio && aspectRatio !== expectedAspectRatio) {
-      console.warn(`⚠️ Aspect ratio mismatch: expected ${expectedAspectRatio}, got ${aspectRatio}`);
-      
-      return {
-        isValid: false,
-        error: `Aspect ratio mismatch`,
-        correctedValue: expectedAspectRatio
-      };
-    }
-
-    const validation = validateOrientationFlow(orientation, expectedAspectRatio);
+  const validateWithRecovery = useCallback((orientation: string, aspectRatio: string) => {
+    // Supported aspect ratios for GPT-Image-1
+    const supportedRatios = ['1:1', '3:2', '2:3'];
     
-    if (!validation.isValid) {
-      toast({
-        title: "Processing Issue",
-        description: "We're adjusting your image settings for optimal results.",
-        duration: 2000,
-      });
+    console.log(`🔍 Validating aspect ratio: ${aspectRatio} for orientation: ${orientation}`);
+    
+    if (supportedRatios.includes(aspectRatio)) {
+      return { isValid: true, correctedValue: null, error: null };
     }
-
+    
+    // Auto-correct unsupported ratios
+    let correctedValue: string;
+    switch (aspectRatio) {
+      case '4:3':
+        correctedValue = '3:2'; // Closest landscape ratio
+        break;
+      case '3:4':
+        correctedValue = '2:3'; // Closest portrait ratio
+        break;
+      case '16:9':
+        correctedValue = '3:2'; // Closest landscape ratio
+        break;
+      case '9:16':
+        correctedValue = '2:3'; // Closest portrait ratio
+        break;
+      default:
+        correctedValue = '1:1'; // Default fallback
+    }
+    
+    console.log(`✅ Auto-corrected ${aspectRatio} to ${correctedValue}`);
+    
     return {
-      isValid: validation.isValid,
-      error: validation.error,
-      correctedValue: validation.expectedRatio
+      isValid: false,
+      correctedValue,
+      error: `Aspect ratio ${aspectRatio} not supported, auto-corrected to ${correctedValue}`
     };
-  }, [toast]);
+  }, []);
 
-  const autoCorrect = useCallback((orientation: string): OrientationType => {
-    if (isValidOrientation(orientation)) {
-      return orientation as OrientationType;
+  const autoCorrect = useCallback((orientation: string): string => {
+    switch (orientation.toLowerCase()) {
+      case 'square':
+        return 'square';
+      case 'landscape':
+      case 'horizontal':
+        return 'landscape';
+      case 'portrait':
+      case 'vertical':
+        return 'portrait';
+      default:
+        return 'square';
     }
-
-    // Smart correction based on common inputs
-    const normalized = orientation.toLowerCase();
-    if (normalized.includes('horizontal') || normalized.includes('landscape')) {
-      return 'horizontal';
-    }
-    if (normalized.includes('vertical') || normalized.includes('portrait')) {
-      return 'vertical';
-    }
-    
-    console.log('🔧 Auto-correcting invalid orientation to square:', orientation);
-    return 'square'; // Safe fallback
   }, []);
 
   const memoizedValidator = useMemo(() => ({
     validateWithRecovery,
-    autoCorrect
+    autoCorrect,
+    isValidAspectRatio
   }), [validateWithRecovery, autoCorrect]);
 
   return memoizedValidator;

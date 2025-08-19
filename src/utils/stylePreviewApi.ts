@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { createPreview } from "./previewOperations";
 import { getAspectRatio, validateOrientationFlow, isValidAspectRatio } from "@/components/product/orientation/utils";
@@ -24,8 +23,12 @@ export const generateStylePreview = async (
       options
     });
     
-    // SIMPLIFIED: Use aspect ratio as-is, let backend handle validation
-    const correctedAspectRatio = aspectRatio;
+    // STEP 1: Validate aspect ratio format before API call
+    if (!isValidAspectRatio(aspectRatio)) {
+      const errorMsg = `Invalid aspect ratio format: ${aspectRatio}. Must be one of: 1:1, 4:3, 3:4`;
+      console.error(`❌ ${errorMsg}`);
+      throw new Error(errorMsg);
+    }
     
     // Check if user is authenticated (optional now)
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -36,20 +39,20 @@ export const generateStylePreview = async (
     // Generate session ID for watermarking if not provided
     const sessionId = options.sessionId || `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    // STEP 2: Prepare the request body with corrected aspect ratio
+    // STEP 2: Prepare the request body with validated aspect ratio
     const requestBody = { 
       imageUrl, 
       style,
       photoId,
       isAuthenticated,
-      aspectRatio: correctedAspectRatio, // Use the corrected aspect ratio
+      aspectRatio, // This is now validated to be correct format
       watermark: options.watermark !== false, // Default to true
       quality: options.quality || 'preview',
       sessionId
     };
 
     console.log('FULL REQUEST BODY TO SUPABASE FUNCTION:', JSON.stringify(requestBody, null, 2));
-    console.log('🎯 CRITICAL: GPT-Image-1 compatible aspect ratio being sent to API:', correctedAspectRatio);
+    console.log('🎯 CRITICAL: Validated aspect ratio being sent to API:', aspectRatio);
 
     // STEP 3: Enhanced error handling for the Supabase function call
     try {
@@ -86,7 +89,7 @@ export const generateStylePreview = async (
         throw new Error('AI service returned an invalid response. Please try again.');
       }
 
-      console.log('GPT-Image-1 preview generated successfully with aspect ratio:', correctedAspectRatio, '-> URL:', data.preview_url.substring(0, 50) + '...');
+      console.log('GPT-Image-1 preview generated successfully with aspect ratio:', aspectRatio, '-> URL:', data.preview_url.substring(0, 50) + '...');
       
       // Only store the preview if user is authenticated
       if (isAuthenticated) {

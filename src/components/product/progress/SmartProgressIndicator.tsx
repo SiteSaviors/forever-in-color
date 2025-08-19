@@ -1,26 +1,36 @@
+
 import { useState, useEffect } from "react";
 import { useProgressOrchestrator } from "./ProgressOrchestrator";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { CheckCircle, Upload, Settings, Palette, ShoppingBag, Sparkles, TrendingUp, Users, Clock } from "lucide-react";
+import ProgressHeader from "./components/ProgressHeader";
+import ProgressBar from "./components/ProgressBar";
+import StepCard from "./components/StepCard";
+import SocialProofSection from "./components/SocialProofSection";
+import MilestoneOverlay from "./components/MilestoneOverlay";
+
 interface SmartProgressIndicatorProps {
   uploadedImage: string | null;
 }
-const SmartProgressIndicator = ({
-  uploadedImage
-}: SmartProgressIndicatorProps) => {
-  const {
-    state
-  } = useProgressOrchestrator();
-  const [showMilestone, setShowMilestone] = useState(false);
-  const completedStepsCount = state.completedSteps?.length || 0;
-  const overallProgress = Math.min(completedStepsCount / 4 * 100, 100);
 
+const SmartProgressIndicator = ({ uploadedImage }: SmartProgressIndicatorProps) => {
+  const { state } = useProgressOrchestrator();
+  const [showMilestone, setShowMilestone] = useState(false);
+  const [animatingStep, setAnimatingStep] = useState<number | null>(null);
+
+  // Always call hooks at the top level
+  const completedStepsCount = state.completedSteps?.length || 0;
+  const overallProgress = Math.min((completedStepsCount / 4) * 100, 100);
+  
   // Effect to handle milestone animations
   useEffect(() => {
     if (state.completedSteps && state.completedSteps.length > 0) {
+      const lastCompletedStep = Math.max(...state.completedSteps);
+      setAnimatingStep(lastCompletedStep);
       setShowMilestone(true);
-      setTimeout(() => setShowMilestone(false), 3000);
+      
+      setTimeout(() => {
+        setShowMilestone(false);
+        setAnimatingStep(null);
+      }, 3000);
     }
   }, [state.completedSteps]);
 
@@ -28,39 +38,69 @@ const SmartProgressIndicator = ({
   if (!uploadedImage) {
     return null;
   }
-  const steps = [{
-    id: 1,
-    icon: Upload,
-    title: "Photo & Style",
-    completed: state.completedSteps?.includes(1) || false
-  }, {
-    id: 2,
-    icon: Settings,
-    title: "Size & Format",
-    completed: state.completedSteps?.includes(2) || false
-  }, {
-    id: 3,
-    icon: Palette,
-    title: "Customize",
-    completed: state.completedSteps?.includes(3) || false
-  }, {
-    id: 4,
-    icon: ShoppingBag,
-    title: "Review & Order",
-    completed: state.completedSteps?.includes(4) || false
-  }];
-  const getCurrentStepMessage = () => {
-    if (completedStepsCount === 0) return "AI is analyzing your photo for perfect recommendations";
-    if (completedStepsCount === 1) return "Finding the ideal size for your space";
-    if (completedStepsCount === 2) return "Adding premium finishing touches";
-    if (completedStepsCount >= 3) return "Almost ready to transform your photo!";
-    return "Getting started...";
-  };
-  return <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-100 overflow-hidden relative">
-      {/* Milestone celebration overlay */}
-      {showMilestone && <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-pink-500/10 animate-pulse z-10 pointer-events-none" />}
+
+  const steps = [
+    {
+      id: 1,
+      title: "Photo & Style",
+      description: "Upload photo and choose art style",
+      completed: state.completedSteps?.includes(1) || false,
+      active: state.currentStep === 1
+    },
+    {
+      id: 2,
+      title: "Size & Format",
+      description: "Select canvas size and orientation",
+      completed: state.completedSteps?.includes(2) || false,
+      active: state.currentStep === 2
+    },
+    {
+      id: 3,
+      title: "Customize",
+      description: "Add premium features",
+      completed: state.completedSteps?.includes(3) || false,
+      active: state.currentStep === 3
+    },
+    {
+      id: 4,
+      title: "Review & Order",
+      description: "Complete your purchase",
+      completed: state.completedSteps?.includes(4) || false,
+      active: state.currentStep === 4
+    }
+  ];
+
+  return (
+    <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden relative">
+      <MilestoneOverlay show={showMilestone} animatingStep={animatingStep} />
       
-      
-    </div>;
+      <div className="p-8">
+        <ProgressHeader 
+          completedStepsCount={completedStepsCount}
+          personalizedMessages={state.personalizedMessages}
+        />
+        
+        <ProgressBar 
+          overallProgress={overallProgress}
+          state={state}
+          completedStepsCount={completedStepsCount}
+        />
+
+        {/* Steps Grid */}
+        <div className="grid md:grid-cols-2 gap-4 mb-8">
+          {steps.map((step) => (
+            <StepCard 
+              key={step.id}
+              step={step}
+              showPersonalizedMessage={state.personalizedMessages.length > 0}
+            />
+          ))}
+        </div>
+
+        <SocialProofSection />
+      </div>
+    </div>
+  );
 };
+
 export default SmartProgressIndicator;

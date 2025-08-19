@@ -1,57 +1,48 @@
 
-import { Badge } from "@/components/ui/badge";
-import { Camera, Sparkles, Shield, CheckCircle } from "lucide-react";
+import { ImageIcon, Camera, Sparkles, CheckCircle2 } from "lucide-react";
 
 const UploadFeatures = () => {
-  const features = [
-    {
-      icon: Camera,
-      title: "Smart Crop",
-      subtitle: "AI-powered framing",
-      color: "from-cyan-500 to-cyan-600",
-      shadowColor: "shadow-cyan-500/30"
-    },
-    {
-      icon: CheckCircle,
-      title: "Any Format", 
-      subtitle: "JPG, PNG, HEIC",
-      color: "from-violet-500 to-violet-600",
-      shadowColor: "shadow-violet-500/30"
-    },
-    {
-      icon: Sparkles,
-      title: "AI Enhanced",
-      subtitle: "Professional quality",
-      color: "from-fuchsia-500 to-fuchsia-600",
-      shadowColor: "shadow-fuchsia-500/30"
-    },
-    {
-      icon: Shield,
-      title: "Secure",
-      subtitle: "Private & safe",
-      color: "from-rose-500 to-rose-600",
-      shadowColor: "shadow-rose-500/30"
-    }
-  ];
-
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 max-w-2xl mx-auto">
-      {features.map((feature, index) => {
-        const IconComponent = feature.icon;
-        return (
-          <div key={index} className="text-center group">
-            <div className="flex flex-col items-center space-y-2">
-              <div className={`p-2 sm:p-3 rounded-full bg-gradient-to-br ${feature.color} shadow-2xl ${feature.shadowColor} backdrop-blur-sm transition-all duration-300 group-hover:scale-110 group-hover:shadow-3xl`}>
-                <IconComponent className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-              </div>
-              <div>
-                <div className="font-montserrat font-black text-white text-sm sm:text-base drop-shadow-2xl">{feature.title}</div>
-                <div className="font-poppins text-white/90 text-xs sm:text-sm drop-shadow-lg">{feature.subtitle}</div>
-              </div>
-            </div>
-          </div>
-        );
-      })}
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+      <div className="flex flex-col items-center gap-2">
+        <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+          <ImageIcon className="w-6 h-6 text-purple-600" />
+        </div>
+        <div className="text-sm">
+          <div className="font-medium text-gray-900">Smart Crop</div>
+          <div className="text-xs text-gray-500">AI-powered framing</div>
+        </div>
+      </div>
+      
+      <div className="flex flex-col items-center gap-2">
+        <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+          <Camera className="w-6 h-6 text-blue-600" />
+        </div>
+        <div className="text-sm">
+          <div className="font-medium text-gray-900">Any Format</div>
+          <div className="text-xs text-gray-500">JPG, PNG, HEIC</div>
+        </div>
+      </div>
+      
+      <div className="flex flex-col items-center gap-2">
+        <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center">
+          <Sparkles className="w-6 h-6 text-pink-600" />
+        </div>
+        <div className="text-sm">
+          <div className="font-medium text-gray-900">AI Enhanced</div>
+          <div className="text-xs text-gray-500">Professional quality</div>
+        </div>
+      </div>
+      
+      <div className="flex flex-col items-center gap-2">
+        <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+          <CheckCircle2 className="w-6 h-6 text-green-600" />
+        </div>
+        <div className="text-sm">
+          <div className="font-medium text-gray-900">Secure</div>
+          <div className="text-xs text-gray-500">Private & safe</div>
+        </div>
+      </div>
     </div>
   );
 };

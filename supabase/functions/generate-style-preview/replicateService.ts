@@ -12,9 +12,9 @@ export class ReplicateService {
   private pollingService: PollingService;
 
   constructor(apiToken: string, openaiApiKey: string) {
-    // Clean the tokens in case they have extra text
-    this.apiToken = apiToken.replace(/^export\s+REPLICATE_API_TOKEN=/, '').trim();
-    this.openaiApiKey = openaiApiKey.replace(/^export\s+OPENAI_API_KEY=/, '').trim();
+    // Use the tokens directly without any processing
+    this.apiToken = apiToken;
+    this.openaiApiKey = openaiApiKey;
     
     console.log("ReplicateService initialized for GPT-Image-1 with token length:", this.apiToken?.length);
 

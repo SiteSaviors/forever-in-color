@@ -51,7 +51,11 @@ export function progressReducer(state: ProgressState, action: ProgressAction): P
       return { 
         ...state, 
         currentStep: action.payload,
-        userBehavior: { ...state.userBehavior, lastInteraction: Date.now() }
+        userBehavior: { ...state.userBehavior, lastInteraction: Date.now() },
+        conversionElements: {
+          ...state.conversionElements,
+          momentumScore: Math.min(100, state.conversionElements.momentumScore + 15)
+        }
       };
     case 'SET_SUB_STEP':
       return { 
@@ -60,10 +64,16 @@ export function progressReducer(state: ProgressState, action: ProgressAction): P
         userBehavior: { ...state.userBehavior, lastInteraction: Date.now() }
       };
     case 'COMPLETE_STEP':
+      const newMomentumScore = Math.min(100, state.conversionElements.momentumScore + 25);
       return {
         ...state,
         completedSteps: [...state.completedSteps, action.payload],
-        userBehavior: { ...state.userBehavior, lastInteraction: Date.now() }
+        userBehavior: { ...state.userBehavior, lastInteraction: Date.now() },
+        conversionElements: {
+          ...state.conversionElements,
+          momentumScore: newMomentumScore,
+          personalizationLevel: newMomentumScore > 50 ? 'high' : newMomentumScore > 25 ? 'medium' : 'low'
+        }
       };
     case 'SHOW_HELP':
       return {

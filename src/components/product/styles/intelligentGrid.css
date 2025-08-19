@@ -1,24 +1,24 @@
 
-/* Optimized Progressive Enhancement Animations */
+/* Progressive Enhancement Animations */
 @keyframes slideInUp {
   from {
     opacity: 0;
-    transform: translate3d(0, 30px, 0);
+    transform: translateY(30px);
   }
   to {
     opacity: 1;
-    transform: translate3d(0, 0, 0);
+    transform: translateY(0);
   }
 }
 
 @keyframes fadeInScale {
   from {
     opacity: 0;
-    transform: scale3d(0.95, 0.95, 1);
+    transform: scale(0.95);
   }
   to {
     opacity: 1;
-    transform: scale3d(1, 1, 1);
+    transform: scale(1);
   }
 }
 
@@ -31,19 +31,19 @@
   }
 }
 
-/* Optimized recommended style pulse with amber glow */
+/* Enhanced recommended style pulse with amber glow */
 @keyframes recommendedPulse {
   0%, 100% {
     box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.4), 0 4px 12px rgba(0, 0, 0, 0.1);
-    transform: scale3d(1, 1, 1);
+    transform: scale(1);
   }
   50% {
     box-shadow: 0 0 0 8px rgba(251, 191, 36, 0.2), 0 8px 24px rgba(0, 0, 0, 0.15);
-    transform: scale3d(1.02, 1.02, 1);
+    transform: scale(1.02);
   }
 }
 
-/* Optimized hover glow with purple shadow */
+/* Enhanced hover glow with purple shadow */
 @keyframes hoverGlow {
   0% {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -57,102 +57,90 @@
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translate3d(0, 20px, 0);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
-    transform: translate3d(0, 0, 0);
+    transform: translateY(0);
   }
 }
 
-/* Performance-optimized hero recommendations */
+/* Hero Recommendations */
 .hero-recommendation {
-  animation: slideInUp 0.4s ease-out forwards;
-  will-change: transform, opacity;
-  contain: layout style paint;
+  animation: slideInUp 0.6s ease-out forwards;
 }
 
-.hero-recommendation:nth-child(1) { animation-delay: 0.05s; }
-.hero-recommendation:nth-child(2) { animation-delay: 0.1s; }
-.hero-recommendation:nth-child(3) { animation-delay: 0.15s; }
+.hero-recommendation:nth-child(1) { animation-delay: 0.1s; }
+.hero-recommendation:nth-child(2) { animation-delay: 0.2s; }
+.hero-recommendation:nth-child(3) { animation-delay: 0.3s; }
 
-/* Optimized popular choices */
+/* Popular Choices */
 .popular-choice {
-  animation: fadeInScale 0.3s ease-out forwards;
-  will-change: transform, opacity;
-  contain: layout style paint;
+  animation: fadeInScale 0.5s ease-out forwards;
 }
 
-.popular-choice:nth-child(1) { animation-delay: 0.2s; }
-.popular-choice:nth-child(2) { animation-delay: 0.25s; }
-.popular-choice:nth-child(3) { animation-delay: 0.3s; }
+.popular-choice:nth-child(1) { animation-delay: 0.4s; }
+.popular-choice:nth-child(2) { animation-delay: 0.5s; }
+.popular-choice:nth-child(3) { animation-delay: 0.6s; }
 
-/* Reduced complexity recommended pulse */
+/* Recommended Style Pulse Animation */
 .recommended-pulse {
-  animation: recommendedPulse 2s ease-in-out infinite;
-  will-change: transform, box-shadow;
-  contain: layout style;
+  animation: recommendedPulse 3s ease-in-out infinite;
 }
 
-/* Optimized hover states with GPU acceleration */
+/* Enhanced Hover States */
 .style-card-hover {
-  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-              box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: transform;
-  contain: layout style paint;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .style-card-hover:hover {
-  transform: translate3d(0, -4px, 0) scale3d(1.02, 1.02, 1);
-  animation: hoverGlow 0.2s ease-out forwards;
+  transform: translateY(-6px) scale(1.03);
+  animation: hoverGlow 0.3s ease-out forwards;
 }
 
-/* Optimized micro-interaction feedback */
+/* Micro-interaction feedback */
 .style-card-press {
-  transition: transform 0.08s ease-out;
-  contain: layout style;
+  transition: transform 0.1s ease-out;
 }
 
 .style-card-press:active {
-  transform: scale3d(0.98, 0.98, 1);
+  transform: scale(0.98);
 }
 
-/* Optimized grid animation with reduced complexity */
+/* Optimized Grid Animation for Complete Collection */
 .grid-item {
   opacity: 0;
-  animation: fadeInScale 0.4s ease-out forwards;
-  will-change: opacity, transform;
-  contain: layout style paint;
+  animation: fadeInScale 0.6s ease-out forwards;
 }
 
-/* Reduced staggered animation delays */
-.grid-item:nth-child(1) { animation-delay: 0.05s; }
-.grid-item:nth-child(2) { animation-delay: 0.08s; }
-.grid-item:nth-child(3) { animation-delay: 0.11s; }
-.grid-item:nth-child(4) { animation-delay: 0.14s; }
-.grid-item:nth-child(5) { animation-delay: 0.17s; }
-.grid-item:nth-child(6) { animation-delay: 0.2s; }
+/* Staggered animation delays for better visual flow */
+.grid-item:nth-child(1) { animation-delay: 0.1s; }
+.grid-item:nth-child(2) { animation-delay: 0.15s; }
+.grid-item:nth-child(3) { animation-delay: 0.2s; }
+.grid-item:nth-child(4) { animation-delay: 0.25s; }
+.grid-item:nth-child(5) { animation-delay: 0.3s; }
+.grid-item:nth-child(6) { animation-delay: 0.35s; }
+.grid-item:nth-child(7) { animation-delay: 0.4s; }
+.grid-item:nth-child(8) { animation-delay: 0.45s; }
 
-/* Optimized canvas preview overlay */
+/* Canvas Preview Overlay */
 .canvas-overlay {
   backdrop-filter: blur(8px);
   background: rgba(0, 0, 0, 0.8);
-  transition: opacity 0.2s ease, transform 0.2s ease;
-  will-change: opacity, transform;
-  contain: layout style paint;
+  transition: all 0.3s ease;
 }
 
 .canvas-overlay.entering {
   opacity: 0;
-  transform: scale3d(0.9, 0.9, 1);
+  transform: scale(0.9);
 }
 
 .canvas-overlay.entered {
   opacity: 1;
-  transform: scale3d(1, 1, 1);
+  transform: scale(1);
 }
 
-/* Optimized loading skeleton animation */
+/* Loading skeleton animation */
 @keyframes shimmer {
   0% {
     background-position: -200px 0;
@@ -165,12 +153,10 @@
 .loading-shimmer {
   background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
   background-size: 200px 100%;
-  animation: shimmer 1.2s infinite;
-  will-change: background-position;
-  contain: paint;
+  animation: shimmer 1.5s infinite;
 }
 
-/* Performance utilities */
+/* Mobile-friendly text utilities */
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -178,125 +164,37 @@
   overflow: hidden;
 }
 
+/* Fade in animation class */
 .animate-fade-in {
-  animation: fadeIn 0.3s ease-out forwards;
+  animation: fadeIn 0.5s ease-out forwards;
 }
 
-/* Performance containers with enhanced containment */
-.performance-container {
-  contain: layout style paint;
-  will-change: auto;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-}
-
-/* Optimize frequently animated elements */
-.frequently-animated {
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  perspective: 1000px;
-  contain: layout style paint;
-}
-
-/* Touch-optimized interactions */
-.touch-target {
-  min-height: 44px;
-  min-width: 44px;
-  touch-action: manipulation;
-}
-
-/* Mobile-first performance optimizations */
+/* Enhanced responsive design for Complete Collection */
 @media (max-width: 768px) {
   .style-card-hover:hover {
-    transform: translate3d(0, -2px, 0) scale3d(1.01, 1.01, 1);
+    transform: translateY(-3px) scale(1.02);
   }
   
   .recommended-pulse {
-    animation-duration: 3s;
-    animation-iteration-count: 2; /* Reduce on mobile */
+    animation-duration: 4s;
   }
   
+  /* Improved mobile grid spacing */
   .grid-item {
-    margin-bottom: 0.5rem;
-  }
-  
-  /* Reduce animation complexity on mobile */
-  .hero-recommendation,
-  .popular-choice {
-    animation-duration: 0.2s;
-  }
-
-  /* Disable hover effects on touch devices */
-  @media (hover: none) {
-    .style-card-hover:hover {
-      transform: none;
-      animation: none;
-    }
-  }
-
-  /* Optimize for high-DPI mobile screens */
-  @media (-webkit-min-device-pixel-ratio: 2) {
-    .loading-shimmer {
-      background-size: 100px 100%;
-    }
+    margin-bottom: 1rem;
   }
 }
 
 /* Tablet optimizations */
 @media (min-width: 768px) and (max-width: 1024px) {
   .grid-item:hover {
-    transform: translate3d(0, -3px, 0) scale3d(1.015, 1.015, 1);
-  }
-  
-  .performance-container {
-    contain: layout style paint size;
+    transform: translateY(-4px) scale(1.02);
   }
 }
 
 /* Desktop enhancements */
 @media (min-width: 1024px) {
   .grid-item:hover {
-    transform: translate3d(0, -4px, 0) scale3d(1.02, 1.02, 1);
-  }
-  
-  .performance-container {
-    contain: layout style paint size;
-  }
-}
-
-/* High refresh rate displays optimization */
-@media (min-resolution: 120dpi) {
-  .style-card-hover {
-    transition-duration: 0.1s;
-  }
-  
-  .style-card-press {
-    transition-duration: 0.05s;
-  }
-}
-
-/* Reduce motion for accessibility */
-@media (prefers-reduced-motion: reduce) {
-  .hero-recommendation,
-  .popular-choice,
-  .grid-item,
-  .recommended-pulse,
-  .style-card-hover,
-  .style-card-press {
-    animation: none;
-    transition: none;
-  }
-}
-
-/* Memory optimization for low-end devices */
-@media (max-width: 480px) and (max-height: 800px) {
-  .performance-container {
-    contain: layout;
-    will-change: auto;
-  }
-  
-  .loading-shimmer {
-    animation: none;
-    background: #f0f0f0;
+    transform: translateY(-6px) scale(1.03);
   }
 }

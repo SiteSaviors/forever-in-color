@@ -29,10 +29,10 @@ const UploadDropzone = ({
   return (
     <div
       className={`
-        relative border-2 border-dashed rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 text-center transition-all duration-500 cursor-pointer group
+        relative border-2 border-dashed rounded-xl sm:rounded-2xl p-6 sm:p-8 lg:p-16 text-center transition-all duration-500 cursor-pointer group
         ${isDragOver 
-          ? 'border-cyan-400 bg-gradient-to-br from-cyan-950/90 via-violet-900/90 to-fuchsia-950/90 scale-[1.02] shadow-2xl shadow-cyan-500/30 backdrop-blur-xl' 
-          : 'border-cyan-300/30 hover:border-cyan-300/70 hover:bg-gradient-to-br hover:from-cyan-950/80 hover:via-violet-900/80 hover:to-fuchsia-950/80 hover:shadow-2xl hover:shadow-violet-500/20 hover:backdrop-blur-lg'
+          ? 'border-purple-400 bg-gradient-to-br from-purple-50 to-pink-50 scale-[1.02] shadow-xl' 
+          : 'border-gray-200 hover:border-purple-300 hover:bg-gradient-to-br hover:from-purple-50/50 hover:to-pink-50/50 hover:shadow-lg'
         }
         ${isUploading ? 'pointer-events-none' : ''}
       `}
@@ -50,70 +50,93 @@ const UploadDropzone = ({
         className="hidden"
       />
       
-      <div className="space-y-4 sm:space-y-5">
-        {/* Icon Section - Reduced size */}
+      <div className="space-y-6 sm:space-y-8">
+        {/* Icon Section with mobile-optimized sizing */}
         <div className="flex justify-center">
           <div className={`
-            relative p-3 sm:p-4 rounded-full transition-all duration-500
+            relative p-4 sm:p-6 rounded-full transition-all duration-500
             ${isDragOver 
-              ? 'bg-gradient-to-br from-cyan-500 to-fuchsia-500 scale-110 shadow-2xl shadow-cyan-400/50' 
-              : 'bg-gradient-to-br from-cyan-100/80 to-fuchsia-100/80 group-hover:scale-105 group-hover:shadow-xl group-hover:shadow-violet-400/30'
+              ? 'bg-gradient-to-br from-purple-500 to-pink-500 scale-110 shadow-2xl' 
+              : 'bg-gradient-to-br from-purple-100 to-pink-100 group-hover:scale-105 group-hover:shadow-xl'
             }
           `}>
             {isUploading ? (
               <div className="relative">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 border-4 border-white/30 border-t-white rounded-full animate-spin" />
-                <Sparkles className="absolute inset-0 m-auto w-4 h-4 sm:w-5 sm:h-5 text-white animate-pulse" />
+                <div className="w-12 h-12 sm:w-16 sm:h-16 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+                <Sparkles className="absolute inset-0 m-auto w-5 h-5 sm:w-6 sm:h-6 text-white animate-pulse" />
               </div>
             ) : (
-              <Upload className={`w-8 h-8 sm:w-10 sm:h-10 transition-colors duration-300 ${
-                isDragOver ? 'text-white' : 'text-cyan-600 group-hover:text-fuchsia-600'
+              <Upload className={`w-12 h-12 sm:w-16 sm:h-16 transition-colors duration-300 ${
+                isDragOver ? 'text-white' : 'text-purple-600 group-hover:text-purple-700'
               }`} />
             )}
             
-            {/* Hero-style floating particles effect */}
-            {(isDragOver || isUploading) && (
+            {/* Floating particles effect - hidden on small screens */}
+            {isDragOver && (
               <>
-                <div className="absolute -top-2 -right-2 w-3 h-3 bg-fuchsia-400 rounded-full animate-bounce hidden sm:block shadow-lg shadow-fuchsia-500/50" />
-                <div className="absolute -bottom-1 -left-2 w-2 h-2 bg-cyan-400 rounded-full animate-bounce delay-150 hidden sm:block shadow-lg shadow-cyan-500/50" />
-                <div className="absolute top-1/2 -right-3 w-1.5 h-1.5 bg-violet-400 rounded-full animate-bounce delay-300 hidden sm:block shadow-lg shadow-violet-500/50" />
-                <div className="absolute -top-1 -left-3 w-2 h-2 bg-rose-400 rounded-full animate-bounce delay-500 hidden sm:block shadow-lg shadow-rose-500/50" />
+                <div className="absolute -top-2 -right-2 w-3 h-3 bg-pink-400 rounded-full animate-bounce hidden sm:block" />
+                <div className="absolute -bottom-1 -left-2 w-2 h-2 bg-purple-400 rounded-full animate-bounce delay-150 hidden sm:block" />
+                <div className="absolute top-1/2 -right-3 w-1.5 h-1.5 bg-orange-400 rounded-full animate-bounce delay-300 hidden sm:block" />
               </>
             )}
           </div>
         </div>
         
-          {/* Mobile-optimized CTA button with proper touch targets */}
-          <div className="pt-2">
+        {/* Content Section with mobile-first typography */}
+        <div className="space-y-3 sm:space-y-4">
+          <div className="space-y-2 sm:space-y-3">
+            <MobileTypography variant="h2" className="tracking-tight">
+              {isUploading ? (
+                <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                  {processingStage || "Processing..."}
+                </span>
+              ) : isDragOver ? (
+                <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                  Drop to Create Magic ✨
+                </span>
+              ) : (
+                "Transform Your Photo Into Art"
+              )}
+            </MobileTypography>
+            
+            <MobileTypography variant="body" className="text-gray-600 max-w-md mx-auto">
+              {isUploading 
+                ? "AI is analyzing your photo for the perfect composition and canvas format"
+                : "Upload your favorite photo and our AI will instantly find the perfect crop and canvas orientation"
+              }
+            </MobileTypography>
+          </div>
+          
+          {/* Mobile-optimized CTA button */}
+          <div className="pt-4 sm:pt-6">
             <MobileButton 
               size="lg" 
-              className="bg-gradient-to-r from-cyan-600 via-violet-600 to-fuchsia-600 hover:from-cyan-700 hover:via-violet-700 hover:to-fuchsia-700 text-white font-black font-montserrat shadow-2xl hover:shadow-2xl hover:shadow-cyan-500/30 transition-all duration-300 transform hover:scale-105 disabled:hover:scale-100 w-full sm:w-auto min-h-[48px] px-4 sm:px-8 py-4 text-base sm:text-lg sm:text-xl backdrop-blur-sm"
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 disabled:hover:scale-100 w-full sm:w-auto"
               disabled={isUploading}
               onClick={onClick}
             >
               {isUploading ? (
                 <>
-                  <Sparkles className="w-5 h-5 mr-2 sm:mr-3 animate-spin" />
-                  <span className="tracking-wide">CREATING MAGIC</span>
+                  <Sparkles className="w-5 h-5 mr-2 animate-spin" />
+                  Processing...
                 </>
               ) : (
                 <>
-                  <Upload className="w-5 h-5 mr-2 sm:mr-3" />
-                  <span className="tracking-wide sm:hidden">UPLOAD PHOTO</span>
-                  <span className="tracking-wide hidden sm:inline">TRANSFORM YOUR PHOTO</span>
+                  <Upload className="w-5 h-5 mr-2" />
+                  Choose Your Photo
                 </>
               )}
             </MobileButton>
           </div>
+        </div>
       </div>
 
-      {/* Hero-style premium glow effect */}
+      {/* Premium glow effect */}
       <div className={`
-        absolute inset-0 rounded-xl sm:rounded-2xl opacity-0 transition-all duration-500
-        ${isDragOver || isUploading ? 'opacity-100' : 'group-hover:opacity-60'}
+        absolute inset-0 rounded-xl sm:rounded-2xl opacity-0 transition-opacity duration-500
+        ${isDragOver ? 'opacity-100' : 'group-hover:opacity-50'}
       `}>
-        <div className="absolute inset-0 rounded-xl sm:rounded-2xl bg-gradient-to-r from-cyan-400/30 via-violet-400/30 to-fuchsia-400/30 blur-xl" />
-        <div className="absolute inset-0 rounded-xl sm:rounded-2xl bg-gradient-to-br from-cyan-500/10 via-violet-500/10 to-fuchsia-500/10 blur-2xl" />
+        <div className="absolute inset-0 rounded-xl sm:rounded-2xl bg-gradient-to-r from-purple-400/20 to-pink-400/20 blur-xl" />
       </div>
     </div>
   );

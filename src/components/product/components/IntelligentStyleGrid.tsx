@@ -9,6 +9,8 @@ import EmptyState from "./EmptyState";
 import AIAnalysisStatus from "./AIAnalysisStatus";
 import HeroRecommendations from "./HeroRecommendations";
 import PopularChoices from "./PopularChoices";
+import ShowMoreToggle from "./ShowMoreToggle";
+import CompleteCollection from "./CompleteCollection";
 
 interface IntelligentStyleGridProps {
   croppedImage: string | null;
@@ -29,6 +31,7 @@ const IntelligentStyleGrid = ({
 }: IntelligentStyleGridProps) => {
   const [recommendations, setRecommendations] = useState<StyleRecommendation[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [showAllStyles, setShowAllStyles] = useState(false);
 
   // Analyze image and generate recommendations
   useEffect(() => {
@@ -64,6 +67,9 @@ const IntelligentStyleGrid = ({
     onStyleSelect(styleId, styleName);
   };
 
+  // Get secondary styles count for the toggle button
+  const secondaryStyles = recommendations.filter(r => r.category === 'secondary');
+
   if (!croppedImage) {
     return <EmptyState />;
   }
@@ -91,6 +97,24 @@ const IntelligentStyleGrid = ({
         onStyleSelect={handleStyleSelect}
         onComplete={onComplete}
       />
+
+      <ShowMoreToggle
+        showAllStyles={showAllStyles}
+        secondaryStylesCount={secondaryStyles.length}
+        onToggle={() => setShowAllStyles(!showAllStyles)}
+      />
+
+      {showAllStyles && (
+        <CompleteCollection
+          recommendations={recommendations}
+          croppedImage={croppedImage}
+          selectedStyle={selectedStyle}
+          cropAspectRatio={cropAspectRatio}
+          selectedOrientation={selectedOrientation}
+          onStyleSelect={handleStyleSelect}
+          onComplete={onComplete}
+        />
+      )}
     </div>
   );
 };

@@ -25,6 +25,36 @@ export const getStepIcon = (step: number) => {
   }
 };
 
+export const getStepTitle = (step: number): string => {
+  switch (step) {
+    case 1:
+      return 'Upload & Style';
+    case 2:
+      return 'Size & Format';
+    case 3:
+      return 'Customize';
+    case 4:
+      return 'Review Order';
+    default:
+      return `Step ${step}`;
+  }
+};
+
+export const getStepDescription = (step: number): string => {
+  switch (step) {
+    case 1:
+      return 'Upload your photo and choose your artistic style';
+    case 2:
+      return 'Select your canvas size and orientation';
+    case 3:
+      return 'Add custom touches and premium features';
+    case 4:
+      return 'Review your masterpiece and complete your order';
+    default:
+      return '';
+  }
+};
+
 // Add missing functions that are imported by other components
 export const getLockStatus = (isCompleted: boolean, canAccess: boolean): 'completed' | 'accessible' | 'locked' => {
   if (isCompleted) return 'completed';
