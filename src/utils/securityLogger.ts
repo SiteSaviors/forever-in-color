@@ -33,9 +33,6 @@ class SecurityLogger {
       this.events.pop();
     }
 
-    // Log to console for development
-    console.warn('🚨 Security Event:', securityEvent);
-
     // Send to monitoring endpoint if available
     this.sendToMonitoring(securityEvent);
 
@@ -58,14 +55,13 @@ class SecurityLogger {
       
       localStorage.setItem('security_events', JSON.stringify(existingEvents));
     } catch (error) {
-      console.error('Failed to store security event:', error);
+      // Failed to store security event
     }
   }
 
   private showSecurityAlert(event: SecurityEvent) {
     // For high severity events, we could show a toast or modal
     const message = this.getAlertMessage(event);
-    console.error('🔥 SECURITY ALERT:', message);
   }
 
   private getAlertMessage(event: SecurityEvent): string {
