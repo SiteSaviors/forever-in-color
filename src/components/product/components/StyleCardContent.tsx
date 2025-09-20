@@ -1,8 +1,8 @@
 
-import React, { memo } from 'react';
+import { memo } from 'react';
 import ProgressiveStyleImage from './ProgressiveStyleImage';
-import EnhancedStyleCardLoadingOverlay from './EnhancedStyleCardLoadingOverlay';
 import StyleCardInfo from './StyleCardInfo';
+import EnhancedStyleCardLoadingOverlay from './EnhancedStyleCardLoadingOverlay';
 
 interface StyleCardContentProps {
   style: {
@@ -13,12 +13,12 @@ interface StyleCardContentProps {
   };
   imageToShow: string;
   cropAspectRatio?: number;
-  isPopular?: boolean;
+  isPopular: boolean;
   isSelected: boolean;
   hasGeneratedPreview: boolean;
   showGeneratedBadge: boolean;
   showContinueInCard: boolean;
-  shouldBlur?: boolean;
+  shouldBlur: boolean;
   hasErrorBoolean: boolean;
   errorMessage: string;
   effectiveIsLoading: boolean;
@@ -27,20 +27,21 @@ interface StyleCardContentProps {
   touchHandlers: any;
   isPressed: boolean;
   onContinueClick: (e: React.MouseEvent) => void;
-  onGenerateClick: () => void;
-  onRetryClick: () => void;
+  onGenerateClick: (e: React.MouseEvent) => void;
+  onRetryClick: (e: React.MouseEvent) => void;
+  onImageExpand: (e: React.MouseEvent) => void;
 }
 
 const StyleCardContent = memo(({
   style,
   imageToShow,
   cropAspectRatio,
-  isPopular = false,
+  isPopular,
   isSelected,
   hasGeneratedPreview,
   showGeneratedBadge,
   showContinueInCard,
-  shouldBlur = false,
+  shouldBlur,
   hasErrorBoolean,
   errorMessage,
   effectiveIsLoading,
@@ -50,57 +51,72 @@ const StyleCardContent = memo(({
   isPressed,
   onContinueClick,
   onGenerateClick,
-  onRetryClick
+  onRetryClick,
+  onImageExpand
 }: StyleCardContentProps) => {
+  // Determine if this is a horizontal/landscape orientation
+  const isHorizontal = cropAspectRatio ? cropAspectRatio > 1.2 : false;
+  const isVertical = cropAspectRatio ? cropAspectRatio < 0.8 : false;
+  
+  // Calculate optimal image container aspect ratio based on orientation
+  const getImageContainerClass = () => {
+    if (isHorizontal) {
+      return "relative aspect-[4/3] overflow-hidden"; // Wider aspect for horizontal images
+    } else if (isVertical) {
+      return "relative aspect-[3/4] overflow-hidden"; // Taller aspect for vertical images
+    }
+    return "relative aspect-square overflow-hidden"; // Default square
+  };
+
+  // Get orientation-specific padding for the info section with enhanced spacing
+  const getInfoPadding = () => {
+    if (isHorizontal) {
+      return "p-3.5"; // Enhanced padding for horizontal to give more breathing room
+    }
+    return "p-4"; // Enhanced standard padding for better spacing
+  };
+
   return (
-    <div 
-      {...touchHandlers}
-      className={`performance-container ${isPressed ? 'scale-95' : ''} transition-transform duration-100`}
-    >
-      {/* Image Section with Progressive Loading */}
-      <div className="relative flex-1">
+    <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group flex flex-col h-full">
+      {/* Image Section - Dynamic aspect ratio */}
+      <div className={getImageContainerClass()}>
         <ProgressiveStyleImage
           src={imageToShow}
-          alt={style.name}
-          aspectRatio={cropAspectRatio || 1}
-          className="transition-transform duration-300 ease-out group-hover:scale-105 will-change-transform"
-          priority={isPopular || isSelected}
-          onLoad={() => console.log(`Image loaded: ${style.name}`)}
+          alt={`${style.name} preview`}
+          aspectRatio={cropAspectRatio}
+          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          onClick={onImageExpand}
+          {...touchHandlers}
         />
         
-        {/* Subtle locked state indicator */}
-        {showLockedFeedback && (
-          <div className="absolute top-2 right-2 bg-green-500/90 text-white px-2 py-1 rounded-full text-xs font-medium shadow-lg">
-            ✓ Generated
-          </div>
-        )}
-        
-        {/* Loading Overlay - CRITICAL: Never show if permanently generated */}
-        {!isPermanentlyGenerated && (
+        {/* Loading Overlay */}
+        {effectiveIsLoading && !isPermanentlyGenerated && (
           <EnhancedStyleCardLoadingOverlay
-            isBlinking={false}
             styleName={style.name}
+            isBlinking={false}
             isLoading={effectiveIsLoading}
-            error={hasErrorBoolean ? errorMessage : null}
-            onRetry={onRetryClick}
           />
         )}
       </div>
 
-      {/* Info Section */}
-      <StyleCardInfo
-        style={style}
-        hasGeneratedPreview={hasGeneratedPreview || isPermanentlyGenerated}
-        isPopular={isPopular}
-        isSelected={isSelected}
-        showGeneratedBadge={showGeneratedBadge || isPermanentlyGenerated}
-        showContinueInCard={showContinueInCard}
-        shouldBlur={shouldBlur}
-        showError={hasErrorBoolean}
-        onContinueClick={onContinueClick}
-        onGenerateClick={onGenerateClick}
-        onRetryClick={onRetryClick}
-      />
+      {/* Info Section - Flexible height to fill remaining space with enhanced padding */}
+      <div className={`${getInfoPadding()} flex-1 flex flex-col justify-between min-h-0`}>
+        <StyleCardInfo
+          style={style}
+          hasGeneratedPreview={hasGeneratedPreview}
+          isPopular={isPopular}
+          isSelected={isSelected}
+          showGeneratedBadge={showGeneratedBadge}
+          showContinueInCard={showContinueInCard}
+          shouldBlur={shouldBlur}
+          showError={hasErrorBoolean}
+          onContinueClick={onContinueClick}
+          onGenerateClick={onGenerateClick}
+          onRetryClick={onRetryClick}
+          imageUrl={hasGeneratedPreview ? imageToShow : undefined}
+          isHorizontalOrientation={isHorizontal}
+        />
+      </div>
     </div>
   );
 });

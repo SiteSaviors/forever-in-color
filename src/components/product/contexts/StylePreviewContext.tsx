@@ -70,11 +70,3 @@ export const StylePreviewProvider = ({
     </StylePreviewContext.Provider>
   );
 };
-
-export const useStylePreview = (): StylePreviewContextType => {
-  const context = useContext(StylePreviewContext);
-  if (!context) {
-    throw new Error('useStylePreview must be used within a StylePreviewProvider');
-  }
-  return context;
-};

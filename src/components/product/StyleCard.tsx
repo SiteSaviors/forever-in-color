@@ -1,7 +1,7 @@
 
-import React, { memo } from 'react';
+import { memo } from 'react';
 import { useStyleCardHooks } from './hooks/useStyleCardHooks';
-import StyleCardContainer from './components/StyleCardContainer';
+import StyleCardSimplified from './components/StyleCardSimplified';
 import StyleCardContent from './components/StyleCardContent';
 import StyleCardErrorBoundary from './components/StyleCardErrorBoundary';
 import Lightbox from '@/components/ui/lightbox';
@@ -29,14 +29,8 @@ const StyleCard = memo((props: StyleCardProps) => {
   const {
     style,
     croppedImage,
-    selectedStyle,
     isPopular = false,
-    preGeneratedPreview,
     cropAspectRatio,
-    selectedOrientation = "square",
-    showContinueButton = true,
-    onStyleClick,
-    onContinue,
     shouldBlur = false
   } = props;
 
@@ -50,9 +44,7 @@ const StyleCard = memo((props: StyleCardProps) => {
     isPermanentlyGenerated,
     isLightboxOpen,
     setIsLightboxOpen,
-    previewUrl,
     hasGeneratedPreview,
-    isStyleGenerated,
     showGeneratedBadge,
     imageToShow,
     showContinueInCard,
@@ -63,6 +55,7 @@ const StyleCard = memo((props: StyleCardProps) => {
     handleContinueClick,
     handleGenerateWrapper,
     handleRetryWrapper,
+    handleImageExpand,
     
     // Interactions
     isPressed,
@@ -71,7 +64,7 @@ const StyleCard = memo((props: StyleCardProps) => {
 
   return (
     <StyleCardErrorBoundary styleId={style.id} styleName={style.name}>
-      <StyleCardContainer
+      <StyleCardSimplified
         isSelected={isSelected}
         styleId={style.id}
         styleName={style.name}
@@ -80,7 +73,6 @@ const StyleCard = memo((props: StyleCardProps) => {
         hasError={hasErrorBoolean}
         canAccess={!!croppedImage}
         onClick={handleCardClick}
-        onGenerateStyle={handleGenerateWrapper}
       >
         <StyleCardContent
           style={style}
@@ -102,8 +94,9 @@ const StyleCard = memo((props: StyleCardProps) => {
           onContinueClick={handleContinueClick}
           onGenerateClick={handleGenerateWrapper}
           onRetryClick={handleRetryWrapper}
+          onImageExpand={handleImageExpand}
         />
-      </StyleCardContainer>
+      </StyleCardSimplified>
 
       {/* Lightbox for image expansion - always available */}
       <Lightbox

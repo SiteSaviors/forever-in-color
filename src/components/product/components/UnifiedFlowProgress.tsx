@@ -78,33 +78,6 @@ const UnifiedFlowProgress = ({
   }
 
   // Show full progress when actively working through steps
-  return <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
-      {/* Compact Header */}
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
-            <Sparkles className="w-3 h-3 text-white" />
-          </div>
-          <div>
-            <h3 className="text-sm font-bold text-gray-900">Creating Your Art</h3>
-            <p className="text-xs text-gray-500">AI-Powered Transformation</p>
-          </div>
-        </div>
-        
-        <div className="text-right">
-          <div className="text-sm font-bold text-purple-600">{progressPercentage}%</div>
-          <div className="flex items-center gap-1 text-xs text-green-600">
-            <TrendingUp className="w-3 h-3" />
-            <span>Progress</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Compact Progress Steps */}
-      
-
-      {/* Compact Progress Bar */}
-      
-    </div>;
+  return;
 };
 export default UnifiedFlowProgress;
