@@ -1,7 +1,7 @@
 
 import { memo } from 'react';
 import { useStyleCardHooks } from './hooks/useStyleCardHooks';
-import StyleCardContainer from './components/StyleCardContainer';
+import StyleCardSimplified from './components/StyleCardSimplified';
 import StyleCardContent from './components/StyleCardContent';
 import StyleCardErrorBoundary from './components/StyleCardErrorBoundary';
 import Lightbox from '@/components/ui/lightbox';
@@ -64,7 +64,7 @@ const StyleCard = memo((props: StyleCardProps) => {
 
   return (
     <StyleCardErrorBoundary styleId={style.id} styleName={style.name}>
-      <StyleCardContainer
+      <StyleCardSimplified
         isSelected={isSelected}
         styleId={style.id}
         styleName={style.name}
@@ -73,7 +73,6 @@ const StyleCard = memo((props: StyleCardProps) => {
         hasError={hasErrorBoolean}
         canAccess={!!croppedImage}
         onClick={handleCardClick}
-        onGenerateStyle={handleGenerateWrapper}
       >
         <StyleCardContent
           style={style}
@@ -97,7 +96,7 @@ const StyleCard = memo((props: StyleCardProps) => {
           onRetryClick={handleRetryWrapper}
           onImageExpand={handleImageExpand}
         />
-      </StyleCardContainer>
+      </StyleCardSimplified>
 
       {/* Lightbox for image expansion - always available */}
       <Lightbox

@@ -24,21 +24,8 @@ export const generateStylePreview = async (
       options
     });
     
-    // STEP 1: Validate and correct aspect ratio format for GPT-Image-1
-    let correctedAspectRatio = aspectRatio;
-    if (!isValidAspectRatio(aspectRatio)) {
-      // Map common invalid ratios to valid GPT-Image-1 ratios
-      if (aspectRatio === '4:3') {
-        correctedAspectRatio = '3:2';
-        console.warn(`⚠️ Converting invalid ratio 4:3 to 3:2 for GPT-Image-1 compatibility`);
-      } else if (aspectRatio === '3:4') {
-        correctedAspectRatio = '2:3';
-        console.warn(`⚠️ Converting invalid ratio 3:4 to 2:3 for GPT-Image-1 compatibility`);
-      } else {
-        correctedAspectRatio = '1:1';
-        console.warn(`⚠️ Invalid aspect ratio "${aspectRatio}", defaulting to 1:1 for GPT-Image-1`);
-      }
-    }
+    // SIMPLIFIED: Use aspect ratio as-is, let backend handle validation
+    const correctedAspectRatio = aspectRatio;
     
     // Check if user is authenticated (optional now)
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();

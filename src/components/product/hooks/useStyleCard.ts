@@ -63,39 +63,14 @@ export const useStyleCard = ({
 
   // Effects from useStyleCardEffects
   
-  // Track permanent generation state - once generated, never allow regeneration
+  // SIMPLIFIED: Track generation but allow retry on errors
   useEffect(() => {
-    if (previewUrl && !isPermanentlyGenerated) {
-      console.log(`🔒 StyleCard: Permanently locking ${style.name} - will never regenerate again`);
-      setIsPermanentlyGenerated(true);
-      setLocalIsLoading(false);
-    }
-  }, [previewUrl, isPermanentlyGenerated, style.name]);
-
-  // Initialize permanent state if pre-generated preview exists
-  useEffect(() => {
-    if (preGeneratedPreview && !isPermanentlyGenerated) {
-      console.log(`🔒 StyleCard: ${style.name} has pre-generated preview - marking as permanently generated`);
-      setIsPermanentlyGenerated(true);
-    }
-  }, [preGeneratedPreview, isPermanentlyGenerated, style.name]);
-
-  // Stop all loading states immediately when permanently generated
-  useEffect(() => {
-    if (isPermanentlyGenerated) {
-      console.log(`🛑 StyleCard: ${style.name} is permanently generated, stopping all loading states`);
-      setLocalIsLoading(false);
-    }
-  }, [isPermanentlyGenerated, style.name]);
-
-  // CRITICAL: Reset all loading states immediately when permanently generated
-  useEffect(() => {
-    if (isPermanentlyGenerated) {
-      console.log(`🛑 StyleCard: ${style.name} is permanently generated, forcing all loading states to false`);
+    if (previewUrl) {
+      console.log(`✅ StyleCard: ${style.name} generated successfully`);
       setLocalIsLoading(false);
       setShowError(false);
     }
-  }, [isPermanentlyGenerated, style.name]);
+  }, [previewUrl, style.name]);
 
   // Handlers from useStyleCardHandlers
   
@@ -106,18 +81,12 @@ export const useStyleCard = ({
     // Always call onStyleClick to select the style
     onStyleClick(style);
     
-    // CRITICAL: Never generate if permanently generated
-    if (isPermanentlyGenerated) {
-      console.log(`🚫 PERMANENT BLOCK - ${style.name} is permanently generated, no generation will occur`);
-      return;
-    }
-    
-    // Only generate if we don't have a preview AND not permanently generated AND not currently generating AND not Original style
+    // Auto-generate if no preview and conditions are met
     if (!previewUrl && !effectiveIsLoading && !hasError && style.id !== 1) {
-      console.log(`🚀 Auto-generating preview for ${style.name} (first time only)`);
-      handleGenerateClick({} as React.MouseEvent);
+      console.log(`🚀 Auto-generating preview for ${style.name}`);
+      handleGenerateClick();
     } else {
-      console.log(`🔒 No generation needed - previewUrl: ${!!previewUrl}, isLoading: ${effectiveIsLoading}, hasError: ${hasError}, styleId: ${style.id}`);
+      console.log(`📋 Generation check - previewUrl: ${!!previewUrl}, isLoading: ${effectiveIsLoading}, hasError: ${hasError}, styleId: ${style.id}`);
     }
   }, [style, previewUrl, isPermanentlyGenerated, effectiveIsLoading, hasError, onStyleClick]);
 
@@ -135,13 +104,18 @@ export const useStyleCard = ({
     setIsLightboxOpen(true);
   };
 
-  // Generate click handler
-  const handleGenerateClick = useCallback(async (e: React.MouseEvent) => {
-    e.stopPropagation();
+  // Generate click handler with enhanced logging
+  const handleGenerateClick = useCallback(async () => {
     
-    // CRITICAL: Never generate if permanently generated
-    if (isPermanentlyGenerated) {
-      console.log(`🚫 PERMANENT BLOCK - ${style.name} cannot be regenerated (generate button)`);
+    console.log(`🎨 GENERATE BUTTON CLICKED - ${style.name} (ID: ${style.id})`);
+    console.log(`  - isPermanentlyGenerated: ${isPermanentlyGenerated}`);
+    console.log(`  - effectiveIsLoading: ${effectiveIsLoading}`);
+    console.log(`  - hasError: ${hasError}`);
+    console.log(`  - croppedImage: ${!!croppedImage}`);
+    
+    // Skip Original Image style
+    if (style.id === 1) {
+      console.log(`🚫 SKIP - Original Image style cannot be generated`);
       return;
     }
     
@@ -150,28 +124,34 @@ export const useStyleCard = ({
       return;
     }
     
-    console.log(`🎨 Starting generation for ${style.name}`);
+    if (!croppedImage) {
+      console.log(`🚫 NO IMAGE BLOCK - ${style.name} has no cropped image`);
+      return;
+    }
+    
+    console.log(`🚀 STARTING GENERATION for ${style.name}`);
     setShowError(false);
     setLocalIsLoading(true);
     
     try {
+      console.log(`📞 CALLING generatePreview() for ${style.name}`);
       await generatePreview();
       console.log(`✅ Generation completed for ${style.name}`);
     } catch (error) {
-      console.log(`❌ Generation failed for ${style.name}:`, error);
+      console.error(`❌ Generation failed for ${style.name}:`, error);
       setShowError(true);
     } finally {
+      console.log(`🏁 Generation finished for ${style.name}, setting loading to false`);
       setLocalIsLoading(false);
     }
-  }, [generatePreview, isPermanentlyGenerated, effectiveIsLoading, style.name]);
+  }, [generatePreview, isPermanentlyGenerated, effectiveIsLoading, style.name, style.id, hasError, croppedImage]);
 
   // Retry click handler
-  const handleRetryClick = useCallback(async (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleRetryClick = useCallback(async () => {
     
-    // CRITICAL: Never retry if permanently generated
-    if (isPermanentlyGenerated) {
-      console.log(`🚫 PERMANENT BLOCK - ${style.name} cannot be retried`);
+    // Skip Original Image style
+    if (style.id === 1) {
+      console.log(`🚫 SKIP - Original Image style cannot be retried`);
       return;
     }
     
