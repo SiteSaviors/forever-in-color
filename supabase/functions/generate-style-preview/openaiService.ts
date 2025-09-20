@@ -21,7 +21,7 @@ export class OpenAIService {
           prompt: fullPrompt,
           size: size,
           n: 1,
-          quality: 'standard'
+          quality: 'auto'
         }),
       });
 
