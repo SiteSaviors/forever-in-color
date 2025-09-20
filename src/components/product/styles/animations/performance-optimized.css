@@ -91,41 +91,47 @@
   transform: translate3d(0, 0, 0);
 }
 
+
 /* Accordion-specific optimizations */
 .accordion-item-optimized {
-  @apply perf-container;
+  contain: layout style;
+  transform: translate3d(0, 0, 0);
   transition: box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .accordion-item-optimized.is-active {
-  @apply perf-animating;
+  will-change: transform, opacity;
   animation: step-activation 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .accordion-item-optimized.is-interactive:hover {
-  @apply perf-animating;
+  will-change: transform, opacity;
   animation: interaction-feedback 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .accordion-content-optimized {
-  @apply perf-base;
+  will-change: auto;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
   animation-duration: 0.25s;
   animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   animation-fill-mode: forwards;
 }
 
 .accordion-content-optimized[data-state="open"] {
-  @apply perf-animating;
+  will-change: transform, opacity;
   animation-name: accordion-expand-optimized;
 }
 
 .accordion-content-optimized[data-state="closed"] {
-  @apply perf-animating;
+  will-change: transform, opacity;
   animation-name: accordion-collapse-optimized;
 }
 
 .accordion-trigger-optimized {
-  @apply perf-base;
+  will-change: auto;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
   transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -139,7 +145,9 @@
 
 /* Chevron rotation optimization */
 .chevron-optimized {
-  @apply perf-base;
+  will-change: auto;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
   transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -149,18 +157,21 @@
 
 /* Step indicator optimizations */
 .step-indicator-optimized {
-  @apply perf-base;
+  will-change: auto;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .step-indicator-optimized.is-completed {
-  @apply perf-animating;
+  will-change: transform, opacity;
   animation: gentle-pulse 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Loading state optimizations */
 .loading-skeleton-optimized {
-  @apply perf-paint-container;
+  contain: layout style paint;
+  transform: translate3d(0, 0, 0);
   background: linear-gradient(90deg, 
     transparent 25%, 
     rgba(255, 255, 255, 0.1) 50%, 
@@ -181,7 +192,7 @@
 
 /* Error state animations */
 .error-shake-optimized {
-  @apply perf-animating;
+  will-change: transform, opacity;
   animation: error-shake 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
