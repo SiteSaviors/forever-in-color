@@ -1,12 +1,12 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
-import { StylePromptService } from './stylePromptService.ts';
-import { corsHeaders, handleCorsPreflightRequest, createCorsResponse } from './corsUtils.ts';
-import { base64ToBlob, getImageSize } from './imageUtils.ts';
-import { validateRequest } from './requestValidator.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 import { OpenAIService } from './openaiService.ts';
-import { createSuccessResponse, createErrorResponse } from './responseUtils.ts';
+import { CanvasWatermarkService } from './canvasWatermarkService.ts';
+import { EnhancedErrorHandler } from './errorHandling.ts';
+import { corsHeaders, handleCorsPreflightRequest, createErrorResponse, createSuccessResponse } from './corsUtils.ts';
+import { validateEnvironment } from './environmentValidator.ts';
+import { validateAndParseRequest } from './requestValidator.ts';
 
 serve(async (req) => {
   console.log(`🔥 Edge Function Request: ${req.method} ${req.url}`);
@@ -18,9 +18,13 @@ serve(async (req) => {
 
   // Only allow POST requests
   if (req.method !== 'POST') {
-    return createCorsResponse(
-      JSON.stringify(createErrorResponse('method_not_allowed', 'Method not allowed')), 
-      405
+    console.log(`❌ Method not allowed: ${req.method}`);
+    return new Response(
+      JSON.stringify({ error: 'Method not allowed' }), 
+      { 
+        status: 405, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
     );
   }
 
@@ -29,99 +33,116 @@ serve(async (req) => {
   console.log(`=== GPT-IMAGE-1 REQUEST START [${requestId}] ===`);
 
   try {
-    const body = await req.json();
-    console.log(`📝 [${requestId}] Request body:`, JSON.stringify({ ...body, imageUrl: 'BASE64_DATA_HIDDEN' }, null, 2));
-
-    // Validate request
-    const validation = validateRequest(body);
-    if (!validation.isValid) {
-      return createCorsResponse(
-        JSON.stringify(createErrorResponse('invalid_request', validation.error!)),
-        400
-      );
+    // Validate environment variables
+    const envValidation = await validateEnvironment(req, requestId);
+    if (!envValidation.isValid) {
+      return envValidation.error!;
     }
 
-    const { imageUrl, style, aspectRatio, quality } = validation.data!;
-
-    const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openaiApiKey) {
-      console.error(`❌ [${requestId}] Missing OpenAI API key`);
-      return createCorsResponse(
-        JSON.stringify(createErrorResponse('configuration_error', 'AI service configuration error')),
-        500
-      );
+    // Validate and parse request
+    const requestValidation = await validateAndParseRequest(req, requestId);
+    if (!requestValidation.isValid) {
+      return requestValidation.error!;
     }
 
-    console.log(`🎨 [${requestId}] Starting generation with:`, { style, aspectRatio, quality });
+    const { body, imageData } = requestValidation;
+    const { 
+      style, 
+      photoId, 
+      aspectRatio = '1:1', 
+      isAuthenticated,
+      watermark = true,
+      sessionId: providedSessionId,
+      quality = 'preview'
+    } = body;
 
-    // Initialize Supabase client and StylePromptService
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    const stylePromptService = new StylePromptService(supabase);
+    // Generate session ID if not provided
+    const sessionId = providedSessionId || CanvasWatermarkService.generateSessionId();
 
-    // Get the tested, specific prompt for this style
-    let stylePrompt: string;
-    try {
-      const fetchedPrompt = await stylePromptService.getStylePrompt(style);
-      if (fetchedPrompt) {
-        stylePrompt = fetchedPrompt;
-        console.log(`✅ [${requestId}] Using tested prompt for style: ${style}`);
-      } else {
-        // Fallback to a basic prompt if database lookup fails
-        stylePrompt = `Transform this image into ${style} style while keeping the exact same subject, composition, and scene. Apply only the artistic style transformation. Do not change what is depicted in the image - only change how it looks artistically.`;
-        console.warn(`⚠️ [${requestId}] No prompt found for style ${style}, using fallback`);
-      }
-    } catch (error) {
-      console.error(`❌ [${requestId}] Error fetching style prompt:`, error);
-      stylePrompt = `Transform this image into ${style} style while keeping the exact same subject, composition, and scene. Apply only the artistic style transformation. Do not change what is depicted in the image - only change how it looks artistically.`;
-    }
-
-    console.log(`🎯 [${requestId}] Using prompt:`, stylePrompt.substring(0, 100) + '...');
-
-    // Convert aspect ratio to size
-    const size = getImageSize(aspectRatio);
-
-    // Convert base64 image to blob
-    let imageBlob: Blob;
-    try {
-      imageBlob = await base64ToBlob(imageUrl);
-      console.log(`📷 [${requestId}] Image converted to blob, size:`, imageBlob.size);
-    } catch (error) {
-      console.error(`❌ [${requestId}] Failed to convert image:`, error);
-      return createCorsResponse(
-        JSON.stringify(createErrorResponse('invalid_image', 'Invalid image format')),
-        400
-      );
-    }
-
-    // Initialize OpenAI service
-    const openaiService = new OpenAIService(openaiApiKey);
-
-    // Try GPT-Image-1 with image variations (maintains subject better)
-    let generatedImageUrl = await openaiService.tryImageVariations(imageBlob, stylePrompt, size, requestId);
+    // Initialize Supabase (optional)
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     
-    // Fallback to GPT-Image-1 edits
-    if (!generatedImageUrl) {
-      generatedImageUrl = await openaiService.tryImageEdits(imageBlob, stylePrompt, size, requestId);
+    let supabase = null;
+    if (supabaseUrl && supabaseServiceKey) {
+      supabase = createClient(supabaseUrl, supabaseServiceKey);
     }
 
-    if (generatedImageUrl) {
+    console.log(`🔧 [${requestId}] Creating OpenAI service with validated inputs`);
+
+    // Create OpenAI service with enhanced error handling
+    const openaiService = new OpenAIService(envValidation.openaiApiKey!, envValidation.replicateApiToken!, supabase);
+    
+    // Determine quality settings
+    const isPreview = quality === 'preview';
+    const imageQuality = isPreview ? 'medium' : 'high';
+    
+    // Generate image with comprehensive error handling
+    console.log(`🎨 [${requestId}] Starting generation with aspect ratio:`, aspectRatio, 'quality:', imageQuality);
+    const result = await openaiService.generateImageToImage(imageData!, style, aspectRatio, imageQuality);
+
+    if (result.ok && result.output) {
+      console.log(`✅ [${requestId}] Generation successful, applying watermarks...`);
+      
+      let finalOutput = result.output;
+      
+      // Apply watermarking if requested (default behavior)
+      if (watermark) {
+        try {
+          console.log(`💧 [${requestId}] Applying watermarks with Canvas API...`);
+          
+          // Apply watermarks using the CanvasWatermarkService
+          finalOutput = await CanvasWatermarkService.createWatermarkedImage(
+            result.output, 
+            sessionId, 
+            isPreview
+          );
+          
+          console.log(`✅ [${requestId}] Canvas watermarking completed successfully`);
+          
+        } catch (watermarkError) {
+          console.error(`⚠️ [${requestId}] Canvas watermarking failed, using original:`, watermarkError);
+          // Continue with original image if watermarking fails
+          finalOutput = result.output;
+        }
+      }
+
       const endTime = Date.now();
       const duration = endTime - startTime;
-      console.log(`=== ✅ GENERATION COMPLETED [${requestId}] in ${duration}ms ===`);
+      console.log(`=== ✅ GPT-IMAGE-1 COMPLETED [${requestId}] in ${duration}ms ===`);
 
-      return createCorsResponse(
-        JSON.stringify(createSuccessResponse(generatedImageUrl, requestId, duration))
+      return createSuccessResponse(finalOutput, requestId, duration);
+    } else {
+      console.error(`❌ [${requestId}] Generation failed:`, result.error);
+      
+      // Determine appropriate status code based on error type
+      let statusCode = 500;
+      let userMessage = 'Image generation failed. Please try again.';
+      
+      if (result.errorType === 'service_unavailable') {
+        statusCode = 503;
+        userMessage = 'AI service is temporarily unavailable. Please try again in a few moments.';
+      } else if (result.errorType === 'rate_limit') {
+        statusCode = 429;
+        userMessage = 'Too many requests. Please wait a moment before trying again.';
+      } else if (result.errorType === 'invalid_request') {
+        statusCode = 400;
+        userMessage = 'Invalid request. Please check your image and try again.';
+      }
+      
+      return new Response(
+        JSON.stringify({ 
+          error: result.errorType || 'generation_failed',
+          message: userMessage,
+          requestId,
+          timestamp: new Date().toISOString()
+        }), 
+        { 
+          status: statusCode, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
       );
     }
-
-    // All models failed
-    console.error(`❌ [${requestId}] All models failed`);
-    return createCorsResponse(
-      JSON.stringify(createErrorResponse('generation_failed', 'AI service is temporarily unavailable. Please try again.')),
-      503
-    );
 
   } catch (error) {
     const endTime = Date.now();
@@ -130,9 +151,9 @@ serve(async (req) => {
     console.error('💥 Unexpected error:', error);
     console.error('📍 Error stack:', error.stack);
     
-    return createCorsResponse(
-      JSON.stringify(createErrorResponse('internal_error', 'Internal server error. Please try again.', requestId)),
-      500
-    );
+    const parsedError = EnhancedErrorHandler.parseError(error);
+    const userMessage = EnhancedErrorHandler.createUserFriendlyMessage(parsedError);
+    
+    return createErrorResponse(userMessage, 500, requestId);
   }
 });
