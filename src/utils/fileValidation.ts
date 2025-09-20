@@ -213,7 +213,6 @@ export const scanForMaliciousContent = async (file: File): Promise<FileValidatio
  * Comprehensive file validation that runs all checks
  */
 export const validateImageFile = async (file: File): Promise<FileValidationResult> => {
-  console.log('Starting comprehensive file validation for:', file.name);
 
   // Step 1: Basic validations
   const mimeResult = validateMimeType(file);
@@ -238,8 +237,6 @@ export const validateImageFile = async (file: File): Promise<FileValidationResul
     return contentResult;
   }
 
-  console.log('File validation completed successfully');
-  
   return {
     isValid: true,
     warnings: contentResult.warnings

@@ -77,8 +77,6 @@ const CanvasPreviewSection = ({
               style={{
                 filter: 'brightness(0.95) contrast(1.05) saturate(1.1)'
               }}
-              onLoad={() => console.log('✅ AI-generated artwork loaded successfully on canvas:', userArtworkUrl.substring(0, 50) + '...')}
-              onError={(e) => console.error('❌ Failed to load AI-generated artwork on canvas:', userArtworkUrl, e)}
             />
           </div>
         )}

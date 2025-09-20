@@ -103,12 +103,6 @@ class CascadeErrorBoundary extends Component<Props, State> {
     // Call external error handler
     this.props.onError?.(enhancedError);
 
-    // Log detailed error information
-    console.group(`🚨 CascadeErrorBoundary - Step ${this.props.stepNumber || 'Unknown'}`);
-    console.error('Error:', error);
-    console.error('Error Info:', errorInfo);
-    console.error('Enhanced Context:', enhancedError);
-    console.groupEnd();
   }
 
   private determineErrorSeverity(error: Error, errorInfo: React.ErrorInfo): ErrorSeverity {
@@ -179,9 +173,7 @@ class CascadeErrorBoundary extends Component<Props, State> {
       };
 
       // Send to analytics (replace with your service)
-      console.log('📊 Error Analytics:', analyticsData);
     } catch (analyticsError) {
-      console.warn('Failed to report error analytics:', analyticsError);
     }
   }
 
@@ -189,7 +181,6 @@ class CascadeErrorBoundary extends Component<Props, State> {
     const { maxRetries = 3, retryDelay = 1000 } = this.props;
     
     if (this.state.retryCount >= maxRetries) {
-      console.warn('Max retry attempts reached');
       return;
     }
 

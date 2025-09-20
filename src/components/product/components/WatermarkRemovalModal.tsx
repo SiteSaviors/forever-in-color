@@ -53,7 +53,6 @@ const WatermarkRemovalModal: React.FC<WatermarkRemovalModalProps> = ({
 
     setIsProcessing(true);
     try {
-      console.log('Starting watermark removal process...');
       
       const { data, error } = await supabase.functions.invoke('remove-watermark', {
         body: {
@@ -66,7 +65,6 @@ const WatermarkRemovalModal: React.FC<WatermarkRemovalModalProps> = ({
       });
 
       if (error) {
-        console.error('Watermark removal error:', error);
         throw new Error(error.message || 'Failed to remove watermark');
       }
 
@@ -74,8 +72,6 @@ const WatermarkRemovalModal: React.FC<WatermarkRemovalModalProps> = ({
         throw new Error(data.error || 'Failed to generate clean image');
       }
 
-      console.log('Watermark removal successful:', data);
-      
       setCleanImageUrl(data.cleanImageUrl);
       setIsSuccess(true);
       refreshBalance();
@@ -90,7 +86,6 @@ const WatermarkRemovalModal: React.FC<WatermarkRemovalModalProps> = ({
       await onRemoveWatermark(selectedResolution, selectedTokens);
 
     } catch (error) {
-      console.error('Failed to remove watermark:', error);
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to remove watermark. Please try again.",
