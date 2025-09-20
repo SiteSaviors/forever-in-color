@@ -3,7 +3,6 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProductHeader from "@/components/product/ProductHeader";
 import ProductContent from "@/components/product/ProductContent";
-import TrustElements from "@/components/product/TrustElements";
 import BottomMomentumPopup from "@/components/product/components/BottomMomentumPopup";
 import ProductTestimonials from "@/components/product/ProductTestimonials";
 import UnifiedSocialMomentumWidget from "@/components/product/components/UnifiedSocialMomentumWidget";
@@ -69,8 +68,6 @@ const Product = () => {
             currentStep={currentStep}
             onUploadClick={handleUploadClick}
           />
-          
-          <TrustElements />
           
           <ProductContent
             currentStep={currentStep}
