@@ -7,7 +7,7 @@ import { useBackNavigation } from "./hooks/useBackNavigation";
 import { useOrientationSelector } from "./orientation/hooks/useOrientationSelector";
 import { OrientationSelectorProps } from "./orientation/types";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Target, Sparkles } from "lucide-react";
+import { CheckCircle } from "lucide-react";
 
 interface ExtendedOrientationSelectorProps extends OrientationSelectorProps {
   userImageUrl?: string | null;
@@ -53,59 +53,26 @@ const OrientationSelector = ({
   });
 
   return (
-    <div className="space-y-8 font-poppins">
-      {/* Enhanced Header with Size Focus */}
-      <div className="text-center space-y-6">
-        <div className="flex items-center justify-center gap-3 mb-4">
-          <Badge className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold px-4 py-2 shadow-lg">
-            <CheckCircle className="w-4 h-4 mr-2" />
-            {selectedOrientation} Canvas Ready
-          </Badge>
-        </div>
-        
-        <div className="space-y-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight font-poppins drop-shadow-sm">
-            Choose Your Perfect Size
-          </h2>
-          <div className="flex items-center justify-center gap-2 text-purple-600 mb-2">
-            <Target className="w-5 h-5" />
-            <span className="font-semibold tracking-tight">Step 2 of 4</span>
-          </div>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed font-poppins tracking-tight">
-            Your <span className="font-semibold text-purple-700">{selectedOrientation}</span> canvas orientation is locked in. 
-            Now select the ideal size that will make your artwork truly shine in your space.
+    <div className="space-y-10">
+      {/* Confirmation Header */}
+      <div className="text-center space-y-4">
+        <Badge className="bg-green-100 text-green-700 font-medium">
+          <CheckCircle className="w-4 h-4 mr-2" />
+          Canvas Orientation Selected: {selectedOrientation}
+        </Badge>
+        <div>
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">Perfect! Now Choose Your Size</h2>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            Your {selectedOrientation} canvas orientation has been locked in from Step 1. 
+            Now select the perfect size for your artwork.
           </p>
-        </div>
-
-        {/* Size Context Helper */}
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100 shadow-sm">
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <Sparkles className="w-5 h-5 text-blue-600" />
-            <h3 className="text-lg font-bold text-blue-900 tracking-tight font-poppins drop-shadow-sm">
-              Size Guide
-            </h3>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-700 mb-1">12" - 16"</div>
-              <div className="text-blue-600 font-medium">Perfect for desks & shelves</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-700 mb-1">18" - 24"</div>
-              <div className="text-blue-600 font-medium">Great for walls & focal points</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-700 mb-1">30"+</div>
-              <div className="text-blue-600 font-medium">Statement pieces & galleries</div>
-            </div>
-          </div>
         </div>
       </div>
 
       {/* Validation Error Alert */}
       <ValidationErrorAlert validationError={validationError} />
 
-      {/* Size Selection Section - Enhanced */}
+      {/* Size Selection Section - This is now the main focus */}
       <SizeSelectionSection
         ref={sizeSectionRef}
         selectedOrientation={selectedOrientation}
@@ -116,13 +83,13 @@ const OrientationSelector = ({
         onContinueWithSize={handleContinueWithSize}
       />
 
-      {/* Step Navigation - Enhanced */}
+      {/* Step Navigation */}
       <StepNavigation
         canGoBack={canGoBack}
         canContinue={canContinueToNext}
         onBack={handleBackStep}
         onContinue={handleContinueClick}
-        continueText="Continue to Customize →"
+        continueText="Continue to Customize"
         currentStep={currentStep}
         totalSteps={4}
       />

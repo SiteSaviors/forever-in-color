@@ -1,6 +1,10 @@
 
-import React, { memo } from 'react';
-import { Maximize2 } from 'lucide-react';
+import StyleCardImageDisplay from "./StyleCardImageDisplay";
+import StyleCardIndicators from "./StyleCardIndicators";
+import StyleCardLoadingOverlay from "./StyleCardLoadingOverlay";
+import StyleCardSelectionOverlay from "./StyleCardSelectionOverlay";
+import StyleCardBlurOverlay from "./StyleCardBlurOverlay";
+import StyleCardRetryOverlay from "./StyleCardRetryOverlay";
 
 interface StyleCardImageProps {
   style: {
@@ -10,47 +14,94 @@ interface StyleCardImageProps {
     image: string;
   };
   imageToShow: string;
-  cropAspectRatio?: number;
-  onImageExpand?: (e: React.MouseEvent) => void;
+  cropAspectRatio: number;
+  showLoadingState: boolean;
+  isPopular: boolean;
+  showGeneratedBadge: boolean;
+  isSelected: boolean;
+  hasPreviewOrCropped: boolean;
+  shouldBlur: boolean;
+  isGenerating: boolean;
+  showError: boolean;
+  error?: string;
+  selectedOrientation?: string;
+  previewUrl?: string | null;
+  hasGeneratedPreview?: boolean;
+  onExpandClick: () => void;
+  onCanvasPreviewClick: () => void;
+  onGenerateStyle: (e?: React.MouseEvent) => void;
+  onRetry: (e?: React.MouseEvent) => void;
 }
 
-const StyleCardImage = memo(({
+const StyleCardImage = ({
   style,
   imageToShow,
   cropAspectRatio,
-  onImageExpand
+  showLoadingState,
+  isPopular,
+  showGeneratedBadge,
+  isSelected,
+  hasPreviewOrCropped,
+  shouldBlur,
+  isGenerating,
+  showError,
+  error,
+  selectedOrientation = "square",
+  previewUrl,
+  hasGeneratedPreview = false,
+  onExpandClick,
+  onCanvasPreviewClick,
+  onGenerateStyle,
+  onRetry
 }: StyleCardImageProps) => {
-  const aspectRatio = cropAspectRatio || 1;
-
   return (
-    <div 
-      className="relative bg-gray-100 overflow-hidden group/image will-change-transform"
-      style={{ aspectRatio }}
-    >
-      <img
-        src={imageToShow}
-        alt={style.name}
-        className="w-full h-full object-cover transition-transform duration-300 ease-out group-hover:scale-105 will-change-transform"
-        loading="lazy"
-        decoding="async"
+    <div className="relative group/image">
+      {/* Main Image Display - Make this the priority on mobile */}
+      <div className="relative min-h-[200px] md:min-h-[250px]">
+        <StyleCardImageDisplay
+          style={style}
+          imageToShow={imageToShow}
+          cropAspectRatio={cropAspectRatio}
+          showLoadingState={showLoadingState}
+          selectedOrientation={selectedOrientation}
+          previewUrl={previewUrl}
+          hasGeneratedPreview={hasGeneratedPreview}
+          onExpandClick={onExpandClick}
+        />
+      </div>
+
+      {/* Overlays and Indicators */}
+      <StyleCardIndicators
+        isPopular={isPopular}
+        showGeneratedBadge={showGeneratedBadge}
+        isSelected={isSelected}
+        hasPreviewOrCropped={hasPreviewOrCropped}
+        onExpandClick={onExpandClick}
+        onCanvasPreviewClick={onCanvasPreviewClick}
       />
-      
-      {/* Expand button overlay - appears on hover */}
-      {onImageExpand && (
-        <div className="absolute inset-0 bg-black/0 group-hover/image:bg-black/20 transition-colors duration-200 flex items-center justify-center opacity-0 group-hover/image:opacity-100 will-change-auto">
-          <button
-            onClick={onImageExpand}
-            className="bg-white/90 hover:bg-white text-gray-800 rounded-full p-2 shadow-lg transition-transform duration-150 hover:scale-110 will-change-transform"
-            title="View full size"
-          >
-            <Maximize2 className="w-5 h-5" />
-          </button>
-        </div>
-      )}
+
+      <StyleCardLoadingOverlay
+        isGenerating={isGenerating}
+        styleName={style.name}
+        error={error}
+      />
+
+      <StyleCardRetryOverlay
+        hasError={showError}
+        error={error}
+        onRetry={onRetry}
+      />
+
+      <StyleCardSelectionOverlay isSelected={isSelected} />
+
+      <StyleCardBlurOverlay
+        shouldBlur={shouldBlur}
+        isGenerating={isGenerating}
+        styleName={style.name}
+        onGenerateStyle={onGenerateStyle}
+      />
     </div>
   );
-});
-
-StyleCardImage.displayName = 'StyleCardImage';
+};
 
 export default StyleCardImage;

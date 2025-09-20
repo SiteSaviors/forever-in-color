@@ -1,25 +1,30 @@
-import PhotoUploadContainer from "../photo-upload/PhotoUploadContainer";
+
+import PhotoUpload from "../PhotoUpload";
+
 interface PhotoUploadSectionProps {
   hasImage: boolean;
   croppedImage: string | null;
   onImageUpload: (imageUrl: string, originalImageUrl?: string, orientation?: string) => void;
 }
+
 const PhotoUploadSection = ({
   hasImage,
   croppedImage,
   onImageUpload
 }: PhotoUploadSectionProps) => {
-  // Only show the upload interface if no image is present
-  if (hasImage && croppedImage) {
-    return null;
-  }
-  return <div className="space-y-6">
+  if (hasImage) return null;
+
+  return (
+    <div className="space-y-4">
       <div className="text-center">
-        
-        
+        <p className="text-gray-600">
+          Upload your photo and select your canvas orientation in one seamless step.
+        </p>
       </div>
       
-      <PhotoUploadContainer onImageUpload={onImageUpload} initialImage={croppedImage} />
-    </div>;
+      <PhotoUpload onImageUpload={onImageUpload} initialImage={croppedImage} />
+    </div>
+  );
 };
+
 export default PhotoUploadSection;

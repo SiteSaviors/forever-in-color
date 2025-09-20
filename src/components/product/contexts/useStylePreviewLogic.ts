@@ -1,13 +1,13 @@
 import { useCallback } from 'react';
 import { generateStylePreview } from '@/utils/stylePreviewApi';
 import { addWatermarkToImage } from '@/utils/watermarkUtils';
-import { getAspectRatio, validateOrientationFlow } from '../orientation/utils';
-import { useAspectRatioValidator } from '../orientation/hooks/useAspectRatioValidator';
+import { StylePreviewAction } from './types';
+import { getAspectRatio } from '../orientation/utils';
 
 interface UseStylePreviewLogicProps {
   croppedImage: string | null;
   selectedOrientation: string;
-  dispatch: React.Dispatch<any>;
+  dispatch: React.Dispatch<StylePreviewAction>;
 }
 
 export const useStylePreviewLogic = ({
@@ -15,9 +15,7 @@ export const useStylePreviewLogic = ({
   selectedOrientation,
   dispatch
 }: UseStylePreviewLogicProps) => {
-  const { validateWithRecovery, autoCorrect } = useAspectRatioValidator();
-
-  // Manual generation function with enhanced validation
+  // Manual generation function
   const generatePreview = useCallback(async (styleId: number, styleName: string) => {
     if (!croppedImage) {
       console.error('❌ Cannot generate preview: no cropped image');
@@ -31,49 +29,23 @@ export const useStylePreviewLogic = ({
 
     try {
       console.log(`🎨 Starting manual generation for ${styleName} (ID: ${styleId})`);
-      console.log(`🎯 Selected orientation: ${selectedOrientation}`);
       dispatch({ type: 'START_GENERATION', styleId });
       
-      // ENHANCED: Auto-correct orientation and get aspect ratio
-      const correctedOrientation = autoCorrect(selectedOrientation);
-      const aspectRatio = getAspectRatio(correctedOrientation);
-      
-      // ENHANCED: Validate with recovery and correction
-      const validation = validateWithRecovery(correctedOrientation, aspectRatio);
-      if (!validation.isValid && !validation.correctedValue) {
-        const errorMsg = `Aspect ratio validation failed: ${validation.error}`;
-        console.error(`❌ ${errorMsg}`);
-        dispatch({ 
-          type: 'GENERATION_ERROR', 
-          styleId, 
-          error: errorMsg 
-        });
-        return;
-      }
-
-      // Use corrected value if available
-      const finalAspectRatio = validation.correctedValue || aspectRatio;
-      
+      const aspectRatio = getAspectRatio(selectedOrientation);
       const tempPhotoId = `temp_${Date.now()}_${styleId}`;
       
       console.log(`📋 Generation parameters:`, {
         styleName,
         styleId,
-        originalOrientation: selectedOrientation,
-        correctedOrientation,
-        mappedAspectRatio: finalAspectRatio,
-        croppedImageLength: croppedImage.length,
-        validationPassed: validation.isValid || !!validation.correctedValue
+        aspectRatio,
+        selectedOrientation
       });
       
-      console.log(`🔥 CRITICAL DEBUG: Calling generateStylePreview with validated aspect ratio: ${finalAspectRatio} for orientation: ${correctedOrientation}`);
-      
-      // ENHANCED: Generate with validated and potentially corrected aspect ratio
       const previewUrl = await generateStylePreview(
         croppedImage, 
         styleName, 
         tempPhotoId, 
-        finalAspectRatio // This is now validated and potentially corrected
+        aspectRatio
       );
 
       if (previewUrl) {
@@ -84,7 +56,7 @@ export const useStylePreviewLogic = ({
             styleId, 
             url: watermarkedUrl 
           });
-          console.log(`✅ Manual generation completed for ${styleName} with validated aspect ratio: ${finalAspectRatio}`);
+          console.log(`✅ Manual generation completed for ${styleName}`);
         } catch (watermarkError) {
           console.warn(`⚠️ Watermark failed for ${styleName}, using original:`, watermarkError);
           dispatch({ 
@@ -99,10 +71,10 @@ export const useStylePreviewLogic = ({
       dispatch({ 
         type: 'GENERATION_ERROR', 
         styleId, 
-        error: error.message || 'Failed to generate preview'
+        error: error.message 
       });
     }
-  }, [croppedImage, selectedOrientation, dispatch, validateWithRecovery, autoCorrect]);
+  }, [croppedImage, selectedOrientation, dispatch]);
 
   return { generatePreview };
 };

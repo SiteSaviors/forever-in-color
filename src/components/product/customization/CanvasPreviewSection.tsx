@@ -33,9 +33,6 @@ const CanvasPreviewSection = ({
     }
   };
 
-  // Determine actual loading state - only loading if explicitly set and no artwork available
-  const actuallyLoading = isLoading && !userArtworkUrl;
-
   return (
     <div className="space-y-6">
       <div className="text-center">
@@ -52,8 +49,8 @@ const CanvasPreviewSection = ({
           className="w-full h-auto rounded-lg shadow-lg group-hover:shadow-xl transition-all duration-300 transform group-hover:scale-[1.02]" 
         />
         
-        {/* Expand Button - Only show when artwork is available and not loading */}
-        {userArtworkUrl && !actuallyLoading && !error && (
+        {/* Expand Button - Only show when artwork is available */}
+        {userArtworkUrl && !isLoading && !error && (
           <button
             onClick={handleExpandClick}
             className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-all duration-300 z-20"
@@ -63,8 +60,8 @@ const CanvasPreviewSection = ({
           </button>
         )}
         
-        {/* AI-Generated Artwork Overlay - Only show when available and not loading */}
-        {userArtworkUrl && !actuallyLoading && (
+        {/* AI-Generated Artwork Overlay - THIS IS THE KEY SECTION */}
+        {userArtworkUrl && !isLoading && (
           <div 
             className="absolute overflow-hidden transition-all duration-300 group-hover:brightness-110 rounded-sm cursor-pointer"
             style={artworkPosition}
@@ -83,8 +80,8 @@ const CanvasPreviewSection = ({
           </div>
         )}
         
-        {/* Loading state overlay - only show when actually loading */}
-        {actuallyLoading && (
+        {/* Loading state overlay */}
+        {isLoading && (
           <div 
             className="absolute border-2 border-dashed border-purple-300 bg-purple-50/80 flex items-center justify-center text-purple-600 text-sm font-medium rounded-sm"
             style={artworkPosition}
@@ -97,7 +94,7 @@ const CanvasPreviewSection = ({
         )}
         
         {/* Error state overlay */}
-        {error && !userArtworkUrl && !actuallyLoading && (
+        {error && !userArtworkUrl && !isLoading && (
           <div 
             className="absolute border-2 border-dashed border-red-300 bg-red-50/80 flex items-center justify-center text-red-600 text-sm font-medium rounded-sm"
             style={artworkPosition}
@@ -108,8 +105,8 @@ const CanvasPreviewSection = ({
           </div>
         )}
         
-        {/* Placeholder when no artwork and not loading */}
-        {!userArtworkUrl && !actuallyLoading && !error && (
+        {/* Debug overlay when no artwork is available */}
+        {!userArtworkUrl && !isLoading && !error && (
           <div 
             className="absolute border-2 border-dashed border-gray-300 bg-gray-50/50 flex items-center justify-center text-gray-600 text-sm font-medium rounded-sm"
             style={artworkPosition}
