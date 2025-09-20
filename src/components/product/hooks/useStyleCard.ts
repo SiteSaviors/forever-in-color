@@ -135,9 +135,15 @@ export const useStyleCard = ({
     setIsLightboxOpen(true);
   };
 
-  // Generate click handler
+  // Generate click handler with enhanced logging
   const handleGenerateClick = useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    console.log(`🎨 GENERATE BUTTON CLICKED - ${style.name} (ID: ${style.id})`);
+    console.log(`  - isPermanentlyGenerated: ${isPermanentlyGenerated}`);
+    console.log(`  - effectiveIsLoading: ${effectiveIsLoading}`);
+    console.log(`  - hasError: ${hasError}`);
+    console.log(`  - croppedImage: ${!!croppedImage}`);
     
     // CRITICAL: Never generate if permanently generated
     if (isPermanentlyGenerated) {
@@ -150,20 +156,27 @@ export const useStyleCard = ({
       return;
     }
     
-    console.log(`🎨 Starting generation for ${style.name}`);
+    if (!croppedImage) {
+      console.log(`🚫 NO IMAGE BLOCK - ${style.name} has no cropped image`);
+      return;
+    }
+    
+    console.log(`🚀 STARTING GENERATION for ${style.name}`);
     setShowError(false);
     setLocalIsLoading(true);
     
     try {
+      console.log(`📞 CALLING generatePreview() for ${style.name}`);
       await generatePreview();
       console.log(`✅ Generation completed for ${style.name}`);
     } catch (error) {
-      console.log(`❌ Generation failed for ${style.name}:`, error);
+      console.error(`❌ Generation failed for ${style.name}:`, error);
       setShowError(true);
     } finally {
+      console.log(`🏁 Generation finished for ${style.name}, setting loading to false`);
       setLocalIsLoading(false);
     }
-  }, [generatePreview, isPermanentlyGenerated, effectiveIsLoading, style.name]);
+  }, [generatePreview, isPermanentlyGenerated, effectiveIsLoading, style.name, style.id, hasError, croppedImage]);
 
   // Retry click handler
   const handleRetryClick = useCallback(async (e: React.MouseEvent) => {
