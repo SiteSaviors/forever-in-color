@@ -21,12 +21,10 @@ export const useAspectRatioValidator = () => {
     orientation: string,
     aspectRatio?: string
   ): ValidationResult => {
-    console.log('🔍 Running aspect ratio validation:', { orientation, aspectRatio });
 
     // Step 1: Validate orientation
     if (!isValidOrientation(orientation)) {
       const corrected = 'square'; // Fallback to square
-      console.warn(`⚠️ Invalid orientation "${orientation}", correcting to "${corrected}"`);
       
       toast({
         title: "Image Format Adjusted",
@@ -44,7 +42,6 @@ export const useAspectRatioValidator = () => {
     // Step 2: Validate aspect ratio if provided
     if (aspectRatio && !isValidAspectRatio(aspectRatio)) {
       const correctedAspectRatio = getAspectRatio(orientation as OrientationType);
-      console.warn(`⚠️ Invalid aspect ratio "${aspectRatio}", correcting to "${correctedAspectRatio}"`);
       
       return {
         isValid: false,
@@ -56,7 +53,6 @@ export const useAspectRatioValidator = () => {
     // Step 3: Validate flow consistency
     const expectedAspectRatio = getAspectRatio(orientation as OrientationType);
     if (aspectRatio && aspectRatio !== expectedAspectRatio) {
-      console.warn(`⚠️ Aspect ratio mismatch: expected ${expectedAspectRatio}, got ${aspectRatio}`);
       
       return {
         isValid: false,
@@ -96,7 +92,6 @@ export const useAspectRatioValidator = () => {
       return 'vertical';
     }
     
-    console.log('🔧 Auto-correcting invalid orientation to square:', orientation);
     return 'square'; // Safe fallback
   }, []);
 

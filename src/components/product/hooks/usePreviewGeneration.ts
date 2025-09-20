@@ -33,12 +33,9 @@ export const usePreviewGeneration = (uploadedImage: string | null, selectedOrien
     try {
       // Skip generation for Original Image style
       if (styleId === 1) {
-        console.log('Skipping generation for Original Image style');
         setIsGenerating(false);
         return uploadedImage;
       }
-
-      console.log(`Generating preview for ${styleName} with orientation ${selectedOrientation}`);
       
       // Use the correct aspect ratio format for the API
       const aspectRatio = convertOrientationToAspectRatio(selectedOrientation);
@@ -74,7 +71,7 @@ export const usePreviewGeneration = (uploadedImage: string | null, selectedOrien
             setIsGenerating(false);
             return watermarkedUrl;
           } catch (watermarkError) {
-            console.warn(`Watermark failed for ${styleName}, using original:`, watermarkError);
+            // Watermark failed, use original
             
             // Update with unwatermarked URL as fallback
             setPreviewUrls(prev => ({
@@ -87,7 +84,7 @@ export const usePreviewGeneration = (uploadedImage: string | null, selectedOrien
           }
         }
       } catch (error) {
-        console.error(`❌ Error generating preview for ${styleName}:`, error);
+        // Error generating preview
         
         // Store the error message
         setGenerationErrors(prev => ({
@@ -99,7 +96,7 @@ export const usePreviewGeneration = (uploadedImage: string | null, selectedOrien
         return null;
       }
     } catch (error) {
-      console.error(`❌ Error in generation process for ${styleName}:`, error);
+      // Error in generation process
       setGenerationErrors(prev => ({
         ...prev,
         [styleId]: error.message || 'Failed to generate preview'
