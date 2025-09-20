@@ -10,14 +10,26 @@
 */
 
 /* NEW - Use these instead: */
-.step-container-optimized { @apply perf-base; }
-.sparkle-effect { @apply perf-base; }
-.accordion-trigger-optimized { @apply perf-base; }
-.chevron-optimized { @apply perf-base; }
+.step-container-optimized { 
+  transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+}
+.sparkle-effect { 
+  transition: transform 0.3s ease;
+}
+.accordion-trigger-optimized { 
+  transition: transform 0.3s ease;
+}
+.chevron-optimized { 
+  transition: transform 0.3s ease;
+}
 
-/* Apply perf-animating class only during active animations */
-.step-container-optimized.is-animating { @apply perf-animating; }
-.sparkle-effect.is-animating { @apply perf-animating; }
+/* Apply during active animations */
+.step-container-optimized.is-animating { 
+  will-change: transform, box-shadow, opacity;
+}
+.sparkle-effect.is-animating { 
+  will-change: transform;
+}
 
 /* Cleanup utility - automatically removes will-change after animations */
 .perf-cleanup {

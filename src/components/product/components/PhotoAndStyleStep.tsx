@@ -37,7 +37,7 @@ const PhotoAndStyleStep = ({
   currentStep,
   completedSteps
 }: PhotoAndStyleStepProps) => {
-  const { dispatch, showContextualHelp } = useProgressOrchestrator();
+  const { dispatch } = useProgressOrchestrator();
   
   const {
     currentOrientation,
@@ -79,9 +79,7 @@ const PhotoAndStyleStep = ({
   return (
     <MobileGestureHandler
       onSwipeLeft={() => {
-        if (hasImage && !hasStyle) {
-          showContextualHelp('hesitation', 'Swipe through the style gallery above to find your perfect match!');
-        }
+        // Mobile swipe gesture handled
       }}
       enableHaptic={true}
       showGestureHints={true}

@@ -49,11 +49,6 @@ export interface ProgressAction {
 export interface ProgressContextType {
   state: ProgressState;
   dispatch: React.Dispatch<ProgressAction>;
-  triggerHaptic: () => void;
-  showContextualHelp: (type: string, message: string, level?: 'minimal' | 'moderate' | 'detailed') => void;
-  hideContextualHelp: () => void;
   startAIAnalysis: (stage: string) => void;
   completeAIAnalysis: (imageType: string, recommendations: number[]) => void;
-  trackHover: (duration: number) => void;
-  trackClick: (element: string) => void;
 }

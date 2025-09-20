@@ -2,7 +2,6 @@ import { useState, useMemo } from 'react';
 import { useBlinking } from './useBlinking';
 import { useStyleCard } from './useStyleCard';
 import { useTouchOptimizedInteractions } from './useTouchOptimizedInteractions';
-import { usePerformanceMonitor } from './usePerformanceMonitor';
 
 interface UseStyleCardHooksProps {
   style: {
@@ -36,11 +35,6 @@ export const useStyleCardHooks = (props: UseStyleCardHooksProps) => {
     onContinue,
     shouldBlur = false
   } = props;
-
-  // Performance monitoring with consolidated hook
-  usePerformanceMonitor(`StyleCard-${style.name}`, { 
-    enabled: process.env.NODE_ENV === 'development' 
-  });
 
   // Use the consolidated style card hook
   const styleCardState = useStyleCard({

@@ -16,10 +16,7 @@ const UnifiedSocialMomentumWidget = ({
   uploadedImage,
   showWidget
 }: UnifiedSocialMomentumWidgetProps) => {
-  const {
-    state,
-    trackClick
-  } = useProgressOrchestrator();
+  const { state } = useProgressOrchestrator();
   const [currentActivity, setCurrentActivity] = useState(0);
   const [showExpanded, setShowExpanded] = useState(false);
   const [liveUsers, setLiveUsers] = useState(238);
@@ -80,7 +77,6 @@ const UnifiedSocialMomentumWidget = ({
   const momentum = getMomentumLevel();
   const handleToggleExpanded = () => {
     setShowExpanded(!showExpanded);
-    trackClick('unified-widget-expand');
   };
   return <div className="fixed bottom-6 left-6 z-50 max-w-sm animate-slide-in-left">
       <Card className="bg-white/95 backdrop-blur-md shadow-xl border border-gray-200/50 hover:shadow-2xl transition-all duration-300 cursor-pointer overflow-hidden" onClick={handleToggleExpanded}>

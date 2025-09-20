@@ -21,7 +21,7 @@ const MobileGestureHandler = ({
   showGestureHints = true
 }: MobileGestureHandlerProps) => {
   const isMobile = useIsMobile();
-  const { triggerHaptic, trackClick, state } = useProgressOrchestrator();
+  const { state } = useProgressOrchestrator();
   const [showHint, setShowHint] = useState(false);
   const [lastGesture, setLastGesture] = useState<string | null>(null);
 
@@ -100,7 +100,6 @@ const MobileGestureHandler = ({
 
         const gestureType = deltaX > 0 ? 'swipe-right' : 'swipe-left';
         setLastGesture(gestureType);
-        trackClick(`gesture-${gestureType}`);
 
         if (deltaX > 0 && onSwipeRight) {
           onSwipeRight();
@@ -125,7 +124,7 @@ const MobileGestureHandler = ({
       document.removeEventListener('touchmove', handleTouchMove);
       document.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [isMobile, onSwipeLeft, onSwipeRight, enableHaptic, triggerHaptic, trackClick]);
+  }, [isMobile, onSwipeLeft, onSwipeRight, enableHaptic]);
 
   return (
     <div className="relative">

@@ -5,12 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { X, Lightbulb, Heart, Sparkles, ArrowRight, Users, HelpCircle, Target } from "lucide-react";
 import { useProgressOrchestrator } from "../progress/ProgressOrchestrator";
 const ContextualHelp = () => {
-  const {
-    state,
-    hideContextualHelp,
-    triggerHaptic,
-    trackClick
-  } = useProgressOrchestrator();
+  const { state } = useProgressOrchestrator();
   const [isVisible, setIsVisible] = useState(false);
   const [hasShownInitialTooltip, setHasShownInitialTooltip] = useState(false);
   const [pageLoadTime] = useState(Date.now());
@@ -48,13 +43,10 @@ const ContextualHelp = () => {
   }, [state.currentSubStep]);
   if (!isVisible) return null;
   const handleClose = () => {
-    triggerHaptic();
-    trackClick('help-close');
-    hideContextualHelp();
+    setIsVisible(false);
   };
   const handleMoreHelp = () => {
     setShowAdvancedHelp(true);
-    trackClick('help-more-info');
   };
   const getHelpContent = () => {
     const {

@@ -8,7 +8,6 @@ import ProductTestimonials from "@/components/product/ProductTestimonials";
 import UnifiedSocialMomentumWidget from "@/components/product/components/UnifiedSocialMomentumWidget";
 import { useProductState } from "@/components/product/ProductStateManager";
 import { ProgressOrchestrator } from "@/components/product/progress/ProgressOrchestrator";
-import { preloadCriticalImages } from "@/utils/performanceUtils";
 
 const Product = () => {
   const {
@@ -27,23 +26,6 @@ const Product = () => {
     handleCustomizationChange
   } = useProductState();
 
-  // Preload critical resources on page load
-  useEffect(() => {
-    const initializePage = async () => {
-      try {
-        console.log('🚀 Preloading critical images for Product page...');
-        await preloadCriticalImages((progress) => {
-          if (progress === 100) {
-            console.log('✅ Critical images preloaded successfully');
-          }
-        });
-      } catch (error) {
-        console.warn('⚠️ Critical image preloading failed:', error);
-      }
-    };
-
-    initializePage();
-  }, []);
 
   const handleUploadClick = () => {
     // Scroll to upload section and ensure we're on step 1

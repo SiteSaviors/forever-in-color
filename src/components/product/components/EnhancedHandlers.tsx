@@ -5,7 +5,7 @@ export const useEnhancedHandlers = (
   handleImageUpload: (imageUrl: string, originalImageUrl?: string, orientation?: string) => void,
   handleStyleSelect: (styleId: number, styleName: string) => void
 ) => {
-  const { dispatch, showContextualHelp, startAIAnalysis, completeAIAnalysis, trackClick } = useProgressOrchestrator();
+  const { dispatch, startAIAnalysis, completeAIAnalysis } = useProgressOrchestrator();
 
   // Enhanced image upload handler with AI analysis
   const handleEnhancedImageUpload = (imageUrl: string, originalImageUrl?: string, orientation?: string) => {
@@ -25,11 +25,7 @@ export const useEnhancedHandlers = (
       
       completeAIAnalysis(imageType, recommendedStyles);
       
-      showContextualHelp(
-        'recommendation',
-        `Perfect! Your ${imageType} photo will look amazing in our Classic Oil or Abstract Fusion styles.`,
-        'moderate'
-      );
+      // AI analysis complete
     }, 3000);
 
     handleImageUpload(imageUrl, originalImageUrl, orientation);
@@ -37,18 +33,10 @@ export const useEnhancedHandlers = (
 
   // Enhanced style selection with confidence scoring
   const handleEnhancedStyleSelect = (styleId: number, styleName: string) => {
-    trackClick(`style-select-${styleName.toLowerCase().replace(/\s+/g, '-')}`);
-    
     dispatch({ 
       type: 'ADD_PERSONALIZED_MESSAGE', 
       payload: `Excellent choice! ${styleName} is perfect for your photo composition.`
     });
-    
-    showContextualHelp(
-      'social',
-      `${styleName} is loved by 94% of users with similar photos. You're going to love the result!`,
-      'minimal'
-    );
 
     handleStyleSelect(styleId, styleName);
   };
