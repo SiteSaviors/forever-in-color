@@ -28,8 +28,6 @@ export const useStripePayment = ({ customerEmail }: UseStripePaymentProps = {}) 
     setIsProcessing(true);
     
     try {
-      console.log('Processing payment for items:', items);
-      
       const { data, error } = await supabase.functions.invoke('create-payment', {
         body: {
           amount: items.reduce((total, item) => total + (item.amount * (item.quantity || 1)), 0),
@@ -55,7 +53,6 @@ export const useStripePayment = ({ customerEmail }: UseStripePaymentProps = {}) 
         throw new Error('No checkout URL received');
       }
     } catch (error) {
-      console.error('Payment processing error:', error);
       toast({
         title: "Payment Error",
         description: "Failed to process payment. Please try again.",
@@ -70,8 +67,6 @@ export const useStripePayment = ({ customerEmail }: UseStripePaymentProps = {}) 
     setIsProcessing(true);
     
     try {
-      console.log('Processing token purchase:', item);
-      
       const { data, error } = await supabase.functions.invoke('purchase-tokens', {
         body: item
       });
@@ -92,7 +87,6 @@ export const useStripePayment = ({ customerEmail }: UseStripePaymentProps = {}) 
         throw new Error('No checkout URL received');
       }
     } catch (error) {
-      console.error('Token purchase error:', error);
       toast({
         title: "Purchase Error",
         description: "Failed to process token purchase. Please try again.",

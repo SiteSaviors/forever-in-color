@@ -31,8 +31,6 @@ export const useDownloadPurchases = () => {
     }
 
     try {
-      console.log('Fetching download purchases for user:', user.id);
-      
       const { data, error } = await supabase
         .from('download_purchases')
         .select('*')
@@ -40,18 +38,15 @@ export const useDownloadPurchases = () => {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching download purchases:', error);
         toast({
           title: "Error",
           description: "Failed to load download history.",
           variant: "destructive",
         });
       } else {
-        console.log('Download purchases fetched:', data?.length || 0);
         setPurchases(data || []);
       }
     } catch (error) {
-      console.error('Error fetching download purchases:', error);
       setPurchases([]);
     } finally {
       setIsLoading(false);
@@ -72,8 +67,6 @@ export const useDownloadPurchases = () => {
         throw new Error('Purchase not found');
       }
 
-      console.log('Re-downloading purchase:', purchaseId);
-
       // Download the file
       const link = document.createElement('a');
       link.href = purchase.clean_image_url;
@@ -91,9 +84,7 @@ export const useDownloadPurchases = () => {
         })
         .eq('id', purchaseId);
 
-      if (error) {
-        console.error('Failed to update download count:', error);
-      } else {
+      if (!error) {
         // Update local state
         setPurchases(prev => prev.map(p => 
           p.id === purchaseId 
@@ -109,7 +100,6 @@ export const useDownloadPurchases = () => {
 
       return true;
     } catch (error) {
-      console.error('Failed to re-download:', error);
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to re-download. Please try again.",

@@ -34,7 +34,6 @@ export const useAuthStore = () => {
       // Show warning if session expires within 5 minutes
       if (timeUntilExpiry <= SESSION_TIMEOUT_WARNING && timeUntilExpiry > 0) {
         setSessionTimeoutWarning(true);
-        console.log('Session will expire soon. Consider refreshing.');
       } else {
         setSessionTimeoutWarning(false);
       }
@@ -43,10 +42,7 @@ export const useAuthStore = () => {
       if (timeUntilExpiry <= 2 * 60 * 1000 && timeUntilExpiry > 0) {
         try {
           const { data: { session: refreshedSession }, error } = await supabase.auth.refreshSession();
-          if (error) {
-            console.error('Failed to refresh session:', error);
-          } else if (refreshedSession) {
-            console.log('Session refreshed successfully');
+          if (!error && refreshedSession) {
             setAuthState(prev => ({
               ...prev,
               session: refreshedSession,
@@ -54,7 +50,7 @@ export const useAuthStore = () => {
             }));
           }
         } catch (error) {
-          console.error('Error refreshing session:', error);
+          // Session refresh failed silently
         }
       }
     }
@@ -67,7 +63,6 @@ export const useAuthStore = () => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email);
         if (mounted) {
           setAuthState({
             session,
@@ -94,9 +89,6 @@ export const useAuthStore = () => {
     const getSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) {
-          console.error('Error getting session:', error);
-        }
         if (mounted) {
           setAuthState({
             session,
@@ -110,7 +102,6 @@ export const useAuthStore = () => {
           }
         }
       } catch (error) {
-        console.error('Session check failed:', error);
         if (mounted) {
           setAuthState(prev => ({ ...prev, isLoading: false }));
         }
@@ -153,12 +144,9 @@ export const useAuthStore = () => {
         logSessionTimeout(authState.user.id, sessionDuration);
       }
       
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error('Error signing out:', error);
-      }
+      await supabase.auth.signOut();
     } catch (error) {
-      console.error('Sign out failed:', error);
+      // Sign out failed silently
     }
   };
 
@@ -166,13 +154,11 @@ export const useAuthStore = () => {
     try {
       const { data: { session }, error } = await supabase.auth.refreshSession();
       if (error) {
-        console.error('Failed to refresh session:', error);
         return false;
       }
       setSessionTimeoutWarning(false);
       return true;
     } catch (error) {
-      console.error('Error refreshing session:', error);
       return false;
     }
   };
