@@ -25,31 +25,15 @@ const StyleSelector = ({
   onRecropImage
 }: StyleSelectorProps) => {
   const handleComplete = () => {
-    console.log('StyleSelector handleComplete called', {
-      croppedImage,
-      selectedStyle
-    });
     if (croppedImage && selectedStyle) {
       const style = artStyles.find(s => s.id === selectedStyle);
       if (style) {
-        console.log('Calling onComplete with:', croppedImage, selectedStyle, style.name);
         onComplete(croppedImage, selectedStyle, style.name);
-      } else {
-        console.error('Style not found for selectedStyle:', selectedStyle);
       }
-    } else {
-      console.error('Missing required data for completion:', {
-        croppedImage,
-        selectedStyle
-      });
     }
   };
 
   const handleStyleSelect = (styleId: number, styleName: string) => {
-    console.log('StyleSelector handleStyleSelect called', {
-      styleId,
-      styleName
-    });
     onStyleSelect(styleId, styleName);
   };
 
