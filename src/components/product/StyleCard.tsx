@@ -29,8 +29,14 @@ const StyleCard = memo((props: StyleCardProps) => {
   const {
     style,
     croppedImage,
+    selectedStyle,
     isPopular = false,
+    preGeneratedPreview,
     cropAspectRatio,
+    selectedOrientation = "square",
+    showContinueButton = true,
+    onStyleClick,
+    onContinue,
     shouldBlur = false
   } = props;
 
@@ -55,7 +61,6 @@ const StyleCard = memo((props: StyleCardProps) => {
     handleContinueClick,
     handleGenerateWrapper,
     handleRetryWrapper,
-    handleImageExpand,
     
     // Interactions
     isPressed,
@@ -95,7 +100,6 @@ const StyleCard = memo((props: StyleCardProps) => {
           onContinueClick={handleContinueClick}
           onGenerateClick={handleGenerateWrapper}
           onRetryClick={handleRetryWrapper}
-          onImageExpand={handleImageExpand}
         />
       </StyleCardContainer>
 

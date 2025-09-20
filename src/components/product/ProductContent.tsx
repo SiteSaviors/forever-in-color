@@ -2,7 +2,6 @@
 import { StylePreviewProvider } from "./contexts/StylePreviewContext";
 import { CustomizationOptions } from "./types/productState";
 import { useProductSteps } from "./hooks/useProductSteps";
-import { usePreviewGeneration } from "./hooks/usePreviewGeneration";
 import ErrorBoundary from "./components/ErrorBoundary";
 import LoadingState from "./components/LoadingState";
 import ProductContentContainer from "./components/ProductContentContainer";
@@ -41,26 +40,6 @@ const ProductContent = ({
   onCustomizationChange
 }: ProductContentProps) => {
   
-  console.log('🐛 ProductContent Debug:', {
-    currentStep,
-    completedSteps,
-    selectedStyle,
-    selectedSize,
-    selectedOrientation,
-    uploadedImage: !!uploadedImage,
-    autoGenerationComplete
-  });
-
-  // Get the actual preview URLs from the state management system
-  const { previewUrls, autoGenerationComplete: previewGenerationComplete } = usePreviewGeneration(uploadedImage, selectedOrientation);
-  
-  console.log('🖼️ ProductContent Preview Debug:', {
-    previewUrls,
-    previewUrlsKeys: Object.keys(previewUrls || {}),
-    previewGenerationComplete,
-    selectedStyleId: selectedStyle?.id
-  });
-
   const {
     canProceedToStep,
     handleContinueToStep2,
@@ -72,7 +51,6 @@ const ProductContent = ({
     onCurrentStepChange
   });
 
-  // Add validation for required props
   if (typeof currentStep !== 'number' || !Array.isArray(completedSteps)) {
     return <LoadingState message="Loading product configuration..." />;
   }

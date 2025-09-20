@@ -16,20 +16,23 @@ const PhotoCropperSection = ({
   onCropComplete,
   onOrientationChange
 }: PhotoCropperSectionProps) => {
-  if (!showCropper || !originalImage) return null;
+  if (!showCropper || !originalImage) {
+    return null;
+  }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="text-center">
-        <h3 className="text-2xl font-bold text-gray-900 mb-2">Adjust Your Photo</h3>
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">
+          Perfect Your Crop
+        </h3>
         <p className="text-gray-600">
-          Crop and adjust your photo to get the perfect composition
+          Adjust the crop area and canvas orientation to showcase your photo beautifully
         </p>
       </div>
       
       <PhotoCropper
         imageUrl={originalImage}
-        initialAspectRatio={currentOrientation === 'vertical' ? 3/4 : currentOrientation === 'horizontal' ? 4/3 : 1}
         selectedOrientation={currentOrientation}
         onCropComplete={onCropComplete}
         onOrientationChange={onOrientationChange}

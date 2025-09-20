@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useCallback } from "react";
 
 interface UseCanvasPreviewProps {
   orientation: string;
@@ -7,44 +7,27 @@ interface UseCanvasPreviewProps {
   variant: 'interactive' | 'morphing' | 'simple';
 }
 
-export const useCanvasPreview = ({
-  orientation,
-  userImageUrl,
-  variant
-}: UseCanvasPreviewProps) => {
-  const [morphing, setMorphing] = useState(false);
-  const [prevOrientation, setPrevOrientation] = useState(orientation);
+export const useCanvasPreview = ({ orientation, userImageUrl, variant }: UseCanvasPreviewProps) => {
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [morphing, setMorphing] = useState(false);
 
-  // Handle morphing animation for morphing variant
-  useEffect(() => {
-    if (variant === 'morphing' && prevOrientation !== orientation) {
-      setMorphing(true);
-      setImageLoaded(false);
-      setTimeout(() => {
-        setPrevOrientation(orientation);
-        setMorphing(false);
-        setImageLoaded(true);
-      }, 300);
-    } else if (userImageUrl) {
-      setImageLoaded(true);
-    }
-  }, [orientation, prevOrientation, userImageUrl, variant]);
+  const handleImageLoad = useCallback(() => {
+    setImageLoaded(true);
+  }, []);
 
-  const canvasFrame = useMemo(() => {
+  const getCanvasFrame = useCallback(() => {
     switch (orientation) {
       case 'horizontal':
-        return '/lovable-uploads/5e67d281-e2f5-4b6b-942d-32f66511851e.png'; // New horizontal canvas
+        return '/lovable-uploads/5e67d281-e2f5-4b6b-942d-32f66511851e.png';
       case 'vertical':
         return '/lovable-uploads/79613d9d-74f9-4f65-aec0-50fd2346a131.png';
       case 'square':
-        return '/lovable-uploads/7db3e997-ea34-4d40-af3e-67b693dc0544.png';
       default:
-        return '/lovable-uploads/7db3e997-ea34-4d40-af3e-67b693dc0544.png';
+        return '/lovable-uploads/1308e62b-7d30-4d01-bad3-ef128e25924b.png';
     }
   }, [orientation]);
 
-  const imagePosition = useMemo(() => {
+  const getImagePosition = useCallback(() => {
     switch (orientation) {
       case 'horizontal':
         return {
@@ -55,24 +38,18 @@ export const useCanvasPreview = ({
         };
       case 'vertical':
         return {
-          top: '15%',
-          left: '20%',
-          width: '60%',
-          height: '70%'
+          top: '8%',
+          left: '8%',
+          width: '84%',
+          height: '84%'
         };
       case 'square':
-        return {
-          top: '5.2%',
-          left: '4.7%',
-          width: '89.3%',
-          height: '89.3%'
-        };
       default:
         return {
-          top: '5.2%',
-          left: '4.7%',
-          width: '89.3%',
-          height: '89.3%'
+          top: '8%',
+          left: '8%',
+          width: '84%',
+          height: '84%'
         };
     }
   }, [orientation]);
@@ -80,26 +57,22 @@ export const useCanvasPreview = ({
   const getAspectRatio = useCallback(() => {
     switch (orientation) {
       case 'horizontal':
-        return 4 / 3;
+        return 3/2;
       case 'vertical':
-        return 3 / 4;
+        return 2/3;
       case 'square':
-        return 1;
       default:
         return 1;
     }
   }, [orientation]);
 
-  const handleImageLoad = useCallback(() => {
-    setImageLoaded(true);
-  }, []);
-
   return {
-    morphing,
     imageLoaded,
-    canvasFrame,
-    imagePosition,
+    morphing,
+    canvasFrame: getCanvasFrame(),
+    imagePosition: getImagePosition(),
+    handleImageLoad,
     getAspectRatio,
-    handleImageLoad
+    setMorphing
   };
 };

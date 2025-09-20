@@ -34,13 +34,13 @@ const StepHeader = React.memo(({
         onStepClick();
       }
     } catch (error) {
-      console.error('Error in step click handler:', error);
+      // Error handled silently
     }
   }, [canAccess, onStepClick]);
 
   return (
     <AccordionTrigger 
-      className={`px-6 py-6 sm:px-8 sm:py-8 md:px-12 md:py-12 hover:no-underline group min-h-[100px] sm:min-h-[120px] md:min-h-[140px] transition-all duration-500 hover:scale-105 hover:backdrop-blur-sm ${!canAccess ? 'cursor-default' : 'hover:shadow-2xl hover:shadow-cyan-500/20'}`}
+      className={`px-4 py-4 sm:px-6 sm:py-6 md:px-8 md:py-8 hover:no-underline group min-h-[60px] sm:min-h-[80px] transition-all duration-300 ${!canAccess ? 'cursor-default' : ''}`}
       disabled={!canAccess}
       onClick={handleStepClick}
     >

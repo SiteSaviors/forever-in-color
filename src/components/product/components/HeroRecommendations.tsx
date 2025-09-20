@@ -33,7 +33,6 @@ const HeroRecommendations = ({
   if (heroRecommendations.length === 0) return null;
 
   const handleStyleSelect = (styleId: number, styleName: string) => {
-    console.log('🎯 HeroRecommendations handleStyleSelect:', styleId, styleName);
     onStyleSelect(styleId, styleName);
   };
 
