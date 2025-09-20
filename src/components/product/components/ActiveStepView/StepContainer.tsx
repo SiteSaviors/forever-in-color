@@ -20,11 +20,15 @@ const StepContainer = React.memo(({
     const isNextStep = !isCompleted && canAccess && !isActive;
     
     return `
-      relative bg-gradient-to-br from-cyan-950/90 via-violet-900/90 to-fuchsia-950/90 rounded-2xl sm:rounded-3xl shadow-2xl border-2 overflow-hidden 
-      transition-all duration-700 ease-out hover:shadow-3xl mx-2 sm:mx-0 will-change-transform transform-gpu contain-layout contain-style
-      ${isActive && canAccess ? 'ring-4 ring-gradient-to-r ring-cyan-400/60 shadow-3xl shadow-fuchsia-500/30 transform3d(0,0,0) scale-[1.05] animate-fade-in bg-gradient-to-br from-cyan-900/95 via-violet-800/95 to-fuchsia-900/95 premium-pulse' : 'border-gradient-to-r border-cyan-500/30 border-violet-500/30 border-fuchsia-500/30'}
-      ${isNextStep && canAccess ? 'ring-2 ring-cyan-300/50 hover:ring-4 hover:ring-fuchsia-400/60 hover:shadow-cyan-400/20 animate-pulse glow-pulse' : ''}
-      backdrop-blur-xl float-gentle
+      perf-container relative bg-gradient-to-br from-cyan-950/90 via-violet-900/90 to-fuchsia-950/90 
+      rounded-2xl sm:rounded-3xl shadow-2xl border-2 overflow-hidden 
+      transition-all duration-700 ease-out hover:shadow-3xl mx-2 sm:mx-0
+      ${isActive && canAccess ? 
+        'ring-4 ring-cyan-400/60 shadow-3xl shadow-fuchsia-500/30 scale-[1.05] bg-gradient-to-br from-cyan-900/95 via-violet-800/95 to-fuchsia-900/95' : 
+        'border-cyan-500/30 border-violet-500/30 border-fuchsia-500/30'
+      }
+      ${isNextStep && canAccess ? 'ring-2 ring-cyan-300/50 hover:ring-4 hover:ring-fuchsia-400/60 hover:shadow-cyan-400/20' : ''}
+      backdrop-blur-xl
     `;
   }, [isActive, canAccess, isCompleted]);
 
@@ -32,10 +36,6 @@ const StepContainer = React.memo(({
     <div
       data-step={stepNumber}
       className={containerClasses}
-      style={{
-        willChange: isActive || canAccess ? 'transform, box-shadow' : 'auto',
-        transform: 'translate3d(0,0,0)' // Force GPU layer
-      }}
     >
       {/* Premium hero-style overlay effects */}
       <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-violet-500/10 to-fuchsia-500/10 opacity-70" />

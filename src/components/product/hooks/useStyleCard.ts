@@ -1,7 +1,6 @@
-import { useState, useCallback, useEffect } from 'react';
-import { generateStylePreview } from '@/utils/stylePreviewApi';
-import { useDebounce } from './useDebounce';
-import { getAspectRatio } from '../orientation/utils';
+
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useStylePreview } from './useStylePreview';
 
 interface UseStyleCardProps {
   style: {
@@ -29,146 +28,208 @@ export const useStyleCard = ({
   onStyleClick,
   onContinue
 }: UseStyleCardProps) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [isStyleGenerated, setIsStyleGenerated] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(preGeneratedPreview || null);
-  const [hasError, setHasError] = useState<string | boolean>(false);
-  const [validationError, setValidationError] = useState<string | null>(null);
+  // State from useStyleCardLogic
+  const [showError, setShowError] = useState(false);
+  const [localIsLoading, setLocalIsLoading] = useState(false);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [isPermanentlyGenerated, setIsPermanentlyGenerated] = useState(false);
 
-  // Enhanced error handling state
-  const [retryCount, setRetryCount] = useState(0);
-  const [lastError, setLastError] = useState<string | null>(null);
+  // Style preview hook
+  const {
+    isLoading,
+    previewUrl,
+    hasGeneratedPreview,
+    isStyleGenerated,
+    validationError,
+    handleClick,
+    generatePreview
+  } = useStylePreview({
+    style,
+    croppedImage,
+    isPopular,
+    preGeneratedPreview,
+    selectedOrientation,
+    onStyleClick
+  });
 
+  // Computed values from useStyleCardLogic
   const isSelected = selectedStyle === style.id;
-  const isPermanentlyGenerated = !!preGeneratedPreview;
-  const showGeneratedBadge = isPopular && isStyleGenerated;
-  const hasGeneratedPreview = !!previewUrl && isStyleGenerated;
+  const showGeneratedBadge = hasGeneratedPreview && isStyleGenerated;
+  const hasError = showError || validationError;
+  const imageToShow = previewUrl || croppedImage || style.image;
+  
+  // CRITICAL: Once permanently generated, NEVER allow any loading states
+  const effectiveIsLoading = isPermanentlyGenerated ? false : (isLoading || localIsLoading);
 
-  // Use debounced loading state to prevent flickering
-  const effectiveIsLoading = useDebounce(isLoading, 300);
-
-  const handleCardClick = () => {
-    if (!isPermanentlyGenerated) {
-      onStyleClick(style);
+  // Effects from useStyleCardEffects
+  
+  // Track permanent generation state - once generated, never allow regeneration
+  useEffect(() => {
+    if (previewUrl && !isPermanentlyGenerated) {
+      console.log(`🔒 StyleCard: Permanently locking ${style.name} - will never regenerate again`);
+      setIsPermanentlyGenerated(true);
+      setLocalIsLoading(false);
     }
-  };
+  }, [previewUrl, isPermanentlyGenerated, style.name]);
 
+  // Initialize permanent state if pre-generated preview exists
+  useEffect(() => {
+    if (preGeneratedPreview && !isPermanentlyGenerated) {
+      console.log(`🔒 StyleCard: ${style.name} has pre-generated preview - marking as permanently generated`);
+      setIsPermanentlyGenerated(true);
+    }
+  }, [preGeneratedPreview, isPermanentlyGenerated, style.name]);
+
+  // Stop all loading states immediately when permanently generated
+  useEffect(() => {
+    if (isPermanentlyGenerated) {
+      console.log(`🛑 StyleCard: ${style.name} is permanently generated, stopping all loading states`);
+      setLocalIsLoading(false);
+    }
+  }, [isPermanentlyGenerated, style.name]);
+
+  // CRITICAL: Reset all loading states immediately when permanently generated
+  useEffect(() => {
+    if (isPermanentlyGenerated) {
+      console.log(`🛑 StyleCard: ${style.name} is permanently generated, forcing all loading states to false`);
+      setLocalIsLoading(false);
+      setShowError(false);
+    }
+  }, [isPermanentlyGenerated, style.name]);
+
+  // Handlers from useStyleCardHandlers
+  
+  // Main card click handler
+  const handleCardClick = useCallback(() => {
+    console.log(`🎯 StyleCard clicked: ${style.name}, isPermanentlyGenerated: ${isPermanentlyGenerated}, isGenerating: ${effectiveIsLoading}`);
+    
+    // Always call onStyleClick to select the style
+    onStyleClick(style);
+    
+    // CRITICAL: Never generate if permanently generated
+    if (isPermanentlyGenerated) {
+      console.log(`🚫 PERMANENT BLOCK - ${style.name} is permanently generated, no generation will occur`);
+      return;
+    }
+    
+    // Only generate if we don't have a preview AND not permanently generated AND not currently generating AND not Original style
+    if (!previewUrl && !effectiveIsLoading && !hasError && style.id !== 1) {
+      console.log(`🚀 Auto-generating preview for ${style.name} (first time only)`);
+      handleGenerateClick({} as React.MouseEvent);
+    } else {
+      console.log(`🔒 No generation needed - previewUrl: ${!!previewUrl}, isLoading: ${effectiveIsLoading}, hasError: ${hasError}, styleId: ${style.id}`);
+    }
+  }, [style, previewUrl, isPermanentlyGenerated, effectiveIsLoading, hasError, onStyleClick]);
+
+  // Continue button handler
   const handleContinueClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    console.log(`🎯 Continue clicked for style: ${style.name}`);
     onContinue();
   };
 
+  // Image expand handler
   const handleImageExpand = (e: React.MouseEvent) => {
     e.stopPropagation();
+    console.log(`🔍 Expanding image for style: ${style.name}`);
     setIsLightboxOpen(true);
   };
 
+  // Generate click handler
   const handleGenerateClick = useCallback(async (e: React.MouseEvent) => {
-    e?.stopPropagation();
-    console.log(`🎨 Generate clicked for style: ${style.id} (${style.name})`);
+    e.stopPropagation();
     
-    if (!croppedImage || isPermanentlyGenerated) {
-      console.log('❌ Generate blocked: No image or already generated');
+    // CRITICAL: Never generate if permanently generated
+    if (isPermanentlyGenerated) {
+      console.log(`🚫 PERMANENT BLOCK - ${style.name} cannot be regenerated (generate button)`);
       return;
     }
-
-    // Clear previous errors and start generation
-    setHasError(false);
-    setValidationError(null);
-    setLastError(null);
-    setIsLoading(true);
-    setRetryCount(prev => prev + 1);
+    
+    if (effectiveIsLoading) {
+      console.log(`🚫 BUSY BLOCK - ${style.name} is already generating`);
+      return;
+    }
+    
+    console.log(`🎨 Starting generation for ${style.name}`);
+    setShowError(false);
+    setLocalIsLoading(true);
     
     try {
-      console.log('🚀 Starting style preview generation...', {
-        imageUrl: croppedImage.substring(0, 50) + '...',
-        styleName: style.name,
-        orientation: selectedOrientation,
-        retryAttempt: retryCount + 1
-      });
-
-      const photoId = `photo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      const aspectRatio = getAspectRatio(selectedOrientation);
-      
-      const previewUrl = await generateStylePreview(
-        croppedImage,
-        style.name,
-        photoId,
-        aspectRatio
-      );
-
-      if (previewUrl) {
-        console.log('✅ Style preview generated successfully:', previewUrl.substring(0, 50) + '...');
-        setPreviewUrl(previewUrl);
-        setIsStyleGenerated(true);
-        setHasError(false);
-        setValidationError(null);
-        setLastError(null);
-        
-        // Auto-select the style after successful generation
-        onStyleClick(style);
-      } else {
-        throw new Error('No preview URL returned from generation service');
-      }
+      await generatePreview();
+      console.log(`✅ Generation completed for ${style.name}`);
     } catch (error) {
-      console.error('❌ Style preview generation failed:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to generate style preview';
-      setHasError(errorMessage);
-      setValidationError(errorMessage);
-      setLastError(errorMessage);
+      console.log(`❌ Generation failed for ${style.name}:`, error);
+      setShowError(true);
     } finally {
-      setIsLoading(false);
+      setLocalIsLoading(false);
     }
-  }, [style, croppedImage, selectedOrientation, isPermanentlyGenerated, onStyleClick, retryCount]);
+  }, [generatePreview, isPermanentlyGenerated, effectiveIsLoading, style.name]);
 
+  // Retry click handler
   const handleRetryClick = useCallback(async (e: React.MouseEvent) => {
-    e?.stopPropagation();
-    console.log(`🔄 Retry clicked for style: ${style.id} (${style.name}), attempt: ${retryCount + 1}`);
+    e.stopPropagation();
     
-    // Reset error state and try again
-    setHasError(false);
-    setValidationError(null);
+    // CRITICAL: Never retry if permanently generated
+    if (isPermanentlyGenerated) {
+      console.log(`🚫 PERMANENT BLOCK - ${style.name} cannot be retried`);
+      return;
+    }
     
-    // Call the generate function again
-    await handleGenerateClick(e);
-  }, [handleGenerateClick, style, retryCount]);
+    if (effectiveIsLoading) {
+      console.log(`🚫 BUSY BLOCK - ${style.name} is already generating`);
+      return;
+    }
+    
+    console.log(`🔄 Retrying generation for ${style.name}`);
+    setShowError(false);
+    setLocalIsLoading(true);
+    
+    try {
+      await generatePreview();
+      console.log(`✅ Retry completed for ${style.name}`);
+    } catch (error) {
+      console.log(`❌ Retry failed for ${style.name}:`, error);
+      setShowError(true);
+    } finally {
+      setLocalIsLoading(false);
+    }
+  }, [generatePreview, isPermanentlyGenerated, effectiveIsLoading, style.name]);
 
-  const imageToShow = previewUrl || style.image;
-
-  // Enhanced logging for debugging
-  console.log(`🔍 StyleCard State Debug [${style.name}]:`, {
-    isSelected,
-    hasError: !!hasError,
-    isLoading,
-    isPermanentlyGenerated,
-    isStyleGenerated,
-    previewUrl: previewUrl ? previewUrl.substring(0, 50) + '...' : null,
-    retryCount,
-    lastError
-  });
+  // Memoize style comparison for better performance
+  const isSelectedMemo = useMemo(() => selectedStyle === style.id, [selectedStyle, style.id]);
 
   return {
-    isSelected,
-    isLoading,
-    effectiveIsLoading,
-    isStyleGenerated,
-    previewUrl,
-    hasError,
-    validationError,
-    isPermanentlyGenerated,
+    // State
+    showError,
+    setShowError,
+    localIsLoading,
+    setLocalIsLoading,
     isLightboxOpen,
     setIsLightboxOpen,
+    isPermanentlyGenerated,
+    setIsPermanentlyGenerated,
+    
+    // Preview hook values
+    isLoading,
+    previewUrl,
+    hasGeneratedPreview,
+    isStyleGenerated,
+    validationError,
+    handleClick,
+    generatePreview,
+    
+    // Computed values
+    isSelected: isSelectedMemo,
+    showGeneratedBadge,
+    hasError,
+    imageToShow,
+    effectiveIsLoading,
+    
+    // Handlers
     handleCardClick,
     handleContinueClick,
-    handleGenerateClick,
-    handleRetryClick,
     handleImageExpand,
-    imageToShow,
-    isPopular,
-    showGeneratedBadge,
-    hasGeneratedPreview,
-    retryCount,
-    lastError
+    handleGenerateClick,
+    handleRetryClick
   };
 };
