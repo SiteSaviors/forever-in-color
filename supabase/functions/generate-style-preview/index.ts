@@ -1,138 +1,194 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
-import { StylePromptService } from './stylePromptService.ts';
-import { corsHeaders, handleCorsPreflightRequest, createCorsResponse } from './corsUtils.ts';
-import { base64ToBlob, getImageSize } from './imageUtils.ts';
-import { validateRequest } from './requestValidator.ts';
-import { OpenAIService } from './openaiService.ts';
-import { createSuccessResponse, createErrorResponse } from './responseUtils.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+// FIXED: Simplified direct OpenAI integration - no complex service chains
+async function generateWithOpenAI(imageData: string, stylePrompt: string, aspectRatio: string = "1:1", quality: string = "medium") {
+  const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
+  if (!openaiApiKey) {
+    throw new Error('OpenAI API key not configured');
+  }
+
+  console.log('🎨 Calling OpenAI GPT-Image-1 directly');
+  
+  // Convert aspect ratio for OpenAI (supports 1024x1024, 1536x1024, 1024x1536)
+  let size = "1024x1024";
+  if (aspectRatio === "16:9" || aspectRatio === "3:2") {
+    size = "1536x1024";
+  } else if (aspectRatio === "9:16" || aspectRatio === "2:3") {
+    size = "1024x1536";
+  }
+
+  const response = await fetch('https://api.openai.com/v1/images/generations', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${openaiApiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'gpt-image-1',
+      prompt: `Transform this image into ${stylePrompt}. Maintain the original subject and composition while applying the artistic style.`,
+      image: imageData,
+      size: size,
+      quality: quality === 'high' ? 'high' : 'medium',
+      output_format: 'png'
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('❌ OpenAI API error:', response.status, errorText);
+    throw new Error(`OpenAI API error: ${response.status}`);
+  }
+
+  const result = await response.json();
+  
+  if (!result.data?.[0]?.url && !result.data?.[0]?.b64_json) {
+    throw new Error('No image data returned from OpenAI');
+  }
+
+  // Return base64 data or URL
+  return result.data[0].b64_json ? `data:image/png;base64,${result.data[0].b64_json}` : result.data[0].url;
+}
+
+// FIXED: Simplified style prompt lookup
+async function getStylePrompt(styleName: string, supabase: any): Promise<string> {
+  try {
+    if (!supabase) {
+      // Fallback prompts if no database connection
+      const fallbackPrompts: { [key: string]: string } = {
+        'Original Image': 'the original image without any modifications',
+        'Classic Oil Painting': 'a classic oil painting with rich textures and traditional brushwork',
+        'Watercolor Dreams': 'a soft watercolor painting with flowing colors and gentle washes',
+        'Pastel Bliss': 'a pastel art style with soft, muted colors and gentle transitions',
+        'Gemstone Poly': 'a low-poly geometric art style with crystal-like faceted surfaces',
+        '3D Storybook': 'a 3D illustrated storybook style with charming character design',
+        'Pop Art Burst': 'a vibrant pop art style with bold colors and strong contrasts',
+        'Electric Bloom': 'an electric neon art style with glowing effects and vibrant colors',
+        'Abstract Fusion': 'an abstract artistic fusion with flowing forms and dynamic composition'
+      };
+      return fallbackPrompts[styleName] || 'an artistic transformation';
+    }
+
+    const { data } = await supabase
+      .from('style_prompts')
+      .select('prompt')
+      .eq('style_id', getStyleId(styleName))
+      .single();
+
+    return data?.prompt || 'an artistic transformation';
+  } catch (error) {
+    console.warn('Could not fetch style prompt, using fallback');
+    return 'an artistic transformation';
+  }
+}
+
+function getStyleId(styleName: string): number {
+  const styleMap: { [key: string]: number } = {
+    'Original Image': 1,
+    'Classic Oil Painting': 2,
+    'Watercolor Dreams': 4,
+    'Pastel Bliss': 5,
+    'Gemstone Poly': 6,
+    '3D Storybook': 7,
+    'Pop Art Burst': 9,
+    'Electric Bloom': 11,
+    'Abstract Fusion': 13
+  };
+  return styleMap[styleName] || 1;
+}
 
 serve(async (req) => {
-  console.log(`🔥 Edge Function Request: ${req.method} ${req.url}`);
+  console.log(`🔥 SIMPLIFIED Edge Function Request: ${req.method} ${req.url}`);
   
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return handleCorsPreflightRequest();
+    return new Response(null, { headers: corsHeaders });
   }
 
-  // Only allow POST requests
   if (req.method !== 'POST') {
-    return createCorsResponse(
-      JSON.stringify(createErrorResponse('method_not_allowed', 'Method not allowed')), 
-      405
+    return new Response(
+      JSON.stringify({ error: 'Method not allowed' }), 
+      { status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 
-  const startTime = Date.now();
   const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  console.log(`=== GPT-IMAGE-1 REQUEST START [${requestId}] ===`);
+  console.log(`=== SIMPLIFIED GENERATION START [${requestId}] ===`);
 
   try {
+    // FIXED: Simple request parsing with fallbacks
     const body = await req.json();
-    console.log(`📝 [${requestId}] Request body:`, JSON.stringify({ ...body, imageUrl: 'BASE64_DATA_HIDDEN' }, null, 2));
+    const { 
+      imageUrl, 
+      style, 
+      photoId, 
+      aspectRatio = '1:1', 
+      quality = 'medium'
+    } = body;
 
-    // Validate request
-    const validation = validateRequest(body);
-    if (!validation.isValid) {
-      return createCorsResponse(
-        JSON.stringify(createErrorResponse('invalid_request', validation.error!)),
-        400
-      );
-    }
+    console.log(`📋 [${requestId}] Parameters:`, {
+      style,
+      aspectRatio,
+      quality,
+      hasImage: !!imageUrl,
+      photoId
+    });
 
-    const { imageUrl, style, aspectRatio, quality } = validation.data!;
+    // FIXED: Basic validation only
+    if (!imageUrl) throw new Error('Image URL is required');
+    if (!style) throw new Error('Style is required');
 
-    const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openaiApiKey) {
-      console.error(`❌ [${requestId}] Missing OpenAI API key`);
-      return createCorsResponse(
-        JSON.stringify(createErrorResponse('configuration_error', 'AI service configuration error')),
-        500
-      );
-    }
-
-    console.log(`🎨 [${requestId}] Starting generation with:`, { style, aspectRatio, quality });
-
-    // Initialize Supabase client and StylePromptService
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    const stylePromptService = new StylePromptService(supabase);
-
-    // Get the tested, specific prompt for this style
-    let stylePrompt: string;
-    try {
-      const fetchedPrompt = await stylePromptService.getStylePrompt(style);
-      if (fetchedPrompt) {
-        stylePrompt = fetchedPrompt;
-        console.log(`✅ [${requestId}] Using tested prompt for style: ${style}`);
-      } else {
-        // Fallback to a basic prompt if database lookup fails
-        stylePrompt = `Transform this image into ${style} style while keeping the exact same subject, composition, and scene. Apply only the artistic style transformation. Do not change what is depicted in the image - only change how it looks artistically.`;
-        console.warn(`⚠️ [${requestId}] No prompt found for style ${style}, using fallback`);
-      }
-    } catch (error) {
-      console.error(`❌ [${requestId}] Error fetching style prompt:`, error);
-      stylePrompt = `Transform this image into ${style} style while keeping the exact same subject, composition, and scene. Apply only the artistic style transformation. Do not change what is depicted in the image - only change how it looks artistically.`;
-    }
-
-    console.log(`🎯 [${requestId}] Using prompt:`, stylePrompt.substring(0, 100) + '...');
-
-    // Convert aspect ratio to size
-    const size = getImageSize(aspectRatio);
-
-    // Convert base64 image to blob
-    let imageBlob: Blob;
-    try {
-      imageBlob = await base64ToBlob(imageUrl);
-      console.log(`📷 [${requestId}] Image converted to blob, size:`, imageBlob.size);
-    } catch (error) {
-      console.error(`❌ [${requestId}] Failed to convert image:`, error);
-      return createCorsResponse(
-        JSON.stringify(createErrorResponse('invalid_image', 'Invalid image format')),
-        400
-      );
-    }
-
-    // Initialize OpenAI service
-    const openaiService = new OpenAIService(openaiApiKey);
-
-    // Try GPT-Image-1 with image variations (maintains subject better)
-    let generatedImageUrl = await openaiService.tryImageVariations(imageBlob, stylePrompt, size, requestId);
+    // Initialize Supabase (optional)
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     
-    // Fallback to GPT-Image-1 edits
-    if (!generatedImageUrl) {
-      generatedImageUrl = await openaiService.tryImageEdits(imageBlob, stylePrompt, size, requestId);
+    let supabase = null;
+    if (supabaseUrl && supabaseServiceKey) {
+      supabase = createClient(supabaseUrl, supabaseServiceKey);
     }
 
-    if (generatedImageUrl) {
-      const endTime = Date.now();
-      const duration = endTime - startTime;
-      console.log(`=== ✅ GENERATION COMPLETED [${requestId}] in ${duration}ms ===`);
+    // Get style prompt
+    const stylePrompt = await getStylePrompt(style, supabase);
+    console.log(`📝 [${requestId}] Using prompt for ${style}:`, stylePrompt);
 
-      return createCorsResponse(
-        JSON.stringify(createSuccessResponse(generatedImageUrl, requestId, duration))
+    // FIXED: Direct generation without complex service chains
+    console.log(`🎨 [${requestId}] Starting direct OpenAI generation...`);
+    const result = await generateWithOpenAI(imageUrl, stylePrompt, aspectRatio, quality);
+
+    if (result) {
+      console.log(`✅ [${requestId}] Generation successful`);
+      return new Response(
+        JSON.stringify({ 
+          preview_url: result,
+          requestId,
+          timestamp: new Date().toISOString()
+        }), 
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+    } else {
+      throw new Error('Generation failed - no result');
     }
-
-    // All models failed
-    console.error(`❌ [${requestId}] All models failed`);
-    return createCorsResponse(
-      JSON.stringify(createErrorResponse('generation_failed', 'AI service is temporarily unavailable. Please try again.')),
-      503
-    );
 
   } catch (error) {
-    const endTime = Date.now();
-    const duration = endTime - startTime;
-    console.error(`=== ❌ GPT-IMAGE-1 ERROR [${requestId}] after ${duration}ms ===`);
-    console.error('💥 Unexpected error:', error);
-    console.error('📍 Error stack:', error.stack);
+    console.error(`❌ [${requestId}] Generation error:`, error.message);
+    console.error('📍 Error details:', error);
     
-    return createCorsResponse(
-      JSON.stringify(createErrorResponse('internal_error', 'Internal server error. Please try again.', requestId)),
-      500
+    return new Response(
+      JSON.stringify({ 
+        error: 'generation_failed',
+        message: 'Image generation failed. Please try again.',
+        requestId,
+        timestamp: new Date().toISOString()
+      }), 
+      { 
+        status: 500, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
     );
   }
 });

@@ -1,10 +1,9 @@
 
 import { StylePreviewProvider } from "./contexts/StylePreviewContext";
-import { AccordionStateProvider } from "./contexts/AccordionStateContext";
 import { CustomizationOptions } from "./types/productState";
 import { useProductSteps } from "./hooks/useProductSteps";
 import { usePreviewGeneration } from "./hooks/usePreviewGeneration";
-import CascadeErrorBoundary from "./components/ErrorBoundaries/CascadeErrorBoundary";
+import ErrorBoundary from "./components/ErrorBoundary";
 import LoadingState from "./components/LoadingState";
 import ProductContentContainer from "./components/ProductContentContainer";
 import StepAccordion from "./components/StepAccordion";
@@ -79,23 +78,14 @@ const ProductContent = ({
   }
 
   return (
-    <CascadeErrorBoundary
-      enableAnalytics={true}
-      maxRetries={2}
-      onNavigateHome={() => window.location.href = '/'}
-    >
-      <AccordionStateProvider
-        initialCurrentStep={currentStep}
-        initialCompletedSteps={completedSteps}
-        onStepChange={onCurrentStepChange}
+    <ErrorBoundary>
+      <StylePreviewProvider 
+        croppedImage={uploadedImage} 
+        selectedOrientation={selectedOrientation}
       >
-        <StylePreviewProvider 
-          croppedImage={uploadedImage} 
-          selectedOrientation={selectedOrientation}
-        >
-          <ProductContentContainer>
-            <StepAccordion currentStep={currentStep}>
-              <ProductStepsManager
+        <ProductContentContainer>
+          <StepAccordion currentStep={currentStep}>
+            <ProductStepsManager
               currentStep={currentStep}
               completedSteps={completedSteps}
               selectedStyle={selectedStyle}
@@ -113,12 +103,11 @@ const ProductContent = ({
               handleContinueToStep2={handleContinueToStep2}
               handleContinueToStep3={handleContinueToStep3}
               handleContinueToStep4={handleContinueToStep4}
-              />
-            </StepAccordion>
-          </ProductContentContainer>
-        </StylePreviewProvider>
-      </AccordionStateProvider>
-    </CascadeErrorBoundary>
+            />
+          </StepAccordion>
+        </ProductContentContainer>
+      </StylePreviewProvider>
+    </ErrorBoundary>
   );
 };
 
