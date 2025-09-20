@@ -1,5 +1,4 @@
-
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useBlinking } from './useBlinking';
 import { useStyleCard } from './useStyleCard';
 import { useTouchOptimizedInteractions } from './useTouchOptimizedInteractions';
@@ -38,13 +37,6 @@ export const useStyleCardHooks = (props: UseStyleCardHooksProps) => {
     shouldBlur = false
   } = props;
 
-  console.log(`🔧 StyleCardHooks initialized for ${style.name}:`, {
-    styleId: style.id,
-    hasImage: !!croppedImage,
-    isSelected: selectedStyle === style.id,
-    hasPreGenerated: !!preGeneratedPreview
-  });
-
   // Performance monitoring with consolidated hook
   usePerformanceMonitor(`StyleCard-${style.name}`, { 
     enabled: process.env.NODE_ENV === 'development' 
@@ -62,53 +54,51 @@ export const useStyleCardHooks = (props: UseStyleCardHooksProps) => {
     onContinue
   });
 
-  // Convert hasError to boolean and extract error message
+  // Convert hasError to boolean and extract error message before passing to handlers
   const hasErrorBoolean = Boolean(styleCardState.hasError);
   const errorMessage = typeof styleCardState.hasError === 'string' ? styleCardState.hasError : (styleCardState.validationError || 'Generation failed');
 
-  // Direct event handlers - no mock objects or wrappers
-  const handleGenerateClick = (e?: React.MouseEvent) => {
-    console.log(`🎯 Direct generate click for ${style.name}`);
-    if (e) {
-      styleCardState.handleGenerateClick(e);
-    } else {
-      // Create a minimal synthetic event for programmatic calls
-      const syntheticEvent = {
-        stopPropagation: () => {},
-        preventDefault: () => {}
-      } as React.MouseEvent;
-      styleCardState.handleGenerateClick(syntheticEvent);
+  // Create minimal mock event for handlers that require it
+  const createMockEvent = (): React.MouseEvent => ({
+    stopPropagation: () => {},
+    preventDefault: () => {}
+  } as React.MouseEvent);
+
+  // Simplified direct handlers without mock events
+  const handleGenerateWrapper = () => {
+    if (styleCardState.isPermanentlyGenerated) {
+      console.log(`🚫 PERMANENT BLOCK - ${style.name} cannot be regenerated`);
+      return;
     }
+    
+    if (styleCardState.effectiveIsLoading) {
+      console.log(`🚫 BUSY BLOCK - ${style.name} is already generating`);
+      return;
+    }
+    
+    console.log(`🎨 Direct generate call for ${style.name}`);
+    styleCardState.generatePreview();
   };
   
-  const handleRetryClick = (e?: React.MouseEvent) => {
-    console.log(`🔄 Direct retry click for ${style.name}`);
-    if (e) {
-      styleCardState.handleRetryClick(e);
-    } else {
-      // Create a minimal synthetic event for programmatic calls  
-      const syntheticEvent = {
-        stopPropagation: () => {},
-        preventDefault: () => {}
-      } as React.MouseEvent;
-      styleCardState.handleRetryClick(syntheticEvent);
+  const handleRetryWrapper = () => {
+    if (styleCardState.isPermanentlyGenerated) {
+      console.log(`🚫 PERMANENT BLOCK - ${style.name} cannot be retried`);
+      return;
     }
+    
+    if (styleCardState.effectiveIsLoading) {
+      console.log(`🚫 BUSY BLOCK - ${style.name} is already generating`);
+      return;
+    }
+    
+    console.log(`🔄 Direct retry call for ${style.name}`);
+    styleCardState.setShowError(false);
+    styleCardState.generatePreview();
   };
 
-  // Simplified touch handlers
-  const handleTouchTap = () => {
-    console.log(`👆 Touch tap for ${style.name}`);
-    styleCardState.handleCardClick();
-  };
-
-  const handleTouchLongPress = () => {
-    console.log(`👆 Touch long press for ${style.name}`);
-    const syntheticEvent = {
-      stopPropagation: () => {},
-      preventDefault: () => {}
-    } as React.MouseEvent;
-    styleCardState.handleImageExpand(syntheticEvent);
-  };
+  // Create wrapper functions for touch handlers that accept events but ignore them
+  const handleTouchTap = () => styleCardState.handleCardClick();
+  const handleTouchLongPress = () => styleCardState.handleImageExpand(createMockEvent());
 
   // Touch-optimized interactions with integrated debouncing
   const { isPressed, touchHandlers } = useTouchOptimizedInteractions({
@@ -123,22 +113,15 @@ export const useStyleCardHooks = (props: UseStyleCardHooksProps) => {
     hasGeneratedOnce: styleCardState.isPermanentlyGenerated
   });
 
-  console.log(`📊 StyleCardHooks state for ${style.name}:`, {
-    isLoading: styleCardState.isLoading,
-    hasError: hasErrorBoolean,
-    isSelected: styleCardState.isSelected,
-    hasPreview: !!styleCardState.previewUrl
-  });
-
   return {
     // State from consolidated hook
     ...styleCardState,
     hasErrorBoolean,
     errorMessage,
     
-    // Direct handlers (no wrappers)
-    handleGenerateClick,
-    handleRetryClick,
+    // Wrapper handlers
+    handleGenerateWrapper,
+    handleRetryWrapper,
     
     // Interactions
     isPressed,
