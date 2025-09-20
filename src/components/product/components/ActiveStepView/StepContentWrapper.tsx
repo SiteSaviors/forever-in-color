@@ -9,7 +9,7 @@ interface StepContentWrapperProps {
 
 const StepContentWrapper = React.memo(({ children }: StepContentWrapperProps) => {
   return (
-    <div className="bg-gradient-to-br from-slate-50 via-purple-50/60 to-indigo-100/40 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-10 border border-purple-100/60 shadow-lg backdrop-blur-sm animate-fade-in content-container-optimized">
+    <div className="bg-gradient-to-br from-cyan-50/80 via-violet-50/60 to-fuchsia-100/40 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-10 border border-cyan-200/60 shadow-2xl backdrop-blur-xl animate-fade-in content-container-optimized">
       <ErrorBoundary fallback={
         <div className="text-center py-6">
           <MobileTypography variant="body" className="text-gray-600 font-poppins">

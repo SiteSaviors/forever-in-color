@@ -1,6 +1,6 @@
 
 import { useRef } from 'react';
-import { useScrollParallax } from '@/hooks/useScrollParallax';
+import { useScrollParallax } from '@/components/product/hooks/useScrollParallax';
 
 export const useCarouselParallax = () => {
   const sectionRef = useRef<HTMLElement>(null);

@@ -1,9 +1,6 @@
-
 import { useState, useMemo } from 'react';
 import { useBlinking } from './useBlinking';
-import { useStyleCardLogic } from './useStyleCardLogic';
-import { useStyleCardEffects } from './useStyleCardEffects';
-import { useStyleCardHandlers } from './useStyleCardHandlers';
+import { useStyleCard } from './useStyleCard';
 import { useTouchOptimizedInteractions } from './useTouchOptimizedInteractions';
 import { usePerformanceMonitor } from './usePerformanceMonitor';
 
@@ -40,88 +37,62 @@ export const useStyleCardHooks = (props: UseStyleCardHooksProps) => {
     shouldBlur = false
   } = props;
 
-  // Performance monitoring
-  usePerformanceMonitor(`StyleCard-${style.name}`, process.env.NODE_ENV === 'development');
+  // Performance monitoring with consolidated hook
+  usePerformanceMonitor(`StyleCard-${style.name}`, { 
+    enabled: process.env.NODE_ENV === 'development' 
+  });
 
-  // Memoize style comparison for better performance
-  const isSelected = useMemo(() => selectedStyle === style.id, [selectedStyle, style.id]);
-  
-  // Use the logic hook for state management
-  const logicState = useStyleCardLogic({
+  // Use the consolidated style card hook
+  const styleCardState = useStyleCard({
     style,
     croppedImage,
     selectedStyle,
     isPopular,
     preGeneratedPreview,
     selectedOrientation,
-    onStyleClick
-  });
-
-  // Use the effects hook for side effects
-  useStyleCardEffects({
-    previewUrl: logicState.previewUrl,
-    preGeneratedPreview,
-    isPermanentlyGenerated: logicState.isPermanentlyGenerated,
-    setIsPermanentlyGenerated: logicState.setIsPermanentlyGenerated,
-    setLocalIsLoading: logicState.setLocalIsLoading,
-    styleName: style.name
+    onStyleClick,
+    onContinue
   });
 
   // Convert hasError to boolean and extract error message before passing to handlers
-  const hasErrorBoolean = Boolean(logicState.hasError);
-  const errorMessage = typeof logicState.hasError === 'string' ? logicState.hasError : (logicState.validationError || 'Generation failed');
-
-  // Use the handlers hook for event handling
-  const handlers = useStyleCardHandlers({
-    style,
-    previewUrl: logicState.previewUrl,
-    isPermanentlyGenerated: logicState.isPermanentlyGenerated,
-    effectiveIsLoading: logicState.effectiveIsLoading,
-    hasError: hasErrorBoolean,
-    setShowError: logicState.setShowError,
-    setLocalIsLoading: logicState.setLocalIsLoading,
-    setIsLightboxOpen: logicState.setIsLightboxOpen,
-    onStyleClick,
-    onContinue,
-    generatePreview: logicState.generatePreview
-  });
+  const hasErrorBoolean = Boolean(styleCardState.hasError);
+  const errorMessage = typeof styleCardState.hasError === 'string' ? styleCardState.hasError : (styleCardState.validationError || 'Generation failed');
 
   // Create wrapper functions that don't require parameters
   const handleGenerateWrapper = () => {
     const mockEvent = { stopPropagation: () => {} } as React.MouseEvent;
-    handlers.handleGenerateClick(mockEvent);
+    styleCardState.handleGenerateClick(mockEvent);
   };
   
   const handleRetryWrapper = () => {
     const mockEvent = { stopPropagation: () => {} } as React.MouseEvent;
-    handlers.handleRetryClick(mockEvent);
+    styleCardState.handleRetryClick(mockEvent);
   };
 
   // Create wrapper functions for touch handlers that accept events but ignore them
-  const handleTouchTap = () => handlers.handleCardClick();
-  const handleTouchLongPress = () => handlers.handleImageExpand({} as React.MouseEvent);
+  const handleTouchTap = () => styleCardState.handleCardClick();
+  const handleTouchLongPress = () => styleCardState.handleImageExpand({} as React.MouseEvent);
 
-  // Touch-optimized interactions
+  // Touch-optimized interactions with integrated debouncing
   const { isPressed, touchHandlers } = useTouchOptimizedInteractions({
     onTap: handleTouchTap,
-    onLongPress: handleTouchLongPress
+    onLongPress: handleTouchLongPress,
+    debounceDelay: 150
   });
 
-  const { isBlinking } = useBlinking(logicState.previewUrl, {
-    isGenerating: logicState.isPermanentlyGenerated ? false : (logicState.effectiveIsLoading),
-    hasPreview: !!logicState.previewUrl,
-    hasGeneratedOnce: logicState.isPermanentlyGenerated
+  const { isBlinking } = useBlinking(styleCardState.previewUrl, {
+    isGenerating: styleCardState.isPermanentlyGenerated ? false : (styleCardState.effectiveIsLoading),
+    hasPreview: !!styleCardState.previewUrl,
+    hasGeneratedOnce: styleCardState.isPermanentlyGenerated
   });
 
   return {
-    // State
-    ...logicState,
-    isSelected,
+    // State from consolidated hook
+    ...styleCardState,
     hasErrorBoolean,
     errorMessage,
     
-    // Handlers
-    ...handlers,
+    // Wrapper handlers
     handleGenerateWrapper,
     handleRetryWrapper,
     
@@ -130,8 +101,8 @@ export const useStyleCardHooks = (props: UseStyleCardHooksProps) => {
     touchHandlers,
     
     // Computed values
-    showContinueInCard: showContinueButton && isSelected && (logicState.isStyleGenerated || logicState.isPermanentlyGenerated),
-    isLocked: logicState.isPermanentlyGenerated,
-    showLockedFeedback: logicState.isPermanentlyGenerated && !isSelected
+    showContinueInCard: showContinueButton && styleCardState.isSelected && (styleCardState.isStyleGenerated || styleCardState.isPermanentlyGenerated),
+    isLocked: styleCardState.isPermanentlyGenerated,
+    showLockedFeedback: styleCardState.isPermanentlyGenerated && !styleCardState.isSelected
   };
 };

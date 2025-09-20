@@ -1,5 +1,4 @@
 
-import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, Zap } from "lucide-react";
 import { orientationOptions } from "../data/orientationOptions";
@@ -29,20 +28,20 @@ const OrientationSelector = ({
 
   return (
     <div className="space-y-6">
-      {/* AI Recommendation Header */}
+      {/* Hero-Level AI Recommendation Header */}
       {recommendedOrientation && (
-        <div className="text-center bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4 border border-purple-200">
+        <div className="text-center bg-gradient-to-r from-cyan-50/80 to-fuchsia-50/80 rounded-xl p-4 border-2 border-cyan-200/60 backdrop-blur-sm shadow-2xl">
           <div className="flex items-center justify-center gap-2 mb-2">
-            <div className="p-1 bg-purple-100 rounded-full">
-              <Zap className="w-4 h-4 text-purple-600" />
+            <div className="p-1 bg-gradient-to-br from-cyan-100/80 to-fuchsia-100/80 rounded-full shadow-lg">
+              <Zap className="w-4 h-4 text-cyan-600" />
             </div>
-            <h4 className="font-semibold text-purple-900">AI Recommendation</h4>
-            <Badge className="bg-purple-500 text-white">
+            <h4 className="font-semibold text-gray-900 font-montserrat">AI Recommendation</h4>
+            <Badge className="bg-gradient-to-r from-cyan-500 via-violet-500 to-fuchsia-500 text-white shadow-lg">
               <Sparkles className="w-3 h-3 mr-1" />
               Smart Choice
             </Badge>
           </div>
-          <p className="text-sm text-purple-700">
+          <p className="text-sm text-gray-700 font-poppins">
             Based on your photo's composition, we recommend the <strong>{recommendedOrientation}</strong> canvas format
           </p>
         </div>
@@ -57,13 +56,13 @@ const OrientationSelector = ({
           return (
             <div 
               key={option.id} 
-              className={`
+               className={`
                 relative p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 transform hover:scale-105
                 ${isActive 
-                  ? 'border-purple-500 bg-gradient-to-br from-purple-50 to-pink-50 shadow-xl scale-105' 
+                  ? 'border-cyan-500 bg-gradient-to-br from-cyan-50/80 via-violet-50/60 to-fuchsia-100/40 shadow-2xl scale-105 backdrop-blur-sm' 
                   : isRecommended
-                    ? 'border-purple-300 bg-gradient-to-br from-purple-25 to-pink-25 shadow-lg hover:border-purple-400'
-                    : 'border-gray-200 bg-white hover:border-purple-300 hover:bg-purple-25 shadow-md'
+                    ? 'border-cyan-300/60 bg-gradient-to-br from-cyan-25/60 to-fuchsia-25/40 shadow-xl hover:border-cyan-400 backdrop-blur-sm'
+                    : 'border-gray-200/60 bg-white/80 hover:border-cyan-300 hover:bg-cyan-25/40 shadow-lg backdrop-blur-sm'
                 }
               `} 
               onClick={() => onOrientationChange(option.ratio, option.id)}
@@ -83,10 +82,10 @@ const OrientationSelector = ({
                 <div className={`
                   flex justify-center p-4 rounded-xl transition-all duration-300
                   ${isActive 
-                    ? 'bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-lg' 
+                    ? 'bg-gradient-to-br from-cyan-500 via-violet-500 to-fuchsia-500 text-white shadow-2xl shadow-cyan-500/30' 
                     : isRecommended
-                      ? 'bg-gradient-to-br from-purple-100 to-pink-100 text-purple-600'
-                      : 'bg-gray-100 text-gray-500'
+                      ? 'bg-gradient-to-br from-cyan-100/80 to-fuchsia-100/80 text-cyan-600'
+                      : 'bg-gray-100/80 text-gray-500'
                   }
                 `}>
                   <IconComponent className="w-8 h-8" />
@@ -114,23 +113,23 @@ const OrientationSelector = ({
                   </div>
                   
                   {/* Status Badge */}
-                  {isActive && (
-                    <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg">
+                   {isActive && (
+                    <Badge className="bg-gradient-to-r from-cyan-500 via-violet-500 to-fuchsia-500 text-white shadow-2xl shadow-cyan-500/30">
                       ✓ Selected
                     </Badge>
                   )}
                   
                   {isRecommended && !isActive && (
-                    <Badge variant="outline" className="border-purple-300 text-purple-600 bg-purple-50">
+                    <Badge variant="outline" className="border-cyan-300/60 text-cyan-600 bg-cyan-50/80 backdrop-blur-sm">
                       🎯 Recommended for your photo
                     </Badge>
                   )}
                 </div>
               </div>
 
-              {/* Glow effect for recommended option */}
+              {/* Hero-Level Glow effect for recommended option */}
               {isRecommended && (
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-400/10 to-pink-400/10 blur-sm -z-10" />
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-cyan-400/20 via-violet-400/15 to-fuchsia-400/20 blur-lg -z-10" />
               )}
             </div>
           );
