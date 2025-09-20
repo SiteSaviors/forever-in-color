@@ -1,4 +1,5 @@
-import { useCallback, useMemo } from 'react';
+
+import React, { useCallback, useMemo } from 'react';
 import { useInteractionStateMachine } from './useInteractionStateMachine';
 
 interface UseStyleCardInteractionsProps {
@@ -25,13 +26,15 @@ export const useStyleCardInteractions = ({
   
   // Initialize state machine with current props
   const stateMachine = useInteractionStateMachine({
-    initialState: isSelected ? 'selected' : hasError ? 'error' : isGenerating ? 'loading' : canAccess ? 'idle' : 'disabled',
+    initialState: !canAccess ? 'disabled' : hasError ? 'error' : isGenerating ? 'loading' : isSelected ? 'selected' : 'idle',
     debounceDelay: 100,
     animationDuration: 300
   });
 
   // Sync external state with state machine
-  const syncExternalState = useCallback(() => {
+  React.useEffect(() => {
+    console.log(`🔄 Syncing state for ${styleName}:`, { canAccess, hasError, isGenerating, isSelected, currentState: stateMachine.state });
+    
     if (!canAccess && !stateMachine.isDisabled) {
       stateMachine.transition('DISABLE', true);
     } else if (canAccess && stateMachine.isDisabled) {
@@ -41,6 +44,7 @@ export const useStyleCardInteractions = ({
     if (hasError && !stateMachine.hasError) {
       stateMachine.transition('ERROR', true);
     } else if (!hasError && stateMachine.hasError) {
+      // Reset from error state when error is cleared
       stateMachine.transition('RESET', true);
     }
     
@@ -55,12 +59,9 @@ export const useStyleCardInteractions = ({
     } else if (!isSelected && stateMachine.isSelected) {
       stateMachine.transition('DESELECT', true);
     }
-  }, [canAccess, hasError, isGenerating, isSelected, stateMachine]);
+  }, [canAccess, hasError, isGenerating, isSelected, stateMachine, styleName]);
 
-  // Call sync on every render to keep in sync
-  syncExternalState();
-
-  // Interaction handlers with state machine integration
+  // Interaction handlers with improved error handling
   const handleMouseEnter = useCallback(() => {
     if (stateMachine.isInteractive) {
       console.log(`🎯 HOVER START ▶️ ${styleName} (ID: ${styleId})`);
@@ -76,18 +77,31 @@ export const useStyleCardInteractions = ({
   }, [stateMachine, styleName, styleId]);
 
   const handleClick = useCallback(() => {
-    if (!stateMachine.isInteractive || stateMachine.isAnimating) {
+    console.log(`🎯 CLICK ATTEMPT ▶️ ${styleName} (ID: ${styleId}) - State: ${stateMachine.state}, Interactive: ${stateMachine.isInteractive}, Animating: ${stateMachine.isAnimating}`);
+    
+    if (!stateMachine.isInteractive && !stateMachine.hasError) {
       console.log(`🚫 CLICK BLOCKED ▶️ ${styleName} (ID: ${styleId}) - State: ${stateMachine.state}`);
       return;
     }
 
-    console.log(`🎯 CLICK ▶️ ${styleName} (ID: ${styleId}) - State: ${stateMachine.state}`);
+    // Allow clicks from error state for recovery
+    if (stateMachine.hasError) {
+      console.log(`🔄 RECOVERY CLICK ▶️ ${styleName} (ID: ${styleId}) - Resetting from error`);
+      stateMachine.transition('RESET');
+    }
     
-    // Queue the click action to prevent conflicts
-    stateMachine.queueAnimation(() => {
-      onStyleClick();
-      stateMachine.transition('SELECT');
-    });
+    console.log(`✅ CLICK PROCESSING ▶️ ${styleName} (ID: ${styleId})`);
+    
+    try {
+      // Queue the click action to prevent conflicts
+      stateMachine.queueAnimation(() => {
+        onStyleClick();
+        stateMachine.transition('SELECT');
+      });
+    } catch (error) {
+      console.error(`❌ CLICK ERROR ▶️ ${styleName}:`, error);
+      stateMachine.transition('ERROR', true);
+    }
   }, [stateMachine, styleName, styleId, onStyleClick]);
 
   const handleGenerateClick = useCallback((e?: React.MouseEvent) => {
@@ -95,16 +109,35 @@ export const useStyleCardInteractions = ({
       e.stopPropagation();
     }
     
-    if (!stateMachine.isInteractive || stateMachine.isAnimating || !onGenerateStyle) {
+    console.log(`🎨 GENERATE ATTEMPT ▶️ ${styleName} (ID: ${styleId}) - State: ${stateMachine.state}`);
+    
+    if (!stateMachine.isInteractive && !stateMachine.hasError) {
+      console.log(`🚫 GENERATE BLOCKED ▶️ ${styleName} - Not interactive`);
       return;
     }
 
-    console.log(`🎨 GENERATE CLICK ▶️ ${styleName} (ID: ${styleId})`);
+    if (!onGenerateStyle) {
+      console.log(`🚫 GENERATE BLOCKED ▶️ ${styleName} - No generate function`);
+      return;
+    }
+
+    // Allow generation from error state (retry scenario)
+    if (stateMachine.hasError) {
+      console.log(`🔄 RETRY GENERATE ▶️ ${styleName} - From error state`);
+      stateMachine.transition('RESET');
+    }
+
+    console.log(`✅ GENERATE PROCESSING ▶️ ${styleName} (ID: ${styleId})`);
     
-    stateMachine.queueAnimation(() => {
-      stateMachine.transition('START_LOADING');
-      onGenerateStyle();
-    });
+    try {
+      stateMachine.queueAnimation(() => {
+        stateMachine.transition('START_LOADING');
+        onGenerateStyle();
+      });
+    } catch (error) {
+      console.error(`❌ GENERATE ERROR ▶️ ${styleName}:`, error);
+      stateMachine.transition('ERROR', true);
+    }
   }, [stateMachine, styleName, styleId, onGenerateStyle]);
 
   const handleRetryClick = useCallback((e?: React.MouseEvent) => {
@@ -112,17 +145,25 @@ export const useStyleCardInteractions = ({
       e.stopPropagation();
     }
     
-    if (!stateMachine.isInteractive || !onGenerateStyle) {
+    console.log(`🔄 RETRY ATTEMPT ▶️ ${styleName} (ID: ${styleId})`);
+    
+    if (!onGenerateStyle) {
+      console.log(`🚫 RETRY BLOCKED ▶️ ${styleName} - No generate function`);
       return;
     }
 
-    console.log(`🔄 RETRY CLICK ▶️ ${styleName} (ID: ${styleId})`);
+    console.log(`✅ RETRY PROCESSING ▶️ ${styleName} (ID: ${styleId})`);
     
-    stateMachine.queueAnimation(() => {
-      stateMachine.transition('RESET');
-      stateMachine.transition('START_LOADING');
-      onGenerateStyle();
-    });
+    try {
+      stateMachine.queueAnimation(() => {
+        stateMachine.transition('RESET');
+        stateMachine.transition('START_LOADING');
+        onGenerateStyle();
+      });
+    } catch (error) {
+      console.error(`❌ RETRY ERROR ▶️ ${styleName}:`, error);
+      stateMachine.transition('ERROR', true);
+    }
   }, [stateMachine, styleName, styleId, onGenerateStyle]);
 
   // Computed visual states for styling
@@ -142,6 +183,10 @@ export const useStyleCardInteractions = ({
     
     if (visualState.isDisabled) {
       return `${base} opacity-60 grayscale-[0.3] shadow-lg cursor-not-allowed`;
+    }
+    
+    if (visualState.hasError) {
+      return `${base} ring-2 ring-red-200 shadow-red-100 cursor-pointer`;
     }
     
     if (visualState.isSelected) {

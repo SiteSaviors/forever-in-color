@@ -37,7 +37,7 @@ const StepContent = ({
   const styleNameElement = useMemo(() => {
     if (stepNumber === 1 && selectedStyle?.name) {
       return (
-        <span className={`ml-1 sm:ml-3 font-bold text-base sm:text-xl md:text-2xl transition-all duration-500 font-oswald tracking-tight ${
+        <span className={`ml-2 sm:ml-3 font-bold text-lg sm:text-xl md:text-2xl transition-all duration-500 font-oswald tracking-tight ${
           isActive ? 'bg-gradient-to-r from-rose-400 via-fuchsia-500 to-cyan-400 bg-clip-text text-transparent drop-shadow-lg' : 'text-white/90'
         }`}>
           - {selectedStyle.name}
@@ -53,7 +53,7 @@ const StepContent = ({
         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 flex-wrap">
           <MobileTypography
             variant="h3"
-            className={`${titleClasses} text-xl sm:text-3xl md:text-4xl lg:text-5xl animate-fade-in float-gentle`}
+            className={`${titleClasses} text-lg sm:text-2xl md:text-4xl lg:text-5xl animate-fade-in float-gentle`}
           >
             {title}
             {styleNameElement}
@@ -69,7 +69,7 @@ const StepContent = ({
       
       <MobileTypography
         variant="body"
-        className={`transition-all duration-500 font-poppins text-sm sm:text-lg leading-relaxed font-semibold ${
+        className={`transition-all duration-500 font-poppins text-base sm:text-lg leading-relaxed font-semibold ${
           !canAccess ? 'text-white/40' : 'text-white/90'
         } ${isActive ? 'block' : 'hidden sm:block'}`}
       >
