@@ -85,7 +85,7 @@ const ProductStep = ({
         onClick={onStepClick}
       >
         <div className="flex items-center gap-3 md:gap-6 w-full">
-          {/* Step Icon/Number */}
+          {/* Step Icon - Simplified without number badge */}
           <div className="relative">
             <div className={`
               relative w-10 h-10 md:w-14 md:h-14 rounded-lg md:rounded-xl flex items-center justify-center transition-all duration-500 shadow-lg
@@ -102,17 +102,6 @@ const ProductStep = ({
               ) : (
                 <Icon className="w-5 h-5 md:w-7 md:h-7" />
               )}
-              
-              {/* Step number badge */}
-              <div className={`
-                absolute -top-1 -right-1 md:-top-2 md:-right-2 w-5 h-5 md:w-6 md:h-6 rounded-full text-xs font-bold flex items-center justify-center
-                ${isCompleted ? 'bg-green-600 text-white' 
-                  : isActive && canAccess ? 'bg-white text-purple-600' 
-                  : !canAccess ? 'bg-gray-300 text-gray-500'
-                  : 'bg-gray-300 text-gray-600'}
-              `}>
-                {stepNumber}
-              </div>
             </div>
           </div>
           
@@ -132,7 +121,7 @@ const ProductStep = ({
                   )}
                 </h3>
                 
-                {/* Gentle progression indicator */}
+                {/* Status Indicators */}
                 {lockStatus === "locked" && (
                   <div className="transition-all duration-300">
                     <Lock className="w-4 h-4 text-gray-400 opacity-60" />
@@ -142,22 +131,26 @@ const ProductStep = ({
                 {lockStatus === "complete" && (
                   <div className="flex items-center gap-2 animate-in zoom-in duration-300">
                     <CheckCircle className="w-4 h-4 text-emerald-500" />
-                    {/* Edit Selection Button - Only show when step is completed */}
+                    {/* Enhanced Edit Selection Button */}
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={handleEditSelection}
-                      className="h-8 px-3 text-xs font-medium text-purple-600 hover:text-purple-800 hover:bg-purple-50 transition-all duration-200 opacity-80 hover:opacity-100"
+                      className="h-8 px-3 text-xs font-medium text-purple-600 hover:text-purple-800 hover:bg-purple-50 transition-all duration-200 opacity-80 hover:opacity-100 min-h-[44px] md:min-h-[32px]"
                     >
                       <Edit3 className="w-3 h-3 mr-1" />
-                      Edit Selection
+                      <span className="hidden sm:inline">Edit Selection</span>
+                      <span className="sm:hidden">Edit</span>
                     </Button>
                   </div>
                 )}
               </div>
             </div>
             
-            <p className={`text-sm hidden md:block ${!canAccess ? 'text-gray-400' : 'text-gray-500'}`}>
+            {/* Description - Hidden on mobile when completed to reduce clutter */}
+            <p className={`text-sm ${
+              !canAccess ? 'text-gray-400' : 'text-gray-500'
+            } ${isCompleted ? 'hidden md:block' : 'hidden md:block'}`}>
               {description}
             </p>
           </div>
