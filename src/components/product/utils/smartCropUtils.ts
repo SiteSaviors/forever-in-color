@@ -36,22 +36,13 @@ const detectSubjectRegion = async (imageUrl: string): Promise<DetectionResult> =
         const imageData = ctx.getImageData(0, 0, img.width, img.height);
         const detected = analyzeImageForSubject(imageData, img.width, img.height);
         
-        console.log('🎯 Smart Crop Detection Result:', {
-          method: detected.method,
-          confidence: detected.confidence,
-          region: detected.region,
-          imageSize: `${img.width}x${img.height}`
-        });
-        
         resolve(detected);
       } catch (error) {
-        console.warn('⚠️ Smart crop detection failed, using center fallback:', error);
         resolve(getCenterFallback(img.width, img.height));
       }
     };
     
     img.onerror = () => {
-      console.error('❌ Failed to load image for smart crop');
       resolve(getCenterFallback(800, 600)); // Default fallback
     };
     
@@ -192,13 +183,6 @@ const expandToAspectRatio = (
   imageHeight: number,
   orientation: string
 ): CropRegion => {
-  console.log('🔧 Expanding detected region to aspect ratio:', {
-    detectedRegion,
-    targetRatio,
-    orientation,
-    imageSize: `${imageWidth}x${imageHeight}`
-  });
-  
   const { x, y, width, height } = detectedRegion;
   const centerX = x + width / 2;
   const centerY = y + height / 2;
@@ -236,8 +220,6 @@ const expandToAspectRatio = (
     width: newWidth,
     height: newHeight
   };
-  
-  console.log('✅ Final crop region:', finalRegion);
   
   return finalRegion;
 };
@@ -280,23 +262,9 @@ export const applyCropToImage = async (imageUrl: string, cropRegion: CropRegion)
 };
 
 export const generateSmartCrop = async (imageUrl: string, orientation: string): Promise<string> => {
-  console.log(`🎯 Starting enhanced smart crop for ${orientation} orientation`);
-  
   try {
     // Step 1: Detect the subject in the image
     const detection = await detectSubjectRegion(imageUrl);
-    
-    console.log('📊 Detection results:', {
-      method: detection.method,
-      confidence: detection.confidence,
-      region: detection.region
-    });
-    
-    // Step 2: If detection confidence is too low, use center crop
-    if (detection.confidence < 0.3) {
-      console.log('⚠️ Low confidence detection, using center crop fallback');
-      // For low confidence, we'll still use the center fallback but log it
-    }
     
     // Step 3: Get image dimensions for aspect ratio calculation
     const img = new Image();
@@ -317,17 +285,13 @@ export const generateSmartCrop = async (imageUrl: string, orientation: string): 
           
           // Step 5: Apply the crop
           const croppedImageUrl = await applyCropToImage(imageUrl, expandedRegion);
-          
-          console.log('✅ Smart crop completed successfully with method:', detection.method);
           resolve(croppedImageUrl);
         } catch (error) {
-          console.error('❌ Error in crop processing:', error);
           resolve(imageUrl); // Fallback to original
         }
       };
       
       img.onerror = () => {
-        console.error('❌ Failed to load image for dimensions');
         resolve(imageUrl); // Fallback to original
       };
       
@@ -335,7 +299,6 @@ export const generateSmartCrop = async (imageUrl: string, orientation: string): 
     });
     
   } catch (error) {
-    console.error('❌ Error in smart crop generation:', error);
     return imageUrl; // Fallback to original image
   }
 };
