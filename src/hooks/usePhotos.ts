@@ -22,6 +22,7 @@ export const usePhotos = () => {
       const userPhotos = await getUserPhotos();
       setPhotos(userPhotos);
     } catch (err) {
+      console.error('Error fetching photos:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch photos');
     } finally {
       setIsLoading(false);

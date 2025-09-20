@@ -1,7 +1,7 @@
 
 import { forwardRef } from "react";
 import SizeHeader from "./SizeHeader";
-import PsychologyOptimizedSizeGrid from "./PsychologyOptimizedSizeGrid";
+import SizeGrid from "./SizeGrid";
 import SizeTransitionIndicator from "./SizeTransitionIndicator";
 import PriceUpdateDisplay from "./PriceUpdateDisplay";
 import { SizeOption } from "../types";
@@ -22,15 +22,15 @@ const SizeSelectionSection = forwardRef<HTMLDivElement, SizeSelectionSectionProp
         {/* Smooth transition indicator */}
         <SizeTransitionIndicator selectedOrientation={selectedOrientation} />
 
-        {/* Size Selection Section - Psychology Optimized */}
+        {/* Size Selection Section - Optimized grid */}
         {selectedOrientation && (
           <>
             <SizeHeader />
             <div ref={ref}>
-              <PsychologyOptimizedSizeGrid
+              <SizeGrid
                 selectedOrientation={selectedOrientation}
                 selectedSize={selectedSize}
-                userImageUrl={null}
+                recommendedSize={recommendedSize}
                 onSizeSelect={onSizeSelect}
                 onContinueWithSize={onContinueWithSize}
               />

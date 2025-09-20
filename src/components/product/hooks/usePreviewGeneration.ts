@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { generateStylePreview } from "@/utils/stylePreviewApi";
 import { addWatermarkToImage } from "@/utils/watermarkUtils";
 import { convertOrientationToAspectRatio } from "../utils/orientationDetection";
@@ -7,104 +7,74 @@ import { convertOrientationToAspectRatio } from "../utils/orientationDetection";
 export const usePreviewGeneration = (uploadedImage: string | null, selectedOrientation: string) => {
   const [previewUrls, setPreviewUrls] = useState<{ [key: number]: string }>({});
   const [autoGenerationComplete, setAutoGenerationComplete] = useState(false);
-  const [generationErrors, setGenerationErrors] = useState<{ [key: number]: string }>({});
-  const [isGenerating, setIsGenerating] = useState(false);
+
+  // Auto-generate previews for popular styles when cropped image is available
+  useEffect(() => {
+    if (uploadedImage && !autoGenerationComplete) {
+      const popularStyleIds = [2, 4, 5]; // Classic Oil Painting, Watercolor Dreams, Pastel Bliss
+      const artStyles = [
+        { id: 2, name: "Classic Oil Painting" },
+        { id: 4, name: "Watercolor Dreams" },
+        { id: 5, name: "Pastel Bliss" }
+      ];
+      
+      const generatePopularPreviews = async () => {
+        console.log('🚀 Auto-generating previews for popular styles:', popularStyleIds);
+        console.log('Current selected orientation:', selectedOrientation);
+        
+        const aspectRatio = convertOrientationToAspectRatio(selectedOrientation);
+        console.log(`Using aspect ratio ${aspectRatio} for auto-generation based on orientation ${selectedOrientation}`);
+        
+        for (const styleId of popularStyleIds) {
+          const style = artStyles.find(s => s.id === styleId);
+          if (!style) continue;
+
+          try {
+            console.log(`🎨 Auto-generating preview for ${style.name} (ID: ${styleId}) with aspect ratio: ${aspectRatio}`);
+            
+            const tempPhotoId = `temp_${Date.now()}_${styleId}`;
+            
+            // Generate without server-side watermarking
+            const rawPreviewUrl = await generateStylePreview(uploadedImage, style.name, tempPhotoId, aspectRatio, {
+              watermark: false // Disable server-side watermarking
+            });
+
+            if (rawPreviewUrl) {
+              try {
+                // Apply client-side watermarking
+                const watermarkedUrl = await addWatermarkToImage(rawPreviewUrl);
+                setPreviewUrls(prev => ({ ...prev, [styleId]: watermarkedUrl }));
+                console.log(`✅ Auto-generated preview for ${style.name} completed with client-side watermark and aspect ratio ${aspectRatio}`);
+              } catch (watermarkError) {
+                console.warn(`⚠️ Failed to add watermark for ${style.name}, using original:`, watermarkError);
+                setPreviewUrls(prev => ({ ...prev, [styleId]: rawPreviewUrl }));
+              }
+            }
+          } catch (error) {
+            console.error(`❌ Error auto-generating preview for ${style.name}:`, error);
+          }
+        }
+        
+        setAutoGenerationComplete(true);
+        console.log('🏁 Auto-generation of popular style previews completed');
+      };
+
+      generatePopularPreviews();
+    }
+  }, [uploadedImage, autoGenerationComplete, selectedOrientation]);
 
   // Reset states when uploaded image changes but preserve previews within session
   useEffect(() => {
     if (!uploadedImage) {
       setAutoGenerationComplete(false);
       setPreviewUrls({});
-      setGenerationErrors({});
     }
   }, [uploadedImage]);
-
-  // Add a manual generation function that can be called for specific styles
-  const generatePreviewForStyle = useCallback(async (styleId: number, styleName: string) => {
-    if (!uploadedImage) {
-      return null;
-    }
-
-    setIsGenerating(true);
-
-    try {
-      // Skip generation for Original Image style
-      if (styleId === 1) {
-        setIsGenerating(false);
-        return uploadedImage;
-      }
-
-      // Use the correct aspect ratio format for the API
-      const aspectRatio = convertOrientationToAspectRatio(selectedOrientation);
-      
-      const tempPhotoId = `temp_${Date.now()}_${styleId}`;
-      
-      try {
-        const previewUrl = await generateStylePreview(
-          uploadedImage, 
-          styleName, 
-          tempPhotoId, 
-          aspectRatio
-        );
-        
-        if (previewUrl) {
-          try {
-            // Apply client-side watermark
-            const watermarkedUrl = await addWatermarkToImage(previewUrl);
-            
-            // Update the preview URLs state
-            setPreviewUrls(prev => ({
-              ...prev,
-              [styleId]: watermarkedUrl
-            }));
-            
-            // Clear any previous errors for this style
-            setGenerationErrors(prev => {
-              const newErrors = {...prev};
-              delete newErrors[styleId];
-              return newErrors;
-            });
-            
-            setIsGenerating(false);
-            return watermarkedUrl;
-          } catch (watermarkError) {
-            // Update with unwatermarked URL as fallback
-            setPreviewUrls(prev => ({
-              ...prev,
-              [styleId]: previewUrl
-            }));
-            
-            setIsGenerating(false);
-            return previewUrl;
-          }
-        }
-      } catch (error) {
-        // Store the error message
-        setGenerationErrors(prev => ({
-          ...prev,
-          [styleId]: error.message || 'Failed to generate preview'
-        }));
-        
-        setIsGenerating(false);
-        return null;
-      }
-    } catch (error) {
-      setGenerationErrors(prev => ({
-        ...prev,
-        [styleId]: error.message || 'Failed to generate preview'
-      }));
-      setIsGenerating(false);
-      return null;
-    }
-  }, [uploadedImage, selectedOrientation]);
 
   return {
     previewUrls,
     autoGenerationComplete,
-    generationErrors,
-    isGenerating,
     setPreviewUrls,
-    setAutoGenerationComplete,
-    generatePreviewForStyle
+    setAutoGenerationComplete
   };
 };
