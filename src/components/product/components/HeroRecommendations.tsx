@@ -28,7 +28,7 @@ const HeroRecommendations = ({
   const heroRecommendations = recommendations.filter(r => r.category === 'hero').slice(0, 5);
   if (heroRecommendations.length === 0) return null;
   const handleStyleSelect = (styleId: number, styleName: string) => {
-    console.log('🎯 HeroRecommendations handleStyleSelect:', styleId, styleName);
+    // Hero recommendation style selected
     onStyleSelect(styleId, styleName);
   };
 

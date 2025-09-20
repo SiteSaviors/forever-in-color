@@ -66,7 +66,7 @@ export const useStyleCard = ({
   // SIMPLIFIED: Track generation but allow retry on errors
   useEffect(() => {
     if (previewUrl) {
-      console.log(`✅ StyleCard: ${style.name} generated successfully`);
+      // StyleCard generated successfully
       setLocalIsLoading(false);
       setShowError(false);
     }
@@ -76,72 +76,60 @@ export const useStyleCard = ({
   
   // Main card click handler
   const handleCardClick = useCallback(() => {
-    console.log(`🎯 StyleCard clicked: ${style.name}, isPermanentlyGenerated: ${isPermanentlyGenerated}, isGenerating: ${effectiveIsLoading}`);
+    // StyleCard clicked - handle selection and generation
     
     // Always call onStyleClick to select the style
     onStyleClick(style);
     
     // Auto-generate if no preview and conditions are met
     if (!previewUrl && !effectiveIsLoading && !hasError && style.id !== 1) {
-      console.log(`🚀 Auto-generating preview for ${style.name}`);
+      // Auto-generating preview
       handleGenerateClick();
-    } else {
-      console.log(`📋 Generation check - previewUrl: ${!!previewUrl}, isLoading: ${effectiveIsLoading}, hasError: ${hasError}, styleId: ${style.id}`);
     }
   }, [style, previewUrl, isPermanentlyGenerated, effectiveIsLoading, hasError, onStyleClick]);
 
   // Continue button handler
   const handleContinueClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    console.log(`🎯 Continue clicked for style: ${style.name}`);
+    // Continue clicked for style
     onContinue();
   };
 
   // Image expand handler
   const handleImageExpand = (e: React.MouseEvent) => {
     e.stopPropagation();
-    console.log(`🔍 Expanding image for style: ${style.name}`);
+    // Expanding image for style
     setIsLightboxOpen(true);
   };
 
   // Generate click handler with enhanced logging
   const handleGenerateClick = useCallback(async () => {
     
-    console.log(`🎨 GENERATE BUTTON CLICKED - ${style.name} (ID: ${style.id})`);
-    console.log(`  - isPermanentlyGenerated: ${isPermanentlyGenerated}`);
-    console.log(`  - effectiveIsLoading: ${effectiveIsLoading}`);
-    console.log(`  - hasError: ${hasError}`);
-    console.log(`  - croppedImage: ${!!croppedImage}`);
+    // Generate button clicked - validate and start generation
     
     // Skip Original Image style
     if (style.id === 1) {
-      console.log(`🚫 SKIP - Original Image style cannot be generated`);
       return;
     }
     
     if (effectiveIsLoading) {
-      console.log(`🚫 BUSY BLOCK - ${style.name} is already generating`);
       return;
     }
     
     if (!croppedImage) {
-      console.log(`🚫 NO IMAGE BLOCK - ${style.name} has no cropped image`);
       return;
     }
     
-    console.log(`🚀 STARTING GENERATION for ${style.name}`);
+    // Starting generation
     setShowError(false);
     setLocalIsLoading(true);
     
     try {
-      console.log(`📞 CALLING generatePreview() for ${style.name}`);
       await generatePreview();
-      console.log(`✅ Generation completed for ${style.name}`);
+      // Generation completed
     } catch (error) {
-      console.error(`❌ Generation failed for ${style.name}:`, error);
       setShowError(true);
     } finally {
-      console.log(`🏁 Generation finished for ${style.name}, setting loading to false`);
       setLocalIsLoading(false);
     }
   }, [generatePreview, isPermanentlyGenerated, effectiveIsLoading, style.name, style.id, hasError, croppedImage]);
@@ -151,24 +139,21 @@ export const useStyleCard = ({
     
     // Skip Original Image style
     if (style.id === 1) {
-      console.log(`🚫 SKIP - Original Image style cannot be retried`);
       return;
     }
     
     if (effectiveIsLoading) {
-      console.log(`🚫 BUSY BLOCK - ${style.name} is already generating`);
       return;
     }
     
-    console.log(`🔄 Retrying generation for ${style.name}`);
+    // Retrying generation
     setShowError(false);
     setLocalIsLoading(true);
     
     try {
       await generatePreview();
-      console.log(`✅ Retry completed for ${style.name}`);
+      // Retry completed
     } catch (error) {
-      console.log(`❌ Retry failed for ${style.name}:`, error);
       setShowError(true);
     } finally {
       setLocalIsLoading(false);

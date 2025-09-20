@@ -82,25 +82,25 @@ export const useStyleCardInteractions = ({
   // Interaction handlers with state machine integration
   const handleMouseEnter = useCallback(() => {
     if (stateMachine.isInteractive) {
-      console.log(`🎯 HOVER START ▶️ ${styleName} (ID: ${styleId})`);
+      // Hover start on style card
       stateMachine.debouncedHoverStart();
     }
   }, [stateMachine, styleName, styleId]);
 
   const handleMouseLeave = useCallback(() => {
     if (stateMachine.isInteractive) {
-      console.log(`🎯 HOVER END ▶️ ${styleName} (ID: ${styleId})`);
+      // Hover end on style card
       stateMachine.hoverEnd();
     }
   }, [stateMachine, styleName, styleId]);
 
   const handleClick = useCallback(() => {
     if (!stateMachine.isInteractive || stateMachine.isAnimating) {
-      console.log(`🚫 CLICK BLOCKED ▶️ ${styleName} (ID: ${styleId}) - State: ${stateMachine.state}`);
+      // Click blocked - not interactive or animating
       return;
     }
 
-    console.log(`🎯 CLICK ▶️ ${styleName} (ID: ${styleId}) - State: ${stateMachine.state}`);
+    // Style card clicked
     
     // Queue the click action to prevent conflicts
     stateMachine.queueAnimation(() => {
@@ -115,22 +115,20 @@ export const useStyleCardInteractions = ({
     }
     
     if (!onGenerateStyle) {
-      console.log(`🚫 NO GENERATE FUNCTION - ${styleName} (ID: ${styleId})`);
       return;
     }
 
     // Allow generation even in error state by resetting first
     if (stateMachine.hasError) {
-      console.log(`🔄 RESETTING ERROR STATE before generation - ${styleName} (ID: ${styleId})`);
+      // Resetting error state before generation
       stateMachine.transition('RESET', true);
     }
     
     if (!stateMachine.isInteractive && !stateMachine.hasError) {
-      console.log(`🚫 NOT INTERACTIVE - ${styleName} (ID: ${styleId}) - State: ${stateMachine.state}`);
       return;
     }
 
-    console.log(`🎨 GENERATE CLICK ▶️ ${styleName} (ID: ${styleId}) - State: ${stateMachine.state}`);
+    // Generate click on style card
     
     // Direct call without animation queue to prevent conflicts
     stateMachine.transition('START_LOADING', true);
@@ -143,11 +141,10 @@ export const useStyleCardInteractions = ({
     }
     
     if (!onGenerateStyle) {
-      console.log(`🚫 NO GENERATE FUNCTION for retry - ${styleName} (ID: ${styleId})`);
       return;
     }
 
-    console.log(`🔄 RETRY CLICK ▶️ ${styleName} (ID: ${styleId}) - State: ${stateMachine.state}`);
+    // Retry click on style card
     
     // Reset error state and start generation immediately
     stateMachine.transition('RESET', true);

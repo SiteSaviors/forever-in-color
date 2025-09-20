@@ -26,7 +26,7 @@ const StyleCardSimplified = memo(({
   
   const handleClick = () => {
     if (canAccess && onClick) {
-      console.log(`🎯 Direct click on ${styleName} (ID: ${styleId})`);
+      // Direct click on style card
       onClick();
     }
   };

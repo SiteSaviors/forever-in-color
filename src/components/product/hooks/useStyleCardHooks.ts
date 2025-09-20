@@ -61,31 +61,27 @@ export const useStyleCardHooks = (props: UseStyleCardHooksProps) => {
   // Simplified direct handlers without mock events
   const handleGenerateWrapper = () => {
     if (styleCardState.isPermanentlyGenerated) {
-      console.log(`🚫 PERMANENT BLOCK - ${style.name} cannot be regenerated`);
       return;
     }
     
     if (styleCardState.effectiveIsLoading) {
-      console.log(`🚫 BUSY BLOCK - ${style.name} is already generating`);
       return;
     }
     
-    console.log(`🎨 Direct generate call for ${style.name}`);
+    // Direct generate call
     styleCardState.generatePreview();
   };
   
   const handleRetryWrapper = () => {
     if (styleCardState.isPermanentlyGenerated) {
-      console.log(`🚫 PERMANENT BLOCK - ${style.name} cannot be retried`);
       return;
     }
     
     if (styleCardState.effectiveIsLoading) {
-      console.log(`🚫 BUSY BLOCK - ${style.name} is already generating`);
       return;
     }
     
-    console.log(`🔄 Direct retry call for ${style.name}`);
+    // Direct retry call
     styleCardState.setShowError(false);
     styleCardState.generatePreview();
   };

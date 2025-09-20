@@ -38,10 +38,10 @@ const IntelligentStyleGrid = ({
         .then(analysis => {
           const recs = generateStyleRecommendations(analysis);
           setRecommendations(recs);
-          console.log('🎯 AI Recommendations generated:', recs);
+          // AI recommendations generated successfully
         })
         .catch(error => {
-          console.error('Recommendation analysis failed:', error);
+          // Recommendation analysis failed - using fallback
           // Fallback to default recommendations
           const fallbackRecs = generateStyleRecommendations({
             orientation: selectedOrientation,
@@ -60,7 +60,7 @@ const IntelligentStyleGrid = ({
   }, [croppedImage, selectedOrientation]);
 
   const handleStyleSelect = (styleId: number, styleName: string) => {
-    console.log('🎯 IntelligentStyleGrid handleStyleSelect:', styleId, styleName);
+    // Style selected in intelligent grid
     onStyleSelect(styleId, styleName);
   };
 

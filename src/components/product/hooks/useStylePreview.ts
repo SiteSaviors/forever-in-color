@@ -43,9 +43,9 @@ export const useStylePreview = ({
           const watermarkedUrl = await addWatermarkToImage(preGeneratedPreview);
           setPreviewUrl(watermarkedUrl);
           setHasGeneratedPreview(true);
-          console.log(`✅ Watermark applied to pre-generated preview for ${style.name}`);
+          // Watermark applied to pre-generated preview
         } catch (error) {
-          console.warn(`⚠️ Watermarking failed for ${style.name}, using original:`, error);
+          // Watermarking failed, using original
           setPreviewUrl(preGeneratedPreview);
           setHasGeneratedPreview(true);
         }
@@ -59,17 +59,17 @@ export const useStylePreview = ({
 
   const generatePreview = useCallback(async () => {
     if (!croppedImage || style.id === 1 || preGeneratedPreview) {
-      console.log(`Cannot generate preview for ${style.name}: croppedImage=${!!croppedImage}, styleId=${style.id}, preGenerated=${!!preGeneratedPreview}`);
+      // Cannot generate preview - invalid conditions
       return;
     }
 
-    console.log(`🎯 useStylePreview: Selected orientation is: ${selectedOrientation}`);
+    // useStylePreview with selected orientation
     
     // ENHANCED: Use validator with auto-correction
     const correctedOrientation = autoCorrect(selectedOrientation);
     const aspectRatio = getAspectRatio(correctedOrientation);
     
-    console.log(`🎨 Starting preview generation for style: ${style.name} (ID: ${style.id}) with corrected orientation: ${correctedOrientation} -> aspect ratio: ${aspectRatio}`);
+    // Starting preview generation with corrected orientation
     
     // SIMPLIFIED: Skip frontend validation, let backend handle it
     const finalAspectRatio = aspectRatio;
@@ -79,11 +79,11 @@ export const useStylePreview = ({
     setIsLoading(true);
     
     try {
-      console.log(`🔄 Generating preview for ${style.name} with validated aspect ratio: ${finalAspectRatio} (from orientation: ${correctedOrientation})`);
+      // Generating preview with validated aspect ratio
       
       const tempPhotoId = `temp_${Date.now()}_${style.id}`;
       
-      console.log(`🔥 CRITICAL DEBUG: About to call generateStylePreview with aspectRatio: ${finalAspectRatio}`);
+      // About to call generateStylePreview
       
       // ENHANCED: Generate with validated and potentially corrected aspect ratio
       const rawPreviewUrl = await generateStylePreview(croppedImage, style.name, tempPhotoId, finalAspectRatio, {
@@ -91,37 +91,37 @@ export const useStylePreview = ({
       });
 
       if (rawPreviewUrl) {
-        console.log(`✅ Raw preview generated for ${style.name} with correct aspect ratio ${finalAspectRatio}, applying client-side watermark...`);
+        // Raw preview generated, applying client-side watermark
         
         try {
           // Apply client-side watermarking
           const watermarkedUrl = await addWatermarkToImage(rawPreviewUrl);
-          console.log(`✅ Client-side watermark applied successfully for ${style.name}`);
+          // Client-side watermark applied successfully
           setPreviewUrl(watermarkedUrl);
         } catch (watermarkError) {
-          console.warn(`⚠️ Client-side watermarking failed for ${style.name}, using original:`, watermarkError);
+          // Client-side watermarking failed, using original
           setPreviewUrl(rawPreviewUrl);
         }
         
         setHasGeneratedPreview(true);
       } else {
-        console.error(`❌ Failed to generate preview for ${style.name}: No preview URL returned`);
+        // Failed to generate preview - no URL returned
       }
     } catch (error) {
-      console.error(`❌ Error generating preview for ${style.name}:`, error);
+      // Error generating preview
       setValidationError(`Generation failed: ${error.message}`);
     } finally {
       setIsLoading(false);
-      console.log(`🏁 Preview generation completed for ${style.name} (ID: ${style.id}) with aspect ratio: ${finalAspectRatio}`);
+      // Preview generation completed
     }
   }, [croppedImage, style.id, style.name, preGeneratedPreview, selectedOrientation, validateWithRecovery, autoCorrect]);
 
   const handleClick = useCallback(() => {
-    console.log(`🎯 Style clicked: ${style.name} (ID: ${style.id}) with orientation: ${selectedOrientation}`);
+    // Style clicked with orientation
     onStyleClick(style);
     
     if (croppedImage && !hasGeneratedPreview && !isLoading && style.id !== 1 && !preGeneratedPreview) {
-      console.log(`🚀 Auto-generating preview for style: ${style.name} with orientation ${selectedOrientation}`);
+      // Auto-generating preview for style
       generatePreview();
     }
   }, [style, croppedImage, hasGeneratedPreview, isLoading, onStyleClick, generatePreview, preGeneratedPreview, selectedOrientation]);

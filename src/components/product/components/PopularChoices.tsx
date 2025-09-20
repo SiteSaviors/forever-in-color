@@ -26,7 +26,7 @@ const PopularChoices = ({
   const allRemainingStyles = recommendations.filter(r => (r.category === 'popular' || r.category === 'secondary') && r.styleId !== 1);
   if (allRemainingStyles.length === 0) return null;
   const handleStyleSelect = (styleId: number, styleName: string) => {
-    console.log('🎯 PopularChoices handleStyleSelect:', styleId, styleName);
+    // Popular choice style selected
     onStyleSelect(styleId, styleName);
   };
   return <div className="space-y-6">
