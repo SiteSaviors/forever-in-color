@@ -27,7 +27,8 @@ const HeroRecommendations = ({
 }: HeroRecommendationsProps) => {
   const [hoveredStyle, setHoveredStyle] = useState<number | null>(null);
   
-  const heroRecommendations = recommendations.filter(r => r.category === 'hero').slice(0, 2); // Reduced to 2 to make room for original
+  // Show 5 AI recommendations instead of 2
+  const heroRecommendations = recommendations.filter(r => r.category === 'hero').slice(0, 5);
 
   if (heroRecommendations.length === 0) return null;
 
@@ -55,12 +56,12 @@ const HeroRecommendations = ({
           <Crown className="w-6 h-6 text-amber-500" />
         </div>
         <p className="text-gray-600 max-w-2xl mx-auto">
-          Your original photo or our AI-selected styles that will create stunning results
+          Your original photo plus our AI-selected styles that will create stunning results
         </p>
       </div>
 
-      {/* Hero Grid - Enhanced with Original Photo First */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
+      {/* Hero Grid - Changed to rows of 3 cards each */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mb-8">
         {/* Original Photo Card - Always First */}
         <div
           className={`relative group transform transition-all duration-500 hover:scale-105 ${
@@ -96,7 +97,7 @@ const HeroRecommendations = ({
           </div>
         </div>
 
-        {/* AI Recommended Styles */}
+        {/* AI Recommended Styles - Now 5 cards in rows of 3 */}
         {heroRecommendations.map((rec, index) => {
           const style = artStyles.find(s => s.id === rec.styleId);
           if (!style) return null;

@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 interface UseBlinkingOptions {
   isGenerating?: boolean;
@@ -20,16 +20,20 @@ export const useBlinking = (previewUrl: string | null, options: UseBlinkingOptio
     }
   }, [previewUrl, hasGeneratedOnce]);
 
-  console.log('🔔 useBlinking returning:', { 
-    isBlinking: false, // Always false - no more blinking
-    hasPreview: !!previewUrl, 
-    isGenerating,
-    hasGeneratedOnce
-  });
-  
-  // Never return true for blinking - animation removed
-  return { 
-    isBlinking: false,
-    hasGeneratedOnce
-  };
+  // Memoize the return value to prevent unnecessary re-renders
+  const blinkingState = useMemo(() => {
+    console.log('🔔 useBlinking returning:', { 
+      isBlinking: false, // Always false - no more blinking for performance
+      hasPreview: !!previewUrl, 
+      isGenerating,
+      hasGeneratedOnce
+    });
+    
+    return { 
+      isBlinking: false, // Disabled for performance
+      hasGeneratedOnce
+    };
+  }, [previewUrl, isGenerating, hasGeneratedOnce]);
+
+  return blinkingState;
 };
