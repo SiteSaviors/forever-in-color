@@ -25,10 +25,7 @@ const PopularChoices = ({
   onComplete
 }: PopularChoicesProps) => {
   // Combine both popular and secondary categories to show all remaining styles
-  // Filter out the "Original Image" style (ID 1) since it's already shown in the hero section
-  const allRemainingStyles = recommendations.filter(r => 
-    (r.category === 'popular' || r.category === 'secondary') && r.styleId !== 1
-  );
+  const allRemainingStyles = recommendations.filter(r => r.category === 'popular' || r.category === 'secondary');
 
   if (allRemainingStyles.length === 0) return null;
 

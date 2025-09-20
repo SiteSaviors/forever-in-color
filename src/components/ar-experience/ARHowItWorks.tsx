@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { Brain, Mic, Palette, Shield } from 'lucide-react';
 
 const ARHowItWorks = () => {

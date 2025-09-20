@@ -5,6 +5,7 @@ import PhotoCropperSection from "./PhotoCropperSection";
 import SmartProgressIndicator from "../progress/SmartProgressIndicator";
 import ContextualHelp from "../help/ContextualHelp";
 import MobileGestureHandler from "../mobile/MobileGestureHandler";
+import ConversionMomentumTracker from "../progress/ConversionMomentumTracker";
 import ProgressStateManager from "./ProgressStateManager";
 import { useProgressOrchestrator } from "../progress/ProgressOrchestrator";
 import { usePhotoUploadState } from "../hooks/usePhotoUploadState";
@@ -31,11 +32,13 @@ const PhotoAndStyleStep = ({
   selectedStyle,
   uploadedImage,
   selectedOrientation,
+  autoGenerationComplete,
   onComplete,
   onPhotoAndStyleComplete,
   onContinue,
   currentStep,
-  completedSteps
+  completedSteps,
+  onStepChange
 }: PhotoAndStyleStepProps) => {
   const { dispatch, showContextualHelp } = useProgressOrchestrator();
   
@@ -144,6 +147,7 @@ const PhotoAndStyleStep = ({
 
         {/* Enhanced UX Components */}
         <ContextualHelp />
+        <ConversionMomentumTracker />
       </div>
     </MobileGestureHandler>
   );

@@ -1,4 +1,6 @@
+
 import { artStyles } from "@/data/artStyles";
+import { ArtStyle } from "@/types/artStyle";
 import CarouselHeader from "@/components/carousel/CarouselHeader";
 import CarouselNavigation from "@/components/carousel/CarouselNavigation";
 import StyleIndicators from "@/components/carousel/StyleIndicators";
@@ -12,7 +14,7 @@ const ArtStylesCarousel = () => {
   const { sectionRef, parallaxOffset } = useCarouselParallax();
   const { currentIndex, handlePrevious, handleNext, handleIndicatorClick } = useCarouselAutoplay();
 
-  const handleStyleClick = () => {
+  const handleStyleClick = (style: ArtStyle) => {
     // Navigate to product configurator
     window.location.href = '/product';
   };

@@ -1,13 +1,13 @@
 
-import React, { useCallback, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import { AccordionItem } from "@/components/ui/accordion";
-import CascadeErrorBoundary from "./ErrorBoundaries/CascadeErrorBoundary";
+import ErrorBoundary from "./ErrorBoundary";
 import StepContainer from "./ActiveStepView/StepContainer";
 import StepOverlays from "./ActiveStepView/StepOverlays";
 import StepHeader from "./ActiveStepView/StepHeader";
 import StepFooter from "./ActiveStepView/StepFooter";
-import { useAccordionState } from "../contexts/AccordionStateContext";
-import "../styles/animations/performance-optimized.css";
+import { useInteractionStateMachine } from "../hooks/useInteractionStateMachine";
+import "../styles/activeStepOptimized.css";
 
 interface ActiveStepViewProps {
   stepNumber: number;
@@ -32,69 +32,62 @@ const ActiveStepView = React.memo(({
   selectedStyle,
   children
 }: ActiveStepViewProps) => {
-  // Use centralized accordion state
-  const { 
-    getStepState, 
-    setStepInteractionState, 
-    startAnimation, 
-    endAnimation,
-    isStepAnimating 
-  } = useAccordionState();
+  // Use interaction state machine for step interactions
+  const stepStateMachine = useInteractionStateMachine({
+    initialState: !canAccess ? 'disabled' : isActive ? 'selected' : isCompleted ? 'idle' : 'idle',
+    debounceDelay: 100,
+    animationDuration: 300
+  });
 
-  const stepState = getStepState(stepNumber);
-  const isAnimating = isStepAnimating(stepNumber);
-
-  // Sync interaction states with context
-  useEffect(() => {
-    const interactionState = !canAccess ? 'disabled' : 
-      isActive ? 'selected' : 
-      isCompleted ? 'idle' : 'idle';
-    
-    if (stepState.interactionState !== interactionState) {
-      setStepInteractionState(stepNumber, interactionState);
+  // Sync external state with state machine
+  React.useEffect(() => {
+    if (!canAccess && !stepStateMachine.isDisabled) {
+      stepStateMachine.transition('DISABLE', true);
+    } else if (canAccess && stepStateMachine.isDisabled) {
+      stepStateMachine.transition('ENABLE', true);
     }
-  }, [canAccess, isActive, isCompleted, stepNumber, stepState.interactionState, setStepInteractionState]);
+    
+    if (isActive && !stepStateMachine.isSelected) {
+      stepStateMachine.transition('SELECT', true);
+    } else if (!isActive && stepStateMachine.isSelected) {
+      stepStateMachine.transition('DESELECT', true);
+    }
+  }, [canAccess, isActive, stepStateMachine]);
 
   const handleMouseEnter = useCallback(() => {
-    if (canAccess && !isAnimating) {
-      setStepInteractionState(stepNumber, 'hovering');
+    if (stepStateMachine.isInteractive) {
+      stepStateMachine.debouncedHoverStart();
     }
-  }, [canAccess, isAnimating, stepNumber, setStepInteractionState]);
+  }, [stepStateMachine]);
 
   const handleMouseLeave = useCallback(() => {
-    if (canAccess && !isAnimating && !isActive) {
-      setStepInteractionState(stepNumber, 'idle');
+    if (stepStateMachine.isInteractive) {
+      stepStateMachine.hoverEnd();
     }
-  }, [canAccess, isAnimating, isActive, stepNumber, setStepInteractionState]);
+  }, [stepStateMachine]);
 
   const handleStepClick = useCallback(() => {
-    if (!canAccess || isAnimating) {
+    if (!stepStateMachine.isInteractive || stepStateMachine.isAnimating) {
       return;
     }
 
-    startAnimation(stepNumber);
-    
-    // Perform step action after brief delay for animation
-    setTimeout(() => {
+    stepStateMachine.queueAnimation(() => {
       onStepClick();
-      endAnimation(stepNumber);
-    }, 150);
-  }, [canAccess, isAnimating, stepNumber, onStepClick, startAnimation, endAnimation]);
+      stepStateMachine.transition('SELECT');
+    });
+  }, [stepStateMachine, onStepClick]);
 
   return (
-    <CascadeErrorBoundary
-      stepNumber={stepNumber}
-      enableAnalytics={true}
-      maxRetries={3}
-      onNavigateHome={() => window.location.href = '/'}
-    >
+    <ErrorBoundary>
       <AccordionItem 
         value={`step-${stepNumber}`}
-        className={`accordion-item-optimized ${isActive ? 'is-active' : ''} ${
-          canAccess && !isActive ? 'is-interactive' : ''
-        }`}
+        className="relative step-container-optimized"
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
+        style={{
+          willChange: stepStateMachine.isAnimating ? 'transform, box-shadow' : 'auto',
+          transform: 'translate3d(0,0,0)'
+        }}
       >
         <StepContainer
           isActive={isActive}
@@ -124,7 +117,7 @@ const ActiveStepView = React.memo(({
           </StepFooter>
         </StepContainer>
       </AccordionItem>
-    </CascadeErrorBoundary>
+    </ErrorBoundary>
   );
 });
 

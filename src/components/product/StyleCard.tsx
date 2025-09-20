@@ -1,5 +1,5 @@
 
-import { memo } from 'react';
+import React, { memo } from 'react';
 import { useStyleCardHooks } from './hooks/useStyleCardHooks';
 import StyleCardContainer from './components/StyleCardContainer';
 import StyleCardContent from './components/StyleCardContent';
@@ -29,8 +29,14 @@ const StyleCard = memo((props: StyleCardProps) => {
   const {
     style,
     croppedImage,
+    selectedStyle,
     isPopular = false,
+    preGeneratedPreview,
     cropAspectRatio,
+    selectedOrientation = "square",
+    showContinueButton = true,
+    onStyleClick,
+    onContinue,
     shouldBlur = false
   } = props;
 
@@ -44,7 +50,9 @@ const StyleCard = memo((props: StyleCardProps) => {
     isPermanentlyGenerated,
     isLightboxOpen,
     setIsLightboxOpen,
+    previewUrl,
     hasGeneratedPreview,
+    isStyleGenerated,
     showGeneratedBadge,
     imageToShow,
     showContinueInCard,
@@ -55,7 +63,6 @@ const StyleCard = memo((props: StyleCardProps) => {
     handleContinueClick,
     handleGenerateWrapper,
     handleRetryWrapper,
-    handleImageExpand,
     
     // Interactions
     isPressed,
@@ -95,7 +102,6 @@ const StyleCard = memo((props: StyleCardProps) => {
           onContinueClick={handleContinueClick}
           onGenerateClick={handleGenerateWrapper}
           onRetryClick={handleRetryWrapper}
-          onImageExpand={handleImageExpand}
         />
       </StyleCardContainer>
 

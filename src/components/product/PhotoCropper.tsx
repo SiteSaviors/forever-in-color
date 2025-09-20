@@ -81,21 +81,15 @@ const PhotoCropper = ({
 
   return (
     <div className="relative">
-      {/* Hero-Level Premium Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-cyan-950/90 via-violet-900/90 to-fuchsia-950/90" />
+      {/* Premium Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 opacity-60" />
       <div className="absolute inset-0" style={{
-        backgroundImage: `radial-gradient(circle at 25% 25%, rgba(6, 182, 212, 0.15) 0%, transparent 50%), 
-                         radial-gradient(circle at 75% 75%, rgba(236, 72, 153, 0.15) 0%, transparent 50%),
-                         radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.1) 0%, transparent 70%)`
+        backgroundImage: `radial-gradient(circle at 25% 25%, rgba(120, 119, 198, 0.08) 0%, transparent 50%), 
+                         radial-gradient(circle at 75% 75%, rgba(255, 119, 198, 0.08) 0%, transparent 50%)`
       }} />
       
-      {/* Floating particles effect */}
-      <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-br from-cyan-300/20 to-violet-400/20 rounded-full blur-xl animate-pulse"></div>
-      <div className="absolute bottom-20 right-10 w-40 h-40 bg-gradient-to-br from-fuchsia-300/20 to-cyan-400/20 rounded-full blur-xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-      <div className="absolute top-1/2 left-1/3 w-24 h-24 bg-gradient-to-br from-violet-300/20 to-fuchsia-400/20 rounded-full blur-xl animate-pulse" style={{ animationDelay: '2s' }}></div>
-      
       <div className="relative p-4 md:p-8">
-        <Card className="overflow-hidden border-2 border-cyan-200/30 shadow-2xl bg-white/10 backdrop-blur-xl">
+        <Card className="overflow-hidden border-0 shadow-2xl bg-white/80 backdrop-blur-sm">
           <div className="p-6 md:p-8 space-y-8">
             <CropperHeader />
 
@@ -119,8 +113,8 @@ const PhotoCropper = ({
                 />
               </div>
               
-              {/* Hero-Level Premium glow effect */}
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-cyan-400/20 via-violet-400/15 to-fuchsia-400/20 blur-xl -z-10" />
+              {/* Premium glow effect */}
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-400/10 to-pink-400/10 blur-xl -z-10" />
             </div>
 
             <CropperActions

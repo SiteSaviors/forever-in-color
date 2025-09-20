@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useEffect } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useInteractionStateMachine } from './useInteractionStateMachine';
 
 interface UseStyleCardInteractionsProps {
@@ -30,51 +30,35 @@ export const useStyleCardInteractions = ({
     animationDuration: 300
   });
 
-  // Sync external state with state machine - memoized to prevent infinite re-renders
+  // Sync external state with state machine
   const syncExternalState = useCallback(() => {
-    // Only sync if there are actual state differences to prevent infinite loops
-    const needsDisableTransition = !canAccess && !stateMachine.isDisabled;
-    const needsEnableTransition = canAccess && stateMachine.isDisabled;
-    const needsErrorTransition = hasError && !stateMachine.hasError;
-    const needsResetTransition = !hasError && stateMachine.hasError;
-    const needsLoadingStartTransition = isGenerating && !stateMachine.isLoading;
-    const needsLoadingEndTransition = !isGenerating && stateMachine.isLoading;
-    const needsSelectTransition = isSelected && !stateMachine.isSelected && !stateMachine.isLoading;
-    const needsDeselectTransition = !isSelected && stateMachine.isSelected;
-
-    if (needsDisableTransition) {
+    if (!canAccess && !stateMachine.isDisabled) {
       stateMachine.transition('DISABLE', true);
-    } else if (needsEnableTransition) {
+    } else if (canAccess && stateMachine.isDisabled) {
       stateMachine.transition('ENABLE', true);
     }
     
-    if (needsErrorTransition) {
+    if (hasError && !stateMachine.hasError) {
       stateMachine.transition('ERROR', true);
-    } else if (needsResetTransition) {
+    } else if (!hasError && stateMachine.hasError) {
       stateMachine.transition('RESET', true);
     }
     
-    if (needsLoadingStartTransition) {
+    if (isGenerating && !stateMachine.isLoading) {
       stateMachine.transition('START_LOADING', true);
-    } else if (needsLoadingEndTransition) {
+    } else if (!isGenerating && stateMachine.isLoading) {
       stateMachine.transition('FINISH_LOADING', true);
     }
     
-    if (needsSelectTransition) {
-      // If in error state and trying to select, reset first
-      if (stateMachine.hasError) {
-        stateMachine.transition('RESET', true);
-      }
+    if (isSelected && !stateMachine.isSelected && !stateMachine.isLoading) {
       stateMachine.transition('SELECT', true);
-    } else if (needsDeselectTransition) {
+    } else if (!isSelected && stateMachine.isSelected) {
       stateMachine.transition('DESELECT', true);
     }
-  }, [canAccess, hasError, isGenerating, isSelected, stateMachine.isDisabled, stateMachine.hasError, stateMachine.isLoading, stateMachine.isSelected, stateMachine.transition]);
+  }, [canAccess, hasError, isGenerating, isSelected, stateMachine]);
 
-  // Only sync when dependencies actually change
-  useEffect(() => {
-    syncExternalState();
-  }, [syncExternalState]);
+  // Call sync on every render to keep in sync
+  syncExternalState();
 
   // Interaction handlers with state machine integration
   const handleMouseEnter = useCallback(() => {
