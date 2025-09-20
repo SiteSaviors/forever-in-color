@@ -10,7 +10,7 @@ export const generateStylePreview = async (
   aspectRatio: string = "1:1",
   options: {
     watermark?: boolean;
-    quality?: 'preview' | 'final';
+    quality?: 'low' | 'medium' | 'high' | 'auto' | 'preview' | 'final';
     sessionId?: string;
   } = {}
 ) => {
@@ -25,6 +25,13 @@ export const generateStylePreview = async (
     // Generate session ID for watermarking if not provided
     const sessionId = options.sessionId || `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
+    // Map legacy quality values to valid Replicate values
+    const qualityMap: Record<string, 'low' | 'medium' | 'high' | 'auto'> = {
+      'preview': 'medium',
+      'final': 'high'
+    };
+    const mappedQuality = options.quality ? (qualityMap[options.quality] || options.quality) : 'medium';
+
     // STEP 2: Prepare the request body with corrected aspect ratio
     const requestBody = { 
       imageUrl, 
@@ -33,7 +40,7 @@ export const generateStylePreview = async (
       isAuthenticated,
       aspectRatio: correctedAspectRatio, // Use the corrected aspect ratio
       watermark: options.watermark !== false, // Default to true
-      quality: options.quality || 'preview',
+      quality: mappedQuality,
       sessionId
     };
 
@@ -102,7 +109,7 @@ export const generateFinalImage = async (
 ) => {
   return generateStylePreview(imageUrl, style, photoId, aspectRatio, {
     watermark: false,
-    quality: 'final',
+    quality: 'high',
     sessionId
   });
 };

@@ -17,9 +17,16 @@ export function validateRequest(body: any): { isValid: boolean; error?: string; 
     };
   }
 
+  // Map legacy quality values for backward compatibility
+  const legacyQualityMap: Record<string, 'low' | 'medium' | 'high' | 'auto'> = {
+    'preview': 'medium',
+    'final': 'high'
+  };
+  const normalizedQuality = quality ? (legacyQualityMap[quality] || quality) : 'medium';
+
   // Validate quality parameter
   const validQualityValues = ['low', 'medium', 'high', 'auto'];
-  if (quality && !validQualityValues.includes(quality)) {
+  if (normalizedQuality && !validQualityValues.includes(normalizedQuality)) {
     return {
       isValid: false,
       error: `Invalid quality value. Must be one of: ${validQualityValues.join(', ')}`
@@ -28,6 +35,6 @@ export function validateRequest(body: any): { isValid: boolean; error?: string; 
 
   return {
     isValid: true,
-    data: { imageUrl, style, photoId, aspectRatio, watermark, quality }
+    data: { imageUrl, style, photoId, aspectRatio, watermark, quality: normalizedQuality }
   };
 }
