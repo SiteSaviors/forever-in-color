@@ -62,13 +62,20 @@ const PhotoAndStyleStep = ({
   );
 
   const handleStyleComplete = (imageUrl: string, styleId: number, styleName: string) => {
-    console.log('🎨 Style selection completed:', {
-      imageUrl,
-      styleId,
-      styleName
+    console.log('🎨 Style selection completed:', { imageUrl, styleId, styleName });
+    console.log('🖼️ FIXED: Image URL consistency check:', {
+      uploadedImage: uploadedImage?.substring(0, 50) + '...',
+      croppedImage: croppedImage?.substring(0, 50) + '...',
+      completedImageUrl: imageUrl?.substring(0, 50) + '...',
+      originalMatches: uploadedImage === imageUrl,
+      croppedMatches: croppedImage === imageUrl
     });
+    
     dispatch({ type: 'COMPLETE_STEP', payload: 1 });
-    onComplete(imageUrl, styleId, styleName);
+    
+    // FIXED: Ensure image consistency - use croppedImage as source of truth
+    const finalImageUrl = croppedImage || uploadedImage || imageUrl;
+    onComplete(finalImageUrl, styleId, styleName);
     onContinue();
   };
 

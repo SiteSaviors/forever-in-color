@@ -49,8 +49,8 @@ const StepContent = ({
 
   return (
     <div className="flex-1 text-left min-w-0">
-      <div className="flex flex-col gap-1 sm:gap-3 mb-1 sm:mb-4">
-        <div className="flex flex-row items-center gap-1 sm:gap-3 flex-wrap">
+      <div className="flex flex-col gap-1 sm:gap-3 mb-2 sm:mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 flex-wrap">
           <MobileTypography
             variant="h3"
             className={`${titleClasses} text-lg sm:text-2xl md:text-4xl lg:text-5xl animate-fade-in float-gentle`}

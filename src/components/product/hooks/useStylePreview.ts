@@ -71,8 +71,17 @@ export const useStylePreview = ({
     
     console.log(`🎨 Starting preview generation for style: ${style.name} (ID: ${style.id}) with corrected orientation: ${correctedOrientation} -> aspect ratio: ${aspectRatio}`);
     
-    // SIMPLIFIED: Skip frontend validation, let backend handle it
-    const finalAspectRatio = aspectRatio;
+    // ENHANCED: Validate with recovery
+    const validation = validateWithRecovery(correctedOrientation, aspectRatio);
+    if (!validation.isValid && !validation.correctedValue) {
+      const errorMsg = `Aspect ratio validation failed: ${validation.error}`;
+      console.error(`❌ ${errorMsg}`);
+      setValidationError(errorMsg);
+      return;
+    }
+
+    // Use corrected value if validation failed but correction is available
+    const finalAspectRatio = validation.correctedValue || aspectRatio;
     
     // Clear any previous validation errors
     setValidationError(null);
