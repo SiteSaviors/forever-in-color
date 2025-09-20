@@ -48,21 +48,14 @@ const Product = () => {
   }, []);
 
   const handleUploadClick = () => {
-    console.log('🎯 Hero button clicked - activating Step 1');
-    
-    // Ensure we're on step 1 and it becomes active
+    // Scroll to upload section and ensure we're on step 1
     setCurrentStep(1);
-    
-    // Small delay to ensure DOM updates before scrolling
     setTimeout(() => {
       const uploadSection = document.querySelector('[data-step="1"]');
       if (uploadSection) {
-        uploadSection.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'center' 
-        });
+        uploadSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
-    }, 150);
+    }, 100);
   };
 
   return (
