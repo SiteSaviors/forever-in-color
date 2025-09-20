@@ -27,9 +27,6 @@ export class ClientWatermarkService {
         canvas.width = mainImage.width;
         canvas.height = mainImage.height;
         
-        console.log(`📐 Canvas dimensions: ${canvas.width}x${canvas.height}`);
-        console.log(`📐 Original image dimensions: ${mainImage.width}x${mainImage.height}`);
-        
         // Draw the main image at exact size and position - no scaling or cropping
         ctx.drawImage(mainImage, 0, 0, mainImage.width, mainImage.height, 0, 0, canvas.width, canvas.height);
         
@@ -38,8 +35,6 @@ export class ClientWatermarkService {
         watermarkImage.crossOrigin = 'anonymous';
         
         watermarkImage.onload = () => {
-          console.log(`🖼️ Watermark image loaded: ${watermarkImage.width}x${watermarkImage.height}`);
-          
           // Calculate watermark size (80% of image width - 400% increase from 20%)
           const watermarkWidth = mainImage.width * 0.8;
           const aspectRatio = watermarkImage.height / watermarkImage.width;
@@ -48,9 +43,6 @@ export class ClientWatermarkService {
           // Position watermark in center
           const x = (mainImage.width - watermarkWidth) / 2;
           const y = (mainImage.height - watermarkHeight) / 2;
-          
-          console.log(`🎯 Watermark position: (${x}, ${y}), size: ${watermarkWidth}x${watermarkHeight}`);
-          console.log(`🎯 Image center calculation: width=${mainImage.width}, height=${mainImage.height}`);
           
           // Set opacity for watermark (50% for better visibility)
           ctx.globalAlpha = 0.5;
@@ -73,13 +65,10 @@ export class ClientWatermarkService {
           
           // Convert to data URL with high quality - preserve original format and quality
           const watermarkedImageUrl = canvas.toDataURL('image/jpeg', 0.95);
-          console.log('✅ Client-side watermark applied successfully with 400% increased size');
-          console.log('✅ Canvas output dimensions match original input exactly');
           resolve(watermarkedImageUrl);
         };
         
         watermarkImage.onerror = (error) => {
-          console.warn('⚠️ Failed to load watermark, returning original image', error);
           resolve(imageUrl);
         };
         
@@ -87,7 +76,6 @@ export class ClientWatermarkService {
       };
       
       mainImage.onerror = (error) => {
-        console.error('❌ Failed to load main image for watermarking', error);
         reject(new Error('Failed to load main image'));
       };
       

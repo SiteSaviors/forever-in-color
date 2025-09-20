@@ -20,7 +20,6 @@ export const createPreview = async (photoId: string, style: string, previewUrl: 
     .single();
 
   if (error) {
-    console.error('Error creating preview:', error);
     throw error;
   }
 
@@ -46,7 +45,6 @@ export const getUserPreviews = async (photoId?: string) => {
   const { data, error } = await query.order('created_at', { ascending: false });
 
   if (error) {
-    console.error('Error fetching user previews:', error);
     throw error;
   }
 
@@ -67,7 +65,6 @@ export const deletePreview = async (previewId: string) => {
     .eq('user_id', user.id);
 
   if (error) {
-    console.error('Error deleting preview:', error);
     throw error;
   }
 };

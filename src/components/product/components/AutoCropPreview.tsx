@@ -61,15 +61,12 @@ interface AutoCropPreviewProps {
   useEffect(() => {
     // Generate actual smart crop
     const generateCrop = async () => {
-      console.log('🎯 Starting smart crop generation for:', recommendedOrientation);
       setIsGeneratingCrop(true);
       
       try {
         const smartCroppedUrl = await generateSmartCrop(imageUrl, recommendedOrientation);
         setCroppedImageUrl(smartCroppedUrl);
-        console.log('✅ Smart crop completed');
       } catch (error) {
-        console.error('❌ Smart crop failed:', error);
         setCroppedImageUrl(imageUrl); // Fallback to original
       }
       
@@ -103,7 +100,6 @@ interface AutoCropPreviewProps {
   };
 
   const handleAcceptCrop = () => {
-    console.log('✅ User accepted smart crop');
     // Always use the cropped image URL, never the original
     onAcceptCrop(croppedImageUrl);
   };
