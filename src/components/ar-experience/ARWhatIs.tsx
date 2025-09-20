@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { Upload, Wand2, Printer, Smartphone } from 'lucide-react';
 
 const ARWhatIs = () => {

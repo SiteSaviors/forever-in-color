@@ -1,78 +1,49 @@
+
+import { ImageAnalysisService } from './imageAnalysisService.ts';
+import { StylePromptService } from './stylePromptService.ts';
+import { ReplicateService } from './replicateService.ts';
+
 export class OpenAIService {
-  private apiKey: string;
+  private imageAnalysisService: ImageAnalysisService;
+  private stylePromptService: StylePromptService;
+  private replicateService: ReplicateService;
 
-  constructor(apiKey: string) {
-    this.apiKey = apiKey;
+  constructor(private openaiApiKey: string, private replicateApiToken: string, private supabase: any) {
+    this.imageAnalysisService = new ImageAnalysisService(openaiApiKey);
+    this.stylePromptService = new StylePromptService(supabase);
+    this.replicateService = new ReplicateService(replicateApiToken, openaiApiKey);
   }
 
-  async tryImageVariations(imageBlob: Blob, stylePrompt: string, size: string, requestId: string): Promise<string | null> {
+  async generateImageToImage(imageData: string, styleName: string, aspectRatio: string = "1:1", quality: string = "medium"): Promise<{ ok: boolean; output?: string; error?: string }> {
     try {
-      console.log(`🔄 [${requestId}] Trying GPT-Image-1 variations...`);
+      console.log('=== OPENAI SERVICE GENERATION ===');
+      console.log('🎯 CRITICAL: OpenAI Service received aspect ratio:', aspectRatio);
+      console.log('Style name:', styleName);
       
-      const formData = new FormData();
-      formData.append('image', imageBlob, 'image.jpg');
-      formData.append('prompt', stylePrompt);
-      formData.append('model', 'gpt-image-1');
-      formData.append('size', size);
-      formData.append('n', '1');
-
-      const response = await fetch('https://api.openai.com/v1/images/variations', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-        },
-        body: formData,
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        if (result.data && result.data[0]?.url) {
-          console.log(`✅ [${requestId}] Success with GPT-Image-1 variations`);
-          return result.data[0].url;
-        }
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        console.warn(`⚠️ [${requestId}] GPT-Image-1 variations failed:`, errorData.error?.message || 'Unknown error');
-      }
-    } catch (error) {
-      console.warn(`⚠️ [${requestId}] GPT-Image-1 variations error:`, error.message);
-    }
-    return null;
-  }
-
-  async tryImageEdits(imageBlob: Blob, stylePrompt: string, size: string, requestId: string): Promise<string | null> {
-    try {
-      console.log(`🔄 [${requestId}] Trying GPT-Image-1 edits...`);
+      // Get the exact prompt from Supabase
+      const stylePrompt = await this.stylePromptService.getStylePrompt(styleName);
       
-      const formData = new FormData();
-      formData.append('image', imageBlob, 'image.jpg');
-      formData.append('prompt', stylePrompt);
-      formData.append('model', 'gpt-image-1');
-      formData.append('size', size);
-      formData.append('n', '1');
-
-      const response = await fetch('https://api.openai.com/v1/images/edits', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-        },
-        body: formData,
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        if (result.data && result.data[0]?.url) {
-          console.log(`✅ [${requestId}] Success with GPT-Image-1 edits`);
-          return result.data[0].url;
-        }
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        console.warn(`⚠️ [${requestId}] GPT-Image-1 edits failed:`, errorData.error?.message || 'Unknown error');
+      if (!stylePrompt) {
+        console.error('No style prompt found for:', styleName);
+        return {
+          ok: false,
+          error: 'Style prompt not found'
+        };
       }
-    } catch (error) {
-      console.warn(`⚠️ [${requestId}] GPT-Image-1 edits error:`, error.message);
-    }
-    return null;
-  }
 
+      console.log('Using exact prompt for style:', styleName, '- Prompt:', stylePrompt);
+      console.log('🔥 CRITICAL: Passing aspect ratio to Replicate Service:', aspectRatio);
+
+      // Generate the image using Replicate's GPT-Image-1 model with specified aspect ratio
+      console.log('🎯 About to call ReplicateService.generateImageToImage with aspect ratio:', aspectRatio);
+      return await this.replicateService.generateImageToImage(imageData, stylePrompt, aspectRatio, quality);
+
+    } catch (error) {
+      console.error('OpenAI Service error:', error);
+      return {
+        ok: false,
+        error: error.message
+      };
+    }
+  }
 }

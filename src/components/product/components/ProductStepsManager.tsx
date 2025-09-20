@@ -5,7 +5,7 @@ import LoadingState from './LoadingState';
 
 // Lazy load step components for better code splitting
 const PhotoUploadStep = lazy(() => import('./PhotoUploadStep'));
-const CanvasConfigurationStep = lazy(() => import('./CanvasConfigurationStep'));
+const OrientationStep = lazy(() => import('./OrientationStep'));
 const CustomizationStep = lazy(() => import('./CustomizationStep'));
 const ReviewOrderStep = lazy(() => import('./ReviewOrderStep'));
 
@@ -76,8 +76,8 @@ const ProductStepsManager = memo(({
       </StepErrorBoundary>
 
       <StepErrorBoundary stepNumber={2} onNavigateHome={handleNavigateHome}>
-        <Suspense fallback={<LoadingState message="Loading canvas configuration..." />}>
-          <CanvasConfigurationStep
+        <Suspense fallback={<LoadingState message="Loading orientation options..." />}>
+          <OrientationStep
             currentStep={currentStep}
             isActive={currentStep === 2}
             isCompleted={completedSteps.includes(2)}

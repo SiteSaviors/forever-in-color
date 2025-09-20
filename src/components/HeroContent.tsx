@@ -1,4 +1,6 @@
+
 import { ArrowRight, Heart, Sparkles, Camera } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
 interface HeroContentProps {
   hideBadgeAndHeadline?: boolean;

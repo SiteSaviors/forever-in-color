@@ -1,6 +1,9 @@
+
 import { useState, useMemo } from 'react';
 import { useBlinking } from './useBlinking';
-import { useStyleCard } from './useStyleCard';
+import { useStyleCardLogic } from './useStyleCardLogic';
+import { useStyleCardEffects } from './useStyleCardEffects';
+import { useStyleCardHandlers } from './useStyleCardHandlers';
 import { useTouchOptimizedInteractions } from './useTouchOptimizedInteractions';
 import { usePerformanceMonitor } from './usePerformanceMonitor';
 
@@ -37,89 +40,88 @@ export const useStyleCardHooks = (props: UseStyleCardHooksProps) => {
     shouldBlur = false
   } = props;
 
-  // Performance monitoring with consolidated hook
-  usePerformanceMonitor(`StyleCard-${style.name}`, { 
-    enabled: process.env.NODE_ENV === 'development' 
-  });
+  // Performance monitoring
+  usePerformanceMonitor(`StyleCard-${style.name}`, process.env.NODE_ENV === 'development');
 
-  // Use the consolidated style card hook
-  const styleCardState = useStyleCard({
+  // Memoize style comparison for better performance
+  const isSelected = useMemo(() => selectedStyle === style.id, [selectedStyle, style.id]);
+  
+  // Use the logic hook for state management
+  const logicState = useStyleCardLogic({
     style,
     croppedImage,
     selectedStyle,
     isPopular,
     preGeneratedPreview,
     selectedOrientation,
-    onStyleClick,
-    onContinue
+    onStyleClick
+  });
+
+  // Use the effects hook for side effects
+  useStyleCardEffects({
+    previewUrl: logicState.previewUrl,
+    preGeneratedPreview,
+    isPermanentlyGenerated: logicState.isPermanentlyGenerated,
+    setIsPermanentlyGenerated: logicState.setIsPermanentlyGenerated,
+    setLocalIsLoading: logicState.setLocalIsLoading,
+    styleName: style.name
   });
 
   // Convert hasError to boolean and extract error message before passing to handlers
-  const hasErrorBoolean = Boolean(styleCardState.hasError);
-  const errorMessage = typeof styleCardState.hasError === 'string' ? styleCardState.hasError : (styleCardState.validationError || 'Generation failed');
+  const hasErrorBoolean = Boolean(logicState.hasError);
+  const errorMessage = typeof logicState.hasError === 'string' ? logicState.hasError : (logicState.validationError || 'Generation failed');
 
-  // Create minimal mock event for handlers that require it
-  const createMockEvent = (): React.MouseEvent => ({
-    stopPropagation: () => {},
-    preventDefault: () => {}
-  } as React.MouseEvent);
+  // Use the handlers hook for event handling
+  const handlers = useStyleCardHandlers({
+    style,
+    previewUrl: logicState.previewUrl,
+    isPermanentlyGenerated: logicState.isPermanentlyGenerated,
+    effectiveIsLoading: logicState.effectiveIsLoading,
+    hasError: hasErrorBoolean,
+    setShowError: logicState.setShowError,
+    setLocalIsLoading: logicState.setLocalIsLoading,
+    setIsLightboxOpen: logicState.setIsLightboxOpen,
+    onStyleClick,
+    onContinue,
+    generatePreview: logicState.generatePreview
+  });
 
-  // Simplified direct handlers without mock events
+  // Create wrapper functions that don't require parameters
   const handleGenerateWrapper = () => {
-    if (styleCardState.isPermanentlyGenerated) {
-      console.log(`🚫 PERMANENT BLOCK - ${style.name} cannot be regenerated`);
-      return;
-    }
-    
-    if (styleCardState.effectiveIsLoading) {
-      console.log(`🚫 BUSY BLOCK - ${style.name} is already generating`);
-      return;
-    }
-    
-    console.log(`🎨 Direct generate call for ${style.name}`);
-    styleCardState.generatePreview();
+    const mockEvent = { stopPropagation: () => {} } as React.MouseEvent;
+    handlers.handleGenerateClick(mockEvent);
   };
   
   const handleRetryWrapper = () => {
-    if (styleCardState.isPermanentlyGenerated) {
-      console.log(`🚫 PERMANENT BLOCK - ${style.name} cannot be retried`);
-      return;
-    }
-    
-    if (styleCardState.effectiveIsLoading) {
-      console.log(`🚫 BUSY BLOCK - ${style.name} is already generating`);
-      return;
-    }
-    
-    console.log(`🔄 Direct retry call for ${style.name}`);
-    styleCardState.setShowError(false);
-    styleCardState.generatePreview();
+    const mockEvent = { stopPropagation: () => {} } as React.MouseEvent;
+    handlers.handleRetryClick(mockEvent);
   };
 
   // Create wrapper functions for touch handlers that accept events but ignore them
-  const handleTouchTap = () => styleCardState.handleCardClick();
-  const handleTouchLongPress = () => styleCardState.handleImageExpand(createMockEvent());
+  const handleTouchTap = () => handlers.handleCardClick();
+  const handleTouchLongPress = () => handlers.handleImageExpand({} as React.MouseEvent);
 
-  // Touch-optimized interactions with integrated debouncing
+  // Touch-optimized interactions
   const { isPressed, touchHandlers } = useTouchOptimizedInteractions({
     onTap: handleTouchTap,
-    onLongPress: handleTouchLongPress,
-    debounceDelay: 150
+    onLongPress: handleTouchLongPress
   });
 
-  const { isBlinking } = useBlinking(styleCardState.previewUrl, {
-    isGenerating: styleCardState.isPermanentlyGenerated ? false : (styleCardState.effectiveIsLoading),
-    hasPreview: !!styleCardState.previewUrl,
-    hasGeneratedOnce: styleCardState.isPermanentlyGenerated
+  const { isBlinking } = useBlinking(logicState.previewUrl, {
+    isGenerating: logicState.isPermanentlyGenerated ? false : (logicState.effectiveIsLoading),
+    hasPreview: !!logicState.previewUrl,
+    hasGeneratedOnce: logicState.isPermanentlyGenerated
   });
 
   return {
-    // State from consolidated hook
-    ...styleCardState,
+    // State
+    ...logicState,
+    isSelected,
     hasErrorBoolean,
     errorMessage,
     
-    // Wrapper handlers
+    // Handlers
+    ...handlers,
     handleGenerateWrapper,
     handleRetryWrapper,
     
@@ -128,8 +130,8 @@ export const useStyleCardHooks = (props: UseStyleCardHooksProps) => {
     touchHandlers,
     
     // Computed values
-    showContinueInCard: showContinueButton && styleCardState.isSelected && (styleCardState.isStyleGenerated || styleCardState.isPermanentlyGenerated),
-    isLocked: styleCardState.isPermanentlyGenerated,
-    showLockedFeedback: styleCardState.isPermanentlyGenerated && !styleCardState.isSelected
+    showContinueInCard: showContinueButton && isSelected && (logicState.isStyleGenerated || logicState.isPermanentlyGenerated),
+    isLocked: logicState.isPermanentlyGenerated,
+    showLockedFeedback: logicState.isPermanentlyGenerated && !isSelected
   };
 };
