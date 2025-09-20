@@ -5,7 +5,7 @@ import { StylePromptService } from './stylePromptService.ts';
 import { corsHeaders, handleCorsPreflightRequest, createCorsResponse } from './corsUtils.ts';
 import { base64ToBlob, getImageSize } from './imageUtils.ts';
 import { validateRequest } from './requestValidator.ts';
-import { OpenAIService } from './openaiService.ts';
+import { ReplicateService } from './replicateService.ts';
 import { createSuccessResponse, createErrorResponse } from './responseUtils.ts';
 
 serve(async (req) => {
@@ -40,7 +40,9 @@ serve(async (req) => {
     const { imageUrl, style, aspectRatio, quality } = validation.data!;
 
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openaiApiKey) {
+    const replicateApiToken = Deno.env.get('REPLICATE_API_TOKEN');
+    
+    if (!openaiApiKey || !replicateApiToken) {
       return createCorsResponse(
         JSON.stringify(createErrorResponse('configuration_error', 'AI service configuration error')),
         500
@@ -67,53 +69,32 @@ serve(async (req) => {
       stylePrompt = `Transform this image into ${style} style while keeping the exact same subject, composition, and scene. Apply only the artistic style transformation. Do not change what is depicted in the image - only change how it looks artistically.`;
     }
 
-    // Convert aspect ratio to size
-    const size = getImageSize(aspectRatio);
-
-    // Convert base64 image to blob
-    let imageBlob: Blob;
-    try {
-      imageBlob = await base64ToBlob(imageUrl);
-    } catch (error) {
-      return createCorsResponse(
-        JSON.stringify(createErrorResponse('invalid_image', 'Invalid image format')),
-        400
-      );
-    }
-
-    // Initialize OpenAI service
-    console.log(`🔧 [DIAGNOSTIC] Initializing OpenAI service for request [${requestId}]`);
-    console.log(`🔧 [DIAGNOSTIC] API Key present: ${!!openaiApiKey}, Length: ${openaiApiKey?.length || 0}`);
+    // Initialize Replicate service
+    console.log(`🔧 [DIAGNOSTIC] Initializing Replicate service for request [${requestId}]`);
+    console.log(`🔧 [DIAGNOSTIC] API Keys present - OpenAI: ${!!openaiApiKey}, Replicate: ${!!replicateApiToken}`);
     console.log(`🔧 [DIAGNOSTIC] Style prompt: "${stylePrompt}"`);
-    console.log(`🔧 [DIAGNOSTIC] Image size: ${size}`);
+    console.log(`🔧 [DIAGNOSTIC] Aspect ratio: ${aspectRatio}, Quality: ${quality}`);
     
-    const openaiService = new OpenAIService(openaiApiKey);
+    const replicateService = new ReplicateService(replicateApiToken, openaiApiKey);
 
-    // Try GPT-Image-1 with generation (supports rectangular sizes)
-    console.log(`🔧 [DIAGNOSTIC] Attempting image generation...`);
-    let generatedImageUrl = await openaiService.generateStyledImage(imageUrl, stylePrompt, size, requestId);
-    console.log(`🔧 [DIAGNOSTIC] Image generation result: ${generatedImageUrl ? 'SUCCESS' : 'FAILED'}`);
+    // Generate image using Replicate's openai/gpt-image-1 model
+    console.log(`🔧 [DIAGNOSTIC] Attempting image generation with Replicate...`);
+    const result = await replicateService.generateImageToImage(imageUrl, stylePrompt, aspectRatio, quality);
     
-    // Fallback to variations if generation fails (square sizes only)
-    if (!generatedImageUrl && size === '1024x1024') {
-      console.log(`🔧 [DIAGNOSTIC] Attempting image variations fallback...`);
-      generatedImageUrl = await openaiService.tryImageVariations(imageBlob, stylePrompt, size, requestId);
-      console.log(`🔧 [DIAGNOSTIC] Image variations result: ${generatedImageUrl ? 'SUCCESS' : 'FAILED'}`);
-    }
-
-    if (generatedImageUrl) {
+    if (result.ok && result.output) {
+      console.log(`🔧 [DIAGNOSTIC] Image generation result: SUCCESS`);
       const endTime = Date.now();
       const duration = endTime - startTime;
 
       return createCorsResponse(
-        JSON.stringify(createSuccessResponse(generatedImageUrl, requestId, duration))
+        JSON.stringify(createSuccessResponse(result.output, requestId, duration))
       );
     }
 
-    // All models failed
-    console.error(`🔧 [DIAGNOSTIC] All OpenAI methods failed for request [${requestId}]`);
+    // Generation failed
+    console.error(`🔧 [DIAGNOSTIC] Replicate generation failed for request [${requestId}]:`, result.error);
     return createCorsResponse(
-      JSON.stringify(createErrorResponse('generation_failed', 'AI service is temporarily unavailable. Please try again.')),
+      JSON.stringify(createErrorResponse('generation_failed', result.error || 'AI service is temporarily unavailable. Please try again.')),
       503
     );
 
