@@ -7,7 +7,7 @@ import StepOverlays from "./ActiveStepView/StepOverlays";
 import StepHeader from "./ActiveStepView/StepHeader";
 import StepFooter from "./ActiveStepView/StepFooter";
 import { useAccordionState } from "../contexts/AccordionStateContext";
-import "../styles/animations/performance-optimized.css";
+
 
 interface ActiveStepViewProps {
   stepNumber: number;

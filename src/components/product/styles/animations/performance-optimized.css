@@ -249,23 +249,3 @@
     border: 2px solid;
   }
 }
-
-/* Performance debugging utilities (remove in production) */
-.perf-debug {
-  outline: 1px solid red;
-}
-
-.perf-debug.will-change-active {
-  outline: 2px solid orange;
-}
-
-/* Animation performance monitoring classes */
-.perf-monitor {
-  /* Add performance monitoring attributes */
-  --animation-start: var(--time-now);
-}
-
-/* Cleanup utility - removes all will-change when animation ends */
-.perf-cleanup {
-  will-change: auto;
-}
