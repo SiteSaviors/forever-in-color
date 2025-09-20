@@ -21,12 +21,11 @@ export async function logSecurityEvent(
       timestamp: new Date().toISOString()
     };
 
-    console.error('🚨 SECURITY EVENT:', JSON.stringify(securityEvent, null, 2));
+    
     
     // Could store in database here if needed
     return true;
   } catch (error) {
-    console.error('Failed to log security event:', error);
     return false;
   }
 }

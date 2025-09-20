@@ -18,7 +18,6 @@ export class CanvasWatermarkService {
     
     // Check if the image URL is a data URL (base64 encoded image)
     if (imageUrl.startsWith('data:image/')) {
-      console.log('[Watermark] Image is a data URL, returning as-is');
       return imageUrl;
     }
     

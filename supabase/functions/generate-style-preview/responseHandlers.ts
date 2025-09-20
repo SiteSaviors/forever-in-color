@@ -1,6 +1,5 @@
 
 export function handleSuccess(output: string, corsHeaders: Record<string, string>, requestId?: string) {
-  console.log(`✅ Sending success response for [${requestId}]`);
   
   return new Response(
     JSON.stringify({
@@ -25,7 +24,6 @@ export function handleError(
   status: number = 400,
   requestId?: string
 ) {
-  console.error(`❌ Sending error response for [${requestId}]:`, { error, status });
   
   return new Response(
     JSON.stringify({
