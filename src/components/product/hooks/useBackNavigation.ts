@@ -25,7 +25,6 @@ export const useBackNavigation = ({
   const handleBackStep = useCallback(() => {
     if (canGoBack()) {
       const previousStep = getPreviousStep();
-      console.log(`Navigating back from step ${currentStep} to step ${previousStep}`);
       onStepChange(previousStep);
     }
   }, [currentStep, canGoBack, getPreviousStep, onStepChange]);
