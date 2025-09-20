@@ -24,10 +24,9 @@ const PopularChoices = ({
   onStyleSelect,
   onComplete
 }: PopularChoicesProps) => {
-  // Combine both popular and secondary categories to show all remaining styles
-  const allRemainingStyles = recommendations.filter(r => r.category === 'popular' || r.category === 'secondary');
+  const popularChoices = recommendations.filter(r => r.category === 'popular').slice(0, 3);
 
-  if (allRemainingStyles.length === 0) return null;
+  if (popularChoices.length === 0) return null;
 
   const handleStyleSelect = (styleId: number, styleName: string) => {
     console.log('🎯 PopularChoices handleStyleSelect:', styleId, styleName);
@@ -48,27 +47,25 @@ const PopularChoices = ({
       </div>
       
       <p className="text-center text-gray-600">
-        Explore all our artistic styles and find your perfect match
+        Styles other customers loved for similar photos
       </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-        {allRemainingStyles.map((rec, index) => {
+        {popularChoices.map((rec, index) => {
           const style = artStyles.find(s => s.id === rec.styleId);
           if (!style) return null;
-
-          const isPopularCategory = rec.category === 'popular';
 
           return (
             <div
               key={rec.styleId}
               className="transform transition-all duration-300 hover:scale-105 style-card-hover style-card-press"
-              style={{ animationDelay: `${index * 150}ms` }}
+              style={{ animationDelay: `${(index + 3) * 150}ms` }}
             >
               <StyleCard
                 style={style}
                 croppedImage={croppedImage}
                 selectedStyle={selectedStyle}
-                isPopular={isPopularCategory}
+                isPopular={true}
                 cropAspectRatio={cropAspectRatio}
                 selectedOrientation={selectedOrientation}
                 showContinueButton={false}

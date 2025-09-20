@@ -1,9 +1,13 @@
 
-import React, { memo } from 'react';
-import { useStyleCardHooks } from './hooks/useStyleCardHooks';
+import React from 'react';
+import { useBlinking } from './hooks/useBlinking';
+import { useStyleCardLogic } from './hooks/useStyleCardLogic';
+import { useStyleCardEffects } from './hooks/useStyleCardEffects';
+import { useStyleCardHandlers } from './hooks/useStyleCardHandlers';
 import StyleCardContainer from './components/StyleCardContainer';
-import StyleCardContent from './components/StyleCardContent';
-import StyleCardErrorBoundary from './components/StyleCardErrorBoundary';
+import StyleCardInfo from './components/StyleCardInfo';
+import StyleCardImage from './components/StyleCardImage';
+import EnhancedStyleCardLoadingOverlay from './components/EnhancedStyleCardLoadingOverlay';
 import Lightbox from '@/components/ui/lightbox';
 
 interface StyleCardProps {
@@ -25,52 +29,98 @@ interface StyleCardProps {
   shouldBlur?: boolean;
 }
 
-const StyleCard = memo((props: StyleCardProps) => {
+const StyleCard = ({
+  style,
+  croppedImage,
+  selectedStyle,
+  isPopular = false,
+  preGeneratedPreview,
+  cropAspectRatio,
+  selectedOrientation = "square",
+  showContinueButton = true,
+  onStyleClick,
+  onContinue,
+  shouldBlur = false
+}: StyleCardProps) => {
+  // Use the logic hook for state management
   const {
-    style,
-    croppedImage,
-    selectedStyle,
-    isPopular = false,
-    preGeneratedPreview,
-    cropAspectRatio,
-    selectedOrientation = "square",
-    showContinueButton = true,
-    onStyleClick,
-    onContinue,
-    shouldBlur = false
-  } = props;
-
-  // Consolidated hooks
-  const {
-    // State
-    isSelected,
-    hasErrorBoolean,
-    errorMessage,
-    effectiveIsLoading,
-    isPermanentlyGenerated,
+    showError,
+    setShowError,
+    localIsLoading,
+    setLocalIsLoading,
     isLightboxOpen,
     setIsLightboxOpen,
+    isPermanentlyGenerated,
+    setIsPermanentlyGenerated,
     previewUrl,
     hasGeneratedPreview,
     isStyleGenerated,
+    validationError,
+    generatePreview,
+    isSelected,
     showGeneratedBadge,
+    hasError,
     imageToShow,
-    showContinueInCard,
-    showLockedFeedback,
-    
-    // Handlers
+    effectiveIsLoading
+  } = useStyleCardLogic({
+    style,
+    croppedImage,
+    selectedStyle,
+    isPopular,
+    preGeneratedPreview,
+    selectedOrientation,
+    onStyleClick
+  });
+
+  // Use the effects hook for side effects
+  useStyleCardEffects({
+    previewUrl,
+    preGeneratedPreview,
+    isPermanentlyGenerated,
+    setIsPermanentlyGenerated,
+    setLocalIsLoading,
+    styleName: style.name
+  });
+
+  // Convert hasError to boolean and extract error message before passing to handlers
+  const hasErrorBoolean = Boolean(hasError);
+  const errorMessage = typeof hasError === 'string' ? hasError : (validationError || 'Generation failed');
+
+  // Use the handlers hook for event handling
+  const {
     handleCardClick,
     handleContinueClick,
-    handleGenerateWrapper,
-    handleRetryWrapper,
-    
-    // Interactions
-    isPressed,
-    touchHandlers
-  } = useStyleCardHooks(props);
+    handleImageExpand,
+    handleGenerateClick,
+    handleRetryClick
+  } = useStyleCardHandlers({
+    style,
+    previewUrl,
+    isPermanentlyGenerated,
+    effectiveIsLoading,
+    hasError: hasErrorBoolean,
+    setShowError,
+    setLocalIsLoading,
+    setIsLightboxOpen,
+    onStyleClick,
+    onContinue,
+    generatePreview
+  });
+
+  const { isBlinking } = useBlinking(previewUrl, {
+    isGenerating: isPermanentlyGenerated ? false : (effectiveIsLoading),
+    hasPreview: !!previewUrl,
+    hasGeneratedOnce: isPermanentlyGenerated
+  });
+
+  const showContinueInCard = showContinueButton && isSelected && (isStyleGenerated || isPermanentlyGenerated);
+
+  // Enhanced visual feedback for permanently generated state
+  const isLocked = isPermanentlyGenerated;
+  const showLockedFeedback = isLocked && !isSelected;
 
   return (
-    <StyleCardErrorBoundary styleId={style.id} styleName={style.name}>
+    <>
       <StyleCardContainer
         isSelected={isSelected}
         styleId={style.id}
@@ -80,28 +130,49 @@ const StyleCard = memo((props: StyleCardProps) => {
         hasError={hasErrorBoolean}
         canAccess={!!croppedImage}
         onClick={handleCardClick}
-        onGenerateStyle={handleGenerateWrapper}
+        onGenerateStyle={() => handleGenerateClick({} as React.MouseEvent)}
       >
-        <StyleCardContent
+        {/* Image Section */}
+        <div className="relative flex-1">
+          <StyleCardImage
+            style={style}
+            imageToShow={imageToShow}
+            cropAspectRatio={cropAspectRatio}
+            onImageExpand={handleImageExpand}
+          />
+          
+          {/* Subtle locked state indicator */}
+          {showLockedFeedback && (
+            <div className="absolute top-2 right-2 bg-green-500/90 text-white px-2 py-1 rounded-full text-xs font-medium shadow-lg">
+              ✓ Generated
+            </div>
+          )}
+          
+          {/* Loading Overlay - CRITICAL: Never show if permanently generated */}
+          {!isPermanentlyGenerated && (
+            <EnhancedStyleCardLoadingOverlay
+              isBlinking={false}
+              styleName={style.name}
+              isLoading={effectiveIsLoading}
+              error={hasErrorBoolean ? errorMessage : null}
+              onRetry={() => handleRetryClick({} as React.MouseEvent)}
+            />
+          )}
+        </div>
+
+        {/* Info Section */}
+        <StyleCardInfo
           style={style}
-          imageToShow={imageToShow}
-          cropAspectRatio={cropAspectRatio}
+          hasGeneratedPreview={hasGeneratedPreview || isPermanentlyGenerated}
           isPopular={isPopular}
           isSelected={isSelected}
-          hasGeneratedPreview={hasGeneratedPreview}
-          showGeneratedBadge={showGeneratedBadge}
+          showGeneratedBadge={showGeneratedBadge || isPermanentlyGenerated}
           showContinueInCard={showContinueInCard}
           shouldBlur={shouldBlur}
-          hasErrorBoolean={hasErrorBoolean}
-          errorMessage={errorMessage}
-          effectiveIsLoading={effectiveIsLoading}
-          isPermanentlyGenerated={isPermanentlyGenerated}
-          showLockedFeedback={showLockedFeedback}
-          touchHandlers={touchHandlers}
-          isPressed={isPressed}
+          showError={hasErrorBoolean}
           onContinueClick={handleContinueClick}
-          onGenerateClick={handleGenerateWrapper}
-          onRetryClick={handleRetryWrapper}
+          onGenerateClick={handleGenerateClick}
+          onRetryClick={handleRetryClick}
         />
       </StyleCardContainer>
 
@@ -113,10 +184,8 @@ const StyleCard = memo((props: StyleCardProps) => {
         imageAlt={`${style.name} preview`}
         title={style.name}
       />
-    </StyleCardErrorBoundary>
+    </>
   );
-});
-
-StyleCard.displayName = 'StyleCard';
+};
 
 export default StyleCard;

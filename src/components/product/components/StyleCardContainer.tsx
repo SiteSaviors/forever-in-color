@@ -1,5 +1,5 @@
 
-import React, { memo, useCallback } from 'react';
+import React from 'react';
 import { useStyleCardInteractions } from '../hooks/useStyleCardInteractions';
 
 interface StyleCardContainerProps {
@@ -15,7 +15,7 @@ interface StyleCardContainerProps {
   onGenerateStyle?: () => void;
 }
 
-const StyleCardContainer = memo(({
+const StyleCardContainer = ({
   children,
   isSelected,
   styleId,
@@ -45,13 +45,13 @@ const StyleCardContainer = memo(({
     onGenerateStyle
   });
 
-  // Memoized cursor class calculation
-  const getCursorClass = useCallback(() => {
+  // Enhanced cursor states for better UX feedback
+  const getCursorClass = () => {
     if (!canAccess) return 'cursor-not-allowed';
     if (isGenerating) return 'cursor-wait';
     if (hasError) return 'cursor-pointer';
     return 'cursor-pointer';
-  }, [canAccess, isGenerating, hasError]);
+  };
 
   const containerClasses = `
     ${cssClasses} 
@@ -59,8 +59,6 @@ const StyleCardContainer = memo(({
     ${shouldBlur ? 'blur-sm opacity-60' : ''}
     ${isGenerating ? 'animate-pulse' : ''}
     ${hasError ? 'ring-2 ring-red-200 shadow-red-100' : ''}
-    will-change-transform
-    contain-layout
   `.trim();
 
   return (
@@ -77,8 +75,6 @@ const StyleCardContainer = memo(({
       {children}
     </div>
   );
-});
-
-StyleCardContainer.displayName = 'StyleCardContainer';
+};
 
 export default StyleCardContainer;
