@@ -28,8 +28,10 @@ export class OpenAIService {
         }
       } else {
         const errorData = await response.json().catch(() => ({}));
+        console.error(`🔧 [DIAGNOSTIC] Image variations failed - Status: ${response.status}, Error:`, errorData);
       }
     } catch (error) {
+      console.error(`🔧 [DIAGNOSTIC] Image variations exception:`, error);
     }
     return null;
   }
@@ -58,8 +60,10 @@ export class OpenAIService {
         }
       } else {
         const errorData = await response.json().catch(() => ({}));
+        console.error(`🔧 [DIAGNOSTIC] Image edits failed - Status: ${response.status}, Error:`, errorData);
       }
     } catch (error) {
+      console.error(`🔧 [DIAGNOSTIC] Image edits exception:`, error);
     }
     return null;
   }

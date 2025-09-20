@@ -82,14 +82,23 @@ serve(async (req) => {
     }
 
     // Initialize OpenAI service
+    console.log(`🔧 [DIAGNOSTIC] Initializing OpenAI service for request [${requestId}]`);
+    console.log(`🔧 [DIAGNOSTIC] API Key present: ${!!openaiApiKey}, Length: ${openaiApiKey?.length || 0}`);
+    console.log(`🔧 [DIAGNOSTIC] Style prompt: "${stylePrompt}"`);
+    console.log(`🔧 [DIAGNOSTIC] Image size: ${size}`);
+    
     const openaiService = new OpenAIService(openaiApiKey);
 
     // Try GPT-Image-1 with image variations (maintains subject better)
+    console.log(`🔧 [DIAGNOSTIC] Attempting image variations...`);
     let generatedImageUrl = await openaiService.tryImageVariations(imageBlob, stylePrompt, size, requestId);
+    console.log(`🔧 [DIAGNOSTIC] Image variations result: ${generatedImageUrl ? 'SUCCESS' : 'FAILED'}`);
     
     // Fallback to GPT-Image-1 edits
     if (!generatedImageUrl) {
+      console.log(`🔧 [DIAGNOSTIC] Attempting image edits...`);
       generatedImageUrl = await openaiService.tryImageEdits(imageBlob, stylePrompt, size, requestId);
+      console.log(`🔧 [DIAGNOSTIC] Image edits result: ${generatedImageUrl ? 'SUCCESS' : 'FAILED'}`);
     }
 
     if (generatedImageUrl) {
@@ -102,6 +111,7 @@ serve(async (req) => {
     }
 
     // All models failed
+    console.error(`🔧 [DIAGNOSTIC] All OpenAI methods failed for request [${requestId}]`);
     return createCorsResponse(
       JSON.stringify(createErrorResponse('generation_failed', 'AI service is temporarily unavailable. Please try again.')),
       503
