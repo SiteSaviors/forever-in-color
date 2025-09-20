@@ -7,8 +7,6 @@ export class OpenAIService {
 
   async tryImageVariations(imageBlob: Blob, stylePrompt: string, size: string, requestId: string): Promise<string | null> {
     try {
-      console.log(`🔄 [${requestId}] Trying GPT-Image-1 variations...`);
-      
       const formData = new FormData();
       formData.append('image', imageBlob, 'image.jpg');
       formData.append('model', 'gpt-image-1');
@@ -26,23 +24,18 @@ export class OpenAIService {
       if (response.ok) {
         const result = await response.json();
         if (result.data && result.data[0]?.url) {
-          console.log(`✅ [${requestId}] Success with GPT-Image-1 variations`);
           return result.data[0].url;
         }
       } else {
         const errorData = await response.json().catch(() => ({}));
-        console.warn(`⚠️ [${requestId}] GPT-Image-1 variations failed:`, errorData.error?.message || 'Unknown error');
       }
     } catch (error) {
-      console.warn(`⚠️ [${requestId}] GPT-Image-1 variations error:`, error.message);
     }
     return null;
   }
 
   async tryImageEdits(imageBlob: Blob, stylePrompt: string, size: string, requestId: string): Promise<string | null> {
     try {
-      console.log(`🔄 [${requestId}] Trying GPT-Image-1 edits...`);
-      
       const formData = new FormData();
       formData.append('image', imageBlob, 'image.jpg');
       formData.append('prompt', stylePrompt);
@@ -61,15 +54,12 @@ export class OpenAIService {
       if (response.ok) {
         const result = await response.json();
         if (result.data && result.data[0]?.url) {
-          console.log(`✅ [${requestId}] Success with GPT-Image-1 edits`);
           return result.data[0].url;
         }
       } else {
         const errorData = await response.json().catch(() => ({}));
-        console.warn(`⚠️ [${requestId}] GPT-Image-1 edits failed:`, errorData.error?.message || 'Unknown error');
       }
     } catch (error) {
-      console.warn(`⚠️ [${requestId}] GPT-Image-1 edits error:`, error.message);
     }
     return null;
   }

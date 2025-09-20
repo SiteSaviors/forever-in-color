@@ -13,25 +13,14 @@ export async function validateEnvironment(req: Request, requestId: string): Prom
   const openaiApiKey = Deno.env.get('OPENAI_API_KEY') || Deno.env.get('OPEN_AI_KEY');
   const replicateApiToken = Deno.env.get('REPLICATE_API_TOKEN');
 
-  console.log('🔧 Environment check:', {
-    hasOpenAIKey: !!openaiApiKey,
-    hasReplicateToken: !!replicateApiToken,
-    openaiKeyLength: openaiApiKey?.length || 0,
-    replicateTokenLength: replicateApiToken?.length || 0,
-    allEnvVars: Object.keys(Deno.env.toObject()).filter(key => 
-      key.includes('OPENAI') || key.includes('REPLICATE') || key.includes('API')
-    )
-  });
-
   // Check for missing or empty OpenAI API key
   if (!openaiApiKey || openaiApiKey.trim() === '') {
     const errorMsg = 'OpenAI API key is not configured or is empty. Please set OPENAI_API_KEY or OPEN_AI_KEY environment variable in your Supabase project settings.';
-    console.error(`❌ [${requestId}] ${errorMsg}`);
+    
     
     try {
       await logSecurityEvent('api_key_missing', 'OpenAI API key not configured or empty', req);
     } catch (logError) {
-      console.warn('Failed to log security event:', logError);
     }
     
     return {
@@ -54,12 +43,11 @@ export async function validateEnvironment(req: Request, requestId: string): Prom
   // Check for missing or empty Replicate API token
   if (!replicateApiToken || replicateApiToken.trim() === '') {
     const errorMsg = 'Replicate API token is not configured or is empty. Please set REPLICATE_API_TOKEN environment variable in your Supabase project settings.';
-    console.error(`❌ [${requestId}] ${errorMsg}`);
+    
     
     try {
       await logSecurityEvent('api_key_missing', 'Replicate API token not configured or empty', req);
     } catch (logError) {
-      console.warn('Failed to log security event:', logError);
     }
     
     return {

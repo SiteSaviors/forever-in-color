@@ -6,8 +6,6 @@ export class StylePromptService {
     try {
       const styleId = this.getStyleIdByName(styleName);
       
-      console.log('Fetching exact prompt for style:', styleName, 'with ID:', styleId);
-      
       // Fetch the prompt from Supabase style_prompts table
       const { data, error } = await this.supabase
         .from('style_prompts')
@@ -16,14 +14,11 @@ export class StylePromptService {
         .single();
 
       if (error) {
-        console.warn('Could not fetch style prompt from Supabase:', error);
         return null;
       }
 
-      console.log('Successfully fetched exact prompt from Supabase for', styleName);
       return data?.prompt || null;
     } catch (error) {
-      console.warn('Error fetching style prompt from Supabase:', error);
       return null;
     }
   }
@@ -50,7 +45,6 @@ export class StylePromptService {
     };
     
     const styleId = styleNameToId[styleName];
-    console.log('Style name:', styleName, 'mapped to ID:', styleId);
     
     return styleId || 1; // Default to Original Image if not found
   }

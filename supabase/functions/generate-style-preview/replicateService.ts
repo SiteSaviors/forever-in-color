@@ -16,18 +16,11 @@ export class ReplicateService {
     this.apiToken = apiToken.replace(/^export\s+REPLICATE_API_TOKEN=/, '').trim();
     this.openaiApiKey = openaiApiKey.replace(/^export\s+OPENAI_API_KEY=/, '').trim();
     
-    console.log("ReplicateService initialized for GPT-Image-1 with token length:", this.apiToken?.length);
-
     this.apiClient = new ReplicateApiClient(this.apiToken);
     this.pollingService = new PollingService(this.apiToken);
   }
 
   async generateImageToImage(imageData: string, prompt: string, aspectRatio: string = "1:1", quality: string = "medium"): Promise<ReplicateGenerationResponse> {
-    console.log('=== REPLICATE SERVICE GENERATION ===');
-    console.log('Starting GPT-Image-1 generation with enhanced error handling');
-    console.log('🔥 CRITICAL: Replicate Service received aspect ratio:', aspectRatio);
-    console.log('Prompt length:', prompt.length);
-    
     // Validate inputs
     if (!this.apiToken || this.apiToken === 'undefined' || this.apiToken.trim() === '') {
       throw new Error('Invalid or missing Replicate API token');
@@ -47,12 +40,9 @@ export class ReplicateService {
       }
     };
 
-    console.log('🎯 CRITICAL: Request body aspect_ratio before API call:', requestBody.input.aspect_ratio);
-
     try {
       // Execute with retry logic
       const result = await executeWithRetry(async () => {
-        console.log('Making API call to GPT-Image-1...');
         const data = await this.apiClient.createPrediction(requestBody);
 
         if (!data.ok) {
@@ -61,7 +51,6 @@ export class ReplicateService {
 
         // Handle immediate success
         if (data.status === "succeeded" && data.output) {
-          console.log('GPT-Image-1 generation succeeded immediately');
           return {
             ok: true,
             output: data.output
@@ -71,7 +60,7 @@ export class ReplicateService {
         // Handle immediate failure
         if (data.status === "failed") {
           const errorMsg = data.error || "GPT-Image-1 generation failed";
-          console.error('GPT-Image-1 generation failed immediately:', errorMsg);
+          
           
           // Check for specific error types
           if (errorMsg.includes('high demand') || errorMsg.includes('E003')) {
@@ -85,7 +74,6 @@ export class ReplicateService {
         
         // Handle polling requirement
         if (data.status === "processing" || data.status === "starting") {
-          console.log('GPT-Image-1 requires polling, prediction ID:', data.id);
           return await this.pollingService.pollForCompletion(data.id!, data.urls?.get!);
         }
 
@@ -95,8 +83,6 @@ export class ReplicateService {
       return result;
 
     } catch (error) {
-      console.error('GPT-Image-1 Replicate error after retries:', error);
-      
       // Convert to user-friendly error
       const parsedError = EnhancedErrorHandler.parseError(error);
       const userMessage = EnhancedErrorHandler.createUserFriendlyMessage(parsedError);
