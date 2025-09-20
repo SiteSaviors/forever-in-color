@@ -87,20 +87,19 @@ const UploadDropzone = ({
           <div className="pt-2">
             <MobileButton 
               size="lg" 
-              className="bg-gradient-to-r from-cyan-600 via-violet-600 to-fuchsia-600 hover:from-cyan-700 hover:via-violet-700 hover:to-fuchsia-700 text-white font-black font-montserrat shadow-2xl hover:shadow-2xl hover:shadow-cyan-500/30 transition-all duration-300 transform hover:scale-105 disabled:hover:scale-100 w-full sm:w-auto min-h-[48px] px-4 sm:px-8 py-4 text-base sm:text-lg sm:text-xl backdrop-blur-sm"
+              className="bg-gradient-to-r from-cyan-600 via-violet-600 to-fuchsia-600 hover:from-cyan-700 hover:via-violet-700 hover:to-fuchsia-700 text-white font-black font-montserrat shadow-2xl hover:shadow-2xl hover:shadow-cyan-500/30 transition-all duration-300 transform hover:scale-105 disabled:hover:scale-100 w-full sm:w-auto min-h-[48px] px-8 py-4 text-lg sm:text-xl backdrop-blur-sm"
               disabled={isUploading}
               onClick={onClick}
             >
               {isUploading ? (
                 <>
-                  <Sparkles className="w-5 h-5 mr-2 sm:mr-3 animate-spin" />
+                  <Sparkles className="w-5 h-5 mr-3 animate-spin" />
                   <span className="tracking-wide">CREATING MAGIC</span>
                 </>
               ) : (
                 <>
-                  <Upload className="w-5 h-5 mr-2 sm:mr-3" />
-                  <span className="tracking-wide sm:hidden">UPLOAD PHOTO</span>
-                  <span className="tracking-wide hidden sm:inline">TRANSFORM YOUR PHOTO</span>
+                  <Upload className="w-5 h-5 mr-3" />
+                  <span className="tracking-wide">TRANSFORM YOUR PHOTO</span>
                 </>
               )}
             </MobileButton>

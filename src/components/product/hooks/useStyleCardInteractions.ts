@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useEffect } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useInteractionStateMachine } from './useInteractionStateMachine';
 
 interface UseStyleCardInteractionsProps {
@@ -30,54 +30,35 @@ export const useStyleCardInteractions = ({
     animationDuration: 300
   });
 
-  // Sync external state with state machine - memoized to prevent infinite re-renders
+  // Sync external state with state machine
   const syncExternalState = useCallback(() => {
-    // Only sync if there are actual state differences to prevent infinite loops
-    const needsDisableTransition = !canAccess && !stateMachine.isDisabled;
-    const needsEnableTransition = canAccess && stateMachine.isDisabled;
-    const needsErrorTransition = hasError && !stateMachine.hasError;
-    const needsResetTransition = !hasError && stateMachine.hasError;
-    const needsLoadingStartTransition = isGenerating && !stateMachine.isLoading;
-    const needsLoadingEndTransition = !isGenerating && stateMachine.isLoading;
-    const needsSelectTransition = isSelected && !stateMachine.isSelected && !stateMachine.isLoading;
-    const needsDeselectTransition = !isSelected && stateMachine.isSelected;
-
-    if (needsDisableTransition) {
+    if (!canAccess && !stateMachine.isDisabled) {
       stateMachine.transition('DISABLE', true);
-    } else if (needsEnableTransition) {
+    } else if (canAccess && stateMachine.isDisabled) {
       stateMachine.transition('ENABLE', true);
     }
     
-    if (needsErrorTransition) {
+    if (hasError && !stateMachine.hasError) {
       stateMachine.transition('ERROR', true);
-    } else if (needsResetTransition) {
+    } else if (!hasError && stateMachine.hasError) {
       stateMachine.transition('RESET', true);
     }
     
-    if (needsLoadingStartTransition) {
+    if (isGenerating && !stateMachine.isLoading) {
       stateMachine.transition('START_LOADING', true);
-    } else if (needsLoadingEndTransition) {
+    } else if (!isGenerating && stateMachine.isLoading) {
       stateMachine.transition('FINISH_LOADING', true);
     }
     
-    if (needsSelectTransition) {
-      // If in error state and trying to select, reset first then select
-      if (stateMachine.hasError) {
-        stateMachine.transition('RESET', true);
-        // Allow a frame for state to settle before selecting
-        setTimeout(() => stateMachine.transition('SELECT', true), 0);
-      } else {
-        stateMachine.transition('SELECT', true);
-      }
-    } else if (needsDeselectTransition) {
+    if (isSelected && !stateMachine.isSelected && !stateMachine.isLoading) {
+      stateMachine.transition('SELECT', true);
+    } else if (!isSelected && stateMachine.isSelected) {
       stateMachine.transition('DESELECT', true);
     }
-  }, [canAccess, hasError, isGenerating, isSelected, stateMachine.isDisabled, stateMachine.hasError, stateMachine.isLoading, stateMachine.isSelected, stateMachine.transition]);
+  }, [canAccess, hasError, isGenerating, isSelected, stateMachine]);
 
-  // Only sync when dependencies actually change
-  useEffect(() => {
-    syncExternalState();
-  }, [syncExternalState]);
+  // Call sync on every render to keep in sync
+  syncExternalState();
 
   // Interaction handlers with state machine integration
   const handleMouseEnter = useCallback(() => {
@@ -114,27 +95,16 @@ export const useStyleCardInteractions = ({
       e.stopPropagation();
     }
     
-    if (!onGenerateStyle) {
-      console.log(`🚫 NO GENERATE FUNCTION - ${styleName} (ID: ${styleId})`);
+    if (!stateMachine.isInteractive || stateMachine.isAnimating || !onGenerateStyle) {
       return;
     }
 
-    // Allow generation even in error state by resetting first
-    if (stateMachine.hasError) {
-      console.log(`🔄 RESETTING ERROR STATE before generation - ${styleName} (ID: ${styleId})`);
-      stateMachine.transition('RESET', true);
-    }
+    console.log(`🎨 GENERATE CLICK ▶️ ${styleName} (ID: ${styleId})`);
     
-    if (!stateMachine.isInteractive && !stateMachine.hasError) {
-      console.log(`🚫 NOT INTERACTIVE - ${styleName} (ID: ${styleId}) - State: ${stateMachine.state}`);
-      return;
-    }
-
-    console.log(`🎨 GENERATE CLICK ▶️ ${styleName} (ID: ${styleId}) - State: ${stateMachine.state}`);
-    
-    // Direct call without animation queue to prevent conflicts
-    stateMachine.transition('START_LOADING', true);
-    onGenerateStyle();
+    stateMachine.queueAnimation(() => {
+      stateMachine.transition('START_LOADING');
+      onGenerateStyle();
+    });
   }, [stateMachine, styleName, styleId, onGenerateStyle]);
 
   const handleRetryClick = useCallback((e?: React.MouseEvent) => {
@@ -142,17 +112,17 @@ export const useStyleCardInteractions = ({
       e.stopPropagation();
     }
     
-    if (!onGenerateStyle) {
-      console.log(`🚫 NO GENERATE FUNCTION for retry - ${styleName} (ID: ${styleId})`);
+    if (!stateMachine.isInteractive || !onGenerateStyle) {
       return;
     }
 
-    console.log(`🔄 RETRY CLICK ▶️ ${styleName} (ID: ${styleId}) - State: ${stateMachine.state}`);
+    console.log(`🔄 RETRY CLICK ▶️ ${styleName} (ID: ${styleId})`);
     
-    // Reset error state and start generation immediately
-    stateMachine.transition('RESET', true);
-    stateMachine.transition('START_LOADING', true);
-    onGenerateStyle();
+    stateMachine.queueAnimation(() => {
+      stateMachine.transition('RESET');
+      stateMachine.transition('START_LOADING');
+      onGenerateStyle();
+    });
   }, [stateMachine, styleName, styleId, onGenerateStyle]);
 
   // Computed visual states for styling
