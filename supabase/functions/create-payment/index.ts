@@ -16,8 +16,6 @@ serve(async (req) => {
   try {
     const { amount, currency = "usd", customerEmail = "guest@example.com", items } = await req.json();
 
-    console.log('Payment request received:', { amount, currency, customerEmail, items });
-
     // Initialize Stripe
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2023-10-16",
@@ -49,9 +47,7 @@ serve(async (req) => {
       },
     });
 
-    console.log('Stripe session created:', session.id);
-
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       url: session.url,
       sessionId: session.id 
     }), {

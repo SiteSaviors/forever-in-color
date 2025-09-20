@@ -17,8 +17,6 @@ serve(async (req) => {
   try {
     const { tokens, amount, packageName } = await req.json();
     
-    console.log('Token purchase request received:', { tokens, amount, packageName });
-
     // Create Supabase client
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -69,9 +67,7 @@ serve(async (req) => {
       },
     });
 
-    console.log('Stripe session created:', session.id);
-
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       url: session.url,
       sessionId: session.id 
     }), {
@@ -79,7 +75,6 @@ serve(async (req) => {
       status: 200,
     });
   } catch (error) {
-    console.error('Token purchase error:', error);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,

@@ -54,8 +54,6 @@ serve(async (req) => {
       });
     }
 
-    console.log(`Processing watermark removal for user ${user.id}, style ${styleId}, resolution ${resolution}`);
-
     // Check and spend tokens
     const { data: tokenResult } = await supabase.rpc('update_token_balance', {
       p_user_id: user.id,
@@ -71,8 +69,6 @@ serve(async (req) => {
       });
     }
 
-    console.log(`Tokens spent successfully. New balance: ${tokenResult[0].new_balance}`);
-
     // Generate clean image by calling the generate-style-preview function without watermark
     const { data: cleanImageData, error: generateError } = await supabase.functions.invoke('generate-style-preview', {
       body: {
@@ -87,8 +83,6 @@ serve(async (req) => {
     });
 
     if (generateError || !cleanImageData?.preview_url) {
-      console.error('Failed to generate clean image:', generateError);
-      
       // Refund tokens if generation failed
       await supabase.rpc('update_token_balance', {
         p_user_id: user.id,
@@ -104,7 +98,6 @@ serve(async (req) => {
     }
 
     const cleanImageUrl = cleanImageData.preview_url;
-    console.log('Clean image generated successfully');
 
     // Store the download purchase record
     const { error: purchaseError } = await supabase
@@ -121,11 +114,8 @@ serve(async (req) => {
       });
 
     if (purchaseError) {
-      console.error('Failed to store purchase record:', purchaseError);
       // Continue anyway, user still gets their image
     }
-
-    console.log('Watermark removal completed successfully');
 
     return new Response(JSON.stringify({
       success: true,
@@ -137,7 +127,6 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('Error in remove-watermark function:', error);
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
