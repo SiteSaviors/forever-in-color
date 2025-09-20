@@ -30,11 +30,11 @@ const StepHeader = React.memo(({
   const handleStepClick = React.useCallback(() => {
     try {
       if (canAccess) {
-        triggerHapticFeedback();
+      triggerHapticFeedback();
         onStepClick();
       }
     } catch (error) {
-      console.error('Error in step click handler:', error);
+      // Error in step click handler - silent fail
     }
   }, [canAccess, onStepClick]);
 

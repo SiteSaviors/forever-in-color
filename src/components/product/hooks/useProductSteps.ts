@@ -13,13 +13,6 @@ export const useProductSteps = ({
   onCurrentStepChange
 }: UseProductStepsProps) => {
   const canProceedToStep = useCallback((step: number) => {
-    console.log(`🐛 Checking access to step ${step}:`, {
-      step1Complete: completedSteps.includes(1),
-      step2Complete: completedSteps.includes(2),
-      step3Complete: completedSteps.includes(3),
-      completedSteps
-    });
-    
     if (step === 1) return true;
     if (step === 2) return completedSteps.includes(1);
     if (step === 3) return completedSteps.includes(1) && completedSteps.includes(2);
@@ -28,8 +21,6 @@ export const useProductSteps = ({
   }, [completedSteps]);
 
   const handleStepTransition = useCallback((targetStep: number) => {
-    console.log(`🐛 Transitioning to step ${targetStep}`);
-    
     // Change the step first
     onCurrentStepChange(targetStep);
     
@@ -52,17 +43,14 @@ export const useProductSteps = ({
   }, [onCurrentStepChange]);
 
   const handleContinueToStep2 = useCallback(() => {
-    console.log('🐛 User clicked continue to step 2');
     handleStepTransition(2);
   }, [handleStepTransition]);
 
   const handleContinueToStep3 = useCallback(() => {
-    console.log('🐛 User clicked continue to step 3');
     handleStepTransition(3);
   }, [handleStepTransition]);
 
   const handleContinueToStep4 = useCallback(() => {
-    console.log('🐛 User clicked continue to step 4');
     handleStepTransition(4);
   }, [handleStepTransition]);
 

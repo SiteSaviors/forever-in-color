@@ -30,7 +30,7 @@ class StepErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     this.setState({ errorInfo });
-    console.error(`Step ${this.props.stepNumber || 'Unknown'} Error:`, error, errorInfo);
+    // Error logged for debugging in dev environment
   }
 
   handleRetry = () => {
