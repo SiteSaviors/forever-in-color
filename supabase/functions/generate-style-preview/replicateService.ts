@@ -21,13 +21,29 @@ export class ReplicateService {
   }
 
   async generateImageToImage(imageData: string, prompt: string, aspectRatio: string = "1:1", quality: string = "medium"): Promise<ReplicateGenerationResponse> {
-    // Validate inputs
+    // Enhanced validation and logging
+    console.log(`🔧 [DEBUG] generateImageToImage called with:`, {
+      imageDataLength: imageData?.length || 0,
+      imageDataPrefix: imageData?.substring(0, 50) || 'null',
+      promptLength: prompt?.length || 0,
+      aspectRatio,
+      quality
+    });
+
     if (!this.apiToken || this.apiToken === 'undefined' || this.apiToken.trim() === '') {
+      console.error(`🔧 [DEBUG] Invalid Replicate API token:`, this.apiToken);
       throw new Error('Invalid or missing Replicate API token');
     }
 
     if (!this.openaiApiKey || this.openaiApiKey === 'undefined' || this.openaiApiKey.trim() === '') {
+      console.error(`🔧 [DEBUG] Invalid OpenAI API key:`, this.openaiApiKey);
       throw new Error('Invalid or missing OpenAI API key');
+    }
+
+    // Validate image data format
+    if (!imageData || !imageData.startsWith('data:image/')) {
+      console.error(`🔧 [DEBUG] Invalid image data format. Expected data:image/... but got:`, imageData?.substring(0, 100));
+      throw new Error('Invalid image data format. Expected base64 data URL.');
     }
 
     const requestBody = {
@@ -39,6 +55,18 @@ export class ReplicateService {
         quality: quality
       }
     };
+
+    console.log(`🔧 [DEBUG] Request body structure:`, {
+      input: {
+        prompt: prompt.substring(0, 100) + '...',
+        input_images_count: requestBody.input.input_images.length,
+        input_images_sample: requestBody.input.input_images[0]?.substring(0, 100) + '...',
+        openai_api_key_present: !!requestBody.input.openai_api_key,
+        openai_api_key_prefix: requestBody.input.openai_api_key?.substring(0, 10) + '...',
+        aspect_ratio: requestBody.input.aspect_ratio,
+        quality: requestBody.input.quality
+      }
+    });
 
     try {
       // Execute with retry logic
