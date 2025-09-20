@@ -1,38 +1,45 @@
 
-export const detectOrientationFromImage = (imageUrl: string): Promise<string> => {
-  return new Promise((resolve) => {
+import { 
+  detectOrientationFromDimensions, 
+  getAspectRatio, 
+  type OrientationType,
+  validateOrientationFlow
+} from '../orientation/utils';
+
+export const detectOrientationFromImage = (imageUrl: string): Promise<OrientationType> => {
+  return new Promise((resolve, reject) => {
     const img = new Image();
+    
     img.onload = () => {
-      const aspectRatio = img.width / img.height;
-      let detectedOrientation = 'square';
-      
-      if (aspectRatio > 1.2) {
-        detectedOrientation = 'horizontal';
-      } else if (aspectRatio < 0.8) {
-        detectedOrientation = 'vertical';
-      } else {
-        detectedOrientation = 'square';
+      try {
+        const detectedOrientation = detectOrientationFromDimensions(img.width, img.height);
+        console.log(`🎯 Auto-detected canvas orientation: ${detectedOrientation} from ${img.width}x${img.height}`);
+        resolve(detectedOrientation);
+      } catch (error) {
+        console.error('❌ Error in orientation detection:', error);
+        reject(error);
       }
-      
-      console.log(`🎯 Auto-detected canvas orientation: ${detectedOrientation} (aspect ratio: ${aspectRatio.toFixed(2)})`);
-      resolve(detectedOrientation);
     };
+    
+    img.onerror = (error) => {
+      console.error('❌ Error loading image for orientation detection:', error);
+      reject(new Error('Failed to load image for orientation detection'));
+    };
+    
     img.src = imageUrl;
   });
 };
 
+// Legacy function - now uses consolidated logic
 export const convertOrientationToAspectRatio = (orientation: string) => {
-  console.log('Converting orientation to GPT-Image-1 aspect ratio:', orientation);
-  switch (orientation) {
-    case 'vertical':
-      console.log('Using 2:3 for vertical orientation (GPT-Image-1 supported)');
-      return '2:3';
-    case 'horizontal':
-      console.log('Using 3:2 for horizontal orientation (GPT-Image-1 supported)');
-      return '3:2';
-    case 'square':
-    default:
-      console.log('Using 1:1 for square orientation');
-      return '1:1';
-  }
+  console.log('⚠️ DEPRECATED: convertOrientationToAspectRatio called. Use getAspectRatio instead.');
+  return getAspectRatio(orientation);
+};
+
+// Validation helper for API calls
+export const validateOrientationForGeneration = (
+  selectedOrientation: string,
+  generationAspectRatio: string
+) => {
+  return validateOrientationFlow(selectedOrientation, generationAspectRatio);
 };

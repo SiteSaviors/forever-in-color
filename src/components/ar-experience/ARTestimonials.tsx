@@ -1,5 +1,4 @@
 
-import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Quote, Heart } from 'lucide-react';
 

@@ -1,39 +1,26 @@
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+import { StylePromptService } from './stylePromptService.ts';
+import { corsHeaders, handleCorsPreflightRequest, createCorsResponse } from './corsUtils.ts';
+import { base64ToBlob, getImageSize } from './imageUtils.ts';
+import { validateRequest } from './requestValidator.ts';
 import { OpenAIService } from './openaiService.ts';
-import { CanvasWatermarkService } from './canvasWatermarkService.ts';
-import { logSecurityEvent } from './securityLogger.ts';
-import { validateInput, extractImageData } from './inputValidation.ts';
-import { handleSuccess, handleError } from './responseHandlers.ts';
-import { EnhancedErrorHandler } from './errorHandling.ts';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-};
+import { createSuccessResponse, createErrorResponse } from './responseUtils.ts';
 
 serve(async (req) => {
   console.log(`🔥 Edge Function Request: ${req.method} ${req.url}`);
   
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    console.log('✅ Handling CORS preflight request');
-    return new Response(null, { 
-      status: 200,
-      headers: corsHeaders 
-    });
+    return handleCorsPreflightRequest();
   }
 
   // Only allow POST requests
   if (req.method !== 'POST') {
-    console.log(`❌ Method not allowed: ${req.method}`);
-    return new Response(
-      JSON.stringify({ error: 'Method not allowed' }), 
-      { 
-        status: 405, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
+    return createCorsResponse(
+      JSON.stringify(createErrorResponse('method_not_allowed', 'Method not allowed')), 
+      405
     );
   }
 
@@ -42,305 +29,99 @@ serve(async (req) => {
   console.log(`=== GPT-IMAGE-1 REQUEST START [${requestId}] ===`);
 
   try {
-    // Enhanced environment variable validation with better error messages
-    const openaiApiKey = Deno.env.get('OPENAI_API_KEY') || Deno.env.get('OPEN_AI_KEY');
-    const replicateApiToken = Deno.env.get('REPLICATE_API_TOKEN');
+    const body = await req.json();
+    console.log(`📝 [${requestId}] Request body:`, JSON.stringify({ ...body, imageUrl: 'BASE64_DATA_HIDDEN' }, null, 2));
 
-    console.log('🔧 Environment check:', {
-      hasOpenAIKey: !!openaiApiKey,
-      hasReplicateToken: !!replicateApiToken,
-      openaiKeyLength: openaiApiKey?.length || 0,
-      replicateTokenLength: replicateApiToken?.length || 0,
-      allEnvVars: Object.keys(Deno.env.toObject()).filter(key => 
-        key.includes('OPENAI') || key.includes('REPLICATE') || key.includes('API')
-      )
-    });
-
-    // Check for missing or empty OpenAI API key
-    if (!openaiApiKey || openaiApiKey.trim() === '') {
-      const errorMsg = 'OpenAI API key is not configured or is empty. Please set OPENAI_API_KEY or OPEN_AI_KEY environment variable in your Supabase project settings.';
-      console.error(`❌ [${requestId}] ${errorMsg}`);
-      
-      try {
-        await logSecurityEvent('api_key_missing', 'OpenAI API key not configured or empty', req);
-      } catch (logError) {
-        console.warn('Failed to log security event:', logError);
-      }
-      
-      return new Response(
-        JSON.stringify({ 
-          error: 'Service configuration error',
-          message: 'AI service is not properly configured. Please contact support.',
-          requestId,
-          timestamp: new Date().toISOString()
-        }), 
-        { 
-          status: 503, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+    // Validate request
+    const validation = validateRequest(body);
+    if (!validation.isValid) {
+      return createCorsResponse(
+        JSON.stringify(createErrorResponse('invalid_request', validation.error!)),
+        400
       );
     }
 
-    // Check for missing or empty Replicate API token
-    if (!replicateApiToken || replicateApiToken.trim() === '') {
-      const errorMsg = 'Replicate API token is not configured or is empty. Please set REPLICATE_API_TOKEN environment variable in your Supabase project settings.';
-      console.error(`❌ [${requestId}] ${errorMsg}`);
-      
-      try {
-        await logSecurityEvent('api_key_missing', 'Replicate API token not configured or empty', req);
-      } catch (logError) {
-        console.warn('Failed to log security event:', logError);
-      }
-      
-      return new Response(
-        JSON.stringify({ 
-          error: 'Service configuration error',
-          message: 'Image processing service is not properly configured. Please contact support.',
-          requestId,
-          timestamp: new Date().toISOString()
-        }), 
-        { 
-          status: 503, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+    const { imageUrl, style, aspectRatio, quality } = validation.data!;
+
+    const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
+    if (!openaiApiKey) {
+      console.error(`❌ [${requestId}] Missing OpenAI API key`);
+      return createCorsResponse(
+        JSON.stringify(createErrorResponse('configuration_error', 'AI service configuration error')),
+        500
       );
     }
 
-    // Parse request body with enhanced error handling
-    let body;
+    console.log(`🎨 [${requestId}] Starting generation with:`, { style, aspectRatio, quality });
+
+    // Initialize Supabase client and StylePromptService
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const stylePromptService = new StylePromptService(supabase);
+
+    // Get the tested, specific prompt for this style
+    let stylePrompt: string;
     try {
-      const rawBody = await req.text();
-      console.log(`📝 Raw request body length: ${rawBody.length}`);
-      
-      if (!rawBody || rawBody.trim() === '') {
-        throw new Error('Request body is empty');
+      const fetchedPrompt = await stylePromptService.getStylePrompt(style);
+      if (fetchedPrompt) {
+        stylePrompt = fetchedPrompt;
+        console.log(`✅ [${requestId}] Using tested prompt for style: ${style}`);
+      } else {
+        // Fallback to a basic prompt if database lookup fails
+        stylePrompt = `Transform this image into ${style} style while keeping the exact same subject, composition, and scene. Apply only the artistic style transformation. Do not change what is depicted in the image - only change how it looks artistically.`;
+        console.warn(`⚠️ [${requestId}] No prompt found for style ${style}, using fallback`);
       }
-      
-      body = JSON.parse(rawBody);
-      console.log(`📋 Parsed request body keys:`, Object.keys(body));
-    } catch (parseError) {
-      console.error(`❌ [${requestId}] Failed to parse request body:`, parseError);
-      return new Response(
-        JSON.stringify({ 
-          error: 'Invalid request format',
-          message: 'Request body must be valid JSON',
-          requestId,
-          timestamp: new Date().toISOString()
-        }), 
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+    } catch (error) {
+      console.error(`❌ [${requestId}] Error fetching style prompt:`, error);
+      stylePrompt = `Transform this image into ${style} style while keeping the exact same subject, composition, and scene. Apply only the artistic style transformation. Do not change what is depicted in the image - only change how it looks artistically.`;
+    }
+
+    console.log(`🎯 [${requestId}] Using prompt:`, stylePrompt.substring(0, 100) + '...');
+
+    // Convert aspect ratio to size
+    const size = getImageSize(aspectRatio);
+
+    // Convert base64 image to blob
+    let imageBlob: Blob;
+    try {
+      imageBlob = await base64ToBlob(imageUrl);
+      console.log(`📷 [${requestId}] Image converted to blob, size:`, imageBlob.size);
+    } catch (error) {
+      console.error(`❌ [${requestId}] Failed to convert image:`, error);
+      return createCorsResponse(
+        JSON.stringify(createErrorResponse('invalid_image', 'Invalid image format')),
+        400
       );
     }
 
-    console.log(`📋 [${requestId}] Request received:`, {
-      hasImageUrl: !!body.imageUrl,
-      style: body.style,
-      aspectRatio: body.aspectRatio,
-      isAuthenticated: body.isAuthenticated,
-      watermark: body.watermark !== false // Default to true unless explicitly false
-    });
+    // Initialize OpenAI service
+    const openaiService = new OpenAIService(openaiApiKey);
 
-    const { 
-      imageUrl, 
-      style, 
-      photoId, 
-      aspectRatio = '1:1', 
-      isAuthenticated,
-      watermark = true,  // New parameter for watermark control
-      sessionId: providedSessionId,
-      quality = 'preview' // 'preview' or 'final'
-    } = body;
-
-    // Validate required fields with better error messages
-    if (!imageUrl) {
-      console.error(`❌ [${requestId}] Missing imageUrl`);
-      return new Response(
-        JSON.stringify({ 
-          error: 'Missing required field',
-          message: 'Image URL is required',
-          field: 'imageUrl',
-          requestId,
-          timestamp: new Date().toISOString()
-        }), 
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
-    }
-
-    if (!style) {
-      console.error(`❌ [${requestId}] Missing style`);
-      return new Response(
-        JSON.stringify({ 
-          error: 'Missing required field',
-          message: 'Art style is required',
-          field: 'style',
-          requestId,
-          timestamp: new Date().toISOString()
-        }), 
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
-    }
-
-    // Generate session ID if not provided
-    const sessionId = providedSessionId || CanvasWatermarkService.generateSessionId();
-
-    // Enhanced input validation
-    const validationResult = validateInput(imageUrl, style, aspectRatio);
-    if (!validationResult.isValid) {
-      console.error(`❌ [${requestId}] Input validation failed:`, validationResult.error);
-      
-      try {
-        await logSecurityEvent('suspicious_upload', 'Input validation failed', req, {
-          reason: 'Input validation failed',
-          validation_error: validationResult.error,
-          received_style: style,
-          requestId
-        });
-      } catch (logError) {
-        console.warn('Failed to log security event:', logError);
-      }
-      
-      return new Response(
-        JSON.stringify({ 
-          error: 'Invalid input',
-          message: validationResult.error,
-          requestId,
-          timestamp: new Date().toISOString()
-        }), 
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
-    }
-
-    // Initialize Supabase (optional)
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    // Try GPT-Image-1 with image variations (maintains subject better)
+    let generatedImageUrl = await openaiService.tryImageVariations(imageBlob, stylePrompt, size, requestId);
     
-    let supabase = null;
-    if (supabaseUrl && supabaseServiceKey) {
-      supabase = createClient(supabaseUrl, supabaseServiceKey);
+    // Fallback to GPT-Image-1 edits
+    if (!generatedImageUrl) {
+      generatedImageUrl = await openaiService.tryImageEdits(imageBlob, stylePrompt, size, requestId);
     }
 
-    // Extract and validate image data
-    const imageData = extractImageData(imageUrl);
-    if (!imageData) {
-      console.error(`❌ [${requestId}] Failed to extract image data`);
-      
-      try {
-        await logSecurityEvent('invalid_image', 'Failed to extract image data', req);
-      } catch (logError) {
-        console.warn('Failed to log security event:', logError);
-      }
-      
-      return new Response(
-        JSON.stringify({ 
-          error: 'Invalid image',
-          message: 'Unable to process the provided image',
-          requestId,
-          timestamp: new Date().toISOString()
-        }), 
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
-    }
-
-    console.log(`🔧 [${requestId}] Creating OpenAI service with validated inputs`);
-
-    // Create OpenAI service with enhanced error handling
-    const openaiService = new OpenAIService(openaiApiKey, replicateApiToken, supabase);
-    
-    // Determine quality settings
-    const isPreview = quality === 'preview';
-    const imageQuality = isPreview ? 'medium' : 'high';
-    
-    // Generate image with comprehensive error handling
-    console.log(`🎨 [${requestId}] Starting generation with aspect ratio:`, aspectRatio, 'quality:', imageQuality);
-    const result = await openaiService.generateImageToImage(imageData, style, aspectRatio, imageQuality);
-
-    if (result.ok && result.output) {
-      console.log(`✅ [${requestId}] Generation successful, applying watermarks...`);
-      
-      let finalOutput = result.output;
-      
-      // Apply watermarking if requested (default behavior)
-      if (watermark) {
-        try {
-          console.log(`💧 [${requestId}] Applying watermarks with Canvas API...`);
-          
-          // Apply watermarks using the CanvasWatermarkService
-          finalOutput = await CanvasWatermarkService.createWatermarkedImage(
-            result.output, 
-            sessionId, 
-            isPreview
-          );
-          
-          console.log(`✅ [${requestId}] Canvas watermarking completed successfully`);
-          
-        } catch (watermarkError) {
-          console.error(`⚠️ [${requestId}] Canvas watermarking failed, using original:`, watermarkError);
-          // Continue with original image if watermarking fails
-          finalOutput = result.output;
-        }
-      }
-
+    if (generatedImageUrl) {
       const endTime = Date.now();
       const duration = endTime - startTime;
-      console.log(`=== ✅ GPT-IMAGE-1 COMPLETED [${requestId}] in ${duration}ms ===`);
+      console.log(`=== ✅ GENERATION COMPLETED [${requestId}] in ${duration}ms ===`);
 
-      return new Response(
-        JSON.stringify({ 
-          preview_url: finalOutput,
-          requestId,
-          timestamp: new Date().toISOString(),
-          duration: `${duration}ms`
-        }), 
-        { 
-          status: 200, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
-    } else {
-      console.error(`❌ [${requestId}] Generation failed:`, result.error);
-      
-      // Determine appropriate status code based on error type
-      let statusCode = 500;
-      let userMessage = 'Image generation failed. Please try again.';
-      
-      if (result.errorType === 'service_unavailable') {
-        statusCode = 503;
-        userMessage = 'AI service is temporarily unavailable. Please try again in a few moments.';
-      } else if (result.errorType === 'rate_limit') {
-        statusCode = 429;
-        userMessage = 'Too many requests. Please wait a moment before trying again.';
-      } else if (result.errorType === 'invalid_request') {
-        statusCode = 400;
-        userMessage = 'Invalid request. Please check your image and try again.';
-      }
-      
-      return new Response(
-        JSON.stringify({ 
-          error: result.errorType || 'generation_failed',
-          message: userMessage,
-          requestId,
-          timestamp: new Date().toISOString()
-        }), 
-        { 
-          status: statusCode, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+      return createCorsResponse(
+        JSON.stringify(createSuccessResponse(generatedImageUrl, requestId, duration))
       );
     }
+
+    // All models failed
+    console.error(`❌ [${requestId}] All models failed`);
+    return createCorsResponse(
+      JSON.stringify(createErrorResponse('generation_failed', 'AI service is temporarily unavailable. Please try again.')),
+      503
+    );
 
   } catch (error) {
     const endTime = Date.now();
@@ -349,30 +130,9 @@ serve(async (req) => {
     console.error('💥 Unexpected error:', error);
     console.error('📍 Error stack:', error.stack);
     
-    try {
-      await logSecurityEvent('generation_error', 'Unexpected error during generation', req, {
-        error: error.message,
-        stack: error.stack,
-        requestId
-      });
-    } catch (logError) {
-      console.error('Failed to log security event:', logError);
-    }
-    
-    const parsedError = EnhancedErrorHandler.parseError(error);
-    const userMessage = EnhancedErrorHandler.createUserFriendlyMessage(parsedError);
-    
-    return new Response(
-      JSON.stringify({ 
-        error: 'internal_server_error',
-        message: userMessage,
-        requestId,
-        timestamp: new Date().toISOString()
-      }), 
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
+    return createCorsResponse(
+      JSON.stringify(createErrorResponse('internal_error', 'Internal server error. Please try again.', requestId)),
+      500
     );
   }
 });

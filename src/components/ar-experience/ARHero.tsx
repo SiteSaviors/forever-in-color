@@ -1,5 +1,3 @@
-
-import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Play, Smartphone, ArrowRight } from 'lucide-react';
 

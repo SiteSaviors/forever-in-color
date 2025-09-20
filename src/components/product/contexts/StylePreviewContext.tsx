@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { useAuthStore } from '@/hooks/useAuthStore';
 import { 
@@ -70,12 +69,4 @@ export const StylePreviewProvider = ({
       {children}
     </StylePreviewContext.Provider>
   );
-};
-
-export const useStylePreview = (): StylePreviewContextType => {
-  const context = useContext(StylePreviewContext);
-  if (!context) {
-    throw new Error('useStylePreview must be used within a StylePreviewProvider');
-  }
-  return context;
 };

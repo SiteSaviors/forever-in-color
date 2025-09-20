@@ -1,62 +1,98 @@
 
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import StepProgress from "./components/StepProgress";
-import { Shield, Truck, Award } from "lucide-react";
+import { useState, useEffect } from "react";
+import StreamlinedProgress from "./components/StreamlinedProgress";
+import CustomerPhotoMarquee from "./components/CustomerPhotoMarquee";
+import LiveActivityBar from "./ProductHeader/LiveActivityBar";
+import TestimonialSection from "./ProductHeader/TestimonialSection";
+import HeaderContent from "./ProductHeader/HeaderContent";
+import TrustIndicators from "./ProductHeader/TrustIndicators";
+import AnimatedBackground from "./ProductHeader/AnimatedBackground";
 
 interface ProductHeaderProps {
   completedSteps: number[];
   totalSteps: number;
   currentStep?: number;
+  onUploadClick?: () => void;
 }
 
-const ProductHeader = ({ completedSteps, totalSteps, currentStep = 1 }: ProductHeaderProps) => {
-  const progressPercentage = (completedSteps.length / totalSteps) * 100;
+const ProductHeader = ({
+  completedSteps,
+  totalSteps,
+  currentStep = 1,
+  onUploadClick
+}: ProductHeaderProps) => {
+  const progressPercentage = completedSteps.length / totalSteps * 100;
+  const [liveUsers, setLiveUsers] = useState(423);
+  const [recentOrders, setRecentOrders] = useState(12);
+
+  // Live testimonials for social proof rotation
+  const liveTestimonials = [
+    { 
+      name: "Sarah M.", 
+      text: "Just received my canvas - absolutely stunning!", 
+      mobileText: "Canvas looks amazing!",
+      rating: 5 
+    },
+    { 
+      name: "Mike R.", 
+      text: "The AI style transformation exceeded my expectations!", 
+      mobileText: "AI results exceeded expectations!",
+      rating: 5 
+    },
+    { 
+      name: "Emma L.", 
+      text: "Customer service was incredible, delivery was fast!", 
+      mobileText: "Great service & fast delivery!",
+      rating: 5 
+    },
+    { 
+      name: "David K.", 
+      text: "Museum quality - looks amazing in our living room!", 
+      mobileText: "Museum quality results!",
+      rating: 5 
+    }
+  ];
+
+  // Enhanced live activity simulation
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLiveUsers(prev => prev + Math.floor(Math.random() * 7) - 3);
+      if (Math.random() > 0.4) {
+        setRecentOrders(prev => prev + 1);
+      }
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
-    <div className="bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 border-b border-purple-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        {/* Header Content - Mobile optimized */}
-        <div className="text-center mb-6 sm:mb-8">
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 mb-4">
-            <Badge variant="outline" className="bg-purple-100 text-purple-700 border-purple-200 text-xs sm:text-sm px-2 sm:px-3 py-1">
-              ✨ AI-Powered Art Creation
-            </Badge>
-            <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200 text-xs sm:text-sm px-2 sm:px-3 py-1">
-              {Math.round(progressPercentage)}% Complete
-            </Badge>
-          </div>
-          
-          <h1 className="text-3xl sm:text-4xl md:text-6xl font-poppins font-bold tracking-tighter mb-3 sm:mb-4 bg-gradient-to-r from-purple-600 via-purple-500 to-pink-500 bg-clip-text text-transparent leading-tight">
-            Create Your Masterpiece
-          </h1>
-          <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto px-4 sm:px-0 leading-relaxed">
-            Transform your precious memories into stunning canvas art with AI-powered artistic styles and magical AR experiences
-          </p>
+    <div className="bg-gradient-to-br from-violet-900 via-purple-800 to-fuchsia-900 relative overflow-hidden">
+      {/* Enhanced Animated Background Effects */}
+      <AnimatedBackground />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8 lg:py-10 relative z-10">
+        {/* Phase 2: Mobile-Optimized Live Activity Bar with Single-Line Layout */}
+        <LiveActivityBar liveUsers={liveUsers} progressPercentage={progressPercentage} />
+
+        {/* Phase 3: Mobile-Optimized Horizontal Inline Testimonial */}
+        <TestimonialSection testimonials={liveTestimonials} />
+
+        {/* Enhanced Header Content with Phase 1 Mobile CTA Optimization */}
+        <HeaderContent progressPercentage={progressPercentage} onUploadClick={onUploadClick} />
+
+        {/* Customer Photo Marquee - Social Proof */}
+        <div className="mb-6 md:mb-10">
+          <CustomerPhotoMarquee />
         </div>
 
-        {/* Step Progress */}
-        <StepProgress 
-          currentStep={currentStep}
-          completedSteps={completedSteps}
-          totalSteps={totalSteps}
-        />
+        {/* Progress - Only show when needed */}
+        {progressPercentage > 0 && (
+          <div className="mb-6 md:mb-10 animate-fade-in">
+            <StreamlinedProgress currentStep={currentStep} completedSteps={completedSteps} totalSteps={totalSteps} />
+          </div>
+        )}
 
-        {/* Enhanced Trust Indicators for mobile */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 text-xs sm:text-sm text-gray-600 mt-6 sm:mt-8">
-          <div className="flex items-center gap-2">
-            <Shield className="w-4 h-4 text-green-500 flex-shrink-0" />
-            <span>Secure Checkout</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Truck className="w-4 h-4 text-blue-500 flex-shrink-0" />
-            <span>Free Shipping Over $75</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Award className="w-4 h-4 text-purple-500 flex-shrink-0" />
-            <span>Premium Quality</span>
-          </div>
-        </div>
+        {/* Trust Indicators */}
+        <TrustIndicators />
       </div>
     </div>
   );

@@ -1,13 +1,10 @@
 
-import { useState } from "react";
-import StyleCardImage from "./components/StyleCardImage";
-import StyleCardInfo from "./components/StyleCardInfo";
-import StyleCardContainer from "./components/StyleCardContainer";
-import StyleCardActions from "./components/StyleCardActions";
-import StyleCardLightboxes from "./components/StyleCardLightboxes";
-import Lightbox from "@/components/ui/lightbox";
-import FullCanvasMockup from "./components/FullCanvasMockup";
-import { useStyleCardLogic } from "./hooks/useStyleCardLogic";
+import { memo } from 'react';
+import { useStyleCardHooks } from './hooks/useStyleCardHooks';
+import StyleCardSimplified from './components/StyleCardSimplified';
+import StyleCardContent from './components/StyleCardContent';
+import StyleCardErrorBoundary from './components/StyleCardErrorBoundary';
+import Lightbox from '@/components/ui/lightbox';
 
 interface StyleCardProps {
   style: {
@@ -18,174 +15,101 @@ interface StyleCardProps {
   };
   croppedImage: string | null;
   selectedStyle: number | null;
-  isPopular: boolean;
-  cropAspectRatio: number;
+  isPopular?: boolean;
+  preGeneratedPreview?: string;
+  cropAspectRatio?: number;
   selectedOrientation?: string;
   showContinueButton?: boolean;
-  shouldBlur?: boolean;
   onStyleClick: (style: { id: number; name: string; description: string; image: string }) => void;
-  onContinue?: () => void;
+  onContinue: () => void;
+  shouldBlur?: boolean;
 }
 
-const StyleCard = ({
-  style,
-  croppedImage,
-  selectedStyle,
-  isPopular,
-  cropAspectRatio,
-  selectedOrientation = "square",
-  showContinueButton = true,
-  shouldBlur = false,
-  onStyleClick,
-  onContinue
-}: StyleCardProps) => {
-  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  const [isCanvasLightboxOpen, setIsCanvasLightboxOpen] = useState(false);
-
+const StyleCard = memo((props: StyleCardProps) => {
   const {
-    isSelected,
-    isGenerating,
-    hasGeneratedPreview,
-    previewUrl,
-    error,
-    showError,
-    imageToShow,
-    showContinueInCard,
-    hasPreviewOrCropped,
-    showGeneratedBadge,
-    shouldShowBlur,
-    handleClick,
-    handleGenerateStyle,
-    handleRetry,
-    handleContinueClick
-  } = useStyleCardLogic({
     style,
     croppedImage,
-    selectedStyle,
-    shouldBlur,
-    onStyleClick,
-    onContinue
-  });
+    isPopular = false,
+    cropAspectRatio,
+    shouldBlur = false
+  } = props;
 
-  // Handle expand click for lightbox
-  const handleExpandClick = () => {
-    if (previewUrl || croppedImage) {
-      setIsLightboxOpen(true);
-    }
-  };
-
-  // Handle canvas preview click
-  const handleCanvasPreviewClick = () => {
-    if (previewUrl || croppedImage) {
-      setIsCanvasLightboxOpen(true);
-    }
-  };
-
-  console.log(`StyleCard ${style.name} (ID: ${style.id}):`, {
+  // Consolidated hooks
+  const {
+    // State
     isSelected,
-    isGenerating,
+    hasErrorBoolean,
+    errorMessage,
+    effectiveIsLoading,
+    isPermanentlyGenerated,
+    isLightboxOpen,
+    setIsLightboxOpen,
     hasGeneratedPreview,
     showGeneratedBadge,
-    shouldBlur,
-    shouldShowBlur,
-    showError,
-    hasPreview: !!previewUrl,
-    croppedImage: !!croppedImage,
-    cropAspectRatio
-  });
-
-  // Get action handlers
-  const actions = StyleCardActions({
-    style,
-    onStyleClick,
-    onContinue
-  });
+    imageToShow,
+    showContinueInCard,
+    showLockedFeedback,
+    
+    // Handlers
+    handleCardClick,
+    handleContinueClick,
+    handleGenerateWrapper,
+    handleRetryWrapper,
+    handleImageExpand,
+    
+    // Interactions
+    isPressed,
+    touchHandlers
+  } = useStyleCardHooks(props);
 
   return (
-    <>
-      <StyleCardContainer
+    <StyleCardErrorBoundary styleId={style.id} styleName={style.name}>
+      <StyleCardSimplified
         isSelected={isSelected}
         styleId={style.id}
-        onClick={handleClick}
-        shouldBlur={shouldShowBlur}
+        styleName={style.name}
+        shouldBlur={shouldBlur}
+        isGenerating={effectiveIsLoading}
+        hasError={hasErrorBoolean}
+        canAccess={!!croppedImage}
+        onClick={handleCardClick}
       >
-        {/* Hero Image Section - Make this prominent on mobile */}
-        <div className="flex-shrink-0 relative">
-          <StyleCardImage
-            style={style}
-            imageToShow={imageToShow}
-            cropAspectRatio={cropAspectRatio}
-            showLoadingState={isGenerating}
-            isPopular={isPopular}
-            showGeneratedBadge={showGeneratedBadge}
-            isSelected={isSelected}
-            hasPreviewOrCropped={hasPreviewOrCropped}
-            shouldBlur={shouldShowBlur}
-            isGenerating={isGenerating}
-            showError={showError}
-            error={error}
-            selectedOrientation={selectedOrientation}
-            previewUrl={previewUrl}
-            hasGeneratedPreview={hasGeneratedPreview}
-            onExpandClick={handleExpandClick}
-            onCanvasPreviewClick={handleCanvasPreviewClick}
-            onGenerateStyle={handleGenerateStyle}
-            onRetry={handleRetry}
-          />
-        </div>
+        <StyleCardContent
+          style={style}
+          imageToShow={imageToShow}
+          cropAspectRatio={cropAspectRatio}
+          isPopular={isPopular}
+          isSelected={isSelected}
+          hasGeneratedPreview={hasGeneratedPreview}
+          showGeneratedBadge={showGeneratedBadge}
+          showContinueInCard={showContinueInCard}
+          shouldBlur={shouldBlur}
+          hasErrorBoolean={hasErrorBoolean}
+          errorMessage={errorMessage}
+          effectiveIsLoading={effectiveIsLoading}
+          isPermanentlyGenerated={isPermanentlyGenerated}
+          showLockedFeedback={showLockedFeedback}
+          touchHandlers={touchHandlers}
+          isPressed={isPressed}
+          onContinueClick={handleContinueClick}
+          onGenerateClick={handleGenerateWrapper}
+          onRetryClick={handleRetryWrapper}
+          onImageExpand={handleImageExpand}
+        />
+      </StyleCardSimplified>
 
-        {/* Info Section - Streamlined for mobile */}
-        <div className="flex-1 flex flex-col">
-          <StyleCardInfo
-            style={style}
-            hasGeneratedPreview={hasGeneratedPreview}
-            isPopular={isPopular}
-            isSelected={isSelected}
-            showGeneratedBadge={showGeneratedBadge}
-            showContinueInCard={showContinueInCard}
-            shouldBlur={shouldShowBlur}
-            showError={showError}
-            onContinueClick={handleContinueClick}
-            onGenerateClick={actions.handleGenerateClick}
-            onRetryClick={handleRetry}
-          />
-        </div>
-      </StyleCardContainer>
-
-      <StyleCardLightboxes
-        style={style}
-        finalPreviewUrl={previewUrl}
-        croppedImage={croppedImage}
-        selectedOrientation={selectedOrientation}
-        onExpandClick={handleExpandClick}
-        onCanvasPreviewClick={handleCanvasPreviewClick}
-      />
-
-      {/* Lightboxes */}
+      {/* Lightbox for image expansion - always available */}
       <Lightbox
         isOpen={isLightboxOpen}
         onClose={() => setIsLightboxOpen(false)}
-        imageSrc={previewUrl || croppedImage || ''}
+        imageSrc={imageToShow}
         imageAlt={`${style.name} preview`}
         title={style.name}
       />
-
-      <Lightbox
-        isOpen={isCanvasLightboxOpen}
-        onClose={() => setIsCanvasLightboxOpen(false)}
-        imageSrc=""
-        imageAlt={`${style.name} canvas preview`}
-        title={`${style.name} on Canvas`}
-        customContent={
-          <FullCanvasMockup
-            imageUrl={previewUrl || croppedImage || ''}
-            orientation={selectedOrientation}
-            styleName={style.name}
-          />
-        }
-      />
-    </>
+    </StyleCardErrorBoundary>
   );
-};
+});
+
+StyleCard.displayName = 'StyleCard';
 
 export default StyleCard;

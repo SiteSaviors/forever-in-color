@@ -1,0 +1,86 @@
+
+/* Enhanced shimmer animation for skeleton loading */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Progressive image loading transitions */
+.progressive-image-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.progressive-image-placeholder {
+  filter: blur(4px);
+  transform: scale(1.05);
+  transition: all 0.3s ease;
+}
+
+.progressive-image-loaded {
+  filter: blur(0);
+  transform: scale(1);
+}
+
+/* Skeleton pulse optimization */
+.skeleton-optimized {
+  background: linear-gradient(90deg, 
+    rgba(226, 232, 240, 0.8) 25%, 
+    rgba(248, 250, 252, 0.8) 50%, 
+    rgba(226, 232, 240, 0.8) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* Loading state transitions */
+.loading-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.loading-fade-out {
+  animation: fadeOut 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+/* Prevent layout shift during loading */
+.aspect-ratio-container {
+  position: relative;
+  width: 100%;
+}
+
+.aspect-ratio-container::before {
+  content: '';
+  display: block;
+  padding-bottom: calc(var(--aspect-ratio, 1) * 100%);
+}
+
+.aspect-ratio-content {
+  position: absolute;
+  inset: 0;
+}
