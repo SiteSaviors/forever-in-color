@@ -7,7 +7,7 @@ interface StyleCardIndicatorsProps {
   showGeneratedBadge: boolean;
   isSelected: boolean;
   hasPreviewOrCropped: boolean;
-  onExpandClick: () => void;
+  onExpandClick: () => void; // Required prop
   onCanvasPreviewClick: () => void;
 }
 

@@ -8,8 +8,8 @@ export class ReplicateApiClient {
   async createPrediction(requestBody: ReplicateGenerationRequest): Promise<ReplicateGenerationResponse> {
     try {
       console.log('=== REPLICATE API CLIENT ===');
+      console.log('🔥 CRITICAL: API Client received request body with aspect_ratio:', requestBody.input?.aspect_ratio);
       console.log('Creating prediction with request body:', JSON.stringify(requestBody, null, 2));
-      console.log('ASPECT RATIO IN API CLIENT:', requestBody.input?.aspect_ratio);
       
       const response = await fetch(`${REPLICATE_CONFIG.baseUrl}/models/${REPLICATE_CONFIG.model}/predictions`, {
         method: "POST",

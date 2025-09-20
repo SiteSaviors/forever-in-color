@@ -4,14 +4,17 @@ import { Sparkles, Zap } from "lucide-react";
 
 interface StyleCardBlurOverlayProps {
   shouldBlur: boolean;
-  isGenerating: boolean;
+  isBlinking: boolean;
+  previewUrl?: string | null;
   styleName?: string;
   onGenerateStyle: (e?: React.MouseEvent) => void;
 }
 
-const StyleCardBlurOverlay = ({ shouldBlur, isGenerating, styleName, onGenerateStyle }: StyleCardBlurOverlayProps) => {
-  // Only show blur overlay if we explicitly should blur and we're not currently generating
-  if (!shouldBlur || isGenerating) return null;
+const StyleCardBlurOverlay = ({ shouldBlur, isBlinking, previewUrl, styleName, onGenerateStyle }: StyleCardBlurOverlayProps) => {
+  // Don't show if not blurring or if preview exists
+  if (!shouldBlur || previewUrl) {
+    return null;
+  }
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();

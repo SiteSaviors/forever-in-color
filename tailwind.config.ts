@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -25,6 +24,10 @@ export default {
 				'poppins': ['Poppins', 'sans-serif'],
 				'playfair': ['Playfair Display', 'serif'],
 				'inter': ['Inter', 'sans-serif'],
+			},
+			letterSpacing: {
+				'extra-tight': '-0.05em',
+				'ultra-tight': '-0.075em',
 			},
 			colors: {
 				border: 'hsl(var(--border))',
@@ -129,7 +132,6 @@ export default {
 						boxShadow: '0 20px 60px rgb(0,0,0,0.15)'
 					}
 				},
-				// New premium animations for Phase 2
 				'glass-shimmer': {
 					'0%': {
 						transform: 'translateX(-100%) skewX(-12deg)',
@@ -189,6 +191,41 @@ export default {
 					'100%': {
 						backgroundPosition: '100% 100%'
 					}
+				},
+				'confidence-build': {
+					'0%': {
+						transform: 'scale(0.98)',
+						opacity: '0.8'
+					},
+					'50%': {
+						transform: 'scale(1.01)',
+						opacity: '0.9'
+					},
+					'100%': {
+						transform: 'scale(1)',
+						opacity: '1'
+					}
+				},
+				'selection-celebrate': {
+					'0%': {
+						transform: 'scale(1)',
+					},
+					'50%': {
+						transform: 'scale(1.05)',
+					},
+					'100%': {
+						transform: 'scale(1.02)',
+					}
+				},
+				'fade-in': {
+					'0%': {
+						opacity: '0',
+						transform: 'translateY(10px)'
+					},
+					'100%': {
+						opacity: '1',
+						transform: 'translateY(0)'
+					}
 				}
 			},
 			animation: {
@@ -198,18 +235,19 @@ export default {
 				'slide-in': 'slide-in 0.3s ease-out',
 				'float': 'float 3s ease-in-out infinite',
 				'premium-hover': 'premium-hover 0.3s ease-out forwards',
-				// New premium animations for Phase 2
 				'glass-shimmer': 'glass-shimmer 2s ease-in-out infinite',
 				'morph-scale': 'morph-scale 0.3s ease-in-out',
 				'holographic-border': 'holographic-border 3s ease-in-out infinite',
 				'floating-particles': 'floating-particles 4s ease-in-out infinite',
-				'texture-flow': 'texture-flow 8s linear infinite'
+				'texture-flow': 'texture-flow 8s linear infinite',
+				'confidence-build': 'confidence-build 0.6s ease-out',
+				'selection-celebrate': 'selection-celebrate 0.4s ease-out',
+				'fade-in': 'fade-in 0.3s ease-out'
 			},
 			boxShadow: {
 				'premium': '0 8px 30px rgb(0,0,0,0.12)',
 				'premium-hover': '0 20px 60px rgb(0,0,0,0.15)',
 				'premium-selected': '0 20px 60px rgb(147,51,234,0.25)',
-				// New glass-morphism shadows
 				'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
 				'glass-hover': '0 8px 32px 0 rgba(31, 38, 135, 0.5)',
 				'holographic': '0 0 20px rgba(139, 92, 246, 0.3), 0 0 40px rgba(236, 72, 153, 0.2)'
