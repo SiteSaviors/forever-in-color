@@ -1,15 +1,7 @@
 
 /* Core Animation Keyframes */
 
-/* Floating animation with different speeds */
-@keyframes float-gentle {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
-}
+/* Floating animation with different speeds - removed duplicate float-gentle (defined in index.css) */
 
 @keyframes float-slow {
   0%, 100% {
@@ -70,10 +62,7 @@
   }
 }
 
-/* Animation classes */
-.float-gentle {
-  animation: float-gentle 6s ease-in-out infinite;
-}
+/* Animation classes - removed duplicate float-gentle (defined in index.css) */
 
 .float-slow {
   animation: float-slow 8s ease-in-out infinite;

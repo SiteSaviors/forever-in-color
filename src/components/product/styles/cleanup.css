@@ -10,14 +10,34 @@
 */
 
 /* NEW - Use these instead: */
-.step-container-optimized { @apply perf-base; }
-.sparkle-effect { @apply perf-base; }
-.accordion-trigger-optimized { @apply perf-base; }
-.chevron-optimized { @apply perf-base; }
+.step-container-optimized { 
+  will-change: auto;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+.sparkle-effect { 
+  will-change: auto;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+.accordion-trigger-optimized { 
+  will-change: auto;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+.chevron-optimized { 
+  will-change: auto;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
 
 /* Apply perf-animating class only during active animations */
-.step-container-optimized.is-animating { @apply perf-animating; }
-.sparkle-effect.is-animating { @apply perf-animating; }
+.step-container-optimized.is-animating { 
+  will-change: transform, opacity;
+}
+.sparkle-effect.is-animating { 
+  will-change: transform, opacity;
+}
 
 /* Cleanup utility - automatically removes will-change after animations */
 .perf-cleanup {

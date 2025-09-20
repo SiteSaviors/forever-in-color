@@ -11,19 +11,7 @@
   }
 }
 
-/* Premium pulse animation for gradient text */
-@keyframes premium-pulse {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-    filter: drop-shadow(0 0 8px rgba(236, 72, 153, 0.3));
-  }
-  50% {
-    opacity: 0.85;
-    transform: scale(1.015);
-    filter: drop-shadow(0 0 16px rgba(236, 72, 153, 0.5));
-  }
-}
+/* Premium pulse animation for gradient text - removed duplicate (defined in index.css) */
 
 /* Live activity animations */
 @keyframes live-pulse {
@@ -54,9 +42,7 @@
   animation: glow-pulse 3s ease-in-out infinite;
 }
 
-.premium-pulse {
-  animation: premium-pulse 3.5s ease-in-out infinite;
-}
+/* .premium-pulse removed - using definition from index.css */
 
 .live-pulse {
   animation: live-pulse 2s ease-in-out infinite;
