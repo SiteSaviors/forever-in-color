@@ -53,7 +53,6 @@ export const useImageProcessing = () => {
       }
       
       setRecommendedOrientation(detected);
-      console.log('🎯 Auto-detected recommended orientation:', detected, 'from aspect ratio:', aspectRatio.toFixed(2));
     };
     img.src = imageUrl;
   };

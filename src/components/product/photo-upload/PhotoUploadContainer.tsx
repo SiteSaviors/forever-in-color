@@ -34,7 +34,6 @@ const PhotoUploadContainer = ({ onImageUpload, initialImage }: PhotoUploadContai
         setShowAutoCropPreview(true);
       }, 1500);
     } catch (error) {
-      console.error('Error analyzing image:', error);
       setRecommendedOrientation('square');
       setAnalysisComplete(true);
       setCurrentFlowStage('crop-preview');
@@ -73,7 +72,6 @@ const PhotoUploadContainer = ({ onImageUpload, initialImage }: PhotoUploadContai
   }, [initialImage]);
 
   const handleAcceptAutoCrop = (croppedImageUrl: string) => {
-    console.log('✅ Accepting auto crop with URL:', croppedImageUrl);
     setCropAccepted(true);
     setCurrentFlowStage('complete');
     setShowAutoCropPreview(false);
@@ -89,7 +87,6 @@ const PhotoUploadContainer = ({ onImageUpload, initialImage }: PhotoUploadContai
   };
 
   const handleCropComplete = (croppedImage: string, aspectRatio: number, orientation: string) => {
-    console.log('Custom crop completed:', { croppedImage, aspectRatio, orientation });
     setCropAccepted(true);
     setCurrentFlowStage('complete');
     onImageUpload(croppedImage, uploadedImage || undefined, orientation);

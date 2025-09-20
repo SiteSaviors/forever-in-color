@@ -42,7 +42,6 @@ export const usePhotoUploadLogic = ({
   const handleFileSelect = async (file: File) => {
     const validationResult = await validateImageFile(file);
     if (!validationResult.isValid) {
-      console.error('File validation failed:', validationResult.error);
       return;
     }
 
@@ -67,9 +66,7 @@ export const usePhotoUploadLogic = ({
         }, 800);
       }, 2000);
 
-      console.log('Photo uploaded, starting AI analysis:', imageUrl);
     } catch (error) {
-      console.error('Error uploading file:', error);
       setIsUploading(false);
       setUploadProgress(0);
       setProcessingStage("");

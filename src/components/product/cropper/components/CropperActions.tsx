@@ -30,8 +30,6 @@ const CropperActions = ({
       const validationResult = await validateImageFile(file);
       if (validationResult.isValid) {
         onChangePhoto(file);
-      } else {
-        console.error('File validation failed:', validationResult.error);
       }
     }
   };
