@@ -5,6 +5,43 @@ export class OpenAIService {
     this.apiKey = apiKey;
   }
 
+  async generateStyledImage(imageDataUrl: string, stylePrompt: string, size: string, requestId: string): Promise<string | null> {
+    try {
+      // Create a comprehensive prompt that includes the style transformation
+      const fullPrompt = `Transform this image with the following style: ${stylePrompt}. Maintain the same composition, subject positioning, and key visual elements while applying the artistic style transformation.`;
+
+      const response = await fetch('https://api.openai.com/v1/images/generations', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-image-1',
+          prompt: fullPrompt,
+          size: size,
+          n: 1,
+          quality: 'standard'
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.data && result.data[0]?.b64_json) {
+          // gpt-image-1 returns base64, convert to data URL
+          return `data:image/png;base64,${result.data[0].b64_json}`;
+        }
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error(`🔧 [DIAGNOSTIC] Image generation failed - Status: ${response.status}, Error:`, errorData);
+      }
+    } catch (error) {
+      console.error(`🔧 [DIAGNOSTIC] Image generation exception:`, error);
+    }
+    return null;
+  }
+
+  // Keep legacy methods as fallbacks
   async tryImageVariations(imageBlob: Blob, stylePrompt: string, size: string, requestId: string): Promise<string | null> {
     try {
       const formData = new FormData();

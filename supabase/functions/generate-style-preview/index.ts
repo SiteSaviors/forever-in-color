@@ -89,16 +89,16 @@ serve(async (req) => {
     
     const openaiService = new OpenAIService(openaiApiKey);
 
-    // Try GPT-Image-1 with image variations (maintains subject better)
-    console.log(`🔧 [DIAGNOSTIC] Attempting image variations...`);
-    let generatedImageUrl = await openaiService.tryImageVariations(imageBlob, stylePrompt, size, requestId);
-    console.log(`🔧 [DIAGNOSTIC] Image variations result: ${generatedImageUrl ? 'SUCCESS' : 'FAILED'}`);
+    // Try GPT-Image-1 with generation (supports rectangular sizes)
+    console.log(`🔧 [DIAGNOSTIC] Attempting image generation...`);
+    let generatedImageUrl = await openaiService.generateStyledImage(imageUrl, stylePrompt, size, requestId);
+    console.log(`🔧 [DIAGNOSTIC] Image generation result: ${generatedImageUrl ? 'SUCCESS' : 'FAILED'}`);
     
-    // Fallback to GPT-Image-1 edits
-    if (!generatedImageUrl) {
-      console.log(`🔧 [DIAGNOSTIC] Attempting image edits...`);
-      generatedImageUrl = await openaiService.tryImageEdits(imageBlob, stylePrompt, size, requestId);
-      console.log(`🔧 [DIAGNOSTIC] Image edits result: ${generatedImageUrl ? 'SUCCESS' : 'FAILED'}`);
+    // Fallback to variations if generation fails (square sizes only)
+    if (!generatedImageUrl && size === '1024x1024') {
+      console.log(`🔧 [DIAGNOSTIC] Attempting image variations fallback...`);
+      generatedImageUrl = await openaiService.tryImageVariations(imageBlob, stylePrompt, size, requestId);
+      console.log(`🔧 [DIAGNOSTIC] Image variations result: ${generatedImageUrl ? 'SUCCESS' : 'FAILED'}`);
     }
 
     if (generatedImageUrl) {
