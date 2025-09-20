@@ -1,5 +1,5 @@
 
-import PhotoUploadAndStyleSelection from "../PhotoUploadAndStyleSelection";
+import PhotoAndStyleStep from "./PhotoAndStyleStep";
 import ProductStepWrapper from "./ProductStepWrapper";
 
 interface PhotoUploadStepProps {
@@ -45,7 +45,7 @@ const PhotoUploadStep = ({
       selectedStyle={selectedStyle}
     >
       {currentStep === 1 && (
-        <PhotoUploadAndStyleSelection
+        <PhotoAndStyleStep
           selectedStyle={selectedStyle}
           uploadedImage={uploadedImage}
           selectedOrientation={selectedOrientation}

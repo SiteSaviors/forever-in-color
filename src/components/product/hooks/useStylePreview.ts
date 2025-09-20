@@ -2,6 +2,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { generateStylePreview } from '@/utils/stylePreviewApi';
 import { addWatermarkToImage } from '@/utils/watermarkUtils';
+import { getAspectRatio, validateOrientationFlow } from '../orientation/utils';
+import { useAspectRatioValidator } from '../orientation/hooks/useAspectRatioValidator';
 
 interface UseStylePreviewProps {
   style: {
@@ -28,6 +30,9 @@ export const useStylePreview = ({
   const [isLoading, setIsLoading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [hasGeneratedPreview, setHasGeneratedPreview] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
+  
+  const { validateWithRecovery, autoCorrect } = useAspectRatioValidator();
 
   // Initialize with pre-generated preview if available
   useEffect(() => {
@@ -52,47 +57,50 @@ export const useStylePreview = ({
 
   const isStyleGenerated = hasGeneratedPreview && !!(preGeneratedPreview || previewUrl);
 
-  // Convert selected orientation to GPT-Image-1 supported aspect ratios
-  const getGenerationAspectRatio = useCallback(() => {
-    console.log('Converting selected orientation to GPT-Image-1 aspect ratio:', selectedOrientation);
-    
-    switch (selectedOrientation) {
-      case 'vertical':
-        console.log('Using 2:3 aspect ratio for vertical orientation (GPT-Image-1 supported)');
-        return '2:3';
-      case 'horizontal':
-        console.log('Using 3:2 aspect ratio for horizontal orientation (GPT-Image-1 supported)');
-        return '3:2';
-      case 'square':
-      default:
-        console.log('Using 1:1 aspect ratio for square orientation');
-        return '1:1';
-    }
-  }, [selectedOrientation]);
-
   const generatePreview = useCallback(async () => {
     if (!croppedImage || style.id === 1 || preGeneratedPreview) {
       console.log(`Cannot generate preview for ${style.name}: croppedImage=${!!croppedImage}, styleId=${style.id}, preGenerated=${!!preGeneratedPreview}`);
       return;
     }
 
-    const aspectRatio = getGenerationAspectRatio();
-    console.log(`🎨 Starting preview generation for style: ${style.name} (ID: ${style.id}) with orientation: ${selectedOrientation} -> aspect ratio: ${aspectRatio}`);
+    console.log(`🎯 useStylePreview: Selected orientation is: ${selectedOrientation}`);
     
+    // ENHANCED: Use validator with auto-correction
+    const correctedOrientation = autoCorrect(selectedOrientation);
+    const aspectRatio = getAspectRatio(correctedOrientation);
+    
+    console.log(`🎨 Starting preview generation for style: ${style.name} (ID: ${style.id}) with corrected orientation: ${correctedOrientation} -> aspect ratio: ${aspectRatio}`);
+    
+    // ENHANCED: Validate with recovery
+    const validation = validateWithRecovery(correctedOrientation, aspectRatio);
+    if (!validation.isValid && !validation.correctedValue) {
+      const errorMsg = `Aspect ratio validation failed: ${validation.error}`;
+      console.error(`❌ ${errorMsg}`);
+      setValidationError(errorMsg);
+      return;
+    }
+
+    // Use corrected value if validation failed but correction is available
+    const finalAspectRatio = validation.correctedValue || aspectRatio;
+    
+    // Clear any previous validation errors
+    setValidationError(null);
     setIsLoading(true);
     
     try {
-      console.log(`🔄 Generating preview for ${style.name} with aspect ratio: ${aspectRatio}`);
+      console.log(`🔄 Generating preview for ${style.name} with validated aspect ratio: ${finalAspectRatio} (from orientation: ${correctedOrientation})`);
       
       const tempPhotoId = `temp_${Date.now()}_${style.id}`;
       
-      // Generate the preview without server-side watermarking
-      const rawPreviewUrl = await generateStylePreview(croppedImage, style.name, tempPhotoId, aspectRatio, {
+      console.log(`🔥 CRITICAL DEBUG: About to call generateStylePreview with aspectRatio: ${finalAspectRatio}`);
+      
+      // ENHANCED: Generate with validated and potentially corrected aspect ratio
+      const rawPreviewUrl = await generateStylePreview(croppedImage, style.name, tempPhotoId, finalAspectRatio, {
         watermark: false // Disable server-side watermarking
       });
 
       if (rawPreviewUrl) {
-        console.log(`✅ Raw preview generated for ${style.name}, applying client-side watermark...`);
+        console.log(`✅ Raw preview generated for ${style.name} with correct aspect ratio ${finalAspectRatio}, applying client-side watermark...`);
         
         try {
           // Apply client-side watermarking
@@ -110,11 +118,12 @@ export const useStylePreview = ({
       }
     } catch (error) {
       console.error(`❌ Error generating preview for ${style.name}:`, error);
+      setValidationError(`Generation failed: ${error.message}`);
     } finally {
       setIsLoading(false);
-      console.log(`🏁 Preview generation completed for ${style.name} (ID: ${style.id})`);
+      console.log(`🏁 Preview generation completed for ${style.name} (ID: ${style.id}) with aspect ratio: ${finalAspectRatio}`);
     }
-  }, [croppedImage, style.id, style.name, preGeneratedPreview, getGenerationAspectRatio, selectedOrientation]);
+  }, [croppedImage, style.id, style.name, preGeneratedPreview, selectedOrientation, validateWithRecovery, autoCorrect]);
 
   const handleClick = useCallback(() => {
     console.log(`🎯 Style clicked: ${style.name} (ID: ${style.id}) with orientation: ${selectedOrientation}`);
@@ -131,6 +140,7 @@ export const useStylePreview = ({
     previewUrl,
     hasGeneratedPreview,
     isStyleGenerated,
+    validationError,
     handleClick,
     generatePreview
   };
