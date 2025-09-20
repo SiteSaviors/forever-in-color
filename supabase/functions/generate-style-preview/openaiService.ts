@@ -11,6 +11,7 @@ export class OpenAIService {
       
       const formData = new FormData();
       formData.append('image', imageBlob, 'image.jpg');
+      formData.append('prompt', stylePrompt);
       formData.append('model', 'gpt-image-1');
       formData.append('size', size);
       formData.append('n', '1');
