@@ -6,15 +6,12 @@ export class PollingService {
   constructor(private apiToken: string) {}
 
   async pollForCompletion(predictionId: string, getUrl: string): Promise<ReplicateGenerationResponse> {
-    console.log('=== POLLING SERVICE ===');
-    console.log('Starting enhanced polling for prediction:', predictionId);
     
     const maxAttempts = 30; // 60 seconds total
     const pollInterval = 2000; // 2 seconds
     
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
-        console.log(`Polling attempt ${attempt}/${maxAttempts} for prediction ${predictionId}`);
         
         const result = await executeWithRetry(async () => {
           const response = await fetch(getUrl, {
@@ -25,7 +22,6 @@ export class PollingService {
 
           if (!response.ok) {
             const errorText = await response.text();
-            console.error(`Polling failed with status ${response.status}:`, errorText);
             
             if (response.status === 503) {
               const error = new Error('Service temporarily unavailable');
@@ -39,7 +35,7 @@ export class PollingService {
           return await response.json();
         }, `Polling attempt ${attempt}`);
 
-        console.log(`Poll attempt ${attempt} status:`, result.status);
+        
 
         if (result.status === 'succeeded') {
           let outputUrl = result.output;
@@ -47,7 +43,7 @@ export class PollingService {
             outputUrl = outputUrl[0];
           }
           
-          console.log('GPT-Image-1 polling completed successfully:', outputUrl);
+          
           return {
             ok: true,
             output: outputUrl
@@ -56,7 +52,6 @@ export class PollingService {
         
         if (result.status === 'failed') {
           const errorMsg = result.error || 'Generation failed during polling';
-          console.error('GPT-Image-1 failed during polling:', errorMsg);
           
           return {
             ok: false,
@@ -81,7 +76,6 @@ export class PollingService {
         }
 
       } catch (error) {
-        console.error(`Polling attempt ${attempt} error:`, error);
         
         // If this is the last attempt, return the error
         if (attempt >= maxAttempts) {
@@ -97,7 +91,7 @@ export class PollingService {
       }
     }
 
-    console.log('Polling timed out after', maxAttempts, 'attempts');
+    
     return {
       ok: false,
       error: 'Generation is taking longer than expected. Please try again.'

@@ -10,13 +10,11 @@ export class WatermarkService {
     // Import imagescript for Deno edge runtime
     const { Image } = await import('https://deno.land/x/imagescript@1.2.15/mod.ts');
     
-    console.log('Creating watermarked image with imagescript');
+    
     
     try {
       // Load the original generated image
       const originalImage = await Image.decode(new Uint8Array(imageBuffer));
-      
-      console.log('Original image metadata:', { width: originalImage.width, height: originalImage.height });
 
       if (isPreview) {
         // 1. Load the transparent infinity logo
@@ -36,11 +34,8 @@ export class WatermarkService {
 
             // Composite logo with transparency
             originalImage.composite(resizedLogo, logoLeft, logoTop);
-            
-            console.log('Added infinity logo watermark');
           }
         } catch (logoError) {
-          console.warn('Could not load logo watermark:', logoError);
         }
 
         // 2. Create "FOREVER IN COLOR" text overlay
@@ -57,18 +52,15 @@ export class WatermarkService {
           // In a real implementation, you'd want to use a proper text rendering solution
           // For now, we'll just add the logo which is the main visual watermark
           
-          console.log('Session info added to watermark:', watermarkText);
+          
         }
       }
 
       // Encode the final watermarked image
       const outputBuffer = await originalImage.encode();
-
-      console.log('Watermarking completed successfully with imagescript');
       return outputBuffer.buffer;
 
     } catch (error) {
-      console.error('Watermarking failed:', error);
       // Return original image if watermarking fails
       return imageBuffer;
     }

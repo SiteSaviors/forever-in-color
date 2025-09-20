@@ -3,7 +3,6 @@ export class ImageAnalysisService {
   constructor(private apiKey: string) {}
 
   async analyzeImage(imageData: string): Promise<string> {
-    console.log('Analyzing image with GPT-4 Vision to extract subject details');
     
     try {
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -37,7 +36,6 @@ export class ImageAnalysisService {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('GPT-4 Vision analysis error:', errorData);
         throw new Error(`Image analysis failed: ${errorData.error?.message || 'Unknown error'}`);
       }
 
@@ -48,11 +46,10 @@ export class ImageAnalysisService {
         throw new Error('No description returned from image analysis');
       }
 
-      console.log('Image analysis completed successfully');
+      
       return description;
 
     } catch (error) {
-      console.error('Error analyzing image:', error);
       throw error;
     }
   }

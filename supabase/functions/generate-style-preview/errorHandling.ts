@@ -9,11 +9,6 @@ export interface ApiError {
 
 export class EnhancedErrorHandler {
   static parseError(error: any, response?: Response): ApiError {
-    console.log('=== ERROR ANALYSIS ===');
-    console.log('Error type:', typeof error);
-    console.log('Error message:', error?.message);
-    console.log('Response status:', response?.status);
-    console.log('Response headers:', response?.headers ? Object.fromEntries(response.headers.entries()) : 'None');
 
     // Handle network/fetch errors
     if (!response && error?.name === 'TypeError') {
@@ -155,26 +150,17 @@ export async function executeWithRetry<T>(
   
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
-      console.log(`${context} - Attempt ${attempt}/3`);
       return await operation();
     } catch (error) {
       const parsedError = EnhancedErrorHandler.parseError(error);
       lastError = parsedError;
       
-      console.log(`${context} - Attempt ${attempt} failed:`, {
-        type: parsedError.type,
-        status: parsedError.status,
-        message: parsedError.message
-      });
-
       if (!EnhancedErrorHandler.shouldRetry(parsedError, attempt)) {
-        console.log(`${context} - Not retrying (attempt ${attempt})`);
         break;
       }
 
       if (attempt < 3) {
         const delay = EnhancedErrorHandler.getRetryDelay(parsedError, attempt);
-        console.log(`${context} - Retrying in ${delay}ms`);
         await new Promise(resolve => setTimeout(resolve, delay));
       }
     }

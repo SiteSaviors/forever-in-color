@@ -3,9 +3,6 @@ export class ImageGenerationService {
   constructor(private openaiApiKey: string, private replicateApiToken: string) {}
 
   async generateImageToImage(imageData: string, prompt: string, aspectRatio: string = "1:1", quality: string = "medium"): Promise<{ ok: boolean; output?: string; error?: string }> {
-    console.log('=== IMAGE GENERATION SERVICE ===');
-    console.log('Using Replicate GPT-Image-1 for image transformation with prompt:', prompt);
-    console.log('ASPECT RATIO PARAMETER:', aspectRatio);
     
     try {
       // Use Replicate's GPT-Image-1 endpoint
@@ -19,8 +16,6 @@ export class ImageGenerationService {
         }
       };
 
-      console.log('SENDING TO REPLICATE API:', JSON.stringify(requestBody, null, 2));
-      console.log('ASPECT RATIO IN API CALL:', requestBody.input.aspect_ratio);
 
       const response = await fetch('https://api.replicate.com/v1/models/openai/gpt-image-1/predictions', {
         method: 'POST',
@@ -34,7 +29,6 @@ export class ImageGenerationService {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('Replicate GPT-Image-1 API error:', errorData);
         return {
           ok: false,
           error: errorData.detail || errorData.error || 'Image generation failed'
@@ -42,7 +36,6 @@ export class ImageGenerationService {
       }
 
       const data = await response.json();
-      console.log('Replicate response:', data);
       
       // Handle different response formats
       if (data.status === 'succeeded' && data.output) {
@@ -52,7 +45,7 @@ export class ImageGenerationService {
           outputUrl = outputUrl[0];
         }
         
-        console.log('GPT-Image-1 generation successful via Replicate with aspect ratio:', aspectRatio, 'Output URL:', outputUrl);
+        
         return {
           ok: true,
           output: outputUrl
@@ -73,7 +66,6 @@ export class ImageGenerationService {
       };
 
     } catch (error) {
-      console.error('Replicate GPT-Image-1 generation error:', error);
       return {
         ok: false,
         error: error.message
@@ -82,7 +74,6 @@ export class ImageGenerationService {
   }
 
   private async pollForCompletion(predictionId: string): Promise<{ ok: boolean; output?: string; error?: string }> {
-    console.log('Polling for completion:', predictionId);
     
     const maxAttempts = 30; // Max 30 attempts (60 seconds with 2s intervals)
     let attempts = 0;
@@ -96,7 +87,6 @@ export class ImageGenerationService {
         });
 
         if (!response.ok) {
-          console.error('Polling failed:', response.status);
           return {
             ok: false,
             error: `Polling failed: ${response.status}`
@@ -104,7 +94,6 @@ export class ImageGenerationService {
         }
 
         const result = await response.json();
-        console.log(`Poll attempt ${attempts + 1}, status:`, result.status);
 
         if (result.status === 'succeeded') {
           let outputUrl = result.output;
@@ -112,13 +101,12 @@ export class ImageGenerationService {
             outputUrl = outputUrl[0];
           }
           
-          console.log('Generation succeeded:', outputUrl);
+          
           return {
             ok: true,
             output: outputUrl
           };
         } else if (result.status === 'failed') {
-          console.error('Generation failed:', result.error);
           return {
             ok: false,
             error: result.error || 'Image generation failed'
@@ -134,7 +122,6 @@ export class ImageGenerationService {
         await new Promise(resolve => setTimeout(resolve, 2000));
         attempts++;
       } catch (error) {
-        console.error('Polling error:', error);
         attempts++;
         await new Promise(resolve => setTimeout(resolve, 2000));
       }

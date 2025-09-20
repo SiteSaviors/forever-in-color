@@ -1,7 +1,5 @@
 
 export function validateInput(imageUrl: string, style: string, aspectRatio: string) {
-  console.log('=== INPUT VALIDATION ===');
-  console.log('Validating aspect ratio:', aspectRatio);
   
   // Check required fields
   if (!imageUrl || typeof imageUrl !== 'string') {
@@ -27,15 +25,13 @@ export function validateInput(imageUrl: string, style: string, aspectRatio: stri
   ];
 
   if (!validAspectRatios.includes(aspectRatio)) {
-    console.error('Invalid aspect ratio received:', aspectRatio);
-    console.error('Valid ratios are:', validAspectRatios);
     return { 
       isValid: false, 
       error: `Invalid aspect ratio. Must be one of: ${validAspectRatios.join(', ')}` 
     };
   }
 
-  console.log('Aspect ratio validation passed:', aspectRatio);
+  
 
   // Basic image URL validation
   if (!imageUrl.startsWith('data:image/')) {
@@ -47,7 +43,7 @@ export function validateInput(imageUrl: string, style: string, aspectRatio: stri
     return { isValid: false, error: 'Style name too long' };
   }
 
-  console.log('All input validation passed');
+  
   return { isValid: true };
 }
 
@@ -58,7 +54,6 @@ export function extractImageData(imageUrl: string): string | null {
     }
     return null;
   } catch (error) {
-    console.error('Error extracting image data:', error);
     return null;
   }
 }
