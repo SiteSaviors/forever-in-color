@@ -3,11 +3,8 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MobileButton } from "@/components/ui/mobile-button";
-import { MobileTypography } from "@/components/ui/mobile-typography";
 import { Sparkles, Check, Edit3, Zap } from "lucide-react";
 import { generateSmartCrop } from "../utils/smartCropUtils";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 interface AutoCropPreviewProps {
   imageUrl: string;
@@ -16,42 +13,41 @@ interface AutoCropPreviewProps {
   recommendedOrientation: string;
 }
 
-  const AutoCropPreview = ({ 
-    imageUrl, 
-    onAcceptCrop, 
-    onCustomizeCrop, 
-    recommendedOrientation 
-  }: AutoCropPreviewProps) => {
-    const [showPreview, setShowPreview] = useState(false);
-    const [analysisComplete, setAnalysisComplete] = useState(false);
-    const [croppedImageUrl, setCroppedImageUrl] = useState<string>("");
-    const [isGeneratingCrop, setIsGeneratingCrop] = useState(true);
-    const isMobile = useIsMobile();
+const AutoCropPreview = ({ 
+  imageUrl, 
+  onAcceptCrop, 
+  onCustomizeCrop, 
+  recommendedOrientation 
+}: AutoCropPreviewProps) => {
+  const [showPreview, setShowPreview] = useState(false);
+  const [analysisComplete, setAnalysisComplete] = useState(false);
+  const [croppedImageUrl, setCroppedImageUrl] = useState<string>("");
+  const [isGeneratingCrop, setIsGeneratingCrop] = useState(true);
 
-  // Dynamic sizing based on orientation with mobile optimization
+  // Dynamic sizing based on orientation
   const getDynamicCropStyles = (orientation: string) => {
     switch (orientation) {
       case 'vertical':
         return {
-          containerClass: "w-full max-w-md mx-auto",
+          containerClass: "w-full max-w-md mx-auto", // Narrower container for vertical
           imageClass: "w-full object-cover",
-          aspectRatio: "2/3",
-          heightClass: "h-56 sm:h-96" // Shorter on mobile
+          aspectRatio: "2/3", // 2:3 for vertical (portrait)
+          heightClass: "h-96" // Taller for vertical
         };
       case 'horizontal':
         return {
-          containerClass: "w-full max-w-2xl mx-auto",
+          containerClass: "w-full max-w-2xl mx-auto", // Wider container for horizontal
           imageClass: "w-full object-cover",
-          aspectRatio: "3/2",
-          heightClass: "h-32 sm:h-48" // Shorter on mobile
+          aspectRatio: "3/2", // 3:2 for horizontal (landscape)
+          heightClass: "h-48" // Shorter for horizontal
         };
       case 'square':
       default:
         return {
-          containerClass: "w-full max-w-lg mx-auto",
+          containerClass: "w-full max-w-lg mx-auto", // Balanced container for square
           imageClass: "w-full object-cover",
-          aspectRatio: "1/1",
-          heightClass: "h-40 sm:h-64" // Shorter on mobile
+          aspectRatio: "1/1", // 1:1 for square
+          heightClass: "h-64" // Balanced height for square
         };
     }
   };
@@ -109,60 +105,54 @@ interface AutoCropPreviewProps {
   };
 
   return (
-    <div className="space-y-3 sm:space-y-6">
+    <div className="space-y-6">
       {/* AI Analysis Header */}
-      <div className="text-center space-y-2 sm:space-y-4">
+      <div className="text-center space-y-4">
         <div className="flex justify-center">
-          <div className="relative p-3 sm:p-4 bg-gradient-to-br from-cyan-100/80 to-fuchsia-100/80 rounded-xl sm:rounded-2xl shadow-2xl backdrop-blur-sm">
-            <Zap className="w-6 h-6 sm:w-8 sm:h-8 text-cyan-600" />
+          <div className="relative p-4 bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl shadow-lg">
+            <Zap className="w-8 h-8 text-purple-600" />
             {analysisComplete && !isGeneratingCrop && (
               <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
                 <Check className="w-3 h-3 text-white" />
               </div>
             )}
             {isGeneratingCrop && (
-              <Sparkles className="absolute -top-1 -right-1 w-4 h-4 text-fuchsia-500 animate-pulse" />
+              <Sparkles className="absolute -top-1 -right-1 w-4 h-4 text-pink-500 animate-pulse" />
             )}
           </div>
         </div>
 
-        <div className="space-y-1 sm:space-y-2">
-          <MobileTypography 
-            variant="h2" 
-            className="font-montserrat font-black tracking-tight drop-shadow-2xl"
-          >
+        <div className="space-y-2">
+          <h3 className="font-montserrat font-black text-3xl sm:text-4xl lg:text-5xl tracking-tight drop-shadow-2xl">
             {analysisComplete && !isGeneratingCrop ? (
               <>
-                <span className="text-white block mb-1 sm:mb-2">AI Analysis</span>
+                <span className="text-white block mb-2">AI Analysis</span>
                 <span className="bg-gradient-to-r from-cyan-300 via-violet-300 to-fuchsia-300 bg-clip-text text-transparent font-oswald">
                   COMPLETE! ✨
                 </span>
               </>
             ) : (
               <>
-                <span className="text-white block mb-1 sm:mb-2">Analyzing</span>
+                <span className="text-white block mb-2">Analyzing</span>
                 <span className="bg-gradient-to-r from-cyan-300 via-violet-300 to-fuchsia-300 bg-clip-text text-transparent font-oswald animate-pulse">
                   YOUR PHOTO 🧠
                 </span>
               </>
             )}
-          </MobileTypography>
-          <MobileTypography 
-            variant="body"
-            className="font-poppins text-white/90 max-w-xl mx-auto drop-shadow-lg"
-          >
+          </h3>
+          <p className="font-poppins text-white/90 max-w-xl mx-auto text-base sm:text-lg lg:text-xl drop-shadow-lg">
             {analysisComplete && !isGeneratingCrop
               ? "We've discovered the perfect crop and premium canvas orientation for your treasured image"
               : "Our AI is detecting the optimal composition and artistic canvas format for maximum impact"
             }
-          </MobileTypography>
+          </p>
         </div>
       </div>
 
       {/* Preview Area */}
       {showPreview && (
-        <Card className="overflow-hidden border-2 border-dashed border-cyan-200/60 bg-gradient-to-br from-cyan-50/80 via-violet-50/60 to-fuchsia-100/40 backdrop-blur-xl shadow-2xl">
-          <div className="p-3 sm:p-6 space-y-3 sm:space-y-4">
+        <Card className="overflow-hidden border-2 border-dashed border-purple-300 bg-gradient-to-br from-purple-50 to-pink-50">
+          <div className="p-6 space-y-4">
             {/* Dynamic Crop Preview Container */}
             <div className={`${dynamicStyles.containerClass} transition-all duration-500 ease-in-out`}>
               {/* Crop Preview with Smart Crop Applied */}
@@ -173,12 +163,12 @@ interface AutoCropPreviewProps {
                     style={{ aspectRatio: dynamicStyles.aspectRatio }}
                   >
                     <div className="text-center space-y-2">
-                      <Sparkles className="w-8 h-8 text-cyan-500 animate-spin mx-auto" />
+                      <Sparkles className="w-8 h-8 text-purple-500 animate-spin mx-auto" />
                       <p className="text-gray-600">Applying smart crop...</p>
                       <div className="flex items-center justify-center gap-1">
-                        <div className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-fuchsia-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                        <div className="w-2 h-2 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                        <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce"></div>
+                        <div className="w-2 h-2 bg-pink-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                        <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                       </div>
                     </div>
                   </div>
@@ -193,9 +183,9 @@ interface AutoCropPreviewProps {
                     
                     {/* Smart Crop Overlay - only show when we have a cropped image different from original */}
                     {croppedImageUrl !== imageUrl && (
-                      <div className="absolute inset-0 border-4 border-cyan-400 border-dashed bg-cyan-400/10 rounded-xl animate-pulse">
+                      <div className="absolute inset-0 border-4 border-purple-400 border-dashed bg-purple-400/10 rounded-xl animate-pulse">
                         <div className="absolute top-2 left-2">
-                          <Badge className="bg-gradient-to-r from-cyan-500 to-fuchsia-500 text-white shadow-lg animate-fade-in">
+                          <Badge className="bg-purple-500 text-white shadow-lg animate-fade-in">
                             <Sparkles className="w-3 h-3 mr-1" />
                             Smart Crop Applied
                           </Badge>
@@ -203,16 +193,16 @@ interface AutoCropPreviewProps {
                         
                         {/* Orientation indicator */}
                         <div className="absolute bottom-2 right-2">
-                          <Badge className="bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-lg text-xs">
+                          <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg text-xs">
                             {recommendedOrientation.charAt(0).toUpperCase() + recommendedOrientation.slice(1)} Format
                           </Badge>
                         </div>
                         
                         {/* Subtle corner accents */}
-                        <div className="absolute top-1 left-1 w-4 h-4 border-l-2 border-t-2 border-cyan-500 rounded-tl-lg"></div>
-                        <div className="absolute top-1 right-1 w-4 h-4 border-r-2 border-t-2 border-cyan-500 rounded-tr-lg"></div>
-                        <div className="absolute bottom-1 left-1 w-4 h-4 border-l-2 border-b-2 border-cyan-500 rounded-bl-lg"></div>
-                        <div className="absolute bottom-1 right-1 w-4 h-4 border-r-2 border-b-2 border-cyan-500 rounded-br-lg"></div>
+                        <div className="absolute top-1 left-1 w-4 h-4 border-l-2 border-t-2 border-purple-500 rounded-tl-lg"></div>
+                        <div className="absolute top-1 right-1 w-4 h-4 border-r-2 border-t-2 border-purple-500 rounded-tr-lg"></div>
+                        <div className="absolute bottom-1 left-1 w-4 h-4 border-l-2 border-b-2 border-purple-500 rounded-bl-lg"></div>
+                        <div className="absolute bottom-1 right-1 w-4 h-4 border-r-2 border-b-2 border-purple-500 rounded-br-lg"></div>
                       </div>
                     )}
                   </>
@@ -220,56 +210,49 @@ interface AutoCropPreviewProps {
               </div>
             </div>
 
-            {/* Orientation Recommendation - Mobile Optimized */}
-            <div className="bg-white/80 backdrop-blur-sm rounded-lg p-3 sm:p-4 border border-cyan-200/60 shadow-lg">
-              <div className="flex flex-col sm:flex-row items-start gap-2 sm:gap-3">
-                <div className="p-1.5 sm:p-2 bg-gradient-to-br from-cyan-100/80 to-fuchsia-100/80 rounded-lg shadow-md flex-shrink-0">
-                  <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-600" />
+            {/* Orientation Recommendation */}
+            <div className="bg-white rounded-lg p-4 border border-purple-200 shadow-sm">
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-purple-100 rounded-lg">
+                  <Zap className="w-5 h-5 text-purple-600" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-1">
-                    <MobileTypography 
-                      variant="h4" 
-                      className="font-montserrat font-black text-gray-900 leading-tight"
-                    >
-                      <span className="bg-gradient-to-r from-cyan-600 via-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
-                        Recommended: {recommendedOrientation} Canvas
-                      </span>
-                      <span className="text-xs sm:text-sm font-normal text-cyan-600/80 ml-1 sm:ml-2">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h4 className="font-semibold text-gray-900">
+                      Recommended: {recommendedOrientation} Canvas 
+                      <span className="text-sm font-normal text-purple-600">
                         ({dynamicStyles.aspectRatio.replace('/', ':')})
                       </span>
-                    </MobileTypography>
-                    <Badge variant="secondary" className="bg-green-100 text-green-700 self-start sm:self-auto text-xs">
+                    </h4>
+                    <Badge variant="secondary" className="bg-green-100 text-green-700">
                       AI Suggested
                     </Badge>
                   </div>
-                  <MobileTypography variant="caption" className="text-gray-600">
+                  <p className="text-sm text-gray-600">
                     {getOrientationReason(recommendedOrientation)}
-                  </MobileTypography>
+                  </p>
                 </div>
               </div>
             </div>
 
-            {/* Action Buttons - Mobile Optimized */}
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-              <MobileButton
+            {/* Action Buttons */}
+            <div className="flex gap-3">
+              <Button
                 onClick={handleAcceptCrop}
                 disabled={isGeneratingCrop}
-                size="lg"
-                className="flex-1 bg-gradient-to-r from-cyan-500 via-violet-500 to-fuchsia-500 hover:from-cyan-600 hover:via-violet-600 hover:to-fuchsia-600 text-white shadow-2xl backdrop-blur-sm transform transition-all duration-300 hover:scale-105 disabled:hover:scale-100"
+                className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg transform transition-all duration-200 hover:scale-105"
               >
                 <Check className="w-4 h-4 mr-2" />
-                <span className="font-semibold">Perfect! Use This</span>
-              </MobileButton>
-              <MobileButton
+                Perfect! Use This
+              </Button>
+              <Button
                 onClick={onCustomizeCrop}
                 variant="outline"
-                size="lg"
-                className="border-cyan-300/60 text-cyan-600 hover:bg-cyan-50/80 backdrop-blur-sm transform transition-all duration-300 hover:scale-105"
+                className="border-purple-300 text-purple-600 hover:bg-purple-50 transform transition-all duration-200 hover:scale-105"
               >
                 <Edit3 className="w-4 h-4 mr-2" />
-                <span className="font-semibold">Adjust Crop</span>
-              </MobileButton>
+                Adjust Crop
+              </Button>
             </div>
           </div>
         </Card>
