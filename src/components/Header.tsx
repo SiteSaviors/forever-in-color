@@ -33,7 +33,7 @@ const Header = () => {
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <Link to="/" className="flex items-center">
-              <img src="/lovable-uploads/353d8eff-65bb-4296-ac0d-a23a0c4b5cce.png" alt="Forever In Color" className="h-10 w-auto object-contain" />
+              <img src="/wondertone-logo.png" alt="Wondertone" className="h-10 w-auto object-contain" />
             </Link>
 
             {/* Desktop Navigation */}
