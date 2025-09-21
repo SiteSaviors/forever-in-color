@@ -52,7 +52,11 @@ const StyleCardButtons = ({
         <div className="flex gap-1.5">
           {showGenerateButton && (
             <Button 
-              onClick={onGenerateClick} 
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                onGenerateClick(e);
+              }} 
               className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-xs font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] hover:-translate-y-0.5 font-poppins h-8 px-2"
             >
               <Sparkles className="w-3.5 h-3.5 mr-1.5" />
@@ -83,7 +87,11 @@ const StyleCardButtons = ({
 
           {showRetryButton && (
             <Button 
-              onClick={onRetryClick} 
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                onRetryClick(e);
+              }} 
               variant="outline" 
               className="flex-1 text-xs border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 transition-all duration-300 transform hover:scale-[1.02] hover:-translate-y-0.5 font-poppins h-8 px-2"
             >

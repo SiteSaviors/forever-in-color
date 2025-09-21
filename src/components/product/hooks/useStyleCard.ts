@@ -33,6 +33,7 @@ export const useStyleCard = ({
   const [localIsLoading, setLocalIsLoading] = useState(false);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isPermanentlyGenerated, setIsPermanentlyGenerated] = useState(false);
+  const [manualGenerationTriggered, setManualGenerationTriggered] = useState(false);
 
   // Style preview hook
   const {
@@ -81,12 +82,17 @@ export const useStyleCard = ({
     // Always call onStyleClick to select the style
     onStyleClick(style);
     
-    // Auto-generate if no preview and conditions are met
-    if (!previewUrl && !effectiveIsLoading && !hasError && style.id !== 1) {
+    // Auto-generate if no preview and conditions are met, but skip if manual generation was just triggered
+    if (!previewUrl && !effectiveIsLoading && !hasError && style.id !== 1 && !manualGenerationTriggered) {
       // Auto-generating preview
       handleGenerateClick();
     }
-  }, [style, previewUrl, isPermanentlyGenerated, effectiveIsLoading, hasError, onStyleClick]);
+    
+    // Reset manual generation flag after a brief delay
+    if (manualGenerationTriggered) {
+      setTimeout(() => setManualGenerationTriggered(false), 100);
+    }
+  }, [style, previewUrl, isPermanentlyGenerated, effectiveIsLoading, hasError, manualGenerationTriggered, onStyleClick]);
 
   // Continue button handler
   const handleContinueClick = (e: React.MouseEvent) => {
@@ -120,6 +126,9 @@ export const useStyleCard = ({
       return;
     }
     
+    // Flag that manual generation was triggered to prevent auto-generation
+    setManualGenerationTriggered(true);
+    
     // Starting generation
     setShowError(false);
     setLocalIsLoading(true);
@@ -145,6 +154,9 @@ export const useStyleCard = ({
     if (effectiveIsLoading) {
       return;
     }
+    
+    // Flag that manual generation was triggered to prevent auto-generation
+    setManualGenerationTriggered(true);
     
     // Retrying generation
     setShowError(false);

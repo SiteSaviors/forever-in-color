@@ -58,8 +58,9 @@ export const useStylePreview = ({
   const isStyleGenerated = hasGeneratedPreview && !!(preGeneratedPreview || previewUrl);
 
   const generatePreview = useCallback(async () => {
-    if (!croppedImage || style.id === 1 || preGeneratedPreview) {
-      // Cannot generate preview - invalid conditions
+    // Re-entrancy guard: prevent concurrent generations
+    if (isLoading || !croppedImage || style.id === 1 || preGeneratedPreview) {
+      // Cannot generate preview - already loading or invalid conditions
       return;
     }
 
