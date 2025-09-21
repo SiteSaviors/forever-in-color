@@ -46,9 +46,18 @@ export class ReplicateService {
       throw new Error('Invalid image data format. Expected base64 data URL.');
     }
 
+    // Enhance prompt with identity preservation rules
+    const enhancedPrompt = PromptEnhancer.enhanceForIdentityPreservation(prompt);
+    
+    console.log(`🔧 [DEBUG] Enhanced prompt:`, {
+      originalLength: prompt.length,
+      enhancedLength: enhancedPrompt.length,
+      identityRulesAdded: enhancedPrompt.includes('IDENTITY PRESERVATION RULES')
+    });
+
     const requestBody = {
       input: {
-        prompt: prompt,
+        prompt: enhancedPrompt,
         input_images: [imageData],
         openai_api_key: this.openaiApiKey,
         aspect_ratio: aspectRatio, // 🎯 CRITICAL: This must be the correct aspect ratio
