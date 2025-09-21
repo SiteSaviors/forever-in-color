@@ -1,5 +1,4 @@
 
-import { StylePreviewProvider } from "./contexts/StylePreviewContext";
 import { AccordionStateProvider } from "./contexts/AccordionStateContext";
 import { CustomizationOptions } from "./types/productState";
 import { useProductSteps } from "./hooks/useProductSteps";
@@ -74,34 +73,29 @@ const ProductContent = ({
         initialCompletedSteps={completedSteps}
         onStepChange={onCurrentStepChange}
       >
-        <StylePreviewProvider 
-          croppedImage={uploadedImage} 
-          selectedOrientation={selectedOrientation}
-        >
-          <ProductContentContainer>
-            <StepAccordion currentStep={currentStep}>
-              <ProductStepsManager
-              currentStep={currentStep}
-              completedSteps={completedSteps}
-              selectedStyle={selectedStyle}
-              selectedSize={selectedSize}
-              selectedOrientation={selectedOrientation}
-              customizations={customizations}
-              uploadedImage={uploadedImage}
-              autoGenerationComplete={autoGenerationComplete}
-              onCurrentStepChange={onCurrentStepChange}
-              onPhotoAndStyleComplete={onPhotoAndStyleComplete}
-              onOrientationSelect={onOrientationSelect}
-              onSizeSelect={onSizeSelect}
-              onCustomizationChange={onCustomizationChange}
-              canProceedToStep={canProceedToStep}
-              handleContinueToStep2={handleContinueToStep2}
-              handleContinueToStep3={handleContinueToStep3}
-              handleContinueToStep4={handleContinueToStep4}
-              />
-            </StepAccordion>
-          </ProductContentContainer>
-        </StylePreviewProvider>
+        <ProductContentContainer>
+          <StepAccordion currentStep={currentStep}>
+            <ProductStepsManager
+            currentStep={currentStep}
+            completedSteps={completedSteps}
+            selectedStyle={selectedStyle}
+            selectedSize={selectedSize}
+            selectedOrientation={selectedOrientation}
+            customizations={customizations}
+            uploadedImage={uploadedImage}
+            autoGenerationComplete={autoGenerationComplete}
+            onCurrentStepChange={onCurrentStepChange}
+            onPhotoAndStyleComplete={onPhotoAndStyleComplete}
+            onOrientationSelect={onOrientationSelect}
+            onSizeSelect={onSizeSelect}
+            onCustomizationChange={onCustomizationChange}
+            canProceedToStep={canProceedToStep}
+            handleContinueToStep2={handleContinueToStep2}
+            handleContinueToStep3={handleContinueToStep3}
+            handleContinueToStep4={handleContinueToStep4}
+            />
+          </StepAccordion>
+        </ProductContentContainer>
       </AccordionStateProvider>
     </CascadeErrorBoundary>
   );
