@@ -1,4 +1,4 @@
-import { Card, CardContent } from "@/components/ui/card";
+te oimport { Card, CardContent } from "@/components/ui/card";
 
 type GalleryItem = {
   id: string;
