@@ -3,29 +3,31 @@
 
 @keyframes marquee-right {
   0% {
-    transform: translateX(0%);
+    transform: translateX(0);
   }
   100% {
-    transform: translateX(-100%);
+    transform: translateX(-50%);
   }
 }
 
 @keyframes marquee-left {
   0% {
-    transform: translateX(-100%);
+    transform: translateX(-50%);
   }
   100% {
-    transform: translateX(0%);
+    transform: translateX(0);
   }
 }
 
 /* Marquee animation classes */
 .animate-marquee-right {
-  animation: marquee-right 30s linear infinite;
+  animation: marquee-right 45s linear infinite;
+  will-change: transform;
 }
 
 .animate-marquee-left {
-  animation: marquee-left 25s linear infinite;
+  animation: marquee-left 40s linear infinite;
+  will-change: transform;
 }
 
 /* Pause animations on hover for accessibility */
