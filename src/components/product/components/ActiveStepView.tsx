@@ -1,13 +1,11 @@
 
-import React, { useCallback, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import { AccordionItem } from "@/components/ui/accordion";
 import CascadeErrorBoundary from "./ErrorBoundaries/CascadeErrorBoundary";
 import StepContainer from "./ActiveStepView/StepContainer";
 import StepOverlays from "./ActiveStepView/StepOverlays";
 import StepHeader from "./ActiveStepView/StepHeader";
 import StepFooter from "./ActiveStepView/StepFooter";
-import { useAccordionState } from "../contexts/AccordionStateContext";
-
 
 interface ActiveStepViewProps {
   stepNumber: number;
@@ -32,54 +30,26 @@ const ActiveStepView = React.memo(({
   selectedStyle,
   children
 }: ActiveStepViewProps) => {
-  // Use centralized accordion state
-  const { 
-    getStepState, 
-    setStepInteractionState, 
-    startAnimation, 
-    endAnimation,
-    isStepAnimating 
-  } = useAccordionState();
+  // Simple local state to prevent double-clicks during transition
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
-  const stepState = getStepState(stepNumber);
-  const isAnimating = isStepAnimating(stepNumber);
-
-  // Sync interaction states with context
-  useEffect(() => {
-    const interactionState = !canAccess ? 'disabled' : 
-      isActive ? 'selected' : 
-      isCompleted ? 'idle' : 'idle';
-    
-    if (stepState.interactionState !== interactionState) {
-      setStepInteractionState(stepNumber, interactionState);
-    }
-  }, [canAccess, isActive, isCompleted, stepNumber, stepState.interactionState, setStepInteractionState]);
-
-  const handleMouseEnter = useCallback(() => {
-    if (canAccess && !isAnimating) {
-      setStepInteractionState(stepNumber, 'hovering');
-    }
-  }, [canAccess, isAnimating, stepNumber, setStepInteractionState]);
-
-  const handleMouseLeave = useCallback(() => {
-    if (canAccess && !isAnimating && !isActive) {
-      setStepInteractionState(stepNumber, 'idle');
-    }
-  }, [canAccess, isAnimating, isActive, stepNumber, setStepInteractionState]);
-
+  // This is the preserved click-handling logic, simplified.
   const handleStepClick = useCallback(() => {
-    if (!canAccess || isAnimating) {
+    // Prevent clicking if the step is inaccessible or if we're already transitioning
+    if (!canAccess || isTransitioning) {
       return;
     }
 
-    startAnimation(stepNumber);
+    // Set transitioning state to true to block further clicks
+    setIsTransitioning(true);
     
-    // Perform step action after brief delay for animation
+    // Perform the actual step change after a short delay
     setTimeout(() => {
       onStepClick();
-      endAnimation(stepNumber);
+      // After the action is done, allow clicks again
+      setIsTransitioning(false);
     }, 150);
-  }, [canAccess, isAnimating, stepNumber, onStepClick, startAnimation, endAnimation]);
+  }, [canAccess, isTransitioning, onStepClick]);
 
   return (
     <CascadeErrorBoundary
@@ -90,11 +60,11 @@ const ActiveStepView = React.memo(({
     >
       <AccordionItem 
         value={`step-${stepNumber}`}
+        // The complex JS-based hover handlers are removed.
+        // Simple CSS will now handle hover states.
         className={`accordion-item-optimized ${isActive ? 'is-active' : ''} ${
           canAccess && !isActive ? 'is-interactive' : ''
         }`}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
       >
         <StepContainer
           isActive={isActive}
@@ -115,6 +85,7 @@ const ActiveStepView = React.memo(({
             isActive={isActive}
             isCompleted={isCompleted}
             canAccess={canAccess}
+            // We pass our new, simple click handler here
             onStepClick={handleStepClick}
             selectedStyle={selectedStyle}
           />

@@ -1,5 +1,4 @@
 
-import { AccordionStateProvider } from "./contexts/AccordionStateContext";
 import { CustomizationOptions } from "./types/productState";
 import { useProductSteps } from "./hooks/useProductSteps";
 import { usePreviewGeneration } from "./hooks/usePreviewGeneration";
@@ -68,14 +67,9 @@ const ProductContent = ({
       maxRetries={2}
       onNavigateHome={() => window.location.href = '/'}
     >
-      <AccordionStateProvider
-        initialCurrentStep={currentStep}
-        initialCompletedSteps={completedSteps}
-        onStepChange={onCurrentStepChange}
-      >
-        <ProductContentContainer>
-          <StepAccordion currentStep={currentStep}>
-            <ProductStepsManager
+      <ProductContentContainer>
+        <StepAccordion currentStep={currentStep}>
+          <ProductStepsManager
             currentStep={currentStep}
             completedSteps={completedSteps}
             selectedStyle={selectedStyle}
@@ -93,12 +87,11 @@ const ProductContent = ({
             handleContinueToStep2={handleContinueToStep2}
             handleContinueToStep3={handleContinueToStep3}
             handleContinueToStep4={handleContinueToStep4}
-            />
-          </StepAccordion>
-        </ProductContentContainer>
-      </AccordionStateProvider>
+          />
+        </StepAccordion>
+      </ProductContentContainer>
     </CascadeErrorBoundary>
-  );
-};
+ );
+} // end of function
 
 export default ProductContent;
