@@ -83,6 +83,11 @@ export class ReplicateService {
         const data = await this.apiClient.createPrediction(requestBody);
 
         if (!data.ok) {
+          console.error('🔧 [DEBUG] Replicate createPrediction failure', {
+            status: data.status,
+            error: data.error,
+            technicalError: data.technicalError
+          });
           throw new Error(data.error || 'API call failed');
         }
 
@@ -117,12 +122,26 @@ export class ReplicateService {
         throw new Error(`Unexpected status: ${data.status}`);
       }, 'GPT-Image-1 Generation');
 
+      if (!result.ok) {
+        console.error('🔧 [DEBUG] Replicate result not ok', {
+          error: result.error,
+          technicalError: result.technicalError,
+          errorType: result.errorType
+        });
+      }
+
       return result;
 
     } catch (error) {
       // Convert to user-friendly error
       const parsedError = EnhancedErrorHandler.parseError(error);
       const userMessage = EnhancedErrorHandler.createUserFriendlyMessage(parsedError);
+      console.error('🔧 [DEBUG] Replicate generateImageToImage exception', {
+        error: error.message,
+        stack: error.stack,
+        parsedError,
+        userMessage
+      });
       
       return {
         ok: false,

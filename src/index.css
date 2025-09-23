@@ -169,6 +169,113 @@
   .style-grid-consistent > * {
     @apply h-full;
   }
+
+  .style-card-hover {
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+    contain: layout style paint;
+  }
+
+  .style-card-hover:hover {
+    transform: translate3d(0, -4px, 0) scale3d(1.02, 1.02, 1);
+    animation: hoverGlow 0.2s ease-out forwards;
+  }
+
+  .style-card-press {
+    transition: transform 0.08s ease-out;
+    contain: layout style;
+  }
+
+  .style-card-press:active {
+    transform: scale3d(0.98, 0.98, 1);
+  }
+
+  .recommended-pulse {
+    animation: recommendedPulse 2s ease-in-out infinite;
+    will-change: transform, box-shadow;
+    contain: layout style;
+  }
+
+  .loading-shimmer {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200px 100%;
+    animation: shimmer 1.2s infinite;
+    will-change: background-position;
+    contain: paint;
+  }
+
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .perf-container {
+    contain: layout style;
+    transform: translate3d(0, 0, 0);
+  }
+
+  .accordion-item-optimized {
+    contain: layout style;
+    transform: translate3d(0, 0, 0);
+    transition: box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .accordion-item-optimized.is-active {
+    will-change: transform, opacity;
+    animation: step-activation 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  .accordion-item-optimized.is-interactive:hover {
+    will-change: transform, opacity;
+    animation: interaction-feedback 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .accordion-content-optimized {
+    will-change: auto;
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    animation-duration: 0.25s;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    animation-fill-mode: forwards;
+  }
+
+  .accordion-content-optimized[data-state="open"] {
+    will-change: transform, opacity;
+    animation-name: accordion-expand-optimized;
+  }
+
+  .accordion-content-optimized[data-state="closed"] {
+    will-change: transform, opacity;
+    animation-name: accordion-collapse-optimized;
+  }
+
+  .accordion-trigger-optimized {
+    will-change: auto;
+    transform: translate3d(0, 0, 0);
+    transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .accordion-trigger-optimized:hover {
+    transform: translate3d(0, -1px, 0);
+  }
+
+  .accordion-trigger-optimized:active {
+    transform: translate3d(0, 0, 0);
+  }
+
+  .chevron-optimized {
+    will-change: auto;
+    transform: translate3d(0, 0, 0);
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    backface-visibility: hidden;
+  }
+
+  .chevron-optimized.is-open {
+    transform: translate3d(0, 0, 0) rotate(180deg);
+  }
 }
 
 /* Logo Marquee Animation */
@@ -197,6 +304,84 @@
   }
   100% {
     transform: translateX(0);
+  }
+}
+
+@keyframes recommendedPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.4), 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: scale3d(1, 1, 1);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(251, 191, 36, 0.2), 0 8px 24px rgba(0, 0, 0, 0.15);
+    transform: scale3d(1.02, 1.02, 1);
+  }
+}
+
+@keyframes hoverGlow {
+  0% {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  100% {
+    box-shadow: 0 12px 32px rgba(168, 85, 247, 0.25), 0 8px 24px rgba(0, 0, 0, 0.15);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+@keyframes accordion-expand-optimized {
+  from {
+    height: 0;
+    opacity: 0;
+    transform: translate3d(0, -10px, 0);
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes accordion-collapse-optimized {
+  from {
+    height: var(--radix-accordion-content-height);
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    height: 0;
+    opacity: 0;
+    transform: translate3d(0, -10px, 0);
+  }
+}
+
+@keyframes step-activation {
+  from {
+    transform: translate3d(0, 0, 0) scale3d(0.98, 0.98, 1);
+    opacity: 0.8;
+  }
+  to {
+    transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
+    opacity: 1;
+  }
+}
+
+@keyframes interaction-feedback {
+  0% {
+    transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
+  }
+  50% {
+    transform: translate3d(0, -2px, 0) scale3d(1.02, 1.02, 1);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
   }
 }
 
@@ -307,6 +492,44 @@
   .scroll-smooth-mobile {
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 768px) {
+  .accordion-item-optimized.is-active {
+    animation-duration: 0.2s;
+  }
+
+  .accordion-content-optimized {
+    animation-duration: 0.2s;
+  }
+
+  .accordion-trigger-optimized:hover {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .accordion-item-optimized,
+  .accordion-content-optimized,
+  .accordion-trigger-optimized,
+  .chevron-optimized,
+  .style-card-hover,
+  .recommended-pulse,
+  .loading-shimmer {
+    will-change: auto;
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .chevron-optimized.is-open {
+    transform: rotate(180deg);
+  }
+}
+
+@media (prefers-contrast: high) {
+  .accordion-item-optimized {
+    border-width: 2px;
   }
 }
 

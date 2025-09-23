@@ -89,7 +89,7 @@ const HeroRecommendations = ({
         {heroRecommendations.map((rec, index) => {
         const style = artStyles.find(s => s.id === rec.styleId);
         if (!style) return null;
-        return <div key={rec.styleId} className={`relative group transform transition-all duration-500 hover:scale-105 recommended-pulse ${hoveredStyle === rec.styleId ? 'z-10' : ''}`} style={{
+        return <div key={rec.styleId} className={`relative group transform transition-all duration-500 hover:scale-105 ${hoveredStyle === rec.styleId ? 'z-10' : ''}`} style={{
           animationDelay: `${(index + 1) * 200}ms`
         }} onMouseEnter={() => setHoveredStyle(rec.styleId)} onMouseLeave={() => setHoveredStyle(null)}>
               {/* Enhanced Premium Glow Effect */}

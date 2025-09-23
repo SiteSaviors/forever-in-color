@@ -3,10 +3,30 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 import { StylePromptService } from './stylePromptService.ts';
 import { corsHeaders, handleCorsPreflightRequest, createCorsResponse } from './corsUtils.ts';
-import { base64ToBlob, getImageSize } from './imageUtils.ts';
 import { validateRequest } from './requestValidator.ts';
 import { ReplicateService } from './replicateService.ts';
 import { createSuccessResponse, createErrorResponse } from './responseUtils.ts';
+
+async function normalizeImageInput(image: string): Promise<string> {
+  if (image.startsWith('data:image/')) {
+    return image;
+  }
+
+  try {
+    const response = await fetch(image);
+    if (!response.ok) {
+      throw new Error(`Image fetch failed with status ${response.status}`);
+    }
+
+    const contentType = response.headers.get('content-type') ?? 'image/jpeg';
+    const buffer = await response.arrayBuffer();
+    const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
+    return `data:${contentType};base64,${base64}`;
+  } catch (error) {
+    console.error('Failed to normalize image input:', error);
+    return image; // fall back to original to preserve previous behavior
+  }
+}
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -38,6 +58,8 @@ serve(async (req) => {
     }
 
     const { imageUrl, style, aspectRatio, quality } = validation.data!;
+
+    const normalizedImageUrl = await normalizeImageInput(imageUrl);
 
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
     const replicateApiToken = Deno.env.get('REPLICATE_API_TOKEN');
@@ -79,7 +101,7 @@ serve(async (req) => {
 
     // Generate image using Replicate's openai/gpt-image-1 model
     console.log(`🔧 [DIAGNOSTIC] Attempting image generation with Replicate...`);
-    const result = await replicateService.generateImageToImage(imageUrl, stylePrompt, aspectRatio, quality);
+    const result = await replicateService.generateImageToImage(normalizedImageUrl, stylePrompt, aspectRatio, quality);
     
     if (result.ok && result.output) {
       console.log(`🔧 [DIAGNOSTIC] Image generation result: SUCCESS`);

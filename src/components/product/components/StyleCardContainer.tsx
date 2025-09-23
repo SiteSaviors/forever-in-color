@@ -57,7 +57,7 @@ const StyleCardContainer = memo(({
     ${cssClasses} 
     ${getCursorClass()}
     ${shouldBlur ? 'blur-sm opacity-60' : ''}
-    ${isGenerating ? 'animate-pulse' : ''}
+    ${isGenerating ? 'recommended-pulse' : ''}
     ${hasError ? 'ring-2 ring-red-200 shadow-red-100' : ''}
     will-change-transform
     contain-layout

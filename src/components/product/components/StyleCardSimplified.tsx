@@ -51,7 +51,7 @@ const StyleCardSimplified = memo(({
     }
     
     if (shouldBlur) classes += " blur-sm opacity-60";
-    if (isGenerating) classes += " animate-pulse";
+    if (isGenerating) classes += " recommended-pulse";
     if (hasError) classes += " ring-2 ring-red-200 shadow-red-100";
     
     classes += ` ${getCursorClass()}`;
