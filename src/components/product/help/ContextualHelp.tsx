@@ -1,14 +1,13 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { X, Lightbulb, Heart, Sparkles, ArrowRight, Users, HelpCircle, Target } from "lucide-react";
 import { useProgressOrchestrator } from "../progress/ProgressOrchestrator";
 const ContextualHelp = () => {
-  const { state } = useProgressOrchestrator();
+  const { state, dispatch } = useProgressOrchestrator();
   const [isVisible, setIsVisible] = useState(false);
   const [hasShownInitialTooltip, setHasShownInitialTooltip] = useState(false);
-  const [pageLoadTime] = useState(Date.now());
   const [showAdvancedHelp, setShowAdvancedHelp] = useState(false);
   useEffect(() => {
     setIsVisible(state.contextualHelp.showTooltip);
@@ -43,7 +42,9 @@ const ContextualHelp = () => {
   }, [state.currentSubStep]);
   if (!isVisible) return null;
   const handleClose = () => {
+    dispatch({ type: 'HIDE_HELP' });
     setIsVisible(false);
+    setShowAdvancedHelp(false);
   };
   const handleMoreHelp = () => {
     setShowAdvancedHelp(true);
@@ -112,6 +113,95 @@ const ContextualHelp = () => {
     }
   };
   const advancedHelp = getAdvancedHelp();
-  return;
+  return (
+    <div className="fixed bottom-6 right-6 z-50 w-full max-w-sm animate-scale-in">
+      <Card className="bg-white/95 backdrop-blur-xl shadow-2xl border border-purple-100/60">
+        <CardContent className="relative p-6 space-y-4">
+          <button
+            type="button"
+            className="absolute top-3 right-3 inline-flex h-8 w-8 items-center justify-center rounded-full border border-purple-100/60 bg-white/80 text-slate-500 shadow-sm transition hover:text-slate-700"
+            onClick={handleClose}
+            aria-label="Close helper"
+          >
+            <X className="h-4 w-4" />
+          </button>
+
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-100 text-purple-600">
+              <Icon className="h-5 w-5" />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="text-sm font-semibold text-slate-900">{content.title}</h3>
+                {content.variant === 'ai' && (
+                  <Badge className="flex items-center gap-1 border-purple-200 bg-purple-100 text-purple-700">
+                    <Sparkles className="h-3 w-3" />
+                    AI Tip
+                  </Badge>
+                )}
+                {content.variant === 'social' && (
+                  <Badge className="flex items-center gap-1 border-amber-200 bg-amber-100 text-amber-700">
+                    <Users className="h-3 w-3" />
+                    Popular
+                  </Badge>
+                )}
+              </div>
+
+              <p className="text-sm text-slate-600">{content.message}</p>
+
+              {typeof content.confidence === 'number' && (
+                <p className="flex items-center gap-1 text-xs text-slate-500">
+                  <Target className="h-3 w-3" />
+                  {content.confidence}% match confidence
+                </p>
+              )}
+
+              {content.socialProof && (
+                <p className="flex items-center gap-1 text-xs text-slate-500">
+                  <Users className="h-3 w-3" />
+                  {content.socialProof}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 pt-1">
+            <Button size="sm" onClick={handleClose} className="gap-1">
+              {content.action}
+            </Button>
+            {content.showMoreInfo && (
+              <Button size="sm" variant="ghost" className="gap-1" onClick={handleMoreHelp}>
+                Learn more
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+
+          {showAdvancedHelp && (
+            <div className="space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-4">
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-700">
+                <HelpCircle className="h-4 w-4" />
+                More guidance
+              </div>
+
+              <ul className="space-y-2 text-sm text-slate-600">
+                {advancedHelp.tips.map(tip => (
+                  <li key={tip} className="flex items-start gap-2">
+                    <span className="text-purple-500">•</span>
+                    <span>{tip}</span>
+                  </li>
+                ))}
+              </ul>
+
+              {advancedHelp.examples && (
+                <p className="text-xs text-slate-500">{advancedHelp.examples}</p>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
 };
 export default ContextualHelp;

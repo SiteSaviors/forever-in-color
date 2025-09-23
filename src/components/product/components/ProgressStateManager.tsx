@@ -15,17 +15,29 @@ const ProgressStateManager = ({
   croppedImage,
   selectedStyle
 }: ProgressStateManagerProps) => {
-  const { dispatch } = useProgressOrchestrator();
+  const { state, dispatch } = useProgressOrchestrator();
 
-  // Update progress orchestrator state
+  // Update current step immediately when it changes
   useEffect(() => {
     dispatch({ type: 'SET_STEP', payload: currentStep });
-    completedSteps.forEach(step => {
-      dispatch({ type: 'COMPLETE_STEP', payload: step });
-    });
-  }, [currentStep, completedSteps, dispatch]);
+  }, [currentStep, dispatch]);
 
-  // Update sub-step based on progress
+  // Sync completed steps without duplicating entries in the reducer-managed list
+  useEffect(() => {
+    const orchestratorSteps = new Set(state.completedSteps);
+    const uniqueCompletedSteps = new Set(completedSteps);
+
+    uniqueCompletedSteps.forEach(step => {
+      if (!orchestratorSteps.has(step)) {
+        orchestratorSteps.add(step);
+        dispatch({ type: 'COMPLETE_STEP', payload: step });
+      }
+    });
+
+    // TODO: reinforce this guard inside progressReducer when reducer refactor is scoped.
+  }, [completedSteps, state.completedSteps, dispatch]);
+
+  // Update sub-step based on upload/crop progress
   useEffect(() => {
     if (!croppedImage) {
       dispatch({ type: 'SET_SUB_STEP', payload: 'upload' });
