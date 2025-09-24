@@ -1,6 +1,6 @@
 
 import { ReplicateGenerationResponse } from './types.ts';
-import { EnhancedErrorHandler, executeWithRetry } from '../errorHandling.ts';
+import { consumeRetryMetric, EnhancedErrorHandler, executeWithRetry } from '../errorHandling.ts';
 import { resolvePreviewTimingConfig } from './config.ts';
 
 export class PollingService {
@@ -8,12 +8,33 @@ export class PollingService {
 
   async pollForCompletion(predictionId: string, getUrl: string): Promise<ReplicateGenerationResponse> {
     
-    const { maxAttempts, pollIntervalMs } = resolvePreviewTimingConfig(); // defaults: 30 attempts, 2000ms interval
-    const pollInterval = pollIntervalMs;
+    const { maxAttempts, pollIntervalMs, retryAttempts, retryBaseMs } = resolvePreviewTimingConfig(); // defaults: 30 attempts, 2000ms interval
+    const requestId = predictionId || 'unknown-request';
+    let attemptsUsed = 0;
+    let retriesUsed = 0;
+
+    console.log('[preview-poll]', {
+      requestId,
+      pollIntervalMs,
+      maxAttempts,
+      retryAttempts,
+      retryBaseMs,
+      attemptsUsed,
+      retriesUsed,
+      finalStatus: 'started'
+    });
+
+    const waitWithJitter = async () => {
+      const jitter = Math.floor(Math.random() * 401) - 200; // ±200ms
+      const effectiveInterval = Math.max(0, pollIntervalMs + jitter);
+      await new Promise(resolve => setTimeout(resolve, effectiveInterval));
+    };
     
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      attemptsUsed = attempt;
+      const contextLabel = `Polling attempt ${attempt}`;
       try {
-        
+
         const result = await executeWithRetry(async () => {
           const response = await fetch(getUrl, {
             headers: {
@@ -34,17 +55,28 @@ export class PollingService {
           }
 
           return await response.json();
-        }, `Polling attempt ${attempt}`);
+        }, contextLabel);
 
-        
+        retriesUsed += consumeRetryMetric(contextLabel);
+
+
 
         if (result.status === 'succeeded') {
           let outputUrl = result.output;
           if (Array.isArray(outputUrl)) {
             outputUrl = outputUrl[0];
           }
-          
-          
+
+          console.log('[preview-poll]', {
+            requestId,
+            pollIntervalMs,
+            maxAttempts,
+            retryAttempts,
+            retryBaseMs,
+            attemptsUsed,
+            retriesUsed,
+            finalStatus: 'succeeded'
+          });
           return {
             ok: true,
             output: outputUrl
@@ -53,6 +85,16 @@ export class PollingService {
         
         if (result.status === 'failed') {
           const errorMsg = result.error || 'Generation failed during polling';
+          console.log('[preview-poll]', {
+            requestId,
+            pollIntervalMs,
+            maxAttempts,
+            retryAttempts,
+            retryBaseMs,
+            attemptsUsed,
+            retriesUsed,
+            finalStatus: 'failed'
+          });
           
           return {
             ok: false,
@@ -63,8 +105,18 @@ export class PollingService {
             })
           };
         }
-        
+
         if (result.status === 'canceled') {
+          console.log('[preview-poll]', {
+            requestId,
+            pollIntervalMs,
+            maxAttempts,
+            retryAttempts,
+            retryBaseMs,
+            attemptsUsed,
+            retriesUsed,
+            finalStatus: 'canceled'
+          });
           return {
             ok: false,
             error: 'Generation was canceled'
@@ -73,14 +125,25 @@ export class PollingService {
 
         // Continue polling for other statuses
         if (attempt < maxAttempts) {
-          await new Promise(resolve => setTimeout(resolve, pollInterval));
+          await waitWithJitter();
         }
 
       } catch (error) {
+        retriesUsed += consumeRetryMetric(contextLabel);
         
         // If this is the last attempt, return the error
         if (attempt >= maxAttempts) {
           const parsedError = EnhancedErrorHandler.parseError(error);
+          console.log('[preview-poll]', {
+            requestId,
+            pollIntervalMs,
+            maxAttempts,
+            retryAttempts,
+            retryBaseMs,
+            attemptsUsed,
+            retriesUsed,
+            finalStatus: 'error'
+          });
           return {
             ok: false,
             error: EnhancedErrorHandler.createUserFriendlyMessage(parsedError)
@@ -88,11 +151,21 @@ export class PollingService {
         }
         
         // Wait before next attempt
-        await new Promise(resolve => setTimeout(resolve, pollInterval));
+        await waitWithJitter();
       }
     }
 
-    
+
+    console.log('[preview-poll]', {
+      requestId,
+      pollIntervalMs,
+      maxAttempts,
+      retryAttempts,
+      retryBaseMs,
+      attemptsUsed,
+      retriesUsed,
+      finalStatus: 'timeout'
+    });
     return {
       ok: false,
       error: 'Generation is taking longer than expected. Please try again.'
