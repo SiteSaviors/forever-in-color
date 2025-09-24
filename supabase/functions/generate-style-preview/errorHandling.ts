@@ -1,3 +1,4 @@
+import { resolvePreviewTimingConfig } from './replicate/config.ts';
 
 export interface ApiError {
   type: 'rate_limit' | 'service_unavailable' | 'invalid_request' | 'network_error' | 'timeout' | 'unknown';
@@ -106,9 +107,7 @@ export class EnhancedErrorHandler {
     }
   }
 
-  static shouldRetry(error: ApiError, attemptNumber: number): boolean {
-    const maxAttempts = 3;
-    
+  static shouldRetry(error: ApiError, attemptNumber: number, maxAttempts: number): boolean {
     if (attemptNumber >= maxAttempts) {
       return false;
     }
@@ -117,8 +116,8 @@ export class EnhancedErrorHandler {
     return ['service_unavailable', 'rate_limit', 'network_error', 'timeout'].includes(error.type);
   }
 
-  static getRetryDelay(error: ApiError, attemptNumber: number): number {
-    const baseDelay = error.retryAfter ? error.retryAfter * 1000 : 5000;
+  static getRetryDelay(error: ApiError, attemptNumber: number, baseDelayMs: number): number {
+    const baseDelay = error.retryAfter ? error.retryAfter * 1000 : baseDelayMs;
     const exponentialBackoff = Math.pow(2, attemptNumber) * 1000;
     
     // Use the longer of retry-after header or exponential backoff
@@ -147,20 +146,21 @@ export async function executeWithRetry<T>(
   context: string
 ): Promise<T> {
   let lastError: ApiError | null = null;
+  const { retryAttempts, retryBaseMs } = resolvePreviewTimingConfig();
   
-  for (let attempt = 1; attempt <= 3; attempt++) {
+  for (let attempt = 1; attempt <= retryAttempts; attempt++) {
     try {
       return await operation();
     } catch (error) {
       const parsedError = EnhancedErrorHandler.parseError(error);
       lastError = parsedError;
       
-      if (!EnhancedErrorHandler.shouldRetry(parsedError, attempt)) {
+      if (!EnhancedErrorHandler.shouldRetry(parsedError, attempt, retryAttempts)) {
         break;
       }
 
-      if (attempt < 3) {
-        const delay = EnhancedErrorHandler.getRetryDelay(parsedError, attempt);
+      if (attempt < retryAttempts) {
+        const delay = EnhancedErrorHandler.getRetryDelay(parsedError, attempt, retryBaseMs);
         await new Promise(resolve => setTimeout(resolve, delay));
       }
     }

@@ -1,14 +1,15 @@
 
 import { ReplicateGenerationResponse } from './types.ts';
 import { EnhancedErrorHandler, executeWithRetry } from '../errorHandling.ts';
+import { resolvePreviewTimingConfig } from './config.ts';
 
 export class PollingService {
   constructor(private apiToken: string) {}
 
   async pollForCompletion(predictionId: string, getUrl: string): Promise<ReplicateGenerationResponse> {
     
-    const maxAttempts = 30; // 60 seconds total
-    const pollInterval = 2000; // 2 seconds
+    const { maxAttempts, pollIntervalMs } = resolvePreviewTimingConfig(); // defaults: 30 attempts, 2000ms interval
+    const pollInterval = pollIntervalMs;
     
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {

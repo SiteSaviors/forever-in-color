@@ -1,3 +1,4 @@
+import { resolvePreviewTimingConfig } from './replicate/config.ts';
 
 export class ImageGenerationService {
   constructor(private openaiApiKey: string, private replicateApiToken: string) {}
@@ -75,7 +76,7 @@ export class ImageGenerationService {
 
   private async pollForCompletion(predictionId: string): Promise<{ ok: boolean; output?: string; error?: string }> {
     
-    const maxAttempts = 30; // Max 30 attempts (60 seconds with 2s intervals)
+    const { maxAttempts, pollIntervalMs } = resolvePreviewTimingConfig(); // defaults: 30 attempts, 2000ms interval
     let attempts = 0;
 
     while (attempts < maxAttempts) {
@@ -118,18 +119,18 @@ export class ImageGenerationService {
           };
         }
 
-        // Wait 2 seconds before next poll
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        // Wait before next poll using configurable interval
+        await new Promise(resolve => setTimeout(resolve, pollIntervalMs));
         attempts++;
       } catch (error) {
         attempts++;
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise(resolve => setTimeout(resolve, pollIntervalMs));
       }
     }
 
     return {
       ok: false,
-      error: 'Generation timed out after 60 seconds'
+      error: `Generation timed out after ${Math.round((maxAttempts * pollIntervalMs) / 1000)} seconds`
     };
   }
 }
