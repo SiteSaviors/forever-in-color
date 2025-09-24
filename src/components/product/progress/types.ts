@@ -8,7 +8,6 @@ export interface ProgressState {
     timeOnStep: number;
     lastInteraction: number;
     hoverDuration: number;
-    clickPattern: string[];
   };
   contextualHelp: {
     showTooltip: boolean;
@@ -23,7 +22,6 @@ export interface ProgressState {
     liveUserCount: number;
     recentCompletions: number;
   };
-  personalizedMessages: string[];
   conversionElements: {
     urgencyMessage: string;
     momentumScore: number;
@@ -40,15 +38,14 @@ export interface ProgressState {
 
 export type ProgressSliceState = Pick<ProgressState, 'currentStep' | 'currentSubStep' | 'completedSteps'>;
 
-export type EngagementSliceState = Pick<ProgressState, 'userBehavior' | 'contextualHelp' | 'socialProof' | 'personalizedMessages' | 'conversionElements'>;
+export type EngagementSliceState = Pick<ProgressState, 'userBehavior' | 'contextualHelp' | 'socialProof' | 'conversionElements'>;
 
 export type AIInsightsSliceState = Pick<ProgressState, 'aiAnalysis'>;
 
 export interface ProgressAction {
-  type: 'SET_STEP' | 'SET_SUB_STEP' | 'COMPLETE_STEP' | 'SHOW_HELP' | 'HIDE_HELP' | 
-        'UPDATE_BEHAVIOR' | 'UPDATE_SOCIAL_PROOF' | 'ADD_PERSONALIZED_MESSAGE' |
-        'UPDATE_CONVERSION_ELEMENTS' | 'START_AI_ANALYSIS' | 'COMPLETE_AI_ANALYSIS' |
-        'UPDATE_HELP_LEVEL' | 'TRACK_HOVER' | 'TRACK_CLICK';
+  type: 'SET_STEP' | 'SET_SUB_STEP' | 'COMPLETE_STEP' | 'HIDE_HELP' | 
+        'UPDATE_BEHAVIOR' | 'ADD_PERSONALIZED_MESSAGE' |
+        'START_AI_ANALYSIS' | 'COMPLETE_AI_ANALYSIS';
   payload: any;
 }
 

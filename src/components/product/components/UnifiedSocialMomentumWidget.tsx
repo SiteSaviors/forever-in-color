@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { useProgressOrchestrator } from "../progress/ProgressOrchestrator";
+import {
+  useSocialProof,
+  useUserBehavior,
+  useTooltip,
+  useConversionElements
+} from "../progress/hooks/useProgressSelectors";
 import WidgetHeader from "./unified-momentum/WidgetHeader";
 import ActivityDisplay from "./unified-momentum/ActivityDisplay";
 import MomentumIndicator from "./unified-momentum/MomentumIndicator";
@@ -16,19 +21,22 @@ const UnifiedSocialMomentumWidget = ({
   uploadedImage,
   showWidget
 }: UnifiedSocialMomentumWidgetProps) => {
-  const { state } = useProgressOrchestrator();
+  const socialProof = useSocialProof();
+  const userBehavior = useUserBehavior();
+  const contextualHelp = useTooltip();
+  const conversionElements = useConversionElements();
   const [currentActivity, setCurrentActivity] = useState(0);
   const [showExpanded, setShowExpanded] = useState(false);
   const [liveUsers, setLiveUsers] = useState(238);
 
   // Rotate through activities
   useEffect(() => {
-    if (!showWidget || state.socialProof.recentActivity.length === 0) return;
+    if (!showWidget || socialProof.recentActivity.length === 0) return;
     const interval = setInterval(() => {
-      setCurrentActivity(prev => (prev + 1) % state.socialProof.recentActivity.length);
+      setCurrentActivity(prev => (prev + 1) % socialProof.recentActivity.length);
     }, 8000);
     return () => clearInterval(interval);
-  }, [showWidget, state.socialProof.recentActivity.length]);
+  }, [showWidget, socialProof.recentActivity.length]);
 
   // Simulate live user count fluctuations
   useEffect(() => {
@@ -42,16 +50,16 @@ const UnifiedSocialMomentumWidget = ({
   // Auto-expand logic based on hesitation
   useEffect(() => {
     if (!showWidget) return;
-    const timeSinceLastInteraction = Date.now() - state.userBehavior.lastInteraction;
-    if (timeSinceLastInteraction > 20000 && !state.contextualHelp.showTooltip) {
+    const timeSinceLastInteraction = Date.now() - userBehavior.lastInteraction;
+    if (timeSinceLastInteraction > 20000 && !contextualHelp.showTooltip) {
       setShowExpanded(true);
     } else if (timeSinceLastInteraction < 8000) {
       setShowExpanded(false);
     }
-  }, [showWidget, state.userBehavior.lastInteraction, state.contextualHelp.showTooltip]);
+  }, [showWidget, userBehavior.lastInteraction, contextualHelp.showTooltip]);
   if (!showWidget || !uploadedImage) return null;
-  const activity = state.socialProof.recentActivity[currentActivity];
-  const momentumScore = state?.conversionElements?.momentumScore || 0;
+  const activity = socialProof.recentActivity[currentActivity];
+  const momentumScore = conversionElements?.momentumScore || 0;
   const getMomentumLevel = () => {
     if (momentumScore >= 75) return {
       level: 'High',

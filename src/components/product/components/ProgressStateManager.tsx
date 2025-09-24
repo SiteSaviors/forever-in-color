@@ -1,6 +1,6 @@
 
 import { useEffect } from "react";
-import { useProgressOrchestrator } from "../progress/ProgressOrchestrator";
+import { useProgressDispatch, useCompletedSteps } from "../progress/hooks/useProgressSelectors";
 
 interface ProgressStateManagerProps {
   currentStep: number;
@@ -15,7 +15,8 @@ const ProgressStateManager = ({
   croppedImage,
   selectedStyle
 }: ProgressStateManagerProps) => {
-  const { state, dispatch } = useProgressOrchestrator();
+  const dispatch = useProgressDispatch();
+  const orchestratorCompletedSteps = useCompletedSteps();
 
   // Update current step immediately when it changes
   useEffect(() => {
@@ -24,7 +25,7 @@ const ProgressStateManager = ({
 
   // Sync completed steps without duplicating entries in the reducer-managed list
   useEffect(() => {
-    const orchestratorSteps = new Set(state.completedSteps);
+    const orchestratorSteps = new Set(orchestratorCompletedSteps);
     const uniqueCompletedSteps = new Set(completedSteps);
 
     uniqueCompletedSteps.forEach(step => {
@@ -35,7 +36,7 @@ const ProgressStateManager = ({
     });
 
     // TODO: reinforce this guard inside progressReducer when reducer refactor is scoped.
-  }, [completedSteps, state.completedSteps, dispatch]);
+  }, [completedSteps, orchestratorCompletedSteps, dispatch]);
 
   // Update sub-step based on upload/crop progress
   useEffect(() => {

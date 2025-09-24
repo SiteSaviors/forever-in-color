@@ -64,13 +64,11 @@ export const EngagementSliceProvider = ({ state, dispatch, children }: BaseSlice
       userBehavior: state.userBehavior,
       contextualHelp: state.contextualHelp,
       socialProof: state.socialProof,
-      personalizedMessages: state.personalizedMessages,
       conversionElements: state.conversionElements,
     }),
     [
       state.contextualHelp,
       state.conversionElements,
-      state.personalizedMessages,
       state.socialProof,
       state.userBehavior,
     ]

@@ -1,7 +1,7 @@
 
 import { useEffect, ReactNode, useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useProgressOrchestrator } from "../progress/ProgressOrchestrator";
+import { useCurrentSubStep, useUserBehavior } from "../progress/hooks/useProgressSelectors";
 import { Badge } from "@/components/ui/badge";
 import { Smartphone, ArrowLeftRight, Hand } from "lucide-react";
 
@@ -21,7 +21,8 @@ const MobileGestureHandler = ({
   showGestureHints = true
 }: MobileGestureHandlerProps) => {
   const isMobile = useIsMobile();
-  const { state } = useProgressOrchestrator();
+  const currentSubStep = useCurrentSubStep();
+  const userBehavior = useUserBehavior();
   const [showHint, setShowHint] = useState(false);
   const [lastGesture, setLastGesture] = useState<string | null>(null);
 
@@ -31,15 +32,15 @@ const MobileGestureHandler = ({
 
     const timer = setTimeout(() => {
       // Show hints during style selection or when user seems stuck
-      if (state.currentSubStep === 'style-selection' || 
-          (Date.now() - state.userBehavior.lastInteraction > 20000)) {
+      if (currentSubStep === 'style-selection' || 
+          (Date.now() - userBehavior.lastInteraction > 20000)) {
         setShowHint(true);
         setTimeout(() => setShowHint(false), 4000);
       }
     }, 15000);
 
     return () => clearTimeout(timer);
-  }, [isMobile, showGestureHints, state.currentSubStep, state.userBehavior.lastInteraction]);
+  }, [isMobile, showGestureHints, currentSubStep, userBehavior.lastInteraction]);
 
   useEffect(() => {
     if (!isMobile) return;

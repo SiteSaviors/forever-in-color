@@ -1,11 +1,12 @@
 
-import { useProgressOrchestrator } from "../progress/ProgressOrchestrator";
+import { useProgressDispatch, useAIHelpers } from "../progress/hooks/useProgressSelectors";
 
 export const useEnhancedHandlers = (
   handleImageUpload: (imageUrl: string, originalImageUrl?: string, orientation?: string) => void,
   handleStyleSelect: (styleId: number, styleName: string) => void
 ) => {
-  const { dispatch, startAIAnalysis, completeAIAnalysis } = useProgressOrchestrator();
+  const dispatch = useProgressDispatch();
+  const { startAIAnalysis, completeAIAnalysis } = useAIHelpers();
 
   // Enhanced image upload handler with AI analysis
   const handleEnhancedImageUpload = (imageUrl: string, originalImageUrl?: string, orientation?: string) => {

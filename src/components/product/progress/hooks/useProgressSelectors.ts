@@ -40,11 +40,6 @@ export const useSocialProof = () => {
   return state.socialProof;
 };
 
-export const usePersonalizedMessages = () => {
-  const { state } = useEngagementSliceContext();
-  return state.personalizedMessages;
-};
-
 export const useConversionElements = () => {
   const { state } = useEngagementSliceContext();
   return state.conversionElements;

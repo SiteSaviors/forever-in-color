@@ -3,22 +3,34 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { X, Lightbulb, Heart, Sparkles, ArrowRight, Users, HelpCircle, Target } from "lucide-react";
-import { useProgressOrchestrator } from "../progress/ProgressOrchestrator";
+import {
+  useProgressDispatch,
+  useTooltip,
+  useUserBehavior,
+  useAIStatus,
+  useSocialProof,
+  useCurrentSubStep
+} from "../progress/hooks/useProgressSelectors";
 const ContextualHelp = () => {
-  const { state, dispatch } = useProgressOrchestrator();
+  const dispatch = useProgressDispatch();
+  const contextualHelp = useTooltip();
+  const userBehavior = useUserBehavior();
+  const aiStatus = useAIStatus();
+  const socialProof = useSocialProof();
+  const currentSubStep = useCurrentSubStep();
   const [isVisible, setIsVisible] = useState(false);
   const [hasShownInitialTooltip, setHasShownInitialTooltip] = useState(false);
   const [showAdvancedHelp, setShowAdvancedHelp] = useState(false);
   useEffect(() => {
-    setIsVisible(state.contextualHelp.showTooltip);
-  }, [state.contextualHelp.showTooltip]);
+    setIsVisible(contextualHelp.showTooltip);
+  }, [contextualHelp.showTooltip]);
 
   // Show initial tooltip once after 20 seconds if no image uploaded
   useEffect(() => {
     if (hasShownInitialTooltip) return;
     const timer = setTimeout(() => {
       // Check if user hasn't uploaded an image (still on upload sub-step)
-      if (state.currentSubStep === 'upload' && !hasShownInitialTooltip) {
+      if (currentSubStep === 'upload' && !hasShownInitialTooltip) {
         setHasShownInitialTooltip(true);
         // This will trigger the contextual help through the existing system
         const helpEvent = new CustomEvent('showInitialHelp', {
@@ -32,14 +44,14 @@ const ContextualHelp = () => {
     }, 20000); // 20 seconds
 
     return () => clearTimeout(timer);
-  }, [state.currentSubStep, hasShownInitialTooltip]);
+  }, [currentSubStep, hasShownInitialTooltip]);
 
   // Reset the flag if user moves past upload step
   useEffect(() => {
-    if (state.currentSubStep !== 'upload') {
+    if (currentSubStep !== 'upload') {
       setHasShownInitialTooltip(true); // Prevent showing again
     }
-  }, [state.currentSubStep]);
+  }, [currentSubStep]);
   if (!isVisible) return null;
   const handleClose = () => {
     dispatch({ type: 'HIDE_HELP' });
@@ -50,15 +62,13 @@ const ContextualHelp = () => {
     setShowAdvancedHelp(true);
   };
   const getHelpContent = () => {
-    const {
-      helpLevel
-    } = state.contextualHelp;
-    switch (state.contextualHelp.tooltipType) {
+    const { helpLevel } = contextualHelp;
+    switch (contextualHelp.tooltipType) {
       case 'hesitation':
         return {
           icon: Lightbulb,
           title: helpLevel === 'detailed' ? "Let's get you started!" : "Need a little guidance?",
-          message: state.contextualHelp.tooltipMessage,
+          message: contextualHelp.tooltipMessage,
           action: helpLevel === 'detailed' ? "Show me how" : "Got it!",
           variant: "helpful" as const,
           showMoreInfo: helpLevel !== 'detailed'
@@ -67,25 +77,25 @@ const ContextualHelp = () => {
         return {
           icon: Sparkles,
           title: "AI Recommendation",
-          message: state.contextualHelp.tooltipMessage,
+          message: contextualHelp.tooltipMessage,
           action: "Try it",
           variant: "ai" as const,
-          confidence: state.aiAnalysis.imageType !== 'unknown' ? 95 : 85
+          confidence: aiStatus.imageType !== 'unknown' ? 95 : 85
         };
       case 'social':
         return {
           icon: Users,
           title: "Popular Choice",
-          message: state.contextualHelp.tooltipMessage,
+          message: contextualHelp.tooltipMessage,
           action: "Continue",
           variant: "social" as const,
-          socialProof: `${state.socialProof.completionRate}% user satisfaction`
+          socialProof: `${socialProof.completionRate}% user satisfaction`
         };
       default:
         return {
           icon: Heart,
           title: "Helpful Tip",
-          message: state.contextualHelp.tooltipMessage,
+          message: contextualHelp.tooltipMessage,
           action: "Thanks!",
           variant: "general" as const
         };
@@ -94,7 +104,7 @@ const ContextualHelp = () => {
   const content = getHelpContent();
   const Icon = content.icon;
   const getAdvancedHelp = () => {
-    switch (state.currentSubStep) {
+    switch (currentSubStep) {
       case 'upload':
         return {
           tips: ["📸 Best results: Clear, well-lit photos", "👥 Great for: Portraits, pets, landscapes", "📐 Any orientation works (we'll optimize it)", "🚫 Avoid: Blurry, dark, or heavily filtered images"],
@@ -103,7 +113,7 @@ const ContextualHelp = () => {
       case 'style-selection':
         return {
           tips: ["🎨 Hover over styles for instant previews", "⭐ Highlighted styles are AI-recommended for your photo", "🔄 Try different styles - you can always change later", "💡 Portrait photos work great with Classic Oil and Pop Art"],
-          examples: `Perfect for ${state.aiAnalysis.imageType} photos: Abstract Fusion, Classic Oil`
+          examples: `Perfect for ${aiStatus.imageType} photos: Abstract Fusion, Classic Oil`
         };
       default:
         return {

@@ -13,7 +13,6 @@ const initialEngagementSlice: EngagementSliceState = {
     timeOnStep: 0,
     lastInteraction: Date.now(),
     hoverDuration: 0,
-    clickPattern: [],
   },
   contextualHelp: {
     showTooltip: false,
@@ -33,7 +32,6 @@ const initialEngagementSlice: EngagementSliceState = {
     liveUserCount: 247,
     recentCompletions: 43,
   },
-  personalizedMessages: [],
   conversionElements: {
     urgencyMessage: '',
     momentumScore: 0,
@@ -99,16 +97,6 @@ const engagementReducer = (state: EngagementSliceState, action: ProgressAction):
     case 'SET_SUB_STEP':
     case 'COMPLETE_STEP':
       return withInteractionUpdate(state);
-    case 'SHOW_HELP':
-      return {
-        ...state,
-        contextualHelp: {
-          showTooltip: true,
-          tooltipType: action.payload.type,
-          tooltipMessage: action.payload.message,
-          helpLevel: action.payload.level || state.contextualHelp.helpLevel,
-        },
-      };
     case 'HIDE_HELP':
       return {
         ...state,
@@ -125,56 +113,6 @@ const engagementReducer = (state: EngagementSliceState, action: ProgressAction):
         userBehavior: {
           ...state.userBehavior,
           ...action.payload,
-        },
-      };
-    case 'UPDATE_SOCIAL_PROOF':
-      return {
-        ...state,
-        socialProof: {
-          ...state.socialProof,
-          ...action.payload,
-        },
-      };
-    case 'ADD_PERSONALIZED_MESSAGE':
-      return {
-        ...state,
-        personalizedMessages: [...state.personalizedMessages, action.payload],
-      };
-    case 'UPDATE_CONVERSION_ELEMENTS':
-      return {
-        ...state,
-        conversionElements: {
-          ...state.conversionElements,
-          ...action.payload,
-        },
-      };
-    case 'UPDATE_HELP_LEVEL':
-      if (state.contextualHelp.helpLevel === action.payload) {
-        return state;
-      }
-      return {
-        ...state,
-        contextualHelp: {
-          ...state.contextualHelp,
-          helpLevel: action.payload,
-        },
-      };
-    case 'TRACK_HOVER':
-      return {
-        ...state,
-        userBehavior: {
-          ...state.userBehavior,
-          hoverDuration: state.userBehavior.hoverDuration + action.payload,
-          lastInteraction: Date.now(),
-        },
-      };
-    case 'TRACK_CLICK':
-      return {
-        ...state,
-        userBehavior: {
-          ...state.userBehavior,
-          clickPattern: [...state.userBehavior.clickPattern, action.payload].slice(-10),
-          lastInteraction: Date.now(),
         },
       };
     default:
@@ -218,7 +156,6 @@ export function progressReducer(state: ProgressState, action: ProgressAction): P
     userBehavior: state.userBehavior,
     contextualHelp: state.contextualHelp,
     socialProof: state.socialProof,
-    personalizedMessages: state.personalizedMessages,
     conversionElements: state.conversionElements,
   };
 
