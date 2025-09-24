@@ -18,8 +18,10 @@ export interface ProductState {
   selectedSize: string;
   selectedOrientation: string;
   customizations: CustomizationOptions;
-  previewUrls: { [key: number]: string };
+  preview: PreviewState;
   autoGenerationComplete: boolean;
+  isGenerating: boolean;
+  generationErrors: { [key: number]: string };
 }
 
 export interface ProductStateActions {
@@ -29,4 +31,15 @@ export interface ProductStateActions {
   handleOrientationSelect: (orientation: string) => void;
   handleCustomizationChange: (customizations: CustomizationOptions) => void;
   canProceedToStep: (step: number) => boolean;
+  startPreview: (styleId: number, styleName: string) => Promise<string | null>;
+  cancelPreview: () => void;
+}
+
+export interface PreviewState {
+  previewUrls: { [key: number]: string };
+  status: {
+    autoGenerationComplete: boolean;
+    isGenerating: boolean;
+  };
+  error: { [key: number]: string };
 }

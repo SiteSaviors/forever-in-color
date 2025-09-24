@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProductHeader from "@/components/product/ProductHeader";
@@ -19,6 +18,11 @@ const Product = () => {
     selectedOrientation,
     customizations,
     autoGenerationComplete,
+    preview,
+    startPreview,
+    cancelPreview,
+    isGenerating,
+    generationErrors,
     setCurrentStep,
     handlePhotoAndStyleComplete,
     handleSizeSelect,
@@ -60,6 +64,11 @@ const Product = () => {
             customizations={customizations}
             uploadedImage={uploadedImage}
             autoGenerationComplete={autoGenerationComplete}
+            preview={preview}
+            startPreview={startPreview}
+            cancelPreview={cancelPreview}
+            isGenerating={isGenerating}
+            generationErrors={generationErrors}
             onCurrentStepChange={setCurrentStep}
             onPhotoAndStyleComplete={handlePhotoAndStyleComplete}
             onOrientationSelect={handleOrientationSelect}

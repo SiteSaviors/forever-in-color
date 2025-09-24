@@ -1,7 +1,6 @@
 
-import { CustomizationOptions } from "./types/productState";
+import { CustomizationOptions, PreviewState } from "./types/productState";
 import { useProductSteps } from "./hooks/useProductSteps";
-import { usePreviewGeneration } from "./hooks/usePreviewGeneration";
 import CascadeErrorBoundary from "./components/ErrorBoundaries/CascadeErrorBoundary";
 import LoadingState from "./components/LoadingState";
 import ProductContentContainer from "./components/ProductContentContainer";
@@ -17,6 +16,11 @@ interface ProductContentProps {
   customizations: CustomizationOptions;
   uploadedImage: string | null;
   autoGenerationComplete: boolean;
+  preview: PreviewState;
+  startPreview: (styleId: number, styleName: string) => Promise<string | null>;
+  cancelPreview: () => void;
+  isGenerating: boolean;
+  generationErrors: { [key: number]: string };
   onCurrentStepChange: (step: number) => void;
   onPhotoAndStyleComplete: (imageUrl: string, styleId: number, styleName: string) => void;
   onOrientationSelect: (orientation: string) => void;
@@ -33,18 +37,17 @@ const ProductContent = ({
   customizations,
   uploadedImage,
   autoGenerationComplete,
+  preview,
+  startPreview,
+  cancelPreview,
+  isGenerating,
+  generationErrors,
   onCurrentStepChange,
   onPhotoAndStyleComplete,
   onOrientationSelect,
   onSizeSelect,
   onCustomizationChange
 }: ProductContentProps) => {
-  
-
-  // Get the actual preview URLs from the state management system
-  const { previewUrls, autoGenerationComplete: previewGenerationComplete } = usePreviewGeneration(uploadedImage, selectedOrientation);
-  
-
   const {
     canProceedToStep,
     handleContinueToStep2,
@@ -78,6 +81,11 @@ const ProductContent = ({
             customizations={customizations}
             uploadedImage={uploadedImage}
             autoGenerationComplete={autoGenerationComplete}
+            preview={preview}
+            startPreview={startPreview}
+            cancelPreview={cancelPreview}
+            isGenerating={isGenerating}
+            generationErrors={generationErrors}
             onCurrentStepChange={onCurrentStepChange}
             onPhotoAndStyleComplete={onPhotoAndStyleComplete}
             onOrientationSelect={onOrientationSelect}
