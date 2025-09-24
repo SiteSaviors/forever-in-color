@@ -30,7 +30,7 @@ export const generateStylePreview = async (
       'preview': 'medium',
       'final': 'high'
     };
-    const mappedQuality = options.quality ? (qualityMap[options.quality] || options.quality) : 'high';
+    const mappedQuality = options.quality ? (qualityMap[options.quality] || options.quality) : 'medium';
 
     // STEP 2: Prepare the request body with corrected aspect ratio
     const requestBody = { 

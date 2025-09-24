@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { CustomizationOptions } from "../types/productState";
 import { detectOrientationFromImage } from "../utils/orientationDetection";
@@ -27,9 +27,40 @@ export const useProductFlow = () => {
   const {
     previewUrls,
     autoGenerationComplete,
+    generationErrors,
+    isGenerating,
     setPreviewUrls,
-    setAutoGenerationComplete
+    setAutoGenerationComplete,
+    generatePreviewForStyle
   } = usePreviewGeneration(uploadedImage, selectedOrientation);
+
+  useEffect(() => {
+    if (process.env.NODE_ENV !== 'production') {
+      console.count('[dev] usePreviewGeneration mount');
+    }
+  }, []);
+
+  const startPreview = useCallback(
+    (styleId: number, styleName: string) => generatePreviewForStyle(styleId, styleName),
+    [generatePreviewForStyle]
+  );
+
+  const cancelPreview = useCallback(() => {
+    setPreviewUrls({});
+    setAutoGenerationComplete(false);
+  }, [setPreviewUrls, setAutoGenerationComplete]);
+
+  const preview = useMemo(
+    () => ({
+      previewUrls,
+      status: {
+        autoGenerationComplete,
+        isGenerating
+      },
+      error: generationErrors
+    }),
+    [previewUrls, autoGenerationComplete, isGenerating, generationErrors]
+  );
 
   // Handle pre-selected style from style landing pages
   useEffect(() => {
@@ -131,7 +162,11 @@ export const useProductFlow = () => {
     selectedSize,
     selectedOrientation,
     customizations,
-    previewUrls,
+    preview,
+    startPreview,
+    cancelPreview,
+    isGenerating,
+    generationErrors,
     autoGenerationComplete,
     setCurrentStep,
     handlePhotoAndStyleComplete,

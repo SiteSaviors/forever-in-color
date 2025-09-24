@@ -1,7 +1,8 @@
 
-import { memo, lazy, Suspense } from 'react';
+import { memo, lazy, Suspense, useMemo } from 'react';
 import StepErrorBoundary from './StepErrorBoundary';
 import LoadingState from './LoadingState';
+import { PreviewState } from '../types/productState';
 
 // Lazy load step components for better code splitting
 const PhotoUploadStep = lazy(() => import('./PhotoUploadStep'));
@@ -18,6 +19,11 @@ interface ProductStepsManagerProps {
   customizations: any;
   uploadedImage: string | null;
   autoGenerationComplete: boolean;
+  preview: PreviewState;
+  startPreview: (styleId: number, styleName: string) => Promise<string | null>;
+  cancelPreview: () => void;
+  isGenerating: boolean;
+  generationErrors: { [key: number]: string };
   onCurrentStepChange: (step: number) => void;
   onPhotoAndStyleComplete: (imageUrl: string, styleId: number, styleName: string) => void;
   onOrientationSelect: (orientation: string) => void;
@@ -38,6 +44,11 @@ const ProductStepsManager = memo(({
   customizations,
   uploadedImage,
   autoGenerationComplete,
+  preview,
+  startPreview,
+  cancelPreview,
+  isGenerating,
+  generationErrors,
   onCurrentStepChange,
   onPhotoAndStyleComplete,
   onOrientationSelect,
@@ -48,6 +59,16 @@ const ProductStepsManager = memo(({
   handleContinueToStep3,
   handleContinueToStep4
 }: ProductStepsManagerProps) => {
+
+  const previewError = useMemo(() => {
+    const errors = Object.values(generationErrors || {});
+    return errors.length > 0 ? errors[0] ?? null : null;
+  }, [generationErrors]);
+
+  if (process.env.NODE_ENV !== 'production') {
+    void startPreview;
+    void cancelPreview;
+  }
 
   const handleNavigateHome = () => {
     window.location.href = '/';
@@ -110,7 +131,9 @@ const ProductStepsManager = memo(({
             customizations={customizations}
             selectedOrientation={selectedOrientation}
             selectedStyle={selectedStyle}
-            previewUrls={{}}
+            previewUrls={preview.previewUrls}
+            isGeneratingPreviews={isGenerating}
+            previewError={previewError}
             userArtworkUrl={uploadedImage}
             onCustomizationChange={onCustomizationChange}
             onStepClick={() => {
