@@ -38,6 +38,12 @@ export interface ProgressState {
   };
 }
 
+export type ProgressSliceState = Pick<ProgressState, 'currentStep' | 'currentSubStep' | 'completedSteps'>;
+
+export type EngagementSliceState = Pick<ProgressState, 'userBehavior' | 'contextualHelp' | 'socialProof' | 'personalizedMessages' | 'conversionElements'>;
+
+export type AIInsightsSliceState = Pick<ProgressState, 'aiAnalysis'>;
+
 export interface ProgressAction {
   type: 'SET_STEP' | 'SET_SUB_STEP' | 'COMPLETE_STEP' | 'SHOW_HELP' | 'HIDE_HELP' | 
         'UPDATE_BEHAVIOR' | 'UPDATE_SOCIAL_PROOF' | 'ADD_PERSONALIZED_MESSAGE' |

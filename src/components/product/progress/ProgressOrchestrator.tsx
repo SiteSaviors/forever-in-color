@@ -1,33 +1,62 @@
 
-import { createContext, useContext, useReducer, ReactNode } from "react";
-import { ProgressContextType } from './types';
+import { ReactNode, useMemo, useReducer } from "react";
+import { ProgressContextType, ProgressState } from './types';
 import { progressReducer, initialState } from './progressReducer';
 import { useAIAnalysis } from './hooks/useAIAnalysis';
-
-const ProgressContext = createContext<ProgressContextType | null>(null);
+import {
+  ProgressSliceProvider,
+  EngagementSliceProvider,
+  AIInsightsSliceProvider,
+  useProgressSliceContext,
+  useEngagementSliceContext,
+  useAIInsightsSliceContext,
+} from './ProgressSlices';
 
 export const ProgressOrchestrator = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(progressReducer, initialState);
-  
-  // Custom hooks for different concerns
   const { startAIAnalysis, completeAIAnalysis } = useAIAnalysis(dispatch);
 
   return (
-    <ProgressContext.Provider value={{ 
-      state, 
-      dispatch, 
-      startAIAnalysis,
-      completeAIAnalysis
-    }}>
-      {children}
-    </ProgressContext.Provider>
+    <ProgressSliceProvider state={state} dispatch={dispatch}>
+      <EngagementSliceProvider state={state} dispatch={dispatch}>
+        <AIInsightsSliceProvider
+          state={state}
+          dispatch={dispatch}
+          startAIAnalysis={startAIAnalysis}
+          completeAIAnalysis={completeAIAnalysis}
+        >
+          {children}
+        </AIInsightsSliceProvider>
+      </EngagementSliceProvider>
+    </ProgressSliceProvider>
   );
 };
 
-export const useProgressOrchestrator = () => {
-  const context = useContext(ProgressContext);
-  if (!context) {
-    throw new Error('useProgressOrchestrator must be used within ProgressOrchestrator');
-  }
-  return context;
+export const useProgressOrchestrator = (): ProgressContextType => {
+  const { state: progressState, dispatch } = useProgressSliceContext();
+  const { state: engagementState } = useEngagementSliceContext();
+  const {
+    state: aiInsightsState,
+    startAIAnalysis,
+    completeAIAnalysis,
+  } = useAIInsightsSliceContext();
+
+  const combinedState = useMemo<ProgressState>(
+    () => ({
+      ...progressState,
+      ...engagementState,
+      ...aiInsightsState,
+    }),
+    [aiInsightsState, engagementState, progressState]
+  );
+
+  return useMemo<ProgressContextType>(
+    () => ({
+      state: combinedState,
+      dispatch,
+      startAIAnalysis,
+      completeAIAnalysis,
+    }),
+    [combinedState, completeAIAnalysis, dispatch, startAIAnalysis]
+  );
 };
