@@ -72,7 +72,7 @@ const PhotoUploadMain = ({
             </div>
             
             {/* CTA Button */}
-            <UploadCTA isUploading={isUploading} onClick={onClick} />
+            <UploadCTA isUploading={isUploading} />
           </div>
         </div>
       </CardContent>
