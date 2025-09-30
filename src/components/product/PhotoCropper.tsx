@@ -34,6 +34,7 @@ const PhotoCropper = ({
     recommendedOrientation,
     setCrop,
     setZoom,
+    setCropAspect,
     setRecommendedOrientation,
     onCropCompleteHandler,
     handleOrientationChange,
@@ -53,30 +54,27 @@ const PhotoCropper = ({
         const croppedImage = await getCroppedImg(imageUrl, croppedAreaPixels);
         const currentOrientation = getCurrentOrientation().id;
         onCropComplete(croppedImage, cropAspect, currentOrientation);
-      } catch (e) {
+      } catch (_error) {
         // Handle crop error silently
       }
     }
   };
 
-  const handleChangePhotoFile = (file: File) => {
-    // Create object URL for the uploaded file and trigger the change photo callback
-    const imageUrl = URL.createObjectURL(file);
-    
-    // If there's a change photo callback, call it to handle the new image
+  const handleChangePhotoFile = (_file: File) => {
     if (onChangePhoto) {
-      // We need to pass the new image URL back to the parent component
-      // For now, we'll just call the existing callback
       onChangePhoto();
-      
-      // In a real implementation, you might want to update the imageUrl prop
-      // or have a more specific callback that accepts the new image URL
     }
   };
 
   const getCurrentOrientation = () => {
     return orientationOptions.find(opt => opt.ratio === cropAspect) || orientationOptions[0];
   };
+
+  useEffect(() => {
+    if (initialAspectRatio) {
+      setCropAspect(initialAspectRatio);
+    }
+  }, [initialAspectRatio, setCropAspect]);
 
   return (
     <div className="relative">

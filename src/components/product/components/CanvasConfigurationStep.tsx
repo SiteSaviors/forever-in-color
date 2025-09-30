@@ -1,5 +1,4 @@
 
-import OrientationHeader from "../orientation/components/OrientationHeader";
 import ValidationErrorAlert from "../orientation/components/ValidationErrorAlert";
 import SizeSelectionSection from "../orientation/components/SizeSelectionSection";
 import StepNavigation from "./StepNavigation";
