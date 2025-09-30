@@ -54,7 +54,7 @@ const ContextualHelp = () => {
   }, [currentSubStep]);
   if (!isVisible) return null;
   const handleClose = () => {
-    dispatch({ type: 'HIDE_HELP' });
+    dispatch({ type: 'HIDE_HELP', payload: null });
     setIsVisible(false);
     setShowAdvancedHelp(false);
   };
