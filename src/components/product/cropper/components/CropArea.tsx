@@ -1,5 +1,5 @@
 
-import Cropper from 'react-easy-crop';
+import Cropper, { Area } from 'react-easy-crop';
 
 interface CropAreaProps {
   imageUrl: string;
@@ -8,7 +8,7 @@ interface CropAreaProps {
   cropAspect: number;
   onCropChange: (crop: { x: number; y: number }) => void;
   onZoomChange: (zoom: number) => void;
-  onCropComplete: (croppedArea: any, croppedAreaPixels: any) => void;
+  onCropComplete: (croppedArea: Area, croppedAreaPixels: Area) => void;
 }
 
 const CropArea = ({

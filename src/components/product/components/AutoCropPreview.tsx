@@ -1,13 +1,13 @@
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { MobileButton } from "@/components/ui/mobile-button";
 import { MobileTypography } from "@/components/ui/mobile-typography";
 import { Sparkles, Check, Edit3, Zap } from "lucide-react";
+
 import { generateSmartCrop } from "../utils/smartCropUtils";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 interface AutoCropPreviewProps {
   imageUrl: string;
@@ -26,7 +26,6 @@ interface AutoCropPreviewProps {
     const [analysisComplete, setAnalysisComplete] = useState(false);
     const [croppedImageUrl, setCroppedImageUrl] = useState<string>("");
     const [isGeneratingCrop, setIsGeneratingCrop] = useState(true);
-    const isMobile = useIsMobile();
 
   // Dynamic sizing based on orientation with mobile optimization
   const getDynamicCropStyles = (orientation: string) => {
@@ -62,14 +61,10 @@ interface AutoCropPreviewProps {
     // Generate actual smart crop
     const generateCrop = async () => {
       setIsGeneratingCrop(true);
-      
-      try {
-        const smartCroppedUrl = await generateSmartCrop(imageUrl, recommendedOrientation);
-        setCroppedImageUrl(smartCroppedUrl);
-      } catch (error) {
-        setCroppedImageUrl(imageUrl); // Fallback to original
-      }
-      
+
+      const smartCroppedUrl = await generateSmartCrop(imageUrl, recommendedOrientation).catch(() => imageUrl);
+      setCroppedImageUrl(smartCroppedUrl ?? imageUrl);
+
       setIsGeneratingCrop(false);
     };
 

@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import type { Area } from 'react-easy-crop';
 
 export const useImageProcessing = () => {
   const createImage = (url: string): Promise<HTMLImageElement> => 
@@ -11,7 +11,7 @@ export const useImageProcessing = () => {
       image.src = url;
     });
 
-  const getCroppedImg = async (imageSrc: string, pixelCrop: any): Promise<string> => {
+  const getCroppedImg = async (imageSrc: string, pixelCrop: Area): Promise<string> => {
     const image = await createImage(imageSrc);
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');

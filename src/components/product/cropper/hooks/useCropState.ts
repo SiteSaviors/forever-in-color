@@ -1,5 +1,7 @@
 
 import { useState, useCallback } from "react";
+import type { Area } from 'react-easy-crop';
+
 import { getAspectRatioFromOrientation } from "../data/orientationOptions";
 
 interface UseCropStateProps {
@@ -10,11 +12,11 @@ interface UseCropStateProps {
 export const useCropState = ({ selectedOrientation, onOrientationChange }: UseCropStateProps) => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [cropAspect, setCropAspect] = useState(getAspectRatioFromOrientation(selectedOrientation));
   const [recommendedOrientation, setRecommendedOrientation] = useState<string>("");
 
-  const onCropCompleteHandler = useCallback((croppedArea: any, croppedAreaPixels: any) => {
+  const onCropCompleteHandler = useCallback((_: Area, croppedAreaPixels: Area) => {
     setCroppedAreaPixels(croppedAreaPixels);
   }, []);
 

@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -14,6 +15,10 @@ interface UseStripePaymentProps {
   customerEmail?: string;
 }
 
+interface CreatePaymentResponse {
+  url?: string;
+}
+
 export const useStripePayment = ({ customerEmail }: UseStripePaymentProps = {}) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
@@ -24,7 +29,7 @@ export const useStripePayment = ({ customerEmail }: UseStripePaymentProps = {}) 
     try {
       console.log('Processing payment for items:', items);
       
-      const { data, error } = await supabase.functions.invoke('create-payment', {
+      const { data, error } = await supabase.functions.invoke<CreatePaymentResponse>('create-payment', {
         body: {
           amount: items.reduce((total, item) => total + (item.amount * (item.quantity || 1)), 0),
           currency: 'usd',
@@ -48,7 +53,7 @@ export const useStripePayment = ({ customerEmail }: UseStripePaymentProps = {}) 
       } else {
         throw new Error('No checkout URL received');
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Payment processing error:', error);
       toast({
         title: "Payment Error",

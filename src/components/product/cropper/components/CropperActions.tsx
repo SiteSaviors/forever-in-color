@@ -1,5 +1,7 @@
 
 import React, { useRef } from "react";
+import type { Area } from 'react-easy-crop';
+
 import { Button } from "@/components/ui/button";
 import { Upload, RotateCcw, Crop } from "lucide-react";
 import { validateImageFile } from "@/utils/fileValidation";
@@ -8,7 +10,7 @@ interface CropperActionsProps {
   onChangePhoto?: (file: File) => void;
   onAutoCenterCrop: () => void;
   onCropSave: () => void;
-  croppedAreaPixels: any;
+  croppedAreaPixels: Area | null;
 }
 
 const CropperActions = ({

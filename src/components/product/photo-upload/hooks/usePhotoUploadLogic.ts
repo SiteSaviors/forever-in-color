@@ -1,7 +1,6 @@
 
 import { useState, useRef } from "react";
 import { validateImageFile } from "@/utils/fileValidation";
-import { detectOrientationFromImage } from "../../utils/orientationDetection";
 
 interface UsePhotoUploadLogicProps {
   onImageUpload: (imageUrl: string, originalImageUrl?: string, orientation?: string) => void;
@@ -51,27 +50,19 @@ export const usePhotoUploadLogic = ({
     
     simulateProcessingStages();
 
-    try {
-      const imageUrl = URL.createObjectURL(file);
-      
-      setTimeout(() => {
-        setUploadedImage(imageUrl);
-        setUploadProgress(100);
-        
-        setTimeout(() => {
-          setIsUploading(false);
-          setUploadProgress(0);
-          setProcessingStage("");
-          onImageAnalysis(imageUrl);
-        }, 800);
-      }, 2000);
+    const imageUrl = URL.createObjectURL(file);
 
-    } catch (error) {
-      setIsUploading(false);
-      setUploadProgress(0);
-      setProcessingStage("");
-      onFlowStageChange('upload');
-    }
+    setTimeout(() => {
+      setUploadedImage(imageUrl);
+      setUploadProgress(100);
+
+      setTimeout(() => {
+        setIsUploading(false);
+        setUploadProgress(0);
+        setProcessingStage("");
+        onImageAnalysis(imageUrl);
+      }, 800);
+    }, 2000);
   };
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {

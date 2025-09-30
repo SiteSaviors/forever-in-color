@@ -22,7 +22,7 @@ interface UseStylePreviewProps {
 export const useStylePreview = ({
   style,
   croppedImage,
-  isPopular,
+  isPopular: _isPopular,
   preGeneratedPreview,
   selectedOrientation = "square",
   onStyleClick
@@ -116,7 +116,7 @@ export const useStylePreview = ({
       setIsLoading(false);
       // Preview generation completed
     }
-  }, [autoCorrect, croppedImage, preGeneratedPreview, selectedOrientation, style.id]);
+  }, [autoCorrect, croppedImage, isLoading, preGeneratedPreview, selectedOrientation, style.id, style.name]);
 
   const handleClick = useCallback(() => {
     // Style clicked with orientation
