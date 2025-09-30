@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { Check, Zap } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 interface ResolutionOption {
   id: string;

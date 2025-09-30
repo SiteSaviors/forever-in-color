@@ -1,7 +1,6 @@
 
 import { Upload, Sparkles } from "lucide-react";
 import { MobileButton } from "@/components/ui/mobile-button";
-import { MobileTypography } from "@/components/ui/mobile-typography";
 
 interface UploadDropzoneProps {
   isDragOver: boolean;

@@ -1,5 +1,4 @@
 
-import { Badge } from "@/components/ui/badge";
 import { TrendingUp, Clock, Star } from "lucide-react";
 
 interface ExpandedContentProps {

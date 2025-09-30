@@ -1,5 +1,4 @@
 
-import { Badge } from "@/components/ui/badge";
 import { Zap } from "lucide-react";
 
 interface WidgetHeaderProps {

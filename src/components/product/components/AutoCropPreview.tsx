@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { MobileButton } from "@/components/ui/mobile-button";
 import { MobileTypography } from "@/components/ui/mobile-typography";
 import { Sparkles, Check, Edit3, Zap } from "lucide-react";
