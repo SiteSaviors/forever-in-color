@@ -1,4 +1,4 @@
-import { CheckCircle, Upload, Crop, Monitor, Sparkles, TrendingUp, Eye, ArrowDown } from "lucide-react";
+import { CheckCircle, Upload, Crop, Monitor, Sparkles, Eye, ArrowDown } from "lucide-react";
 interface UnifiedFlowProgressProps {
   currentStage: 'upload' | 'analyzing' | 'crop-preview' | 'orientation' | 'complete';
   hasImage: boolean;

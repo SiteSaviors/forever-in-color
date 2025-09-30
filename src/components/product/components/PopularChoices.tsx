@@ -1,4 +1,3 @@
-import { Users } from "lucide-react";
 import StyleCard from "../StyleCard";
 import { artStyles } from "@/data/artStyles";
 import { StyleRecommendation } from "../utils/styleRecommendationEngine";

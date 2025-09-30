@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Zap, Download } from "lucide-react";
+import { Zap, Download } from "lucide-react";
 interface StyleCardBadgesProps {
   isPopular: boolean;
   showGeneratedBadge: boolean;

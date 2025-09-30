@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { Upload, Sparkles, CheckCircle2 } from "lucide-react";
 interface UploadCTAProps {
   isUploading: boolean;
   onClick: () => void;

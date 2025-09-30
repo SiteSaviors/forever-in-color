@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { useStripePayment } from "../hooks/useStripePayment";
 import { usePricingCalculator } from "./bottom-momentum/PricingCalculator";
 import { buildPaymentItems } from "./bottom-momentum/PaymentItemsBuilder";
-import { CheckCircle, Crown, Sparkles, TrendingUp, Users } from "lucide-react";
+import { Crown, Sparkles, TrendingUp, Users } from "lucide-react";
 
 interface CustomizationOptions {
   floatingFrame: {
