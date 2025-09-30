@@ -27,12 +27,11 @@ export class CanvasWatermarkService {
       if (!response.ok) {
         throw new Error(`Image not accessible: ${response.status}`);
       }
-      
-      
+
       return imageUrl;
-      
     } catch (error) {
-      throw error;
+      console.error(`Failed to validate image URL before watermarking: ${imageUrl}`, error);
+      throw error instanceof Error ? error : new Error('Unknown image validation failure');
     }
   }
 

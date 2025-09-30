@@ -2,8 +2,6 @@ import { useCallback, useMemo, useEffect } from 'react';
 import { useInteractionStateMachine } from './useInteractionStateMachine';
 
 interface UseStyleCardInteractionsProps {
-  styleId: number;
-  styleName: string;
   isSelected: boolean;
   isGenerating: boolean;
   hasError: boolean;
@@ -13,8 +11,6 @@ interface UseStyleCardInteractionsProps {
 }
 
 export const useStyleCardInteractions = ({
-  styleId,
-  styleName,
   isSelected,
   isGenerating,
   hasError,
@@ -30,49 +26,69 @@ export const useStyleCardInteractions = ({
     animationDuration: 300
   });
 
+  const {
+    isDisabled: machineDisabled,
+    hasError: machineHasError,
+    isLoading: machineLoading,
+    isSelected: machineSelected,
+    isInteractive: machineInteractive,
+    isAnimating: machineAnimating,
+    shouldShowHover,
+    shouldShowSelected,
+    shouldShowLoading,
+    shouldShowError,
+    shouldShowDisabled,
+    transition,
+    debouncedHoverStart,
+    hoverEnd,
+    queueAnimation,
+    animationQueueLength,
+    state: machineState
+  } = stateMachine;
+
   // Sync external state with state machine - memoized to prevent infinite re-renders
   const syncExternalState = useCallback(() => {
     // Only sync if there are actual state differences to prevent infinite loops
-    const needsDisableTransition = !canAccess && !stateMachine.isDisabled;
-    const needsEnableTransition = canAccess && stateMachine.isDisabled;
-    const needsErrorTransition = hasError && !stateMachine.hasError;
-    const needsResetTransition = !hasError && stateMachine.hasError;
-    const needsLoadingStartTransition = isGenerating && !stateMachine.isLoading;
-    const needsLoadingEndTransition = !isGenerating && stateMachine.isLoading;
-    const needsSelectTransition = isSelected && !stateMachine.isSelected && !stateMachine.isLoading;
-    const needsDeselectTransition = !isSelected && stateMachine.isSelected;
+    const needsDisableTransition = !canAccess && !machineDisabled;
+    const needsEnableTransition = canAccess && machineDisabled;
+    const needsErrorTransition = hasError && !machineHasError;
+    const needsResetTransition = !hasError && machineHasError;
+    const needsLoadingStartTransition = isGenerating && !machineLoading;
+    const needsLoadingEndTransition = !isGenerating && machineLoading;
+    const needsSelectTransition = isSelected && !machineSelected && !machineLoading;
+    const needsDeselectTransition = !isSelected && machineSelected;
 
     if (needsDisableTransition) {
-      stateMachine.transition('DISABLE', true);
+      transition('DISABLE', true);
     } else if (needsEnableTransition) {
-      stateMachine.transition('ENABLE', true);
+      transition('ENABLE', true);
     }
     
     if (needsErrorTransition) {
-      stateMachine.transition('ERROR', true);
+      transition('ERROR', true);
     } else if (needsResetTransition) {
-      stateMachine.transition('RESET', true);
+      transition('RESET', true);
     }
     
     if (needsLoadingStartTransition) {
-      stateMachine.transition('START_LOADING', true);
+      transition('START_LOADING', true);
     } else if (needsLoadingEndTransition) {
-      stateMachine.transition('FINISH_LOADING', true);
+      transition('FINISH_LOADING', true);
     }
     
     if (needsSelectTransition) {
       // If in error state and trying to select, reset first then select
-      if (stateMachine.hasError) {
-        stateMachine.transition('RESET', true);
+      if (machineHasError) {
+        transition('RESET', true);
         // Allow a frame for state to settle before selecting
-        setTimeout(() => stateMachine.transition('SELECT', true), 0);
+        setTimeout(() => transition('SELECT', true), 0);
       } else {
-        stateMachine.transition('SELECT', true);
+        transition('SELECT', true);
       }
     } else if (needsDeselectTransition) {
-      stateMachine.transition('DESELECT', true);
+      transition('DESELECT', true);
     }
-  }, [canAccess, hasError, isGenerating, isSelected, stateMachine.isDisabled, stateMachine.hasError, stateMachine.isLoading, stateMachine.isSelected, stateMachine.transition]);
+  }, [canAccess, hasError, isGenerating, isSelected, machineDisabled, machineHasError, machineLoading, machineSelected, transition]);
 
   // Only sync when dependencies actually change
   useEffect(() => {
@@ -81,21 +97,21 @@ export const useStyleCardInteractions = ({
 
   // Interaction handlers with state machine integration
   const handleMouseEnter = useCallback(() => {
-    if (stateMachine.isInteractive) {
+    if (machineInteractive) {
       // Hover start on style card
-      stateMachine.debouncedHoverStart();
+      debouncedHoverStart();
     }
-  }, [stateMachine, styleName, styleId]);
+  }, [debouncedHoverStart, machineInteractive]);
 
   const handleMouseLeave = useCallback(() => {
-    if (stateMachine.isInteractive) {
+    if (machineInteractive) {
       // Hover end on style card
-      stateMachine.hoverEnd();
+      hoverEnd();
     }
-  }, [stateMachine, styleName, styleId]);
+  }, [hoverEnd, machineInteractive]);
 
   const handleClick = useCallback(() => {
-    if (!stateMachine.isInteractive || stateMachine.isAnimating) {
+    if (!machineInteractive || machineAnimating) {
       // Click blocked - not interactive or animating
       return;
     }
@@ -103,11 +119,11 @@ export const useStyleCardInteractions = ({
     // Style card clicked
     
     // Queue the click action to prevent conflicts
-    stateMachine.queueAnimation(() => {
+    queueAnimation(() => {
       onStyleClick();
-      stateMachine.transition('SELECT');
+      transition('SELECT');
     });
-  }, [stateMachine, styleName, styleId, onStyleClick]);
+  }, [machineAnimating, machineInteractive, onStyleClick, queueAnimation, transition]);
 
   const handleGenerateClick = useCallback((e?: React.MouseEvent) => {
     if (e) {
@@ -119,21 +135,21 @@ export const useStyleCardInteractions = ({
     }
 
     // Allow generation even in error state by resetting first
-    if (stateMachine.hasError) {
+    if (machineHasError) {
       // Resetting error state before generation
-      stateMachine.transition('RESET', true);
+      transition('RESET', true);
     }
     
-    if (!stateMachine.isInteractive && !stateMachine.hasError) {
+    if (!machineInteractive && !machineHasError) {
       return;
     }
 
     // Generate click on style card
     
     // Direct call without animation queue to prevent conflicts
-    stateMachine.transition('START_LOADING', true);
+    transition('START_LOADING', true);
     onGenerateStyle();
-  }, [stateMachine, styleName, styleId, onGenerateStyle]);
+  }, [machineHasError, machineInteractive, onGenerateStyle, transition]);
 
   const handleRetryClick = useCallback((e?: React.MouseEvent) => {
     if (e) {
@@ -147,21 +163,21 @@ export const useStyleCardInteractions = ({
     // Retry click on style card
     
     // Reset error state and start generation immediately
-    stateMachine.transition('RESET', true);
-    stateMachine.transition('START_LOADING', true);
+    transition('RESET', true);
+    transition('START_LOADING', true);
     onGenerateStyle();
-  }, [stateMachine, styleName, styleId, onGenerateStyle]);
+  }, [onGenerateStyle, transition]);
 
   // Computed visual states for styling
   const visualState = useMemo(() => ({
-    isHovered: stateMachine.shouldShowHover,
-    isSelected: stateMachine.shouldShowSelected,
-    isLoading: stateMachine.shouldShowLoading,
-    hasError: stateMachine.shouldShowError,
-    isDisabled: stateMachine.shouldShowDisabled,
-    isAnimating: stateMachine.isAnimating,
-    isInteractive: stateMachine.isInteractive
-  }), [stateMachine]);
+    isHovered: shouldShowHover,
+    isSelected: shouldShowSelected,
+    isLoading: shouldShowLoading,
+    hasError: shouldShowError,
+    isDisabled: shouldShowDisabled,
+    isAnimating: machineAnimating,
+    isInteractive: machineInteractive
+  }), [machineAnimating, machineInteractive, shouldShowDisabled, shouldShowError, shouldShowHover, shouldShowLoading, shouldShowSelected]);
 
   // CSS classes based on current state
   const cssClasses = useMemo(() => {
@@ -195,7 +211,7 @@ export const useStyleCardInteractions = ({
     handleRetryClick,
     
     // State machine access for debugging
-    currentState: stateMachine.state,
-    animationQueueLength: stateMachine.animationQueueLength
+    currentState: machineState,
+    animationQueueLength
   };
 };

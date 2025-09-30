@@ -28,14 +28,16 @@ export class WatermarkService {
             const logoSize = Math.floor(originalImage.width * 0.15);
             const resizedLogo = logoImage.resize(logoSize, Math.floor(logoSize * (logoImage.height / logoImage.width)));
 
-            // Position logo slightly above center
-            const logoTop = Math.floor(originalImage.height * 0.35);
+            // Position logo slightly above center with a subtle session-based offset for variety
+            const sessionOffset = sessionId ? (sessionId.charCodeAt(0) % 7) - 3 : 0;
+            const logoTop = Math.max(0, Math.floor(originalImage.height * 0.35) + sessionOffset);
             const logoLeft = Math.floor((originalImage.width - logoSize) / 2);
 
             // Composite logo with transparency
             originalImage.composite(resizedLogo, logoLeft, logoTop);
           }
         } catch (logoError) {
+          console.warn('Unable to load watermark logo for preview image', logoError);
         }
 
         // 2. Create "FOREVER IN COLOR" text overlay
@@ -43,17 +45,7 @@ export class WatermarkService {
         // For now, we'll focus on the logo and session ID
         
         // 3. Add session ID text in bottom corner (simplified approach)
-        if (sessionId) {
-          const sessionText = sessionId.slice(0, 8);
-          const timestamp = new Date().toISOString().slice(0, 10);
-          const watermarkText = `${sessionText} • ${timestamp}`;
-          
-          // Create a simple text overlay using a filled rectangle as placeholder
-          // In a real implementation, you'd want to use a proper text rendering solution
-          // For now, we'll just add the logo which is the main visual watermark
-          
-          
-        }
+
       }
 
       // Encode the final watermarked image
@@ -62,6 +54,7 @@ export class WatermarkService {
 
     } catch (error) {
       // Return original image if watermarking fails
+      console.error('Watermark generation failed, returning original image', error);
       return imageBuffer;
     }
   }

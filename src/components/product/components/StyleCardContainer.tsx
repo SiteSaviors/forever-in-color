@@ -35,8 +35,6 @@ const StyleCardContainer = memo(({
     handleClick,
     handleGenerateClick
   } = useStyleCardInteractions({
-    styleId,
-    styleName,
     isSelected,
     isGenerating,
     hasError,

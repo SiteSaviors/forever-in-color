@@ -16,11 +16,11 @@ export async function validateEnvironment(req: Request, requestId: string): Prom
   // Check for missing or empty OpenAI API key
   if (!openaiApiKey || openaiApiKey.trim() === '') {
     const errorMsg = 'OpenAI API key is not configured or is empty. Please set OPENAI_API_KEY or OPEN_AI_KEY environment variable in your Supabase project settings.';
-    
-    
+
     try {
-      await logSecurityEvent('api_key_missing', 'OpenAI API key not configured or empty', req);
+      await logSecurityEvent('api_key_missing', errorMsg, req);
     } catch (logError) {
+      console.error('Failed to log missing OpenAI API key event', logError);
     }
     
     return {
@@ -28,7 +28,7 @@ export async function validateEnvironment(req: Request, requestId: string): Prom
       error: new Response(
         JSON.stringify({ 
           error: 'Service configuration error',
-          message: 'AI service is not properly configured. Please contact support.',
+          message: errorMsg,
           requestId,
           timestamp: new Date().toISOString()
         }), 
@@ -43,11 +43,11 @@ export async function validateEnvironment(req: Request, requestId: string): Prom
   // Check for missing or empty Replicate API token
   if (!replicateApiToken || replicateApiToken.trim() === '') {
     const errorMsg = 'Replicate API token is not configured or is empty. Please set REPLICATE_API_TOKEN environment variable in your Supabase project settings.';
-    
-    
+
     try {
-      await logSecurityEvent('api_key_missing', 'Replicate API token not configured or empty', req);
+      await logSecurityEvent('api_key_missing', errorMsg, req);
     } catch (logError) {
+      console.error('Failed to log missing Replicate API token event', logError);
     }
     
     return {
@@ -55,7 +55,7 @@ export async function validateEnvironment(req: Request, requestId: string): Prom
       error: new Response(
         JSON.stringify({ 
           error: 'Service configuration error',
-          message: 'Image processing service is not properly configured. Please contact support.',
+          message: errorMsg,
           requestId,
           timestamp: new Date().toISOString()
         }), 

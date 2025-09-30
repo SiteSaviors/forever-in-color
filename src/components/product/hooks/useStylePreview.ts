@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { generateStylePreview } from '@/utils/stylePreviewApi';
 import { addWatermarkToImage } from '@/utils/watermarkUtils';
-import { getAspectRatio, validateOrientationFlow } from '../orientation/utils';
+import { getAspectRatio } from '../orientation/utils';
 import { useAspectRatioValidator } from '../orientation/hooks/useAspectRatioValidator';
 
 interface UseStylePreviewProps {
@@ -32,7 +32,7 @@ export const useStylePreview = ({
   const [hasGeneratedPreview, setHasGeneratedPreview] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
   
-  const { validateWithRecovery, autoCorrect } = useAspectRatioValidator();
+  const { autoCorrect } = useAspectRatioValidator();
 
   // Initialize with pre-generated preview if available
   useEffect(() => {
@@ -110,12 +110,13 @@ export const useStylePreview = ({
       }
     } catch (error) {
       // Error generating preview
-      setValidationError(`Generation failed: ${error.message}`);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      setValidationError(`Generation failed: ${message}`);
     } finally {
       setIsLoading(false);
       // Preview generation completed
     }
-  }, [croppedImage, style.id, style.name, preGeneratedPreview, selectedOrientation, validateWithRecovery, autoCorrect]);
+  }, [autoCorrect, croppedImage, preGeneratedPreview, selectedOrientation, style.id]);
 
   const handleClick = useCallback(() => {
     // Style clicked with orientation
@@ -125,7 +126,7 @@ export const useStylePreview = ({
       // Auto-generating preview for style
       generatePreview();
     }
-  }, [style, croppedImage, hasGeneratedPreview, isLoading, onStyleClick, generatePreview, preGeneratedPreview, selectedOrientation]);
+  }, [croppedImage, generatePreview, hasGeneratedPreview, isLoading, onStyleClick, preGeneratedPreview, style]);
 
   return {
     isLoading,

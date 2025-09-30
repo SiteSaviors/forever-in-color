@@ -1,7 +1,5 @@
-
 import { CustomizationOptions } from "./types/productState";
 import { useProductSteps } from "./hooks/useProductSteps";
-import { usePreviewGeneration } from "./hooks/usePreviewGeneration";
 import CascadeErrorBoundary from "./components/ErrorBoundaries/CascadeErrorBoundary";
 import LoadingState from "./components/LoadingState";
 import ProductContentContainer from "./components/ProductContentContainer";
@@ -39,12 +37,6 @@ const ProductContent = ({
   onSizeSelect,
   onCustomizationChange
 }: ProductContentProps) => {
-  
-
-  // Get the actual preview URLs from the state management system
-  const { previewUrls, autoGenerationComplete: previewGenerationComplete } = usePreviewGeneration(uploadedImage, selectedOrientation);
-  
-
   const {
     canProceedToStep,
     handleContinueToStep2,
@@ -91,7 +83,7 @@ const ProductContent = ({
         </StepAccordion>
       </ProductContentContainer>
     </CascadeErrorBoundary>
- );
-} // end of function
+  );
+};
 
 export default ProductContent;

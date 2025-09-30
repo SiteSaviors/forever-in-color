@@ -23,7 +23,6 @@ const ProductHeader = ({
 }: ProductHeaderProps) => {
   const progressPercentage = completedSteps.length / totalSteps * 100;
   const [liveUsers, setLiveUsers] = useState(423);
-  const [recentOrders, setRecentOrders] = useState(12);
 
   // Live testimonials for social proof rotation
   const liveTestimonials = [
@@ -57,9 +56,6 @@ const ProductHeader = ({
   useEffect(() => {
     const interval = setInterval(() => {
       setLiveUsers(prev => prev + Math.floor(Math.random() * 7) - 3);
-      if (Math.random() > 0.4) {
-        setRecentOrders(prev => prev + 1);
-      }
     }, 4000);
     return () => clearInterval(interval);
   }, []);
