@@ -11,7 +11,10 @@ const StyleCardBadges = ({
   existingPurchase
 }: StyleCardBadgesProps) => {
   return <div className="flex flex-col gap-1 flex-shrink-0 items-end">
-      {isPopular}
+      {isPopular && <Badge className="bg-gradient-to-r from-amber-400 to-rose-500 text-white text-xs px-2 py-0.5 shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
+          <Sparkles className="w-3 h-3 mr-1" />
+          Popular pick
+        </Badge>}
       {showGeneratedBadge && <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs px-2 py-0.5 shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
           <Zap className="w-3 h-3 mr-1" />
           Ready

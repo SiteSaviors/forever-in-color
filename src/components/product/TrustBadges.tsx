@@ -1,5 +1,5 @@
 
-import { Shield, Truck, Award, Clock, Star, CheckCircle } from "lucide-react";
+import { Shield, Truck, Award, Star, CheckCircle } from "lucide-react";
 
 const TrustBadges = () => {
   return (

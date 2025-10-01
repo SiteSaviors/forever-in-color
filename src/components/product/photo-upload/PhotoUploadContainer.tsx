@@ -33,7 +33,7 @@ const PhotoUploadContainer = ({ onImageUpload, initialImage }: PhotoUploadContai
         setCurrentFlowStage('crop-preview');
         setShowAutoCropPreview(true);
       }, 1500);
-    } catch (error) {
+    } catch (_error) {
       setRecommendedOrientation('square');
       setAnalysisComplete(true);
       setCurrentFlowStage('crop-preview');

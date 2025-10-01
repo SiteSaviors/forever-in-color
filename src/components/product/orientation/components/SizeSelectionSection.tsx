@@ -41,6 +41,10 @@ const SizeSelectionSection = forwardRef<HTMLDivElement, SizeSelectionSectionProp
               selectedSize={selectedSize}
               currentSizeOption={currentSizeOption}
             />
+
+            <p className="mt-3 text-center text-xs text-gray-500">
+              AI recommends <span className="font-semibold text-gray-700">{recommendedSize}</span> based on your orientation.
+            </p>
           </>
         )}
       </>
