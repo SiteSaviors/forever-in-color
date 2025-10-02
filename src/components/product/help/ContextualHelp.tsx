@@ -3,34 +3,27 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { X, Lightbulb, Heart, Sparkles, ArrowRight, Users, HelpCircle, Target } from "lucide-react";
-import {
-  useProgressDispatch,
-  useTooltip,
-  useUserBehavior,
-  useAIStatus,
-  useSocialProof,
-  useCurrentSubStep
-} from "../progress/hooks/useProgressSelectors";
+import { useStepOneExperienceContext } from "../progress/StepOneExperienceContext";
+import { COMPLETION_RATE } from "../progress/useStepOneExperience";
+
 const ContextualHelp = () => {
-  const dispatch = useProgressDispatch();
-  const contextualHelp = useTooltip();
-  const userBehavior = useUserBehavior();
-  const aiStatus = useAIStatus();
-  const socialProof = useSocialProof();
-  const currentSubStep = useCurrentSubStep();
+  const experience = useStepOneExperienceContext();
+  const { state } = experience;
   const [isVisible, setIsVisible] = useState(false);
   const [hasShownInitialTooltip, setHasShownInitialTooltip] = useState(false);
   const [showAdvancedHelp, setShowAdvancedHelp] = useState(false);
+
   useEffect(() => {
-    setIsVisible(contextualHelp.showTooltip);
-  }, [contextualHelp.showTooltip]);
+    setIsVisible(state.help.isVisible);
+  }, [state.help.isVisible]);
 
   // Show initial tooltip once after 20 seconds if no image uploaded
   useEffect(() => {
     if (hasShownInitialTooltip) return;
+
     const timer = setTimeout(() => {
       // Check if user hasn't uploaded an image (still on upload sub-step)
-      if (currentSubStep === 'upload' && !hasShownInitialTooltip) {
+      if (state.subStep === 'upload' && !hasShownInitialTooltip) {
         setHasShownInitialTooltip(true);
         // This will trigger the contextual help through the existing system
         const helpEvent = new CustomEvent('showInitialHelp', {
@@ -44,76 +37,92 @@ const ContextualHelp = () => {
     }, 20000); // 20 seconds
 
     return () => clearTimeout(timer);
-  }, [currentSubStep, hasShownInitialTooltip]);
+  }, [state.subStep, hasShownInitialTooltip, state]);
 
   // Reset the flag if user moves past upload step
   useEffect(() => {
-    if (currentSubStep !== 'upload') {
+    if (state.subStep !== 'upload') {
       setHasShownInitialTooltip(true); // Prevent showing again
     }
-  }, [currentSubStep]);
+  }, [state.subStep]);
+
   if (!isVisible) return null;
+
   const handleClose = () => {
-    dispatch({ type: 'HIDE_HELP', payload: null });
+    experience.hideHelp();
     setIsVisible(false);
     setShowAdvancedHelp(false);
   };
+
   const handleMoreHelp = () => {
     setShowAdvancedHelp(true);
   };
+
   const getHelpContent = () => {
-    const { helpLevel } = contextualHelp;
-    switch (contextualHelp.tooltipType) {
+    const { help, ai } = state;
+    switch (help.type) {
       case 'hesitation':
         return {
           icon: Lightbulb,
-          title: helpLevel === 'detailed' ? "Let's get you started!" : "Need a little guidance?",
-          message: contextualHelp.tooltipMessage,
-          action: helpLevel === 'detailed' ? "Show me how" : "Got it!",
+          title: help.level === 'detailed' ? "Let's get you started!" : "Need a little guidance?",
+          message: help.message,
+          action: help.level === 'detailed' ? "Show me how" : "Got it!",
           variant: "helpful" as const,
-          showMoreInfo: helpLevel !== 'detailed'
+          showMoreInfo: help.level !== 'detailed'
         };
       case 'recommendation':
         return {
           icon: Sparkles,
           title: "AI Recommendation",
-          message: contextualHelp.tooltipMessage,
+          message: help.message,
           action: "Try it",
           variant: "ai" as const,
-          confidence: aiStatus.imageType !== 'unknown' ? 95 : 85
+          confidence: ai.imageType !== 'unknown' ? 95 : 85
         };
       case 'social':
         return {
           icon: Users,
           title: "Popular Choice",
-          message: contextualHelp.tooltipMessage,
+          message: help.message,
           action: "Continue",
           variant: "social" as const,
-          socialProof: `${socialProof.completionRate}% user satisfaction`
+          socialProof: `${COMPLETION_RATE}% user satisfaction`
         };
       default:
         return {
           icon: Heart,
           title: "Helpful Tip",
-          message: contextualHelp.tooltipMessage,
+          message: help.message,
           action: "Thanks!",
           variant: "general" as const
         };
     }
   };
+
   const content = getHelpContent();
   const Icon = content.icon;
+
   const getAdvancedHelp = () => {
-    switch (currentSubStep) {
+    switch (state.subStep) {
       case 'upload':
         return {
-          tips: ["📸 Best results: Clear, well-lit photos", "👥 Great for: Portraits, pets, landscapes", "📐 Any orientation works (we'll optimize it)", "🚫 Avoid: Blurry, dark, or heavily filtered images"],
+          tips: [
+            "📸 Best results: Clear, well-lit photos",
+            "👥 Great for: Portraits, pets, landscapes",
+            "📐 Any orientation works (we'll optimize it)",
+            "🚫 Avoid: Blurry, dark, or heavily filtered images"
+          ],
           examples: "Popular uploads: Family photos, vacation shots, pet portraits"
         };
       case 'style-selection':
         return {
-          tips: ["🎨 Hover over styles for instant previews", "⭐ Highlighted styles are AI-recommended for your photo", "🔄 Try different styles - you can always change later", "💡 Portrait photos work great with Classic Oil and Pop Art"],
-          examples: `Perfect for ${aiStatus.imageType} photos: Abstract Fusion, Classic Oil`
+          tips: [
+            "🎨 Hover over styles for instant previews",
+            "⭐ Highlighted styles are AI-recommended for your photo",
+            "🔄 Try different styles - you can always change later",
+            "💡 Portrait photos work great with Classic Oil and Pop Art"
+          ],
+          examples: `Perfect for ${state.ai.imageType} photos: Abstract Fusion, Classic Oil`
         };
       default:
         return {
@@ -122,7 +131,9 @@ const ContextualHelp = () => {
         };
     }
   };
+
   const advancedHelp = getAdvancedHelp();
+
   return (
     <div className="fixed bottom-6 right-6 z-50 w-full max-w-sm animate-scale-in">
       <Card className="bg-white/95 backdrop-blur-xl shadow-2xl border border-purple-100/60">
@@ -214,4 +225,5 @@ const ContextualHelp = () => {
     </div>
   );
 };
+
 export default ContextualHelp;

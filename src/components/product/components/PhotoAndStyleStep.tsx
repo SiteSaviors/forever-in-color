@@ -1,12 +1,12 @@
 
+import { useEffect } from "react";
 import PhotoUploadContainer from "../photo-upload/PhotoUploadContainer";
 import StyleSelector from "../StyleSelector";
 import PhotoCropperSection from "./PhotoCropperSection";
 import SmartProgressIndicator from "../progress/SmartProgressIndicator";
 import ContextualHelp from "../help/ContextualHelp";
 import MobileGestureHandler from "../mobile/MobileGestureHandler";
-import ProgressStateManager from "./ProgressStateManager";
-import { useProgressOrchestrator } from "../progress/ProgressOrchestrator";
+import { StepOneExperienceProvider, useStepOneExperienceContext } from "../progress/StepOneExperienceContext";
 import { usePhotoUploadState } from "../hooks/usePhotoUploadState";
 import { getAspectRatioFromOrientation } from "../cropper/data/orientationOptions";
 import { useEnhancedHandlers } from "./EnhancedHandlers";
@@ -27,18 +27,17 @@ interface PhotoAndStyleStepProps {
   onStepChange: (step: number) => void;
 }
 
-const PhotoAndStyleStep = ({
+const PhotoAndStyleStepContent = ({
   selectedStyle,
   uploadedImage,
   selectedOrientation,
   onComplete,
   onPhotoAndStyleComplete,
   onContinue,
-  currentStep,
   completedSteps
 }: PhotoAndStyleStepProps) => {
-  const { dispatch } = useProgressOrchestrator();
-  
+  const experience = useStepOneExperienceContext();
+
   const {
     currentOrientation,
     showCropper,
@@ -58,17 +57,28 @@ const PhotoAndStyleStep = ({
 
   const { handleEnhancedImageUpload, handleEnhancedStyleSelect } = useEnhancedHandlers(
     handleImageUpload,
-    handleStyleSelect
+    handleStyleSelect,
+    experience
   );
 
+  // Update sub-step based on upload/crop progress (replaces ProgressStateManager logic)
+  useEffect(() => {
+    if (!croppedImage) {
+      experience.setSubStep('upload');
+    } else if (!selectedStyle || selectedStyle.name === "temp-style") {
+      experience.setSubStep('style-selection');
+    } else {
+      experience.setSubStep('complete');
+    }
+  }, [croppedImage, selectedStyle, experience]);
+
   const handleStyleComplete = (imageUrl: string, styleId: number, styleName: string) => {
-    dispatch({ type: 'COMPLETE_STEP', payload: 1 });
+    experience.markInteraction();
     onComplete(imageUrl, styleId, styleName);
     onContinue();
   };
 
   const hasImage = !!croppedImage;
-  const hasStyle = selectedStyle && selectedStyle.name !== "temp-style";
   const cropAspectRatio = getAspectRatioFromOrientation(currentOrientation);
 
   return (
@@ -80,16 +90,8 @@ const PhotoAndStyleStep = ({
       showGestureHints={true}
     >
       <div className="space-y-8">
-        {/* Progress State Manager */}
-        <ProgressStateManager
-          currentStep={currentStep}
-          completedSteps={completedSteps}
-          croppedImage={croppedImage}
-          selectedStyle={selectedStyle}
-        />
-
         {/* Smart Progress Indicator - Always render but only show content when there's an image */}
-        <SmartProgressIndicator uploadedImage={croppedImage} />
+        <SmartProgressIndicator uploadedImage={croppedImage} completedSteps={completedSteps} />
 
         {/* Show cropper if user wants to recrop */}
         {showCropper && (
@@ -108,10 +110,10 @@ const PhotoAndStyleStep = ({
             <div className="text-center">
               {/* Upload section header content can be added here if needed */}
             </div>
-            
-            <PhotoUploadContainer 
-              onImageUpload={handleEnhancedImageUpload} 
-              initialImage={croppedImage} 
+
+            <PhotoUploadContainer
+              onImageUpload={handleEnhancedImageUpload}
+              initialImage={croppedImage}
             />
           </div>
         )}
@@ -122,15 +124,15 @@ const PhotoAndStyleStep = ({
             <div className="text-center">
               {/* Style selection header content can be added here if needed */}
             </div>
-            
-            <StyleSelector 
-              croppedImage={croppedImage} 
-              selectedStyle={selectedStyle?.id || null} 
-              cropAspectRatio={cropAspectRatio} 
-              selectedOrientation={currentOrientation} 
-              onStyleSelect={handleEnhancedStyleSelect} 
-              onComplete={handleStyleComplete} 
-              onRecropImage={handleRecropImage} 
+
+            <StyleSelector
+              croppedImage={croppedImage}
+              selectedStyle={selectedStyle?.id || null}
+              cropAspectRatio={cropAspectRatio}
+              selectedOrientation={currentOrientation}
+              onStyleSelect={handleEnhancedStyleSelect}
+              onComplete={handleStyleComplete}
+              onRecropImage={handleRecropImage}
             />
           </div>
         )}
@@ -139,6 +141,14 @@ const PhotoAndStyleStep = ({
         <ContextualHelp />
       </div>
     </MobileGestureHandler>
+  );
+};
+
+const PhotoAndStyleStep = (props: PhotoAndStyleStepProps) => {
+  return (
+    <StepOneExperienceProvider>
+      <PhotoAndStyleStepContent {...props} />
+    </StepOneExperienceProvider>
   );
 };
 
