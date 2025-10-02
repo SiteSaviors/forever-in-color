@@ -1,8 +1,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { generateStylePreview } from '@/utils/stylePreviewApi';
+import { generateStylePreview, fetchPreviewStatus } from '@/utils/stylePreviewApi';
 import { addWatermarkToImage } from '@/utils/watermarkUtils';
-import { getAspectRatio, validateOrientationFlow } from '../orientation/utils';
+import { getAspectRatio } from '../orientation/utils';
 import { useAspectRatioValidator } from '../orientation/hooks/useAspectRatioValidator';
 
 interface UseStylePreviewProps {
@@ -32,7 +32,7 @@ export const useStylePreview = ({
   const [hasGeneratedPreview, setHasGeneratedPreview] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
   
-  const { validateWithRecovery, autoCorrect } = useAspectRatioValidator();
+  const { autoCorrect } = useAspectRatioValidator();
 
   // Initialize with pre-generated preview if available
   useEffect(() => {
@@ -56,6 +56,30 @@ export const useStylePreview = ({
   }, [preGeneratedPreview, style.name]);
 
   const isStyleGenerated = hasGeneratedPreview && !!(preGeneratedPreview || previewUrl);
+
+  const pollPreviewStatusUntilReady = useCallback(async (requestId: string) => {
+    const maxAttempts = 30;
+    let attempt = 0;
+
+    while (attempt < maxAttempts) {
+      const status = await fetchPreviewStatus(requestId);
+      const normalized = status.status?.toLowerCase();
+
+      if ((normalized === 'succeeded' || normalized === 'complete') && status.preview_url) {
+        return status.preview_url as string;
+      }
+
+      if (normalized === 'failed' || normalized === 'error') {
+        throw new Error(status.error || 'Preview generation failed');
+      }
+
+      attempt += 1;
+      const wait = Math.min(4000, 500 + attempt * 250);
+      await new Promise((resolve) => setTimeout(resolve, wait));
+    }
+
+    throw new Error('Preview generation timed out');
+  }, []);
 
   const generatePreview = useCallback(async () => {
     // Re-entrancy guard: prevent concurrent generations
@@ -87,9 +111,17 @@ export const useStylePreview = ({
       // About to call generateStylePreview
       
       // ENHANCED: Generate with validated and potentially corrected aspect ratio
-      const rawPreviewUrl = await generateStylePreview(croppedImage, style.name, tempPhotoId, finalAspectRatio, {
+      const generationResult = await generateStylePreview(croppedImage, style.name, tempPhotoId, finalAspectRatio, {
         watermark: false // Disable server-side watermarking
       });
+
+      let rawPreviewUrl: string | null = null;
+
+      if (generationResult.status === 'complete') {
+        rawPreviewUrl = generationResult.previewUrl;
+      } else if (generationResult.status === 'processing') {
+        rawPreviewUrl = await pollPreviewStatusUntilReady(generationResult.requestId);
+      }
 
       if (rawPreviewUrl) {
         // Raw preview generated, applying client-side watermark
@@ -115,7 +147,7 @@ export const useStylePreview = ({
       setIsLoading(false);
       // Preview generation completed
     }
-  }, [croppedImage, style.id, style.name, preGeneratedPreview, selectedOrientation, validateWithRecovery, autoCorrect]);
+  }, [croppedImage, style.id, style.name, preGeneratedPreview, selectedOrientation, autoCorrect, pollPreviewStatusUntilReady]);
 
   const handleClick = useCallback(() => {
     // Style clicked with orientation
