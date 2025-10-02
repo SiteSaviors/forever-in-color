@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Sparkles, ArrowLeft } from "@/components/ui/icons";
@@ -14,7 +15,7 @@ interface StyleSelectorProps {
   onRecropImage: () => void;
 }
 
-const StyleSelector = ({
+const StyleSelector = memo(({
   croppedImage,
   selectedStyle,
   cropAspectRatio,
@@ -73,6 +74,8 @@ const StyleSelector = ({
       />
     </div>
   );
-};
+});
+
+StyleSelector.displayName = 'StyleSelector';
 
 export default StyleSelector;
