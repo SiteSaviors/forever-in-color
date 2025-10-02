@@ -6,6 +6,7 @@ import { corsHeaders, handleCorsPreflightRequest, createCorsResponse } from './c
 import { validateRequest } from './requestValidator.ts';
 import { ReplicateService } from './replicateService.ts';
 import { createSuccessResponse, createErrorResponse } from './responseUtils.ts';
+import { getPromptCacheConfig, getCachedPrompt, setCachedPrompt, schedulePromptWarmup } from './promptCache.ts';
 
 async function normalizeImageInput(image: string): Promise<string> {
   if (image.startsWith('data:image/')) {
@@ -26,6 +27,10 @@ async function normalizeImageInput(image: string): Promise<string> {
     console.error('Failed to normalize image input:', error);
     return image; // fall back to original to preserve previous behavior
   }
+}
+
+function buildFallbackPrompt(style: string): string {
+  return `Transform this image into ${style} style while keeping the exact same subject, composition, and scene. Apply only the artistic style transformation. Do not change what is depicted in the image - only change how it looks artistically.`;
 }
 
 serve(async (req) => {
@@ -77,18 +82,56 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const stylePromptService = new StylePromptService(supabase);
 
-    // Get the tested, specific prompt for this style
+    const promptCacheConfig = getPromptCacheConfig();
+    if (promptCacheConfig.enabled) {
+      schedulePromptWarmup((styleName) => stylePromptService.getStylePrompt(styleName));
+    }
+
     let stylePrompt: string;
-    try {
-      const fetchedPrompt = await stylePromptService.getStylePrompt(style);
+    const cacheEntry = getCachedPrompt(style);
+    const promptCacheWasHit = !!cacheEntry;
+
+    if (cacheEntry) {
+      stylePrompt = cacheEntry.prompt;
+      console.log('[prompt-cache]', {
+        action: 'hit',
+        style,
+        requestId,
+        source: cacheEntry.source,
+        ageMs: cacheEntry.ageMs,
+      });
+    } else {
+      const promptFetchStart = Date.now();
+      let fetchedPrompt: string | null = null;
+
+      try {
+        fetchedPrompt = await stylePromptService.getStylePrompt(style);
+      } catch (error) {
+        console.error('[prompt-cache]', {
+          action: 'fetch_error',
+          style,
+          requestId,
+          message: error instanceof Error ? error.message : String(error),
+        });
+      }
+
+      const promptFetchDurationMs = Date.now() - promptFetchStart;
+
       if (fetchedPrompt) {
         stylePrompt = fetchedPrompt;
+        setCachedPrompt(style, stylePrompt, 'db');
       } else {
-        // Fallback to a basic prompt if database lookup fails
-        stylePrompt = `Transform this image into ${style} style while keeping the exact same subject, composition, and scene. Apply only the artistic style transformation. Do not change what is depicted in the image - only change how it looks artistically.`;
+        stylePrompt = buildFallbackPrompt(style);
+        setCachedPrompt(style, stylePrompt, 'fallback');
       }
-    } catch (error) {
-      stylePrompt = `Transform this image into ${style} style while keeping the exact same subject, composition, and scene. Apply only the artistic style transformation. Do not change what is depicted in the image - only change how it looks artistically.`;
+
+      console.log('[prompt-cache]', {
+        action: 'miss',
+        style,
+        requestId,
+        fetchDurationMs: promptFetchDurationMs,
+        source: fetchedPrompt ? 'db' : 'fallback',
+      });
     }
 
     // Initialize Replicate service
@@ -98,15 +141,26 @@ serve(async (req) => {
     console.log(`🔧 [DIAGNOSTIC] Aspect ratio: ${aspectRatio}, Quality: ${quality}`);
     
     const replicateService = new ReplicateService(replicateApiToken, openaiApiKey);
+    const replicateStart = Date.now();
 
     // Generate image using Replicate's openai/gpt-image-1 model
     console.log(`🔧 [DIAGNOSTIC] Attempting image generation with Replicate...`);
     const result = await replicateService.generateImageToImage(normalizedImageUrl, stylePrompt, aspectRatio, quality);
-    
+    const replicateDurationMs = Date.now() - replicateStart;
+
     if (result.ok && result.output) {
       console.log(`🔧 [DIAGNOSTIC] Image generation result: SUCCESS`);
       const endTime = Date.now();
       const duration = endTime - startTime;
+
+      console.log('[preview-metrics]', {
+        requestId,
+        style,
+        action: 'replicate_success',
+        replicateDurationMs,
+        totalDurationMs: duration,
+        promptCacheHit: promptCacheWasHit,
+      });
 
       return createCorsResponse(
         JSON.stringify(createSuccessResponse(result.output, requestId, duration))
@@ -115,6 +169,14 @@ serve(async (req) => {
 
     // Generation failed
     console.error(`🔧 [DIAGNOSTIC] Replicate generation failed for request [${requestId}]:`, result.error);
+    console.error('[preview-metrics]', {
+      requestId,
+      style,
+      action: 'replicate_failure',
+      replicateDurationMs,
+      promptCacheHit: promptCacheWasHit,
+      error: result.error || 'unknown_error',
+    });
     return createCorsResponse(
       JSON.stringify(createErrorResponse('generation_failed', result.error || 'AI service is temporarily unavailable. Please try again.')),
       503
@@ -123,6 +185,12 @@ serve(async (req) => {
   } catch (error) {
     const endTime = Date.now();
     const duration = endTime - startTime;
+    console.error('[preview-metrics]', {
+      requestId,
+      action: 'replicate_exception',
+      totalDurationMs: duration,
+      message: error instanceof Error ? error.message : String(error),
+    });
     
     return createCorsResponse(
       JSON.stringify(createErrorResponse('internal_error', 'Internal server error. Please try again.', requestId)),
