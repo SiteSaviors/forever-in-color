@@ -4,10 +4,17 @@ import { Outlet } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import SessionTimeoutWarning from "@/components/auth/SessionTimeoutWarning";
 import RouteSuspenseFallback from "@/components/layout/RouteSuspenseFallback";
+import { usePerformanceTracking } from "@/hooks/usePerformanceTracking";
 
 import "./App.css";
 
 function App() {
+  // Initialize performance tracking with automatic Supabase persistence
+  usePerformanceTracking({
+    persistToSupabase: true,
+    batchSize: 10,
+  });
+
   return (
     <div className="min-h-screen">
       <SessionTimeoutWarning />

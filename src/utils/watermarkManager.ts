@@ -95,43 +95,73 @@ export class WatermarkManager {
    * Add watermark to image (primary public API)
    */
   async addWatermark(imageUrl: string): Promise<string> {
-    // Check if Web Workers are supported
-    if (typeof Worker === 'undefined') {
-      console.warn('[WatermarkManager] Web Workers not supported, falling back to sync method');
-      return this.addWatermarkSync(imageUrl);
+    const startTime = performance.now();
+
+    try {
+      // Check if Web Workers are supported
+      if (typeof Worker === 'undefined') {
+        console.warn('[WatermarkManager] Web Workers not supported, falling back to sync method');
+        const result = await this.addWatermarkSync(imageUrl);
+        this.trackWatermarkPerformance(startTime);
+        return result;
+      }
+
+      // Check if OffscreenCanvas is supported
+      if (typeof OffscreenCanvas === 'undefined') {
+        console.warn('[WatermarkManager] OffscreenCanvas not supported, falling back to sync method');
+        const result = await this.addWatermarkSync(imageUrl);
+        this.trackWatermarkPerformance(startTime);
+        return result;
+      }
+
+      const worker = this.initWorker();
+      const requestId = this.generateRequestId();
+
+      return new Promise<string>((resolve, reject) => {
+        // Store pending request
+        this.pendingRequests.set(requestId, { resolve, reject });
+
+        // Send request to worker
+        const request: WatermarkRequest = {
+          type: 'watermark',
+          imageUrl,
+          watermarkUrl: this.logoUrl,
+          requestId,
+        };
+
+        worker.postMessage(request);
+
+        // Set timeout (30 seconds)
+        setTimeout(() => {
+          if (this.pendingRequests.has(requestId)) {
+            this.pendingRequests.delete(requestId);
+            reject(new Error('Watermarking timeout after 30 seconds'));
+          }
+        }, 30000);
+      }).then((result) => {
+        this.trackWatermarkPerformance(startTime);
+        return result;
+      });
+    } catch (error) {
+      this.trackWatermarkPerformance(startTime);
+      throw error;
     }
+  }
 
-    // Check if OffscreenCanvas is supported
-    if (typeof OffscreenCanvas === 'undefined') {
-      console.warn('[WatermarkManager] OffscreenCanvas not supported, falling back to sync method');
-      return this.addWatermarkSync(imageUrl);
+  /**
+   * Track watermark performance
+   */
+  private trackWatermarkPerformance(startTime: number): void {
+    const duration = performance.now() - startTime;
+
+    // Dispatch custom event for performance monitoring
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('watermark-performance', {
+          detail: { duration },
+        })
+      );
     }
-
-    const worker = this.initWorker();
-    const requestId = this.generateRequestId();
-
-    return new Promise<string>((resolve, reject) => {
-      // Store pending request
-      this.pendingRequests.set(requestId, { resolve, reject });
-
-      // Send request to worker
-      const request: WatermarkRequest = {
-        type: 'watermark',
-        imageUrl,
-        watermarkUrl: this.logoUrl,
-        requestId,
-      };
-
-      worker.postMessage(request);
-
-      // Set timeout (30 seconds)
-      setTimeout(() => {
-        if (this.pendingRequests.has(requestId)) {
-          this.pendingRequests.delete(requestId);
-          reject(new Error('Watermarking timeout after 30 seconds'));
-        }
-      }, 30000);
-    });
   }
 
   /**
