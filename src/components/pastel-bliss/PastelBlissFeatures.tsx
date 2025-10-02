@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Eye, Heart, Crown } from "lucide-react";
+import { Eye, Heart, Crown } from "@/components/ui/icons";
 
 const PastelBlissFeatures = () => {
   return (

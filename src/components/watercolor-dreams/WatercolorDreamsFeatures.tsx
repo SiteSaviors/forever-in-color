@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Zap, Palette, Star } from "lucide-react";
+import { Zap, Palette, Star } from "@/components/ui/icons";
 
 const WatercolorDreamsFeatures = () => {
   return (

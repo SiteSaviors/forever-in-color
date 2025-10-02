@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Users, Star, Camera, Heart, LucideIcon } from "lucide-react";
+import { Users, Star, Camera, Heart, LucideIcon } from "@/components/ui/icons";
 
 interface StatItem {
   icon: LucideIcon;

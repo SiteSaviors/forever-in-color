@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { MessageSquare, AlertCircle } from "lucide-react";
+import { MessageSquare, AlertCircle } from "@/components/ui/icons";
 
 interface CustomMessageCardProps {
   message: string;

@@ -1,5 +1,5 @@
 
-import { Upload, Gem, Settings, Package } from "lucide-react";
+import { Upload, Gem, Settings, Package } from "@/components/ui/icons";
 
 const GemstonePolyHowItWorks = () => {
   return (

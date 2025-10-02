@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Palette, Eye, Star } from "lucide-react";
+import { Palette, Eye, Star } from "@/components/ui/icons";
 
 const PopArtBurstFeatures = () => {
   return (

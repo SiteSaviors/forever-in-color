@@ -1,6 +1,6 @@
 
 import { Badge } from "@/components/ui/badge";
-import { Camera, Sparkles, Shield, CheckCircle } from "lucide-react";
+import { Camera, Sparkles, Shield, CheckCircle } from "@/components/ui/icons";
 
 const UploadFeatures = () => {
   const features = [

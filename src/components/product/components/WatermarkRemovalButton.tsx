@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Download, Zap } from 'lucide-react';
+import { Download, Zap } from '@/components/ui/icons';
 import { Button } from '@/components/ui/button';
 
 interface WatermarkRemovalButtonProps {

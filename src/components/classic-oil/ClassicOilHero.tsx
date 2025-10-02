@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Palette, DollarSign } from "lucide-react";
+import { ArrowRight, Palette, DollarSign } from "@/components/ui/icons";
 interface ClassicOilHeroProps {
   onStartCreating: () => void;
 }

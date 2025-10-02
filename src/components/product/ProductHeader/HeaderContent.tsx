@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Upload, Sparkles } from "lucide-react";
+import { Upload, Sparkles } from "@/components/ui/icons";
 
 interface HeaderContentProps {
   progressPercentage: number;

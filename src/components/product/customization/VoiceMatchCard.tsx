@@ -2,7 +2,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Mic } from "lucide-react";
+import { Mic } from "@/components/ui/icons";
 
 interface VoiceMatchCardProps {
   enabled: boolean;

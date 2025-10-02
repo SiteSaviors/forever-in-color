@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Heart, ShoppingCart, Camera, MapPin } from "lucide-react";
+import { Heart, ShoppingCart, Camera, MapPin } from "@/components/ui/icons";
 
 const LiveActivityFeed = () => {
   const [activities, setActivities] = useState([

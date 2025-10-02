@@ -1,6 +1,6 @@
 
 import { Badge } from "@/components/ui/badge";
-import { Play } from "lucide-react";
+import { Play } from "@/components/ui/icons";
 
 const GemstonePolyARPreview = () => {
   return (

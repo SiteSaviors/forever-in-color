@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Upload, Wand2, Download } from "lucide-react";
+import { Upload, Wand2, Download } from "@/components/ui/icons";
 
 const PopArtBurstHowItWorks = () => {
   const steps = [

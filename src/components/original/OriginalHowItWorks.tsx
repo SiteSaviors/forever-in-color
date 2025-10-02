@@ -1,5 +1,5 @@
 
-import { Upload, Image, Settings, Package } from "lucide-react";
+import { Upload, Image, Settings, Package } from "@/components/ui/icons";
 
 const OriginalHowItWorks = () => {
   return (

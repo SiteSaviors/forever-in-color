@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Palette, Crown } from "lucide-react";
+import { Sparkles, Palette, Crown } from "@/components/ui/icons";
 
 interface PremiumMaterialTexturesProps {
   orientation: string;

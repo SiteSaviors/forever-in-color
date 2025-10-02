@@ -1,5 +1,5 @@
 
-import { Brain, Mic, Palette, Shield } from 'lucide-react';
+import { Brain, Mic, Palette, Shield } from '@/components/ui/icons';
 
 const ARHowItWorks = () => {
   return (

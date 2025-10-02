@@ -1,5 +1,5 @@
 
-import { Upload, Brush, Settings, Package } from "lucide-react";
+import { Upload, Brush, Settings, Package } from "@/components/ui/icons";
 
 const PastelBlissHowItWorks = () => {
   return (

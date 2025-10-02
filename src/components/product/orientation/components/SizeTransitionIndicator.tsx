@@ -1,5 +1,5 @@
 
-import { ArrowDown } from "lucide-react";
+import { ArrowDown } from "@/components/ui/icons";
 
 interface SizeTransitionIndicatorProps {
   selectedOrientation: string;

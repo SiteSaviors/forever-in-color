@@ -1,6 +1,6 @@
 
 import { Badge } from "@/components/ui/badge";
-import { Zap } from "lucide-react";
+import { Zap } from "@/components/ui/icons";
 
 interface WidgetHeaderProps {
   momentum: {

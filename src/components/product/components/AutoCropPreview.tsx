@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MobileButton } from "@/components/ui/mobile-button";
 import { MobileTypography } from "@/components/ui/mobile-typography";
-import { Sparkles, Check, Edit3, Zap } from "lucide-react";
+import { Sparkles, Check, Edit3, Zap } from "@/components/ui/icons";
 import { generateSmartCrop } from "../utils/smartCropUtils";
 
 interface AutoCropPreviewProps {

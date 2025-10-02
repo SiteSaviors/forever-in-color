@@ -1,6 +1,6 @@
 
 import { Badge } from "@/components/ui/badge";
-import { Users, Clock } from "lucide-react";
+import { Users, Clock } from "@/components/ui/icons";
 
 interface LiveStatsProps {
   liveUsers: number;

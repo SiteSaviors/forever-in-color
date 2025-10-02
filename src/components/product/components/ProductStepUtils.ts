@@ -1,5 +1,5 @@
 
-import { Camera, Palette, Settings, ShoppingCart } from 'lucide-react';
+import { Camera, Palette, Settings, ShoppingCart } from '@/components/ui/icons';
 
 // Fix the require issue by using proper ES6 imports
 export const getStepIcon = (step: number) => {

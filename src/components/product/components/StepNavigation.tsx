@@ -1,7 +1,7 @@
 
 import { MobileButton } from "@/components/ui/mobile-button";
 import { MobileTypography } from "@/components/ui/mobile-typography";
-import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Sparkles } from "@/components/ui/icons";
 
 interface StepNavigationProps {
   canGoBack: boolean;

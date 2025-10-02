@@ -1,5 +1,5 @@
 
-import { DollarSign } from "lucide-react";
+import { DollarSign } from "@/components/ui/icons";
 import { SizeOption } from "../types";
 
 interface PriceUpdateDisplayProps {

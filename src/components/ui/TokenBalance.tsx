@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Zap, Plus } from 'lucide-react';
+import { Zap, Plus } from '@/components/ui/icons';
 import { Button } from '@/components/ui/button';
 import { useTokenBalance } from '@/hooks/useTokenBalance';
 import { useAuthStore } from '@/hooks/useAuthStore';

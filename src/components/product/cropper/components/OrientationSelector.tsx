@@ -1,6 +1,6 @@
 
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Zap } from "lucide-react";
+import { Sparkles, Zap } from "@/components/ui/icons";
 import { orientationOptions } from "../data/orientationOptions";
 
 interface OrientationSelectorProps {

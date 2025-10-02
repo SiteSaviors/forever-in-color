@@ -2,7 +2,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Video } from "lucide-react";
+import { Video } from "@/components/ui/icons";
 
 interface LivingMemoryCardProps {
   enabled: boolean;

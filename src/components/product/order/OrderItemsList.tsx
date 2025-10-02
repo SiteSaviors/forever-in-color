@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Edit3, Image as ImageIcon, Palette, Frame, Video, Zap, Mic } from "lucide-react";
+import { Edit3, Image as ImageIcon, Palette, Frame, Video, Zap, Mic } from "@/components/ui/icons";
 
 interface OrderItem {
   id: string;

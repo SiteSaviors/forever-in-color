@@ -1,6 +1,6 @@
 
 import { Badge } from "@/components/ui/badge";
-import { Sparkles } from "lucide-react";
+import { Sparkles } from "@/components/ui/icons";
 
 interface CanvasBadgesProps {
   isRecommended: boolean;

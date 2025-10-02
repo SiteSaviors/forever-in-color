@@ -1,4 +1,4 @@
-import { Shield, Truck, Award, Globe, CheckCircle, Zap } from "lucide-react";
+import { Shield, Truck, Award, Globe, CheckCircle, Zap } from "@/components/ui/icons";
 
 const TrustIndicators = () => {
   return (

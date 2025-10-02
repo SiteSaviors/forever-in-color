@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Image, DollarSign } from "lucide-react";
+import { ArrowRight, Image, DollarSign } from "@/components/ui/icons";
 
 interface OriginalHeroProps {
   onStartCreating: () => void;

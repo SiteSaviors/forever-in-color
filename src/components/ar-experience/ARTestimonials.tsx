@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from '@/components/ui/card';
-import { Quote, Heart } from 'lucide-react';
+import { Quote, Heart } from '@/components/ui/icons';
 
 const ARTestimonials = () => {
   const testimonials = [

@@ -1,5 +1,5 @@
 
-import { Upload, Crown, Settings, Package } from "lucide-react";
+import { Upload, Crown, Settings, Package } from "@/components/ui/icons";
 
 const DecoLuxeHowItWorks = () => {
   return (

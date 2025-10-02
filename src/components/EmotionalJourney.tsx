@@ -1,5 +1,5 @@
 
-import { Heart, Users, Clock } from "lucide-react";
+import { Heart, Users, Clock } from "@/components/ui/icons";
 
 const EmotionalJourney = () => {
   return (

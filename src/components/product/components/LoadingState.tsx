@@ -1,5 +1,5 @@
 
-import { Loader2 } from 'lucide-react';
+import { Loader2 } from '@/components/ui/icons';
 import { Card, CardContent } from '@/components/ui/card';
 
 interface LoadingStateProps {

@@ -1,4 +1,4 @@
-import { Star, Heart, Verified, Camera } from "lucide-react";
+import { Star, Heart, Verified, Camera } from "@/components/ui/icons";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 

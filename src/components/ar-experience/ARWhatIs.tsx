@@ -1,5 +1,5 @@
 
-import { Upload, Wand2, Printer, Smartphone } from 'lucide-react';
+import { Upload, Wand2, Printer, Smartphone } from '@/components/ui/icons';
 
 const ARWhatIs = () => {
   const steps = [

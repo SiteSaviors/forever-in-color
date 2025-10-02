@@ -1,6 +1,6 @@
 
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, Clock, Star } from "lucide-react";
+import { TrendingUp, Clock, Star } from "@/components/ui/icons";
 
 interface ExpandedContentProps {
   recentCompletions: number;

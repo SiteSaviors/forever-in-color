@@ -1,6 +1,6 @@
 
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, TrendingUp } from "lucide-react";
+import { Sparkles, TrendingUp } from "@/components/ui/icons";
 
 interface LiveActivityBarProps {
   liveUsers: number;

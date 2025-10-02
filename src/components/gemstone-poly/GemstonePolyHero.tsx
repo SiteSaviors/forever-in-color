@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Gem, DollarSign } from "lucide-react";
+import { ArrowRight, Gem, DollarSign } from "@/components/ui/icons";
 
 interface GemstonePolyHeroProps {
   onStartCreating: () => void;

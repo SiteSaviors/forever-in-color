@@ -6,7 +6,7 @@ import ProductStepWrapper from "./ProductStepWrapper";
 import { useBackNavigation } from "../hooks/useBackNavigation";
 import { useOrientationSelector } from "../orientation/hooks/useOrientationSelector";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Target, Sparkles } from "lucide-react";
+import { CheckCircle, Target, Sparkles } from "@/components/ui/icons";
 
 interface CanvasConfigurationStepProps {
   currentStep: number;

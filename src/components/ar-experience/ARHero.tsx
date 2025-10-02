@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Play, Smartphone, ArrowRight } from 'lucide-react';
+import { Play, Smartphone, ArrowRight } from '@/components/ui/icons';
 
 const ARHero = () => {
   return (

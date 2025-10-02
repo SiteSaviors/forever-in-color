@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Expand } from 'lucide-react';
+import { Expand } from '@/components/ui/icons';
 
 interface ImageExpandButtonProps {
   onExpand: (e: React.MouseEvent) => void;

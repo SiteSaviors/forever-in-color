@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Star } from "lucide-react";
+import { Star } from "@/components/ui/icons";
 
 interface Testimonial {
   name: string;

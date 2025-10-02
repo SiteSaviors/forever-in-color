@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, Shield, Truck } from "lucide-react";
+import { ShoppingCart, Shield, Truck } from "@/components/ui/icons";
 
 interface StickyOrderCTAProps {
   total: number;

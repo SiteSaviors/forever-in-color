@@ -1,5 +1,5 @@
 
-import { Check, ChevronRight, ChevronDown, CheckCircle, Edit3 } from "lucide-react";
+import { Check, ChevronRight, ChevronDown, CheckCircle, Edit3 } from "@/components/ui/icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";

@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Upload, Wand2, Download, Smile } from "lucide-react";
+import { Upload, Wand2, Download, Smile } from "@/components/ui/icons";
 
 const ThreeDStorybookHowItWorks = () => {
   const steps = [

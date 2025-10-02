@@ -1,4 +1,4 @@
-import { Palette } from "lucide-react";
+import { Palette } from "@/components/ui/icons";
 const CarouselHeader = () => {
   return <div className="text-center mb-16">
       <div className="flex items-center justify-center mb-12">

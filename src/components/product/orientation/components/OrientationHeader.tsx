@@ -1,4 +1,4 @@
-import { CheckCircle, Users, Sparkles, Zap } from "lucide-react";
+import { CheckCircle, Users, Sparkles, Zap } from "@/components/ui/icons";
 
 interface OrientationHeaderProps {
   selectedOrientation: string;

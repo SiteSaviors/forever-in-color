@@ -1,6 +1,6 @@
 
 import React, { Component, ReactNode } from 'react';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { AlertTriangle, RefreshCw } from '@/components/ui/icons';
 
 interface Props {
   children: ReactNode;

@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Paintbrush, DollarSign } from "lucide-react";
+import { ArrowRight, Paintbrush, DollarSign } from "@/components/ui/icons";
 
 interface WatercolorDreamsHeroProps {
   onStartCreating: () => void;

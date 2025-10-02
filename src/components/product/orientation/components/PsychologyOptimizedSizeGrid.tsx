@@ -4,7 +4,7 @@ import { sizeOptions } from "../data/sizeOptions";
 import { usePsychologicalOptimization } from "../hooks/usePsychologicalOptimization";
 import { useCallback, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, Users, Sparkles } from "lucide-react";
+import { TrendingUp, Users, Sparkles } from "@/components/ui/icons";
 
 interface PsychologyOptimizedSizeGridProps {
   selectedOrientation: string;

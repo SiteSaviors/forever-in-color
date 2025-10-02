@@ -1,5 +1,5 @@
 
-import { Truck, Calendar, MapPin } from "lucide-react";
+import { Truck, Calendar, MapPin } from "@/components/ui/icons";
 import { Card, CardContent } from "@/components/ui/card";
 
 const DeliveryEstimator = () => {

@@ -2,7 +2,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Star, Clock } from "lucide-react";
+import { Star, Clock } from "@/components/ui/icons";
 
 interface RecentReview {
   name: string;

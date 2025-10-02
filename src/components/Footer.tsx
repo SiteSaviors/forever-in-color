@@ -1,5 +1,5 @@
 
-import { Phone, Mail, MapPin, Clock, MessageCircle, Facebook, Instagram, Twitter, Youtube } from "lucide-react";
+import { Phone, Mail, MapPin, Clock, MessageCircle, Facebook, Instagram, Twitter, Youtube } from "@/components/ui/icons";
 
 const Footer = () => {
   return (

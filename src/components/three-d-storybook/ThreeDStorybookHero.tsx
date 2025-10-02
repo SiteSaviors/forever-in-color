@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Heart, DollarSign } from "lucide-react";
+import { ArrowRight, Heart, DollarSign } from "@/components/ui/icons";
 
 interface ThreeDStorybookHeroProps {
   onStartCreating: () => void;

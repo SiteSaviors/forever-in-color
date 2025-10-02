@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Camera, Clock, Shield } from "lucide-react";
+import { Camera, Clock, Shield } from "@/components/ui/icons";
 
 const OriginalFeatures = () => {
   return (

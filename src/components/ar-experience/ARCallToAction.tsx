@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Play, Heart } from 'lucide-react';
+import { ArrowRight, Play, Heart } from '@/components/ui/icons';
 
 const ARCallToAction = () => {
   return (

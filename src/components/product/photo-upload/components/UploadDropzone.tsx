@@ -1,5 +1,5 @@
 
-import { Upload, Sparkles } from "lucide-react";
+import { Upload, Sparkles } from "@/components/ui/icons";
 import { MobileButton } from "@/components/ui/mobile-button";
 import { MobileTypography } from "@/components/ui/mobile-typography";
 

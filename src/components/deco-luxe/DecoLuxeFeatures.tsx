@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Crown, Gem, Sparkles } from "lucide-react";
+import { Crown, Gem, Sparkles } from "@/components/ui/icons";
 
 const DecoLuxeFeatures = () => {
   return (

@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { ArrowRight, Heart, Sparkles, Camera } from "lucide-react";
+import { ArrowRight, Heart, Sparkles, Camera } from "@/components/ui/icons";
 import { useNavigate } from "react-router-dom";
 import { useRoutePrefetch } from "@/hooks/useRoutePrefetch";
 

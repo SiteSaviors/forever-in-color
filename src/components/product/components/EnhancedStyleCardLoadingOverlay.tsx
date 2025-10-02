@@ -1,5 +1,5 @@
 
-import { Sparkles, AlertCircle, CheckCircle, Zap, Wand2 } from "lucide-react";
+import { Sparkles, AlertCircle, CheckCircle, Zap, Wand2 } from "@/components/ui/icons";
 import { useState, useEffect } from "react";
 
 interface EnhancedStyleCardLoadingOverlayProps {

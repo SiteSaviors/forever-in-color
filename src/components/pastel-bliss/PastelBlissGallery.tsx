@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "@/components/ui/icons";
 
 const PastelBlissGallery = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);

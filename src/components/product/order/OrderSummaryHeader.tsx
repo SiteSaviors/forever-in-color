@@ -1,5 +1,5 @@
 
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart } from "@/components/ui/icons";
 import { CardHeader, CardTitle } from "@/components/ui/card";
 
 const OrderSummaryHeader = () => {

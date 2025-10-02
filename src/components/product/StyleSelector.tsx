@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Sparkles, ArrowLeft } from "lucide-react";
+import { Sparkles, ArrowLeft } from "@/components/ui/icons";
 import IntelligentStyleGrid from "./components/IntelligentStyleGrid";
 import { artStyles } from "@/data/artStyles";
 

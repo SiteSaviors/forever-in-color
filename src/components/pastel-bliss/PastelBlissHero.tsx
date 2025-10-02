@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Brush, DollarSign } from "lucide-react";
+import { ArrowRight, Brush, DollarSign } from "@/components/ui/icons";
 
 interface PastelBlissHeroProps {
   onStartCreating: () => void;

@@ -1,5 +1,5 @@
 
-import { Crop, Sparkles } from "lucide-react";
+import { Crop, Sparkles } from "@/components/ui/icons";
 
 const CropperHeader = () => {
   return (

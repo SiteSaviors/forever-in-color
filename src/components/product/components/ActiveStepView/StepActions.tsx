@@ -1,6 +1,6 @@
 
 import React, { useMemo } from "react";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight } from "@/components/ui/icons";
 import { Badge } from "@/components/ui/badge";
 import { TouchTarget } from "@/components/ui/mobile-touch-target";
 

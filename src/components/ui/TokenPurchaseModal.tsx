@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Zap, Star, Crown, Sparkles, CreditCard } from 'lucide-react';
+import { Zap, Star, Crown, Sparkles, CreditCard } from '@/components/ui/icons';
 import { useStripePayment } from '@/hooks/useStripePayment';
 import { useAuthStore } from '@/hooks/useAuthStore';
 import { useTokenBalance } from '@/hooks/useTokenBalance';

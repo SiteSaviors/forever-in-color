@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CreditCard, Lock, Shield } from "lucide-react";
+import { CreditCard, Lock, Shield } from "@/components/ui/icons";
 
 const PaymentForm = () => {
   return (

@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Layers, Palette, Zap } from "lucide-react";
+import { Layers, Palette, Zap } from "@/components/ui/icons";
 
 const AbstractFusionFeatures = () => {
   return (

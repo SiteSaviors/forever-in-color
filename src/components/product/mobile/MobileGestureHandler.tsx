@@ -3,7 +3,7 @@ import { useEffect, ReactNode, useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useStepOneExperienceContext } from "../progress/StepOneExperienceContext";
 import { Badge } from "@/components/ui/badge";
-import { Smartphone, ArrowLeftRight, Hand } from "lucide-react";
+import { Smartphone, ArrowLeftRight, Hand } from "@/components/ui/icons";
 
 interface MobileGestureHandlerProps {
   children: ReactNode;

@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Sparkles } from "lucide-react";
+import { Sparkles } from "@/components/ui/icons";
 
 interface StepOverlaysProps {
   isActive: boolean;

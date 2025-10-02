@@ -1,4 +1,4 @@
-import { Sparkles, CheckCircle2 } from "lucide-react";
+import { Sparkles, CheckCircle2 } from "@/components/ui/icons";
 
 interface UploadCTAProps {
   isUploading: boolean;

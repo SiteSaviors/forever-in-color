@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Smartphone, Share2, QrCode, Play, Zap } from "lucide-react";
+import { Smartphone, Share2, QrCode, Play, Zap } from "@/components/ui/icons";
 
 const InteractiveDemo = () => {
   const [selectedFeature, setSelectedFeature] = useState("magic-frame");

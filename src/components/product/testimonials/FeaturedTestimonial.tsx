@@ -2,7 +2,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Star, Heart, Quote, CheckCircle } from "lucide-react";
+import { Star, Heart, Quote, CheckCircle } from "@/components/ui/icons";
 
 interface FeaturedTestimonialProps {
   testimonial: {

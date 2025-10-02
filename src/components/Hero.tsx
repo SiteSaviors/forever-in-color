@@ -1,5 +1,5 @@
 
-import { Sparkles, Camera } from "lucide-react";
+import { Sparkles, Camera } from "@/components/ui/icons";
 import HeroContent from "./HeroContent";
 import PhotoFrames from "./PhotoFrames";
 import PhoneMockup from "./PhoneMockup";

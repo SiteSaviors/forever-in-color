@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Zap, Heart, Star } from "lucide-react";
+import { Zap, Heart, Star } from "@/components/ui/icons";
 
 const NeonSplashFeatures = () => {
   return (

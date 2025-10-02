@@ -1,5 +1,5 @@
 
-import { Upload, Palette, Settings, Package } from "lucide-react";
+import { Upload, Palette, Settings, Package } from "@/components/ui/icons";
 
 const NeonSplashHowItWorks = () => {
   return (

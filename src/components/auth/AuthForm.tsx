@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, Eye, EyeOff, Check, X, Shield } from "lucide-react";
+import { AlertCircle, Eye, EyeOff, Check, X, Shield } from "@/components/ui/icons";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   logAuthFailure, 

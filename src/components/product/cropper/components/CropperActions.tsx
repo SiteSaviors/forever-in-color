@@ -1,7 +1,7 @@
 
 import React, { useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Upload, RotateCcw, Crop } from "lucide-react";
+import { Upload, RotateCcw, Crop } from "@/components/ui/icons";
 import { validateImageFile } from "@/utils/fileValidation";
 
 interface CropperActionsProps {

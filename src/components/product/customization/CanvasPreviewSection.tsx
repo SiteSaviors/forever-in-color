@@ -1,5 +1,5 @@
 
-import { Sparkles, Expand } from "lucide-react";
+import { Sparkles, Expand } from "@/components/ui/icons";
 import { useState } from "react";
 import Lightbox from "@/components/ui/lightbox";
 

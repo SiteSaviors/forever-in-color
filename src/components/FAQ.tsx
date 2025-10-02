@@ -1,5 +1,5 @@
 
-import { HelpCircle, Shield, Truck, Palette, Clock, RefreshCw } from "lucide-react";
+import { HelpCircle, Shield, Truck, Palette, Clock, RefreshCw } from "@/components/ui/icons";
 import {
   Accordion,
   AccordionContent,

@@ -1,5 +1,5 @@
 
-import { Square, Monitor, Smartphone } from "lucide-react";
+import { Square, Monitor, Smartphone } from "@/components/ui/icons";
 
 export const orientationOptions = [
   {

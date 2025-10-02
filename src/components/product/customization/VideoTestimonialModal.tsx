@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Play, Pause, Volume2, VolumeX, Heart, Share2 } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, Heart, Share2 } from "@/components/ui/icons";
 import { Badge } from "@/components/ui/badge";
 
 interface VideoTestimonialModalProps {

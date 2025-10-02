@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { ArtStyle } from "@/types/artStyle";
-import { Sparkles } from "lucide-react";
+import { Sparkles } from "@/components/ui/icons";
 
 interface CarouselCardProps {
   style: ArtStyle;

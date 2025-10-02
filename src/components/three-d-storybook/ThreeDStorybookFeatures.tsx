@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Smile, Palette, Sparkles, Camera } from "lucide-react";
+import { Smile, Palette, Sparkles, Camera } from "@/components/ui/icons";
 
 const ThreeDStorybookFeatures = () => {
   const features = [

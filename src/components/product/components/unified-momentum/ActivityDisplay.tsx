@@ -1,6 +1,6 @@
 
 import { Badge } from "@/components/ui/badge";
-import { Heart, CheckCircle, Star, Camera } from "lucide-react";
+import { Heart, CheckCircle, Star, Camera } from "@/components/ui/icons";
 
 interface ActivityDisplayProps {
   activity: string;

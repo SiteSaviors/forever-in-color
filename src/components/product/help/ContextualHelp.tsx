@@ -2,10 +2,9 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { X, Lightbulb, Heart, Sparkles, ArrowRight, Users, HelpCircle, Target } from "lucide-react";
+import { X, Lightbulb, Heart, Sparkles, ArrowRight, Users, HelpCircle, Target } from "@/components/ui/icons";
 import { useStepOneExperienceContext } from "../progress/StepOneExperienceContext";
 import { COMPLETION_RATE } from "../progress/useStepOneExperience";
-
 const ContextualHelp = () => {
   const experience = useStepOneExperienceContext();
   const { state } = experience;

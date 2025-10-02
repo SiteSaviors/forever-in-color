@@ -3,7 +3,7 @@ import { SizeOption } from "../types";
 import { memo, useCallback, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Crown, TrendingUp, Users, Eye, Sparkles, Heart } from "lucide-react";
+import { ArrowRight, Crown, TrendingUp, Users, Eye, Sparkles, Heart } from "@/components/ui/icons";
 import CanvasPreview from "./size-card/CanvasPreview";
 
 interface PsychologyOptimizedSizeCardProps {

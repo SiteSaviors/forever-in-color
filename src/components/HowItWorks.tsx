@@ -1,4 +1,4 @@
-import { Upload, Palette, Settings, Package, ArrowRight } from "lucide-react";
+import { Upload, Palette, Settings, Package, ArrowRight } from "@/components/ui/icons";
 const HowItWorks = () => {
   const steps = [{
     id: 1,

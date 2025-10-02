@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, PenTool, DollarSign } from "lucide-react";
+import { ArrowRight, PenTool, DollarSign } from "@/components/ui/icons";
 
 interface ArtisanCharcoalHeroProps {
   onStartCreating: () => void;

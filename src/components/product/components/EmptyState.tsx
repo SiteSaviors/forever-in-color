@@ -1,5 +1,5 @@
 
-import { Sparkles } from "lucide-react";
+import { Sparkles } from "@/components/ui/icons";
 
 const EmptyState = () => {
   return (

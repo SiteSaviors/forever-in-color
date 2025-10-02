@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Zap, Download, Plus, AlertCircle, CheckCircle } from 'lucide-react';
+import { Zap, Download, Plus, AlertCircle, CheckCircle } from '@/components/ui/icons';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import ResolutionSelector from './ResolutionSelector';
 import { useTokenBalance } from '@/hooks/useTokenBalance';

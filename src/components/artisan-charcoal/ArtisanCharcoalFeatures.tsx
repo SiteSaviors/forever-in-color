@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Camera, BookOpen, Users } from "lucide-react";
+import { Camera, BookOpen, Users } from "@/components/ui/icons";
 
 const ArtisanCharcoalFeatures = () => {
   return (

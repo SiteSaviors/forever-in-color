@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Zap, Eye, Star } from "lucide-react";
+import { Zap, Eye, Star } from "@/components/ui/icons";
 
 const ElectricBloomFeatures = () => {
   return (

@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Heart, Gift, Crown } from "lucide-react";
+import { Heart, Gift, Crown } from "@/components/ui/icons";
 
 const ClassicOilFeatures = () => {
   return (

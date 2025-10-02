@@ -1,5 +1,5 @@
 
-import { Upload, PenTool, Settings, Package } from "lucide-react";
+import { Upload, PenTool, Settings, Package } from "@/components/ui/icons";
 
 const ArtisanCharcoalHowItWorks = () => {
   return (
