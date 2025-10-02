@@ -73,6 +73,15 @@ const UploadDropzone = ({
               )}
             </MobileButton>
           </div>
+
+          {processingStage && (
+            <MobileTypography
+              variant="caption"
+              className="text-white/80 uppercase tracking-[0.2em]"
+            >
+              {processingStage}
+            </MobileTypography>
+          )}
       </div>
 
       {/* Hero-style premium glow effect */}

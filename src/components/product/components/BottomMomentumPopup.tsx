@@ -1,11 +1,10 @@
 
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useStripePayment } from "../hooks/useStripePayment";
 import { usePricingCalculator } from "./bottom-momentum/PricingCalculator";
 import { buildPaymentItems } from "./bottom-momentum/PaymentItemsBuilder";
-import { CheckCircle, Crown, Sparkles, TrendingUp, Users } from "lucide-react";
+import { Crown, Sparkles, TrendingUp, Users } from "lucide-react";
 
 interface CustomizationOptions {
   floatingFrame: {
@@ -41,7 +40,7 @@ const BottomMomentumPopup = ({
 }: BottomMomentumPopupProps) => {
   const { processPayment, isProcessing } = useStripePayment();
   
-  const { basePrice, customizationPrice, totalPrice, savings } = usePricingCalculator({
+  const { totalPrice, savings } = usePricingCalculator({
     selectedSize,
     selectedOrientation,
     customizations
