@@ -3,6 +3,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { createPreview } from "./previewOperations";
 import { getAspectRatio, validateOrientationFlow, isValidAspectRatio } from "@/components/product/orientation/utils";
 
+export type PreviewGenerationResult =
+  | { status: 'complete'; previewUrl: string; isAuthenticated: boolean }
+  | { status: 'processing'; previewUrl: null; requestId: string; isAuthenticated: boolean };
+
+export interface PreviewStatusResult {
+  request_id: string;
+  status: string;
+  preview_url?: string | null;
+  error?: string | null;
+  prediction_id?: string | null;
+  updated_at?: string;
+}
+
 export const generateStylePreview = async (
   imageUrl: string, 
   style: string, 
@@ -72,20 +85,40 @@ export const generateStylePreview = async (
         throw new Error('No response received from AI service. Please try again.');
       }
 
+      if (data.preview_url) {
+        if (isAuthenticated) {
+          try {
+            await createPreview(photoId, style, data.preview_url);
+          } catch (storeError) {
+            // continue even if storing fails
+          }
+        }
+
+        return {
+          status: 'complete',
+          previewUrl: data.preview_url,
+          isAuthenticated: Boolean(isAuthenticated)
+        } satisfies PreviewGenerationResult;
+      }
+
+      if (data.requestId) {
+        return {
+          status: (data.status as string | undefined) === 'succeeded' ? 'complete' : 'processing',
+          previewUrl: null,
+          requestId: data.requestId as string,
+          isAuthenticated: Boolean(isAuthenticated)
+        } satisfies PreviewGenerationResult;
+      }
+
       if (!data.preview_url) {
         throw new Error('AI service returned an invalid response. Please try again.');
       }
-      
-      // Only store the preview if user is authenticated
-      if (isAuthenticated) {
-        try {
-          await createPreview(photoId, style, data.preview_url);
-        } catch (storeError) {
-          // Continue anyway, just don't store
-        }
-      }
-      
-      return data.preview_url;
+
+      return {
+        status: 'complete',
+        previewUrl: data.preview_url,
+        isAuthenticated: Boolean(isAuthenticated)
+      } satisfies PreviewGenerationResult;
     } catch (apiError) {
       throw apiError; // Re-throw to be handled by the caller
     }
@@ -112,4 +145,39 @@ export const generateFinalImage = async (
     quality: 'high',
     sessionId
   });
+};
+
+export const fetchPreviewStatus = async (requestId: string): Promise<PreviewStatusResult> => {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  if (!supabaseUrl) {
+    throw new Error('Supabase URL not configured');
+  }
+
+  const statusUrl = `${supabaseUrl}/functions/v1/generate-style-preview/status?requestId=${encodeURIComponent(requestId)}`;
+
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.access_token) {
+      headers.Authorization = `Bearer ${session.access_token}`;
+    }
+  } catch {
+    // ignore session fetch errors; status endpoint does not require auth
+  }
+
+  const response = await fetch(statusUrl, { headers });
+
+  if (response.status === 404) {
+    return {
+      request_id: requestId,
+      status: 'not_found',
+      preview_url: null
+    };
+  }
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch preview status: ${response.status}`);
+  }
+
+  return response.json() as Promise<PreviewStatusResult>;
 };

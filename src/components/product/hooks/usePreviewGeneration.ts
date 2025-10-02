@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import { generateStylePreview } from "@/utils/stylePreviewApi";
+import { generateStylePreview, fetchPreviewStatus } from "@/utils/stylePreviewApi";
+import { createPreview } from "@/utils/previewOperations";
 import { addWatermarkToImage } from "@/utils/watermarkUtils";
 import { convertOrientationToAspectRatio } from "../utils/orientationDetection";
 
@@ -8,6 +9,30 @@ export const usePreviewGeneration = (uploadedImage: string | null, selectedOrien
   const [autoGenerationComplete, setAutoGenerationComplete] = useState(false);
   const [generationErrors, setGenerationErrors] = useState<{ [key: number]: string }>({});
   const [isGenerating, setIsGenerating] = useState(false);
+
+  const pollPreviewStatusUntilReady = useCallback(async (requestId: string) => {
+    const maxAttempts = 30;
+    let attempt = 0;
+
+    while (attempt < maxAttempts) {
+      const status = await fetchPreviewStatus(requestId);
+      const normalizedStatus = status.status?.toLowerCase();
+
+      if ((normalizedStatus === 'succeeded' || normalizedStatus === 'complete') && status.preview_url) {
+        return status.preview_url as string;
+      }
+
+      if (normalizedStatus === 'failed' || normalizedStatus === 'error') {
+        throw new Error(status.error || 'Preview generation failed');
+      }
+
+      attempt += 1;
+      const backoff = Math.min(4000, 500 + attempt * 250);
+      await new Promise((resolve) => setTimeout(resolve, backoff));
+    }
+
+    throw new Error('Preview generation timed out. Please try again.');
+  }, []);
 
   // Remove the auto-generation useEffect entirely
   // Users will now need to manually click on styles to generate previews
@@ -43,17 +68,34 @@ export const usePreviewGeneration = (uploadedImage: string | null, selectedOrien
       const tempPhotoId = `temp_${Date.now()}_${styleId}`;
       
       try {
-        const previewUrl = await generateStylePreview(
+        const result = await generateStylePreview(
           uploadedImage, 
           styleName, 
           tempPhotoId, 
           aspectRatio
         );
         
-        if (previewUrl) {
+        let resolvedPreviewUrl: string | null = null;
+
+        if (result.status === 'complete') {
+          resolvedPreviewUrl = result.previewUrl;
+        } else if (result.status === 'processing') {
+          const finalPreviewUrl = await pollPreviewStatusUntilReady(result.requestId);
+          resolvedPreviewUrl = finalPreviewUrl;
+
+          if (result.isAuthenticated) {
+            try {
+              await createPreview(tempPhotoId, styleName, finalPreviewUrl);
+            } catch (persistError) {
+              console.warn('Failed to persist preview metadata', persistError);
+            }
+          }
+        }
+
+        if (resolvedPreviewUrl) {
           try {
             // Apply client-side watermark
-            const watermarkedUrl = await addWatermarkToImage(previewUrl);
+            const watermarkedUrl = await addWatermarkToImage(resolvedPreviewUrl);
             
             // Update the preview URLs state
             setPreviewUrls(prev => ({
@@ -76,11 +118,11 @@ export const usePreviewGeneration = (uploadedImage: string | null, selectedOrien
             // Update with unwatermarked URL as fallback
             setPreviewUrls(prev => ({
               ...prev,
-              [styleId]: previewUrl
+              [styleId]: resolvedPreviewUrl
             }));
             
             setIsGenerating(false);
-            return previewUrl;
+            return resolvedPreviewUrl;
           }
         }
       } catch (error) {

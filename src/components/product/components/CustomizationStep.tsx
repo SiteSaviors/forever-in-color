@@ -15,6 +15,8 @@ interface CustomizationStepProps {
   selectedStyle?: { id: number; name: string } | null;
   previewUrls?: { [key: number]: string };
   userArtworkUrl?: string | null;
+  isGeneratingPreviews?: boolean;
+  previewError?: string | null;
   onStepClick: () => void;
 }
 
@@ -30,6 +32,8 @@ const CustomizationStep = ({
   selectedStyle,
   previewUrls,
   userArtworkUrl,
+  isGeneratingPreviews,
+  previewError,
   onStepClick
 }: CustomizationStepProps) => {
   return (
@@ -51,6 +55,8 @@ const CustomizationStep = ({
           selectedStyle={selectedStyle}
           previewUrls={previewUrls}
           userArtworkUrl={userArtworkUrl}
+          isGeneratingPreviews={isGeneratingPreviews}
+          previewError={previewError}
         />
       )}
     </ProductStepWrapper>
