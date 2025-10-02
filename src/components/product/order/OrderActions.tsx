@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { useStripePayment } from "../hooks/useStripePayment";
+import { useStripePayment } from "@/hooks/useStripePayment";
 
 interface OrderActionsProps {
   total: number;
