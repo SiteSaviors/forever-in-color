@@ -112,4 +112,230 @@ This guide captures the shared implementation plan for Optimization #5. It is wr
 
 ---
 
+## 7. Environment Variables & Configuration
+
+### Required Environment Variables
+
+**Cache Control:**
+```bash
+# Feature flag - defaults to false for safety
+ENABLE_PROMPT_CACHE=false
+
+# Optional: TTL in milliseconds (default: 900000 = 15 minutes)
+PROMPT_CACHE_TTL_MS=900000
+
+# Optional: Comma-separated list of styles to pre-warm on cold start
+PROMPT_CACHE_WARMUP_STYLES=classic-oil-painting,watercolor-dreams,modern-abstract
+```
+
+**Existing Required Variables:**
+```bash
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGc...
+OPENAI_API_KEY=sk-...
+REPLICATE_API_TOKEN=r8_...
+```
+
+### Configuration Examples
+
+**Development/Testing (cache disabled):**
+```bash
+ENABLE_PROMPT_CACHE=false
+```
+
+**Staging (cache enabled, no warmup):**
+```bash
+ENABLE_PROMPT_CACHE=true
+PROMPT_CACHE_TTL_MS=900000
+```
+
+**Production (cache enabled with warmup for top 5 styles):**
+```bash
+ENABLE_PROMPT_CACHE=true
+PROMPT_CACHE_TTL_MS=1800000  # 30 minutes
+PROMPT_CACHE_WARMUP_STYLES=classic-oil-painting,watercolor-dreams,modern-abstract,vintage-poster,digital-illustration
+```
+
+### Cache Invalidation Procedures
+
+**Manual Cache Clear (when prompts are updated):**
+1. **Option A - Toggle feature flag:**
+   ```bash
+   # Disable cache (clears on next cold start)
+   ENABLE_PROMPT_CACHE=false
+
+   # Re-enable after a few minutes
+   ENABLE_PROMPT_CACHE=true
+   ```
+
+2. **Option B - Update TTL to force expiry:**
+   ```bash
+   # Set very short TTL temporarily
+   PROMPT_CACHE_TTL_MS=1000  # 1 second
+
+   # Restore normal TTL after cache expires
+   PROMPT_CACHE_TTL_MS=900000
+   ```
+
+3. **Option C - Redeploy Edge Function:**
+   ```bash
+   supabase functions deploy generate-style-preview
+   ```
+   Cold start will reset cache completely.
+
+**Automatic Expiry:**
+- All cache entries auto-expire after `PROMPT_CACHE_TTL_MS` (default 15 minutes)
+- Stale entries are automatically purged on next access attempt
+
+---
+
+## 8. Deployment & Validation Guide
+
+### Phase 1A: Baseline Deployment (Cache Disabled)
+
+**Step 1: Deploy with cache code but disabled**
+```bash
+# Ensure feature flag is OFF
+ENABLE_PROMPT_CACHE=false
+
+# Deploy to staging
+supabase functions deploy generate-style-preview --project-ref <staging-project>
+```
+
+**Step 2: Verify baseline behavior unchanged**
+- Test 10-20 preview requests with various styles
+- Confirm no `[prompt-cache]` logs appear (cache is disabled)
+- Verify existing `[preview-metrics]` logs show normal latency
+- Check no errors or regressions
+
+### Phase 1B: Staging Validation (Cache Enabled)
+
+**Step 1: Enable cache in staging**
+```bash
+# Set environment variables in Supabase dashboard or CLI
+supabase secrets set ENABLE_PROMPT_CACHE=true --project-ref <staging-project>
+supabase secrets set PROMPT_CACHE_WARMUP_STYLES=classic-oil-painting,watercolor-dreams --project-ref <staging-project>
+```
+
+**Step 2: Trigger cold start & monitor warmup**
+```bash
+# Redeploy to trigger cold start
+supabase functions deploy generate-style-preview --project-ref <staging-project>
+
+# Watch logs in real-time
+supabase functions logs generate-style-preview --project-ref <staging-project> --follow
+```
+
+**Step 3: Verify cache behavior**
+- **Expected warmup logs:**
+  ```json
+  [prompt-cache] { action: "warmup_populate", styleName: "classic-oil-painting", timestamp: "2024-..." }
+  [prompt-cache] { action: "warmup_populate", styleName: "watercolor-dreams", timestamp: "2024-..." }
+  ```
+
+- **First request for warmed style:**
+  ```json
+  [prompt-cache] { action: "hit", style: "classic-oil-painting", requestId: "req_...", source: "warmup", ageMs: 234 }
+  ```
+
+- **First request for non-warmed style:**
+  ```json
+  [prompt-cache] { action: "miss", style: "modern-abstract", requestId: "req_...", fetchDurationMs: 87, source: "db" }
+  ```
+
+- **Second request for same style (within TTL):**
+  ```json
+  [prompt-cache] { action: "hit", style: "modern-abstract", requestId: "req_...", source: "db", ageMs: 5432 }
+  ```
+
+**Step 4: Performance validation**
+- Send 50-100 requests to same style within 15 minutes
+- Compare `[preview-metrics]` before/after:
+  - **Cache disabled:** `totalDurationMs` includes ~50-200ms Supabase fetch time
+  - **Cache enabled (hits):** `totalDurationMs` reduces by 45-195ms per request
+- Calculate cache hit rate: `(hits / total_requests) * 100%`
+- Target: >70% hit rate after initial warmup
+
+### Phase 1C: Production Rollout
+
+**Step 1: Enable during low-traffic window**
+```bash
+# Enable cache with extended TTL and top 5 styles
+supabase secrets set ENABLE_PROMPT_CACHE=true --project-ref <production-project>
+supabase secrets set PROMPT_CACHE_TTL_MS=1800000 --project-ref <production-project>
+supabase secrets set PROMPT_CACHE_WARMUP_STYLES=classic-oil-painting,watercolor-dreams,modern-abstract,vintage-poster,digital-illustration --project-ref <production-project>
+
+# Redeploy to activate
+supabase functions deploy generate-style-preview --project-ref <production-project>
+```
+
+**Step 2: Monitor for 1-2 hours**
+- Watch `[preview-metrics]` logs for:
+  - Reduced `totalDurationMs` on cache hits
+  - No increase in error rates
+  - `promptCacheHit: true` appearing in success logs
+- Check Supabase dashboard for reduced `style_prompts` table queries
+
+**Step 3: Rollback procedure (if needed)**
+```bash
+# Instant disable - no redeploy needed
+supabase secrets set ENABLE_PROMPT_CACHE=false --project-ref <production-project>
+
+# Wait 1-2 minutes for config to propagate
+# Next cold start will run without cache
+```
+
+### Success Metrics
+
+**Target Performance Improvements:**
+- **Median latency:** -30ms to -100ms (cache hit rate dependent)
+- **p95 latency:** -150ms to -200ms (for cached styles)
+- **Supabase load:** -70% to -90% reduction in `style_prompts` queries
+- **Cache hit rate:** >70% after 1 hour of production traffic
+
+**Health Indicators:**
+- Zero increase in error rate after enabling cache
+- `[prompt-cache]` logs show consistent hits for top styles
+- `[preview-metrics]` shows `promptCacheHit: true` for majority of requests
+- No `warmup_error` or `fetch_error` logs
+
+---
+
+## 9. Implementation Notes & Optimizations
+
+### Warmup Timing Optimization
+**Issue:** Original implementation triggered warmup inside request handler, causing redundant checks on every request.
+
+**Solution:** Module-level initialization closure that ensures warmup runs exactly once on first request:
+```typescript
+// Module-level warmup initialization - runs once on cold start
+const initializeWarmup = (() => {
+  let initialized = false;
+  return (stylePromptService: any) => {
+    if (initialized) return;
+    initialized = true;
+
+    const config = getPromptCacheConfig();
+    if (config.enabled) {
+      schedulePromptWarmup((styleName) => stylePromptService.getStylePrompt(styleName));
+    }
+  };
+})();
+```
+
+**Benefits:**
+- Warmup triggered exactly once per Edge Function instance lifecycle
+- No redundant config checks on subsequent requests
+- Still lazy (requires Supabase client from first request)
+- Fire-and-forget: doesn't block first user request
+
+### Cache Architecture
+- **In-memory Map** at module level (survives across requests in Deno runtime)
+- **TTL-based expiry** with automatic cleanup on access
+- **Three source types:** `db` (Supabase), `fallback` (generated string), `warmup` (pre-loaded)
+- **Normalized keys:** Case-insensitive with whitespace trimming
+- **Feature flag first:** All cache logic short-circuits if `ENABLE_PROMPT_CACHE=false`
+
+---
+
 With this roadmap, either assistant can pick up the implementation knowing the sequence, configuration knobs, and validation expectations. Feel free to append additional notes as research progresses.

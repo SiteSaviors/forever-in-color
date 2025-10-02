@@ -8,6 +8,21 @@ import { ReplicateService } from './replicateService.ts';
 import { createSuccessResponse, createErrorResponse } from './responseUtils.ts';
 import { getPromptCacheConfig, getCachedPrompt, setCachedPrompt, schedulePromptWarmup } from './promptCache.ts';
 
+// Module-level warmup initialization - runs once on cold start
+// Uses lazy initialization: warmup only happens on first request (requires Supabase client)
+const initializeWarmup = (() => {
+  let initialized = false;
+  return (stylePromptService: any) => {
+    if (initialized) return;
+    initialized = true;
+
+    const config = getPromptCacheConfig();
+    if (config.enabled) {
+      schedulePromptWarmup((styleName) => stylePromptService.getStylePrompt(styleName));
+    }
+  };
+})();
+
 async function normalizeImageInput(image: string): Promise<string> {
   if (image.startsWith('data:image/')) {
     return image;
@@ -82,11 +97,10 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const stylePromptService = new StylePromptService(supabase);
 
-    const promptCacheConfig = getPromptCacheConfig();
-    if (promptCacheConfig.enabled) {
-      schedulePromptWarmup((styleName) => stylePromptService.getStylePrompt(styleName));
-    }
+    // Initialize warmup once on first request (runs async in background)
+    initializeWarmup(stylePromptService);
 
+    // Check cache for current request
     let stylePrompt: string;
     const cacheEntry = getCachedPrompt(style);
     const promptCacheWasHit = !!cacheEntry;
