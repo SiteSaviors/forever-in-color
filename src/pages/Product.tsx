@@ -6,7 +6,6 @@ import BottomMomentumPopup from "@/components/product/components/BottomMomentumP
 import ProductTestimonials from "@/components/product/ProductTestimonials";
 import UnifiedSocialMomentumWidget from "@/components/product/components/UnifiedSocialMomentumWidget";
 import { useProductState } from "@/components/product/ProductStateManager";
-import { ProgressOrchestrator } from "@/components/product/progress/ProgressOrchestrator";
 
 const Product = () => {
   const {
@@ -30,7 +29,6 @@ const Product = () => {
     handleCustomizationChange
   } = useProductState();
 
-
   const handleUploadClick = () => {
     // Scroll to upload section and ensure we're on step 1
     setCurrentStep(1);
@@ -45,60 +43,57 @@ const Product = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      
-      <ProgressOrchestrator>
-        <div className="pt-16">
-          <ProductHeader 
-            completedSteps={completedSteps}
-            totalSteps={4}
-            currentStep={currentStep}
-            onUploadClick={handleUploadClick}
-          />
-          
-          <ProductContent
-            currentStep={currentStep}
-            completedSteps={completedSteps}
-            selectedStyle={selectedStyle}
-            selectedSize={selectedSize}
-            selectedOrientation={selectedOrientation}
-            customizations={customizations}
-            uploadedImage={uploadedImage}
-            autoGenerationComplete={autoGenerationComplete}
-            preview={preview}
-            startPreview={startPreview}
-            cancelPreview={cancelPreview}
-            isGenerating={isGenerating}
-            generationErrors={generationErrors}
-            onCurrentStepChange={setCurrentStep}
-            onPhotoAndStyleComplete={handlePhotoAndStyleComplete}
-            onOrientationSelect={handleOrientationSelect}
-            onSizeSelect={handleSizeSelect}
-            onCustomizationChange={handleCustomizationChange}
-          />
-          
-          <ProductTestimonials />
-        </div>
 
-        {/* Unified Social Momentum Widget - Only show when user reaches styles section */}
-        <UnifiedSocialMomentumWidget
-          currentStep={currentStep}
-          uploadedImage={uploadedImage}
-          showWidget={currentStep === 1 && !!uploadedImage && !!selectedStyle}
-        />
-        
-        {/* Premium Horizontal Bottom Momentum Popup - Show from step 2 onwards */}
-        <BottomMomentumPopup
-          currentStep={currentStep}
+      <div className="pt-16">
+        <ProductHeader
           completedSteps={completedSteps}
           totalSteps={4}
+          currentStep={currentStep}
+          onUploadClick={handleUploadClick}
+        />
+
+        <ProductContent
+          currentStep={currentStep}
+          completedSteps={completedSteps}
+          selectedStyle={selectedStyle}
           selectedSize={selectedSize}
           selectedOrientation={selectedOrientation}
           customizations={customizations}
-          selectedStyle={selectedStyle}
           uploadedImage={uploadedImage}
+          autoGenerationComplete={autoGenerationComplete}
+          preview={preview}
+          startPreview={startPreview}
+          cancelPreview={cancelPreview}
+          isGenerating={isGenerating}
+          generationErrors={generationErrors}
+          onCurrentStepChange={setCurrentStep}
+          onPhotoAndStyleComplete={handlePhotoAndStyleComplete}
+          onOrientationSelect={handleOrientationSelect}
+          onSizeSelect={handleSizeSelect}
+          onCustomizationChange={handleCustomizationChange}
         />
 
-      </ProgressOrchestrator>
+        <ProductTestimonials />
+      </div>
+
+      {/* Unified Social Momentum Widget - Only show when user reaches styles section */}
+      <UnifiedSocialMomentumWidget
+        currentStep={currentStep}
+        uploadedImage={uploadedImage}
+        showWidget={currentStep === 1 && !!uploadedImage && !!selectedStyle}
+      />
+
+      {/* Premium Horizontal Bottom Momentum Popup - Show from step 2 onwards */}
+      <BottomMomentumPopup
+        currentStep={currentStep}
+        completedSteps={completedSteps}
+        totalSteps={4}
+        selectedSize={selectedSize}
+        selectedOrientation={selectedOrientation}
+        customizations={customizations}
+        selectedStyle={selectedStyle}
+        uploadedImage={uploadedImage}
+      />
 
       <Footer />
     </div>

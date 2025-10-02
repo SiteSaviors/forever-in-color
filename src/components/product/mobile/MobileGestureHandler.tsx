@@ -1,7 +1,7 @@
 
 import { useEffect, ReactNode, useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useCurrentSubStep, useUserBehavior } from "../progress/hooks/useProgressSelectors";
+import { useStepOneExperienceContext } from "../progress/StepOneExperienceContext";
 import { Badge } from "@/components/ui/badge";
 import { Smartphone, ArrowLeftRight, Hand } from "lucide-react";
 
@@ -13,16 +13,16 @@ interface MobileGestureHandlerProps {
   showGestureHints?: boolean;
 }
 
-const MobileGestureHandler = ({ 
-  children, 
-  onSwipeLeft, 
-  onSwipeRight, 
+const MobileGestureHandler = ({
+  children,
+  onSwipeLeft,
+  onSwipeRight,
   enableHaptic = true,
   showGestureHints = true
 }: MobileGestureHandlerProps) => {
   const isMobile = useIsMobile();
-  const currentSubStep = useCurrentSubStep();
-  const userBehavior = useUserBehavior();
+  const experience = useStepOneExperienceContext();
+  const { state } = experience;
   const [showHint, setShowHint] = useState(false);
   const [lastGesture, setLastGesture] = useState<string | null>(null);
 
@@ -32,15 +32,15 @@ const MobileGestureHandler = ({
 
     const timer = setTimeout(() => {
       // Show hints during style selection or when user seems stuck
-      if (currentSubStep === 'style-selection' || 
-          (Date.now() - userBehavior.lastInteraction > 20000)) {
+      if (state.subStep === 'style-selection' ||
+          (Date.now() - state.lastInteractionAt > 20000)) {
         setShowHint(true);
         setTimeout(() => setShowHint(false), 4000);
       }
     }, 15000);
 
     return () => clearTimeout(timer);
-  }, [isMobile, showGestureHints, currentSubStep, userBehavior.lastInteraction]);
+  }, [isMobile, showGestureHints, state.subStep, state.lastInteractionAt]);
 
   useEffect(() => {
     if (!isMobile) return;
@@ -65,7 +65,7 @@ const MobileGestureHandler = ({
 
       const deltaX = Math.abs(touch.clientX - startX);
       const deltaY = Math.abs(touch.clientY - startY);
-      
+
       if (deltaX > deltaY && deltaX > 30) {
         e.preventDefault();
       }
@@ -130,7 +130,7 @@ const MobileGestureHandler = ({
   return (
     <div className="relative">
       {children}
-      
+
       {/* Mobile Gesture Hints */}
       {isMobile && showHint && (
         <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 animate-scale-in">
