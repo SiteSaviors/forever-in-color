@@ -2,6 +2,8 @@ const DEFAULT_TTL_MS = 15 * 60 * 1000;
 
 interface PromptCacheEntry {
   prompt: string;
+  styleId: number;
+  styleVersion: string;
   fetchedAt: number;
   source: 'db' | 'fallback' | 'warmup';
 }
@@ -52,6 +54,8 @@ export function getPromptCacheConfig(): PromptCacheConfig {
 
 export interface PromptCacheHit {
   prompt: string;
+  styleId: number;
+  styleVersion: string;
   ageMs: number;
   source: PromptCacheEntry['source'];
 }
@@ -76,12 +80,18 @@ export function getCachedPrompt(styleName: string): PromptCacheHit | null {
 
   return {
     prompt: entry.prompt,
+    styleId: entry.styleId,
+    styleVersion: entry.styleVersion,
     ageMs,
     source: entry.source,
   };
 }
 
-export function setCachedPrompt(styleName: string, prompt: string, source: PromptCacheEntry['source']): void {
+export function setCachedPrompt(
+  styleName: string,
+  payload: { prompt: string; styleId: number; styleVersion: string },
+  source: PromptCacheEntry['source']
+): void {
   const config = getPromptCacheConfig();
   if (!config.enabled) {
     return;
@@ -89,7 +99,9 @@ export function setCachedPrompt(styleName: string, prompt: string, source: Promp
 
   const key = normalizeStyleName(styleName);
   cache.set(key, {
-    prompt,
+    prompt: payload.prompt,
+    styleId: payload.styleId,
+    styleVersion: payload.styleVersion,
     fetchedAt: Date.now(),
     source,
   });
@@ -104,8 +116,14 @@ export function invalidatePrompt(styleName?: string): void {
   cache.delete(normalizeStyleName(styleName));
 }
 
+export interface PromptWarmupResult {
+  prompt: string | null;
+  styleId: number;
+  styleVersion: string;
+}
+
 export function schedulePromptWarmup(
-  fetcher: (styleName: string) => Promise<string | null>
+  fetcher: (styleName: string) => Promise<PromptWarmupResult | null>
 ): void {
   const config = getPromptCacheConfig();
   if (!config.enabled || config.warmupStyles.length === 0) {
@@ -116,9 +134,13 @@ export function schedulePromptWarmup(
     warmupPromise = (async () => {
       for (const styleName of config.warmupStyles) {
         try {
-          const prompt = await fetcher(styleName);
-          if (prompt) {
-            setCachedPrompt(styleName, prompt, 'warmup');
+          const result = await fetcher(styleName);
+          if (result?.prompt) {
+            setCachedPrompt(styleName, {
+              prompt: result.prompt,
+              styleId: result.styleId,
+              styleVersion: result.styleVersion
+            }, 'warmup');
             console.log('[prompt-cache]', {
               action: 'warmup_populate',
               styleName,

@@ -28,6 +28,7 @@ interface Args {
   out?: string;
   warmup: number;
   headers?: string[];
+  cacheBypass: boolean;
 }
 
 function parseArgs(): Args {
@@ -49,7 +50,8 @@ function parseArgs(): Args {
   const warmup = parseInt(get('--warmup') || '5', 10);
   const headersArg = get('--headers');
   const headers = headersArg ? headersArg.split(',') : undefined; // e.g. "Authorization: Bearer X-Token"
-  return { url, bodyPath, bodyInline, count, concurrency, out, warmup, headers } as Args;
+  const cacheBypass = args.includes('--cache-bypass');
+  return { url, bodyPath, bodyInline, count, concurrency, out, warmup, headers, cacheBypass } as Args;
 }
 
 function parseHeaders(kvs?: string[]): Record<string, string> | undefined {
@@ -73,13 +75,23 @@ function percentile(values: number[], p: number): number {
 }
 
 async function main() {
-  const { url, bodyPath, bodyInline, count, concurrency, out, warmup, headers } = parseArgs();
+  const { url, bodyPath, bodyInline, count, concurrency, out, warmup, headers, cacheBypass } = parseArgs();
   const hdrs: Record<string, string> = { 'Content-Type': 'application/json', ...(parseHeaders(headers) || {}) };
-  const body = bodyInline
+  let body = bodyInline
     ? bodyInline
     : bodyPath
     ? fs.readFileSync(path.resolve(bodyPath), 'utf8')
     : JSON.stringify({ imageUrl: 'data:image/png;base64,', style: 'Classic Oil Painting', aspectRatio: '1:1', quality: 'medium' });
+
+  if (cacheBypass) {
+    try {
+      const parsedBody = JSON.parse(body);
+      parsedBody.cacheBypass = true;
+      body = JSON.stringify(parsedBody);
+    } catch (_error) {
+      console.warn('⚠️  Unable to inject cacheBypass flag; body is not valid JSON');
+    }
+  }
 
   const results: number[] = [];
 

@@ -16,6 +16,15 @@ export interface StylePreviewResponse {
   details?: string;
 }
 
+export type CacheStatus = 'hit' | 'miss' | 'bypass';
+
+export interface PreviewCacheLookupResult {
+  cacheStatus: CacheStatus;
+  previewUrl?: string;
+  storagePath?: string;
+  ttlExpiresAt?: string;
+}
+
 export interface OpenAIImageResponse {
   data: Array<{
     b64_json?: string;

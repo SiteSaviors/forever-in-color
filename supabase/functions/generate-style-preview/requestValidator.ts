@@ -5,10 +5,19 @@ export interface GenerationRequest {
   aspectRatio?: string;
   watermark?: boolean;
   quality?: 'low' | 'medium' | 'high' | 'auto';
+  cacheBypass?: boolean;
 }
 
 export function validateRequest(body: any): { isValid: boolean; error?: string; data?: GenerationRequest } {
-  const { imageUrl, style, photoId, aspectRatio = '1:1', watermark = true, quality = 'medium' } = body;
+  const {
+    imageUrl,
+    style,
+    photoId,
+    aspectRatio = '1:1',
+    watermark = true,
+    quality = 'medium',
+    cacheBypass = false
+  } = body;
 
   if (!imageUrl || !style) {
     return {
@@ -35,6 +44,6 @@ export function validateRequest(body: any): { isValid: boolean; error?: string; 
 
   return {
     isValid: true,
-    data: { imageUrl, style, photoId, aspectRatio, watermark, quality: normalizedQuality }
+    data: { imageUrl, style, photoId, aspectRatio, watermark, quality: normalizedQuality, cacheBypass }
   };
 }
