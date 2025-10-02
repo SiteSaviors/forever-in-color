@@ -1,4 +1,7 @@
+import { useCallback } from "react";
 import { ArrowRight, Heart, Sparkles, Camera } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useRoutePrefetch } from "@/hooks/useRoutePrefetch";
 
 interface HeroContentProps {
   hideBadgeAndHeadline?: boolean;
@@ -7,6 +10,13 @@ interface HeroContentProps {
 const HeroContent = ({
   hideBadgeAndHeadline = false
 }: HeroContentProps) => {
+  const navigate = useNavigate();
+  const { prefetchProduct } = useRoutePrefetch();
+
+  const handleStartCreating = useCallback(() => {
+    navigate("/product");
+  }, [navigate]);
+
   return (
     <div className="space-y-8">
       {/* Badge and Headline - Only show if not hidden */}
@@ -68,7 +78,13 @@ const HeroContent = ({
 
       {/* CTA Buttons - Consistent styling and spacing */}
       <div className="flex flex-col sm:flex-row gap-4 pt-2">
-        <button className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-8 py-4 rounded-full font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center gap-2">
+        <button
+          onClick={handleStartCreating}
+          onMouseEnter={prefetchProduct}
+          onFocus={prefetchProduct}
+          onTouchStart={prefetchProduct}
+          className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-8 py-4 rounded-full font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center gap-2"
+        >
           <span>Start Creating</span>
           <ArrowRight className="w-4 h-4" />
         </button>

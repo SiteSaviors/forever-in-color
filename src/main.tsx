@@ -1,5 +1,5 @@
 
-import { StrictMode } from "react";
+import { StrictMode, lazy } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -8,25 +8,26 @@ import "./index.css";
 
 // Import pages
 import Index from "./pages/Index.tsx";
-import Product from "./pages/Product.tsx";
-import PaymentSuccess from "./pages/PaymentSuccess.tsx";
-import Auth from "./pages/Auth.tsx";
-import NotFound from "./pages/NotFound.tsx";
+
+const Product = lazy(() => import("./pages/Product"));
+const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
+const Auth = lazy(() => import("./pages/Auth"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Style pages
-import ClassicOilPainting from "./pages/ClassicOilPainting.tsx";
-import WatercolorDreams from "./pages/WatercolorDreams.tsx";
-import PastelBliss from "./pages/PastelBliss.tsx";
-import GemstonePoly from "./pages/GemstonePoly.tsx";
-import ThreeDStorybook from "./pages/ThreeDStorybook.tsx";
-import ArtisanCharcoal from "./pages/ArtisanCharcoal.tsx";
-import PopArtBurst from "./pages/PopArtBurst.tsx";
-import NeonSplash from "./pages/NeonSplash.tsx";
-import ElectricBloom from "./pages/ElectricBloom.tsx";
-import AbstractFusion from "./pages/AbstractFusion.tsx";
-import DecoLuxe from "./pages/DecoLuxe.tsx";
-import OriginalStyle from "./pages/OriginalStyle.tsx";
-import ARExperience from "./pages/ARExperience.tsx";
+const ClassicOilPainting = lazy(() => import("./pages/ClassicOilPainting"));
+const WatercolorDreams = lazy(() => import("./pages/WatercolorDreams"));
+const PastelBliss = lazy(() => import("./pages/PastelBliss"));
+const GemstonePoly = lazy(() => import("./pages/GemstonePoly"));
+const ThreeDStorybook = lazy(() => import("./pages/ThreeDStorybook"));
+const ArtisanCharcoal = lazy(() => import("./pages/ArtisanCharcoal"));
+const PopArtBurst = lazy(() => import("./pages/PopArtBurst"));
+const NeonSplash = lazy(() => import("./pages/NeonSplash"));
+const ElectricBloom = lazy(() => import("./pages/ElectricBloom"));
+const AbstractFusion = lazy(() => import("./pages/AbstractFusion"));
+const DecoLuxe = lazy(() => import("./pages/DecoLuxe"));
+const OriginalStyle = lazy(() => import("./pages/OriginalStyle"));
+const ARExperience = lazy(() => import("./pages/ARExperience"));
 
 const queryClient = new QueryClient();
 

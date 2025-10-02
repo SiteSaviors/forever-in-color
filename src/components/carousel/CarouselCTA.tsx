@@ -1,7 +1,17 @@
 
+import { useCallback } from "react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import { useRoutePrefetch } from "@/hooks/useRoutePrefetch";
 
 const CarouselCTA = () => {
+  const navigate = useNavigate();
+  const { prefetchProduct } = useRoutePrefetch();
+
+  const handleClick = useCallback(() => {
+    navigate("/product");
+  }, [navigate]);
+
   return (
     <div className="text-center mt-12">
       <div className="bg-gradient-to-br from-white/80 via-white/70 to-white/60 backdrop-blur-md rounded-3xl p-8 shadow-xl border border-white/40 max-w-3xl mx-auto relative overflow-hidden">
@@ -16,7 +26,10 @@ const CarouselCTA = () => {
             Choose your favorite style and start creating your custom artwork in minutes
           </p>
           <Button 
-            onClick={() => window.location.href = '/product'}
+            onClick={handleClick}
+            onMouseEnter={prefetchProduct}
+            onFocus={prefetchProduct}
+            onTouchStart={prefetchProduct}
             className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-10 py-4 text-lg font-semibold border-0 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
           >
             Start Creating Now

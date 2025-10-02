@@ -7,6 +7,7 @@ import { useAuthStore } from "@/hooks/useAuthStore";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import TokenBalance from "@/components/ui/TokenBalance";
 import TokenPurchaseModal from "@/components/ui/TokenPurchaseModal";
+import { useRoutePrefetch } from "@/hooks/useRoutePrefetch";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -16,6 +17,7 @@ const Header = () => {
     signOut
   } = useAuthStore();
   const navigate = useNavigate();
+  const { prefetchProduct, prefetchAuth } = useRoutePrefetch();
   
   const handleSignOut = async () => {
     await signOut();
@@ -41,7 +43,13 @@ const Header = () => {
               <Link to="/" className="text-gray-600 hover:text-gray-900 transition-colors">
                 Home
               </Link>
-              <Link to="/product" className="text-gray-600 hover:text-gray-900 transition-colors">
+              <Link
+                to="/product"
+                className="text-gray-600 hover:text-gray-900 transition-colors"
+                onMouseEnter={prefetchProduct}
+                onFocus={prefetchProduct}
+                onTouchStart={prefetchProduct}
+              >
                 Create Art
               </Link>
               <a href="#styles" className="text-gray-600 hover:text-gray-900 transition-colors">
@@ -79,11 +87,16 @@ const Header = () => {
                 </>
               ) : (
                 <>
-                  <Link to="/auth">
+                  <Link to="/auth" onMouseEnter={prefetchAuth} onFocus={prefetchAuth} onTouchStart={prefetchAuth}>
                     <Button variant="ghost">Sign In</Button>
                   </Link>
-                  <Link to="/product">
-                    <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white">
+                  <Link to="/product" onMouseEnter={prefetchProduct} onFocus={prefetchProduct} onTouchStart={prefetchProduct}>
+                    <Button
+                      onMouseEnter={prefetchProduct}
+                      onFocus={prefetchProduct}
+                      onTouchStart={prefetchProduct}
+                      className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+                    >
                       Start Creating
                     </Button>
                   </Link>
@@ -106,7 +119,14 @@ const Header = () => {
                 <Link to="/" className="text-gray-600 hover:text-gray-900 transition-colors" onClick={() => setIsMenuOpen(false)}>
                   Home
                 </Link>
-                <Link to="/product" className="text-gray-600 hover:text-gray-900 transition-colors" onClick={() => setIsMenuOpen(false)}>
+                <Link
+                  to="/product"
+                  className="text-gray-600 hover:text-gray-900 transition-colors"
+                  onClick={() => setIsMenuOpen(false)}
+                  onMouseEnter={prefetchProduct}
+                  onFocus={prefetchProduct}
+                  onTouchStart={prefetchProduct}
+                >
                   Create Art
                 </Link>
                 <a href="#styles" className="text-gray-600 hover:text-gray-900 transition-colors" onClick={() => setIsMenuOpen(false)}>
@@ -127,11 +147,16 @@ const Header = () => {
                   </div>
                 ) : (
                   <div className="pt-4 border-t border-gray-200 space-y-2">
-                    <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
+                    <Link to="/auth" onClick={() => setIsMenuOpen(false)} onMouseEnter={prefetchAuth} onFocus={prefetchAuth} onTouchStart={prefetchAuth}>
                       <Button variant="ghost" className="w-full">Sign In</Button>
                     </Link>
-                    <Link to="/product" onClick={() => setIsMenuOpen(false)}>
-                      <Button className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white">
+                    <Link to="/product" onClick={() => setIsMenuOpen(false)} onMouseEnter={prefetchProduct} onFocus={prefetchProduct} onTouchStart={prefetchProduct}>
+                      <Button
+                        onMouseEnter={prefetchProduct}
+                        onFocus={prefetchProduct}
+                        onTouchStart={prefetchProduct}
+                        className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+                      >
                         Start Creating
                       </Button>
                     </Link>
