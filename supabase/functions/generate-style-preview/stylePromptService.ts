@@ -1,30 +1,56 @@
+import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+
+export interface StylePromptMetadata {
+  prompt: string | null;
+  styleVersion: string;
+  styleId: number;
+}
 
 export class StylePromptService {
-  constructor(private supabase: any) {}
+  constructor(private supabase: SupabaseClient) {}
 
   async getStylePrompt(styleName: string): Promise<string | null> {
+    const metadata = await this.getStylePromptWithMetadata(styleName);
+    return metadata?.prompt ?? null;
+  }
+
+  async getStylePromptWithMetadata(styleName: string): Promise<StylePromptMetadata | null> {
     try {
-      const styleId = this.getStyleIdByName(styleName);
+      const styleId = this.resolveStyleId(styleName);
       
-      // Fetch the prompt from Supabase style_prompts table
       const { data, error } = await this.supabase
         .from('style_prompts')
-        .select('prompt')
+        .select('prompt, updated_at')
         .eq('style_id', styleId)
         .single();
 
       if (error) {
-        return null;
+        return {
+          prompt: null,
+          styleVersion: '0',
+          styleId
+        };
       }
 
-      return data?.prompt || null;
-    } catch (error) {
-      return null;
+      const updatedAt = data?.updated_at as string | null;
+
+      const styleVersion = updatedAt ? new Date(updatedAt).getTime().toString() : '0';
+
+      return {
+        prompt: data?.prompt ?? null,
+        styleVersion,
+        styleId
+      };
+    } catch (_error) {
+      return {
+        prompt: null,
+        styleVersion: '0',
+        styleId: this.resolveStyleId(styleName)
+      };
     }
   }
 
-  private getStyleIdByName(styleName: string): number {
-    // Updated mapping to match the exact style names used in the frontend
+  resolveStyleId(styleName: string): number {
     const styleNameToId: { [key: string]: number } = {
       'Original Image': 1,
       'Classic Oil Painting': 2,
@@ -39,13 +65,13 @@ export class StylePromptService {
       'Electric Bloom': 11,
       'Artistic Mashup': 12,
       'Abstract Fusion': 13,
-      'Modern Abstract': 13, // Alternative name for Abstract Fusion
+      'Modern Abstract': 13,
       'Intricate Ink': 14,
       'Deco Luxe': 15
     };
     
     const styleId = styleNameToId[styleName];
-    
-    return styleId || 1; // Default to Original Image if not found
+
+    return styleId || 1;
   }
 }
