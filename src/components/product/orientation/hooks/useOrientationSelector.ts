@@ -52,12 +52,6 @@ export const useOrientationSelector = ({
     setValidationError(null);
     onSizeChange(size);
   }, [onSizeChange]);
-  
-  const handleContinueWithSize = useCallback((size: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    onSizeChange(size);
-    handleContinueClick();
-  }, [onSizeChange, handleContinueClick]);
 
   const handleContinueClick = useCallback(() => {
     if (!selectedOrientation) {
@@ -89,6 +83,12 @@ export const useOrientationSelector = ({
       onContinue();
     }
   }, [selectedOrientation, selectedSize, onContinue]);
+  
+  const handleContinueWithSize = useCallback((size: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    onSizeChange(size);
+    handleContinueClick();
+  }, [onSizeChange, handleContinueClick]);
 
   // Memoize expensive calculations
   const getRecommendedOrientation = useCallback(() => {
