@@ -15,7 +15,7 @@ const StepIcon = ({ stepNumber, isCompleted, isActive, canAccess }: StepIconProp
   const Icon = useMemo(() => {
     try {
       return getStepIcon(stepNumber);
-    } catch (error) {
+    } catch (_error) {
       return ChevronRight;
     }
   }, [stepNumber]);

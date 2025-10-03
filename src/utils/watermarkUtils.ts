@@ -18,7 +18,7 @@ export const addWatermarkToImage = async (
     }
 
     return watermarkedImage;
-  } catch (error) {
+  } catch (_error) {
     return imageUrl;
   }
 };

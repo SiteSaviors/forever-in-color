@@ -83,7 +83,7 @@ export const useProductFlow = () => {
       try {
         const detectedOrientation = await detectOrientationFromImage(imageUrl);
         setSelectedOrientation(detectedOrientation);
-      } catch (error) {
+      } catch (_error) {
         // Error handling without logging
       }
     }

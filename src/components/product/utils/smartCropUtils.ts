@@ -35,9 +35,9 @@ const detectSubjectRegion = async (imageUrl: string): Promise<DetectionResult> =
         // Get image data for analysis
         const imageData = ctx.getImageData(0, 0, img.width, img.height);
         const detected = analyzeImageForSubject(imageData, img.width, img.height);
-        
+
         resolve(detected);
-      } catch (error) {
+      } catch (_error) {
         resolve(getCenterFallback(img.width, img.height));
       }
     };
@@ -286,7 +286,7 @@ export const generateSmartCrop = async (imageUrl: string, orientation: string): 
           // Step 5: Apply the crop
           const croppedImageUrl = await applyCropToImage(imageUrl, expandedRegion);
           resolve(croppedImageUrl);
-        } catch (error) {
+        } catch (_error) {
           resolve(imageUrl); // Fallback to original
         }
       };
@@ -297,8 +297,8 @@ export const generateSmartCrop = async (imageUrl: string, orientation: string): 
       
       img.src = imageUrl;
     });
-    
-  } catch (error) {
+
+  } catch (_error) {
     return imageUrl; // Fallback to original image
   }
 };

@@ -14,8 +14,8 @@ export const detectOrientationFromImage = (imageUrl: string): Promise<Orientatio
       try {
         const detectedOrientation = detectOrientationFromDimensions(img.width, img.height);
         resolve(detectedOrientation);
-      } catch (error) {
-        reject(error);
+      } catch (_error) {
+        reject(_error);
       }
     };
     

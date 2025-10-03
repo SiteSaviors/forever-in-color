@@ -34,7 +34,7 @@ export const useTokenBalance = () => {
       } else {
         setBalance(data?.balance || 0);
       }
-    } catch (error) {
+    } catch (_error) {
       setBalance(0);
     } finally {
       setIsLoading(false);
@@ -67,7 +67,7 @@ export const useTokenBalance = () => {
         });
         return false;
       }
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Error",
         description: "Failed to process token transaction.",

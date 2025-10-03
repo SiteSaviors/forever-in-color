@@ -44,7 +44,7 @@ export const useStylePreview = ({
           setPreviewUrl(watermarkedUrl);
           setHasGeneratedPreview(true);
           // Watermark applied to pre-generated preview
-        } catch (error) {
+        } catch (_error) {
           // Watermarking failed, using original
           setPreviewUrl(preGeneratedPreview);
           setHasGeneratedPreview(true);
@@ -131,7 +131,7 @@ export const useStylePreview = ({
           const watermarkedUrl = await watermarkManager.addWatermark(rawPreviewUrl);
           // Client-side watermark applied successfully
           setPreviewUrl(watermarkedUrl);
-        } catch (watermarkError) {
+        } catch (_watermarkError) {
           // Client-side watermarking failed, using original
           setPreviewUrl(rawPreviewUrl);
         }

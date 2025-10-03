@@ -16,7 +16,7 @@ export const getStepIcon = (step: number) => {
       default:
         return Camera;
     }
-  } catch (error) {
+  } catch (_error) {
     return Camera; // Safe fallback
   }
 };
@@ -34,7 +34,7 @@ export const triggerHapticFeedback = () => {
     if ('vibrate' in navigator) {
       navigator.vibrate(50); // Light haptic feedback
     }
-  } catch (error) {
+  } catch (_error) {
     // Haptic feedback not supported - silent fail
   }
 };

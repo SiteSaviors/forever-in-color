@@ -52,9 +52,9 @@ class SecurityLogger {
       if (existingEvents.length > 100) {
         existingEvents.splice(0, existingEvents.length - 100);
       }
-      
+
       localStorage.setItem('security_events', JSON.stringify(existingEvents));
-    } catch (error) {
+    } catch (_error) {
       // Failed to store security event
     }
   }

@@ -124,7 +124,7 @@ const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
           setError('Please check your email and click the confirmation link to complete registration.');
         }
       }
-    } catch (err) {
+    } catch (_err) {
       logAuthFailure(formData.email, 'Unexpected signup error', undefined);
       setError('An unexpected error occurred. Please try again.');
     } finally {
@@ -170,7 +170,7 @@ const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
         clearFailedAttempts(formData.email);
         onAuthSuccess();
       }
-    } catch (err) {
+    } catch (_err) {
       logAuthFailure(formData.email, 'Unexpected signin error', undefined);
       setError('An unexpected error occurred. Please try again.');
     } finally {

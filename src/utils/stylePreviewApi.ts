@@ -122,13 +122,13 @@ export const generateStylePreview = async (
     } catch (apiError) {
       throw apiError; // Re-throw to be handled by the caller
     }
-  } catch (error) {    
+  } catch (_error) {
     // Re-throw with more user-friendly message if it's a generic error
-    if (error.message === 'Failed to fetch' || error.message.includes('TypeError')) {
+    if (_error.message === 'Failed to fetch' || _error.message.includes('TypeError')) {
       throw new Error('Unable to connect to the AI service. Please check your internet connection and try again. If the problem persists, the service may be temporarily unavailable.');
     }
-    
-    throw error;
+
+    throw _error;
   }
 };
 

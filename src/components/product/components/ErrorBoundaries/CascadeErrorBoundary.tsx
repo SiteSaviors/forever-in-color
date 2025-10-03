@@ -173,7 +173,7 @@ class CascadeErrorBoundary extends Component<Props, State> {
       };
 
       // Send to analytics (replace with your service)
-    } catch (analyticsError) {
+    } catch (_analyticsError) {
     }
   }
 

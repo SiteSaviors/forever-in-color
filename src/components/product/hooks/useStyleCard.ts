@@ -136,7 +136,7 @@ export const useStyleCard = ({
     try {
       await generatePreview();
       // Generation completed
-    } catch (error) {
+    } catch (_error) {
       setShowError(true);
     } finally {
       setLocalIsLoading(false);
@@ -165,7 +165,7 @@ export const useStyleCard = ({
     try {
       await generatePreview();
       // Retry completed
-    } catch (error) {
+    } catch (_error) {
       setShowError(true);
     } finally {
       setLocalIsLoading(false);
