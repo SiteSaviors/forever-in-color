@@ -235,7 +235,7 @@ export const generateAndWatermarkPreview = async (
 
 ---
 
-### Step 3: Refactor useStylePreview (Medium Risk) - READY TO START
+### ✅ Step 3: Refactor useStylePreview (COMPLETE)
 
 **Goal:** Replace inline logic with shared utilities
 
@@ -291,24 +291,30 @@ export const generateAndWatermarkPreview = async (
    - Return interface (same 7 fields)
 
 **Verification:**
-- [ ] ESLint passes
-- [ ] TypeScript compiles
-- [ ] Build succeeds
-- [ ] Return type matches original (7 fields)
-- [ ] No new dependencies added beyond shared utils
+- [x] ESLint passes
+- [x] TypeScript compiles
+- [x] Build succeeds
+- [x] Return type matches original (7 fields)
+- [x] No new dependencies added beyond shared utils
+
+**Changes made:**
+- Removed internal `pollPreviewStatusUntilReady` (23 lines deleted)
+- Replaced inline generation logic with `generateAndWatermarkPreview`
+- Reduced from 172 lines to 113 lines (**-34% code reduction**)
+- Kept all unique features: pre-generated preview, aspect ratio validation, handleClick
 
 **Testing checklist:**
-- [ ] StyleCard renders correctly
-- [ ] Click triggers generation
-- [ ] Loading states work
-- [ ] Error states work
-- [ ] Pre-generated previews still display
-- [ ] Watermarking works
-- [ ] Validation errors display
+- [ ] StyleCard renders correctly (E2E test needed)
+- [ ] Click triggers generation (E2E test needed)
+- [ ] Loading states work (E2E test needed)
+- [ ] Error states work (E2E test needed)
+- [ ] Pre-generated previews still display (E2E test needed)
+- [ ] Watermarking works (E2E test needed)
+- [ ] Validation errors display (E2E test needed)
 
 ---
 
-### Step 4: Refactor usePreviewGeneration (Medium Risk)
+### Step 4: Refactor usePreviewGeneration (Medium Risk) - READY TO START
 
 **Goal:** Replace inline logic with shared utilities
 
