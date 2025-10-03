@@ -42,7 +42,7 @@ const StyleCardButtons = ({
   const showWatermarkRemovalButton = hasGeneratedPreview && !showError && imageUrl && style.id !== 1 && !existingPurchase;
   const showRedownloadButton = hasGeneratedPreview && !showError && imageUrl && style.id !== 1 && existingPurchase;
 
-  const handleRemoveWatermark = async (resolution: string, tokens: number) => {
+  const handleRemoveWatermark = async (_resolution: string, _tokens: number) => {
     // Removing watermark for style
   };
 

@@ -54,7 +54,7 @@ export const useStyleCard = ({
   });
 
   // Computed values from useStyleCardLogic
-  const isSelected = selectedStyle === style.id;
+  const _isSelected = selectedStyle === style.id;
   const showGeneratedBadge = hasGeneratedPreview && isStyleGenerated;
   const hasError = showError || validationError;
   const imageToShow = previewUrl || croppedImage || style.image;

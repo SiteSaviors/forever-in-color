@@ -10,7 +10,7 @@ interface UsePsychologicalOptimizationProps {
 
 export const usePsychologicalOptimization = ({
   sizeOptions,
-  selectedSize,
+  selectedSize: _selectedSize,
   userImageUrl
 }: UsePsychologicalOptimizationProps) => {
   

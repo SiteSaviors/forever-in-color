@@ -10,12 +10,12 @@ interface EnhancedStyleCardLoadingOverlayProps {
   onRetry?: () => void;
 }
 
-const EnhancedStyleCardLoadingOverlay = ({ 
-  isBlinking, 
+const EnhancedStyleCardLoadingOverlay = ({
+  isBlinking: _isBlinking,
   isLoading = false,
-  styleName, 
-  error, 
-  onRetry 
+  styleName,
+  error,
+  onRetry
 }: EnhancedStyleCardLoadingOverlayProps) => {
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);

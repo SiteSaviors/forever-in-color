@@ -9,7 +9,7 @@ interface UnifiedFlowProgressProps {
 const UnifiedFlowProgress = ({
   currentStage,
   hasImage,
-  analysisComplete,
+  analysisComplete: _analysisComplete,
   cropAccepted,
   orientationSelected
 }: UnifiedFlowProgressProps) => {
@@ -37,7 +37,7 @@ const UnifiedFlowProgress = ({
     active: currentStage === 'orientation'
   }];
   const completedCount = stages.filter(stage => stage.completed).length;
-  const progressPercentage = Math.round(completedCount / stages.length * 100);
+  const _progressPercentage = Math.round(completedCount / stages.length * 100);
 
   // If no image uploaded yet, show minimal upload prompt
   if (!hasImage) {

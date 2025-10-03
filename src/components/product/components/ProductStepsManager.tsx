@@ -57,7 +57,7 @@ const ProductStepsManager = memo(({
   canProceedToStep,
   handleContinueToStep2,
   handleContinueToStep3,
-  handleContinueToStep4
+  handleContinueToStep4: _handleContinueToStep4
 }: ProductStepsManagerProps) => {
 
   const previewError = useMemo(() => {

@@ -32,7 +32,7 @@ export const useStyleCardHooks = (props: UseStyleCardHooksProps) => {
     showContinueButton = true,
     onStyleClick,
     onContinue,
-    shouldBlur = false
+    shouldBlur: _shouldBlur = false
   } = props;
 
   // Use the consolidated style card hook
@@ -96,7 +96,7 @@ export const useStyleCardHooks = (props: UseStyleCardHooksProps) => {
     debounceDelay: 150
   });
 
-  const { isBlinking } = useBlinking(styleCardState.previewUrl, {
+  const { isBlinking: _isBlinking } = useBlinking(styleCardState.previewUrl, {
     isGenerating: styleCardState.isPermanentlyGenerated ? false : (styleCardState.effectiveIsLoading),
     hasPreview: !!styleCardState.previewUrl,
     hasGeneratedOnce: styleCardState.isPermanentlyGenerated

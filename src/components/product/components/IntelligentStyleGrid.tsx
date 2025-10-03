@@ -40,7 +40,7 @@ const IntelligentStyleGrid = memo(({
           setRecommendations(recs);
           // AI recommendations generated successfully
         })
-        .catch(error => {
+        .catch(_error => {
           // Recommendation analysis failed - using fallback
           // Fallback to default recommendations
           const fallbackRecs = generateStyleRecommendations({

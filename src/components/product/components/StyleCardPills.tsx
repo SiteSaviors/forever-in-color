@@ -3,7 +3,7 @@ interface StyleCardPillsProps {
   isHorizontalOrientation?: boolean;
 }
 
-const StyleCardPills = ({ styleId, isHorizontalOrientation = false }: StyleCardPillsProps) => {
+const StyleCardPills = ({ styleId, isHorizontalOrientation: _isHorizontalOrientation = false }: StyleCardPillsProps) => {
   const getStylePills = (styleId: number) => {
     const pillConfigs: {
       [key: number]: {

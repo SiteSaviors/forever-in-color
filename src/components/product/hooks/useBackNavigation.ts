@@ -9,7 +9,7 @@ interface UseBackNavigationProps {
 
 export const useBackNavigation = ({
   currentStep,
-  completedSteps,
+  completedSteps: _completedSteps,
   onStepChange
 }: UseBackNavigationProps) => {
   

@@ -10,7 +10,7 @@ interface UnifiedSocialMomentumWidgetProps {
 }
 
 const UnifiedSocialMomentumWidget = ({
-  currentStep,
+  currentStep: _currentStep,
   uploadedImage,
   showWidget
 }: UnifiedSocialMomentumWidgetProps) => {
@@ -19,7 +19,7 @@ const UnifiedSocialMomentumWidget = ({
 
   const [currentActivity, setCurrentActivity] = useState(0);
   const [showExpanded, setShowExpanded] = useState(false);
-  const [liveUsers, setLiveUsers] = useState(238);
+  const [_liveUsers, setLiveUsers] = useState(238);
 
   // Rotate through activities using static constant
   useEffect(() => {
@@ -57,7 +57,7 @@ const UnifiedSocialMomentumWidget = ({
 
   if (!showWidget || !uploadedImage) return null;
 
-  const activity = SOCIAL_PROOF_ACTIVITY[currentActivity];
+  const _activity = SOCIAL_PROOF_ACTIVITY[currentActivity];
   const momentumScore = DEFAULT_MOMENTUM_SCORE;
 
   const getMomentumLevel = () => {
@@ -83,7 +83,7 @@ const UnifiedSocialMomentumWidget = ({
     };
   };
 
-  const momentum = getMomentumLevel();
+  const _momentum = getMomentumLevel();
 
   const handleToggleExpanded = () => {
     setShowExpanded(!showExpanded);

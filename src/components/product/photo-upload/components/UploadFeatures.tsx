@@ -1,5 +1,4 @@
 
-import { Badge } from "@/components/ui/badge";
 import { Camera, Sparkles, Shield, CheckCircle } from "@/components/ui/icons";
 
 const UploadFeatures = () => {

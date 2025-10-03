@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Crown } from "@/components/ui/icons";
+import { Crown } from "@/components/ui/icons";
 
 interface PremiumMaterialTexturesProps {
   orientation: string;

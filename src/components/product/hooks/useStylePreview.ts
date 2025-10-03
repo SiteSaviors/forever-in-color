@@ -22,7 +22,7 @@ interface UseStylePreviewProps {
 export const useStylePreview = ({
   style,
   croppedImage,
-  isPopular,
+  isPopular: _isPopular,
   preGeneratedPreview,
   selectedOrientation = "square",
   onStyleClick
