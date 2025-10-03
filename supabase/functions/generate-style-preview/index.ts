@@ -318,7 +318,17 @@ serve(async (req) => {
     const normalizedAspectRatio = aspectRatio.toLowerCase();
     const normalizedQuality = quality.toLowerCase();
 
-    const normalizedImageUrl = await normalizeImageInput(imageUrl);
+    // Telemetry: Track input type for monitoring
+    const inputScheme = imageUrl.startsWith('data:') ? 'data-uri' :
+                       imageUrl.startsWith('http') ? 'http-url' : 'unknown';
+    logger.info('Request received', {
+      requestId,
+      inputScheme,
+      inputLength: imageUrl.length,
+      style,
+      aspectRatio: normalizedAspectRatio,
+      quality: normalizedQuality
+    });
 
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
     const replicateApiToken = Deno.env.get('REPLICATE_API_TOKEN');
@@ -423,9 +433,10 @@ serve(async (req) => {
       };
     }
 
+    // Build cache key from RAW imageUrl (before normalization)
     const cacheAllowedForRequest = cacheEnabledGlobally && !cacheBypass;
     let cacheStatus: CacheStatus = cacheBypass ? 'bypass' : 'miss';
-    const imageDigest = await createImageDigest(normalizedImageUrl);
+    const imageDigest = await createImageDigest(imageUrl);
     let cacheKey: string | null = null;
 
     if (cacheAllowedForRequest) {
@@ -438,10 +449,14 @@ serve(async (req) => {
         watermark
       });
 
+      // Check memory cache FIRST
       const cachedFromMemory = memoryCache.get(cacheKey);
       if (cachedFromMemory) {
         cacheStatus = 'hit';
-        logger.info('Cache hit (memory)', { cacheKey });
+        logger.info('Cache hit (memory) - skipping normalization', {
+          cacheKey,
+          inputScheme
+        });
         cacheMetadataService.recordHit(cacheKey).catch((error) => {
           logger.warn('Failed to record cache hit', { error: error?.message ?? 'unknown', cacheKey });
         });
@@ -451,6 +466,7 @@ serve(async (req) => {
         );
       }
 
+      // Check storage cache SECOND
       try {
         const metadataEntry = await cacheMetadataService.get(cacheKey);
         if (metadataEntry && metadataEntry.preview_url && !isExpired(metadataEntry.ttl_expires_at)) {
@@ -459,7 +475,10 @@ serve(async (req) => {
           if (ttlRemaining > 0) {
             memoryCache.set(cacheKey, metadataEntry.preview_url, ttlRemaining);
           }
-          logger.info('Cache hit (storage)', { cacheKey });
+          logger.info('Cache hit (storage) - skipping normalization', {
+            cacheKey,
+            inputScheme
+          });
           cacheMetadataService.recordHit(cacheKey).catch((error) => {
             logger.warn('Failed to record cache hit', { error: error?.message ?? 'unknown', cacheKey });
           });
@@ -474,6 +493,21 @@ serve(async (req) => {
         logger.warn('Cache metadata lookup failed', { error: error?.message ?? 'unknown', cacheKey });
       }
     }
+
+    // CACHE MISS: Now normalize the image (only happens on misses)
+    logger.info('Cache miss, normalizing input', {
+      inputScheme,
+      cacheKey,
+      cacheStatus
+    });
+    const normalizationStart = Date.now();
+    const normalizedImageUrl = await normalizeImageInput(imageUrl);
+    const normalizationDurationMs = Date.now() - normalizationStart;
+    logger.info('Normalization complete', {
+      requestId,
+      normalizationDurationMs,
+      wasAlreadyDataUri: imageUrl.startsWith('data:')
+    });
 
     const persistGeneratedPreview = async (rawOutput: string): Promise<string> => {
       let finalPreviewUrl = rawOutput;

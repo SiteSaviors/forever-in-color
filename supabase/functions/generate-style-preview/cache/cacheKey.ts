@@ -1,6 +1,6 @@
 const textEncoder = new TextEncoder();
 
-export const CACHE_KEY_VERSION = 'v1';
+export const CACHE_KEY_VERSION = 'v2';
 
 export interface CacheKeyParts {
   imageDigest: string;
@@ -51,6 +51,40 @@ export const buildCacheKey = (parts: CacheKeyParts): string => {
     watermarkFlag,
     imageDigest
   ].join(':');
+};
+
+/**
+ * Optional metadata for creating image digests with immutability hints.
+ * Used for mutable storage URLs (e.g., Supabase Storage) to prevent stale cache hits.
+ */
+export interface ImageDigestMetadata {
+  etag?: string;
+  lastModified?: string;
+}
+
+/**
+ * Enhanced version of createImageDigest that includes metadata for mutable URLs.
+ * For future use when supporting Supabase Storage or other mutable URL sources.
+ *
+ * @param imageInput - The image URL or data URI
+ * @param metadata - Optional immutability hints (ETag, Last-Modified)
+ * @returns SHA-256 digest of the input + metadata
+ */
+export const createImageDigestWithMetadata = async (
+  imageInput: string,
+  metadata?: ImageDigestMetadata
+): Promise<string> => {
+  const baseInput = imageInput.trim();
+  const metaSuffix = metadata?.etag
+    ? `|etag:${metadata.etag}`
+    : metadata?.lastModified
+      ? `|modified:${metadata.lastModified}`
+      : '';
+
+  const digestInput = baseInput + metaSuffix;
+  const buffer = textEncoder.encode(digestInput);
+  const digest = await crypto.subtle.digest('SHA-256', buffer);
+  return base64Url(digest);
 };
 
 export const parseCacheKey = (cacheKey: string): CacheKeyParts | null => {
