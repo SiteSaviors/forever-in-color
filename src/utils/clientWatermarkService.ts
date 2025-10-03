@@ -68,14 +68,14 @@ export class ClientWatermarkService {
           resolve(watermarkedImageUrl);
         };
         
-        watermarkImage.onerror = (error) => {
+        watermarkImage.onerror = (_error) => {
           resolve(imageUrl);
         };
-        
+
         watermarkImage.src = this.logoUrl;
       };
-      
-      mainImage.onerror = (error) => {
+
+      mainImage.onerror = (_error) => {
         reject(new Error('Failed to load main image'));
       };
       

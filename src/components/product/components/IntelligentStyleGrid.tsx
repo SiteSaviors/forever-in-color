@@ -1,9 +1,9 @@
 
-import { useState, useEffect } from "react";
-import { 
-  analyzeImageForRecommendations, 
-  generateStyleRecommendations, 
-  StyleRecommendation 
+import { useState, useEffect, memo } from "react";
+import {
+  analyzeImageForRecommendations,
+  generateStyleRecommendations,
+  StyleRecommendation
 } from "../utils/styleRecommendationEngine";
 import EmptyState from "./EmptyState";
 import AIAnalysisStatus from "./AIAnalysisStatus";
@@ -19,13 +19,13 @@ interface IntelligentStyleGridProps {
   onComplete: () => void;
 }
 
-const IntelligentStyleGrid = ({ 
-  croppedImage, 
-  selectedStyle, 
+const IntelligentStyleGrid = memo(({
+  croppedImage,
+  selectedStyle,
   cropAspectRatio,
   selectedOrientation = "square",
-  onStyleSelect, 
-  onComplete 
+  onStyleSelect,
+  onComplete
 }: IntelligentStyleGridProps) => {
   const [recommendations, setRecommendations] = useState<StyleRecommendation[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -40,7 +40,7 @@ const IntelligentStyleGrid = ({
           setRecommendations(recs);
           // AI recommendations generated successfully
         })
-        .catch(error => {
+        .catch(_error => {
           // Recommendation analysis failed - using fallback
           // Fallback to default recommendations
           const fallbackRecs = generateStyleRecommendations({
@@ -93,6 +93,8 @@ const IntelligentStyleGrid = ({
       />
     </div>
   );
-};
+});
+
+IntelligentStyleGrid.displayName = 'IntelligentStyleGrid';
 
 export default IntelligentStyleGrid;

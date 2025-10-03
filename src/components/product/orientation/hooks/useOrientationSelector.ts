@@ -57,7 +57,7 @@ export const useOrientationSelector = ({
     e.stopPropagation();
     onSizeChange(size);
     handleContinueClick();
-  }, [onSizeChange]);
+  }, [onSizeChange, handleContinueClick]);
 
   const handleContinueClick = useCallback(() => {
     if (!selectedOrientation) {

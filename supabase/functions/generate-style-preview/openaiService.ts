@@ -5,7 +5,7 @@ export class OpenAIService {
     this.apiKey = apiKey;
   }
 
-  async generateStyledImage(imageDataUrl: string, stylePrompt: string, size: string, requestId: string): Promise<string | null> {
+  async generateStyledImage(imageDataUrl: string, stylePrompt: string, size: string, _requestId: string): Promise<string | null> {
     try {
       // Create a comprehensive prompt that includes the style transformation
       const fullPrompt = `Transform this image with the following style: ${stylePrompt}. Maintain the same composition, subject positioning, and key visual elements while applying the artistic style transformation.`;
@@ -35,14 +35,14 @@ export class OpenAIService {
         const errorData = await response.json().catch(() => ({}));
         console.error(`🔧 [DIAGNOSTIC] Image generation failed - Status: ${response.status}, Error:`, errorData);
       }
-    } catch (error) {
+    } catch (_error) {
       console.error(`🔧 [DIAGNOSTIC] Image generation exception:`, error);
     }
     return null;
   }
 
   // Keep legacy methods as fallbacks
-  async tryImageVariations(imageBlob: Blob, stylePrompt: string, size: string, requestId: string): Promise<string | null> {
+  async tryImageVariations(imageBlob: Blob, stylePrompt: string, size: string, _requestId: string): Promise<string | null> {
     try {
       const formData = new FormData();
       formData.append('image', imageBlob, 'image.jpg');
@@ -67,13 +67,13 @@ export class OpenAIService {
         const errorData = await response.json().catch(() => ({}));
         console.error(`🔧 [DIAGNOSTIC] Image variations failed - Status: ${response.status}, Error:`, errorData);
       }
-    } catch (error) {
+    } catch (_error) {
       console.error(`🔧 [DIAGNOSTIC] Image variations exception:`, error);
     }
     return null;
   }
 
-  async tryImageEdits(imageBlob: Blob, stylePrompt: string, size: string, requestId: string): Promise<string | null> {
+  async tryImageEdits(imageBlob: Blob, stylePrompt: string, size: string, _requestId: string): Promise<string | null> {
     try {
       const formData = new FormData();
       formData.append('image', imageBlob, 'image.jpg');
@@ -99,7 +99,7 @@ export class OpenAIService {
         const errorData = await response.json().catch(() => ({}));
         console.error(`🔧 [DIAGNOSTIC] Image edits failed - Status: ${response.status}, Error:`, errorData);
       }
-    } catch (error) {
+    } catch (_error) {
       console.error(`🔧 [DIAGNOSTIC] Image edits exception:`, error);
     }
     return null;

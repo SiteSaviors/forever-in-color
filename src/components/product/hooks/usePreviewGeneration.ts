@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { generateStylePreview, fetchPreviewStatus } from "@/utils/stylePreviewApi";
 import { createPreview } from "@/utils/previewOperations";
-import { addWatermarkToImage } from "@/utils/watermarkUtils";
+import { watermarkManager } from "@/utils/watermarkManager";
 import { convertOrientationToAspectRatio } from "../utils/orientationDetection";
 
 export const usePreviewGeneration = (uploadedImage: string | null, selectedOrientation: string) => {
@@ -94,22 +94,22 @@ export const usePreviewGeneration = (uploadedImage: string | null, selectedOrien
 
         if (resolvedPreviewUrl) {
           try {
-            // Apply client-side watermark
-            const watermarkedUrl = await addWatermarkToImage(resolvedPreviewUrl);
-            
+            // Apply client-side watermark using Web Worker
+            const watermarkedUrl = await watermarkManager.addWatermark(resolvedPreviewUrl);
+
             // Update the preview URLs state
             setPreviewUrls(prev => ({
               ...prev,
               [styleId]: watermarkedUrl
             }));
-            
+
             // Clear any previous errors for this style
             setGenerationErrors(prev => {
               const newErrors = {...prev};
               delete newErrors[styleId];
               return newErrors;
             });
-            
+
             setIsGenerating(false);
             return watermarkedUrl;
           } catch (_watermarkError) {
@@ -120,7 +120,7 @@ export const usePreviewGeneration = (uploadedImage: string | null, selectedOrien
               ...prev,
               [styleId]: resolvedPreviewUrl
             }));
-            
+
             setIsGenerating(false);
             return resolvedPreviewUrl;
           }
@@ -146,7 +146,7 @@ export const usePreviewGeneration = (uploadedImage: string | null, selectedOrien
       setIsGenerating(false);
       return null;
     }
-  }, [uploadedImage, selectedOrientation]);
+  }, [uploadedImage, selectedOrientation, pollPreviewStatusUntilReady]);
 
   return {
     previewUrls,

@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { detectOrientationFromImage } from "../utils/orientationDetection";
 import { usePhotoUploadLogic } from "./hooks/usePhotoUploadLogic";
 import UnifiedFlowProgress from "../components/UnifiedFlowProgress";
@@ -13,7 +13,7 @@ interface PhotoUploadContainerProps {
   initialImage?: string | null;
 }
 
-const PhotoUploadContainer = ({ onImageUpload, initialImage }: PhotoUploadContainerProps) => {
+const PhotoUploadContainer = memo(({ onImageUpload, initialImage }: PhotoUploadContainerProps) => {
   const [showCropper, setShowCropper] = useState(false);
   const [showAutoCropPreview, setShowAutoCropPreview] = useState(false);
   const [recommendedOrientation, setRecommendedOrientation] = useState<string>("");
@@ -69,7 +69,7 @@ const PhotoUploadContainer = ({ onImageUpload, initialImage }: PhotoUploadContai
       setCurrentFlowStage('analyzing');
       handleImageAnalysis(initialImage);
     }
-  }, [initialImage]);
+  }, [initialImage, setUploadedImage]);
 
   const handleAcceptAutoCrop = (croppedImageUrl: string) => {
     setCropAccepted(true);
@@ -167,6 +167,8 @@ const PhotoUploadContainer = ({ onImageUpload, initialImage }: PhotoUploadContai
       />
     </div>
   );
-};
+});
+
+PhotoUploadContainer.displayName = 'PhotoUploadContainer';
 
 export default PhotoUploadContainer;

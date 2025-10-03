@@ -14,7 +14,7 @@ const MAX_MESSAGE_LENGTH = 200;
 const WARNING_THRESHOLD = 160;
 
 const CustomMessageCard = ({ message, livingMemoryEnabled, onMessageChange }: CustomMessageCardProps) => {
-  const isValidMessage = (text: string) => {
+  const _isValidMessage = (text: string) => {
     return text.length <= MAX_MESSAGE_LENGTH;
   };
 

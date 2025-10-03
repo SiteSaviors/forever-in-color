@@ -1,4 +1,4 @@
-import { REPLICATE_CONFIG } from './replicate/config.ts';
+import { REPLICATE_CONFIG as _REPLICATE_CONFIG } from './replicate/config.ts';
 import { PromptEnhancer } from './replicate/promptEnhancer.ts';
 import { PollingService } from './replicate/pollingService.ts';
 import { ReplicateApiClient } from './replicate/apiClient.ts';
@@ -116,7 +116,12 @@ export class ReplicateService {
         
         // Handle polling requirement
         if (data.status === "processing" || data.status === "starting") {
-          return await this.pollingService.pollForCompletion(data.id!, data.urls?.get!);
+          const predictionId = data.id;
+          const getUrl = data.urls?.get;
+          if (!predictionId || !getUrl) {
+            throw new Error('Missing prediction ID or get URL for polling');
+          }
+          return await this.pollingService.pollForCompletion(predictionId, getUrl);
         }
 
         throw new Error(`Unexpected status: ${data.status}`);
@@ -132,7 +137,7 @@ export class ReplicateService {
 
       return result;
 
-    } catch (error) {
+    } catch (_error) {
       // Convert to user-friendly error
       const parsedError = EnhancedErrorHandler.parseError(error);
       const userMessage = EnhancedErrorHandler.createUserFriendlyMessage(parsedError);

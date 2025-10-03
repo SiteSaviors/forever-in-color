@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useStylePreview } from './useStylePreview';
 
 interface UseStyleCardProps {
@@ -54,7 +54,7 @@ export const useStyleCard = ({
   });
 
   // Computed values from useStyleCardLogic
-  const isSelected = selectedStyle === style.id;
+  const _isSelected = selectedStyle === style.id;
   const showGeneratedBadge = hasGeneratedPreview && isStyleGenerated;
   const hasError = showError || validationError;
   const imageToShow = previewUrl || croppedImage || style.image;
@@ -74,25 +74,68 @@ export const useStyleCard = ({
   }, [previewUrl, style.name]);
 
   // Handlers from useStyleCardHandlers
-  
-  // Main card click handler
+
+  // Create a ref to hold handleGenerateClick to avoid circular dependency
+  const handleGenerateClickRef = useRef<(() => Promise<void>) | null>(null);
+
+  // Generate click handler with enhanced logging
+  const handleGenerateClick = useCallback(async () => {
+
+    // Generate button clicked - validate and start generation
+
+    // Skip Original Image style
+    if (style.id === 1) {
+      return;
+    }
+
+    if (effectiveIsLoading) {
+      return;
+    }
+
+    if (!croppedImage) {
+      return;
+    }
+
+    // Flag that manual generation was triggered to prevent auto-generation
+    setManualGenerationTriggered(true);
+
+    // Starting generation
+    setShowError(false);
+    setLocalIsLoading(true);
+
+    try {
+      await generatePreview();
+      // Generation completed
+    } catch (_error) {
+      setShowError(true);
+    } finally {
+      setLocalIsLoading(false);
+    }
+  }, [generatePreview, effectiveIsLoading, style.id, croppedImage]);
+
+  // Update ref whenever handleGenerateClick changes
+  useEffect(() => {
+    handleGenerateClickRef.current = handleGenerateClick;
+  }, [handleGenerateClick]);
+
+  // Main card click handler - uses ref to avoid circular dependency
   const handleCardClick = useCallback(() => {
     // StyleCard clicked - handle selection and generation
-    
+
     // Always call onStyleClick to select the style
     onStyleClick(style);
-    
+
     // Auto-generate if no preview and conditions are met, but skip if manual generation was just triggered
     if (!previewUrl && !effectiveIsLoading && !hasError && style.id !== 1 && !manualGenerationTriggered) {
       // Auto-generating preview
-      handleGenerateClick();
+      handleGenerateClickRef.current?.();
     }
-    
+
     // Reset manual generation flag after a brief delay
     if (manualGenerationTriggered) {
       setTimeout(() => setManualGenerationTriggered(false), 100);
     }
-  }, [style, previewUrl, isPermanentlyGenerated, effectiveIsLoading, hasError, manualGenerationTriggered, onStyleClick]);
+  }, [style, previewUrl, effectiveIsLoading, hasError, manualGenerationTriggered, onStyleClick]);
 
   // Continue button handler
   const handleContinueClick = (e: React.MouseEvent) => {
@@ -107,41 +150,6 @@ export const useStyleCard = ({
     // Expanding image for style
     setIsLightboxOpen(true);
   };
-
-  // Generate click handler with enhanced logging
-  const handleGenerateClick = useCallback(async () => {
-    
-    // Generate button clicked - validate and start generation
-    
-    // Skip Original Image style
-    if (style.id === 1) {
-      return;
-    }
-    
-    if (effectiveIsLoading) {
-      return;
-    }
-    
-    if (!croppedImage) {
-      return;
-    }
-    
-    // Flag that manual generation was triggered to prevent auto-generation
-    setManualGenerationTriggered(true);
-    
-    // Starting generation
-    setShowError(false);
-    setLocalIsLoading(true);
-    
-    try {
-      await generatePreview();
-      // Generation completed
-    } catch (_error) {
-      setShowError(true);
-    } finally {
-      setLocalIsLoading(false);
-    }
-  }, [generatePreview, isPermanentlyGenerated, effectiveIsLoading, style.name, style.id, hasError, croppedImage]);
 
   // Retry click handler
   const handleRetryClick = useCallback(async () => {
@@ -170,7 +178,7 @@ export const useStyleCard = ({
     } finally {
       setLocalIsLoading(false);
     }
-  }, [generatePreview, isPermanentlyGenerated, effectiveIsLoading, style.name]);
+  }, [generatePreview, effectiveIsLoading, style.id]);
 
   // Memoize style comparison for better performance
   const isSelectedMemo = useMemo(() => selectedStyle === style.id, [selectedStyle, style.id]);

@@ -72,7 +72,7 @@ const CustomizationSelector = ({
     }
 
     return null;
-  }, [selectedStyle, previewUrls, userArtworkUrl, isGeneratingPreviews]);
+  }, [selectedStyle, previewUrls, userArtworkUrl]);
 
   // State tracking for debugging purposes
   useEffect(() => {

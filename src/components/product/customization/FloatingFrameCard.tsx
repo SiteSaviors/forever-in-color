@@ -37,9 +37,9 @@ const FloatingFrameCard = ({
   color, 
   selectedSize, 
   onEnabledChange, 
-  onColorChange 
+  onColorChange
 }: FloatingFrameCardProps) => {
-  const getFramePreview = (frameColor: string) => {
+  const _getFramePreview = (frameColor: string) => {
     const baseClasses = "rounded-md shadow-md flex items-center justify-center";
     const textClasses = "text-gray-700 font-medium text-xs";
   

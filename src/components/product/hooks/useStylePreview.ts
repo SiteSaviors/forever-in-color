@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { generateStylePreview, fetchPreviewStatus } from '@/utils/stylePreviewApi';
-import { addWatermarkToImage } from '@/utils/watermarkUtils';
+import { watermarkManager } from '@/utils/watermarkManager';
 import { getAspectRatio } from '../orientation/utils';
 import { useAspectRatioValidator } from '../orientation/hooks/useAspectRatioValidator';
 
@@ -22,7 +22,7 @@ interface UseStylePreviewProps {
 export const useStylePreview = ({
   style,
   croppedImage,
-  isPopular,
+  isPopular: _isPopular,
   preGeneratedPreview,
   selectedOrientation = "square",
   onStyleClick
@@ -37,10 +37,10 @@ export const useStylePreview = ({
   // Initialize with pre-generated preview if available
   useEffect(() => {
     if (preGeneratedPreview) {
-      // Apply watermark to pre-generated preview
+      // Apply watermark to pre-generated preview using Web Worker
       const applyWatermark = async () => {
         try {
-          const watermarkedUrl = await addWatermarkToImage(preGeneratedPreview);
+          const watermarkedUrl = await watermarkManager.addWatermark(preGeneratedPreview);
           setPreviewUrl(watermarkedUrl);
           setHasGeneratedPreview(true);
           // Watermark applied to pre-generated preview
@@ -50,7 +50,7 @@ export const useStylePreview = ({
           setHasGeneratedPreview(true);
         }
       };
-      
+
       applyWatermark();
     }
   }, [preGeneratedPreview, style.name]);
@@ -124,18 +124,18 @@ export const useStylePreview = ({
       }
 
       if (rawPreviewUrl) {
-        // Raw preview generated, applying client-side watermark
-        
+        // Raw preview generated, applying client-side watermark using Web Worker
+
         try {
-          // Apply client-side watermarking
-          const watermarkedUrl = await addWatermarkToImage(rawPreviewUrl);
+          // Apply client-side watermarking via Web Worker
+          const watermarkedUrl = await watermarkManager.addWatermark(rawPreviewUrl);
           // Client-side watermark applied successfully
           setPreviewUrl(watermarkedUrl);
         } catch (_watermarkError) {
           // Client-side watermarking failed, using original
           setPreviewUrl(rawPreviewUrl);
         }
-        
+
         setHasGeneratedPreview(true);
       } else {
         // Failed to generate preview - no URL returned
@@ -147,7 +147,7 @@ export const useStylePreview = ({
       setIsLoading(false);
       // Preview generation completed
     }
-  }, [croppedImage, style.id, style.name, preGeneratedPreview, selectedOrientation, autoCorrect, pollPreviewStatusUntilReady]);
+  }, [croppedImage, style.id, style.name, preGeneratedPreview, selectedOrientation, autoCorrect, pollPreviewStatusUntilReady, isLoading]);
 
   const handleClick = useCallback(() => {
     // Style clicked with orientation
@@ -157,7 +157,7 @@ export const useStylePreview = ({
       // Auto-generating preview for style
       generatePreview();
     }
-  }, [style, croppedImage, hasGeneratedPreview, isLoading, onStyleClick, generatePreview, preGeneratedPreview, selectedOrientation]);
+  }, [style, croppedImage, hasGeneratedPreview, isLoading, onStyleClick, generatePreview, preGeneratedPreview]);
 
   return {
     isLoading,

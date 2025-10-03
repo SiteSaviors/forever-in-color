@@ -10,12 +10,12 @@ interface EnhancedStyleCardLoadingOverlayProps {
   onRetry?: () => void;
 }
 
-const EnhancedStyleCardLoadingOverlay = ({ 
-  isBlinking, 
+const EnhancedStyleCardLoadingOverlay = ({
+  isBlinking: _isBlinking,
   isLoading = false,
-  styleName, 
-  error, 
-  onRetry 
+  styleName,
+  error,
+  onRetry
 }: EnhancedStyleCardLoadingOverlayProps) => {
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
@@ -62,7 +62,7 @@ const EnhancedStyleCardLoadingOverlay = ({
       if (interval) clearInterval(interval);
       if (stepInterval) clearInterval(stepInterval);
     };
-  }, [showLoadingState]);
+  }, [showLoadingState, generationSteps.length]);
 
   // Success state animation
   useEffect(() => {

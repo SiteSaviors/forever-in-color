@@ -122,7 +122,7 @@ export class ImageGenerationService {
         // Wait before next poll using configurable interval
         await new Promise(resolve => setTimeout(resolve, pollIntervalMs));
         attempts++;
-      } catch (error) {
+      } catch (_error) {
         attempts++;
         await new Promise(resolve => setTimeout(resolve, pollIntervalMs));
       }

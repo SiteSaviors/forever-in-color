@@ -28,12 +28,12 @@ const StyleCardContainer = memo(({
   onGenerateStyle
 }: StyleCardContainerProps) => {
   const {
-    visualState,
+    visualState: _visualState,
     cssClasses,
     handleMouseEnter,
     handleMouseLeave,
     handleClick,
-    handleGenerateClick
+    handleGenerateClick: _handleGenerateClick
   } = useStyleCardInteractions({
     styleId,
     styleName,

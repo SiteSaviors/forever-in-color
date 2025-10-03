@@ -3,9 +3,7 @@ export class ImageAnalysisService {
   constructor(private apiKey: string) {}
 
   async analyzeImage(imageData: string): Promise<string> {
-    
-    try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${this.apiKey}`,
@@ -46,11 +44,7 @@ export class ImageAnalysisService {
         throw new Error('No description returned from image analysis');
       }
 
-      
-      return description;
 
-    } catch (error) {
-      throw error;
-    }
+    return description;
   }
 }

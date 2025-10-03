@@ -2,7 +2,7 @@
 import { memo, lazy, Suspense, useMemo } from 'react';
 import StepErrorBoundary from './StepErrorBoundary';
 import LoadingState from './LoadingState';
-import { PreviewState } from '../types/productState';
+import type { PreviewState, CustomizationOptions } from '../types/productState';
 
 // Lazy load step components for better code splitting
 const PhotoUploadStep = lazy(() => import('./PhotoUploadStep'));
@@ -16,7 +16,7 @@ interface ProductStepsManagerProps {
   selectedStyle: {id: number, name: string} | null;
   selectedSize: string;
   selectedOrientation: string;
-  customizations: any;
+  customizations: CustomizationOptions;
   uploadedImage: string | null;
   autoGenerationComplete: boolean;
   preview: PreviewState;
@@ -28,7 +28,7 @@ interface ProductStepsManagerProps {
   onPhotoAndStyleComplete: (imageUrl: string, styleId: number, styleName: string) => void;
   onOrientationSelect: (orientation: string) => void;
   onSizeSelect: (size: string) => void;
-  onCustomizationChange: (customizations: any) => void;
+  onCustomizationChange: (customizations: CustomizationOptions) => void;
   canProceedToStep: (step: number) => boolean;
   handleContinueToStep2: () => void;
   handleContinueToStep3: () => void;
@@ -57,7 +57,7 @@ const ProductStepsManager = memo(({
   canProceedToStep,
   handleContinueToStep2,
   handleContinueToStep3,
-  handleContinueToStep4
+  handleContinueToStep4: _handleContinueToStep4
 }: ProductStepsManagerProps) => {
 
   const previewError = useMemo(() => {

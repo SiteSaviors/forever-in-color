@@ -4,6 +4,12 @@ import ProgressiveStyleImage from './ProgressiveStyleImage';
 import StyleCardInfo from './StyleCardInfo';
 import EnhancedStyleCardLoadingOverlay from './EnhancedStyleCardLoadingOverlay';
 
+interface TouchHandlers {
+  onTouchStart?: (e: React.TouchEvent) => void;
+  onTouchEnd?: (e: React.TouchEvent) => void;
+  onTouchCancel?: (e: React.TouchEvent) => void;
+}
+
 interface StyleCardContentProps {
   style: {
     id: number;
@@ -24,7 +30,7 @@ interface StyleCardContentProps {
   effectiveIsLoading: boolean;
   isPermanentlyGenerated: boolean;
   showLockedFeedback: boolean;
-  touchHandlers: any;
+  touchHandlers: TouchHandlers;
   isPressed: boolean;
   onContinueClick: (e: React.MouseEvent) => void;
   onGenerateClick: (e: React.MouseEvent) => void;
@@ -43,12 +49,12 @@ const StyleCardContent = memo(({
   showContinueInCard,
   shouldBlur,
   hasErrorBoolean,
-  errorMessage,
+  errorMessage: _errorMessage,
   effectiveIsLoading,
   isPermanentlyGenerated,
-  showLockedFeedback,
+  showLockedFeedback: _showLockedFeedback,
   touchHandlers,
-  isPressed,
+  isPressed: _isPressed,
   onContinueClick,
   onGenerateClick,
   onRetryClick,

@@ -1,5 +1,7 @@
 /* Phase 2: Standardized Component Interfaces */
 
+import type { CustomizationOptions, Purchase } from '../types/productState';
+
 // Base interface for all step components
 export interface BaseStepProps {
   stepNumber: number;
@@ -19,7 +21,7 @@ export interface InteractionStateProps {
 }
 
 // Standardized data flow props
-export interface DataFlowProps<T = any> {
+export interface DataFlowProps<T> {
   data?: T;
   onChange?: (data: T) => void;
   onComplete?: (data: T) => void;
@@ -154,14 +156,14 @@ export interface CustomizationStepProps extends
   
   // Step-specific props
   selectedSize?: string;
-  customizations?: any;
+  customizations?: CustomizationOptions;
   selectedOrientation?: string;
   selectedStyle?: { id: number; name: string } | null;
   previewUrls?: Record<string, string>;
   userArtworkUrl?: string | null;
-  
+
   // Callbacks
-  onCustomizationChange?: (customizations: any) => void;
+  onCustomizationChange?: (customizations: CustomizationOptions) => void;
   
   // Current step context
   currentStep?: number;
@@ -209,7 +211,7 @@ export interface ReviewOrderStepProps extends
   selectedStyle?: { id: number; name: string } | null;
   selectedSize?: string;
   selectedOrientation?: string;
-  customizations?: any;
+  customizations?: CustomizationOptions;
   
   // Current step context
   currentStep?: number;
@@ -278,11 +280,11 @@ export interface ErrorStateProps {
 }
 
 // Form field standardization
-export interface StandardFieldProps {
+export interface StandardFieldProps<T = string> {
   label: string;
   name: string;
-  value?: any;
-  onChange: (value: any) => void;
+  value?: T;
+  onChange: (value: T) => void;
   onBlur?: () => void;
   onFocus?: () => void;
   
@@ -353,27 +355,27 @@ export interface StandardButtonProps {
 }
 
 // Type guards for runtime type checking
-export const isPhotoUploadStepData = (data: any): data is PhotoUploadStepData => {
-  return data && (
-    data.uploadedImage !== undefined || 
-    data.selectedStyle !== undefined ||
-    data.cropSettings !== undefined
+export const isPhotoUploadStepData = (data: unknown): data is PhotoUploadStepData => {
+  return typeof data === 'object' && data !== null && (
+    'uploadedImage' in data ||
+    'selectedStyle' in data ||
+    'cropSettings' in data
   );
 };
 
-export const isCanvasConfigurationStepData = (data: any): data is CanvasConfigurationStepData => {
-  return data && (
-    data.selectedOrientation !== undefined || 
-    data.selectedSize !== undefined
+export const isCanvasConfigurationStepData = (data: unknown): data is CanvasConfigurationStepData => {
+  return typeof data === 'object' && data !== null && (
+    'selectedOrientation' in data ||
+    'selectedSize' in data
   );
 };
 
-export const isCustomizationStepData = (data: any): data is CustomizationStepData => {
-  return data && data.customizations !== undefined;
+export const isCustomizationStepData = (data: unknown): data is CustomizationStepData => {
+  return typeof data === 'object' && data !== null && 'customizations' in data;
 };
 
-export const isReviewOrderStepData = (data: any): data is ReviewOrderStepData => {
-  return data && data.orderSummary !== undefined;
+export const isReviewOrderStepData = (data: unknown): data is ReviewOrderStepData => {
+  return typeof data === 'object' && data !== null && 'orderSummary' in data;
 };
 
 // Utility types for prop combination

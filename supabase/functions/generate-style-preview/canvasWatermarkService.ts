@@ -31,7 +31,7 @@ export class CanvasWatermarkService {
       
       return imageUrl;
       
-    } catch (error) {
+    } catch (_error) {
       throw error;
     }
   }

@@ -10,7 +10,7 @@ interface UseBlinkingOptions {
 export const useBlinking = (previewUrl: string | null, options: UseBlinkingOptions = {}) => {
   const [hasGeneratedOnce, setHasGeneratedOnce] = useState(false);
 
-  const { isGenerating = false } = options;
+  const { isGenerating: _isGenerating = false } = options;
 
   // Track if we've ever generated a preview - this should persist permanently
   useEffect(() => {
@@ -21,11 +21,11 @@ export const useBlinking = (previewUrl: string | null, options: UseBlinkingOptio
 
   // Memoize the return value to prevent unnecessary re-renders
   const blinkingState = useMemo(() => {
-    return { 
+    return {
       isBlinking: false, // Disabled for performance
       hasGeneratedOnce
     };
-  }, [previewUrl, isGenerating, hasGeneratedOnce]);
+  }, [hasGeneratedOnce]);
 
   return blinkingState;
 };

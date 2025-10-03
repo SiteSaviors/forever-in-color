@@ -72,7 +72,7 @@ export const useStyleCardInteractions = ({
     } else if (needsDeselectTransition) {
       stateMachine.transition('DESELECT', true);
     }
-  }, [canAccess, hasError, isGenerating, isSelected, stateMachine.isDisabled, stateMachine.hasError, stateMachine.isLoading, stateMachine.isSelected, stateMachine.transition]);
+  }, [canAccess, hasError, isGenerating, isSelected, stateMachine]);
 
   // Only sync when dependencies actually change
   useEffect(() => {
@@ -85,14 +85,14 @@ export const useStyleCardInteractions = ({
       // Hover start on style card
       stateMachine.debouncedHoverStart();
     }
-  }, [stateMachine, styleName, styleId]);
+  }, [stateMachine]);
 
   const handleMouseLeave = useCallback(() => {
     if (stateMachine.isInteractive) {
       // Hover end on style card
       stateMachine.hoverEnd();
     }
-  }, [stateMachine, styleName, styleId]);
+  }, [stateMachine]);
 
   const handleClick = useCallback(() => {
     if (!stateMachine.isInteractive || stateMachine.isAnimating) {
@@ -107,7 +107,7 @@ export const useStyleCardInteractions = ({
       onStyleClick();
       stateMachine.transition('SELECT');
     });
-  }, [stateMachine, styleName, styleId, onStyleClick]);
+  }, [stateMachine, onStyleClick]);
 
   const handleGenerateClick = useCallback((e?: React.MouseEvent) => {
     if (e) {
@@ -133,7 +133,7 @@ export const useStyleCardInteractions = ({
     // Direct call without animation queue to prevent conflicts
     stateMachine.transition('START_LOADING', true);
     onGenerateStyle();
-  }, [stateMachine, styleName, styleId, onGenerateStyle]);
+  }, [stateMachine, onGenerateStyle]);
 
   const handleRetryClick = useCallback((e?: React.MouseEvent) => {
     if (e) {
@@ -150,7 +150,7 @@ export const useStyleCardInteractions = ({
     stateMachine.transition('RESET', true);
     stateMachine.transition('START_LOADING', true);
     onGenerateStyle();
-  }, [stateMachine, styleName, styleId, onGenerateStyle]);
+  }, [stateMachine, onGenerateStyle]);
 
   // Computed visual states for styling
   const visualState = useMemo(() => ({

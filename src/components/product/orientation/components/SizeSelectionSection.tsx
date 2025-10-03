@@ -16,7 +16,7 @@ interface SizeSelectionSectionProps {
 }
 
 const SizeSelectionSection = forwardRef<HTMLDivElement, SizeSelectionSectionProps>(
-  ({ selectedOrientation, selectedSize, recommendedSize, currentSizeOption, onSizeSelect, onContinueWithSize }, ref) => {
+  ({ selectedOrientation, selectedSize, recommendedSize: _recommendedSize, currentSizeOption, onSizeSelect, onContinueWithSize }, ref) => {
     return (
       <>
         {/* Smooth transition indicator */}

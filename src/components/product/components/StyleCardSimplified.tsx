@@ -15,7 +15,7 @@ interface StyleCardSimplifiedProps {
 const StyleCardSimplified = memo(({
   children,
   isSelected,
-  styleId,
+  styleId: _styleId,
   styleName,
   shouldBlur = false,
   isGenerating = false,

@@ -8,7 +8,7 @@ interface UseProductStepsProps {
 }
 
 export const useProductSteps = ({
-  currentStep,
+  currentStep: _currentStep,
   completedSteps,
   onCurrentStepChange
 }: UseProductStepsProps) => {

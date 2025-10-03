@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useEffect, memo } from "react";
 import { Card } from "@/components/ui/card";
 import CropperHeader from "./cropper/components/CropperHeader";
 import OrientationSelector from "./cropper/components/OrientationSelector";
@@ -18,7 +18,7 @@ interface PhotoCropperProps {
   onChangePhoto?: () => void;
 }
 
-const PhotoCropper = ({
+const PhotoCropper = memo(({
   imageUrl,
   initialAspectRatio = 1,
   selectedOrientation = "square",
@@ -46,7 +46,7 @@ const PhotoCropper = ({
   // Auto-detect recommended orientation when image loads
   useEffect(() => {
     detectRecommendedOrientation(imageUrl, setRecommendedOrientation);
-  }, [imageUrl]);
+  }, [imageUrl, detectRecommendedOrientation, setRecommendedOrientation]);
 
   const handleCropSave = async () => {
     if (croppedAreaPixels && imageUrl) {
@@ -131,6 +131,8 @@ const PhotoCropper = ({
       </div>
     </div>
   );
-};
+});
+
+PhotoCropper.displayName = 'PhotoCropper';
 
 export default PhotoCropper;

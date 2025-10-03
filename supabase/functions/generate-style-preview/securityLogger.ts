@@ -1,9 +1,9 @@
 
 export async function logSecurityEvent(
-  eventType: string, 
-  message: string, 
-  req: Request, 
-  additionalDetails?: any
+  eventType: string,
+  message: string,
+  req: Request,
+  additionalDetails?: unknown
 ) {
   try {
     const clientIP = req.headers.get('x-forwarded-for') || 
@@ -12,7 +12,7 @@ export async function logSecurityEvent(
     
     const userAgent = req.headers.get('user-agent') || 'unknown';
     
-    const securityEvent = {
+    const _securityEvent = {
       event_type: eventType,
       ip_address: clientIP,
       user_agent: userAgent,
@@ -22,10 +22,10 @@ export async function logSecurityEvent(
     };
 
     
-    
+
     // Could store in database here if needed
     return true;
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 }
