@@ -1,7 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
-import { StylePromptService } from './stylePromptService.ts';
+import { StylePromptService, type StylePromptMetadata } from './stylePromptService.ts';
 import { handleCorsPreflightRequest, createCorsResponse } from './corsUtils.ts';
 import { validateRequest } from './requestValidator.ts';
 import { ReplicateService } from './replicateService.ts';
@@ -318,7 +318,17 @@ serve(async (req) => {
     const normalizedAspectRatio = aspectRatio.toLowerCase();
     const normalizedQuality = quality.toLowerCase();
 
-    const normalizedImageUrl = await normalizeImageInput(imageUrl);
+    // Telemetry: Track input type for monitoring
+    const inputScheme = imageUrl.startsWith('data:') ? 'data-uri' :
+                       imageUrl.startsWith('http') ? 'http-url' : 'unknown';
+    logger.info('Request received', {
+      requestId,
+      inputScheme,
+      inputLength: imageUrl.length,
+      style,
+      aspectRatio: normalizedAspectRatio,
+      quality: normalizedQuality
+    });
 
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
     const replicateApiToken = Deno.env.get('REPLICATE_API_TOKEN');
@@ -340,13 +350,13 @@ serve(async (req) => {
     const cacheMetadataService = new CacheMetadataService(supabase);
     const storageClient = new PreviewStorageClient(supabase, cacheBucket);
 
-    let _promptCacheWasHit = false;
+    // Check in-memory prompt cache FIRST before hitting the database
     let stylePrompt: string;
-    let styleMetadata = await stylePromptService.getStylePromptWithMetadata(style);
+    let styleMetadata: StylePromptMetadata;
 
     const cachedPrompt = getCachedPrompt(style);
     if (cachedPrompt) {
-      const _promptCacheWasHit = true;
+      // Cache hit: use cached prompt and metadata
       stylePrompt = cachedPrompt.prompt;
       styleMetadata = {
         prompt: cachedPrompt.prompt,
@@ -361,26 +371,25 @@ serve(async (req) => {
         ageMs: cachedPrompt.ageMs
       });
     } else {
+      // Cache miss: fetch from database
       const promptFetchStart = Date.now();
-      let fetchedMetadata = styleMetadata;
+      let fetchedMetadata: StylePromptMetadata | null = null;
 
-      if (!fetchedMetadata) {
-        try {
-          fetchedMetadata = await stylePromptService.getStylePromptWithMetadata(style);
-        } catch (_error) {
-          console.error('[prompt-cache]', {
-            action: 'fetch_error',
-            style,
-            requestId,
-            message: error instanceof Error ? error.message : String(error)
-          });
-        }
+      try {
+        fetchedMetadata = await stylePromptService.getStylePromptWithMetadata(style);
+      } catch (_error) {
+        console.error('[prompt-cache]', {
+          action: 'fetch_error',
+          style,
+          requestId,
+          message: error instanceof Error ? error.message : String(error)
+        });
       }
 
       const resolvedMetadata = fetchedMetadata ?? {
         prompt: null,
         styleVersion: '0',
-        styleId: styleMetadata?.styleId ?? stylePromptService.resolveStyleId(style)
+        styleId: stylePromptService.resolveStyleId(style)
       };
 
       const promptFetchDurationMs = Date.now() - promptFetchStart;
@@ -424,9 +433,10 @@ serve(async (req) => {
       };
     }
 
+    // Build cache key from RAW imageUrl (before normalization)
     const cacheAllowedForRequest = cacheEnabledGlobally && !cacheBypass;
     let cacheStatus: CacheStatus = cacheBypass ? 'bypass' : 'miss';
-    const imageDigest = await createImageDigest(normalizedImageUrl);
+    const imageDigest = await createImageDigest(imageUrl);
     let cacheKey: string | null = null;
 
     if (cacheAllowedForRequest) {
@@ -439,10 +449,14 @@ serve(async (req) => {
         watermark
       });
 
+      // Check memory cache FIRST
       const cachedFromMemory = memoryCache.get(cacheKey);
       if (cachedFromMemory) {
         cacheStatus = 'hit';
-        logger.info('Cache hit (memory)', { cacheKey });
+        logger.info('Cache hit (memory) - skipping normalization', {
+          cacheKey,
+          inputScheme
+        });
         cacheMetadataService.recordHit(cacheKey).catch((error) => {
           logger.warn('Failed to record cache hit', { error: error?.message ?? 'unknown', cacheKey });
         });
@@ -452,6 +466,7 @@ serve(async (req) => {
         );
       }
 
+      // Check storage cache SECOND
       try {
         const metadataEntry = await cacheMetadataService.get(cacheKey);
         if (metadataEntry && metadataEntry.preview_url && !isExpired(metadataEntry.ttl_expires_at)) {
@@ -460,7 +475,10 @@ serve(async (req) => {
           if (ttlRemaining > 0) {
             memoryCache.set(cacheKey, metadataEntry.preview_url, ttlRemaining);
           }
-          logger.info('Cache hit (storage)', { cacheKey });
+          logger.info('Cache hit (storage) - skipping normalization', {
+            cacheKey,
+            inputScheme
+          });
           cacheMetadataService.recordHit(cacheKey).catch((error) => {
             logger.warn('Failed to record cache hit', { error: error?.message ?? 'unknown', cacheKey });
           });
@@ -475,6 +493,21 @@ serve(async (req) => {
         logger.warn('Cache metadata lookup failed', { error: error?.message ?? 'unknown', cacheKey });
       }
     }
+
+    // CACHE MISS: Now normalize the image (only happens on misses)
+    logger.info('Cache miss, normalizing input', {
+      inputScheme,
+      cacheKey,
+      cacheStatus
+    });
+    const normalizationStart = Date.now();
+    const normalizedImageUrl = await normalizeImageInput(imageUrl);
+    const normalizationDurationMs = Date.now() - normalizationStart;
+    logger.info('Normalization complete', {
+      requestId,
+      normalizationDurationMs,
+      wasAlreadyDataUri: imageUrl.startsWith('data:')
+    });
 
     const persistGeneratedPreview = async (rawOutput: string): Promise<string> => {
       let finalPreviewUrl = rawOutput;
