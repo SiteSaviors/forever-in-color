@@ -1,9 +1,9 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { generateStylePreview, fetchPreviewStatus } from '@/utils/stylePreviewApi';
 import { watermarkManager } from '@/utils/watermarkManager';
 import { getAspectRatio } from '../orientation/utils';
 import { useAspectRatioValidator } from '../orientation/hooks/useAspectRatioValidator';
+import { generateAndWatermarkPreview } from '@/utils/previewGeneration';
 
 interface UseStylePreviewProps {
   style: {
@@ -57,97 +57,38 @@ export const useStylePreview = ({
 
   const isStyleGenerated = hasGeneratedPreview && !!(preGeneratedPreview || previewUrl);
 
-  const pollPreviewStatusUntilReady = useCallback(async (requestId: string) => {
-    const maxAttempts = 30;
-    let attempt = 0;
-
-    while (attempt < maxAttempts) {
-      const status = await fetchPreviewStatus(requestId);
-      const normalized = status.status?.toLowerCase();
-
-      if ((normalized === 'succeeded' || normalized === 'complete') && status.preview_url) {
-        return status.preview_url as string;
-      }
-
-      if (normalized === 'failed' || normalized === 'error') {
-        throw new Error(status.error || 'Preview generation failed');
-      }
-
-      attempt += 1;
-      const wait = Math.min(4000, 500 + attempt * 250);
-      await new Promise((resolve) => setTimeout(resolve, wait));
-    }
-
-    throw new Error('Preview generation timed out');
-  }, []);
-
   const generatePreview = useCallback(async () => {
     // Re-entrancy guard: prevent concurrent generations
     if (isLoading || !croppedImage || style.id === 1 || preGeneratedPreview) {
-      // Cannot generate preview - already loading or invalid conditions
       return;
     }
 
-    // useStylePreview with selected orientation
-    
-    // ENHANCED: Use validator with auto-correction
+    // Use validator with auto-correction
     const correctedOrientation = autoCorrect(selectedOrientation);
     const aspectRatio = getAspectRatio(correctedOrientation);
-    
-    // Starting preview generation with corrected orientation
-    
-    // SIMPLIFIED: Skip frontend validation, let backend handle it
-    const finalAspectRatio = aspectRatio;
-    
+
     // Clear any previous validation errors
     setValidationError(null);
     setIsLoading(true);
-    
+
     try {
-      // Generating preview with validated aspect ratio
-      
-      const tempPhotoId = `temp_${Date.now()}_${style.id}`;
-      
-      // About to call generateStylePreview
-      
-      // ENHANCED: Generate with validated and potentially corrected aspect ratio
-      const generationResult = await generateStylePreview(croppedImage, style.name, tempPhotoId, finalAspectRatio, {
-        watermark: false // Disable server-side watermarking
-      });
+      // Use shared generation function
+      const { previewUrl: generatedUrl } = await generateAndWatermarkPreview(
+        croppedImage,
+        style.name,
+        style.id,
+        aspectRatio,
+        { watermark: false, persistToDb: false }
+      );
 
-      let rawPreviewUrl: string | null = null;
-
-      if (generationResult.status === 'complete') {
-        rawPreviewUrl = generationResult.previewUrl;
-      } else if (generationResult.status === 'processing') {
-        rawPreviewUrl = await pollPreviewStatusUntilReady(generationResult.requestId);
-      }
-
-      if (rawPreviewUrl) {
-        // Raw preview generated, applying client-side watermark using Web Worker
-
-        try {
-          // Apply client-side watermarking via Web Worker
-          const watermarkedUrl = await watermarkManager.addWatermark(rawPreviewUrl);
-          // Client-side watermark applied successfully
-          setPreviewUrl(watermarkedUrl);
-        } catch (_watermarkError) {
-          // Client-side watermarking failed, using original
-          setPreviewUrl(rawPreviewUrl);
-        }
-
-        setHasGeneratedPreview(true);
-      } else {
-        // Failed to generate preview - no URL returned
-      }
+      setPreviewUrl(generatedUrl);
+      setHasGeneratedPreview(true);
     } catch (error) {
-      // Error generating preview
       setValidationError(`Generation failed: ${error.message}`);
     } finally {
       setIsLoading(false);
-      // Preview generation completed
     }
-  }, [croppedImage, style.id, style.name, preGeneratedPreview, selectedOrientation, autoCorrect, pollPreviewStatusUntilReady, isLoading]);
+  }, [croppedImage, style.id, style.name, preGeneratedPreview, selectedOrientation, autoCorrect, isLoading]);
 
   const handleClick = useCallback(() => {
     // Style clicked with orientation
