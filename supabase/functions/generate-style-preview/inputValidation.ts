@@ -53,7 +53,7 @@ export function extractImageData(imageUrl: string): string | null {
       return imageUrl;
     }
     return null;
-  } catch (error) {
+  } catch (_error) {
     return null;
   }
 }

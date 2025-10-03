@@ -1,7 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { createPreview } from "./previewOperations";
-import { getAspectRatio, validateOrientationFlow, isValidAspectRatio } from "@/components/product/orientation/utils";
 
 export type PreviewGenerationResult =
   | { status: 'complete'; previewUrl: string; isAuthenticated: boolean }
@@ -89,7 +88,7 @@ export const generateStylePreview = async (
         if (isAuthenticated) {
           try {
             await createPreview(photoId, style, data.preview_url);
-          } catch (storeError) {
+          } catch (_storeError) {
             // continue even if storing fails
           }
         }

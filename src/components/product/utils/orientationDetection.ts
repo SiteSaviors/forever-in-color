@@ -19,7 +19,7 @@ export const detectOrientationFromImage = (imageUrl: string): Promise<Orientatio
       }
     };
     
-    img.onerror = (error) => {
+    img.onerror = (_error) => {
       reject(new Error('Failed to load image for orientation detection'));
     };
     

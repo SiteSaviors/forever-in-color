@@ -6,7 +6,7 @@ import { watermarkManager } from './watermarkManager';
  */
 export const addWatermarkToImage = async (
   imageUrl: string,
-  logoUrl: string = "/lovable-uploads/df3291f2-07fa-4780-a6d2-0d024f3dec89.png"
+  _logoUrl: string = "/lovable-uploads/df3291f2-07fa-4780-a6d2-0d024f3dec89.png"
 ): Promise<string> => {
   try {
     // Use Web Worker watermarking service

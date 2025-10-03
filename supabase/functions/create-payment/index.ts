@@ -14,7 +14,7 @@ serve(async (req) => {
   }
 
   try {
-    const { amount, currency = "usd", customerEmail = "guest@example.com", items } = await req.json();
+    const { amount: _amount, currency = "usd", customerEmail = "guest@example.com", items } = await req.json();
 
     // Initialize Stripe
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
@@ -54,7 +54,7 @@ serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
-  } catch (error) {
+  } catch (_error) {
     console.error('Payment creation error:', error);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

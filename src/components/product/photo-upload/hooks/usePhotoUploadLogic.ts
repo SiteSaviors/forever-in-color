@@ -1,7 +1,6 @@
 
 import { useState, useRef } from "react";
 import { validateImageFile } from "@/utils/fileValidation";
-import { detectOrientationFromImage } from "../../utils/orientationDetection";
 
 interface UsePhotoUploadLogicProps {
   onImageUpload: (imageUrl: string, originalImageUrl?: string, orientation?: string) => void;
@@ -11,7 +10,7 @@ interface UsePhotoUploadLogicProps {
 }
 
 export const usePhotoUploadLogic = ({
-  onImageUpload,
+  onImageUpload: _onImageUpload,
   initialImage,
   onImageAnalysis,
   onFlowStageChange

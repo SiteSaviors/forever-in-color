@@ -79,7 +79,7 @@ async function normalizeImageInput(image: string): Promise<string> {
     const buffer = await response.arrayBuffer();
     const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
     return `data:${contentType};base64,${base64}`;
-  } catch (error) {
+  } catch (_error) {
     console.error('Failed to normalize image input:', error);
     return image;
   }
@@ -121,7 +121,7 @@ async function handleWebhookRequest(req: Request, url: URL): Promise<Response> {
     if (Array.isArray(output)) {
       output = output[0];
     }
-    const errorMsg = body?.error as string | undefined;
+    const _errorMsg = body?.error as string | undefined;
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -234,7 +234,7 @@ async function handleWebhookRequest(req: Request, url: URL): Promise<Response> {
     });
 
     return createCorsResponse(JSON.stringify({ ok: true, cacheStatus }), 200);
-  } catch (error) {
+  } catch (_error) {
     console.error('Webhook handling failed', error);
     return createCorsResponse(JSON.stringify({ ok: false, error: 'webhook_error' }), 500);
   }
@@ -367,7 +367,7 @@ serve(async (req) => {
       if (!fetchedMetadata) {
         try {
           fetchedMetadata = await stylePromptService.getStylePromptWithMetadata(style);
-        } catch (error) {
+        } catch (_error) {
           console.error('[prompt-cache]', {
             action: 'fetch_error',
             style,
@@ -471,7 +471,7 @@ serve(async (req) => {
         } else if (metadataEntry && metadataEntry.preview_url) {
           logger.info('Cache entry expired, regenerating', { cacheKey });
         }
-      } catch (error) {
+      } catch (_error) {
         logger.warn('Cache metadata lookup failed', { error: error?.message ?? 'unknown', cacheKey });
       }
     }
@@ -502,7 +502,7 @@ serve(async (req) => {
 
           memoryCache.set(cacheKey, uploadResult.publicUrl, ttlMs);
           cacheStatus = 'hit';
-        } catch (error) {
+        } catch (_error) {
           logger.warn('Failed to cache preview output', { error: error instanceof Error ? error.message : String(error), cacheKey, requestId });
         }
       } else if (!cacheAllowedForRequest) {
@@ -665,7 +665,7 @@ serve(async (req) => {
       JSON.stringify(createErrorResponse('generation_failed', result.error || 'AI service is temporarily unavailable. Please try again.', requestId)),
       503
     );
-  } catch (error) {
+  } catch (_error) {
     logger.error('Unhandled error in preview generation', { error: error?.message ?? 'unknown', requestId });
     return createCorsResponse(
       JSON.stringify(createErrorResponse('internal_error', 'Internal server error. Please try again.', requestId)),

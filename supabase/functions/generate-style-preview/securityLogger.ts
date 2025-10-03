@@ -12,7 +12,7 @@ export async function logSecurityEvent(
     
     const userAgent = req.headers.get('user-agent') || 'unknown';
     
-    const securityEvent = {
+    const _securityEvent = {
       event_type: eventType,
       ip_address: clientIP,
       user_agent: userAgent,

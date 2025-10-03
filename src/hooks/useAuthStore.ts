@@ -88,7 +88,7 @@ export const useAuthStore = () => {
     // Check for existing session
     const getSession = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        const { data: { session }, error: _error } = await supabase.auth.getSession();
         if (mounted) {
           setAuthState({
             session,
@@ -152,7 +152,7 @@ export const useAuthStore = () => {
 
   const refreshSession = async () => {
     try {
-      const { data: { session }, error } = await supabase.auth.refreshSession();
+      const { data: { session: _session }, error } = await supabase.auth.refreshSession();
       if (error) {
         return false;
       }

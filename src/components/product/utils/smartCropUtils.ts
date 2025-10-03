@@ -270,7 +270,7 @@ export const generateSmartCrop = async (imageUrl: string, orientation: string): 
     const img = new Image();
     img.crossOrigin = 'anonymous';
     
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, _reject) => {
       img.onload = async () => {
         try {
           // Step 4: Expand the detected region to match target aspect ratio

@@ -1,4 +1,4 @@
-import { REPLICATE_CONFIG } from './replicate/config.ts';
+import { REPLICATE_CONFIG as _REPLICATE_CONFIG } from './replicate/config.ts';
 import { PromptEnhancer } from './replicate/promptEnhancer.ts';
 import { PollingService } from './replicate/pollingService.ts';
 import { ReplicateApiClient } from './replicate/apiClient.ts';
@@ -132,7 +132,7 @@ export class ReplicateService {
 
       return result;
 
-    } catch (error) {
+    } catch (_error) {
       // Convert to user-friendly error
       const parsedError = EnhancedErrorHandler.parseError(error);
       const userMessage = EnhancedErrorHandler.createUserFriendlyMessage(parsedError);

@@ -3,9 +3,9 @@ export class WatermarkService {
   private static watermarkUrl = "/lovable-uploads/781d4b89-6ecc-4101-aeaf-c5743efce1c1.png";
 
   static async createWatermarkedImage(
-    imageBuffer: ArrayBuffer, 
-    sessionId: string, 
-    isPreview: boolean = true
+    imageBuffer: ArrayBuffer,
+    sessionId: string,
+    _isPreview: boolean = true
   ): Promise<ArrayBuffer> {
     // Import imagescript for Deno edge runtime
     const { Image } = await import('https://deno.land/x/imagescript@1.2.15/mod.ts');
@@ -60,7 +60,7 @@ export class WatermarkService {
       const outputBuffer = await originalImage.encode();
       return outputBuffer.buffer;
 
-    } catch (error) {
+    } catch (_error) {
       // Return original image if watermarking fails
       return imageBuffer;
     }
