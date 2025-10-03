@@ -24,8 +24,9 @@ class ErrorBoundary extends Component<Props, State> {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+  componentDidCatch(_error: Error, _errorInfo: React.ErrorInfo) {
     // Error caught by boundary - logged for debugging in dev environment
+    // In production, this would send to error tracking service
   }
 
   handleRetry = () => {
