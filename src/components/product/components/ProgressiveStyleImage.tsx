@@ -15,6 +15,10 @@ interface ProgressiveStyleImageProps {
   priority?: boolean;
   showExpandButton?: boolean;
   onExpand?: (e: React.MouseEvent) => void;
+  onClick?: (e: React.MouseEvent) => void;
+  onTouchStart?: (e: React.TouchEvent) => void;
+  onTouchEnd?: (e: React.TouchEvent) => void;
+  onTouchCancel?: (e: React.TouchEvent) => void;
 }
 
 const ProgressiveStyleImage = ({
@@ -27,7 +31,11 @@ const ProgressiveStyleImage = ({
   onError,
   priority = false,
   showExpandButton = false,
-  onExpand
+  onExpand,
+  onClick,
+  onTouchStart,
+  onTouchEnd,
+  onTouchCancel
 }: ProgressiveStyleImageProps) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
@@ -63,11 +71,15 @@ const ProgressiveStyleImage = ({
   };
 
   return (
-    <div 
-      ref={elementRef} 
+    <div
+      ref={elementRef}
       className="relative overflow-hidden group"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={onClick}
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
+      onTouchCancel={onTouchCancel}
     >
       <AspectRatio ratio={aspectRatio}>
         {/* Placeholder/blur background */}

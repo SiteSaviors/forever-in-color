@@ -74,41 +74,8 @@ export const useStyleCard = ({
   }, [previewUrl, style.name]);
 
   // Handlers from useStyleCardHandlers
-  
-  // Main card click handler
-  const handleCardClick = useCallback(() => {
-    // StyleCard clicked - handle selection and generation
-    
-    // Always call onStyleClick to select the style
-    onStyleClick(style);
-    
-    // Auto-generate if no preview and conditions are met, but skip if manual generation was just triggered
-    if (!previewUrl && !effectiveIsLoading && !hasError && style.id !== 1 && !manualGenerationTriggered) {
-      // Auto-generating preview
-      handleGenerateClick();
-    }
-    
-    // Reset manual generation flag after a brief delay
-    if (manualGenerationTriggered) {
-      setTimeout(() => setManualGenerationTriggered(false), 100);
-    }
-  }, [style, previewUrl, effectiveIsLoading, hasError, manualGenerationTriggered, onStyleClick, handleGenerateClick]);
 
-  // Continue button handler
-  const handleContinueClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    // Continue clicked for style
-    onContinue();
-  };
-
-  // Image expand handler
-  const handleImageExpand = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    // Expanding image for style
-    setIsLightboxOpen(true);
-  };
-
-  // Generate click handler with enhanced logging
+  // Generate click handler with enhanced logging (must be declared before handleCardClick uses it)
   const handleGenerateClick = useCallback(async () => {
     
     // Generate button clicked - validate and start generation
@@ -142,6 +109,39 @@ export const useStyleCard = ({
       setLocalIsLoading(false);
     }
   }, [generatePreview, effectiveIsLoading, style.id, croppedImage]);
+
+  // Main card click handler (must be after handleGenerateClick)
+  const handleCardClick = useCallback(() => {
+    // StyleCard clicked - handle selection and generation
+
+    // Always call onStyleClick to select the style
+    onStyleClick(style);
+
+    // Auto-generate if no preview and conditions are met, but skip if manual generation was just triggered
+    if (!previewUrl && !effectiveIsLoading && !hasError && style.id !== 1 && !manualGenerationTriggered) {
+      // Auto-generating preview
+      handleGenerateClick();
+    }
+
+    // Reset manual generation flag after a brief delay
+    if (manualGenerationTriggered) {
+      setTimeout(() => setManualGenerationTriggered(false), 100);
+    }
+  }, [style, previewUrl, effectiveIsLoading, hasError, manualGenerationTriggered, onStyleClick, handleGenerateClick]);
+
+  // Continue button handler
+  const handleContinueClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Continue clicked for style
+    onContinue();
+  };
+
+  // Image expand handler
+  const handleImageExpand = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Expanding image for style
+    setIsLightboxOpen(true);
+  };
 
   // Retry click handler
   const handleRetryClick = useCallback(async () => {

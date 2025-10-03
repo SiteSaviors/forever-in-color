@@ -1,7 +1,7 @@
 
 import { useState, useCallback } from "react";
 import { getAspectRatioFromOrientation } from "../data/orientationOptions";
-import type { Area } from 'react-easy-crop/types';
+import type { Area } from 'react-easy-crop';
 
 interface UseCropStateProps {
   selectedOrientation: string;

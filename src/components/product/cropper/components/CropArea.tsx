@@ -1,6 +1,6 @@
 
 import { lazy, Suspense } from 'react';
-import type { Area } from 'react-easy-crop/types';
+import type { Area } from 'react-easy-crop';
 
 // Lazy load the heavy react-easy-crop library
 const Cropper = lazy(() => import('react-easy-crop'));

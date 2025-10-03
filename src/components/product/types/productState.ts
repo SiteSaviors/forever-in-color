@@ -14,6 +14,14 @@ export interface Purchase {
   id: string;
   url: string;
   created_at?: string;
+  resolution_tier: string;
+  download_count: number;
+  tokens_spent: number;
+  style_id?: number;
+  style_name?: string;
+  original_image_url?: string;
+  clean_image_url?: string;
+  last_downloaded_at?: string | null;
 }
 
 export interface ProductState {
