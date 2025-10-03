@@ -159,7 +159,7 @@ class CascadeErrorBoundary extends Component<Props, State> {
     // Report to analytics service
     try {
       // This would integrate with your analytics service
-      const analyticsData = {
+      const _analyticsData = {
         event: 'error_boundary_triggered',
         properties: {
           step_number: enhancedError.context.stepNumber,
@@ -173,7 +173,9 @@ class CascadeErrorBoundary extends Component<Props, State> {
       };
 
       // Send to analytics (replace with your service)
+      // console.log('Analytics:', _analyticsData);
     } catch (_analyticsError) {
+      // Silent fail for analytics
     }
   }
 

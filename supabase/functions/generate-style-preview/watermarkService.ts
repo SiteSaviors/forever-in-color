@@ -35,24 +35,24 @@ export class WatermarkService {
             // Composite logo with transparency
             originalImage.composite(resizedLogo, logoLeft, logoTop);
           }
-        } catch (logoError) {
+        } catch (_logoError) {
+          // Logo loading failed, continue without logo
         }
 
         // 2. Create "FOREVER IN COLOR" text overlay
         // Since imagescript doesn't have built-in text rendering, we'll create a simple overlay
         // For now, we'll focus on the logo and session ID
-        
+
         // 3. Add session ID text in bottom corner (simplified approach)
         if (sessionId) {
           const sessionText = sessionId.slice(0, 8);
           const timestamp = new Date().toISOString().slice(0, 10);
-          const watermarkText = `${sessionText} • ${timestamp}`;
-          
+          const _watermarkText = `${sessionText} • ${timestamp}`;
+
           // Create a simple text overlay using a filled rectangle as placeholder
           // In a real implementation, you'd want to use a proper text rendering solution
           // For now, we'll just add the logo which is the main visual watermark
-          
-          
+          // Future: Implement text rendering with _watermarkText
         }
       }
 
