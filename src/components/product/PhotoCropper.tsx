@@ -46,7 +46,7 @@ const PhotoCropper = memo(({
   // Auto-detect recommended orientation when image loads
   useEffect(() => {
     detectRecommendedOrientation(imageUrl, setRecommendedOrientation);
-  }, [imageUrl]);
+  }, [imageUrl, detectRecommendedOrientation, setRecommendedOrientation]);
 
   const handleCropSave = async () => {
     if (croppedAreaPixels && imageUrl) {

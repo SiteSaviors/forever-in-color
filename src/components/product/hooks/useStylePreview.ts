@@ -147,7 +147,7 @@ export const useStylePreview = ({
       setIsLoading(false);
       // Preview generation completed
     }
-  }, [croppedImage, style.id, style.name, preGeneratedPreview, selectedOrientation, autoCorrect, pollPreviewStatusUntilReady]);
+  }, [croppedImage, style.id, style.name, preGeneratedPreview, selectedOrientation, autoCorrect, pollPreviewStatusUntilReady, isLoading]);
 
   const handleClick = useCallback(() => {
     // Style clicked with orientation
@@ -157,7 +157,7 @@ export const useStylePreview = ({
       // Auto-generating preview for style
       generatePreview();
     }
-  }, [style, croppedImage, hasGeneratedPreview, isLoading, onStyleClick, generatePreview, preGeneratedPreview, selectedOrientation]);
+  }, [style, croppedImage, hasGeneratedPreview, isLoading, onStyleClick, generatePreview, preGeneratedPreview]);
 
   return {
     isLoading,

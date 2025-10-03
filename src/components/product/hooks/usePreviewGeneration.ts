@@ -146,7 +146,7 @@ export const usePreviewGeneration = (uploadedImage: string | null, selectedOrien
       setIsGenerating(false);
       return null;
     }
-  }, [uploadedImage, selectedOrientation]);
+  }, [uploadedImage, selectedOrientation, pollPreviewStatusUntilReady]);
 
   return {
     previewUrls,

@@ -92,7 +92,7 @@ export const useStyleCard = ({
     if (manualGenerationTriggered) {
       setTimeout(() => setManualGenerationTriggered(false), 100);
     }
-  }, [style, previewUrl, isPermanentlyGenerated, effectiveIsLoading, hasError, manualGenerationTriggered, onStyleClick]);
+  }, [style, previewUrl, effectiveIsLoading, hasError, manualGenerationTriggered, onStyleClick, handleGenerateClick]);
 
   // Continue button handler
   const handleContinueClick = (e: React.MouseEvent) => {
@@ -141,7 +141,7 @@ export const useStyleCard = ({
     } finally {
       setLocalIsLoading(false);
     }
-  }, [generatePreview, isPermanentlyGenerated, effectiveIsLoading, style.name, style.id, hasError, croppedImage]);
+  }, [generatePreview, effectiveIsLoading, style.id, croppedImage]);
 
   // Retry click handler
   const handleRetryClick = useCallback(async () => {
@@ -170,7 +170,7 @@ export const useStyleCard = ({
     } finally {
       setLocalIsLoading(false);
     }
-  }, [generatePreview, isPermanentlyGenerated, effectiveIsLoading, style.name]);
+  }, [generatePreview, effectiveIsLoading, style.id]);
 
   // Memoize style comparison for better performance
   const isSelectedMemo = useMemo(() => selectedStyle === style.id, [selectedStyle, style.id]);

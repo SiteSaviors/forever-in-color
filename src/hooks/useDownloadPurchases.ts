@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/hooks/useAuthStore';
 import { useToast } from '@/hooks/use-toast';
@@ -23,7 +23,7 @@ export const useDownloadPurchases = () => {
   const { user } = useAuthStore();
   const { toast } = useToast();
 
-  const fetchPurchases = async () => {
+  const fetchPurchases = useCallback(async () => {
     if (!user) {
       setPurchases([]);
       setIsLoading(false);
@@ -51,7 +51,7 @@ export const useDownloadPurchases = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user, toast]);
 
   const getPurchaseForStyleAndImage = (styleId: number, imageUrl: string) => {
     return purchases.find(purchase => 
@@ -111,7 +111,7 @@ export const useDownloadPurchases = () => {
 
   useEffect(() => {
     fetchPurchases();
-  }, [user]);
+  }, [user, fetchPurchases]);
 
   return {
     purchases,

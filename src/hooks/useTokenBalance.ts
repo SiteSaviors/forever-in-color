@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/hooks/useAuthStore';
 import { useToast } from '@/hooks/use-toast';
@@ -10,7 +10,7 @@ export const useTokenBalance = () => {
   const { user } = useAuthStore();
   const { toast } = useToast();
 
-  const fetchBalance = async () => {
+  const fetchBalance = useCallback(async () => {
     if (!user) {
       setBalance(0);
       setIsLoading(false);
@@ -39,7 +39,7 @@ export const useTokenBalance = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user]);
 
   const refreshBalance = () => {
     fetchBalance();
@@ -79,7 +79,7 @@ export const useTokenBalance = () => {
 
   useEffect(() => {
     fetchBalance();
-  }, [user]);
+  }, [user, fetchBalance]);
 
   return {
     balance,
