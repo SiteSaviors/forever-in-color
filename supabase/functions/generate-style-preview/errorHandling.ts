@@ -17,11 +17,11 @@ export interface ApiError {
   status: number;
   message: string;
   retryAfter?: number;
-  details?: any;
+  details?: unknown;
 }
 
 export class EnhancedErrorHandler {
-  static parseError(error: any, response?: Response): ApiError {
+  static parseError(error: unknown, response?: Response): ApiError {
 
     // Handle network/fetch errors
     if (!response && error?.name === 'TypeError') {

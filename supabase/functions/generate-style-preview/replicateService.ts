@@ -116,7 +116,12 @@ export class ReplicateService {
         
         // Handle polling requirement
         if (data.status === "processing" || data.status === "starting") {
-          return await this.pollingService.pollForCompletion(data.id!, data.urls?.get!);
+          const predictionId = data.id;
+          const getUrl = data.urls?.get;
+          if (!predictionId || !getUrl) {
+            throw new Error('Missing prediction ID or get URL for polling');
+          }
+          return await this.pollingService.pollForCompletion(predictionId, getUrl);
         }
 
         throw new Error(`Unexpected status: ${data.status}`);
