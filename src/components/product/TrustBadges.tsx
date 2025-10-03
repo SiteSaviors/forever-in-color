@@ -1,5 +1,5 @@
 
-import { Shield, Truck, Award, Clock, Star, CheckCircle } from "@/components/ui/icons";
+import { Shield, Truck, Award, Star, CheckCircle } from "@/components/ui/icons";
 
 const TrustBadges = () => {
   return (

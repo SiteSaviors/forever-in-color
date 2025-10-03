@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Play, Heart, Share2, Star, TrendingUp } from "@/components/ui/icons";
+import { Play, Share2, Star, TrendingUp } from "@/components/ui/icons";
 import VideoTestimonialModal from "./VideoTestimonialModal";
 import LiveActivityFeed from "./LiveActivityFeed";
 

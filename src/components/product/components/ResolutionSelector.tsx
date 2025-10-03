@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { Check, Zap } from '@/components/ui/icons';
-import { Button } from '@/components/ui/button';
 
 interface ResolutionOption {
   id: string;

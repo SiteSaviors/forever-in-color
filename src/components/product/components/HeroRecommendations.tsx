@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Crown, Zap, Image } from "@/components/ui/icons";
+import { Zap, Image } from "@/components/ui/icons";
 import { Badge } from "@/components/ui/badge";
 import StyleCard from "../StyleCard";
 import { artStyles } from "@/data/artStyles";

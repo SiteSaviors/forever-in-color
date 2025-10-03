@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Zap, Download } from "@/components/ui/icons";
+import { Zap, Download } from "@/components/ui/icons";
 interface StyleCardBadgesProps {
   isPopular: boolean;
   showGeneratedBadge: boolean;
