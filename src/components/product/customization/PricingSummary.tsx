@@ -20,7 +20,7 @@ interface PricingSummaryProps {
 
 const PricingSummary = ({ selectedSize, customizations }: PricingSummaryProps) => {
   const calculateTotalPrice = () => {
-    let basePrice = 149; // Base canvas price
+    const basePrice = 149; // Base canvas price
     let total = basePrice;
     
     if (customizations.floatingFrame.enabled) total += 79;

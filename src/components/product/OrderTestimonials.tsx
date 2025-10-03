@@ -1,5 +1,5 @@
 
-import { Star, Quote } from "@/components/ui/icons";
+import { Star } from "@/components/ui/icons";
 import { Card, CardContent } from "@/components/ui/card";
 
 const OrderTestimonials = () => {

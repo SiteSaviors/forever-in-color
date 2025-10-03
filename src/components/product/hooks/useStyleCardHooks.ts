@@ -1,4 +1,3 @@
-import { useState, useMemo } from 'react';
 import { useBlinking } from './useBlinking';
 import { useStyleCard } from './useStyleCard';
 import { useTouchOptimizedInteractions } from './useTouchOptimizedInteractions';

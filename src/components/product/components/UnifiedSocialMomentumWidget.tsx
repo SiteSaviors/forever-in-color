@@ -1,12 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { SOCIAL_PROOF_ACTIVITY, COMPLETION_RATE, DEFAULT_MOMENTUM_SCORE } from "../progress/useStepOneExperience";
+import { SOCIAL_PROOF_ACTIVITY, DEFAULT_MOMENTUM_SCORE } from "../progress/useStepOneExperience";
 import { StepOneExperienceContext } from "../progress/StepOneExperienceContext";
-import WidgetHeader from "./unified-momentum/WidgetHeader";
-import ActivityDisplay from "./unified-momentum/ActivityDisplay";
-import MomentumIndicator from "./unified-momentum/MomentumIndicator";
-import LiveStats from "./unified-momentum/LiveStats";
-import ExpandedContent from "./unified-momentum/ExpandedContent";
 
 interface UnifiedSocialMomentumWidgetProps {
   currentStep: number;

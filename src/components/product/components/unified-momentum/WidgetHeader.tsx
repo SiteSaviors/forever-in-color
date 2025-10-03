@@ -1,5 +1,4 @@
 
-import { Badge } from "@/components/ui/badge";
 import { Zap } from "@/components/ui/icons";
 
 interface WidgetHeaderProps {

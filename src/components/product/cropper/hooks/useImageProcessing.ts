@@ -1,6 +1,4 @@
 
-import { useState } from "react";
-
 export const useImageProcessing = () => {
   const createImage = (url: string): Promise<HTMLImageElement> => 
     new Promise((resolve, reject) => {
