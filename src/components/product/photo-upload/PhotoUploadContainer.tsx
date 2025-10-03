@@ -69,7 +69,7 @@ const PhotoUploadContainer = memo(({ onImageUpload, initialImage }: PhotoUploadC
       setCurrentFlowStage('analyzing');
       handleImageAnalysis(initialImage);
     }
-  }, [initialImage]);
+  }, [initialImage, setUploadedImage]);
 
   const handleAcceptAutoCrop = (croppedImageUrl: string) => {
     setCropAccepted(true);

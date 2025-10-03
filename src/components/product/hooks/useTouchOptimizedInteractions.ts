@@ -103,7 +103,7 @@ export const useTouchOptimizedInteractions = (options: TouchInteractionOptions =
       
       lastTapTime.current = now;
     }
-  }, [onTap, onDoubleTap, onLongPress, longPressDuration, doubleTapDelay]);
+  }, [onTap, onDoubleTap, longPressDuration, doubleTapDelay]);
 
   const handleTouchCancel = useCallback(() => {
     setIsPressed(false);

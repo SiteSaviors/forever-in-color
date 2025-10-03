@@ -62,7 +62,7 @@ const EnhancedStyleCardLoadingOverlay = ({
       if (interval) clearInterval(interval);
       if (stepInterval) clearInterval(stepInterval);
     };
-  }, [showLoadingState]);
+  }, [showLoadingState, generationSteps.length]);
 
   // Success state animation
   useEffect(() => {

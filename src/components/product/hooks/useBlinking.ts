@@ -21,11 +21,11 @@ export const useBlinking = (previewUrl: string | null, options: UseBlinkingOptio
 
   // Memoize the return value to prevent unnecessary re-renders
   const blinkingState = useMemo(() => {
-    return { 
+    return {
       isBlinking: false, // Disabled for performance
       hasGeneratedOnce
     };
-  }, [previewUrl, isGenerating, hasGeneratedOnce]);
+  }, [hasGeneratedOnce]);
 
   return blinkingState;
 };
