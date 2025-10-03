@@ -46,7 +46,7 @@ export const useDownloadPurchases = () => {
       } else {
         setPurchases(data || []);
       }
-    } catch (error) {
+    } catch (_error) {
       setPurchases([]);
     } finally {
       setIsLoading(false);
@@ -99,10 +99,10 @@ export const useDownloadPurchases = () => {
       });
 
       return true;
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to re-download. Please try again.",
+        description: _error instanceof Error ? _error.message : "Failed to re-download. Please try again.",
         variant: "destructive",
       });
       return false;

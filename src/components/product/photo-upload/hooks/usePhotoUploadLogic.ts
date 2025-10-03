@@ -66,7 +66,7 @@ export const usePhotoUploadLogic = ({
         }, 800);
       }, 2000);
 
-    } catch (error) {
+    } catch (_error) {
       setIsUploading(false);
       setUploadProgress(0);
       setProcessingStage("");

@@ -139,7 +139,7 @@ export const validateFileSignature = async (file: File): Promise<FileValidationR
     }
 
     return { isValid: true };
-  } catch (error) {
+  } catch (_error) {
     return {
       isValid: false,
       error: 'Unable to validate file signature. File may be corrupted.'
@@ -201,7 +201,7 @@ export const scanForMaliciousContent = async (file: File): Promise<FileValidatio
       isValid: true,
       warnings: warnings.length > 0 ? warnings : undefined
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       isValid: false,
       error: 'Unable to scan file content for security issues.'

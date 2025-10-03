@@ -49,7 +49,7 @@ export const useAuthStore = () => {
               user: refreshedSession.user
             }));
           }
-        } catch (error) {
+        } catch (_error) {
           // Session refresh failed silently
         }
       }
@@ -101,7 +101,7 @@ export const useAuthStore = () => {
             sessionCheckInterval = setInterval(checkSessionExpiry, SESSION_CHECK_INTERVAL);
           }
         }
-      } catch (error) {
+      } catch (_error) {
         if (mounted) {
           setAuthState(prev => ({ ...prev, isLoading: false }));
         }
@@ -143,9 +143,9 @@ export const useAuthStore = () => {
         const sessionDuration = Date.now() - sessionStartTime;
         logSessionTimeout(authState.user.id, sessionDuration);
       }
-      
+
       await supabase.auth.signOut();
-    } catch (error) {
+    } catch (_error) {
       // Sign out failed silently
     }
   };
@@ -158,7 +158,7 @@ export const useAuthStore = () => {
       }
       setSessionTimeoutWarning(false);
       return true;
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   };

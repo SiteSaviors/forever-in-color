@@ -52,7 +52,7 @@ export const useStripePayment = ({ customerEmail }: UseStripePaymentProps = {}) 
       } else {
         throw new Error('No checkout URL received');
       }
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Payment Error",
         description: "Failed to process payment. Please try again.",
@@ -86,7 +86,7 @@ export const useStripePayment = ({ customerEmail }: UseStripePaymentProps = {}) 
       } else {
         throw new Error('No checkout URL received');
       }
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Purchase Error",
         description: "Failed to process token purchase. Please try again.",

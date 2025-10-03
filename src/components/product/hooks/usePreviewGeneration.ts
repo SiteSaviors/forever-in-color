@@ -112,9 +112,9 @@ export const usePreviewGeneration = (uploadedImage: string | null, selectedOrien
             
             setIsGenerating(false);
             return watermarkedUrl;
-          } catch (watermarkError) {
+          } catch (_watermarkError) {
             // Watermark failed, use original
-            
+
             // Update with unwatermarked URL as fallback
             setPreviewUrls(prev => ({
               ...prev,
@@ -125,23 +125,23 @@ export const usePreviewGeneration = (uploadedImage: string | null, selectedOrien
             return resolvedPreviewUrl;
           }
         }
-      } catch (error) {
+      } catch (_error) {
         // Error generating preview
-        
+
         // Store the error message
         setGenerationErrors(prev => ({
           ...prev,
-          [styleId]: error.message || 'Failed to generate preview'
+          [styleId]: _error.message || 'Failed to generate preview'
         }));
-        
+
         setIsGenerating(false);
         return null;
       }
-    } catch (error) {
+    } catch (_error) {
       // Error in generation process
       setGenerationErrors(prev => ({
         ...prev,
-        [styleId]: error.message || 'Failed to generate preview'
+        [styleId]: _error.message || 'Failed to generate preview'
       }));
       setIsGenerating(false);
       return null;

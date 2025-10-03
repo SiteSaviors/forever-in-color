@@ -12,9 +12,10 @@ export const addWatermarkToImage = async (
     if (watermarkedImage === imageUrl) {
       // Watermark may not have been applied
     }
-    
+
+
     return watermarkedImage;
-  } catch (error) {
+  } catch (_error) {
     return imageUrl;
   }
 };

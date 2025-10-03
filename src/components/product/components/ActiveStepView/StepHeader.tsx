@@ -33,7 +33,7 @@ const StepHeader = React.memo(({
       triggerHapticFeedback();
         onStepClick();
       }
-    } catch (error) {
+    } catch (_error) {
       // Error in step click handler - silent fail
     }
   }, [canAccess, onStepClick]);

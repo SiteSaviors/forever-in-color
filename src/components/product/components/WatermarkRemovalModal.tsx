@@ -85,10 +85,10 @@ const WatermarkRemovalModal: React.FC<WatermarkRemovalModalProps> = ({
       // Call the original callback for any additional handling
       await onRemoveWatermark(selectedResolution, selectedTokens);
 
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to remove watermark. Please try again.",
+        description: _error instanceof Error ? _error.message : "Failed to remove watermark. Please try again.",
         variant: "destructive",
       });
     } finally {
