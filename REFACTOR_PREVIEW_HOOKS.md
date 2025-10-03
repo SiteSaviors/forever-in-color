@@ -314,7 +314,7 @@ export const generateAndWatermarkPreview = async (
 
 ---
 
-### Step 4: Refactor usePreviewGeneration (Medium Risk) - READY TO START
+### ✅ Step 4: Refactor usePreviewGeneration (COMPLETE)
 
 **Goal:** Replace inline logic with shared utilities
 
@@ -385,23 +385,30 @@ export const generateAndWatermarkPreview = async (
    - Return interface (same 7 fields)
 
 **Verification:**
-- [ ] ESLint passes
-- [ ] TypeScript compiles
-- [ ] Build succeeds
-- [ ] Return type matches original (7 fields)
-- [ ] No new dependencies added beyond shared utils
+- [x] ESLint passes
+- [x] TypeScript compiles
+- [x] Build succeeds
+- [x] Return type matches original (7 fields)
+- [x] No new dependencies added beyond shared utils
+
+**Changes made:**
+- Removed internal `pollPreviewStatusUntilReady` (23 lines deleted)
+- Removed unused imports: `generateStylePreview`, `fetchPreviewStatus`, `createPreview`, `watermarkManager`
+- Replaced inline generation logic with `generateAndWatermarkPreview`
+- Reduced from 161 lines to 81 lines (**-50% code reduction**)
+- Kept all unique features: batch URL tracking, per-style errors, autoGenerationComplete
 
 **Testing checklist:**
-- [ ] ProductFlow bulk generation works
-- [ ] Multiple styles can generate in sequence
-- [ ] Error tracking per style works
-- [ ] DB persistence works for authenticated users
-- [ ] Watermarking works
-- [ ] Loading states work across multiple styles
+- [ ] ProductFlow bulk generation works (E2E test needed)
+- [ ] Multiple styles can generate in sequence (E2E test needed)
+- [ ] Error tracking per style works (E2E test needed)
+- [ ] DB persistence works for authenticated users (E2E test needed)
+- [ ] Watermarking works (E2E test needed)
+- [ ] Loading states work across multiple styles (E2E test needed)
 
 ---
 
-### Step 5: Verification & Cleanup
+### Step 5: Verification & Cleanup - READY TO START
 
 **Goal:** Ensure everything works end-to-end
 
