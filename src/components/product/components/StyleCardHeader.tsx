@@ -1,5 +1,6 @@
 
 import StyleCardBadges from './StyleCardBadges';
+import type { Purchase } from '../types/productState';
 
 interface StyleCardHeaderProps {
   style: {
@@ -9,7 +10,7 @@ interface StyleCardHeaderProps {
   };
   isPopular: boolean;
   showGeneratedBadge: boolean;
-  existingPurchase: any;
+  existingPurchase: Purchase | null;
   isHorizontalOrientation?: boolean;
 }
 

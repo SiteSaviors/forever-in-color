@@ -10,6 +10,12 @@ export interface CustomizationOptions {
   aiUpscale: boolean;
 }
 
+export interface Purchase {
+  id: string;
+  url: string;
+  created_at?: string;
+}
+
 export interface ProductState {
   currentStep: number;
   completedSteps: number[];

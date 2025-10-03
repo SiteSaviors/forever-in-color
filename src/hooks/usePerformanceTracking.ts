@@ -126,7 +126,7 @@ export const usePerformanceTracking = (options: UsePerformanceTrackingOptions = 
   /**
    * Track custom metric
    */
-  const trackMetric = useCallback((name: string, value: number, metadata?: Record<string, any>) => {
+  const trackMetric = useCallback((name: string, value: number, metadata?: Record<string, unknown>) => {
     performanceMonitor.trackCustomMetric(name, value, metadata);
   }, []);
 

@@ -3,12 +3,13 @@ import React, { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Upload, RotateCcw, Crop } from "@/components/ui/icons";
 import { validateImageFile } from "@/utils/fileValidation";
+import type { Area } from 'react-easy-crop/types';
 
 interface CropperActionsProps {
   onChangePhoto?: (file: File) => void;
   onAutoCenterCrop: () => void;
   onCropSave: () => void;
-  croppedAreaPixels: any;
+  croppedAreaPixels: Area | null;
 }
 
 const CropperActions = ({

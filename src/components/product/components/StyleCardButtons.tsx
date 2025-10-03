@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Sparkles, ArrowRight, Zap, RefreshCw, CheckCircle, Download } from "@/components/ui/icons";
 import { useState } from "react";
 import WatermarkRemovalModal from "./WatermarkRemovalModal";
+import type { Purchase } from '../types/productState';
 
 interface StyleCardButtonsProps {
   style: {
@@ -17,7 +18,7 @@ interface StyleCardButtonsProps {
   onGenerateClick: (e: React.MouseEvent) => void;
   onRetryClick: (e: React.MouseEvent) => void;
   imageUrl?: string;
-  existingPurchase: any;
+  existingPurchase: Purchase | null;
   onRedownload: () => Promise<void>;
 }
 

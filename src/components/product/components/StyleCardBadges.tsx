@@ -1,9 +1,11 @@
 import { Badge } from "@/components/ui/badge";
 import { Zap, Download } from "@/components/ui/icons";
+import type { Purchase } from '../types/productState';
+
 interface StyleCardBadgesProps {
   isPopular: boolean;
   showGeneratedBadge: boolean;
-  existingPurchase: any;
+  existingPurchase: Purchase | null;
 }
 const StyleCardBadges = ({
   isPopular,

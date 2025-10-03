@@ -6,15 +6,17 @@ import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Mic, Music, Clock, AudioWaveform } from "@/components/ui/icons";
 
+interface PremiumVideoOptionValues {
+  voiceMatching: boolean;
+  backgroundAudio: string;
+  videoLength: number;
+  voiceEnhancement: boolean;
+}
+
 interface PremiumVideoOptionsProps {
   livingMemoryEnabled: boolean;
-  options: {
-    voiceMatching: boolean;
-    backgroundAudio: string;
-    videoLength: number;
-    voiceEnhancement: boolean;
-  };
-  onOptionsChange: (options: any) => void;
+  options: PremiumVideoOptionValues;
+  onOptionsChange: (options: PremiumVideoOptionValues) => void;
 }
 
 const PremiumVideoOptions = ({ 
@@ -24,7 +26,7 @@ const PremiumVideoOptions = ({
 }: PremiumVideoOptionsProps) => {
   if (!livingMemoryEnabled) return null;
 
-  const updateOption = (key: string, value: any) => {
+  const updateOption = (key: keyof PremiumVideoOptionValues, value: string | number | boolean) => {
     onOptionsChange({ ...options, [key]: value });
   };
 

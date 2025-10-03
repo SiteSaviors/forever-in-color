@@ -18,7 +18,7 @@ export interface PerformanceMetric {
 export interface CustomMetric {
   name: string;
   duration: number;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 type MetricCallback = (metric: PerformanceMetric) => void;
