@@ -1,7 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
-import { StylePromptService } from './stylePromptService.ts';
+import { StylePromptService, type StylePromptMetadata } from './stylePromptService.ts';
 import { handleCorsPreflightRequest, createCorsResponse } from './corsUtils.ts';
 import { validateRequest } from './requestValidator.ts';
 import { ReplicateService } from './replicateService.ts';
@@ -340,13 +340,13 @@ serve(async (req) => {
     const cacheMetadataService = new CacheMetadataService(supabase);
     const storageClient = new PreviewStorageClient(supabase, cacheBucket);
 
-    let _promptCacheWasHit = false;
+    // Check in-memory prompt cache FIRST before hitting the database
     let stylePrompt: string;
-    let styleMetadata = await stylePromptService.getStylePromptWithMetadata(style);
+    let styleMetadata: StylePromptMetadata;
 
     const cachedPrompt = getCachedPrompt(style);
     if (cachedPrompt) {
-      const _promptCacheWasHit = true;
+      // Cache hit: use cached prompt and metadata
       stylePrompt = cachedPrompt.prompt;
       styleMetadata = {
         prompt: cachedPrompt.prompt,
@@ -361,26 +361,25 @@ serve(async (req) => {
         ageMs: cachedPrompt.ageMs
       });
     } else {
+      // Cache miss: fetch from database
       const promptFetchStart = Date.now();
-      let fetchedMetadata = styleMetadata;
+      let fetchedMetadata: StylePromptMetadata | null = null;
 
-      if (!fetchedMetadata) {
-        try {
-          fetchedMetadata = await stylePromptService.getStylePromptWithMetadata(style);
-        } catch (_error) {
-          console.error('[prompt-cache]', {
-            action: 'fetch_error',
-            style,
-            requestId,
-            message: error instanceof Error ? error.message : String(error)
-          });
-        }
+      try {
+        fetchedMetadata = await stylePromptService.getStylePromptWithMetadata(style);
+      } catch (_error) {
+        console.error('[prompt-cache]', {
+          action: 'fetch_error',
+          style,
+          requestId,
+          message: error instanceof Error ? error.message : String(error)
+        });
       }
 
       const resolvedMetadata = fetchedMetadata ?? {
         prompt: null,
         styleVersion: '0',
-        styleId: styleMetadata?.styleId ?? stylePromptService.resolveStyleId(style)
+        styleId: stylePromptService.resolveStyleId(style)
       };
 
       const promptFetchDurationMs = Date.now() - promptFetchStart;
