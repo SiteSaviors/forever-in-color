@@ -54,7 +54,7 @@ Consolidate duplicated code between `useStylePreview.ts` and `usePreviewGenerati
 
 ---
 
-### Step 1: Extract Polling Logic (Zero Risk)
+### ✅ Step 1: Extract Polling Logic (COMPLETE)
 
 **Goal:** Create shared polling utility that both hooks can use
 
@@ -114,16 +114,16 @@ export const pollPreviewStatusUntilReady = async (
 ```
 
 **Verification:**
-- [ ] File created at correct path
-- [ ] ESLint passes (no errors)
-- [ ] TypeScript compiles
-- [ ] Export is available from `@/utils/previewPolling`
+- [x] File created at correct path
+- [x] ESLint passes (no errors)
+- [x] TypeScript compiles
+- [x] Export is available from `@/utils/previewPolling`
 
 **No consumer changes at this step** - just creating the utility
 
 ---
 
-### Step 2: Extract Generation Logic (Low Risk)
+### ✅ Step 2: Extract Generation Logic (COMPLETE)
 
 **Goal:** Create shared generation + watermarking pipeline
 
@@ -225,17 +225,17 @@ export const generateAndWatermarkPreview = async (
 ```
 
 **Verification:**
-- [ ] File created at correct path
-- [ ] ESLint passes (no errors)
-- [ ] TypeScript compiles
-- [ ] Export is available from `@/utils/previewGeneration`
-- [ ] Imports resolve correctly
+- [x] File created at correct path
+- [x] ESLint passes (no errors)
+- [x] TypeScript compiles
+- [x] Export is available from `@/utils/previewGeneration`
+- [x] Imports resolve correctly
 
 **No consumer changes at this step** - just creating the utility
 
 ---
 
-### Step 3: Refactor useStylePreview (Medium Risk)
+### Step 3: Refactor useStylePreview (Medium Risk) - READY TO START
 
 **Goal:** Replace inline logic with shared utilities
 
