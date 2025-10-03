@@ -8,7 +8,7 @@ export interface GenerationRequest {
   cacheBypass?: boolean;
 }
 
-export function validateRequest(body: any): { isValid: boolean; error?: string; data?: GenerationRequest } {
+export function validateRequest(body: unknown): { isValid: boolean; error?: string; data?: GenerationRequest } {
   const {
     imageUrl,
     style,

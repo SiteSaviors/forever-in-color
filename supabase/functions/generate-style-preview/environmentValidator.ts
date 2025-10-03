@@ -21,6 +21,7 @@ export async function validateEnvironment(req: Request, _requestId: string): Pro
     try {
       await logSecurityEvent('api_key_missing', 'OpenAI API key not configured or empty', req);
     } catch (_logError) {
+      // Silently fail security logging to not block request
     }
     
     return {
@@ -48,6 +49,7 @@ export async function validateEnvironment(req: Request, _requestId: string): Pro
     try {
       await logSecurityEvent('api_key_missing', 'Replicate API token not configured or empty', req);
     } catch (_logError) {
+      // Silently fail security logging to not block request
     }
     
     return {

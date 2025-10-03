@@ -340,13 +340,13 @@ serve(async (req) => {
     const cacheMetadataService = new CacheMetadataService(supabase);
     const storageClient = new PreviewStorageClient(supabase, cacheBucket);
 
-    let promptCacheWasHit = false;
+    let _promptCacheWasHit = false;
     let stylePrompt: string;
     let styleMetadata = await stylePromptService.getStylePromptWithMetadata(style);
 
     const cachedPrompt = getCachedPrompt(style);
     if (cachedPrompt) {
-      promptCacheWasHit = true;
+      const _promptCacheWasHit = true;
       stylePrompt = cachedPrompt.prompt;
       styleMetadata = {
         prompt: cachedPrompt.prompt,

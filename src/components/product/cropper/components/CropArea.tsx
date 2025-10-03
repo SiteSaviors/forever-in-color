@@ -1,5 +1,6 @@
 
 import { lazy, Suspense } from 'react';
+import type { Area } from 'react-easy-crop/types';
 
 // Lazy load the heavy react-easy-crop library
 const Cropper = lazy(() => import('react-easy-crop'));
@@ -11,7 +12,7 @@ interface CropAreaProps {
   cropAspect: number;
   onCropChange: (crop: { x: number; y: number }) => void;
   onZoomChange: (zoom: number) => void;
-  onCropComplete: (croppedArea: any, croppedAreaPixels: any) => void;
+  onCropComplete: (croppedArea: Area, croppedAreaPixels: Area) => void;
 }
 
 const CropArea = ({

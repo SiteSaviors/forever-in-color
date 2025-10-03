@@ -10,7 +10,7 @@ interface UseBlinkingOptions {
 export const useBlinking = (previewUrl: string | null, options: UseBlinkingOptions = {}) => {
   const [hasGeneratedOnce, setHasGeneratedOnce] = useState(false);
 
-  const { isGenerating = false } = options;
+  const { isGenerating: _isGenerating = false } = options;
 
   // Track if we've ever generated a preview - this should persist permanently
   useEffect(() => {
