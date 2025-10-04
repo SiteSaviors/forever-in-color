@@ -1,6 +1,6 @@
-e# Founder’s Workflow (Visual, No-Terminal Guide)
+# Founder’s Workflow (Visual, No-Terminal Guide)
 
-This is your simple, repeatable process to manage Wondertone inside VS Code using buttons and panels (no complex commands).
+This is your simple, repeatable process to manage Wondertone inside VS Code using buttons and panels (no complex commands). For daily guardrails and acceptance criteria, keep `agents.md` pinned alongside this playbook.
 
 ---
 
@@ -101,7 +101,7 @@ This is your simple, repeatable process to manage Wondertone inside VS Code usin
 ## Keeping this guide handy
 - Open this file → right-click the tab → Pin.
 - Optional: Add a link from README.md to this file.
-- Keep this as your first tab daily.
+- Keep this as your first tab daily alongside `agents.md`.
 
 ---
 

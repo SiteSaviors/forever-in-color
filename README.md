@@ -1,35 +1,49 @@
 # Wondertone - AI-Generated Canvas Artwork
 
-Wondertone is a premium e-commerce service that transforms personal photos into stunning, AI-generated canvas artwork. This project is the complete web application for the Wondertone service, built with a focus on performance, user experience, and long-term maintainability.
+Wondertone is a premium e-commerce experience that transforms personal photos into AI-generated canvas artwork. The application is designed around fast performance, refined UX, and long-term maintainability.
 
 ## Core Features
 
-* **AI Art Generation:** Users can upload their personal photos and choose from a variety of unique AI-powered art styles.
-* **Product Customization:** A multi-step, user-friendly interface for selecting canvas size, orientation, and other add-ons.
-* **Augmented Reality (AR) "Living Memory":** An optional feature that links a video to the physical canvas via a QR code, bringing the artwork to life.
-* **E-commerce Integration:** Secure payment processing and order management powered by Stripe.
-
----
+- **AI Art Generation** – Upload a photo and explore curated AI art styles.
+- **Four-Step Configurator** – Guided flow for style selection, canvas sizing, customization, and checkout.
+- **Augmented Reality "Living Memory"** – Optional video moments linked to the canvas via QR code.
+- **Secure Payments** – Stripe-powered checkout plus token purchases for watermark-free downloads.
 
 ## Technology Stack
 
-This project is built with a modern, high-performance technology stack:
+- **Frontend:** React, TypeScript, Vite, Tailwind CSS
+- **UI Components:** shadcn/ui + Radix UI
+- **State & Data:** Custom hooks with React Query, Supabase SDK
+- **Backend / Edge:** Supabase (Postgres, Auth, Storage, Edge Functions)
+- **AI Providers:** Replicate + OpenAI
+- **Payments:** Stripe
 
-* **Frontend:** React, TypeScript, Vite, Tailwind CSS
-* **UI Components:** shadcn/ui & Radix UI for accessible and beautiful components.
-* **Backend & Database:** Supabase (PostgreSQL, Auth, Storage, Edge Functions)
-* **Payments:** Stripe
-* **AI APIs:** Replicate & OpenAI
+## Local Development
 
----
+1. **Install dependencies**
+   ```sh
+   npm install
+   ```
+2. **Configure environment**
+   - Copy project secrets (ask the founders) into a `.env` file. At minimum the frontend expects `VITE_SUPABASE_URL` for preview polling; other keys are provided through Supabase edge functions.
+3. **Run the dev server**
+   ```sh
+   npm run dev
+   ```
+   - Vite serves the app on `http://localhost:8080/`.
+4. **Run quality checks before committing**
+   ```sh
+   npm run lint
+   npm run build
+   npm run build:analyze   # optional treemap, opens dist/stats.html
+   npm run deps:check
+   ```
+   These match the default checklist enforced in `agents.md` and the founder workflow.
 
-## Local Development Setup
+## VS Code Workflow
 
-To run this project on your local machine, please follow these simple steps.
+Wondertone uses a VS Code-first process—create a branch, review diffs in-editor, and run NPM scripts via the sidebar. See `FOUNDER_WORKFLOW.md` for the button-by-button guide and `agents.md` for daily guardrails.
 
-### **1. Install Dependencies**
+## Supabase & Edge Functions
 
-Open a terminal in the project root and run the following command to install all the necessary software packages:
-
-```sh
-npm install
+Edge logic (preview generation, payments, watermark removal) lives under `supabase/functions/`. The frontend calls these functions rather than hitting AI providers directly, so keep those endpoints available during development. For more architectural detail, check `.github/copilot-instructions.md` and `agents.md`.
