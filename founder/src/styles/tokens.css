@@ -1,0 +1,30 @@
+:root {
+  --brand-indigo: 231 89% 62%;
+  --brand-purple: 267 86% 65%;
+  --brand-pink: 316 92% 72%;
+  --brand-emerald: 157 68% 56%;
+  --brand-slate-950: 222 47% 5%;
+
+  --gradient-hero: linear-gradient(135deg, hsl(var(--brand-indigo)) 0%, hsl(var(--brand-purple)) 40%, hsl(var(--brand-pink)) 100%);
+  --gradient-callout: linear-gradient(135deg, rgba(99, 102, 241, 0.8), rgba(168, 85, 247, 0.8));
+  --gradient-card: linear-gradient(135deg, rgba(15, 23, 42, 0.8), rgba(30, 64, 175, 0.5));
+
+  --shadow-xl: 0 30px 60px rgba(15, 23, 42, 0.45);
+  --shadow-inner: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --glass-bg: rgba(15, 23, 42, 0.55);
+  --glass-border: rgba(255, 255, 255, 0.12);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .glow-ring {
+    position: relative;
+  }
+  .glow-ring::after {
+    content: '';
+    position: absolute;
+    inset: -40%;
+    background: radial-gradient(circle, rgba(168, 85, 247, 0.25), transparent 60%);
+    filter: blur(50px);
+    z-index: -1;
+  }
+}

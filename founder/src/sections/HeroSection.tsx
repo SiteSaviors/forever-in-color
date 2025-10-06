@@ -1,17 +1,18 @@
 import { Sparkles, Play, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import Section from '@/components/layout/Section';
+import Badge from '@/components/ui/Badge';
 
 const HeroSection = () => {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500">
+    <section className="relative overflow-hidden bg-gradient-hero">
       <div className="absolute inset-0 opacity-30 bg-[url('https://www.transparenttextures.com/patterns/nice-snow.png')]" />
-      <div className="relative max-w-6xl mx-auto px-6 py-20 lg:py-28">
+      <Section className="py-24 lg:py-28 relative">
         <div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-12 items-center">
           <div className="space-y-8 text-white">
-            <div className="inline-flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-[0.4em] bg-white/15 rounded-full">
-              <Sparkles className="w-4 h-4" />
-              Instant Preview Engine
-            </div>
+            <Badge variant="glass" className="text-xs tracking-[0.4em]">
+              <Sparkles className="w-4 h-4" /> Instant Preview Engine
+            </Badge>
             <h1 className="text-4xl md:text-6xl font-semibold leading-tight drop-shadow-lg">
               Bring memories to life with museum-grade AI art and Living Canvas AR.
             </h1>
@@ -20,31 +21,45 @@ const HeroSection = () => {
               and checkout with physical canvas, instant digital, and AR experiences in minutes.
             </p>
             <div className="flex flex-wrap gap-4">
-              <Link to="/create" className="inline-flex items-center gap-2 rounded-full bg-white text-slate-900 font-semibold px-6 py-3 shadow-lg shadow-indigo-500/40 transition hover:-translate-y-1">
+              <Link to="/create" className="btn-primary">
                 Start Creating
                 <ArrowRight className="w-4 h-4" />
               </Link>
-              <Link to="/create" state={{ preselectedStyle: 'watercolor-dreams' }} className="inline-flex items-center gap-2 rounded-full border border-white/40 px-6 py-3 text-white/80 backing hover:bg-white/15">
+              <Link to="/create" state={{ preselectedStyle: 'watercolor-dreams' }} className="btn-ghost">
                 Browse Styles
                 <Play className="w-4 h-4" />
               </Link>
             </div>
+            <div className="flex flex-wrap gap-6 text-sm text-white/75">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse" />
+                10,000+ canvases delivered
+              </div>
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-emerald-300" />
+                4.9★ average delight score
+              </div>
+              <div className="flex items-center gap-2">
+                <Play className="w-4 h-4 text-emerald-300" />
+                Living Canvas AR included
+              </div>
+            </div>
           </div>
-          <div className="relative">
+          <div className="relative glow-ring">
             <div className="absolute -inset-6 bg-white/20 blur-3xl" />
-            <div className="relative aspect-square rounded-3xl overflow-hidden shadow-2xl border border-white/20">
+            <div className="relative aspect-square rounded-founder overflow-hidden shadow-2xl border border-white/20">
               <img
                 src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1000&q=80"
                 alt="Wondertone preview"
                 className="w-full h-full object-cover"
               />
               <div className="absolute bottom-4 left-4 bg-white/80 backdrop-blur-md rounded-full px-4 py-2 text-xs font-semibold text-slate-800 flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-indigo-600" /> Live preview ready
+                <Sparkles className="w-4 h-4 text-brand-indigo" /> Live preview ready
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </Section>
     </section>
   );
 };

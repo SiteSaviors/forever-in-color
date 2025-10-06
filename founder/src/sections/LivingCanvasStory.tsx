@@ -1,9 +1,11 @@
 import { Sparkles, Video, Heart } from 'lucide-react';
+import Section from '@/components/layout/Section';
+import Card from '@/components/ui/Card';
 
 const LivingCanvasStory = () => {
   return (
     <section className="bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 py-20">
-      <div className="max-w-6xl mx-auto px-6 grid lg:grid-cols-[1.2fr_0.8fr] gap-12 items-center">
+      <Section className="grid lg:grid-cols-[1.2fr_0.8fr] gap-12 items-center">
         <div className="space-y-6">
           <p className="text-sm uppercase tracking-[0.3em] text-emerald-300">Living Canvas</p>
           <h2 className="text-3xl font-semibold">Memories that play back whenever you need them</h2>
@@ -27,10 +29,10 @@ const LivingCanvasStory = () => {
             </li>
           </ul>
         </div>
-        <div className="relative">
+        <div className="relative glow-ring">
           <div className="absolute -inset-8 bg-emerald-500/20 blur-3xl" />
-          <div className="relative rounded-3xl overflow-hidden border border-emerald-200/40 bg-gradient-to-br from-slate-800 to-slate-900 shadow-2xl p-6">
-            <div className="aspect-[3/4] rounded-2xl overflow-hidden shadow-lg border border-white/10">
+          <Card glass className="relative backdrop-blur-2xl border border-emerald-200/40 p-6">
+            <div className="aspect-[3/4] rounded-2xl overflow-hidden shadow-founder border border-white/10">
               <img
                 src="https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=900&q=80"
                 alt="Living canvas demo"
@@ -44,9 +46,9 @@ const LivingCanvasStory = () => {
               </span>
               <span>View a sample →</span>
             </div>
-          </div>
+          </Card>
         </div>
-      </div>
+      </Section>
     </section>
   );
 };
