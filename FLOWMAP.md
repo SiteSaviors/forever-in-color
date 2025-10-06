@@ -147,55 +147,98 @@ trackEvent('style_preselected', {
 
 ---
 
-## STATE 1: PRODUCT PAGE - UPLOAD INTERFACE
+## STATE 1: PRODUCT PAGE - HERO WITH UPLOAD & CAROUSEL
 **Route**: `/product` (or `/product?preselected_style=watercolor`)
 **Time**: 0:02 (2 seconds from homepage load)
 **Auth**: NONE REQUIRED
 
-### Header
-- "Step 1: Upload & Choose Your Style"
-- Subtext: "Transform your photo in seconds - no account needed"
+**Note**: This is functionally the same as STATE 0 (Homepage). The `/product` route is the main entry point.
 
-### Upload Dropzone
+### Layout
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│  UPLOAD DROPZONE (centered, prominent)                       │
-│  ┌────────────────────────────────────────────────────────┐  │
-│  │                                                         │  │
-│  │          [📸 Upload Icon - Animated pulse]             │  │
-│  │                                                         │  │
-│  │     Drag & drop your photo here                        │  │
-│  │     or click to browse                                 │  │
-│  │                                                         │  │
-│  │     PNG or JPG • Max 10MB                              │  │
-│  │                                                         │  │
-│  └────────────────────────────────────────────────────────┘  │
-│                                                               │
-│  Or use camera 📷 (mobile only)                               │
+│  HERO SECTION                                                │
+│                                                              │
+│  LARGE HEADLINE (Center, Large)                             │
+│  "Transform Your Memories Into Museum-Quality Art"          │
+│                                                              │
+│  SUBHEADLINE                                                │
+│  "AI-powered canvas art that brings your photos to life"    │
+│                                                              │
+│  ┌────────────────────────────────────────────────────────┐ │
+│  │  PRIMARY CTA                                           │ │
+│  │  [Upload Your Photo to Start the Magic →]             │ │
+│  │  Large gradient button with glow                      │ │
+│  │  (Triggers file picker)                                │ │
+│  └────────────────────────────────────────────────────────┘ │
+│                                                              │
+│  ──────── Or Browse Styles First ────────                   │
+│                                                              │
+│  STYLE CAROUSEL (6-8 styles, horizontal scroll):            │
+│  ┌───────────┐ ┌───────────┐ ┌───────────┐ ┌───────────┐  │
+│  │  [Image]  │ │  [Image]  │ │  [Image]  │ │  [Image]  │  │
+│  │ Watercolor│ │ Oil Paint │ │ Charcoal  │ │ Abstract  │  │
+│  │  Dreams   │ │  Classic  │ │  Sketch   │ │  Fusion   │  │
+│  │           │ │           │ │           │ │           │  │
+│  │ [Try This]│ │ [Try This]│ │ [Try This]│ │ [Try This]│  │
+│  │  Style →  │ │  Style →  │ │  Style →  │ │  Style →  │  │
+│  └───────────┘ └───────────┘ └───────────┘ └───────────┘  │
+│                                                              │
+│  Hover behavior: Image crossfades to show ORIGINAL photo    │
+│  Label updates: "Hover to see original"                     │
+│                                                              │
+│  ────────────────────────────────────────────────────────   │
+│                                                              │
+│  Below fold (optional):                                     │
+│  - Trust signals (reviews, recent orders)                   │
+│  - "How it works" (3-step process)                          │
+│  - Example gallery                                          │
 └──────────────────────────────────────────────────────────────┘
 ```
 
-### Example Transformations
-- 3 before/after pairs (pre-rendered from carousel examples)
-- Static images with hover interaction
-- Same behavior as hero carousel
+### Style Carousel Interaction
 
-### User Actions
+**Same as STATE 0** - See above for full details
 
-**Primary Path**: Uploads photo (file or drag-drop)
+**Default State**: Shows AI-generated art result
+**Hover State**: Crossfade to original photo (300ms)
+**Mobile**: Tap to toggle between result and original
 
-**Alternate Path**: Came from hero carousel with preselected style
-- Query param: `?preselected_style=watercolor`
-- UI shows: "✨ Watercolor Dreams selected"
-- First generation will prioritize this style
+### User Actions (Two Primary Paths)
 
-### System Actions
+**Path A: Upload First** (Traditional flow)
+1. User clicks "Upload Your Photo to Start the Magic" CTA button
+2. File picker opens
+3. User selects photo → Triggers STATE 2 (Cropper)
+
+**Path B: Browse Styles First** (Discovery flow)
+1. User scrolls to style carousel
+2. User hovers over styles (sees before/after)
+3. User clicks "Try This Style" on preferred style
+4. Style is pre-selected (`?preselected_style=watercolor` query param)
+5. File picker opens
+6. User selects photo → Triggers STATE 2 (Cropper)
+7. First generation will prioritize the pre-selected style
+
+### Alternate Upload Methods
+
+- **Drag & Drop**: User can drag image directly onto the hero section (entire viewport becomes dropzone on dragover)
+- **Mobile Camera**: On mobile, CTA button includes camera option via `capture="environment"`
+
+### If User Came From Homepage (STATE 0)
+
+If user clicked "Upload Photo" on homepage and was redirected to `/product`:
+- Same experience as STATE 1
+- No difference in behavior
+
+### System Actions (On Upload)
 
 1. Validate file (size <10MB, format: image/jpeg|png)
 2. Generate data URI (client-side)
-3. Auto-detect orientation via ML
-4. IMMEDIATELY transition to STATE 2 (Cropper)
+3. Auto-detect orientation via ML (portrait/square/landscape)
+4. Store: `uploadedImage`, `selectedOrientation`, `preselectedStyle` (if applicable)
+5. IMMEDIATELY transition to STATE 2 (Cropper)
 
 **Timing**: <1 second validation → instant transition
 
