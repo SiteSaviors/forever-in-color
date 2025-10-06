@@ -130,7 +130,7 @@ const PhotoUploader = () => {
   };
 
   return (
-    <Card glass className="space-y-4 relative overflow-hidden">
+    <Card glass className="space-y-6 relative overflow-hidden">
       <input
         ref={inputRef}
         type="file"
@@ -139,55 +139,101 @@ const PhotoUploader = () => {
         onChange={handleFileChange}
       />
       <div
-        className={clsx('dropzone-base', isDragging && 'dropzone-active')}
+        className={clsx(
+          'relative rounded-[1.75rem] border-2 border-dashed transition-all duration-300 overflow-hidden',
+          isDragging
+            ? 'border-purple-400 bg-gradient-upload-hover shadow-glow-purple'
+            : 'border-white/20 bg-gradient-upload'
+        )}
         onDragEnter={handleDragOver}
         onDragLeave={handleDragLeave}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
       >
         <div className="absolute inset-0 bg-dropzone-radial opacity-60 pointer-events-none" />
-        <div className="relative z-10 space-y-4">
-          <h3 className="text-xl font-semibold text-white">Upload & Smart Crop</h3>
-          <p className="text-sm text-white/70">
-            Drag a photo onto this canvas or use the buttons below. We’ll detect orientation, suggest a smart crop, and start generating previews immediately.
-          </p>
-          <div className="rounded-2xl overflow-hidden border border-white/10 aspect-square flex items-center justify-center bg-white/5">
-            {croppedImage ? (
-              <img src={croppedImage} alt="Uploaded" className="w-full h-full object-cover" />
-            ) : (
-              <div className="text-white/50 text-sm">
-                {isDragging ? 'Drop to upload' : 'Drop image here or use the buttons below'}
+        <div className="relative z-10 p-8 space-y-6">
+          {!croppedImage ? (
+            <>
+              <div className="text-center space-y-3">
+                <div className="w-20 h-20 mx-auto bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center shadow-glow-soft animate-pulseGlow">
+                  <svg className="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold text-white">
+                  {isDragging ? 'Drop to Transform' : 'Start Your Masterpiece'}
+                </h3>
+                <p className="text-base text-white/80 max-w-md mx-auto">
+                  Upload your favorite photo and watch it transform into stunning art in seconds
+                </p>
               </div>
-            )}
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <Button className="flex-1" onClick={handleSelectFile}>
-              Upload Photo
-            </Button>
-            <Button variant="ghost" className="flex-1" onClick={handleOpenCropper} disabled={!uploadedImage}>
-              Adjust Crop
-            </Button>
-            <Button variant="ghost" className="flex-1" onClick={handleSamplePhoto}>
-              Try Sample Photo
-            </Button>
-          </div>
-          <p className="text-xs text-white/60">
-            Supported: JPG, PNG up to 10MB. Drag-and-drop is fully supported, and you can fine-tune the crop anytime.
-          </p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={handleSelectFile}
+                  className="flex-1 bg-gradient-cta text-white font-semibold px-6 py-4 rounded-xl shadow-glow-purple hover:shadow-glow-purple hover:scale-[1.02] transition-all duration-200"
+                >
+                  Upload Your Photo
+                </button>
+                <button
+                  onClick={handleSamplePhoto}
+                  className="flex-1 border-2 border-white/30 text-white font-medium px-6 py-4 rounded-xl hover:bg-white/10 hover:border-white/50 transition-all duration-200"
+                >
+                  Try a Sample
+                </button>
+              </div>
+              <p className="text-xs text-center text-white/50">
+                JPG or PNG • Max 10MB • Instant previews
+              </p>
+            </>
+          ) : (
+            <div className="space-y-4 animate-scaleIn">
+              <div className="rounded-xl overflow-hidden border-2 border-white/20 aspect-square flex items-center justify-center bg-black/20 shadow-lg">
+                <img src={croppedImage} alt="Your photo" className="w-full h-full object-cover" />
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={handleSelectFile}
+                  className="flex-1 bg-white/10 border border-white/20 text-white font-medium px-4 py-3 rounded-lg hover:bg-white/20 transition-all"
+                >
+                  Change Photo
+                </button>
+                <button
+                  onClick={handleOpenCropper}
+                  className="flex-1 bg-white/10 border border-white/20 text-white font-medium px-4 py-3 rounded-lg hover:bg-white/20 transition-all"
+                >
+                  Adjust Crop
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
       {orientationMessage && (
-        <div className="flex items-center gap-2 text-sm text-white/80">
-          <Badge variant="emerald">Orientation</Badge>
-          <span>{orientationMessage}</span>
+        <div className="flex items-center gap-3 p-4 rounded-xl bg-gradient-to-r from-emerald-500/10 to-emerald-400/10 border border-emerald-400/20 animate-fadeIn">
+          <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center">
+            <svg className="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-emerald-400">Perfect Orientation</p>
+            <p className="text-xs text-white/70">{orientationMessage}</p>
+          </div>
         </div>
       )}
 
       {croppedImage && (
-        <div className="flex items-center gap-2 text-xs text-white/60">
-          <Badge variant="brand">Smart Crop Ready</Badge>
-          <span>{cropReadyLabel}</span>
+        <div className="flex items-center gap-3 p-4 rounded-xl bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-400/20 animate-fadeIn">
+          <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center">
+            <svg className="w-4 h-4 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-purple-400">Smart Crop Applied</p>
+            <p className="text-xs text-white/70">{cropReadyLabel}</p>
+          </div>
         </div>
       )}
 

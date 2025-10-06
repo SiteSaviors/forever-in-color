@@ -26,7 +26,7 @@ body {
 }
 
 .btn-primary {
-  @apply inline-flex items-center gap-2 rounded-full bg-white text-slate-900 font-semibold px-6 py-3 shadow-lg shadow-brand-indigo/40 transition hover:-translate-y-[2px];
+  @apply inline-flex items-center gap-2 rounded-full bg-gradient-cta text-white font-semibold px-6 py-3 shadow-glow-purple transition-all hover:bg-gradient-cta-hover hover:-translate-y-[2px] hover:shadow-glow-purple;
 }
 
 .btn-ghost {

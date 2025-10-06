@@ -22,11 +22,19 @@ export default {
       boxShadow: {
         founder: 'var(--shadow-xl)',
         innerBrand: 'var(--shadow-inner)',
+        'glow-purple': 'var(--glow-purple)',
+        'glow-blue': 'var(--glow-blue)',
+        'glow-soft': 'var(--glow-soft)',
       },
       backgroundImage: {
         'gradient-hero': 'var(--gradient-hero)',
         'gradient-callout': 'var(--gradient-callout)',
         'gradient-card': 'var(--gradient-card)',
+        'gradient-upload': 'var(--gradient-upload)',
+        'gradient-upload-hover': 'var(--gradient-upload-hover)',
+        'gradient-cta': 'var(--gradient-cta)',
+        'gradient-cta-hover': 'var(--gradient-cta-hover)',
+        'gradient-preview-bg': 'var(--gradient-preview-bg)',
         'dropzone-radial': 'radial-gradient(circle at top, rgba(168, 85, 247, 0.35), transparent 60%)',
       },
       borderRadius: {
@@ -45,11 +53,21 @@ export default {
           '0%, 100%': { boxShadow: '0 0 0 0 rgba(168, 85, 247, 0.35)' },
           '50%': { boxShadow: '0 0 0 20px rgba(168, 85, 247, 0)' },
         },
+        scaleIn: {
+          '0%': { transform: 'scale(0.9)', opacity: '0' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
+        },
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
       },
       animation: {
         shimmer: 'shimmer 1.5s linear infinite',
         confetti: 'confetti 1.2s ease-out forwards',
         pulseGlow: 'pulseGlow 2s ease-in-out infinite',
+        scaleIn: 'scaleIn 0.3s ease-out',
+        fadeIn: 'fadeIn 0.5s ease-out',
       },
     },
   },

@@ -178,14 +178,14 @@ export const useFounderStore = create<FounderState>((set, get) => ({
     );
 
     set((state) => {
-      const livingCanvasEnabled = state.enhancements.find((item) => item.id === 'living-canvas')?.enabled ?? false;
       const nextState: Partial<FounderState> = {
         previewStatus: 'ready',
       };
       if (!state.firstPreviewCompleted) {
         nextState.firstPreviewCompleted = true;
-        nextState.livingCanvasModalOpen = livingCanvasEnabled ? false : true;
         nextState.celebrationAt = Date.now();
+        // Living Canvas modal will be shown later in the Studio flow, not immediately after first preview
+        // This prevents interrupting the user's momentum and allows them to continue to customization
       }
       return nextState;
     });
