@@ -32,3 +32,29 @@ body {
 .btn-ghost {
   @apply inline-flex items-center gap-2 rounded-full border border-white/40 px-6 py-3 text-white/80 hover:bg-white/10 transition;
 }
+
+.dropzone-base {
+  @apply relative rounded-[1.75rem] border border-white/10 bg-white/5 p-10 text-center transition overflow-hidden;
+}
+
+.dropzone-active {
+  @apply border-white/40 bg-gradient-card animate-pulseGlow;
+}
+
+.preview-skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.05) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s linear infinite;
+}
+
+.confetti-container {
+  @apply pointer-events-none absolute inset-0 overflow-hidden;
+}
+
+.confetti-piece {
+  width: 8px;
+  height: 12px;
+  border-radius: 9999px;
+  opacity: 0.85;
+  animation: confetti 1.2s ease-out forwards;
+}

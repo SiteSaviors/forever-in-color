@@ -37,6 +37,10 @@ type FounderState = {
   uploadedImage: string | null;
   croppedImage: string | null;
   orientation: Orientation;
+  orientationTip: string | null;
+  cropReadyAt: number | null;
+  isDragging: boolean;
+  celebrationAt: number | null;
   selectStyle: (id: string) => void;
   toggleEnhancement: (id: string) => void;
   setEnhancementEnabled: (id: string, enabled: boolean) => void;
@@ -47,6 +51,9 @@ type FounderState = {
   setUploadedImage: (dataUrl: string | null) => void;
   setCroppedImage: (dataUrl: string | null) => void;
   setOrientation: (orientation: FounderState['orientation']) => void;
+  setOrientationTip: (tip: string | null) => void;
+  markCropReady: () => void;
+  setDragging: (dragging: boolean) => void;
   computedTotal: () => number;
   currentStyle: () => StyleOption | undefined;
   livingCanvasEnabled: () => boolean;
@@ -115,6 +122,10 @@ export const useFounderStore = create<FounderState>((set, get) => ({
   uploadedImage: null,
   croppedImage: null,
   orientation: 'square',
+  orientationTip: null,
+  cropReadyAt: null,
+  isDragging: false,
+  celebrationAt: null,
   selectStyle: (id) => set({ selectedStyleId: id }),
   toggleEnhancement: (id) =>
     set((state) => {
@@ -174,6 +185,7 @@ export const useFounderStore = create<FounderState>((set, get) => ({
       if (!state.firstPreviewCompleted) {
         nextState.firstPreviewCompleted = true;
         nextState.livingCanvasModalOpen = livingCanvasEnabled ? false : true;
+        nextState.celebrationAt = Date.now();
       }
       return nextState;
     });
@@ -182,6 +194,9 @@ export const useFounderStore = create<FounderState>((set, get) => ({
   setUploadedImage: (dataUrl) => set({ uploadedImage: dataUrl }),
   setCroppedImage: (dataUrl) => set({ croppedImage: dataUrl }),
   setOrientation: (orientation) => set({ orientation }),
+  setOrientationTip: (tip) => set({ orientationTip: tip }),
+  markCropReady: () => set({ cropReadyAt: Date.now() }),
+  setDragging: (isDragging) => set({ isDragging }),
   computedTotal: () => {
     const { basePrice, enhancements, styles, selectedStyleId } = get();
     const styleMod = styles.find((style) => style.id === selectedStyleId)?.priceModifier ?? 0;

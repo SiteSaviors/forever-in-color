@@ -2,9 +2,10 @@ import Section from '@/components/layout/Section';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import { useFounderStore } from '@/store/useFounderStore';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { emitStepOneEvent } from '@/utils/telemetry';
 import PhotoUploader from '@/components/launchpad/PhotoUploader';
+import ConfettiBurst from '@/components/launchpad/ConfettiBurst';
 
 const LaunchpadLayout = () => {
   const styles = useFounderStore((state) => state.styles);
@@ -12,7 +13,11 @@ const LaunchpadLayout = () => {
   const generatePreviews = useFounderStore((state) => state.generatePreviews);
   const previewStatus = useFounderStore((state) => state.previewStatus);
   const previews = useFounderStore((state) => state.previews);
+  const celebrationAt = useFounderStore((state) => state.celebrationAt);
   const uploadedImage = useFounderStore((state) => state.uploadedImage);
+  const orientation = useFounderStore((state) => state.orientation);
+  const orientationLabel = orientation.charAt(0).toUpperCase() + orientation.slice(1);
+  const [confettiActive, setConfettiActive] = useState(false);
   const currentStyle = useFounderStore((state) => state.currentStyle());
 
   useEffect(() => {
@@ -26,7 +31,6 @@ const LaunchpadLayout = () => {
   };
 
   const previewTiles = useMemo(() => styles.slice(0, 4), [styles]);
-  const orientation = useFounderStore((state) => state.orientation);
   const currentPreviewState = currentStyle ? previews[currentStyle.id] : undefined;
   const statusLabel = currentPreviewState?.status === 'ready'
     ? 'Preview ready'
@@ -55,6 +59,13 @@ const LaunchpadLayout = () => {
     lastPreviewStatusRef.current = previewStatus;
   }, [previewStatus]);
 
+  useEffect(() => {
+    if (!celebrationAt) return;
+    setConfettiActive(true);
+    const timer = window.setTimeout(() => setConfettiActive(false), 1500);
+    return () => window.clearTimeout(timer);
+  }, [celebrationAt]);
+
   return (
     <Section id="launchpad">
       <div className="flex items-center gap-3 text-sm text-brand-indigo uppercase tracking-[0.3em] mb-6">
@@ -69,7 +80,8 @@ const LaunchpadLayout = () => {
           </p>
           <div className="grid lg:grid-cols-2 gap-6">
             <PhotoUploader />
-            <Card glass className="space-y-4">
+            <Card glass className="space-y-4 relative overflow-hidden">
+              <ConfettiBurst active={confettiActive} />
               <h3 className="text-xl font-semibold text-white">Live Preview Rail</h3>
               <p className="text-sm text-white/70">
                 Parallel requests generate multiple styles in seconds. Choose your favorite to continue.
@@ -83,7 +95,7 @@ const LaunchpadLayout = () => {
                   >
                     {style.name}
                     {previews[style.id]?.status === 'loading' && (
-                      <span className="absolute inset-0 bg-white/10 animate-pulse" />
+                      <span className="absolute inset-0 preview-skeleton" />
                     )}
                     {previews[style.id]?.status === 'ready' && (
                       <span className="absolute top-2 right-2 text-[10px] px-2 py-1 rounded-full bg-white/80 text-slate-900">Ready</span>
@@ -96,7 +108,7 @@ const LaunchpadLayout = () => {
               </div>
               <div className="flex justify-between text-xs text-white/60">
                 <span>Status: {statusLabel}</span>
-                <span>Orientation: {orientation}</span>
+                <span>Orientation: {orientationLabel}</span>
               </div>
             </Card>
           </div>
@@ -113,7 +125,7 @@ const LaunchpadLayout = () => {
               <span>{currentStyle?.name ?? '—'}</span>
             </div>
             <div className="flex justify-between"><span>Status</span><span>{statusLabel}</span></div>
-            <div className="flex justify-between"><span>Orientation</span><span>{orientation}</span></div>
+            <div className="flex justify-between"><span>Orientation</span><span>{orientationLabel}</span></div>
           </div>
           <Button
             className="w-full"
