@@ -45,7 +45,7 @@
 │                                                            │
 │  ─────────── Or Browse Styles First ───────────           │
 │                                                            │
-│  STYLE CAROUSEL (6-8 styles, horizontal scroll)           │
+│  STYLE CAROUSEL (12 styles, horizontal scroll)           │
 │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐    │
 │  │ [Result] │ │ [Result] │ │ [Result] │ │ [Result] │    │
 │  │ Image    │ │ Image    │ │ Image    │ │ Image    │    │

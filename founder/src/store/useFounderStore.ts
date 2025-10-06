@@ -19,6 +19,15 @@ export type Enhancement = {
   enabled: boolean;
 };
 
+export type StyleCarouselCard = {
+  id: string;
+  name: string;
+  resultImage: string;
+  originalImage: string;
+  description: string;
+  ctaLabel: string;
+};
+
 type PreviewState = {
   status: 'idle' | 'loading' | 'ready' | 'error';
   data?: PreviewResult;
@@ -41,6 +50,9 @@ type FounderState = {
   cropReadyAt: number | null;
   isDragging: boolean;
   celebrationAt: number | null;
+  styleCarouselData: StyleCarouselCard[];
+  hoveredStyleId: string | null;
+  preselectedStyleId: string | null;
   selectStyle: (id: string) => void;
   toggleEnhancement: (id: string) => void;
   setEnhancementEnabled: (id: string, enabled: boolean) => void;
@@ -54,6 +66,8 @@ type FounderState = {
   setOrientationTip: (tip: string | null) => void;
   markCropReady: () => void;
   setDragging: (dragging: boolean) => void;
+  setHoveredStyle: (id: string | null) => void;
+  setPreselectedStyle: (id: string | null) => void;
   computedTotal: () => number;
   currentStyle: () => StyleOption | undefined;
   livingCanvasEnabled: () => boolean;
@@ -110,6 +124,57 @@ const mockEnhancements: Enhancement[] = [
   },
 ];
 
+const mockCarouselData: StyleCarouselCard[] = [
+  {
+    id: 'watercolor-dreams',
+    name: 'Watercolor Dreams',
+    resultImage: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=400&q=80',
+    originalImage: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=400&q=80',
+    description: 'Soft, dreamy watercolor aesthetic',
+    ctaLabel: 'Try This Style →',
+  },
+  {
+    id: 'neon-bloom',
+    name: 'Neon Bloom',
+    resultImage: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=400&q=80',
+    originalImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
+    description: 'Electric palettes and bloom edges',
+    ctaLabel: 'Try This Style →',
+  },
+  {
+    id: 'monochrome-muse',
+    name: 'Monochrome Muse',
+    resultImage: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80',
+    originalImage: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&q=80',
+    description: 'Cinematic black & white portraiture',
+    ctaLabel: 'Try This Style →',
+  },
+  {
+    id: 'oil-paint-classic',
+    name: 'Oil Paint Classic',
+    resultImage: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&w=400&q=80',
+    originalImage: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=400&q=80',
+    description: 'Traditional oil painting texture',
+    ctaLabel: 'Try This Style →',
+  },
+  {
+    id: 'charcoal-sketch',
+    name: 'Charcoal Sketch',
+    resultImage: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=400&q=80',
+    originalImage: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80',
+    description: 'Hand-drawn charcoal artistry',
+    ctaLabel: 'Try This Style →',
+  },
+  {
+    id: 'abstract-fusion',
+    name: 'Abstract Fusion',
+    resultImage: 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?auto=format&fit=crop&w=400&q=80',
+    originalImage: 'https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?auto=format&fit=crop&w=400&q=80',
+    description: 'Bold geometric abstraction',
+    ctaLabel: 'Try This Style →',
+  },
+];
+
 export const useFounderStore = create<FounderState>((set, get) => ({
   styles: mockStyles,
   enhancements: mockEnhancements,
@@ -126,6 +191,9 @@ export const useFounderStore = create<FounderState>((set, get) => ({
   cropReadyAt: null,
   isDragging: false,
   celebrationAt: null,
+  styleCarouselData: mockCarouselData,
+  hoveredStyleId: null,
+  preselectedStyleId: null,
   selectStyle: (id) => set({ selectedStyleId: id }),
   toggleEnhancement: (id) =>
     set((state) => {
