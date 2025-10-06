@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wondertone Launchpad Prototype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="bg-slate-950 text-white min-h-screen">
+    <div id="app" class="font-poppins">
+      <header class="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500">
+        <div class="absolute inset-0 opacity-30 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+        <div class="relative max-w-6xl mx-auto px-6 py-16 lg:py-20">
+          <nav class="flex items-center justify-between mb-10 text-sm font-medium uppercase tracking-[0.35em]">
+            <div class="flex items-center gap-3 text-white/90">
+              <div class="flex items-center justify-center w-10 h-10 rounded-full bg-white/15 backdrop-blur">
+                <span class="text-lg font-bold">W</span>
+              </div>
+              <span class="text-white/80">Wondertone Preview</span>
+            </div>
+            <div class="hidden md:flex items-center gap-6 text-white/70">
+              <span class="hover:text-white transition">Size & Orientation</span>
+              <span class="hover:text-white transition">Frame Style</span>
+              <span class="hover:text-white transition">Living Canvas</span>
+              <span class="hover:text-white transition">Review Details</span>
+            </div>
+          </nav>
+
+          <div class="grid lg:grid-cols-[1.1fr_0.9fr] gap-12 items-center">
+            <div>
+              <p class="inline-flex items-center gap-2 px-4 py-2 text-xs tracking-[0.4em] uppercase rounded-full bg-white/10 text-white/70 mb-6">
+                <span class="h-1.5 w-1.5 rounded-full bg-emerald-300"></span>
+                Live preview in seconds
+              </p>
+              <h1 class="text-4xl md:text-5xl lg:text-6xl font-semibold leading-tight drop-shadow-md">
+                Transform Your Photo into Gallery-Worthy AI Art — Instantly.
+              </h1>
+              <p class="mt-6 text-lg text-white/80 max-w-xl leading-relaxed">
+                Upload once, explore curated styles, and watch your canvas come to life. This prototype shows the guided launchpad and studio experience without touching production routes.
+              </p>
+              <div class="mt-10 flex flex-wrap gap-4">
+                <button id="upload-btn" class="primary-btn">
+                  Upload Your Photo & Start Creating
+                </button>
+                <button id="browse-btn" class="secondary-btn">
+                  Browse Styles First
+                </button>
+              </div>
+              <p class="mt-5 text-sm text-white/60">
+                No sign-in required. Your first preview appears in under 10 seconds.
+              </p>
+            </div>
+            <div class="bg-black/20 rounded-3xl border border-white/10 backdrop-blur p-6 shadow-2xl">
+              <div class="aspect-square rounded-2xl overflow-hidden shadow-lg border border-white/10">
+                <img
+                  id="hero-preview"
+                  src="https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=900&q=80"
+                  alt="AI preview"
+                  class="w-full h-full object-cover transition duration-700"
+                />
+              </div>
+              <div class="mt-4 flex items-center justify-between text-xs text-white/70">
+                <span class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-emerald-300 animate-pulse"></span>
+                  Preview ready • Watercolor Dreams
+                </span>
+                <span>Orientation: Square</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main class="relative bg-slate-950 py-16 lg:py-24">
+        <section class="max-w-6xl mx-auto px-6" id="style-gallery">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-2xl font-semibold">Browse Styles First</h2>
+            <button class="text-sm text-violet-300 hover:text-white transition" id="view-all-styles">
+              View All 48 Styles →
+            </button>
+          </div>
+          <p class="text-white/60 max-w-3xl mb-8">
+            Scroll through curated Wondertone styles. Select “Try This Style” to jump into the Launchpad with that aesthetic already generating against your uploaded photo.
+          </p>
+          <div class="overflow-hidden">
+            <div class="flex gap-6 overflow-x-auto pb-4" id="style-carousel">
+              <!-- Cards injected via script -->
+            </div>
+          </div>
+        </section>
+
+        <section class="max-w-6xl mx-auto px-6 mt-20 grid lg:grid-cols-[1fr_400px] gap-12" id="launchpad-section">
+          <div>
+            <div class="flex items-center gap-3 text-sm text-white/60 uppercase tracking-[0.4em] mb-6">
+              <span class="w-2 h-2 rounded-full bg-violet-400"></span>
+              Launchpad
+            </div>
+            <h3 class="text-3xl font-semibold mb-3">Step 1 • Upload & Choose Style</h3>
+            <p class="text-white/60 max-w-3xl mb-8">
+              The launchpad keeps upload, crop, and style selection in a single split-view. Previews stream into the rail on the right the moment a style is tapped.
+            </p>
+            <div class="grid lg:grid-cols-2 gap-6">
+              <div class="bg-white/5 rounded-3xl border border-white/10 p-6 shadow-lg space-y-4">
+                <h4 class="text-xl font-medium">Upload & Smart Crop</h4>
+                <p class="text-sm text-white/60">
+                  Drop an image to trigger smart orientation detection, auto crop, and StepOne progress tracking.
+                </p>
+                <div class="rounded-2xl overflow-hidden border border-white/10">
+                  <img src="https://images.unsplash.com/photo-1508264165352-258a6c62f3e8?auto=format&fit=crop&w=800&q=80" alt="Upload" class="h-48 w-full object-cover" />
+                </div>
+                <button class="secondary-btn w-full">Upload Photo</button>
+              </div>
+              <div class="bg-white/5 rounded-3xl border border-white/10 p-6 shadow-lg space-y-4">
+                <h4 class="text-xl font-medium">Live Preview Rail</h4>
+                <p class="text-sm text-white/60">
+                  Generated styles appear instantly with blur placeholders. Tap any preview to continue to the Studio.
+                </p>
+                <div class="grid grid-cols-2 gap-3">
+                  <div class="preview-tile animate-pulse" data-style="Watercolor Dreams"></div>
+                  <div class="preview-tile" data-style="Pastel Bliss"></div>
+                  <div class="preview-tile" data-style="Neon Bloom"></div>
+                  <div class="preview-tile" data-style="Monochrome Muse"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <aside class="bg-white/5 rounded-3xl border border-white/10 p-6 shadow-lg" id="preview-summary">
+            <h4 class="text-lg font-medium mb-4">Live Preview Summary</h4>
+            <div class="space-y-3 text-sm">
+              <div class="flex justify-between text-white/70"><span>Photo</span><span>Waiting for upload</span></div>
+              <div class="flex justify-between text-white/70"><span>Style</span><span id="summary-style">—</span></div>
+              <div class="flex justify-between text-white/70"><span>Status</span><span id="summary-status">Idle</span></div>
+            </div>
+            <button class="primary-btn w-full mt-6" disabled>Continue to Studio</button>
+            <p class="mt-4 text-xs text-white/60">
+              This summary mirrors the right rail in production and unlocks once a preview is ready.
+            </p>
+          </aside>
+        </section>
+
+        <section class="max-w-6xl mx-auto px-6 mt-24" id="studio-section">
+          <div class="flex items-center gap-3 text-sm text-white/60 uppercase tracking-[0.4em] mb-6">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            Studio View
+          </div>
+          <h3 class="text-3xl font-semibold mb-3">Steps 2–4 • Configure Canvas & Checkout</h3>
+          <p class="text-white/60 max-w-4xl mb-12">
+            Once Step One is complete, the Studio layout keeps the live canvas in view while size, frame, Living Canvas, and order details sit in synchronized tabs. A sticky order rail mirrors pricing everywhere.
+          </p>
+          <div class="bg-white/5 rounded-3xl border border-white/10 p-8 shadow-2xl">
+            <div class="grid lg:grid-cols-[1.2fr_1fr] gap-10">
+              <div class="space-y-8">
+                <div class="bg-black/20 border border-white/10 rounded-2xl p-4">
+                  <div class="flex justify-between items-center mb-3 text-xs uppercase tracking-[0.3em] text-white/50">
+                    <span>Canvas Preview</span>
+                    <span>Living Memory Added</span>
+                  </div>
+                  <div class="aspect-[4/3] rounded-xl overflow-hidden relative">
+                    <img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80" class="w-full h-full object-cover" alt="Canvas preview" />
+                    <div class="absolute bottom-3 right-3 bg-indigo-500/80 backdrop-blur px-3 py-1 rounded-full text-xs">QR Overlay</div>
+                  </div>
+                </div>
+                <div class="grid md:grid-cols-3 gap-4 text-sm text-white/70">
+                  <div class="glass-card">
+                    <h5 class="text-white font-medium mb-2">Size & Orientation</h5>
+                    <p>Switching sizes animates pricing and keeps previews cached by orientation.</p>
+                  </div>
+                  <div class="glass-card">
+                    <h5 class="text-white font-medium mb-2">Enhancements</h5>
+                    <p>Floating frames and Living Canvas live here with inline demos.</p>
+                  </div>
+                  <div class="glass-card">
+                    <h5 class="text-white font-medium mb-2">Sticky Order Rail</h5>
+                    <p>Mirrors pricing, unlocks checkout CTA, and surfaces bundle upsells.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="bg-black/20 border border-white/10 rounded-2xl p-6 space-y-5">
+                <div class="flex justify-between items-center">
+                  <h4 class="text-lg font-medium">Order Summary</h4>
+                  <span class="text-sm text-emerald-300">$148.99</span>
+                </div>
+                <ul class="space-y-3 text-sm text-white/70">
+                  <li class="flex justify-between"><span>24" x 18" Canvas</span><span>$129.00</span></li>
+                  <li class="flex justify-between"><span>Floating Frame (Walnut)</span><span>$29.00</span></li>
+                  <li class="flex justify-between"><span>Living Memory Add-on</span><span>$59.99</span></li>
+                  <li class="flex justify-between"><span>Canvas + Digital Bundle</span><span>$14.99</span></li>
+                </ul>
+                <button class="primary-btn w-full">Complete Order • $148.99</button>
+                <p class="text-xs text-white/60">
+                  Guest checkout by default; email captured here powers Stripe + post-purchase account invite.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
