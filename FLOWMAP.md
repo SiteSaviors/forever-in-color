@@ -8,7 +8,6 @@
 ---
 
 ## Table of Contents
-1. [STATE 0: Homepage Hero](#state-0-homepage-hero)
 2. [STATE 1: Product Page Hero](#state-1-product-page-hero)
 3. [STATE 2: Cropper](#state-2-cropper)
 4. [STATE 3: Preview Generation](#state-3-preview-generation)
@@ -22,8 +21,9 @@
 
 ---
 
-## STATE 0: Homepage Hero
-**Route**: `/`
+
+## STATE 1: Product Page Hero
+**Route**: `/product` or `/product?preselected_style=watercolor`
 **Time**: 0:00 (Page load)
 **Auth**: None required
 
@@ -87,60 +87,6 @@
 1. **Click main CTA** → Opens file picker → STATE 2 (Cropper)
 2. **Click "Try This Style"** → Pre-selects style → Opens file picker → STATE 2 (Cropper)
 3. **Drag & drop image** → STATE 2 (Cropper)
-
----
-
-## STATE 1: Product Page Hero
-**Route**: `/product` or `/product?preselected_style=watercolor`
-**Time**: 0:02 (if navigated from homepage)
-**Auth**: None required
-
-### Layout
-
-**Identical to STATE 0 (Homepage Hero)**
-
-The `/product` route IS the main product page. It has the same hero layout:
-- Large headline
-- Upload CTA button
-- "Or Browse Styles First" divider
-- Style carousel with hover interaction
-
-### Key Difference from STATE 0
-
-If user came from homepage by clicking a style:
-- Query param present: `?preselected_style=watercolor`
-- UI shows: "✨ Watercolor Dreams selected"
-- First generation will prioritize this style
-
-### User Actions
-
-**Path A: Upload First**
-1. Click "Upload Your Photo to Start the Magic"
-2. File picker opens
-3. Select photo → STATE 2 (Cropper)
-
-**Path B: Browse Styles First**
-1. Scroll to carousel
-2. Hover to see before/after
-3. Click "Try This Style" on preferred style
-4. Style pre-selected
-5. File picker opens
-6. Select photo → STATE 2 (Cropper)
-
-**Path C: Drag & Drop**
-- Drag image onto hero section
-- Entire viewport becomes dropzone on dragover
-- Drop → STATE 2 (Cropper)
-
-### System Actions (On Upload)
-
-1. Validate file (size <10MB, format: JPG/PNG)
-2. Generate data URI (client-side)
-3. Auto-detect orientation (portrait/square/landscape)
-4. Store: `uploadedImage`, `selectedOrientation`, `preselectedStyle`
-5. Transition to STATE 2
-
-**Timing**: <1 second validation → instant transition
 
 ---
 
