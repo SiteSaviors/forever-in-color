@@ -16,6 +16,8 @@ const StudioConfigurator = () => {
   const getGenerationLimit = useFounderStore((state) => state.getGenerationLimit);
   const canGenerateMore = useFounderStore((state) => state.canGenerateMore);
   const generatePreviews = useFounderStore((state) => state.generatePreviews);
+  const setPreviewState = useFounderStore((state) => state.setPreviewState);
+  const croppedImage = useFounderStore((state) => state.croppedImage);
   const orientation = useFounderStore((state) => state.orientation);
   const orientationMeta = ORIENTATION_PRESETS[orientation];
 
@@ -23,6 +25,20 @@ const StudioConfigurator = () => {
     selectStyle(styleId);
     const previewState = previews[styleId];
     if (previewState?.status === 'loading' || previewState?.status === 'ready') {
+      return;
+    }
+
+    // Special handling for "Original Image" style - use user's cropped photo directly
+    if (styleId === 'original-image' && croppedImage) {
+      setPreviewState('original-image', {
+        status: 'ready',
+        data: {
+          previewUrl: croppedImage,
+          watermarkApplied: false,
+          startedAt: Date.now(),
+          completedAt: Date.now(),
+        },
+      });
       return;
     }
 

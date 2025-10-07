@@ -62,7 +62,6 @@ type FounderState = {
   accountPromptTriggerAt: number | null;
   originalImage: string | null;
   smartCrops: Partial<Record<Orientation, string>>;
-  accountPromptTriggerAt: number | null;
   selectStyle: (id: string) => void;
   toggleEnhancement: (id: string) => void;
   setEnhancementEnabled: (id: string, enabled: boolean) => void;

@@ -1,7 +1,7 @@
 import type { StyleOption } from '@/store/useFounderStore';
 
 export type PreviewResult = {
-  url: string;
+  previewUrl: string;
   watermarkApplied: boolean;
   startedAt: number;
   completedAt: number;
@@ -39,7 +39,7 @@ export async function fetchPreviewForStyle(style: StyleOption, baseImage?: strin
       const data = (await response.json()) as { previewUrl?: string; watermarkApplied?: boolean };
       if (data.previewUrl) {
         return {
-          url: data.previewUrl,
+          previewUrl: data.previewUrl,
           watermarkApplied: data.watermarkApplied ?? true,
           startedAt,
           completedAt: Date.now(),
@@ -51,9 +51,9 @@ export async function fetchPreviewForStyle(style: StyleOption, baseImage?: strin
   }
 
   await simulateDelay();
-  const url = await mockStylize(baseImage ?? style.preview, style);
+  const previewUrl = await mockStylize(baseImage ?? style.preview, style);
   return {
-    url,
+    previewUrl,
     watermarkApplied: true,
     startedAt,
     completedAt: Date.now(),

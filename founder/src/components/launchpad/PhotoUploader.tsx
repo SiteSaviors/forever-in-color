@@ -28,6 +28,7 @@ const PhotoUploader = () => {
   const resetPreviews = useFounderStore((state) => state.resetPreviews);
   const setSmartCropForOrientation = useFounderStore((state) => state.setSmartCropForOrientation);
   const clearSmartCrops = useFounderStore((state) => state.clearSmartCrops);
+  const setPreviewState = useFounderStore((state) => state.setPreviewState);
   const uploadedImage = useFounderStore((state) => state.uploadedImage);
   const croppedImage = useFounderStore((state) => state.croppedImage);
   const orientation = useFounderStore((state) => state.orientation);
@@ -136,6 +137,18 @@ const PhotoUploader = () => {
     emitStepOneEvent({ type: 'substep', value: source === 'auto' ? 'complete' : 'crop' });
     setStage('complete');
     resetPreviews();
+
+    // Populate "Original Image" style with user's cropped photo immediately
+    setPreviewState('original-image', {
+      status: 'ready',
+      data: {
+        previewUrl: dataUrl,
+        watermarkApplied: false,
+        startedAt: Date.now(),
+        completedAt: Date.now(),
+      },
+    });
+
     await generatePreviews(undefined, { force: true });
   };
 

@@ -15,6 +15,7 @@ const StickyOrderRail = () => {
   const setOrientation = useFounderStore((state) => state.setOrientation);
   const resetPreviews = useFounderStore((state) => state.resetPreviews);
   const generatePreviews = useFounderStore((state) => state.generatePreviews);
+  const setPreviewState = useFounderStore((state) => state.setPreviewState);
   const selectedStyleId = useFounderStore((state) => state.selectedStyleId);
   const originalImage = useFounderStore((state) => state.originalImage);
   const smartCrops = useFounderStore((state) => state.smartCrops);
@@ -74,6 +75,17 @@ const StickyOrderRail = () => {
     setUploadedImage(nextCrop);
     markCropReady();
     resetPreviews();
+
+    // Populate "Original Image" style with new cropped photo for this orientation
+    setPreviewState('original-image', {
+      status: 'ready',
+      data: {
+        previewUrl: nextCrop,
+        watermarkApplied: false,
+        startedAt: Date.now(),
+        completedAt: Date.now(),
+      },
+    });
 
     const styleIds = selectedStyleId ? [selectedStyleId] : undefined;
     await generatePreviews(styleIds, { force: true });
