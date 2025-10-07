@@ -1,8 +1,6 @@
-import { ChangeEvent, DragEvent, useMemo, useRef, useState } from 'react';
+import { ChangeEvent, DragEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { clsx } from 'clsx';
-import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
-import Badge from '@/components/ui/Badge';
 import { useFounderStore } from '@/store/useFounderStore';
 import {
   readFileAsDataURL,
@@ -36,8 +34,10 @@ const PhotoUploader = () => {
   const orientationTip = useFounderStore((state) => state.orientationTip);
   const cropReadyAt = useFounderStore((state) => state.cropReadyAt);
   const isDragging = useFounderStore((state) => state.isDragging);
+  const uploadIntentAt = useFounderStore((state) => state.uploadIntentAt);
   const [isCropperOpen, setCropperOpen] = useState(false);
   const [cropSource, setCropSource] = useState<string | null>(null);
+  const lastHandledUploadIntentRef = useRef<number | null>(null);
 
   const cropReadyLabel = useMemo(() => {
     if (!cropReadyAt) return null;
@@ -114,6 +114,13 @@ const PhotoUploader = () => {
     });
     await processDataUrl(dataUrl);
   };
+
+  useEffect(() => {
+    if (!uploadIntentAt) return;
+    if (lastHandledUploadIntentRef.current === uploadIntentAt) return;
+    lastHandledUploadIntentRef.current = uploadIntentAt;
+    handleSelectFile();
+  }, [uploadIntentAt]);
 
   const handleOpenCropper = () => {
     if (!uploadedImage) return;

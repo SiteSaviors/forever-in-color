@@ -1,11 +1,11 @@
 import Section from '@/components/layout/Section';
 import Card from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
 import { useFounderStore } from '@/store/useFounderStore';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { emitStepOneEvent } from '@/utils/telemetry';
 import PhotoUploader from '@/components/launchpad/PhotoUploader';
 import ConfettiBurst from '@/components/launchpad/ConfettiBurst';
+import AccountPromptModal from '@/components/modals/AccountPromptModal';
 
 const LaunchpadLayout = () => {
   const styles = useFounderStore((state) => state.styles);
@@ -15,28 +15,42 @@ const LaunchpadLayout = () => {
   const previews = useFounderStore((state) => state.previews);
   const celebrationAt = useFounderStore((state) => state.celebrationAt);
   const uploadedImage = useFounderStore((state) => state.uploadedImage);
-  const orientation = useFounderStore((state) => state.orientation);
-  const orientationLabel = orientation.charAt(0).toUpperCase() + orientation.slice(1);
   const [confettiActive, setConfettiActive] = useState(false);
   const currentStyle = useFounderStore((state) => state.currentStyle());
-
-  useEffect(() => {
-    void generatePreviews(styles.slice(0, 3).map((style) => style.id));
-  }, [generatePreviews, styles]);
+  const accountPromptShown = useFounderStore((state) => state.accountPromptShown);
+  const shouldShowAccountPrompt = useFounderStore((state) => state.shouldShowAccountPrompt);
+  const setAccountPromptShown = useFounderStore((state) => state.setAccountPromptShown);
+  const incrementGenerationCount = useFounderStore((state) => state.incrementGenerationCount);
+  const [showAccountModal, setShowAccountModal] = useState(false);
 
   const handleStyleSelect = (id: string) => {
     selectStyle(id);
     emitStepOneEvent({ type: 'preview', styleId: id, status: 'generating' });
-    void generatePreviews([id]).then(() => emitStepOneEvent({ type: 'preview', styleId: id, status: 'ready' }));
+
+    // Increment generation counter when user selects a style
+    incrementGenerationCount();
+
+    void generatePreviews([id]).then(() => {
+      emitStepOneEvent({ type: 'preview', styleId: id, status: 'ready' });
+
+      // After generation completes, check if we should show account prompt
+      // Delay by 2 seconds to not interrupt the WOW moment
+      if (shouldShowAccountPrompt()) {
+        setTimeout(() => {
+          setAccountPromptShown(true);
+          setShowAccountModal(true);
+        }, 2000);
+      }
+    });
   };
 
   const previewTiles = useMemo(() => styles.slice(0, 4), [styles]);
   const currentPreviewState = currentStyle ? previews[currentStyle.id] : undefined;
   const statusLabel = currentPreviewState?.status === 'ready'
     ? 'Preview ready'
-    : currentPreviewState?.status === 'loading'
+    : currentPreviewState?.status === 'loading' || previewStatus === 'generating'
       ? 'Generating…'
-      : previewStatus;
+      : 'Awaiting upload';
 
   const lastStyleIdRef = useRef<string | null>(null);
   const lastPreviewStatusRef = useRef(previewStatus);
@@ -209,6 +223,12 @@ const LaunchpadLayout = () => {
           )}
         </aside>
       </div>
+
+      {/* Account Prompt Modal - Shows after 3rd generation */}
+      <AccountPromptModal
+        open={showAccountModal}
+        onClose={() => setShowAccountModal(false)}
+      />
     </Section>
   );
 };

@@ -53,6 +53,12 @@ type FounderState = {
   styleCarouselData: StyleCarouselCard[];
   hoveredStyleId: string | null;
   preselectedStyleId: string | null;
+  uploadIntentAt: number | null;
+  generationCount: number;
+  isAuthenticated: boolean;
+  accountPromptShown: boolean;
+  accountPromptDismissed: boolean;
+  subscriptionTier: 'free' | 'creator' | 'pro' | null;
   selectStyle: (id: string) => void;
   toggleEnhancement: (id: string) => void;
   setEnhancementEnabled: (id: string, enabled: boolean) => void;
@@ -68,6 +74,15 @@ type FounderState = {
   setDragging: (dragging: boolean) => void;
   setHoveredStyle: (id: string | null) => void;
   setPreselectedStyle: (id: string | null) => void;
+  requestUpload: (options?: { preselectedStyleId?: string }) => void;
+  incrementGenerationCount: () => void;
+  setAuthenticated: (status: boolean) => void;
+  setAccountPromptShown: (shown: boolean) => void;
+  dismissAccountPrompt: () => void;
+  setSubscriptionTier: (tier: FounderState['subscriptionTier']) => void;
+  shouldShowAccountPrompt: () => boolean;
+  canGenerateMore: () => boolean;
+  getGenerationLimit: () => number;
   computedTotal: () => number;
   currentStyle: () => StyleOption | undefined;
   livingCanvasEnabled: () => boolean;
@@ -97,6 +112,30 @@ const mockStyles: StyleOption[] = [
     thumbnail: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80',
     preview: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=900&q=80',
     priceModifier: 10,
+  },
+  {
+    id: 'oil-paint-classic',
+    name: 'Oil Paint Classic',
+    description: 'Traditional oil painting texture with bold brush strokes.',
+    thumbnail: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&w=400&q=80',
+    preview: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&w=900&q=80',
+    priceModifier: 15,
+  },
+  {
+    id: 'charcoal-sketch',
+    name: 'Charcoal Sketch',
+    description: 'Hand-drawn charcoal artistry with dramatic shading.',
+    thumbnail: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=400&q=80',
+    preview: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=900&q=80',
+    priceModifier: 12,
+  },
+  {
+    id: 'abstract-fusion',
+    name: 'Abstract Fusion',
+    description: 'Bold geometric abstraction with luminous color blocking.',
+    thumbnail: 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?auto=format&fit=crop&w=400&q=80',
+    preview: 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?auto=format&fit=crop&w=900&q=80',
+    priceModifier: 18,
   },
 ];
 
@@ -173,6 +212,62 @@ const mockCarouselData: StyleCarouselCard[] = [
     description: 'Bold geometric abstraction',
     ctaLabel: 'Try This Style →',
   },
+  {
+    id: 'pastel-serenade',
+    name: 'Pastel Serenade',
+    resultImage: 'https://images.unsplash.com/photo-1520690214124-2405f0ec57cc?auto=format&fit=crop&w=400&q=80',
+    originalImage: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80',
+    description: 'Gentle color washes with soft grain highlights',
+    ctaLabel: 'Try This Style →',
+  },
+  {
+    id: 'golden-hour-glow',
+    name: 'Golden Hour Glow',
+    resultImage: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80',
+    originalImage: 'https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb?auto=format&fit=crop&w=400&q=80',
+    description: 'Sun-kissed highlights with cinematic warmth',
+    ctaLabel: 'Try This Style →',
+  },
+  {
+    id: 'noir-dreamscape',
+    name: 'Noir Dreamscape',
+    resultImage: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=400&q=80',
+    originalImage: 'https://images.unsplash.com/photo-1504208434309-cb69f4fe52b0?auto=format&fit=crop&w=400&q=80',
+    description: 'Moody monochrome with sculpted lighting',
+    ctaLabel: 'Try This Style →',
+  },
+  {
+    id: 'midnight-spectrum',
+    name: 'Midnight Spectrum',
+    resultImage: 'https://images.unsplash.com/photo-1522098635831-696873ac66c1?auto=format&fit=crop&w=400&q=80',
+    originalImage: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=400&q=80',
+    description: 'Deep blues with neon light trails',
+    ctaLabel: 'Try This Style →',
+  },
+  {
+    id: 'vintage-mosaic',
+    name: 'Vintage Mosaic',
+    resultImage: 'https://images.unsplash.com/photo-1545239351-77ee02f37f43?auto=format&fit=crop&w=400&q=80',
+    originalImage: 'https://images.unsplash.com/photo-1504197885-609741792ce7?auto=format&fit=crop&w=400&q=80',
+    description: 'Textured collage with rich film tones',
+    ctaLabel: 'Try This Style →',
+  },
+  {
+    id: 'celestial-ink',
+    name: 'Celestial Ink',
+    resultImage: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=400&q=80',
+    originalImage: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80',
+    description: 'Starry gradients with inky depth',
+    ctaLabel: 'Try This Style →',
+  },
+  {
+    id: 'garden-lux',
+    name: 'Garden Lux',
+    resultImage: 'https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?auto=format&fit=crop&w=400&q=80',
+    originalImage: 'https://images.unsplash.com/photo-1504196605672-7ad8e5d7e8f9?auto=format&fit=crop&w=400&q=80',
+    description: 'Lush florals with painterly highlights',
+    ctaLabel: 'Try This Style →',
+  },
 ];
 
 export const useFounderStore = create<FounderState>((set, get) => ({
@@ -180,7 +275,7 @@ export const useFounderStore = create<FounderState>((set, get) => ({
   enhancements: mockEnhancements,
   selectedStyleId: mockStyles[0]?.id ?? null,
   basePrice: 129,
-  previewStatus: 'ready',
+  previewStatus: 'idle',
   previews: Object.fromEntries(mockStyles.map((style) => [style.id, { status: 'idle' as const }])),
   firstPreviewCompleted: false,
   livingCanvasModalOpen: false,
@@ -194,6 +289,12 @@ export const useFounderStore = create<FounderState>((set, get) => ({
   styleCarouselData: mockCarouselData,
   hoveredStyleId: null,
   preselectedStyleId: null,
+  uploadIntentAt: null,
+  generationCount: parseInt(sessionStorage.getItem('generation_count') || '0'),
+  isAuthenticated: !!localStorage.getItem('user_id'),
+  accountPromptShown: false,
+  accountPromptDismissed: sessionStorage.getItem('account_prompt_dismissed') === 'true',
+  subscriptionTier: (localStorage.getItem('subscription_tier') as FounderState['subscriptionTier']) || null,
   selectStyle: (id) => set({ selectedStyleId: id }),
   toggleEnhancement: (id) =>
     set((state) => {
@@ -221,6 +322,44 @@ export const useFounderStore = create<FounderState>((set, get) => ({
         [id]: previewState,
       },
     })),
+  setHoveredStyle: (id) => set({ hoveredStyleId: id ?? null }),
+  setPreselectedStyle: (id) =>
+    set((state) => {
+      if (!id) {
+        return {
+          preselectedStyleId: null,
+        };
+      }
+
+      const normalized = id.trim().toLowerCase();
+      const matchingStyle = state.styles.find((style) => style.id === normalized);
+
+      return {
+        preselectedStyleId: matchingStyle ? matchingStyle.id : normalized,
+        selectedStyleId: matchingStyle ? matchingStyle.id : state.selectedStyleId,
+      };
+    }),
+  requestUpload: (options) =>
+    set((state) => {
+      const now = Date.now();
+      const timestamp = state.uploadIntentAt && state.uploadIntentAt >= now ? state.uploadIntentAt + 1 : now;
+      const next: Partial<FounderState> = {
+        uploadIntentAt: timestamp,
+      };
+
+      const desiredStyleId = options?.preselectedStyleId?.trim().toLowerCase();
+      if (desiredStyleId) {
+        const matchingStyle = state.styles.find((style) => style.id === desiredStyleId);
+        if (matchingStyle) {
+          next.preselectedStyleId = matchingStyle.id;
+          next.selectedStyleId = matchingStyle.id;
+        } else {
+          next.preselectedStyleId = desiredStyleId;
+        }
+      }
+
+      return next;
+    }),
   generatePreviews: async (ids) => {
     const store = get();
     const targetStyles = ids ? store.styles.filter((style) => ids.includes(style.id)) : store.styles;
@@ -278,4 +417,66 @@ export const useFounderStore = create<FounderState>((set, get) => ({
     return styles.find((style) => style.id === selectedStyleId);
   },
   livingCanvasEnabled: () => get().enhancements.find((item) => item.id === 'living-canvas')?.enabled ?? false,
+  setHoveredStyle: (id) => set({ hoveredStyleId: id }),
+  setPreselectedStyle: (id) => set({ preselectedStyleId: id }),
+  requestUpload: (options) => {
+    if (options?.preselectedStyleId) {
+      set({ preselectedStyleId: options.preselectedStyleId });
+    }
+    set({ uploadIntentAt: Date.now() });
+  },
+  incrementGenerationCount: () => {
+    const newCount = get().generationCount + 1;
+    sessionStorage.setItem('generation_count', newCount.toString());
+    set({ generationCount: newCount });
+  },
+  setAuthenticated: (status) => {
+    if (status) {
+      localStorage.setItem('user_id', 'temp_user_' + Date.now());
+    } else {
+      localStorage.removeItem('user_id');
+    }
+    set({ isAuthenticated: status });
+  },
+  setAccountPromptShown: (shown) => set({ accountPromptShown: shown }),
+  dismissAccountPrompt: () => {
+    sessionStorage.setItem('account_prompt_dismissed', 'true');
+    set({ accountPromptDismissed: true, accountPromptShown: false });
+  },
+  setSubscriptionTier: (tier) => {
+    if (tier) {
+      localStorage.setItem('subscription_tier', tier);
+    } else {
+      localStorage.removeItem('subscription_tier');
+    }
+    set({ subscriptionTier: tier });
+  },
+  shouldShowAccountPrompt: () => {
+    const { generationCount, isAuthenticated, accountPromptShown, accountPromptDismissed } = get();
+    return generationCount === 3 && !isAuthenticated && !accountPromptShown && !accountPromptDismissed;
+  },
+  canGenerateMore: () => {
+    const { generationCount, isAuthenticated, subscriptionTier } = get();
+
+    // Pro tier: unlimited
+    if (subscriptionTier === 'pro') return true;
+
+    // Creator tier: unlimited (but watermarked)
+    if (subscriptionTier === 'creator') return true;
+
+    // Authenticated free tier: 8 limit
+    if (isAuthenticated) return generationCount < 8;
+
+    // Anonymous: 9 hard limit (soft prompt at 3)
+    return generationCount < 9;
+  },
+  getGenerationLimit: () => {
+    const { isAuthenticated, subscriptionTier } = get();
+
+    if (subscriptionTier === 'creator' || subscriptionTier === 'pro') {
+      return Infinity;
+    }
+
+    return isAuthenticated ? 8 : 9;
+  },
 }));
