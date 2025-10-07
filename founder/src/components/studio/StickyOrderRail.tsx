@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Card from '@/components/ui/Card';
 import { useFounderStore } from '@/store/useFounderStore';
 import { generateSmartCrop, ORIENTATION_PRESETS } from '@/utils/smartCrop';
 import type { Orientation } from '@/utils/imageUtils';
 
 const StickyOrderRail = () => {
+  const inFlightCropsRef = useRef<Map<Orientation, Promise<string>>>(new Map());
   const enhancements = useFounderStore((state) => state.enhancements);
   const toggleEnhancement = useFounderStore((state) => state.toggleEnhancement);
   const setLivingCanvasModalOpen = useFounderStore((state) => state.setLivingCanvasModalOpen);
@@ -24,9 +25,11 @@ const StickyOrderRail = () => {
   const setUploadedImage = useFounderStore((state) => state.setUploadedImage);
   const markCropReady = useFounderStore((state) => state.markCropReady);
   const setOrientationTip = useFounderStore((state) => state.setOrientationTip);
+  const orientationChanging = useFounderStore((state) => state.orientationChanging);
+  const setOrientationChanging = useFounderStore((state) => state.setOrientationChanging);
+  const shouldAutoGeneratePreviews = useFounderStore((state) => state.shouldAutoGeneratePreviews);
 
   const [selectedSize, setSelectedSize] = useState<'8x10' | '12x16' | '16x20' | '20x24'>('12x16');
-  const [orientationLoading, setOrientationLoading] = useState<Orientation | null>(null);
 
   const sizeOptions = [
     { id: '8x10', label: '8×10"', price: 49 },
@@ -59,15 +62,33 @@ const StickyOrderRail = () => {
       return;
     }
 
-    setOrientationLoading(orient);
+    setOrientationChanging(true);
 
+    // Check cache first
     let nextCrop = smartCrops[orient];
+
     if (!nextCrop) {
-      try {
-        nextCrop = await generateSmartCrop(originalImage, orient);
-        setSmartCropForOrientation(orient, nextCrop);
-      } catch {
-        nextCrop = originalImage;
+      // Check if already generating this orientation
+      if (inFlightCropsRef.current.has(orient)) {
+        // Wait for in-flight operation to complete
+        nextCrop = await inFlightCropsRef.current.get(orient)!;
+      } else {
+        // Start new smart crop generation
+        const promise = generateSmartCrop(originalImage, orient)
+          .then((result) => {
+            setSmartCropForOrientation(orient, result);
+            return result;
+          })
+          .catch(() => {
+            setSmartCropForOrientation(orient, originalImage);
+            return originalImage;
+          })
+          .finally(() => {
+            inFlightCropsRef.current.delete(orient);
+          });
+
+        inFlightCropsRef.current.set(orient, promise);
+        nextCrop = await promise;
       }
     }
 
@@ -87,10 +108,15 @@ const StickyOrderRail = () => {
       },
     });
 
-    const styleIds = selectedStyleId ? [selectedStyleId] : undefined;
-    await generatePreviews(styleIds, { force: true });
+    // Auto-preview generation on orientation change (disabled during testing)
+    if (shouldAutoGeneratePreviews()) {
+      const styleIds = selectedStyleId ? [selectedStyleId] : undefined;
+      await generatePreviews(styleIds, { force: true });
+    } else {
+      console.log('[StickyOrderRail] Auto-preview regeneration disabled (testing mode). Click styles in Studio to generate.');
+    }
 
-    setOrientationLoading(null);
+    setOrientationChanging(false);
   };
 
   return (
@@ -103,14 +129,14 @@ const StickyOrderRail = () => {
             <button
               key={orient}
               onClick={() => void handleOrientationSelect(orient)}
-              disabled={orientationLoading !== null}
+              disabled={orientationChanging}
               className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
                 orientation === orient
                   ? 'bg-purple-500 text-white shadow-glow-soft'
                   : 'bg-white/10 text-white/70 border border-white/20 hover:bg-white/20'
               }`}
             >
-              {orientationLoading === orient ? 'Updating…' : ORIENTATION_PRESETS[orient].label}
+              {orientationChanging && orientation === orient ? 'Updating…' : ORIENTATION_PRESETS[orient].label}
             </button>
           ))}
         </div>

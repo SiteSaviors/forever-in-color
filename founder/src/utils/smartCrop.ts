@@ -52,8 +52,6 @@ const loadImage = (src: string): Promise<HTMLImageElement> =>
 const analyzeImageForSubject = (image: HTMLImageElement): DetectionResult => {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
-  canvas.width = image.width;
-  canvas.height = image.height;
 
   if (!ctx) {
     const size = Math.min(image.width, image.height) * 0.8;
@@ -69,19 +67,32 @@ const analyzeImageForSubject = (image: HTMLImageElement): DetectionResult => {
     };
   }
 
-  ctx.drawImage(image, 0, 0);
-  const imageData = ctx.getImageData(0, 0, image.width, image.height);
+  // Downsample to max 1000px for analysis (5x+ speedup)
+  const MAX_ANALYSIS_SIZE = 1000;
+  const scale = Math.min(1, MAX_ANALYSIS_SIZE / Math.max(image.width, image.height));
+  const analysisWidth = Math.round(image.width * scale);
+  const analysisHeight = Math.round(image.height * scale);
+
+  canvas.width = analysisWidth;
+  canvas.height = analysisHeight;
+
+  // High-quality downsampling
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(image, 0, 0, analysisWidth, analysisHeight);
+
+  const imageData = ctx.getImageData(0, 0, analysisWidth, analysisHeight);
   const data = imageData.data;
-  const blocksX = Math.ceil(image.width / BLOCK_SIZE);
-  const blocksY = Math.ceil(image.height / BLOCK_SIZE);
+  const blocksX = Math.ceil(analysisWidth / BLOCK_SIZE);
+  const blocksY = Math.ceil(analysisHeight / BLOCK_SIZE);
 
   // Multi-peak analysis: find top 3 candidate regions
   const candidates: Array<{ x: number; y: number; score: number; hasFace: boolean }> = [];
 
   for (let by = 0; by < blocksY; by++) {
     for (let bx = 0; bx < blocksX; bx++) {
-      const saliency = calculateBlockSaliency(data, image.width, image.height, bx, by);
-      const faceScore = detectFaceFeatures(data, image.width, image.height, bx, by);
+      const saliency = calculateBlockSaliency(data, analysisWidth, analysisHeight, bx, by);
+      const faceScore = detectFaceFeatures(data, analysisWidth, analysisHeight, bx, by);
       const centerBias = calculateCenterBias(bx, by, blocksX, blocksY);
 
       // Combined score: saliency + face detection + center bias
@@ -97,22 +108,25 @@ const analyzeImageForSubject = (image: HTMLImageElement): DetectionResult => {
   const best = candidates[0];
 
   if (best && best.score > 0.2) {
-    // Adaptive region size based on detection quality
-    const regionSize = best.hasFace ? BLOCK_SIZE * 4 : BLOCK_SIZE * 3;
+    // Adaptive region size based on detection quality (as % of analyzed image)
+    const regionSizePercent = best.hasFace ? 0.25 : 0.20; // 20-25% of image
+    const regionSizeInAnalysis = Math.min(analysisWidth, analysisHeight) * regionSizePercent;
 
+    // Scale region back to original image dimensions
+    const scaleUpFactor = 1 / scale;
     return {
       region: {
-        x: Math.max(0, best.x - BLOCK_SIZE),
-        y: Math.max(0, best.y - BLOCK_SIZE),
-        width: Math.min(image.width - best.x, regionSize),
-        height: Math.min(image.height - best.y, regionSize),
+        x: Math.max(0, (best.x - BLOCK_SIZE) * scaleUpFactor),
+        y: Math.max(0, (best.y - BLOCK_SIZE) * scaleUpFactor),
+        width: Math.min(image.width - best.x * scaleUpFactor, regionSizeInAnalysis * scaleUpFactor),
+        height: Math.min(image.height - best.y * scaleUpFactor, regionSizeInAnalysis * scaleUpFactor),
       },
       confidence: Math.min(1, best.score),
       hasFace: best.hasFace,
     };
   }
 
-  // Fallback: rule of thirds center crop
+  // Fallback: rule of thirds center crop (already in original dimensions)
   const size = Math.min(image.width, image.height) * 0.8;
   return {
     region: {
@@ -308,9 +322,9 @@ const expandToAspect = (
   let newWidth = region.width;
   let newHeight = region.height;
 
-  // Adaptive expansion based on image size
+  // Adaptive expansion based on image size (gentler to avoid over-zooming)
   const imageSize = Math.max(imageWidth, imageHeight);
-  const expansionFactor = imageSize < 1000 ? 1.2 : imageSize > 2000 ? 2.0 : 1.6;
+  const expansionFactor = imageSize < 1000 ? 1.5 : imageSize > 2000 ? 1.8 : 1.6;
 
   if (orientation === 'square') {
     // For square, preserve detected subject center instead of forcing center crop
@@ -395,12 +409,28 @@ export const generateSmartCrop = async (
   imageUrl: string,
   orientation: Orientation
 ): Promise<string> => {
+  const startTime = performance.now();
+
   try {
     const image = await loadImage(imageUrl);
+    const analysisStart = performance.now();
     const detection = analyzeImageForSubject(image);
+    const analysisTime = performance.now() - analysisStart;
+
     const region = expandToAspect(detection.region, image.width, image.height, orientation);
-    return await applyCrop(image, region);
-  } catch {
+    const result = await applyCrop(image, region);
+
+    const totalTime = performance.now() - startTime;
+    console.log(
+      `[SmartCrop] ${orientation} | ${image.width}x${image.height} | ` +
+      `analysis: ${analysisTime.toFixed(0)}ms | total: ${totalTime.toFixed(0)}ms | ` +
+      `confidence: ${(detection.confidence * 100).toFixed(0)}% | face: ${detection.hasFace}`
+    );
+
+    return result;
+  } catch (error) {
+    const failTime = performance.now() - startTime;
+    console.error(`[SmartCrop] Failed after ${failTime.toFixed(0)}ms:`, error);
     return imageUrl;
   }
 };

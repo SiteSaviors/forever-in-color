@@ -19,6 +19,7 @@ const StudioConfigurator = () => {
   const setPreviewState = useFounderStore((state) => state.setPreviewState);
   const croppedImage = useFounderStore((state) => state.croppedImage);
   const orientation = useFounderStore((state) => state.orientation);
+  const orientationChanging = useFounderStore((state) => state.orientationChanging);
   const orientationMeta = ORIENTATION_PRESETS[orientation];
 
   const handleStyleClick = (styleId: string) => {
@@ -158,6 +159,16 @@ const StudioConfigurator = () => {
               className="relative rounded-3xl overflow-hidden border-2 border-white/20 bg-gradient-preview-bg shadow-2xl transition-all"
               style={{ aspectRatio: orientationMeta.ratio }}
             >
+              {/* Orientation changing overlay */}
+              {orientationChanging && (
+                <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-20">
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="w-12 h-12 border-4 border-purple-400/30 border-t-purple-400 rounded-full animate-spin" />
+                    <p className="text-white text-sm font-medium">Updating orientation...</p>
+                  </div>
+                </div>
+              )}
+
               {preview?.status === 'loading' && (
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 to-blue-900/20">
                   <div className="absolute inset-0 preview-skeleton" />

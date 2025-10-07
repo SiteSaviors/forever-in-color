@@ -5,6 +5,7 @@ import { useFounderStore } from '@/store/useFounderStore';
 import { readFileAsDataURL, detectOrientationFromDataUrl } from '@/utils/imageUtils';
 import CropperModal from '@/components/launchpad/cropper/CropperModal';
 import SmartCropPreview from '@/components/launchpad/SmartCropPreview';
+import AIAnalysisOverlay from '@/components/launchpad/AIAnalysisOverlay';
 import { emitStepOneEvent } from '@/utils/telemetry';
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
 import type { Orientation } from '@/utils/imageUtils';
@@ -26,6 +27,7 @@ const PhotoUploader = () => {
   const setDragging = useFounderStore((state) => state.setDragging);
   const generatePreviews = useFounderStore((state) => state.generatePreviews);
   const resetPreviews = useFounderStore((state) => state.resetPreviews);
+  const shouldAutoGeneratePreviews = useFounderStore((state) => state.shouldAutoGeneratePreviews);
   const setSmartCropForOrientation = useFounderStore((state) => state.setSmartCropForOrientation);
   const clearSmartCrops = useFounderStore((state) => state.clearSmartCrops);
   const setPreviewState = useFounderStore((state) => state.setPreviewState);
@@ -41,6 +43,7 @@ const PhotoUploader = () => {
   const [stage, setStage] = useState<UploadStage>('idle');
   const [pendingOrientation, setPendingOrientation] = useState<Orientation>('square');
   const lastHandledUploadIntentRef = useRef<number | null>(null);
+  const inFlightCropsRef = useRef<Map<Orientation, Promise<string>>>(new Map());
 
   const cropReadyLabel = useMemo(() => {
     if (!cropReadyAt) return null;
@@ -95,7 +98,7 @@ const PhotoUploader = () => {
     setOrientationTip(ORIENTATION_PRESETS[detectedOrientation].description);
     emitStepOneEvent({ type: 'upload_success', value: detectedOrientation });
 
-    setStage('preview');
+    // Note: AIAnalysisOverlay will call setStage('preview') when animation completes
   };
 
   const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -128,15 +131,22 @@ const PhotoUploader = () => {
     handleSelectFile();
   }, [uploadIntentAt]);
 
-  const finalizeCrop = async (dataUrl: string, source: 'auto' | 'manual') => {
-    setSmartCropForOrientation(orientation, dataUrl);
+  const finalizeCrop = async (dataUrl: string, source: 'auto' | 'manual', chosenOrientation?: Orientation) => {
+    const targetOrientation = chosenOrientation ?? orientation;
+    const orientationChanged = targetOrientation !== orientation;
+
+    setSmartCropForOrientation(targetOrientation, dataUrl);
     setCroppedImage(dataUrl);
     setUploadedImage(dataUrl);
-    setOrientationTip(ORIENTATION_PRESETS[orientation].description);
+
+    if (orientationChanged) {
+      setOrientation(targetOrientation);
+    }
+
+    setOrientationTip(ORIENTATION_PRESETS[targetOrientation].description);
     markCropReady();
     emitStepOneEvent({ type: 'substep', value: source === 'auto' ? 'complete' : 'crop' });
     setStage('complete');
-    resetPreviews();
 
     // Populate "Original Image" style with user's cropped photo immediately
     setPreviewState('original-image', {
@@ -149,7 +159,19 @@ const PhotoUploader = () => {
       },
     });
 
-    await generatePreviews(undefined, { force: true });
+    // Auto-preview generation (disabled during testing to save API costs)
+    if (shouldAutoGeneratePreviews()) {
+      // Only force regeneration if orientation changed or this is the initial crop
+      if (orientationChanged || source === 'auto') {
+        resetPreviews();
+        await generatePreviews(undefined, { force: true });
+      } else {
+        // Manual crop with same orientation: only regenerate if previews don't exist
+        await generatePreviews(undefined, { force: false });
+      }
+    } else {
+      console.log('[PhotoUploader] Auto-preview generation disabled (testing mode). Click styles in Studio to generate.');
+    }
   };
 
   const handleAcceptSmartCrop = async (dataUrl: string) => {
@@ -174,6 +196,17 @@ const PhotoUploader = () => {
     await finalizeCrop(dataUrl, 'manual');
     setCropperOpen(false);
   };
+
+  if (stage === 'analyzing' && originalImage) {
+    return (
+      <Card glass className="space-y-6 relative overflow-hidden">
+        <AIAnalysisOverlay
+          imageUrl={originalImage}
+          onComplete={() => setStage('preview')}
+        />
+      </Card>
+    );
+  }
 
   if (stage === 'preview' && originalImage) {
     return (

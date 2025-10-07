@@ -2,6 +2,15 @@ import { create } from 'zustand';
 import { fetchPreviewForStyle, PreviewResult } from '@/utils/previewClient';
 import type { Orientation } from '@/utils/imageUtils';
 
+/**
+ * TESTING MODE FLAG
+ * Set to `false` to disable automatic preview generation (saves API costs during testing)
+ * Set to `true` to enable automatic preview generation (production behavior)
+ *
+ * When disabled, previews only generate when user manually clicks a style in Studio
+ */
+const ENABLE_AUTO_PREVIEWS = false;
+
 export type StyleOption = {
   id: string;
   name: string;
@@ -62,6 +71,8 @@ type FounderState = {
   accountPromptTriggerAt: number | null;
   originalImage: string | null;
   smartCrops: Partial<Record<Orientation, string>>;
+  orientationChanging: boolean;
+  setOrientationChanging: (loading: boolean) => void;
   selectStyle: (id: string) => void;
   toggleEnhancement: (id: string) => void;
   setEnhancementEnabled: (id: string, enabled: boolean) => void;
@@ -90,6 +101,7 @@ type FounderState = {
   shouldShowAccountPrompt: () => boolean;
   canGenerateMore: () => boolean;
   getGenerationLimit: () => number;
+  shouldAutoGeneratePreviews: () => boolean;
   computedTotal: () => number;
   currentStyle: () => StyleOption | undefined;
   livingCanvasEnabled: () => boolean;
@@ -353,6 +365,8 @@ export const useFounderStore = create<FounderState>((set, get) => ({
   accountPromptTriggerAt: null,
   originalImage: null,
   smartCrops: {},
+  orientationChanging: false,
+  setOrientationChanging: (loading) => set({ orientationChanging: loading }),
   selectStyle: (id) => set({ selectedStyleId: id }),
   toggleEnhancement: (id) =>
     set((state) => {
@@ -436,6 +450,12 @@ export const useFounderStore = create<FounderState>((set, get) => ({
   generatePreviews: async (ids, options = {}) => {
     const store = get();
     const state = get();
+
+    // Guard: Prevent concurrent generation calls
+    if (state.previewStatus === 'generating') {
+      console.warn('[generatePreviews] Already generating, skipping duplicate call');
+      return;
+    }
 
     let targetStyles: StyleOption[];
     if (ids && ids.length > 0) {
@@ -615,5 +635,8 @@ export const useFounderStore = create<FounderState>((set, get) => ({
     }
 
     return isAuthenticated ? 8 : 9;
+  },
+  shouldAutoGeneratePreviews: () => {
+    return ENABLE_AUTO_PREVIEWS;
   },
 }));
