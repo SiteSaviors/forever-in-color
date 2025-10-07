@@ -60,6 +60,9 @@ type FounderState = {
   accountPromptDismissed: boolean;
   subscriptionTier: 'free' | 'creator' | 'pro' | null;
   accountPromptTriggerAt: number | null;
+  originalImage: string | null;
+  smartCrops: Partial<Record<Orientation, string>>;
+  accountPromptTriggerAt: number | null;
   selectStyle: (id: string) => void;
   toggleEnhancement: (id: string) => void;
   setEnhancementEnabled: (id: string, enabled: boolean) => void;
@@ -69,6 +72,7 @@ type FounderState = {
   setLivingCanvasModalOpen: (open: boolean) => void;
   setUploadedImage: (dataUrl: string | null) => void;
   setCroppedImage: (dataUrl: string | null) => void;
+  setOriginalImage: (dataUrl: string | null) => void;
   setOrientation: (orientation: FounderState['orientation']) => void;
   setOrientationTip: (tip: string | null) => void;
   markCropReady: () => void;
@@ -77,6 +81,8 @@ type FounderState = {
   setPreselectedStyle: (id: string | null) => void;
   requestUpload: (options?: { preselectedStyleId?: string }) => void;
   resetPreviews: () => void;
+  setSmartCropForOrientation: (orientation: Orientation, dataUrl: string) => void;
+  clearSmartCrops: () => void;
   incrementGenerationCount: () => void;
   setAuthenticated: (status: boolean) => void;
   setAccountPromptShown: (shown: boolean) => void;
@@ -346,6 +352,8 @@ export const useFounderStore = create<FounderState>((set, get) => ({
   accountPromptDismissed: sessionStorage.getItem('account_prompt_dismissed') === 'true',
   subscriptionTier: (localStorage.getItem('subscription_tier') as FounderState['subscriptionTier']) || null,
   accountPromptTriggerAt: null,
+  originalImage: null,
+  smartCrops: {},
   selectStyle: (id) => set({ selectedStyleId: id }),
   toggleEnhancement: (id) =>
     set((state) => {
@@ -380,6 +388,14 @@ export const useFounderStore = create<FounderState>((set, get) => ({
       ),
       previewStatus: 'idle',
     })),
+  setSmartCropForOrientation: (orientation, dataUrl) =>
+    set((state) => ({
+      smartCrops: {
+        ...state.smartCrops,
+        [orientation]: dataUrl,
+      },
+    })),
+  clearSmartCrops: () => set({ smartCrops: {} }),
   setHoveredStyle: (id) => set({ hoveredStyleId: id ?? null }),
   setPreselectedStyle: (id) =>
     set((state) => {
@@ -466,9 +482,21 @@ export const useFounderStore = create<FounderState>((set, get) => ({
         store.setPreviewState(style.id, { status: 'loading' });
 
         try {
+          const baseImage =
+            stateBefore.croppedImage ??
+            stateBefore.smartCrops[stateBefore.orientation] ??
+            stateBefore.uploadedImage ??
+            stateBefore.originalImage ??
+            undefined;
+
+          if (!baseImage) {
+            store.setPreviewState(style.id, { status: 'idle' });
+            return;
+          }
+
           const result = await fetchPreviewForStyle(
             style,
-            stateBefore.croppedImage ?? stateBefore.uploadedImage ?? undefined
+            baseImage
           );
           store.setPreviewState(style.id, { status: 'ready', data: result });
           generatedAny = true;
@@ -496,6 +524,7 @@ export const useFounderStore = create<FounderState>((set, get) => ({
   setLivingCanvasModalOpen: (open) => set({ livingCanvasModalOpen: open }),
   setUploadedImage: (dataUrl) => set({ uploadedImage: dataUrl }),
   setCroppedImage: (dataUrl) => set({ croppedImage: dataUrl }),
+  setOriginalImage: (dataUrl) => set({ originalImage: dataUrl }),
   setOrientation: (orientation) => set({ orientation }),
   setOrientationTip: (tip) => set({ orientationTip: tip }),
   markCropReady: () => set({ cropReadyAt: Date.now() }),

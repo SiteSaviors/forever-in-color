@@ -3,6 +3,7 @@ import Section from '@/components/layout/Section';
 import { useFounderStore } from '@/store/useFounderStore';
 import StickyOrderRail from '@/components/studio/StickyOrderRail';
 import LivingCanvasModal from '@/components/studio/LivingCanvasModal';
+import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
 
 const StudioConfigurator = () => {
   const styles = useFounderStore((state) => state.styles);
@@ -15,6 +16,8 @@ const StudioConfigurator = () => {
   const getGenerationLimit = useFounderStore((state) => state.getGenerationLimit);
   const canGenerateMore = useFounderStore((state) => state.canGenerateMore);
   const generatePreviews = useFounderStore((state) => state.generatePreviews);
+  const orientation = useFounderStore((state) => state.orientation);
+  const orientationMeta = ORIENTATION_PRESETS[orientation];
 
   const handleStyleClick = (styleId: string) => {
     selectStyle(styleId);
@@ -134,8 +137,11 @@ const StudioConfigurator = () => {
         {/* CENTER: Canvas Preview (Flexible) */}
         <main className="flex-1 p-8 flex flex-col items-center justify-start">
           <div className="w-full max-w-2xl">
-            {/* Canvas Preview - Reduced size */}
-            <div className="relative aspect-square rounded-3xl overflow-hidden border-2 border-white/20 bg-gradient-preview-bg shadow-2xl">
+            {/* Canvas Preview */}
+            <div
+              className="relative rounded-3xl overflow-hidden border-2 border-white/20 bg-gradient-preview-bg shadow-2xl transition-all"
+              style={{ aspectRatio: orientationMeta.ratio }}
+            >
               {preview?.status === 'loading' && (
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 to-blue-900/20">
                   <div className="absolute inset-0 preview-skeleton" />
@@ -181,6 +187,10 @@ const StudioConfigurator = () => {
                   </div>
                 </div>
               )}
+
+              <div className="absolute top-6 left-6 px-4 py-2 rounded-full bg-white/10 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 backdrop-blur">
+                {orientationMeta.label}
+              </div>
 
               {/* Ready Badge */}
               {preview?.status === 'ready' && (

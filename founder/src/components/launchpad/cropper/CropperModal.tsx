@@ -10,9 +10,10 @@ interface CropperModalProps {
   image: string | null;
   onClose: () => void;
   onComplete: (dataUrl: string) => Promise<void> | void;
+  aspectRatio?: number;
 }
 
-const CropperModal = ({ open, image, onClose, onComplete }: CropperModalProps) => {
+const CropperModal = ({ open, image, onClose, onComplete, aspectRatio = 1 }: CropperModalProps) => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
@@ -26,12 +27,16 @@ const CropperModal = ({ open, image, onClose, onComplete }: CropperModalProps) =
     if (!image || !croppedAreaPixels) return;
     setSubmitting(true);
     try {
+      const baseSize = 1024;
+      const outputWidth = aspectRatio >= 1 ? baseSize : Math.round(baseSize * aspectRatio);
+      const outputHeight = aspectRatio >= 1 ? Math.round(baseSize / aspectRatio) : baseSize;
+
       const cropped = await cropImageToDataUrl(image, {
         x: croppedAreaPixels.x,
         y: croppedAreaPixels.y,
         width: croppedAreaPixels.width,
         height: croppedAreaPixels.height,
-      }, 1024, 1024);
+      }, outputWidth, outputHeight);
       await onComplete(cropped);
     } finally {
       setSubmitting(false);
@@ -46,7 +51,7 @@ const CropperModal = ({ open, image, onClose, onComplete }: CropperModalProps) =
           <div className="bg-slate-900 border border-white/10 rounded-[2rem] shadow-founder w-full max-w-3xl p-6 space-y-4">
             <Dialog.Title className="text-xl font-semibold text-white">Adjust Crop</Dialog.Title>
             <Dialog.Description className="text-sm text-white/60">
-              Drag to reposition or zoom. We maintain a 1:1 crop so previews stay consistent across styles.
+              Drag to reposition or zoom. We maintain the current canvas ratio so your preview matches the final art.
             </Dialog.Description>
             <div className="relative h-[60vh] bg-black/40 rounded-2xl overflow-hidden">
               {image && (
@@ -54,7 +59,7 @@ const CropperModal = ({ open, image, onClose, onComplete }: CropperModalProps) =
                   image={image}
                   crop={crop}
                   zoom={zoom}
-                  aspect={1}
+                  aspect={aspectRatio}
                   onCropChange={setCrop}
                   onZoomChange={setZoom}
                   onCropComplete={onCropComplete}

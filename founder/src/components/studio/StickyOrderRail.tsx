@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import Card from '@/components/ui/Card';
 import { useFounderStore } from '@/store/useFounderStore';
-import { useState } from 'react';
+import { generateSmartCrop, ORIENTATION_PRESETS } from '@/utils/smartCrop';
+import type { Orientation } from '@/utils/imageUtils';
 
 const StickyOrderRail = () => {
   const enhancements = useFounderStore((state) => state.enhancements);
@@ -12,11 +14,18 @@ const StickyOrderRail = () => {
   const orientation = useFounderStore((state) => state.orientation);
   const setOrientation = useFounderStore((state) => state.setOrientation);
   const resetPreviews = useFounderStore((state) => state.resetPreviews);
-  const canGenerateMore = useFounderStore((state) => state.canGenerateMore);
   const generatePreviews = useFounderStore((state) => state.generatePreviews);
   const selectedStyleId = useFounderStore((state) => state.selectedStyleId);
+  const originalImage = useFounderStore((state) => state.originalImage);
+  const smartCrops = useFounderStore((state) => state.smartCrops);
+  const setSmartCropForOrientation = useFounderStore((state) => state.setSmartCropForOrientation);
+  const setCroppedImage = useFounderStore((state) => state.setCroppedImage);
+  const setUploadedImage = useFounderStore((state) => state.setUploadedImage);
+  const markCropReady = useFounderStore((state) => state.markCropReady);
+  const setOrientationTip = useFounderStore((state) => state.setOrientationTip);
 
   const [selectedSize, setSelectedSize] = useState<'8x10' | '12x16' | '16x20' | '20x24'>('12x16');
+  const [orientationLoading, setOrientationLoading] = useState<Orientation | null>(null);
 
   const sizeOptions = [
     { id: '8x10', label: '8×10"', price: 49 },
@@ -40,6 +49,38 @@ const StickyOrderRail = () => {
     }
   };
 
+  const handleOrientationSelect = async (orient: Orientation) => {
+    if (orientation === orient) return;
+    setOrientation(orient);
+    setOrientationTip(ORIENTATION_PRESETS[orient].description);
+
+    if (!originalImage) {
+      return;
+    }
+
+    setOrientationLoading(orient);
+
+    let nextCrop = smartCrops[orient];
+    if (!nextCrop) {
+      try {
+        nextCrop = await generateSmartCrop(originalImage, orient);
+        setSmartCropForOrientation(orient, nextCrop);
+      } catch {
+        nextCrop = originalImage;
+      }
+    }
+
+    setCroppedImage(nextCrop);
+    setUploadedImage(nextCrop);
+    markCropReady();
+    resetPreviews();
+
+    const styleIds = selectedStyleId ? [selectedStyleId] : undefined;
+    await generatePreviews(styleIds, { force: true });
+
+    setOrientationLoading(null);
+  };
+
   return (
     <aside className="md:sticky md:top-24 space-y-4">
       {/* Orientation Selector */}
@@ -49,21 +90,15 @@ const StickyOrderRail = () => {
           {(['vertical', 'square', 'horizontal'] as const).map((orient) => (
             <button
               key={orient}
-              onClick={() => {
-                if (orientation === orient) return;
-                setOrientation(orient);
-                resetPreviews();
-                if (selectedStyleId && canGenerateMore()) {
-                  void generatePreviews([selectedStyleId], { force: true });
-                }
-              }}
+              onClick={() => void handleOrientationSelect(orient)}
+              disabled={orientationLoading !== null}
               className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
                 orientation === orient
                   ? 'bg-purple-500 text-white shadow-glow-soft'
                   : 'bg-white/10 text-white/70 border border-white/20 hover:bg-white/20'
               }`}
             >
-              {orient === 'vertical' ? 'Portrait' : orient === 'square' ? 'Square' : 'Landscape'}
+              {orientationLoading === orient ? 'Updating…' : ORIENTATION_PRESETS[orient].label}
             </button>
           ))}
         </div>
