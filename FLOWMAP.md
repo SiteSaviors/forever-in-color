@@ -8,7 +8,7 @@
 ---
 
 ## Table of Contents
-2. [STATE 1: Product Page Hero](#state-1-product-page-hero)
+2. [STATE 1: Product Page Hero] AI 
 3. [STATE 2: Cropper](#state-2-cropper)
 4. [STATE 3: Preview Generation](#state-3-preview-generation)
 5. [STATE 3A: First Preview Reveal](#state-3a-first-preview-reveal)

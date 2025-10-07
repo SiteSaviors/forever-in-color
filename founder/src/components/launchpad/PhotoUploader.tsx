@@ -28,6 +28,7 @@ const PhotoUploader = () => {
   const markCropReady = useFounderStore((state) => state.markCropReady);
   const setDragging = useFounderStore((state) => state.setDragging);
   const generatePreviews = useFounderStore((state) => state.generatePreviews);
+  const resetPreviews = useFounderStore((state) => state.resetPreviews);
   const uploadedImage = useFounderStore((state) => state.uploadedImage);
   const croppedImage = useFounderStore((state) => state.croppedImage);
   const orientation = useFounderStore((state) => state.orientation);
@@ -89,6 +90,7 @@ const PhotoUploader = () => {
     setCroppedImage(cropped);
     setCropSource(dataUrl);
     markCropReady();
+    resetPreviews();
     await generatePreviews();
   };
 
@@ -133,6 +135,7 @@ const PhotoUploader = () => {
     setCropperOpen(false);
     emitStepOneEvent({ type: 'substep', value: 'crop' });
     markCropReady();
+    resetPreviews();
     await generatePreviews();
   };
 

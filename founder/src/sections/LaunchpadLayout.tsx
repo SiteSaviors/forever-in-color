@@ -9,6 +9,7 @@ const LaunchpadLayout = () => {
   const croppedImage = useFounderStore((state) => state.croppedImage);
   const cropReadyAt = useFounderStore((state) => state.cropReadyAt);
   const accountPromptShown = useFounderStore((state) => state.accountPromptShown);
+  const accountPromptTriggerAt = useFounderStore((state) => state.accountPromptTriggerAt);
   const [showAccountModal, setShowAccountModal] = useState(false);
 
   useEffect(() => {
@@ -16,8 +17,15 @@ const LaunchpadLayout = () => {
   }, []);
 
   useEffect(() => {
-    if (accountPromptShown) {
-      setShowAccountModal(true);
+    if (!accountPromptTriggerAt) return;
+    const delay = Math.max(0, accountPromptTriggerAt + 2000 - Date.now());
+    const timer = window.setTimeout(() => setShowAccountModal(true), delay);
+    return () => window.clearTimeout(timer);
+  }, [accountPromptTriggerAt]);
+
+  useEffect(() => {
+    if (!accountPromptShown) {
+      setShowAccountModal(false);
     }
   }, [accountPromptShown]);
 

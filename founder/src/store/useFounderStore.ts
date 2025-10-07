@@ -59,12 +59,13 @@ type FounderState = {
   accountPromptShown: boolean;
   accountPromptDismissed: boolean;
   subscriptionTier: 'free' | 'creator' | 'pro' | null;
+  accountPromptTriggerAt: number | null;
   selectStyle: (id: string) => void;
   toggleEnhancement: (id: string) => void;
   setEnhancementEnabled: (id: string, enabled: boolean) => void;
   setPreviewStatus: (status: FounderState['previewStatus']) => void;
   setPreviewState: (id: string, state: PreviewState) => void;
-  generatePreviews: (ids?: string[]) => Promise<void>;
+  generatePreviews: (ids?: string[], options?: { force?: boolean }) => Promise<void>;
   setLivingCanvasModalOpen: (open: boolean) => void;
   setUploadedImage: (dataUrl: string | null) => void;
   setCroppedImage: (dataUrl: string | null) => void;
@@ -75,6 +76,7 @@ type FounderState = {
   setHoveredStyle: (id: string | null) => void;
   setPreselectedStyle: (id: string | null) => void;
   requestUpload: (options?: { preselectedStyleId?: string }) => void;
+  resetPreviews: () => void;
   incrementGenerationCount: () => void;
   setAuthenticated: (status: boolean) => void;
   setAccountPromptShown: (shown: boolean) => void;
@@ -343,6 +345,7 @@ export const useFounderStore = create<FounderState>((set, get) => ({
   accountPromptShown: false,
   accountPromptDismissed: sessionStorage.getItem('account_prompt_dismissed') === 'true',
   subscriptionTier: (localStorage.getItem('subscription_tier') as FounderState['subscriptionTier']) || null,
+  accountPromptTriggerAt: null,
   selectStyle: (id) => set({ selectedStyleId: id }),
   toggleEnhancement: (id) =>
     set((state) => {
@@ -369,6 +372,13 @@ export const useFounderStore = create<FounderState>((set, get) => ({
         ...state.previews,
         [id]: previewState,
       },
+    })),
+  resetPreviews: () =>
+    set((state) => ({
+      previews: Object.fromEntries(
+        state.styles.map((style) => [style.id, { status: 'idle' as const }])
+      ),
+      previewStatus: 'idle',
     })),
   setHoveredStyle: (id) => set({ hoveredStyleId: id ?? null }),
   setPreselectedStyle: (id) =>
@@ -408,21 +418,61 @@ export const useFounderStore = create<FounderState>((set, get) => ({
 
       return next;
     }),
-  generatePreviews: async (ids) => {
+  generatePreviews: async (ids, options = {}) => {
     const store = get();
-    const targetStyles = ids ? store.styles.filter((style) => ids.includes(style.id)) : store.styles;
+    const state = get();
+
+    let targetStyles: StyleOption[];
+    if (ids && ids.length > 0) {
+      targetStyles = store.styles.filter((style) => ids.includes(style.id));
+    } else {
+      const prioritized: StyleOption[] = [];
+      if (state.selectedStyleId) {
+        const selected = store.styles.find((style) => style.id === state.selectedStyleId);
+        if (selected) {
+          prioritized.push(selected);
+        }
+      }
+
+      for (const style of store.styles) {
+        if (prioritized.length >= 3) break;
+        if (prioritized.some((item) => item.id === style.id)) continue;
+        prioritized.push(style);
+      }
+
+      targetStyles = prioritized;
+    }
+
     if (!targetStyles.length) return;
 
     set({ previewStatus: 'generating' });
-    targetStyles.forEach((style) => {
-      store.setPreviewState(style.id, { status: 'loading' });
-    });
+
+    let generatedAny = false;
 
     await Promise.all(
       targetStyles.map(async (style) => {
+        const stateBefore = get();
+
+        // If a preview is already ready and not forcing a refresh, reuse it.
+        if (!options.force && stateBefore.previews[style.id]?.status === 'ready') {
+          return;
+        }
+
+        if (!stateBefore.canGenerateMore()) {
+          store.setPreviewState(style.id, { status: 'idle' });
+          return;
+        }
+
+        store.setPreviewState(style.id, { status: 'loading' });
+
         try {
-          const result = await fetchPreviewForStyle(style, store.croppedImage ?? store.uploadedImage ?? undefined);
+          const result = await fetchPreviewForStyle(
+            style,
+            stateBefore.croppedImage ?? stateBefore.uploadedImage ?? undefined
+          );
           store.setPreviewState(style.id, { status: 'ready', data: result });
+          generatedAny = true;
+          store.incrementGenerationCount();
         } catch (error) {
           store.setPreviewState(style.id, {
             status: 'error',
@@ -436,11 +486,9 @@ export const useFounderStore = create<FounderState>((set, get) => ({
       const nextState: Partial<FounderState> = {
         previewStatus: 'ready',
       };
-      if (!state.firstPreviewCompleted) {
+      if (generatedAny && !state.firstPreviewCompleted) {
         nextState.firstPreviewCompleted = true;
         nextState.celebrationAt = Date.now();
-        // Living Canvas modal will be shown later in the Studio flow, not immediately after first preview
-        // This prevents interrupting the user's momentum and allows them to continue to customization
       }
       return nextState;
     });
@@ -465,18 +513,22 @@ export const useFounderStore = create<FounderState>((set, get) => ({
     return styles.find((style) => style.id === selectedStyleId);
   },
   livingCanvasEnabled: () => get().enhancements.find((item) => item.id === 'living-canvas')?.enabled ?? false,
-  setHoveredStyle: (id) => set({ hoveredStyleId: id }),
-  setPreselectedStyle: (id) => set({ preselectedStyleId: id }),
-  requestUpload: (options) => {
-    if (options?.preselectedStyleId) {
-      set({ preselectedStyleId: options.preselectedStyleId });
-    }
-    set({ uploadIntentAt: Date.now() });
-  },
   incrementGenerationCount: () => {
-    const newCount = get().generationCount + 1;
+    const state = get();
+    const newCount = state.generationCount + 1;
     sessionStorage.setItem('generation_count', newCount.toString());
-    set({ generationCount: newCount });
+
+    const shouldPrompt =
+      newCount === 3 &&
+      !state.isAuthenticated &&
+      !state.accountPromptDismissed &&
+      !state.accountPromptShown;
+
+    set({
+      generationCount: newCount,
+      accountPromptShown: shouldPrompt ? true : state.accountPromptShown,
+      accountPromptTriggerAt: shouldPrompt ? Date.now() : state.accountPromptTriggerAt,
+    });
   },
   setAuthenticated: (status) => {
     if (status) {
@@ -484,12 +536,21 @@ export const useFounderStore = create<FounderState>((set, get) => ({
     } else {
       localStorage.removeItem('user_id');
     }
-    set({ isAuthenticated: status });
+    set((state) => ({
+      isAuthenticated: status,
+      accountPromptShown: status ? false : state.accountPromptShown,
+      accountPromptTriggerAt: status ? null : state.accountPromptTriggerAt,
+      accountPromptDismissed: status ? false : state.accountPromptDismissed,
+    }));
   },
-  setAccountPromptShown: (shown) => set({ accountPromptShown: shown }),
+  setAccountPromptShown: (shown) =>
+    set({
+      accountPromptShown: shown,
+      accountPromptTriggerAt: shown ? Date.now() : null,
+    }),
   dismissAccountPrompt: () => {
     sessionStorage.setItem('account_prompt_dismissed', 'true');
-    set({ accountPromptDismissed: true, accountPromptShown: false });
+    set({ accountPromptDismissed: true, accountPromptShown: false, accountPromptTriggerAt: null });
   },
   setSubscriptionTier: (tier) => {
     if (tier) {
@@ -501,7 +562,7 @@ export const useFounderStore = create<FounderState>((set, get) => ({
   },
   shouldShowAccountPrompt: () => {
     const { generationCount, isAuthenticated, accountPromptShown, accountPromptDismissed } = get();
-    return generationCount === 3 && !isAuthenticated && !accountPromptShown && !accountPromptDismissed;
+    return generationCount >= 3 && !isAuthenticated && !accountPromptShown && !accountPromptDismissed;
   },
   canGenerateMore: () => {
     const { generationCount, isAuthenticated, subscriptionTier } = get();

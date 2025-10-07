@@ -11,6 +11,10 @@ const StickyOrderRail = () => {
   const currentStyle = useFounderStore((state) => state.currentStyle());
   const orientation = useFounderStore((state) => state.orientation);
   const setOrientation = useFounderStore((state) => state.setOrientation);
+  const resetPreviews = useFounderStore((state) => state.resetPreviews);
+  const canGenerateMore = useFounderStore((state) => state.canGenerateMore);
+  const generatePreviews = useFounderStore((state) => state.generatePreviews);
+  const selectedStyleId = useFounderStore((state) => state.selectedStyleId);
 
   const [selectedSize, setSelectedSize] = useState<'8x10' | '12x16' | '16x20' | '20x24'>('12x16');
 
@@ -45,7 +49,14 @@ const StickyOrderRail = () => {
           {(['vertical', 'square', 'horizontal'] as const).map((orient) => (
             <button
               key={orient}
-              onClick={() => setOrientation(orient)}
+              onClick={() => {
+                if (orientation === orient) return;
+                setOrientation(orient);
+                resetPreviews();
+                if (selectedStyleId && canGenerateMore()) {
+                  void generatePreviews([selectedStyleId], { force: true });
+                }
+              }}
               className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
                 orientation === orient
                   ? 'bg-purple-500 text-white shadow-glow-soft'

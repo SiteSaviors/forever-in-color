@@ -13,10 +13,21 @@ const StudioConfigurator = () => {
   const preview = currentStyle ? previews[currentStyle.id] : undefined;
   const generationCount = useFounderStore((state) => state.generationCount);
   const getGenerationLimit = useFounderStore((state) => state.getGenerationLimit);
+  const canGenerateMore = useFounderStore((state) => state.canGenerateMore);
+  const generatePreviews = useFounderStore((state) => state.generatePreviews);
 
   const handleStyleClick = (styleId: string) => {
     selectStyle(styleId);
-    // TODO: Generate preview if not cached + increment generation counter
+    const previewState = previews[styleId];
+    if (previewState?.status === 'loading' || previewState?.status === 'ready') {
+      return;
+    }
+
+    if (!canGenerateMore()) {
+      return;
+    }
+
+    void generatePreviews([styleId]);
   };
 
   const limit = getGenerationLimit();
