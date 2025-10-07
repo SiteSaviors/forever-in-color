@@ -7,14 +7,16 @@ This session brought the founder `/create` flow to parity—and beyond—with th
 
 ## Core Deliverables
 
-### 1. Smart Crop Engine & Preview Stage (STATE 2)
+### 1. Smart Crop Engine, AI Overlay & Preview Stage (STATE 2)
 - Added `founder/src/utils/smartCrop.ts` with saliency‑based subject detection, aspect‑ratio expansion, and canvas export helpers tuned for portrait/square/landscape.
-- Introduced `SmartCropPreview` (founder/src/components/launchpad/SmartCropPreview.tsx) that:
+- Upgraded the analyzer with smaller 16px sampling blocks, skin-tone/edge based face heuristics, rule-of-thirds biasing, and high-resolution PNG output.
+- Introduced `AIAnalysisOverlay` (founder/src/components/launchpad/AIAnalysisOverlay.tsx) for the 2.5s “AI Analysis” moment before the crop preview, now wired into `PhotoUploader`.
+- Updated `SmartCropPreview` (founder/src/components/launchpad/SmartCropPreview.tsx) to:
   - Shows AI analysis status, orientation reasoning, and the generated crop.
   - Offers `Perfect! Use This` vs. `Adjust Crop` before moving forward.
 - Rebuilt `PhotoUploader.tsx` to orchestrate:
   1. Upload / drag‑drop → orientation detection (`detectOrientationFromDataUrl`).
-  2. Smart crop preview stage with per-orientation caching.
+  2. AI analysis overlay (scanning lines, phased messaging) → smart crop preview with per-orientation caching.
   3. Manual cropper fallback; modal now respects active aspect ratios.
   4. Telemetry updates (`emitStepOneEvent`) for upload, crop, and completion events.
 
@@ -30,7 +32,7 @@ This session brought the founder `/create` flow to parity—and beyond—with th
 - Added helpers `resetPreviews`, `setSmartCropForOrientation`, `clearSmartCrops`, and `setOriginalImage`.
 
 ### 3. Studio Alignment (STATE 4)
-- `StickyOrderRail.tsx` re-runs smart crop when users switch orientation. If a cached crop exists, it reuses it; otherwise it generates a new one, updates state, and triggers preview regeneration.
+- `StickyOrderRail.tsx` re-runs smart crop when users switch orientation. If a cached crop exists, it reuses it; otherwise it generates a new one (with the enhanced heuristics), updates the “Original Image” preview, and triggers regeneration.
 - `StudioConfigurator.tsx` now:
   - Reads the active orientation meta to size the center canvas frame.
   - Displays an orientation badge on the preview to reinforce the current aspect ratio.
