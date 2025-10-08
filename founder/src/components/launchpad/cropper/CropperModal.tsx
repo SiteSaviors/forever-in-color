@@ -215,7 +215,12 @@ const CropperModal = ({
               })}
             </div>
 
-            <div className="relative h-[60vh] bg-black/40 rounded-2xl overflow-hidden border border-white/5">
+            <div
+              className="relative bg-black/40 rounded-2xl overflow-hidden border border-white/5"
+              style={{
+                height: activeOrientation === 'vertical' ? '75vh' : '60vh'
+              }}
+            >
               {originalImage ? (
                 <Cropper
                   key={activeOrientation}
@@ -236,8 +241,11 @@ const CropperModal = ({
 
               {loadingOrientation && (
                 <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm flex flex-col items-center justify-center gap-3">
-                  <div className="w-10 h-10 border-4 border-purple-400/30 border-t-purple-400 rounded-full animate-spin" />
-                  <p className="text-white text-sm font-medium">Preparing smart crop…</p>
+                  <div className="w-12 h-12 border-4 border-purple-400/30 border-t-purple-400 rounded-full animate-spin" />
+                  <p className="text-white text-sm font-medium">
+                    Analyzing {orientationPreset.label.toLowerCase()}...
+                  </p>
+                  <p className="text-white/60 text-xs">Optimizing your crop</p>
                 </div>
               )}
 

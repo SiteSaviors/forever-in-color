@@ -61,19 +61,30 @@ const SmartCropPreview = ({ originalImage, orientation, onAccept, onAdjust, onRe
 
   return (
     <div className="space-y-6">
-      <div className="text-center space-y-2">
+      <div className="text-center space-y-3">
         <h2 className="text-3xl font-semibold text-white drop-shadow-lg">
           {isGenerating ? 'Optimizing Your Canvas...' : 'Smart Crop Applied'}
         </h2>
-        <p className="text-white/70 max-w-xl mx-auto">
-          {metadata.description}
-        </p>
+        <div className="space-y-2">
+          <p className="text-white/80 text-base max-w-xl mx-auto font-medium">
+            {metadata.description}
+          </p>
+          <div className="flex items-center justify-center gap-2 text-xs text-purple-400">
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd"/>
+            </svg>
+            <span>AI-detected optimal orientation</span>
+          </div>
+        </div>
       </div>
 
       <div className="rounded-[2rem] border border-white/15 bg-white/5 p-6 shadow-founder backdrop-blur">
         <div
           className="relative overflow-hidden rounded-[1.5rem] border border-white/10 bg-slate-900/40"
-          style={{ aspectRatio: metadata.ratio }}
+          style={{
+            aspectRatio: metadata.ratio,
+            maxHeight: orientation === 'vertical' ? '75vh' : undefined
+          }}
         >
           {result ? (
             <img

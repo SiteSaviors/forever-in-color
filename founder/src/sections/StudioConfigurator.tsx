@@ -157,7 +157,10 @@ const StudioConfigurator = () => {
             {/* Canvas Preview */}
             <div
               className="relative rounded-3xl overflow-hidden border-2 border-white/20 bg-gradient-preview-bg shadow-2xl transition-all"
-              style={{ aspectRatio: orientationMeta.ratio }}
+              style={{
+                aspectRatio: orientationMeta.ratio,
+                maxHeight: orientation === 'vertical' ? '85vh' : undefined
+              }}
             >
               {/* Orientation changing overlay */}
               {orientationChanging && (

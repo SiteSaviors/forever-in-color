@@ -328,7 +328,10 @@ const PhotoUploader = () => {
             <div className="space-y-4 animate-scaleIn">
               <div
                 className="relative overflow-hidden border-2 border-white/20 bg-black/20 shadow-lg rounded-xl"
-                style={{ aspectRatio: orientationMeta.ratio }}
+                style={{
+                  aspectRatio: orientationMeta.ratio,
+                  maxHeight: orientation === 'vertical' ? '75vh' : undefined
+                }}
               >
                 <img src={croppedImage} alt="Your photo" className="h-full w-full object-cover" />
                 <div className="absolute top-3 right-3 rounded-full bg-white/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.3em] text-white/80 backdrop-blur">
