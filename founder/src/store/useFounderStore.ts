@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { fetchPreviewForStyle, PreviewResult } from '@/utils/previewClient';
 import type { Orientation } from '@/utils/imageUtils';
+import type { SmartCropResult } from '@/utils/smartCrop';
 
 /**
  * TESTING MODE FLAG
@@ -49,6 +50,7 @@ type FounderState = {
   selectedStyleId: string | null;
   basePrice: number;
   previewStatus: 'idle' | 'generating' | 'ready';
+  previewGenerationPromise: Promise<void> | null;
   previews: Record<string, PreviewState>;
   firstPreviewCompleted: boolean;
   livingCanvasModalOpen: boolean;
@@ -70,7 +72,8 @@ type FounderState = {
   subscriptionTier: 'free' | 'creator' | 'pro' | null;
   accountPromptTriggerAt: number | null;
   originalImage: string | null;
-  smartCrops: Partial<Record<Orientation, string>>;
+  originalImageDimensions: { width: number; height: number } | null;
+  smartCrops: Partial<Record<Orientation, SmartCropResult>>;
   orientationChanging: boolean;
   setOrientationChanging: (loading: boolean) => void;
   selectStyle: (id: string) => void;
@@ -83,6 +86,7 @@ type FounderState = {
   setUploadedImage: (dataUrl: string | null) => void;
   setCroppedImage: (dataUrl: string | null) => void;
   setOriginalImage: (dataUrl: string | null) => void;
+  setOriginalImageDimensions: (dimensions: { width: number; height: number } | null) => void;
   setOrientation: (orientation: FounderState['orientation']) => void;
   setOrientationTip: (tip: string | null) => void;
   markCropReady: () => void;
@@ -91,7 +95,7 @@ type FounderState = {
   setPreselectedStyle: (id: string | null) => void;
   requestUpload: (options?: { preselectedStyleId?: string }) => void;
   resetPreviews: () => void;
-  setSmartCropForOrientation: (orientation: Orientation, dataUrl: string) => void;
+  setSmartCropForOrientation: (orientation: Orientation, result: SmartCropResult) => void;
   clearSmartCrops: () => void;
   incrementGenerationCount: () => void;
   setAuthenticated: (status: boolean) => void;
@@ -343,6 +347,7 @@ export const useFounderStore = create<FounderState>((set, get) => ({
   selectedStyleId: mockStyles[0]?.id ?? null,
   basePrice: 129,
   previewStatus: 'idle',
+  previewGenerationPromise: null,
   previews: Object.fromEntries(mockStyles.map((style) => [style.id, { status: 'idle' as const }])),
   firstPreviewCompleted: false,
   livingCanvasModalOpen: false,
@@ -364,6 +369,7 @@ export const useFounderStore = create<FounderState>((set, get) => ({
   subscriptionTier: (localStorage.getItem('subscription_tier') as FounderState['subscriptionTier']) || null,
   accountPromptTriggerAt: null,
   originalImage: null,
+  originalImageDimensions: null,
   smartCrops: {},
   orientationChanging: false,
   setOrientationChanging: (loading) => set({ orientationChanging: loading }),
@@ -401,11 +407,11 @@ export const useFounderStore = create<FounderState>((set, get) => ({
       ),
       previewStatus: 'idle',
     })),
-  setSmartCropForOrientation: (orientation, dataUrl) =>
+  setSmartCropForOrientation: (orientation, result) =>
     set((state) => ({
       smartCrops: {
         ...state.smartCrops,
-        [orientation]: dataUrl,
+        [orientation]: result,
       },
     })),
   clearSmartCrops: () => set({ smartCrops: {} }),
@@ -451,10 +457,9 @@ export const useFounderStore = create<FounderState>((set, get) => ({
     const store = get();
     const state = get();
 
-    // Guard: Prevent concurrent generation calls
-    if (state.previewStatus === 'generating') {
-      console.warn('[generatePreviews] Already generating, skipping duplicate call');
-      return;
+    if (state.previewGenerationPromise) {
+      console.warn('[generatePreviews] In-flight request detected, reusing existing promise');
+      return state.previewGenerationPromise;
     }
 
     let targetStyles: StyleOption[];
@@ -480,70 +485,87 @@ export const useFounderStore = create<FounderState>((set, get) => ({
 
     if (!targetStyles.length) return;
 
-    set({ previewStatus: 'generating' });
+    const shouldGenerate = targetStyles.some((style) => {
+      if (options.force) return true;
+      const previewState = state.previews[style.id];
+      return previewState?.status !== 'ready';
+    });
+
+    if (!shouldGenerate) {
+      return;
+    }
 
     let generatedAny = false;
 
-    await Promise.all(
-      targetStyles.map(async (style) => {
-        const stateBefore = get();
+    const generationRun = (async () => {
+      set({ previewStatus: 'generating' });
 
-        // If a preview is already ready and not forcing a refresh, reuse it.
-        if (!options.force && stateBefore.previews[style.id]?.status === 'ready') {
-          return;
-        }
+      await Promise.all(
+        targetStyles.map(async (style) => {
+          const stateBefore = get();
 
-        if (!stateBefore.canGenerateMore()) {
-          store.setPreviewState(style.id, { status: 'idle' });
-          return;
-        }
+          if (!options.force && stateBefore.previews[style.id]?.status === 'ready') {
+            return;
+          }
 
-        store.setPreviewState(style.id, { status: 'loading' });
-
-        try {
-          const baseImage =
-            stateBefore.croppedImage ??
-            stateBefore.smartCrops[stateBefore.orientation] ??
-            stateBefore.uploadedImage ??
-            stateBefore.originalImage ??
-            undefined;
-
-          if (!baseImage) {
+          if (!stateBefore.canGenerateMore()) {
             store.setPreviewState(style.id, { status: 'idle' });
             return;
           }
 
-          const result = await fetchPreviewForStyle(
-            style,
-            baseImage
-          );
-          store.setPreviewState(style.id, { status: 'ready', data: result });
-          generatedAny = true;
-          store.incrementGenerationCount();
-        } catch (error) {
-          store.setPreviewState(style.id, {
-            status: 'error',
-            error: error instanceof Error ? error.message : 'Unknown error',
-          });
-        }
-      })
-    );
+          store.setPreviewState(style.id, { status: 'loading' });
 
-    set((state) => {
-      const nextState: Partial<FounderState> = {
-        previewStatus: 'ready',
-      };
-      if (generatedAny && !state.firstPreviewCompleted) {
-        nextState.firstPreviewCompleted = true;
-        nextState.celebrationAt = Date.now();
-      }
-      return nextState;
-    });
+          try {
+            const baseImage =
+              stateBefore.croppedImage ??
+              stateBefore.smartCrops[stateBefore.orientation]?.dataUrl ??
+              stateBefore.uploadedImage ??
+              stateBefore.originalImage ??
+              undefined;
+
+            if (!baseImage) {
+              store.setPreviewState(style.id, { status: 'idle' });
+              return;
+            }
+
+            const result = await fetchPreviewForStyle(style, baseImage);
+            store.setPreviewState(style.id, { status: 'ready', data: result });
+            generatedAny = true;
+            store.incrementGenerationCount();
+          } catch (error) {
+            store.setPreviewState(style.id, {
+              status: 'error',
+              error: error instanceof Error ? error.message : 'Unknown error',
+            });
+          }
+        })
+      );
+
+      set((current) => {
+        const nextState: Partial<FounderState> = {
+          previewStatus: 'ready',
+        };
+        if (generatedAny && !current.firstPreviewCompleted) {
+          nextState.firstPreviewCompleted = true;
+          nextState.celebrationAt = Date.now();
+        }
+        return nextState;
+      });
+    })();
+
+    set({ previewGenerationPromise: generationRun });
+
+    try {
+      await generationRun;
+    } finally {
+      set({ previewGenerationPromise: null });
+    }
   },
   setLivingCanvasModalOpen: (open) => set({ livingCanvasModalOpen: open }),
   setUploadedImage: (dataUrl) => set({ uploadedImage: dataUrl }),
   setCroppedImage: (dataUrl) => set({ croppedImage: dataUrl }),
   setOriginalImage: (dataUrl) => set({ originalImage: dataUrl }),
+  setOriginalImageDimensions: (dimensions) => set({ originalImageDimensions: dimensions }),
   setOrientation: (orientation) => set({ orientation }),
   setOrientationTip: (tip) => set({ orientationTip: tip }),
   markCropReady: () => set({ cropReadyAt: Date.now() }),

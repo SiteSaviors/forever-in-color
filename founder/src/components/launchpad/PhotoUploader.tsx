@@ -1,13 +1,13 @@
-import { ChangeEvent, DragEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { ChangeEvent, DragEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { clsx } from 'clsx';
 import Card from '@/components/ui/Card';
 import { useFounderStore } from '@/store/useFounderStore';
-import { readFileAsDataURL, detectOrientationFromDataUrl } from '@/utils/imageUtils';
+import { readFileAsDataURL, getImageDimensions } from '@/utils/imageUtils';
 import CropperModal from '@/components/launchpad/cropper/CropperModal';
 import SmartCropPreview from '@/components/launchpad/SmartCropPreview';
 import AIAnalysisOverlay from '@/components/launchpad/AIAnalysisOverlay';
 import { emitStepOneEvent } from '@/utils/telemetry';
-import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
+import { ORIENTATION_PRESETS, cacheSmartCropResult, clearSmartCropCacheForImage, SmartCropResult } from '@/utils/smartCrop';
 import type { Orientation } from '@/utils/imageUtils';
 
 const SAMPLE_IMAGE = 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=900&q=80';
@@ -19,7 +19,9 @@ const PhotoUploader = () => {
   const setUploadedImage = useFounderStore((state) => state.setUploadedImage);
   const setCroppedImage = useFounderStore((state) => state.setCroppedImage);
   const setOriginalImage = useFounderStore((state) => state.setOriginalImage);
+  const setOriginalImageDimensions = useFounderStore((state) => state.setOriginalImageDimensions);
   const originalImage = useFounderStore((state) => state.originalImage);
+  const originalImageDimensions = useFounderStore((state) => state.originalImageDimensions);
   const smartCrops = useFounderStore((state) => state.smartCrops);
   const setOrientation = useFounderStore((state) => state.setOrientation);
   const setOrientationTip = useFounderStore((state) => state.setOrientationTip);
@@ -31,7 +33,6 @@ const PhotoUploader = () => {
   const setSmartCropForOrientation = useFounderStore((state) => state.setSmartCropForOrientation);
   const clearSmartCrops = useFounderStore((state) => state.clearSmartCrops);
   const setPreviewState = useFounderStore((state) => state.setPreviewState);
-  const uploadedImage = useFounderStore((state) => state.uploadedImage);
   const croppedImage = useFounderStore((state) => state.croppedImage);
   const orientation = useFounderStore((state) => state.orientation);
   const orientationTip = useFounderStore((state) => state.orientationTip);
@@ -39,11 +40,10 @@ const PhotoUploader = () => {
   const isDragging = useFounderStore((state) => state.isDragging);
   const uploadIntentAt = useFounderStore((state) => state.uploadIntentAt);
   const [isCropperOpen, setCropperOpen] = useState(false);
-  const [cropSource, setCropSource] = useState<string | null>(null);
   const [stage, setStage] = useState<UploadStage>('idle');
   const [pendingOrientation, setPendingOrientation] = useState<Orientation>('square');
   const lastHandledUploadIntentRef = useRef<number | null>(null);
-  const inFlightCropsRef = useRef<Map<Orientation, Promise<string>>>(new Map());
+  const previousOriginalRef = useRef<string | null>(null);
 
   const cropReadyLabel = useMemo(() => {
     if (!cropReadyAt) return null;
@@ -86,13 +86,21 @@ const PhotoUploader = () => {
 
   const processDataUrl = async (dataUrl: string) => {
     setStage('analyzing');
+    if (previousOriginalRef.current) {
+      clearSmartCropCacheForImage(previousOriginalRef.current);
+    }
+    clearSmartCropCacheForImage(dataUrl);
     setOriginalImage(dataUrl);
+    setOriginalImageDimensions(null);
     setUploadedImage(null);
     setCroppedImage(null);
     clearSmartCrops();
     resetPreviews();
 
-    const detectedOrientation = await detectOrientationFromDataUrl(dataUrl);
+    const { width, height } = await getImageDimensions(dataUrl);
+    setOriginalImageDimensions({ width, height });
+    const detectedOrientation: Orientation =
+      width === height ? 'square' : width > height ? 'horizontal' : 'vertical';
     setOrientation(detectedOrientation);
     setPendingOrientation(detectedOrientation);
     setOrientationTip(ORIENTATION_PRESETS[detectedOrientation].description);
@@ -131,17 +139,21 @@ const PhotoUploader = () => {
     handleSelectFile();
   }, [uploadIntentAt]);
 
-  const finalizeCrop = async (dataUrl: string, source: 'auto' | 'manual', chosenOrientation?: Orientation) => {
-    const targetOrientation = chosenOrientation ?? orientation;
+  const finalizeCrop = async (result: SmartCropResult, source: 'auto' | 'manual') => {
+    const targetOrientation = result.orientation;
     const orientationChanged = targetOrientation !== orientation;
 
-    setSmartCropForOrientation(targetOrientation, dataUrl);
-    setCroppedImage(dataUrl);
-    setUploadedImage(dataUrl);
+    setSmartCropForOrientation(targetOrientation, result);
+    if (originalImage) {
+      cacheSmartCropResult(originalImage, targetOrientation, result);
+    }
+    setCroppedImage(result.dataUrl);
+    setUploadedImage(result.dataUrl);
 
     if (orientationChanged) {
       setOrientation(targetOrientation);
     }
+    setPendingOrientation(targetOrientation);
 
     setOrientationTip(ORIENTATION_PRESETS[targetOrientation].description);
     markCropReady();
@@ -152,7 +164,7 @@ const PhotoUploader = () => {
     setPreviewState('original-image', {
       status: 'ready',
       data: {
-        previewUrl: dataUrl,
+        previewUrl: result.dataUrl,
         watermarkApplied: false,
         startedAt: Date.now(),
         completedAt: Date.now(),
@@ -161,41 +173,53 @@ const PhotoUploader = () => {
 
     // Auto-preview generation (disabled during testing to save API costs)
     if (shouldAutoGeneratePreviews()) {
-      // Only force regeneration if orientation changed or this is the initial crop
-      if (orientationChanged || source === 'auto') {
+      if (source === 'auto' || orientationChanged) {
         resetPreviews();
         await generatePreviews(undefined, { force: true });
       } else {
-        // Manual crop with same orientation: only regenerate if previews don't exist
-        await generatePreviews(undefined, { force: false });
+        console.log('[PhotoUploader] Manual crop saved without orientation change. Existing previews remain cached until you regenerate a style.');
       }
     } else {
       console.log('[PhotoUploader] Auto-preview generation disabled (testing mode). Click styles in Studio to generate.');
     }
   };
 
-  const handleAcceptSmartCrop = async (dataUrl: string) => {
-    await finalizeCrop(dataUrl, 'auto');
+  const handleSmartCropReady = useCallback(
+    (result: SmartCropResult) => {
+      setSmartCropForOrientation(result.orientation, result);
+      if (originalImage) {
+        cacheSmartCropResult(originalImage, result.orientation, result);
+      }
+    },
+    [originalImage, setSmartCropForOrientation]
+  );
+
+  const handleAcceptSmartCrop = async (result: SmartCropResult) => {
+    await finalizeCrop(result, 'auto');
   };
 
   const handleCustomizeCrop = () => {
     if (!originalImage) return;
-    setCropSource(originalImage);
     setCropperOpen(true);
     setStage('cropper');
   };
 
   const handleOpenCropper = () => {
-    if (!uploadedImage) return;
-    setCropSource(originalImage ?? uploadedImage);
+    if (!originalImage) return;
     setCropperOpen(true);
     setStage('cropper');
   };
 
-  const handleCropComplete = async (dataUrl: string) => {
-    await finalizeCrop(dataUrl, 'manual');
+  const handleCropComplete = async (result: SmartCropResult) => {
+    await finalizeCrop(result, 'manual');
     setCropperOpen(false);
   };
+
+  useEffect(() => {
+    if (originalImage) {
+      previousOriginalRef.current = originalImage;
+    }
+  }, [originalImage]);
 
   if (stage === 'analyzing' && originalImage) {
     return (
@@ -216,29 +240,31 @@ const PhotoUploader = () => {
           orientation={pendingOrientation}
           onAccept={handleAcceptSmartCrop}
           onAdjust={handleCustomizeCrop}
+          onReady={handleSmartCropReady}
         />
       </Card>
     );
   }
 
-  if (stage === 'cropper' && cropSource) {
+  if (stage === 'cropper' && originalImage) {
     return (
-      <>
-        <CropperModal
-          open={isCropperOpen}
-          image={cropSource}
-          aspectRatio={ORIENTATION_PRESETS[orientation].ratio}
-          onClose={() => {
-            setCropperOpen(false);
-            if (croppedImage) {
-              setStage('complete');
-            } else {
-              setStage('idle');
-            }
-          }}
-          onComplete={handleCropComplete}
-        />
-      </>
+      <CropperModal
+        open={isCropperOpen}
+        originalImage={originalImage}
+        originalDimensions={originalImageDimensions}
+        initialOrientation={orientation}
+        smartCropCache={smartCrops}
+        onClose={() => {
+          setCropperOpen(false);
+          if (croppedImage) {
+            setStage('complete');
+          } else {
+            setStage('idle');
+          }
+        }}
+        onComplete={handleCropComplete}
+        onSmartCropReady={handleSmartCropReady}
+      />
     );
   }
 
@@ -355,21 +381,6 @@ const PhotoUploader = () => {
           </div>
         </div>
       )}
-
-      <CropperModal
-        open={isCropperOpen}
-        image={cropSource}
-        aspectRatio={ORIENTATION_PRESETS[orientation].ratio}
-        onClose={() => {
-          setCropperOpen(false);
-          if (croppedImage) {
-            setStage('complete');
-          } else {
-            setStage('idle');
-          }
-        }}
-        onComplete={handleCropComplete}
-      />
     </Card>
   );
 };

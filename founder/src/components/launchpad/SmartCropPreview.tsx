@@ -1,16 +1,17 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ORIENTATION_PRESETS, generateSmartCrop } from '@/utils/smartCrop';
+import { ORIENTATION_PRESETS, generateSmartCrop, SmartCropResult } from '@/utils/smartCrop';
 import type { Orientation } from '@/utils/imageUtils';
 
 interface SmartCropPreviewProps {
   originalImage: string;
   orientation: Orientation;
-  onAccept: (croppedImage: string) => void;
+  onAccept: (result: SmartCropResult) => void;
   onAdjust: () => void;
+  onReady?: (result: SmartCropResult) => void;
 }
 
-const SmartCropPreview = ({ originalImage, orientation, onAccept, onAdjust }: SmartCropPreviewProps) => {
-  const [croppedImage, setCroppedImage] = useState<string | null>(null);
+const SmartCropPreview = ({ originalImage, orientation, onAccept, onAdjust, onReady }: SmartCropPreviewProps) => {
+  const [result, setResult] = useState<SmartCropResult | null>(null);
   const [isGenerating, setIsGenerating] = useState(true);
 
   const metadata = useMemo(() => ORIENTATION_PRESETS[orientation], [orientation]);
@@ -20,13 +21,28 @@ const SmartCropPreview = ({ originalImage, orientation, onAccept, onAdjust }: Sm
     setIsGenerating(true);
 
     generateSmartCrop(originalImage, orientation)
-      .then((result) => {
+      .then((generated) => {
         if (!isMounted) return;
-        setCroppedImage(result);
+        setResult(generated);
+        onReady?.(generated);
       })
       .catch(() => {
         if (!isMounted) return;
-        setCroppedImage(originalImage);
+        const fallback: SmartCropResult = {
+          orientation,
+          dataUrl: originalImage,
+          region: {
+            x: 0,
+            y: 0,
+            width: 0,
+            height: 0,
+          },
+          imageDimensions: { width: 0, height: 0 },
+          generatedAt: Date.now(),
+          generatedBy: 'smart',
+        };
+        setResult(fallback);
+        onReady?.(fallback);
       })
       .finally(() => {
         if (!isMounted) return;
@@ -36,11 +52,11 @@ const SmartCropPreview = ({ originalImage, orientation, onAccept, onAdjust }: Sm
     return () => {
       isMounted = false;
     };
-  }, [originalImage, orientation]);
+  }, [originalImage, orientation, onReady]);
 
   const handleAccept = () => {
-    if (!croppedImage) return;
-    onAccept(croppedImage);
+    if (!result) return;
+    onAccept(result);
   };
 
   return (
@@ -59,9 +75,9 @@ const SmartCropPreview = ({ originalImage, orientation, onAccept, onAdjust }: Sm
           className="relative overflow-hidden rounded-[1.5rem] border border-white/10 bg-slate-900/40"
           style={{ aspectRatio: metadata.ratio }}
         >
-          {croppedImage ? (
+          {result ? (
             <img
-              src={croppedImage}
+              src={result.dataUrl}
               alt="Smart crop preview"
               className="h-full w-full object-cover"
             />
@@ -80,7 +96,7 @@ const SmartCropPreview = ({ originalImage, orientation, onAccept, onAdjust }: Sm
       <div className="flex flex-col sm:flex-row gap-3">
         <button
           onClick={handleAccept}
-          disabled={isGenerating || !croppedImage}
+          disabled={isGenerating || !result}
           className="flex-1 rounded-[1.5rem] bg-gradient-cta px-6 py-4 text-base font-semibold text-white shadow-glow-purple transition disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isGenerating ? 'Analyzing…' : 'Perfect! Use This Crop'}

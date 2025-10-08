@@ -26,6 +26,15 @@ export async function detectOrientationFromDataUrl(dataUrl: string): Promise<Ori
   });
 }
 
+export async function getImageDimensions(dataUrl: string): Promise<{ width: number; height: number }> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve({ width: image.width, height: image.height });
+    image.onerror = reject;
+    image.src = dataUrl;
+  });
+}
+
 export async function cropImageToDataUrl(
   imageSrc: string,
   crop: { x: number; y: number; width: number; height: number },

@@ -37,6 +37,15 @@ interface DetectionResult {
   hasFace: boolean;
 }
 
+export interface SmartCropResult {
+  orientation: Orientation;
+  dataUrl: string;
+  region: CropRegion;
+  imageDimensions: { width: number; height: number };
+  generatedAt: number;
+  generatedBy: 'smart' | 'manual';
+}
+
 const BLOCK_SIZE = 16; // Reduced from 32 for 4x more precision in subject detection
 const MIN_RESOLUTION = 2000; // Maintain at least 2000px on long edge
 
@@ -405,32 +414,123 @@ const applyCrop = async (image: HTMLImageElement, region: CropRegion): Promise<s
   return canvas.toDataURL('image/png');
 };
 
+type OrientationRecord<T> = Partial<Record<Orientation, T>>;
+
+const smartCropResultCache = new Map<string, OrientationRecord<SmartCropResult>>();
+const smartCropInFlightCache = new Map<string, OrientationRecord<Promise<SmartCropResult>>>();
+
+const ensureRecord = <T>(collection: Map<string, OrientationRecord<T>>, key: string): OrientationRecord<T> => {
+  let record = collection.get(key);
+  if (!record) {
+    record = {};
+    collection.set(key, record);
+  }
+  return record;
+};
+
+const deleteRecordValue = <T>(collection: Map<string, OrientationRecord<T>>, key: string, orientation: Orientation) => {
+  const record = collection.get(key);
+  if (!record) return;
+  delete record[orientation];
+  if (Object.keys(record).length === 0) {
+    collection.delete(key);
+  }
+};
+
+export const cacheSmartCropResult = (imageUrl: string, orientation: Orientation, result: SmartCropResult) => {
+  const record = ensureRecord(smartCropResultCache, imageUrl);
+  record[orientation] = result;
+};
+
+export const getCachedSmartCropResult = (imageUrl: string, orientation: Orientation): SmartCropResult | undefined => {
+  return smartCropResultCache.get(imageUrl)?.[orientation];
+};
+
+export const clearSmartCropCacheForImage = (imageUrl: string) => {
+  smartCropResultCache.delete(imageUrl);
+  smartCropInFlightCache.delete(imageUrl);
+};
+
 export const generateSmartCrop = async (
   imageUrl: string,
   orientation: Orientation
-): Promise<string> => {
+): Promise<SmartCropResult> => {
+  const cachedResult = getCachedSmartCropResult(imageUrl, orientation);
+  if (cachedResult) {
+    return cachedResult;
+  }
+
+  const inFlightRecord = smartCropInFlightCache.get(imageUrl);
+  const inFlightPromise = inFlightRecord?.[orientation];
+  if (inFlightPromise) {
+    return inFlightPromise;
+  }
+
   const startTime = performance.now();
 
-  try {
-    const image = await loadImage(imageUrl);
-    const analysisStart = performance.now();
-    const detection = analyzeImageForSubject(image);
-    const analysisTime = performance.now() - analysisStart;
+  const promise = (async () => {
+    try {
+      const image = await loadImage(imageUrl);
+      const analysisStart = performance.now();
+      const detection = analyzeImageForSubject(image);
+      const analysisTime = performance.now() - analysisStart;
 
-    const region = expandToAspect(detection.region, image.width, image.height, orientation);
-    const result = await applyCrop(image, region);
+      const region = expandToAspect(detection.region, image.width, image.height, orientation);
+      const result = await applyCrop(image, region);
 
-    const totalTime = performance.now() - startTime;
-    console.log(
-      `[SmartCrop] ${orientation} | ${image.width}x${image.height} | ` +
-      `analysis: ${analysisTime.toFixed(0)}ms | total: ${totalTime.toFixed(0)}ms | ` +
-      `confidence: ${(detection.confidence * 100).toFixed(0)}% | face: ${detection.hasFace}`
-    );
+      const totalTime = performance.now() - startTime;
+      console.log(
+        `[SmartCrop] ${orientation} | ${image.width}x${image.height} | ` +
+        `analysis: ${analysisTime.toFixed(0)}ms | total: ${totalTime.toFixed(0)}ms | ` +
+        `confidence: ${(detection.confidence * 100).toFixed(0)}% | face: ${detection.hasFace}`
+      );
 
-    return result;
-  } catch (error) {
-    const failTime = performance.now() - startTime;
-    console.error(`[SmartCrop] Failed after ${failTime.toFixed(0)}ms:`, error);
-    return imageUrl;
-  }
+      const payload: SmartCropResult = {
+        orientation,
+        dataUrl: result,
+        region,
+        imageDimensions: { width: image.width, height: image.height },
+        generatedAt: Date.now(),
+        generatedBy: 'smart',
+      };
+
+      cacheSmartCropResult(imageUrl, orientation, payload);
+      return payload;
+    } catch (error) {
+      const failTime = performance.now() - startTime;
+      console.error(`[SmartCrop] Failed after ${failTime.toFixed(0)}ms:`, error);
+      let fallbackDimensions = { width: 0, height: 0 };
+      try {
+        const fallbackImage = await loadImage(imageUrl);
+        fallbackDimensions = { width: fallbackImage.width, height: fallbackImage.height };
+      } catch {
+        // ignore secondary failure
+      }
+
+      const fallback: SmartCropResult = {
+        orientation,
+        dataUrl: imageUrl,
+        region: {
+          x: 0,
+          y: 0,
+          width: fallbackDimensions.width,
+          height: fallbackDimensions.height,
+        },
+        imageDimensions: fallbackDimensions,
+        generatedAt: Date.now(),
+        generatedBy: 'smart',
+      };
+      cacheSmartCropResult(imageUrl, orientation, fallback);
+      return fallback;
+    }
+  })();
+
+  const record = ensureRecord(smartCropInFlightCache, imageUrl);
+  record[orientation] = promise;
+
+  promise.finally(() => {
+    deleteRecordValue(smartCropInFlightCache, imageUrl, orientation);
+  });
+
+  return promise;
 };

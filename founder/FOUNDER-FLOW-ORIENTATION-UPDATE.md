@@ -20,6 +20,8 @@ The founder `/create` flow now features a complete smart crop system with subjec
 - **Orientation presets**: Portrait (3:4), Square (1:1), Landscape (4:3)
 - **High-quality output**: PNG export for lossless intermediates
 - **Telemetry**: Console logging of analysis time, dimensions, confidence, and face detection
+- **Global caching & in-flight guard**: Results stored per image/orientation with promise reuse to prevent duplicate work
+- **Structured results**: Each smart crop returns `{ dataUrl, region, imageDimensions, generatedBy }`, so downstream flows can restore or edit the crop window against the original upload.
 
 **Performance**:
 - 4000×3000 image: ~2000ms → ~400ms (5x faster)
@@ -53,6 +55,9 @@ The founder `/create` flow now features a complete smart crop system with subjec
 - Orientation auto-detection from image dimensions
 - Per-orientation smart crop caching
 - "Original Image" preview populated immediately (free, no API)
+- Smart crop requests deduplicated via shared in-flight registry
+- Manual crops only trigger preview regeneration when orientation actually changes
+- Smart crop suggestions are cached as metadata, but creators always review/edit against the full-resolution upload before committing.
 - **Auto-preview generation DISABLED in testing mode** (see Testing Mode below)
 
 ---
@@ -62,8 +67,10 @@ The founder `/create` flow now features a complete smart crop system with subjec
 
 - **Dynamic aspect ratios** based on orientation selection
 - **Orientation toggle** inside modal (Portrait/Square/Landscape)
-- **Smart crop reuse**: Uses cached crops when switching orientations
-- **Async regeneration**: Generates new crops if not cached
+- **Smart crop reuse**: Uses cached crops (store + global cache) when switching orientations
+- **Async regeneration**: Generates new crops if not cached, with loading overlay + disabled controls
+- **Cache sync**: Manual saves push updated crops back into the shared caches for Studio reuse
+- **Full-image editing**: The cropper always loads the original upload, seeding the frame with smart-crop metadata but allowing complete pan/zoom freedom per orientation.
 
 ---
 
@@ -72,15 +79,16 @@ The founder `/create` flow now features a complete smart crop system with subjec
 
 **Key State**:
 - `originalImage`: Untouched upload
-- `smartCrops`: Per-orientation crop cache `Record<Orientation, string>`
+- `smartCrops`: Per-orientation cache of `SmartCropResult` (data URL + crop region + provenance)
 - `orientation`: Active orientation (vertical/square/horizontal)
 - `orientationChanging`: Loading state for Studio orientation changes
 - `previews`: Per-style preview state (idle/loading/ready/error)
 - `generationCount`: API call counter for gating
+- `originalImageDimensions`: Width/height snapshot captured on upload for precise manual crop math.
 
 **Key Methods**:
 - `generatePreviews(ids?, options?)`: Priority system (selected + 2 recommended)
-- `setSmartCropForOrientation()`: Cache crops per orientation
+- `setSmartCropForOrientation()`: Cache structured crops per orientation (smart suggestions + manual edits)
 - `shouldAutoGeneratePreviews()`: Returns `ENABLE_AUTO_PREVIEWS` flag
 - `canGenerateMore()`: Checks generation limits (free: 9, authenticated: 8, paid: ∞)
 
@@ -95,6 +103,7 @@ The founder `/create` flow now features a complete smart crop system with subjec
 - **In-flight crop tracking**: Prevents duplicate smart crop operations (race condition fix)
 - **Loading state**: Shows "Updating…" on active orientation button
 - **Canvas updates**: "Original Image" preview updates immediately
+- **Manual respect**: Orientation switches hydrate from creator-edited crop regions first, falling back to smart suggestions when no user crop exists.
 
 **StudioConfigurator**:
 - **Dynamic aspect ratio**: Canvas matches `orientationMeta.ratio`
@@ -114,9 +123,9 @@ The founder `/create` flow now features a complete smart crop system with subjec
 
 ### Fix #2: Race Condition in Smart Crop 🚨
 **Issue**: Rapid orientation changes triggered duplicate smart crop operations
-**Root Cause**: No in-flight operation tracking
-**Fix**: Added `inFlightCropsRef` to track pending promises and reuse them
-**Impact**: Eliminates redundant operations (6-9 crops → 3 crops max)
+**Root Cause**: No shared in-flight tracking between Launchpad and Studio
+**Fix**: Centralized promise registry + cache helpers in `smartCrop.ts` (consumed by PhotoUploader & StickyOrderRail)
+**Impact**: Eliminates redundant operations (6-9 crops → 3 crops max) while keeping caches in sync
 
 ### Fix #3: Redundant Preview Generation 💸
 **Issue**: Manual crop adjustments regenerated all 3 previews unnecessarily
@@ -127,8 +136,8 @@ The founder `/create` flow now features a complete smart crop system with subjec
 ### Fix #4: Preview Generation Re-entry ⚡
 **Issue**: Concurrent `generatePreviews()` calls double-counted generation limits
 **Root Cause**: No guard against concurrent execution
-**Fix**: Added `if (previewStatus === 'generating') return;` guard
-**Impact**: Prevents race conditions and double-counting
+**Fix**: Added shared `previewGenerationPromise` gate + status checks before kicking off work
+**Impact**: Prevents race conditions and double-counting, callers reuse the active promise
 
 ### Fix #5: Studio Loading Overlay 🎨
 **Issue**: Orientation change showed stale canvas until smart crop completed
@@ -141,6 +150,18 @@ The founder `/create` flow now features a complete smart crop system with subjec
 **Root Cause**: Import + render logic deleted, `processDataUrl` skipped to preview
 **Fix**: Restored import, added `stage === 'analyzing'` render branch
 **Impact**: Polished upload animation restored
+
+### Fix #7: Manual Crop Freedom 🎯
+**Issue**: "Adjust Crop" modal opened a pre-cropped bitmap, preventing users from panning or zooming beyond the smart crop window.
+**Root Cause**: Cropper received the smart-cropped data URL instead of the original upload, so there was no additional content to explore.
+**Fix**: Cropper now always loads the original image, seeds the frame with smart-crop metadata, and stores manual edits as structured regions.
+**Impact**: Creators can freely reposition or resize their crop in any orientation without losing smart-crop suggestions.
+
+### Fix #8: Studio Orientation Sync 🧭
+**Issue**: Switching orientations in Studio always fell back to algorithmic crops, ignoring manual adjustments.
+**Root Cause**: Orientation state stored only the rendered data URL—no knowledge of the underlying crop region.
+**Fix**: Store + retrieve `SmartCropResult` objects per orientation so Studio reuses manual edits first, only regenerating when no user crop exists.
+**Impact**: Orientation toggles feel consistent—manual tweaks persist across the flow, and smart suggestions only appear when needed.
 
 ---
 

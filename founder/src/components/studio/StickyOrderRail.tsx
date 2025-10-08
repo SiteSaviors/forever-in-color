@@ -1,11 +1,11 @@
 import { useRef, useState } from 'react';
 import Card from '@/components/ui/Card';
 import { useFounderStore } from '@/store/useFounderStore';
-import { generateSmartCrop, ORIENTATION_PRESETS } from '@/utils/smartCrop';
+import { cacheSmartCropResult, generateSmartCrop, ORIENTATION_PRESETS, SmartCropResult } from '@/utils/smartCrop';
 import type { Orientation } from '@/utils/imageUtils';
 
 const StickyOrderRail = () => {
-  const inFlightCropsRef = useRef<Map<Orientation, Promise<string>>>(new Map());
+  const inFlightCropsRef = useRef<Map<Orientation, Promise<SmartCropResult>>>(new Map());
   const enhancements = useFounderStore((state) => state.enhancements);
   const toggleEnhancement = useFounderStore((state) => state.toggleEnhancement);
   const setLivingCanvasModalOpen = useFounderStore((state) => state.setLivingCanvasModalOpen);
@@ -64,33 +64,43 @@ const StickyOrderRail = () => {
 
     setOrientationChanging(true);
 
-    // Check cache first
-    let nextCrop = smartCrops[orient];
+    let nextResult = smartCrops[orient];
 
-    if (!nextCrop) {
-      // Check if already generating this orientation
+    if (!nextResult) {
       if (inFlightCropsRef.current.has(orient)) {
-        // Wait for in-flight operation to complete
-        nextCrop = await inFlightCropsRef.current.get(orient)!;
+        nextResult = await inFlightCropsRef.current.get(orient)!;
       } else {
-        // Start new smart crop generation
         const promise = generateSmartCrop(originalImage, orient)
           .then((result) => {
             setSmartCropForOrientation(orient, result);
+            cacheSmartCropResult(originalImage, orient, result);
             return result;
           })
           .catch(() => {
-            setSmartCropForOrientation(orient, originalImage);
-            return originalImage;
+            const fallback: SmartCropResult = {
+              orientation: orient,
+              dataUrl: originalImage,
+              region: { x: 0, y: 0, width: 0, height: 0 },
+              imageDimensions: { width: 0, height: 0 },
+              generatedAt: Date.now(),
+              generatedBy: 'smart',
+            };
+            setSmartCropForOrientation(orient, fallback);
+            cacheSmartCropResult(originalImage, orient, fallback);
+            return fallback;
           })
           .finally(() => {
             inFlightCropsRef.current.delete(orient);
           });
 
         inFlightCropsRef.current.set(orient, promise);
-        nextCrop = await promise;
+        nextResult = await promise;
       }
+    } else {
+      cacheSmartCropResult(originalImage, orient, nextResult);
     }
+
+    const nextCrop = nextResult.dataUrl;
 
     setCroppedImage(nextCrop);
     setUploadedImage(nextCrop);
