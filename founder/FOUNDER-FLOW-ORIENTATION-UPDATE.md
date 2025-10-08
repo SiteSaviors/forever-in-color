@@ -165,6 +165,25 @@ The founder `/create` flow now features a complete smart crop system with subjec
 
 ---
 
+## Upcoming Enhancements (Planned)
+
+### Portrait Viewport Refinement
+- **Scope**: Right-size the portrait orientation preview in Launchpad, CropperModal, and Studio so it fits comfortably on desktop without requiring scroll.
+- **Goal**: Preserve the new manual crop freedom while keeping the entire artwork visible during adjustments.
+- **Notes**: Horizontal and square already meet target sizing; only portrait requires tuning.
+
+### Dual Preview Canvas (Living Room Mockup)
+- **Scope**: Add a complementary canvas preview beneath the main studio frame that projects the selected image/style onto a provided living-room scene.
+- **Goal**: Give customers instant spatial context and improve purchase confidence before checkout.
+- **Implementation Hooks**: Reuse current preview state, sync with orientation + style selections, and layer supplied canvas assets via lightweight compositing.
+
+### Real Style Generation Integration (Replicate / GPT-Image-1)
+- **Scope**: Wire the founder flow to the production Supabase edge functions for on-demand style transforms once cache + UX polish land.
+- **Goal**: Replace placeholder previews with live AI renders triggered after crop + style selection.
+- **Notes**: Will require budgeting for generation retries, gating, and reusing our new crop metadata in the request payload.
+
+---
+
 ## Testing Mode (Cost Savings)
 
 ### ENABLE_AUTO_PREVIEWS Flag
