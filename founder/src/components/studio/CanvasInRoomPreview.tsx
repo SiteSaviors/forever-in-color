@@ -1,44 +1,13 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import type { Orientation } from '@/utils/imageUtils';
+import { useFounderStore } from '@/store/useFounderStore';
+import type { CanvasSize, FrameColor } from '@/store/useFounderStore';
 
 // ============================================================================
 // TYPES & INTERFACES
 // ============================================================================
 
 export interface CanvasInRoomPreviewProps {
-  /**
-   * URL of the transformed art preview
-   * null = show skeleton loader
-   */
-  previewUrl: string | null;
-
-  /**
-   * Canvas orientation (drives aspect ratio and positioning)
-   */
-  orientation: Orientation;
-
-  /**
-   * Selected canvas size (e.g., "12×16")
-   * Used for display label, future: scale accuracy
-   */
-  canvasSize?: string;
-
-  /**
-   * Preview generation in progress (AI creating art)
-   */
-  isGenerating?: boolean;
-
-  /**
-   * Image currently loading from URL
-   */
-  isLoading?: boolean;
-
-  /**
-   * Room background aesthetic
-   * @default 'modern'
-   */
-  roomStyle?: 'modern' | 'classic' | 'minimal';
-
   /**
    * Enable 3D hover effect (desktop only)
    * @default true
@@ -120,21 +89,53 @@ const ORIENTATION_CONFIGS: Record<Orientation, OrientationConfig> = {
   },
 };
 
+// Orientation name mapping (code → file names)
+const ORIENTATION_MAP: Record<Orientation, string> = {
+  vertical: 'portrait',
+  square: 'square',
+  horizontal: 'horizontal',
+};
+
+// Frame type mapping (state → file names)
+const FRAME_MAP: Record<FrameColor, string> = {
+  black: 'black-framed',
+  white: 'white-framed',
+  none: 'unframed',
+};
+
+// Canvas size scaling (visual cue, not physical accuracy)
+const SIZE_SCALE_MAP: Record<CanvasSize, number> = {
+  '8x10': 0.75,
+  '12x16': 0.90,
+  '16x20': 1.00,
+  '20x24': 1.15,
+};
+
 // ============================================================================
 // MAIN COMPONENT
 // ============================================================================
 
 const CanvasInRoomPreview = ({
-  previewUrl,
-  orientation,
-  canvasSize,
-  isGenerating = false,
-  isLoading = false,
-  roomStyle = 'modern',
   enableHoverEffect = true,
   showDimensions = false,
   className = '',
 }: CanvasInRoomPreviewProps) => {
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // ZUSTAND SUBSCRIPTIONS
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  const orientation = useFounderStore((s) => s.orientation);
+  const selectedFrame = useFounderStore((s) => s.selectedFrame);
+  const selectedSize = useFounderStore((s) => s.selectedCanvasSize);
+  const orientationChanging = useFounderStore((s) => s.orientationChanging);
+
+  // Get current preview URL from selected style
+  const previewUrl = useFounderStore((s) => {
+    const currentStyle = s.styles.find((style) => style.id === s.selectedStyleId);
+    return s.previews[currentStyle?.id ?? '']?.data?.previewUrl ?? null;
+  });
+
+  const isGenerating = orientationChanging;
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // STATE
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -160,12 +161,14 @@ const CanvasInRoomPreview = ({
   const config = useMemo(() => ORIENTATION_CONFIGS[orientation], [orientation]);
 
   const roomBackgroundUrl = useMemo(() => {
-    // TODO: Replace with actual room background assets
-    // For now, return placeholder path structure
-    return `/room-backgrounds/${roomStyle}-${orientation}.jpg`;
-  }, [roomStyle, orientation]);
+    const orientName = ORIENTATION_MAP[orientation];
+    const frameName = FRAME_MAP[selectedFrame];
+    return `/room-backgrounds/${orientName}-${frameName}.jpg`;
+  }, [orientation, selectedFrame]);
 
-  const showLoadingState = isGenerating || isLoading || !previewUrl;
+  const canvasScale = useMemo(() => SIZE_SCALE_MAP[selectedSize], [selectedSize]);
+
+  const showLoadingState = isGenerating || !previewUrl;
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // EFFECTS
@@ -286,7 +289,8 @@ const CanvasInRoomPreview = ({
           style={{
             width: config.canvasWidth,
             aspectRatio: config.aspectRatio,
-            transition: `all ${TRANSITIONS.ORIENTATION_MORPH}ms ${EASINGS.SMOOTH}`,
+            transform: `scale(${canvasScale})`,
+            transition: `all ${TRANSITIONS.ORIENTATION_MORPH}ms ${EASINGS.SMOOTH}, transform 350ms ${EASINGS.SPRING}`,
           }}
         >
           {/* Canvas Frame with Shadow */}
@@ -372,10 +376,10 @@ const CanvasInRoomPreview = ({
           </div>
 
           {/* Canvas Dimensions Badge */}
-          {showDimensions && canvasSize && (
+          {showDimensions && (
             <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-sm shadow-md">
               <span className="text-xs font-semibold text-slate-700 tracking-wide">
-                {canvasSize}
+                {selectedSize.replace('x', '×')}″
               </span>
             </div>
           )}

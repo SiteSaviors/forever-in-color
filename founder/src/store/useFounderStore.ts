@@ -38,6 +38,9 @@ export type StyleCarouselCard = {
   ctaLabel: string;
 };
 
+export type CanvasSize = '8x10' | '12x16' | '16x20' | '20x24';
+export type FrameColor = 'black' | 'white' | 'none';
+
 type PreviewState = {
   status: 'idle' | 'loading' | 'ready' | 'error';
   data?: PreviewResult;
@@ -76,6 +79,10 @@ type FounderState = {
   smartCrops: Partial<Record<Orientation, SmartCropResult>>;
   orientationChanging: boolean;
   setOrientationChanging: (loading: boolean) => void;
+  selectedCanvasSize: CanvasSize;
+  setCanvasSize: (size: CanvasSize) => void;
+  selectedFrame: FrameColor;
+  setFrame: (frame: FrameColor) => void;
   selectStyle: (id: string) => void;
   toggleEnhancement: (id: string) => void;
   setEnhancementEnabled: (id: string, enabled: boolean) => void;
@@ -373,6 +380,10 @@ export const useFounderStore = create<FounderState>((set, get) => ({
   smartCrops: {},
   orientationChanging: false,
   setOrientationChanging: (loading) => set({ orientationChanging: loading }),
+  selectedCanvasSize: '12x16',
+  setCanvasSize: (size) => set({ selectedCanvasSize: size }),
+  selectedFrame: 'none',
+  setFrame: (frame) => set({ selectedFrame: frame }),
   selectStyle: (id) => set({ selectedStyleId: id }),
   toggleEnhancement: (id) =>
     set((state) => {

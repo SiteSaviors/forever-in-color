@@ -3,6 +3,7 @@ import Section from '@/components/layout/Section';
 import { useFounderStore } from '@/store/useFounderStore';
 import StickyOrderRail from '@/components/studio/StickyOrderRail';
 import LivingCanvasModal from '@/components/studio/LivingCanvasModal';
+import CanvasInRoomPreview from '@/components/studio/CanvasInRoomPreview';
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
 
 const StudioConfigurator = () => {
@@ -249,6 +250,19 @@ const StudioConfigurator = () => {
                   </div>
                 </div>
               )}
+            </div>
+
+            {/* Canvas In Room Preview */}
+            <div className="w-full max-w-2xl mt-12 hidden sm:block">
+              <div className="mb-6 text-center space-y-2">
+                <h3 className="text-2xl font-bold text-white">
+                  See It In Your Space
+                </h3>
+                <p className="text-sm text-white/60 max-w-md mx-auto">
+                  Visualize how your canvas will look in a real living room
+                </p>
+              </div>
+              <CanvasInRoomPreview enableHoverEffect={true} showDimensions={false} />
             </div>
           </div>
         </main>

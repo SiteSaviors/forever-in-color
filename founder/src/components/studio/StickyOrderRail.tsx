@@ -28,8 +28,10 @@ const StickyOrderRail = () => {
   const orientationChanging = useFounderStore((state) => state.orientationChanging);
   const setOrientationChanging = useFounderStore((state) => state.setOrientationChanging);
   const shouldAutoGeneratePreviews = useFounderStore((state) => state.shouldAutoGeneratePreviews);
-
-  const [selectedSize, setSelectedSize] = useState<'8x10' | '12x16' | '16x20' | '20x24'>('12x16');
+  const selectedSize = useFounderStore((state) => state.selectedCanvasSize);
+  const setCanvasSize = useFounderStore((state) => state.setCanvasSize);
+  const selectedFrame = useFounderStore((state) => state.selectedFrame);
+  const setFrame = useFounderStore((state) => state.setFrame);
 
   const sizeOptions = [
     { id: '8x10', label: '8×10"', price: 49 },
@@ -159,7 +161,7 @@ const StickyOrderRail = () => {
           {sizeOptions.map((size) => (
             <button
               key={size.id}
-              onClick={() => setSelectedSize(size.id)}
+              onClick={() => setCanvasSize(size.id)}
               className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-sm font-semibold transition-all ${
                 selectedSize === size.id
                   ? 'bg-purple-500 text-white shadow-glow-soft'
@@ -179,41 +181,81 @@ const StickyOrderRail = () => {
 
         {/* Floating Frame */}
         {floatingFrame && (
-          <button
-            onClick={() => toggleEnhancement('floating-frame')}
-            className={`w-full flex items-start gap-3 p-4 rounded-xl text-left transition-all ${
-              floatingFrame.enabled
-                ? 'bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-2 border-purple-400'
-                : 'bg-white/5 border-2 border-white/10 hover:bg-white/10 hover:border-white/20'
-            }`}
-          >
-            <div
-              className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all ${
-                floatingFrame.enabled ? 'bg-purple-500 shadow-glow-soft' : 'bg-white/10'
+          <div className="space-y-3">
+            <button
+              onClick={() => {
+                toggleEnhancement('floating-frame');
+                if (!floatingFrame.enabled) {
+                  setFrame('black'); // Default to black when enabling
+                } else {
+                  setFrame('none');
+                }
+              }}
+              className={`w-full flex items-start gap-3 p-4 rounded-xl text-left transition-all ${
+                floatingFrame.enabled
+                  ? 'bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-2 border-purple-400'
+                  : 'bg-white/5 border-2 border-white/10 hover:bg-white/10 hover:border-white/20'
               }`}
             >
-              {floatingFrame.enabled ? (
-                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    fillRule="evenodd"
-                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              ) : (
-                <svg className="w-5 h-5 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-              )}
-            </div>
-            <div className="flex-1">
-              <div className="flex items-start justify-between mb-1">
-                <p className="text-sm font-bold text-white">{floatingFrame.name}</p>
-                <span className="text-sm font-bold text-white">+${floatingFrame.price}</span>
+              <div
+                className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all ${
+                  floatingFrame.enabled ? 'bg-purple-500 shadow-glow-soft' : 'bg-white/10'
+                }`}
+              >
+                {floatingFrame.enabled ? (
+                  <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      fillRule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                )}
               </div>
-              <p className="text-xs text-white/60">{floatingFrame.description}</p>
-            </div>
-          </button>
+              <div className="flex-1">
+                <div className="flex items-start justify-between mb-1">
+                  <p className="text-sm font-bold text-white">{floatingFrame.name}</p>
+                  <span className="text-sm font-bold text-white">+${floatingFrame.price}</span>
+                </div>
+                <p className="text-xs text-white/60">{floatingFrame.description}</p>
+              </div>
+            </button>
+
+            {/* Frame Color Selector */}
+            {floatingFrame.enabled && (
+              <div className="pl-4 space-y-2 animate-fadeIn">
+                <p className="text-xs font-medium text-white/80">Frame Color</p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setFrame('black')}
+                    className={`flex-1 px-3 py-2.5 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-2 ${
+                      selectedFrame === 'black'
+                        ? 'bg-purple-500 text-white shadow-glow-soft'
+                        : 'bg-white/10 text-white/70 hover:bg-white/20'
+                    }`}
+                  >
+                    <div className="w-4 h-4 rounded-full bg-black border border-white/20" />
+                    Black
+                  </button>
+                  <button
+                    onClick={() => setFrame('white')}
+                    className={`flex-1 px-3 py-2.5 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-2 ${
+                      selectedFrame === 'white'
+                        ? 'bg-purple-500 text-white shadow-glow-soft'
+                        : 'bg-white/10 text-white/70 hover:bg-white/20'
+                    }`}
+                  >
+                    <div className="w-4 h-4 rounded-full bg-white border border-gray-300" />
+                    White
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         )}
 
         {/* Living Canvas AR */}
