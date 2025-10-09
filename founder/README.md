@@ -5,8 +5,25 @@ This workspace explores a founder-led reinvention of Wondertone without touching
 ## Quick Start
 1. `cd founder`
 2. `npm install`
-3. `npm run dev`
+3. Copy `.env.example` to `.env` and fill in your Supabase keys.
+4. `npm run dev`
 4. Visit `http://localhost:4175`
+
+### Environment Variables
+The founder build expects Supabase credentials. Create a `.env` file in this folder (there is a `.env.example` to copy) with:
+
+```
+VITE_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
+VITE_SUPABASE_ANON_KEY=YOUR_ANON_KEY
+
+SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=YOUR_SERVICE_ROLE_KEY
+SUPABASE_ANON_KEY=YOUR_ANON_KEY
+```
+
+Optional helpers:
+- `TEST_IMAGE_URL` for load testing scripts.
+- `VITE_FOUNDER_PREVIEW_MODE=stub` to run the UI without hitting Supabase/Replicate.
 
 ## Phase 0 (Complete)
 - North star storyboard for hero → launchpad → studio.

@@ -1,7 +1,11 @@
 import { create } from 'zustand';
 import { fetchPreviewForStyle, PreviewResult } from '@/utils/previewClient';
+import { startFounderPreviewGeneration } from '@/utils/founderPreviewGeneration';
 import type { Orientation } from '@/utils/imageUtils';
 import type { SmartCropResult } from '@/utils/smartCrop';
+import { emitStepOneEvent } from '@/utils/telemetry';
+import { logPreviewStage } from '@/utils/previewAnalytics';
+import { playPreviewChime } from '@/utils/playPreviewChime';
 
 /**
  * TESTING MODE FLAG
@@ -11,6 +15,22 @@ import type { SmartCropResult } from '@/utils/smartCrop';
  * When disabled, previews only generate when user manually clicks a style in Studio
  */
 const ENABLE_AUTO_PREVIEWS = false;
+const STYLE_PREVIEW_CACHE_LIMIT = 12;
+
+const ORIENTATION_TO_ASPECT: Record<Orientation, string> = {
+  square: '1:1',
+  horizontal: '3:2',
+  vertical: '2:3',
+};
+
+const STAGE_MESSAGES = {
+  animating: 'Summoning the Wondertone studio…',
+  generating: 'Sketching base strokes…',
+  polling: 'Layering textures…',
+  watermarking: 'Applying finishing varnish…',
+  ready: 'Preview ready',
+  error: 'Generation failed',
+} as const;
 
 export type StyleOption = {
   id: string;
@@ -47,6 +67,21 @@ type PreviewState = {
   error?: string;
 };
 
+type StylePreviewCacheEntry = {
+  url: string;
+  orientation: Orientation;
+  generatedAt: number;
+};
+
+export type StylePreviewStatus =
+  | 'idle'
+  | 'animating'
+  | 'generating'
+  | 'polling'
+  | 'watermarking'
+  | 'ready'
+  | 'error';
+
 type FounderState = {
   styles: StyleOption[];
   enhancements: Enhancement[];
@@ -55,6 +90,13 @@ type FounderState = {
   previewStatus: 'idle' | 'generating' | 'ready';
   previewGenerationPromise: Promise<void> | null;
   previews: Record<string, PreviewState>;
+  pendingStyleId: string | null;
+  stylePreviewStatus: StylePreviewStatus;
+  stylePreviewMessage: string | null;
+  stylePreviewError: string | null;
+  stylePreviewCache: Record<string, Partial<Record<Orientation, StylePreviewCacheEntry>>>;
+  stylePreviewCacheOrder: string[];
+  stylePreviewStartAt: number | null;
   firstPreviewCompleted: boolean;
   livingCanvasModalOpen: boolean;
   uploadedImage: string | null;
@@ -88,6 +130,12 @@ type FounderState = {
   setEnhancementEnabled: (id: string, enabled: boolean) => void;
   setPreviewStatus: (status: FounderState['previewStatus']) => void;
   setPreviewState: (id: string, state: PreviewState) => void;
+  setPendingStyle: (styleId: string | null) => void;
+  setStylePreviewState: (status: StylePreviewStatus, message?: string | null, error?: string | null) => void;
+  cacheStylePreview: (styleId: string, entry: StylePreviewCacheEntry) => void;
+  getCachedStylePreview: (styleId: string, orientation: Orientation) => StylePreviewCacheEntry | undefined;
+  clearStylePreviewCache: () => void;
+  startStylePreview: (style: StyleOption, options?: { force?: boolean }) => Promise<void>;
   generatePreviews: (ids?: string[], options?: { force?: boolean }) => Promise<void>;
   setLivingCanvasModalOpen: (open: boolean) => void;
   setUploadedImage: (dataUrl: string | null) => void;
@@ -356,6 +404,13 @@ export const useFounderStore = create<FounderState>((set, get) => ({
   previewStatus: 'idle',
   previewGenerationPromise: null,
   previews: Object.fromEntries(mockStyles.map((style) => [style.id, { status: 'idle' as const }])),
+  pendingStyleId: null,
+  stylePreviewStatus: 'idle',
+  stylePreviewMessage: null,
+  stylePreviewError: null,
+  stylePreviewCache: {},
+  stylePreviewCacheOrder: [],
+  stylePreviewStartAt: null,
   firstPreviewCompleted: false,
   livingCanvasModalOpen: false,
   uploadedImage: null,
@@ -411,12 +466,251 @@ export const useFounderStore = create<FounderState>((set, get) => ({
         [id]: previewState,
       },
     })),
+  setPendingStyle: (styleId) =>
+    set({ pendingStyleId: styleId }),
+  setStylePreviewState: (status, message = null, error = null) =>
+    set((state) => ({
+      stylePreviewStatus: status,
+      stylePreviewMessage: message,
+      stylePreviewError: status === 'error' ? (error ?? state.stylePreviewError ?? 'Preview failed') : null,
+    })),
+  cacheStylePreview: (styleId, entry) =>
+    set((state) => {
+      const existingForStyle = state.stylePreviewCache[styleId] ?? {};
+      const key = `${styleId}:${entry.orientation}`;
+
+      const filteredOrder = state.stylePreviewCacheOrder.filter((existingKey) => existingKey !== key);
+      filteredOrder.push(key);
+
+      const cacheCopy: Record<string, Partial<Record<Orientation, StylePreviewCacheEntry>>> = {
+        ...state.stylePreviewCache,
+        [styleId]: {
+          ...existingForStyle,
+          [entry.orientation]: entry,
+        },
+      };
+
+      while (filteredOrder.length > STYLE_PREVIEW_CACHE_LIMIT) {
+        const oldestKey = filteredOrder.shift();
+        if (!oldestKey) break;
+        const [oldStyleId, oldOrientation] = oldestKey.split(':') as [string, Orientation];
+        const map = cacheCopy[oldStyleId];
+        if (map && map[oldOrientation]) {
+        const { [oldOrientation]: _removed, ...rest } = map;
+        if (Object.keys(rest).length === 0) {
+          delete cacheCopy[oldStyleId];
+        } else {
+          cacheCopy[oldStyleId] = rest as Partial<Record<Orientation, StylePreviewCacheEntry>>;
+        }
+        }
+      }
+
+      return {
+        stylePreviewCache: cacheCopy,
+        stylePreviewCacheOrder: filteredOrder,
+      };
+    }),
+  getCachedStylePreview: (styleId, orientation) => {
+    const state = get();
+    return state.stylePreviewCache[styleId]?.[orientation];
+  },
+  clearStylePreviewCache: () =>
+    set({ stylePreviewCache: {}, stylePreviewCacheOrder: [] }),
+  startStylePreview: async (style, options = {}) => {
+    const state = get();
+    const { force = false } = options;
+
+    if (state.pendingStyleId && state.pendingStyleId !== style.id) {
+      return;
+    }
+
+    set({ selectedStyleId: style.id });
+
+    if (style.id === 'original-image') {
+      const source = state.croppedImage ?? state.uploadedImage;
+      if (source) {
+        const timestamp = Date.now();
+        state.setPreviewState('original-image', {
+          status: 'ready',
+          data: {
+            previewUrl: source,
+            watermarkApplied: false,
+            startedAt: timestamp,
+            completedAt: timestamp,
+          },
+        });
+        set({
+          pendingStyleId: null,
+          stylePreviewStatus: 'idle',
+          stylePreviewMessage: null,
+          stylePreviewError: null,
+        });
+      }
+      return;
+    }
+
+    const sourceImage = state.croppedImage ?? state.uploadedImage;
+    if (!sourceImage) {
+      set({
+        stylePreviewStatus: 'error',
+        stylePreviewMessage: 'Upload a photo to generate a preview.',
+        stylePreviewError: 'No image uploaded',
+        pendingStyleId: null,
+      });
+      return;
+    }
+
+    const cached = !force ? state.getCachedStylePreview(style.id, state.orientation) : undefined;
+    const startTime = Date.now();
+    set({ stylePreviewStartAt: startTime });
+    logPreviewStage({ styleId: style.id, stage: 'start', elapsedMs: 0, timestamp: startTime });
+    if (cached) {
+      const timestamp = Date.now();
+      state.setPreviewState(style.id, {
+        status: 'ready',
+        data: {
+          previewUrl: cached.url,
+          watermarkApplied: false,
+          startedAt: cached.generatedAt ?? timestamp,
+          completedAt: cached.generatedAt ?? timestamp,
+        },
+      });
+      set({
+        pendingStyleId: null,
+        stylePreviewStatus: 'idle',
+        stylePreviewMessage: null,
+        stylePreviewError: null,
+        stylePreviewStartAt: null,
+      });
+      playPreviewChime();
+      logPreviewStage({
+        styleId: style.id,
+        stage: 'complete',
+        elapsedMs: Date.now() - startTime,
+        timestamp: Date.now(),
+      });
+      return;
+    }
+
+    set({
+      pendingStyleId: style.id,
+      stylePreviewStatus: 'animating',
+      stylePreviewMessage: STAGE_MESSAGES.animating,
+      stylePreviewError: null,
+    });
+
+    const aspectRatio = ORIENTATION_TO_ASPECT[state.orientation] ?? '1:1';
+    emitStepOneEvent({ type: 'preview', styleId: style.id, status: 'start' });
+    try {
+      state.setPreviewState(style.id, { status: 'loading' });
+      const result = await startFounderPreviewGeneration({
+        imageUrl: sourceImage,
+        styleId: style.id,
+        styleName: style.name,
+        aspectRatio,
+        onStage: (stage) => {
+          if (get().pendingStyleId !== style.id) {
+            return;
+          }
+          set({
+            stylePreviewStatus: stage,
+            stylePreviewMessage: STAGE_MESSAGES[stage],
+            stylePreviewError: null,
+          });
+          emitStepOneEvent({ type: 'preview', styleId: style.id, status: stage });
+          const startAt = get().stylePreviewStartAt ?? startTime;
+          logPreviewStage({
+            styleId: style.id,
+            stage,
+            elapsedMs: Date.now() - startAt,
+            timestamp: Date.now(),
+          });
+        },
+      });
+
+      const timestamp = Date.now();
+      state.cacheStylePreview(style.id, {
+        url: result.previewUrl,
+        orientation: state.orientation,
+        generatedAt: timestamp,
+      });
+      state.setPreviewState(style.id, {
+        status: 'ready',
+        data: {
+          previewUrl: result.previewUrl,
+          watermarkApplied: false,
+          startedAt: timestamp,
+          completedAt: timestamp,
+        },
+      });
+
+      set({
+        pendingStyleId: null,
+        stylePreviewStatus: 'ready',
+        stylePreviewMessage: STAGE_MESSAGES.ready,
+        stylePreviewError: null,
+        stylePreviewStartAt: null,
+      });
+      emitStepOneEvent({ type: 'preview', styleId: style.id, status: 'complete' });
+      playPreviewChime();
+      logPreviewStage({
+        styleId: style.id,
+        stage: 'complete',
+        elapsedMs: Date.now() - startTime,
+        timestamp: Date.now(),
+      });
+
+      window.setTimeout(() => {
+        if (get().stylePreviewStatus === 'ready') {
+          set({ stylePreviewStatus: 'idle', stylePreviewMessage: null });
+        }
+      }, 400);
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        return;
+      }
+
+      state.setPreviewState(style.id, {
+        status: 'error',
+        error: error instanceof Error ? error.message : 'Preview failed',
+      });
+
+      set({
+        pendingStyleId: null,
+        stylePreviewStatus: 'error',
+        stylePreviewMessage: STAGE_MESSAGES.error,
+        stylePreviewError: error instanceof Error ? error.message : 'Preview failed',
+        stylePreviewStartAt: null,
+      });
+      emitStepOneEvent({ type: 'preview', styleId: style.id, status: 'error' });
+      logPreviewStage({
+        styleId: style.id,
+        stage: 'error',
+        elapsedMs: Date.now() - startTime,
+        timestamp: Date.now(),
+        message: error instanceof Error ? error.message : String(error),
+      });
+
+      window.setTimeout(() => {
+        if (get().stylePreviewStatus === 'error') {
+          set({ stylePreviewStatus: 'idle', stylePreviewMessage: null });
+        }
+      }, 1600);
+    }
+  },
   resetPreviews: () =>
     set((state) => ({
       previews: Object.fromEntries(
         state.styles.map((style) => [style.id, { status: 'idle' as const }])
       ),
       previewStatus: 'idle',
+      stylePreviewCache: {},
+      stylePreviewCacheOrder: [],
+      pendingStyleId: null,
+      stylePreviewStatus: 'idle',
+      stylePreviewMessage: null,
+      stylePreviewError: null,
+      stylePreviewStartAt: null,
     })),
   setSmartCropForOrientation: (orientation, result) =>
     set((state) => ({
@@ -573,11 +867,65 @@ export const useFounderStore = create<FounderState>((set, get) => ({
     }
   },
   setLivingCanvasModalOpen: (open) => set({ livingCanvasModalOpen: open }),
-  setUploadedImage: (dataUrl) => set({ uploadedImage: dataUrl }),
+  setUploadedImage: (dataUrl) =>
+    set({
+      uploadedImage: dataUrl,
+      stylePreviewCache: {},
+      stylePreviewCacheOrder: [],
+      pendingStyleId: null,
+      stylePreviewStatus: 'idle',
+      stylePreviewMessage: null,
+      stylePreviewError: null,
+      stylePreviewStartAt: null,
+    }),
   setCroppedImage: (dataUrl) => set({ croppedImage: dataUrl }),
   setOriginalImage: (dataUrl) => set({ originalImage: dataUrl }),
   setOriginalImageDimensions: (dimensions) => set({ originalImageDimensions: dimensions }),
-  setOrientation: (orientation) => set({ orientation }),
+  setOrientation: (orientation) => {
+    const current = get();
+    if (current.orientation === orientation) return;
+
+    set({ orientation });
+
+    const updated = get();
+    if (updated.pendingStyleId) return;
+
+    const styleId = updated.selectedStyleId;
+    if (!styleId) return;
+
+    if (styleId === 'original-image') {
+      const source = updated.croppedImage ?? updated.uploadedImage;
+      if (source) {
+        const timestamp = Date.now();
+        updated.setPreviewState(styleId, {
+          status: 'ready',
+          data: {
+            previewUrl: source,
+            watermarkApplied: false,
+            startedAt: timestamp,
+            completedAt: timestamp,
+          },
+        });
+      }
+      return;
+    }
+
+    const cached = updated.stylePreviewCache[styleId]?.[orientation];
+    if (cached) {
+      updated.setPreviewState(styleId, {
+        status: 'ready',
+        data: {
+          previewUrl: cached.url,
+          watermarkApplied: false,
+          startedAt: cached.generatedAt,
+          completedAt: cached.generatedAt,
+        },
+      });
+      set({ stylePreviewStatus: 'idle', stylePreviewMessage: null, stylePreviewError: null });
+    } else {
+      updated.setPreviewState(styleId, { status: 'idle' });
+    }
+  },
   setOrientationTip: (tip) => set({ orientationTip: tip }),
   markCropReady: () => set({ cropReadyAt: Date.now() }),
   setDragging: (isDragging) => set({ isDragging }),

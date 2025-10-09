@@ -80,7 +80,7 @@ const SmartCropPreview = ({ originalImage, orientation, onAccept, onAdjust, onRe
 
       <div className="rounded-[2rem] border border-white/15 bg-white/5 p-6 shadow-founder backdrop-blur">
         <div
-          className="relative overflow-hidden rounded-[1.5rem] border border-white/10 bg-slate-900/40"
+          className="relative mx-auto overflow-hidden rounded-[1.5rem] border border-white/10 bg-slate-900/40"
           style={{
             aspectRatio: metadata.ratio,
             maxHeight: orientation === 'vertical' ? '75vh' : undefined

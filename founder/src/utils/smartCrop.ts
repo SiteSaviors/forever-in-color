@@ -355,15 +355,15 @@ const expandToAspect = (
       newHeight = newWidth / ratio;
     }
   } else {
-    // Landscape: expand width intelligently
-    const minWidth = Math.max(region.width * expansionFactor, BLOCK_SIZE * 8);
-    newWidth = Math.min(imageWidth * 0.95, minWidth);
-    newHeight = newWidth / ratio;
+    // Landscape: expand height first so we don't over-zoom on wide subjects
+    const minHeight = Math.max(region.height * expansionFactor, imageHeight * 0.65, BLOCK_SIZE * 8);
+    newHeight = Math.min(imageHeight * 0.9, minHeight);
+    newWidth = newHeight * ratio;
 
-    // Ensure we don't exceed image bounds
-    if (newHeight > imageHeight * 0.95) {
-      newHeight = imageHeight * 0.95;
-      newWidth = newHeight * ratio;
+    // If the computed width exceeds bounds, clamp and recalc height
+    if (newWidth > imageWidth * 0.95) {
+      newWidth = imageWidth * 0.95;
+      newHeight = newWidth / ratio;
     }
   }
 

@@ -6,12 +6,15 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "eslint src --ext .ts,.tsx"
+    "lint": "eslint src --ext .ts,.tsx",
+    "check:prompts": "node ./scripts/check-style-prompts.mjs",
+    "loadtest:styles": "node ./scripts/load-test-styles.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.2",
     "@radix-ui/react-tabs": "^1.1.0",
     "@tanstack/react-query": "^5.56.2",
+    "@supabase/supabase-js": "^2.44.4",
     "clsx": "^2.1.1",
     "framer-motion": "^11.0.12",
     "lucide-react": "^0.462.0",

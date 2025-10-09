@@ -184,8 +184,8 @@ const CropperModal = ({
   return (
     <Dialog.Root open={open} onOpenChange={(value) => !value && onClose()}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-slate-950/70 backdrop-blur" />
-        <Dialog.Content className="fixed inset-0 flex items-center justify-center p-6">
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur" />
+        <Dialog.Content className="fixed inset-0 z-50 flex items-center justify-center p-6">
           <div className="bg-slate-900 border border-white/10 rounded-[2rem] shadow-founder w-full max-w-4xl p-6 space-y-5">
             <Dialog.Title className="text-xl font-semibold text-white">Adjust Crop</Dialog.Title>
             <Dialog.Description className="text-sm text-white/60">

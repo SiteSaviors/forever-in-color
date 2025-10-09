@@ -1,10 +1,10 @@
-import { useState } from 'react';
 import Section from '@/components/layout/Section';
-import { useFounderStore } from '@/store/useFounderStore';
+import { useFounderStore, StylePreviewStatus } from '@/store/useFounderStore';
 import StickyOrderRail from '@/components/studio/StickyOrderRail';
 import LivingCanvasModal from '@/components/studio/LivingCanvasModal';
 import CanvasInRoomPreview from '@/components/studio/CanvasInRoomPreview';
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
+import StyleForgeOverlay from '@/components/studio/StyleForgeOverlay';
 
 const StudioConfigurator = () => {
   const styles = useFounderStore((state) => state.styles);
@@ -16,22 +16,28 @@ const StudioConfigurator = () => {
   const generationCount = useFounderStore((state) => state.generationCount);
   const getGenerationLimit = useFounderStore((state) => state.getGenerationLimit);
   const canGenerateMore = useFounderStore((state) => state.canGenerateMore);
-  const generatePreviews = useFounderStore((state) => state.generatePreviews);
   const setPreviewState = useFounderStore((state) => state.setPreviewState);
   const croppedImage = useFounderStore((state) => state.croppedImage);
   const orientation = useFounderStore((state) => state.orientation);
   const orientationChanging = useFounderStore((state) => state.orientationChanging);
+  const pendingStyleId = useFounderStore((state) => state.pendingStyleId);
+  const stylePreviewStatus = useFounderStore((state) => state.stylePreviewStatus);
+  const stylePreviewMessage = useFounderStore((state) => state.stylePreviewMessage);
+  const stylePreviewError = useFounderStore((state) => state.stylePreviewError);
+  const startStylePreview = useFounderStore((state) => state.startStylePreview);
+  const cachedPreviewEntry = useFounderStore((state) => {
+    const styleId = state.selectedStyleId;
+    if (!styleId) return null;
+    return state.stylePreviewCache[styleId]?.[state.orientation] ?? null;
+  });
   const orientationMeta = ORIENTATION_PRESETS[orientation];
 
   const handleStyleClick = (styleId: string) => {
     selectStyle(styleId);
-    const previewState = previews[styleId];
-    if (previewState?.status === 'loading' || previewState?.status === 'ready') {
-      return;
-    }
+    const style = styles.find((item) => item.id === styleId);
+    if (!style) return;
 
-    // Special handling for "Original Image" style - use user's cropped photo directly
-    if (styleId === 'original-image' && croppedImage) {
+    if (style.id === 'original-image' && croppedImage) {
       setPreviewState('original-image', {
         status: 'ready',
         data: {
@@ -48,11 +54,19 @@ const StudioConfigurator = () => {
       return;
     }
 
-    void generatePreviews([styleId]);
+    void startStylePreview(style);
   };
 
   const limit = getGenerationLimit();
   const remaining = limit === Infinity ? '∞' : Math.max(0, limit - generationCount);
+  type OverlayStatus = Exclude<StylePreviewStatus, 'idle'>;
+  const overlayStatus: OverlayStatus = stylePreviewStatus === 'idle' ? 'animating' : stylePreviewStatus;
+  const canRefreshPreview =
+    Boolean(currentStyle) &&
+    currentStyle?.id !== 'original-image' &&
+    !pendingStyleId &&
+    stylePreviewStatus === 'idle' &&
+    Boolean(cachedPreviewEntry || preview?.status === 'ready');
 
   return (
     <section className="bg-slate-900 min-h-screen relative" data-studio-section id="studio">
@@ -96,11 +110,13 @@ const StudioConfigurator = () => {
                 const stylePreview = previews[style.id];
                 const isReady = stylePreview?.status === 'ready';
 
+                const isLocked = Boolean(pendingStyleId && pendingStyleId !== style.id) || stylePreviewStatus === 'error' && pendingStyleId !== style.id;
                 return (
                   <button
                     key={style.id}
                     onClick={() => handleStyleClick(style.id)}
-                    className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
+                    disabled={isLocked}
+                    className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
                       isSelected
                         ? 'bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-2 border-purple-400'
                         : 'bg-white/5 border-2 border-white/10 hover:bg-white/10 hover:border-white/20'
@@ -154,15 +170,34 @@ const StudioConfigurator = () => {
 
         {/* CENTER: Canvas Preview (Flexible) */}
         <main className="flex-1 p-8 flex flex-col items-center justify-start">
-          <div className="w-full max-w-2xl">
+          <div className="w-full max-w-2xl mx-auto">
             {/* Canvas Preview */}
             <div
-              className="relative rounded-3xl overflow-hidden border-2 border-white/20 bg-gradient-preview-bg shadow-2xl transition-all"
+              className="relative rounded-3xl overflow-hidden border-2 border-white/20 bg-gradient-preview-bg shadow-2xl transition-all mx-auto"
               style={{
                 aspectRatio: orientationMeta.ratio,
                 maxHeight: orientation === 'vertical' ? '85vh' : undefined
               }}
             >
+              {canRefreshPreview && currentStyle && (
+                <button
+                  type="button"
+                  onClick={() => void startStylePreview(currentStyle, { force: true })}
+                  className="absolute right-4 top-4 z-30 rounded-full border border-white/30 bg-white/10 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm transition hover:bg-white/20"
+                >
+                  Refresh Preview
+                </button>
+              )}
+
+              {stylePreviewStatus !== 'idle' && (
+                <StyleForgeOverlay
+                  status={overlayStatus}
+                  styleName={pendingStyleId ? styles.find((style) => style.id === pendingStyleId)?.name ?? 'Selected Style' : currentStyle?.name ?? 'Selected Style'}
+                  message={stylePreviewMessage}
+                  isError={stylePreviewStatus === 'error'}
+                  errorMessage={stylePreviewError}
+                />
+              )}
               {/* Orientation changing overlay */}
               {orientationChanging && (
                 <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-20">
