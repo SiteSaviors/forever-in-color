@@ -5,11 +5,16 @@ import { ReplicateGenerationRequest, ReplicateGenerationResponse } from './types
 export class ReplicateApiClient {
   constructor(private apiToken: string) {}
 
-  async createPrediction(requestBody: ReplicateGenerationRequest): Promise<ReplicateGenerationResponse> {
+  async createPrediction(
+    requestBody: ReplicateGenerationRequest,
+    modelOverride?: string
+  ): Promise<ReplicateGenerationResponse> {
     try {
-      // Log the complete request for debugging
+      const model = modelOverride ?? REPLICATE_CONFIG.model;
+      const endpoint = `${REPLICATE_CONFIG.baseUrl}/models/${model}/predictions`;
+
       console.log(`🔧 [DEBUG] Replicate API Request:`, {
-        url: `${REPLICATE_CONFIG.baseUrl}/models/${REPLICATE_CONFIG.model}/predictions`,
+        url: endpoint,
         method: "POST",
         headers: {
           "Authorization": `Bearer ${this.apiToken.substring(0, 10)}...`,
@@ -18,8 +23,8 @@ export class ReplicateApiClient {
         },
         body: JSON.stringify(requestBody, null, 2)
       });
-      
-      const response = await fetch(`${REPLICATE_CONFIG.baseUrl}/models/${REPLICATE_CONFIG.model}/predictions`, {
+
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${this.apiToken}`,
@@ -29,15 +34,13 @@ export class ReplicateApiClient {
         body: JSON.stringify(requestBody),
       });
 
-      // Log response details
       console.log(`🔧 [DEBUG] Replicate API Response Status: ${response.status} ${response.statusText}`);
       console.log(`🔧 [DEBUG] Replicate API Response Headers:`, Object.fromEntries(response.headers.entries()));
-      
+
       if (!response.ok) {
         const errorData = await response.text();
         console.error(`🔧 [DEBUG] Replicate API Error Response:`, errorData);
-        
-        // Try to parse error as JSON for more details
+
         let parsedError;
         try {
           parsedError = JSON.parse(errorData);
@@ -45,10 +48,10 @@ export class ReplicateApiClient {
         } catch {
           console.error(`🔧 [DEBUG] Raw Error Text:`, errorData);
         }
-        
+
         return {
           ok: false,
-          error: `GPT-Image-1 API request failed: ${response.status} - ${errorData}`,
+          error: `${model} API request failed: ${response.status} - ${errorData}`,
           technicalError: errorData,
           statusCode: response.status
         };
@@ -63,10 +66,12 @@ export class ReplicateApiClient {
       };
     } catch (error) {
       console.error(`🔧 [DEBUG] Replicate API Exception:`, error);
+      const message = error instanceof Error ? error.message : String(error);
+      const stack = error instanceof Error ? error.stack : undefined;
       return {
         ok: false,
-        error: error.message,
-        technicalError: error.stack
+        error: message,
+        technicalError: stack
       };
     }
   }
@@ -88,7 +93,7 @@ export class ReplicateApiClient {
         console.error(`🔧 [DEBUG] Status check error:`, errorData);
         return {
           ok: false,
-          error: `GPT-Image-1 status check failed: ${response.status} - ${errorData}`
+          error: `prediction status check failed: ${response.status} - ${errorData}`
         };
       }
 
@@ -100,9 +105,10 @@ export class ReplicateApiClient {
       };
     } catch (error) {
       console.error(`🔧 [DEBUG] Status check exception:`, error);
+      const message = error instanceof Error ? error.message : String(error);
       return {
         ok: false,
-        error: error.message
+        error: message
       };
     }
   }

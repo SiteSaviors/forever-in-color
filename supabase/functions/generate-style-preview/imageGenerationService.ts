@@ -1,24 +1,40 @@
 import { resolvePreviewTimingConfig } from './replicate/config.ts';
 
+/**
+ * Maps Wondertone quality setting to SeeDream size parameter
+ */
+function mapQualityToSize(quality: string): string {
+  switch (quality.toLowerCase()) {
+    case 'low':
+      return '1K';
+    case 'high':
+      return '4K';
+    case 'medium':
+    default:
+      return '2K';
+  }
+}
+
 export class ImageGenerationService {
-  constructor(private openaiApiKey: string, private replicateApiToken: string) {}
+  constructor(private replicateApiToken: string) {}
 
   async generateImageToImage(imageData: string, prompt: string, aspectRatio: string = "1:1", quality: string = "medium"): Promise<{ ok: boolean; output?: string; error?: string }> {
-    
+
     try {
-      // Use Replicate's GPT-Image-1 endpoint
+      // Use Replicate's SeeDream 4.0 endpoint
+      const seedreamSize = mapQualityToSize(quality);
       const requestBody = {
         input: {
           prompt: prompt,
-          input_images: [imageData],
-          openai_api_key: this.openaiApiKey,
-          aspect_ratio: aspectRatio, // CRITICAL: This must be passed correctly
-          quality: quality
+          image_input: [imageData],
+          aspect_ratio: aspectRatio, // SeeDream supports 1:1, 3:2, 2:3, 4:3, 16:9
+          size: seedreamSize, // 1K, 2K, or 4K
+          max_images: 1
         }
       };
 
 
-      const response = await fetch('https://api.replicate.com/v1/models/openai/gpt-image-1/predictions', {
+      const response = await fetch('https://api.replicate.com/v1/models/bytedance/seedream-4/predictions', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${this.replicateApiToken}`,

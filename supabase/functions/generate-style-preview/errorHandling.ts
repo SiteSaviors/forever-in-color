@@ -63,14 +63,14 @@ export class EnhancedErrorHandler {
           status,
           message: 'Rate limit exceeded',
           retryAfter: retryAfter ? parseInt(retryAfter) : 60,
-          details: 'Too many requests to GPT-Image-1 API'
+          details: 'Too many requests to the image generation API'
         };
 
       case 503:
         return {
           type: 'service_unavailable',
           status,
-          message: 'GPT-Image-1 service temporarily unavailable due to high demand',
+          message: 'Image service temporarily unavailable due to high demand',
           retryAfter: retryAfter ? parseInt(retryAfter) : 30,
           details: 'Service experiencing high load - implement retry logic'
         };
@@ -87,8 +87,8 @@ export class EnhancedErrorHandler {
         return {
           type: 'invalid_request',
           status,
-          message: 'Invalid or missing OpenAI API key',
-          details: 'Verify OPENAI_API_KEY in environment variables'
+          message: 'Invalid or missing Replicate API key',
+          details: 'Verify REPLICATE_API_TOKEN in environment variables'
         };
 
       case 403:
@@ -96,7 +96,7 @@ export class EnhancedErrorHandler {
           type: 'invalid_request',
           status,
           message: 'Access denied - check API key permissions',
-          details: 'API key may not have access to GPT-Image-1 model'
+          details: 'API key may not have access to SeeDream model'
         };
 
       case 502:
@@ -106,7 +106,7 @@ export class EnhancedErrorHandler {
           status,
           message: 'Gateway error - upstream service issue',
           retryAfter: 15,
-          details: 'Temporary network issue with OpenAI servers'
+          details: 'Temporary network issue with Replicate servers'
         };
 
       default:
@@ -114,7 +114,7 @@ export class EnhancedErrorHandler {
           type: 'unknown',
           status,
           message: `HTTP ${status} error`,
-          details: `Unexpected status code from GPT-Image-1 API`
+          details: `Unexpected status code from image generation API`
         };
     }
   }
@@ -142,7 +142,7 @@ export class EnhancedErrorHandler {
   static createUserFriendlyMessage(error: ApiError): string {
     switch (error.type) {
       case 'service_unavailable':
-        return 'GPT-Image-1 is experiencing high demand. Please try again in a few moments.';
+        return 'Our image service is experiencing high demand. Please try again in a few moments.';
       case 'rate_limit':
         return 'Too many requests. Please wait a moment before trying again.';
       case 'invalid_request':

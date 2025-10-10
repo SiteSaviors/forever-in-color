@@ -1,7 +1,7 @@
 
 export const REPLICATE_CONFIG = {
   baseUrl: "https://api.replicate.com/v1",
-  model: "openai/gpt-image-1",
+  model: "bytedance/seedream-4",
   defaultOutputFormat: "jpg",
   maxPollAttempts: 30,
   pollIntervalMs: 2000,

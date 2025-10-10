@@ -5,6 +5,7 @@ import { StylePromptService, type StylePromptMetadata } from './stylePromptServi
 import { handleCorsPreflightRequest, createCorsResponse } from './corsUtils.ts';
 import { validateRequest } from './requestValidator.ts';
 import { ReplicateService } from './replicateService.ts';
+import { validateEnvironment } from './environmentValidator.ts';
 import { createSuccessResponse, createErrorResponse } from './responseUtils.ts';
 import {
   getPromptCacheConfig,
@@ -79,7 +80,7 @@ async function normalizeImageInput(image: string): Promise<string> {
     const buffer = await response.arrayBuffer();
     const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
     return `data:${contentType};base64,${base64}`;
-  } catch (_error) {
+  } catch (error) {
     console.error('Failed to normalize image input:', error);
     return image;
   }
@@ -234,7 +235,7 @@ async function handleWebhookRequest(req: Request, url: URL): Promise<Response> {
     });
 
     return createCorsResponse(JSON.stringify({ ok: true, cacheStatus }), 200);
-  } catch (_error) {
+  } catch (error) {
     console.error('Webhook handling failed', error);
     return createCorsResponse(JSON.stringify({ ok: false, error: 'webhook_error' }), 500);
   }
@@ -330,12 +331,24 @@ serve(async (req) => {
       quality: normalizedQuality
     });
 
-    const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
-    const replicateApiToken = Deno.env.get('REPLICATE_API_TOKEN');
+    const envValidation = await validateEnvironment(req, requestId);
+    if (!envValidation.isValid || !envValidation.replicateApiToken) {
+      logger.error('Environment validation failed');
+      const response = envValidation.error ?? createCorsResponse(
+        JSON.stringify(createErrorResponse('configuration_error', 'AI service configuration error', requestId)),
+        500
+      );
+      return response;
+    }
+
+    const replicateApiToken = envValidation.replicateApiToken;
+    const openAiFallbackKey = envValidation.openaiApiKey ?? '';
+    const fallbackEnabled = Boolean(openAiFallbackKey && openAiFallbackKey.length > 0);
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
-    if (!openaiApiKey || !replicateApiToken || !supabaseUrl || !supabaseServiceKey) {
+    if (!supabaseUrl || !supabaseServiceKey) {
       logger.error('Missing required environment configuration');
       return createCorsResponse(
         JSON.stringify(createErrorResponse('configuration_error', 'AI service configuration error', requestId)),
@@ -377,7 +390,7 @@ serve(async (req) => {
 
       try {
         fetchedMetadata = await stylePromptService.getStylePromptWithMetadata(style);
-      } catch (_error) {
+      } catch (error) {
         console.error('[prompt-cache]', {
           action: 'fetch_error',
           style,
@@ -489,8 +502,8 @@ serve(async (req) => {
         } else if (metadataEntry && metadataEntry.preview_url) {
           logger.info('Cache entry expired, regenerating', { cacheKey });
         }
-      } catch (_error) {
-        logger.warn('Cache metadata lookup failed', { error: error?.message ?? 'unknown', cacheKey });
+      } catch (error) {
+        logger.warn('Cache metadata lookup failed', { error: error instanceof Error ? error.message : String(error), cacheKey });
       }
     }
 
@@ -535,7 +548,7 @@ serve(async (req) => {
 
           memoryCache.set(cacheKey, uploadResult.publicUrl, ttlMs);
           cacheStatus = 'hit';
-        } catch (_error) {
+        } catch (error) {
           logger.warn('Failed to cache preview output', { error: error instanceof Error ? error.message : String(error), cacheKey, requestId });
         }
       } else if (!cacheAllowedForRequest) {
@@ -556,20 +569,25 @@ serve(async (req) => {
 
     if (asyncEnabled && webhookBaseUrl && webhookSecret) {
       const webhookUrl = `${webhookBaseUrl.replace(/\/$/, '')}/functions/v1/generate-style-preview/webhook?token=${webhookSecret}`;
+
+      // Map quality to SeeDream size parameter
+      const seedreamSize = normalizedQuality === 'high' ? '4K' :
+                          normalizedQuality === 'low' ? '1K' : '2K';
+
       const createBody = {
         input: {
           prompt: stylePrompt,
-          input_images: [normalizedImageUrl],
-          openai_api_key: openaiApiKey,
+          image_input: [normalizedImageUrl],
           aspect_ratio: normalizedAspectRatio,
-          quality: normalizedQuality,
+          size: seedreamSize,
+          max_images: 1,
           request_id: requestId
         },
         webhook: webhookUrl,
         webhook_events_filter: ['completed', 'failed', 'canceled']
       } as const;
 
-      const asyncResp = await fetch('https://api.replicate.com/v1/models/openai/gpt-image-1/predictions', {
+      const asyncResp = await fetch('https://api.replicate.com/v1/models/bytedance/seedream-4/predictions', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${replicateApiToken}`,
@@ -582,7 +600,7 @@ serve(async (req) => {
         const errTxt = await asyncResp.text();
         logger.error('Replicate async create failed', { requestId, status: asyncResp.status, errTxt });
         return createCorsResponse(
-          JSON.stringify(createErrorResponse('generation_failed', `GPT-Image-1 API request failed: ${asyncResp.status} - ${errTxt}`, requestId)),
+          JSON.stringify(createErrorResponse('generation_failed', `SeeDream API request failed: ${asyncResp.status} - ${errTxt}`, requestId)),
           503
         );
       }
@@ -647,10 +665,10 @@ serve(async (req) => {
       );
     }
 
-    const replicateService = new ReplicateService(replicateApiToken, openaiApiKey);
+    const replicateService = new ReplicateService(replicateApiToken);
     const replicateStart = Date.now();
 
-    logger.info('Generating preview via Replicate', {
+    logger.info('Generating preview via Replicate (SeeDream 4.0)', {
       requestId,
       cacheStatus,
       cacheEnabled: cacheAllowedForRequest,
@@ -693,13 +711,50 @@ serve(async (req) => {
       );
     }
 
-    logger.error('Replicate generation failed', { error: result.error, requestId });
+    logger.error('SeeDream generation failed', { error: result.error, requestId });
+
+    if (fallbackEnabled) {
+      logger.warn('Attempting GPT-Image-1 fallback', { requestId });
+      const fallbackStart = Date.now();
+      const fallbackResult = await replicateService.generateImageToImageWithGpt(
+        normalizedImageUrl,
+        stylePrompt,
+        normalizedAspectRatio,
+        normalizedQuality,
+        openAiFallbackKey
+      );
+      const fallbackDurationMs = Date.now() - fallbackStart;
+
+      if (fallbackResult.ok && fallbackResult.output) {
+        const fallbackOutput = Array.isArray(fallbackResult.output) ? fallbackResult.output[0] : fallbackResult.output;
+        const finalPreviewUrl = await persistGeneratedPreview(fallbackOutput);
+        const duration = Date.now() - startTime;
+
+        logger.info('GPT-Image-1 fallback succeeded', {
+          requestId,
+          fallbackDurationMs,
+          cacheStatus
+        });
+
+        return createCorsResponse(
+          JSON.stringify(createSuccessResponse(finalPreviewUrl, requestId, duration, cacheStatus)),
+          200
+        );
+      }
+
+      logger.error('GPT-Image-1 fallback failed', {
+        requestId,
+        error: fallbackResult.error,
+        technicalError: fallbackResult.technicalError
+      });
+    }
+
     return createCorsResponse(
       JSON.stringify(createErrorResponse('generation_failed', result.error || 'AI service is temporarily unavailable. Please try again.', requestId)),
       503
     );
-  } catch (_error) {
-    logger.error('Unhandled error in preview generation', { error: error?.message ?? 'unknown', requestId });
+  } catch (error) {
+    logger.error('Unhandled error in preview generation', { error: error instanceof Error ? error.message : String(error), requestId });
     return createCorsResponse(
       JSON.stringify(createErrorResponse('internal_error', 'Internal server error. Please try again.', requestId)),
       500

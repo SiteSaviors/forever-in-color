@@ -1,6 +1,6 @@
 # Generate Style Preview Edge Function
 
-This function powers Wondertone’s AI preview generation. Phase 2 introduces hybrid output caching to serve repeat requests quickly while protecting fallbacks and configurator flow.
+This function powers Wondertone's AI preview generation using **SeeDream 4.0** via Replicate. Phase 2 introduces hybrid output caching to serve repeat requests quickly while protecting fallbacks and configurator flow.
 
 ## Caching Overview
 - **Memory cache**: In-memory LRU per edge worker (size configurable via `PREVIEW_CACHE_MAX_MEMORY_ITEMS`).
@@ -12,6 +12,9 @@ This function powers Wondertone’s AI preview generation. Phase 2 introduces hy
 ## Environment Variables
 | Variable | Default | Purpose |
 | --- | --- | --- |
+| `REPLICATE_API_TOKEN` | — | **Required**. Replicate API token for SeeDream 4.0 model access. |
+| `SUPABASE_URL` | — | **Required**. Supabase project URL. |
+| `SUPABASE_SERVICE_ROLE_KEY` | — | **Required**. Supabase service role key for database/storage access. |
 | `PREVIEW_CACHE_ENABLED` | `true` | Master flag to enable storage+memory caching. Set `false` to revert to on-demand generation. |
 | `PREVIEW_CACHE_BUCKET` | `preview-cache` | Supabase Storage bucket for cached previews. Must exist with public read access via CDN. |
 | `PREVIEW_CACHE_TTL_DAYS` | `30` | Retention period for cached previews. |
@@ -21,6 +24,9 @@ This function powers Wondertone’s AI preview generation. Phase 2 introduces hy
 | `PREVIEW_ASYNC_ENABLED` | `false` | Toggles webhook-driven async generation. When `true`, clients receive a `requestId` for polling. |
 | `PREVIEW_WEBHOOK_BASE_URL` | — | Public base URL (no trailing slash) for invoking the webhook endpoint. Required when async is enabled. |
 | `PREVIEW_WEBHOOK_SECRET` | — | Shared secret appended to webhook callback for verification. Required when async is enabled. |
+| `OPENAI_API_KEY` | _optional_ | Enables GPT-Image-1 fallback when SeeDream encounters an error. |
+
+**Note**: SeeDream 4.0 runs as the primary engine; set `OPENAI_API_KEY` only if you want GPT-Image-1 as a backup.
 
 ## Database Objects
 - Table: `preview_cache_entries` (metadata, TTL, hit counters). RLS allows service role access only.
