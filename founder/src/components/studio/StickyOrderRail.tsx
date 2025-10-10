@@ -3,9 +3,12 @@ import Card from '@/components/ui/Card';
 import { useFounderStore } from '@/store/useFounderStore';
 import { cacheSmartCropResult, generateSmartCrop, ORIENTATION_PRESETS, SmartCropResult } from '@/utils/smartCrop';
 import type { Orientation } from '@/utils/imageUtils';
+import CropperModal from '@/components/launchpad/cropper/CropperModal';
 
 const StickyOrderRail = () => {
   const inFlightCropsRef = useRef<Map<Orientation, Promise<SmartCropResult>>>(new Map());
+  const [cropperOpen, setCropperOpen] = useState(false);
+  const [pendingOrientation, setPendingOrientation] = useState<Orientation | null>(null);
   const enhancements = useFounderStore((state) => state.enhancements);
   const toggleEnhancement = useFounderStore((state) => state.toggleEnhancement);
   const setLivingCanvasModalOpen = useFounderStore((state) => state.setLivingCanvasModalOpen);
@@ -14,15 +17,13 @@ const StickyOrderRail = () => {
   const currentStyle = useFounderStore((state) => state.currentStyle());
   const orientation = useFounderStore((state) => state.orientation);
   const setOrientation = useFounderStore((state) => state.setOrientation);
-  const resetPreviews = useFounderStore((state) => state.resetPreviews);
-  const generatePreviews = useFounderStore((state) => state.generatePreviews);
+  const startStylePreview = useFounderStore((state) => state.startStylePreview);
   const setPreviewState = useFounderStore((state) => state.setPreviewState);
-  const selectedStyleId = useFounderStore((state) => state.selectedStyleId);
   const originalImage = useFounderStore((state) => state.originalImage);
+  const originalImageDimensions = useFounderStore((state) => state.originalImageDimensions);
   const smartCrops = useFounderStore((state) => state.smartCrops);
   const setSmartCropForOrientation = useFounderStore((state) => state.setSmartCropForOrientation);
   const setCroppedImage = useFounderStore((state) => state.setCroppedImage);
-  const setUploadedImage = useFounderStore((state) => state.setUploadedImage);
   const markCropReady = useFounderStore((state) => state.markCropReady);
   const setOrientationTip = useFounderStore((state) => state.setOrientationTip);
   const orientationChanging = useFounderStore((state) => state.orientationChanging);
@@ -32,6 +33,7 @@ const StickyOrderRail = () => {
   const setCanvasSize = useFounderStore((state) => state.setCanvasSize);
   const selectedFrame = useFounderStore((state) => state.selectedFrame);
   const setFrame = useFounderStore((state) => state.setFrame);
+  const setOrientationPreviewPending = useFounderStore((state) => state.setOrientationPreviewPending);
 
   const sizeOptions = [
     { id: '8x10', label: '8×10"', price: 49 },
@@ -55,16 +57,8 @@ const StickyOrderRail = () => {
     }
   };
 
-  const handleOrientationSelect = async (orient: Orientation) => {
-    if (orientation === orient) return;
-    setOrientation(orient);
-    setOrientationTip(ORIENTATION_PRESETS[orient].description);
-
-    if (!originalImage) {
-      return;
-    }
-
-    setOrientationChanging(true);
+  const ensureSmartCropForOrientation = async (orient: Orientation): Promise<SmartCropResult | null> => {
+    if (!originalImage) return null;
 
     let nextResult = smartCrops[orient];
 
@@ -83,7 +77,7 @@ const StickyOrderRail = () => {
               orientation: orient,
               dataUrl: originalImage,
               region: { x: 0, y: 0, width: 0, height: 0 },
-              imageDimensions: { width: 0, height: 0 },
+              imageDimensions: originalImageDimensions ?? { width: 0, height: 0 },
               generatedAt: Date.now(),
               generatedBy: 'smart',
             };
@@ -102,34 +96,94 @@ const StickyOrderRail = () => {
       cacheSmartCropResult(originalImage, orient, nextResult);
     }
 
-    const nextCrop = nextResult.dataUrl;
+    return nextResult;
+  };
 
-    setCroppedImage(nextCrop);
-    setUploadedImage(nextCrop);
+  const handleOrientationSelect = async (orient: Orientation) => {
+    if (orientation === orient || orientationChanging || cropperOpen) return;
+
+    if (!originalImage) {
+      setOrientation(orient);
+      setOrientationTip(ORIENTATION_PRESETS[orient].description);
+      return;
+    }
+
+    setOrientationChanging(true);
+    setPendingOrientation(orient);
+
+    const nextResult = await ensureSmartCropForOrientation(orient);
+
+    setOrientationChanging(false);
+
+    if (!nextResult) {
+      setPendingOrientation(null);
+      setOrientation(orient);
+      setOrientationTip(ORIENTATION_PRESETS[orient].description);
+      return;
+    }
+
+    setCropperOpen(true);
+  };
+
+  const handleCropperDismiss = () => {
+    setCropperOpen(false);
+    setPendingOrientation(null);
+    setOrientationPreviewPending(false);
+    setOrientationChanging(false);
+  };
+
+  const handleCropperComplete = async (result: SmartCropResult) => {
+    const targetOrientation = result.orientation;
+
+    setSmartCropForOrientation(targetOrientation, result);
+    if (originalImage) {
+      cacheSmartCropResult(originalImage, targetOrientation, result);
+    }
+    setCroppedImage(result.dataUrl);
     markCropReady();
-    resetPreviews();
-
-    // Populate "Original Image" style with new cropped photo for this orientation
     setPreviewState('original-image', {
       status: 'ready',
       data: {
-        previewUrl: nextCrop,
+        previewUrl: result.dataUrl,
         watermarkApplied: false,
         startedAt: Date.now(),
         completedAt: Date.now(),
       },
+      orientation: targetOrientation,
     });
 
-    // Auto-preview generation on orientation change (disabled during testing)
-    if (shouldAutoGeneratePreviews()) {
-      const styleIds = selectedStyleId ? [selectedStyleId] : undefined;
-      await generatePreviews(styleIds, { force: true });
+    setCropperOpen(false);
+    setPendingOrientation(null);
+    setOrientation(targetOrientation);
+    setOrientationTip(ORIENTATION_PRESETS[targetOrientation].description);
+
+    const snapshot = useFounderStore.getState();
+    const hasCachedPreview = currentStyle
+      ? Boolean(snapshot.stylePreviewCache[currentStyle.id]?.[targetOrientation])
+      : false;
+
+    if (shouldAutoGeneratePreviews() && currentStyle && currentStyle.id !== 'original-image' && !hasCachedPreview) {
+      try {
+        setOrientationPreviewPending(true);
+        await startStylePreview(currentStyle, { force: true, orientationOverride: targetOrientation });
+      } finally {
+        setOrientationPreviewPending(false);
+      }
     } else {
-      console.log('[StickyOrderRail] Auto-preview regeneration disabled (testing mode). Click styles in Studio to generate.');
+      setOrientationPreviewPending(false);
+      if (!shouldAutoGeneratePreviews()) {
+        console.log(
+          '[StickyOrderRail] Auto-preview regeneration disabled (testing mode). Click styles in Studio to generate.'
+        );
+      } else if (hasCachedPreview) {
+        console.log('[StickyOrderRail] Reusing cached preview for orientation change.');
+      }
     }
 
     setOrientationChanging(false);
   };
+
+  const activeOrientationValue = pendingOrientation ?? orientation;
 
   return (
     <aside className="md:sticky md:top-24 space-y-4">
@@ -141,14 +195,18 @@ const StickyOrderRail = () => {
             <button
               key={orient}
               onClick={() => void handleOrientationSelect(orient)}
-              disabled={orientationChanging}
+              disabled={orientationChanging || cropperOpen}
               className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
-                orientation === orient
+                activeOrientationValue === orient
                   ? 'bg-purple-500 text-white shadow-glow-soft'
                   : 'bg-white/10 text-white/70 border border-white/20 hover:bg-white/20'
               }`}
             >
-              {orientationChanging && orientation === orient ? 'Updating…' : ORIENTATION_PRESETS[orient].label}
+              {orientationChanging && pendingOrientation === orient
+                ? 'Loading…'
+                : cropperOpen && pendingOrientation === orient
+                  ? 'Adjusting…'
+                  : ORIENTATION_PRESETS[orient].label}
             </button>
           ))}
         </div>
@@ -174,6 +232,17 @@ const StickyOrderRail = () => {
           ))}
         </div>
       </Card>
+
+      <CropperModal
+        open={cropperOpen}
+        originalImage={originalImage}
+        originalDimensions={originalImageDimensions}
+        initialOrientation={pendingOrientation ?? orientation}
+        smartCropCache={smartCrops}
+        onClose={handleCropperDismiss}
+        onComplete={handleCropperComplete}
+        onSmartCropReady={(result) => setSmartCropForOrientation(result.orientation, result)}
+      />
 
       {/* Enhancements */}
       <Card glass className="space-y-4 border-2 border-white/20 p-5">

@@ -168,6 +168,7 @@ const PhotoUploader = () => {
         startedAt: Date.now(),
         completedAt: Date.now(),
       },
+      orientation: targetOrientation,
     });
 
     // Auto-preview generation (disabled during testing to save API costs)

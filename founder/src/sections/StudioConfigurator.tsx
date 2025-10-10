@@ -25,12 +25,15 @@ const StudioConfigurator = () => {
   const stylePreviewMessage = useFounderStore((state) => state.stylePreviewMessage);
   const stylePreviewError = useFounderStore((state) => state.stylePreviewError);
   const startStylePreview = useFounderStore((state) => state.startStylePreview);
+  const orientationPreviewPending = useFounderStore((state) => state.orientationPreviewPending);
   const cachedPreviewEntry = useFounderStore((state) => {
     const styleId = state.selectedStyleId;
     if (!styleId) return null;
     return state.stylePreviewCache[styleId]?.[state.orientation] ?? null;
   });
   const orientationMeta = ORIENTATION_PRESETS[orientation];
+  const previewOrientationLabel = preview?.orientation ? ORIENTATION_PRESETS[preview.orientation].label : null;
+  const orientationMismatch = Boolean(preview?.orientation && preview.orientation !== orientation);
 
   const handleStyleClick = (styleId: string) => {
     selectStyle(styleId);
@@ -46,6 +49,7 @@ const StudioConfigurator = () => {
           startedAt: Date.now(),
           completedAt: Date.now(),
         },
+        orientation,
       });
       return;
     }
@@ -264,7 +268,7 @@ const StudioConfigurator = () => {
               </div>
 
               {/* Ready Badge */}
-              {preview?.status === 'ready' && (
+              {preview?.status === 'ready' && !orientationPreviewPending && !orientationMismatch && (
                 <div className="absolute top-6 right-6 px-4 py-2 rounded-full bg-purple-500/95 text-white text-sm font-semibold shadow-glow-soft backdrop-blur-sm animate-scaleIn">
                   <span className="flex items-center gap-2">
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -276,6 +280,18 @@ const StudioConfigurator = () => {
                     </svg>
                     Ready to print
                   </span>
+                </div>
+              )}
+
+              {orientationPreviewPending && (
+                <div className="absolute bottom-6 right-6 px-4 py-2 rounded-full bg-white/15 text-white text-xs font-semibold uppercase tracking-[0.2em] backdrop-blur animate-pulse">
+                  Adapting to {orientationMeta.label}
+                </div>
+              )}
+
+              {!orientationPreviewPending && orientationMismatch && previewOrientationLabel && (
+                <div className="absolute bottom-6 right-6 px-4 py-2 rounded-full bg-amber-500/90 text-slate-900 text-xs font-semibold shadow-glow-soft backdrop-blur-sm">
+                  {`Preview uses ${previewOrientationLabel} crop • Refresh to update`}
                 </div>
               )}
 

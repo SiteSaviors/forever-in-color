@@ -64,6 +64,7 @@ export type FrameColor = 'black' | 'white' | 'none';
 type PreviewState = {
   status: 'idle' | 'loading' | 'ready' | 'error';
   data?: PreviewResult;
+  orientation?: Orientation;
   error?: string;
 };
 
@@ -81,6 +82,11 @@ export type StylePreviewStatus =
   | 'watermarking'
   | 'ready'
   | 'error';
+
+type StartPreviewOptions = {
+  force?: boolean;
+  orientationOverride?: Orientation;
+};
 
 type FounderState = {
   styles: StyleOption[];
@@ -120,6 +126,7 @@ type FounderState = {
   originalImageDimensions: { width: number; height: number } | null;
   smartCrops: Partial<Record<Orientation, SmartCropResult>>;
   orientationChanging: boolean;
+  orientationPreviewPending: boolean;
   setOrientationChanging: (loading: boolean) => void;
   selectedCanvasSize: CanvasSize;
   setCanvasSize: (size: CanvasSize) => void;
@@ -135,8 +142,8 @@ type FounderState = {
   cacheStylePreview: (styleId: string, entry: StylePreviewCacheEntry) => void;
   getCachedStylePreview: (styleId: string, orientation: Orientation) => StylePreviewCacheEntry | undefined;
   clearStylePreviewCache: () => void;
-  startStylePreview: (style: StyleOption, options?: { force?: boolean }) => Promise<void>;
-  generatePreviews: (ids?: string[], options?: { force?: boolean }) => Promise<void>;
+  startStylePreview: (style: StyleOption, options?: StartPreviewOptions) => Promise<void>;
+  generatePreviews: (ids?: string[], options?: { force?: boolean; orientationOverride?: Orientation }) => Promise<void>;
   setLivingCanvasModalOpen: (open: boolean) => void;
   setUploadedImage: (dataUrl: string | null) => void;
   setCroppedImage: (dataUrl: string | null) => void;
@@ -144,6 +151,7 @@ type FounderState = {
   setOriginalImageDimensions: (dimensions: { width: number; height: number } | null) => void;
   setOrientation: (orientation: FounderState['orientation']) => void;
   setOrientationTip: (tip: string | null) => void;
+  setOrientationPreviewPending: (pending: boolean) => void;
   markCropReady: () => void;
   setDragging: (dragging: boolean) => void;
   setHoveredStyle: (id: string | null) => void;
@@ -434,7 +442,9 @@ export const useFounderStore = create<FounderState>((set, get) => ({
   originalImageDimensions: null,
   smartCrops: {},
   orientationChanging: false,
+  orientationPreviewPending: false,
   setOrientationChanging: (loading) => set({ orientationChanging: loading }),
+  setOrientationPreviewPending: (pending) => set({ orientationPreviewPending: pending }),
   selectedCanvasSize: '12x16',
   setCanvasSize: (size) => set({ selectedCanvasSize: size }),
   selectedFrame: 'none',
@@ -516,9 +526,10 @@ export const useFounderStore = create<FounderState>((set, get) => ({
   },
   clearStylePreviewCache: () =>
     set({ stylePreviewCache: {}, stylePreviewCacheOrder: [] }),
-  startStylePreview: async (style, options = {}) => {
+  startStylePreview: async (style, options: StartPreviewOptions = {}) => {
     const state = get();
-    const { force = false } = options;
+    const { force = false, orientationOverride } = options;
+    const targetOrientation = orientationOverride ?? state.orientation;
 
     if (state.pendingStyleId && state.pendingStyleId !== style.id) {
       return;
@@ -538,29 +549,37 @@ export const useFounderStore = create<FounderState>((set, get) => ({
             startedAt: timestamp,
             completedAt: timestamp,
           },
+          orientation: targetOrientation,
         });
         set({
           pendingStyleId: null,
           stylePreviewStatus: 'idle',
           stylePreviewMessage: null,
           stylePreviewError: null,
+          orientationPreviewPending: false,
         });
       }
       return;
     }
 
-    const sourceImage = state.croppedImage ?? state.uploadedImage;
+    const sourceImage =
+      state.croppedImage ??
+      state.smartCrops[targetOrientation]?.dataUrl ??
+      state.uploadedImage ??
+      state.originalImage ??
+      null;
     if (!sourceImage) {
       set({
         stylePreviewStatus: 'error',
         stylePreviewMessage: 'Upload a photo to generate a preview.',
         stylePreviewError: 'No image uploaded',
         pendingStyleId: null,
+        orientationPreviewPending: false,
       });
       return;
     }
 
-    const cached = !force ? state.getCachedStylePreview(style.id, state.orientation) : undefined;
+    const cached = !force ? state.getCachedStylePreview(style.id, targetOrientation) : undefined;
     const startTime = Date.now();
     set({ stylePreviewStartAt: startTime });
     logPreviewStage({ styleId: style.id, stage: 'start', elapsedMs: 0, timestamp: startTime });
@@ -574,6 +593,7 @@ export const useFounderStore = create<FounderState>((set, get) => ({
           startedAt: cached.generatedAt ?? timestamp,
           completedAt: cached.generatedAt ?? timestamp,
         },
+        orientation: targetOrientation,
       });
       set({
         pendingStyleId: null,
@@ -581,6 +601,7 @@ export const useFounderStore = create<FounderState>((set, get) => ({
         stylePreviewMessage: null,
         stylePreviewError: null,
         stylePreviewStartAt: null,
+        orientationPreviewPending: false,
       });
       playPreviewChime();
       logPreviewStage({
@@ -599,10 +620,16 @@ export const useFounderStore = create<FounderState>((set, get) => ({
       stylePreviewError: null,
     });
 
-    const aspectRatio = ORIENTATION_TO_ASPECT[state.orientation] ?? '1:1';
+    const aspectRatio = ORIENTATION_TO_ASPECT[targetOrientation] ?? '1:1';
     emitStepOneEvent({ type: 'preview', styleId: style.id, status: 'start' });
     try {
-      state.setPreviewState(style.id, { status: 'loading' });
+      const existing = state.previews[style.id];
+      state.setPreviewState(style.id, {
+        status: 'loading',
+        data: existing?.data,
+        orientation: existing?.orientation,
+        error: existing?.error,
+      });
       const result = await startFounderPreviewGeneration({
         imageUrl: sourceImage,
         styleId: style.id,
@@ -631,7 +658,7 @@ export const useFounderStore = create<FounderState>((set, get) => ({
       const timestamp = Date.now();
       state.cacheStylePreview(style.id, {
         url: result.previewUrl,
-        orientation: state.orientation,
+        orientation: targetOrientation,
         generatedAt: timestamp,
       });
       state.setPreviewState(style.id, {
@@ -642,6 +669,7 @@ export const useFounderStore = create<FounderState>((set, get) => ({
           startedAt: timestamp,
           completedAt: timestamp,
         },
+        orientation: targetOrientation,
       });
 
       set({
@@ -650,6 +678,7 @@ export const useFounderStore = create<FounderState>((set, get) => ({
         stylePreviewMessage: STAGE_MESSAGES.ready,
         stylePreviewError: null,
         stylePreviewStartAt: null,
+        orientationPreviewPending: get().orientation === targetOrientation ? false : get().orientationPreviewPending,
       });
       emitStepOneEvent({ type: 'preview', styleId: style.id, status: 'complete' });
       playPreviewChime();
@@ -670,8 +699,11 @@ export const useFounderStore = create<FounderState>((set, get) => ({
         return;
       }
 
+      const existingPreview = get().previews[style.id];
       state.setPreviewState(style.id, {
         status: 'error',
+        data: existingPreview?.data,
+        orientation: existingPreview?.orientation ?? targetOrientation,
         error: error instanceof Error ? error.message : 'Preview failed',
       });
 
@@ -696,6 +728,10 @@ export const useFounderStore = create<FounderState>((set, get) => ({
           set({ stylePreviewStatus: 'idle', stylePreviewMessage: null });
         }
       }, 1600);
+
+      if (get().orientation === targetOrientation) {
+        set({ orientationPreviewPending: false });
+      }
     }
   },
   resetPreviews: () =>
@@ -711,6 +747,7 @@ export const useFounderStore = create<FounderState>((set, get) => ({
       stylePreviewMessage: null,
       stylePreviewError: null,
       stylePreviewStartAt: null,
+      orientationPreviewPending: false,
     })),
   setSmartCropForOrientation: (orientation, result) =>
     set((state) => ({
@@ -761,6 +798,7 @@ export const useFounderStore = create<FounderState>((set, get) => ({
   generatePreviews: async (ids, options = {}) => {
     const store = get();
     const state = get();
+    const targetOrientation = options.orientationOverride ?? state.orientation;
 
     if (state.previewGenerationPromise) {
       console.warn('[generatePreviews] In-flight request detected, reusing existing promise');
@@ -813,33 +851,57 @@ export const useFounderStore = create<FounderState>((set, get) => ({
             return;
           }
 
-          if (!stateBefore.canGenerateMore()) {
-            store.setPreviewState(style.id, { status: 'idle' });
-            return;
-          }
+      if (!stateBefore.canGenerateMore()) {
+        const existing = stateBefore.previews[style.id];
+        store.setPreviewState(style.id, {
+          status: 'idle',
+          data: existing?.data,
+          orientation: existing?.orientation,
+          error: existing?.error,
+        });
+        return;
+      }
 
-          store.setPreviewState(style.id, { status: 'loading' });
+      store.setPreviewState(style.id, {
+        status: 'loading',
+        data: stateBefore.previews[style.id]?.data,
+        orientation: stateBefore.previews[style.id]?.orientation,
+        error: stateBefore.previews[style.id]?.error,
+      });
 
-          try {
-            const baseImage =
-              stateBefore.croppedImage ??
-              stateBefore.smartCrops[stateBefore.orientation]?.dataUrl ??
-              stateBefore.uploadedImage ??
-              stateBefore.originalImage ??
-              undefined;
+      try {
+        const baseImage =
+          stateBefore.croppedImage ??
+          stateBefore.smartCrops[targetOrientation]?.dataUrl ??
+          stateBefore.uploadedImage ??
+          stateBefore.originalImage ??
+          undefined;
 
             if (!baseImage) {
-              store.setPreviewState(style.id, { status: 'idle' });
+              const previous = get().previews[style.id];
+              store.setPreviewState(style.id, {
+                status: 'idle',
+                data: previous?.data,
+                orientation: previous?.orientation,
+                error: previous?.error,
+              });
               return;
             }
 
-            const result = await fetchPreviewForStyle(style, baseImage);
-            store.setPreviewState(style.id, { status: 'ready', data: result });
-            generatedAny = true;
-            store.incrementGenerationCount();
+        const result = await fetchPreviewForStyle(style, baseImage);
+        store.setPreviewState(style.id, {
+          status: 'ready',
+          data: result,
+          orientation: targetOrientation,
+        });
+        generatedAny = true;
+        store.incrementGenerationCount();
           } catch (error) {
+            const previous = get().previews[style.id];
             store.setPreviewState(style.id, {
               status: 'error',
+              data: previous?.data,
+              orientation: previous?.orientation,
               error: error instanceof Error ? error.message : 'Unknown error',
             });
           }
@@ -877,6 +939,7 @@ export const useFounderStore = create<FounderState>((set, get) => ({
       stylePreviewMessage: null,
       stylePreviewError: null,
       stylePreviewStartAt: null,
+      orientationPreviewPending: false,
     }),
   setCroppedImage: (dataUrl) => set({ croppedImage: dataUrl }),
   setOriginalImage: (dataUrl) => set({ originalImage: dataUrl }),
@@ -885,13 +948,17 @@ export const useFounderStore = create<FounderState>((set, get) => ({
     const current = get();
     if (current.orientation === orientation) return;
 
+    const previousOrientation = current.orientation;
     set({ orientation });
 
     const updated = get();
     if (updated.pendingStyleId) return;
 
     const styleId = updated.selectedStyleId;
-    if (!styleId) return;
+    if (!styleId) {
+      set({ orientationPreviewPending: false });
+      return;
+    }
 
     if (styleId === 'original-image') {
       const source = updated.croppedImage ?? updated.uploadedImage;
@@ -905,8 +972,10 @@ export const useFounderStore = create<FounderState>((set, get) => ({
             startedAt: timestamp,
             completedAt: timestamp,
           },
+          orientation,
         });
       }
+      set({ orientationPreviewPending: false });
       return;
     }
 
@@ -920,10 +989,25 @@ export const useFounderStore = create<FounderState>((set, get) => ({
           startedAt: cached.generatedAt,
           completedAt: cached.generatedAt,
         },
+        orientation,
       });
-      set({ stylePreviewStatus: 'idle', stylePreviewMessage: null, stylePreviewError: null });
+      set({
+        stylePreviewStatus: 'idle',
+        stylePreviewMessage: null,
+        stylePreviewError: null,
+        orientationPreviewPending: false,
+      });
     } else {
-      updated.setPreviewState(styleId, { status: 'idle' });
+      const existing = updated.previews[styleId];
+      if (existing?.data) {
+        updated.setPreviewState(styleId, {
+          status: existing.status,
+          data: existing.data,
+          orientation: existing.orientation ?? previousOrientation,
+          error: existing.error,
+        });
+      }
+      set({ orientationPreviewPending: true });
     }
   },
   setOrientationTip: (tip) => set({ orientationTip: tip }),
