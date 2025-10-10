@@ -1,38 +1,72 @@
 export type Orientation = 'horizontal' | 'vertical' | 'square';
 
-export async function readFileAsDataURL(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
+const HEIC_EXTENSIONS = ['.heic', '.heif'];
+
+const blobToDataURL = (blob: Blob): Promise<string> =>
+  new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result as string);
     reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(blob);
   });
+
+const looksLikeHeic = (file: File): boolean => {
+  const type = (file.type || '').toLowerCase();
+  if (type === 'image/heic' || type === 'image/heif') {
+    return true;
+  }
+  const name = (file.name || '').toLowerCase();
+  return HEIC_EXTENSIONS.some((ext) => name.endsWith(ext));
+};
+
+export async function readFileAsDataURL(file: File): Promise<string> {
+  if (looksLikeHeic(file)) {
+    try {
+      const heic2anyModule = await import('heic2any');
+      const convert = heic2anyModule.default ?? heic2anyModule;
+      const converted = await convert({
+        blob: file,
+        toType: 'image/jpeg',
+        quality: 0.92,
+      });
+      const outputBlob = Array.isArray(converted) ? converted[0] : converted;
+      return blobToDataURL(outputBlob);
+    } catch (error) {
+      console.warn('[imageUtils] HEIC conversion failed; using original data URL', error);
+    }
+  }
+
+  return blobToDataURL(file);
 }
 
 export async function detectOrientationFromDataUrl(dataUrl: string): Promise<Orientation> {
   return new Promise((resolve, reject) => {
     const image = new Image();
     image.onload = () => {
-      if (image.width === image.height) {
-        resolve('square');
-      } else if (image.width > image.height) {
-        resolve('horizontal');
-      } else {
-        resolve('vertical');
-      }
+      resolve(determineOrientationFromDimensions(image.width, image.height));
     };
     image.onerror = reject;
     image.src = dataUrl;
   });
 }
 
+export function determineOrientationFromDimensions(width: number, height: number): Orientation {
+  if (width === 0 || height === 0) {
+    return 'square';
+  }
+  const ratio = width / height;
+  if (ratio >= 1.2) {
+    return 'horizontal';
+  }
+  if (ratio <= 0.8) {
+    return 'vertical';
+  }
+  return 'square';
+}
+
 export async function getImageDimensions(dataUrl: string): Promise<{ width: number; height: number }> {
-  return new Promise((resolve, reject) => {
-    const image = new Image();
-    image.onload = () => resolve({ width: image.width, height: image.height });
-    image.onerror = reject;
-    image.src = dataUrl;
-  });
+  const image = await loadImage(dataUrl);
+  return { width: image.width, height: image.height };
 }
 
 export async function cropImageToDataUrl(

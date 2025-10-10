@@ -8,13 +8,30 @@ interface SmartCropPreviewProps {
   onAccept: (result: SmartCropResult) => void;
   onAdjust: () => void;
   onReady?: (result: SmartCropResult) => void;
+  onChangePhoto?: () => void;
 }
 
-const SmartCropPreview = ({ originalImage, orientation, onAccept, onAdjust, onReady }: SmartCropPreviewProps) => {
+const SmartCropPreview = ({
+  originalImage,
+  orientation,
+  onAccept,
+  onAdjust,
+  onReady,
+  onChangePhoto,
+}: SmartCropPreviewProps) => {
   const [result, setResult] = useState<SmartCropResult | null>(null);
   const [isGenerating, setIsGenerating] = useState(true);
 
   const metadata = useMemo(() => ORIENTATION_PRESETS[orientation], [orientation]);
+  const previewBounds = useMemo(() => {
+    if (orientation === 'horizontal') {
+      return { maxWidth: 'min(85vw, 48rem)', maxHeight: '60vh' };
+    }
+    if (orientation === 'vertical') {
+      return { maxWidth: 'min(75vw, 28rem)', maxHeight: '72vh' };
+    }
+    return { maxWidth: 'min(80vw, 32rem)', maxHeight: '65vh' };
+  }, [orientation]);
 
   useEffect(() => {
     let isMounted = true;
@@ -83,15 +100,13 @@ const SmartCropPreview = ({ originalImage, orientation, onAccept, onAdjust, onRe
           className="relative mx-auto overflow-hidden rounded-[1.5rem] border border-white/10 bg-slate-900/40"
           style={{
             aspectRatio: metadata.ratio,
-            maxHeight: orientation === 'vertical' ? '75vh' : undefined
+            width: '100%',
+            maxWidth: previewBounds.maxWidth,
+            maxHeight: previewBounds.maxHeight,
           }}
         >
           {result ? (
-            <img
-              src={result.dataUrl}
-              alt="Smart crop preview"
-              className="h-full w-full object-cover"
-            />
+            <img src={result.dataUrl} alt="Smart crop preview" className="h-full w-full object-cover" />
           ) : (
             <div className="flex h-full items-center justify-center text-white/60 text-sm">
               Preparing preview...
@@ -101,6 +116,15 @@ const SmartCropPreview = ({ originalImage, orientation, onAccept, onAdjust, onRe
           <div className="absolute top-4 left-4 rounded-full bg-purple-500/80 px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-white shadow-md backdrop-blur">
             {metadata.label}
           </div>
+          {onChangePhoto && (
+            <button
+              type="button"
+              onClick={onChangePhoto}
+              className="absolute top-4 right-4 rounded-full border border-white/30 bg-black/30 px-4 py-1 text-xs font-semibold uppercase tracking-[0.15em] text-white/90 shadow-md backdrop-blur transition hover:bg-black/50"
+            >
+              Change Photo
+            </button>
+          )}
         </div>
       </div>
 

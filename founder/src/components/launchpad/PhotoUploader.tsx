@@ -2,7 +2,7 @@ import { ChangeEvent, DragEvent, useCallback, useEffect, useMemo, useRef, useSta
 import { clsx } from 'clsx';
 import Card from '@/components/ui/Card';
 import { useFounderStore } from '@/store/useFounderStore';
-import { readFileAsDataURL, getImageDimensions } from '@/utils/imageUtils';
+import { readFileAsDataURL, getImageDimensions, determineOrientationFromDimensions } from '@/utils/imageUtils';
 import CropperModal from '@/components/launchpad/cropper/CropperModal';
 import SmartCropPreview from '@/components/launchpad/SmartCropPreview';
 import AIAnalysisOverlay from '@/components/launchpad/AIAnalysisOverlay';
@@ -99,8 +99,7 @@ const PhotoUploader = () => {
 
     const { width, height } = await getImageDimensions(dataUrl);
     setOriginalImageDimensions({ width, height });
-    const detectedOrientation: Orientation =
-      width === height ? 'square' : width > height ? 'horizontal' : 'vertical';
+    const detectedOrientation = determineOrientationFromDimensions(width, height);
     setOrientation(detectedOrientation);
     setPendingOrientation(detectedOrientation);
     setOrientationTip(ORIENTATION_PRESETS[detectedOrientation].description);
@@ -241,6 +240,7 @@ const PhotoUploader = () => {
           onAccept={handleAcceptSmartCrop}
           onAdjust={handleCustomizeCrop}
           onReady={handleSmartCropReady}
+          onChangePhoto={handleSelectFile}
         />
       </Card>
     );
