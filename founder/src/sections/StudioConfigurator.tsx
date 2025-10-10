@@ -69,7 +69,12 @@ const StudioConfigurator = () => {
     Boolean(cachedPreviewEntry || preview?.status === 'ready');
 
   return (
-    <section className="bg-slate-900 min-h-screen relative" data-studio-section id="studio">
+    <section
+      className="bg-slate-900 min-h-screen relative"
+      data-studio-section
+      data-founder-anchor="studio"
+      id="studio"
+    >
       {/* Header */}
       <div className="border-b border-white/10 bg-slate-950/50 backdrop-blur-sm sticky top-0 z-30">
         <div className="max-w-[1800px] mx-auto px-6 py-4 flex items-center justify-between">

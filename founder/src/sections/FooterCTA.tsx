@@ -23,7 +23,7 @@ const FooterCTA = () => {
   return (
     <footer className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 py-16">
       <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
-      <Section className="relative text-center space-y-10">
+      <Section id="pricing" className="relative text-center space-y-10">
         <h2 className="text-4xl font-semibold">Ready to deliver the world’s most meaningful art gifts?</h2>
         <p className="text-white/70 max-w-2xl mx-auto text-lg">
           Join tens of thousands of families, memory artists, and thoughtful gifters who trust Wondertone to preserve

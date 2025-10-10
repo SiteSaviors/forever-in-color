@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import { clsx } from 'clsx';
 
 const STATUS_ORDER = ['animating', 'generating', 'polling', 'watermarking', 'ready', 'error'] as const;
@@ -36,6 +37,37 @@ const STATUS_COPY: Record<StatusKey, StatusInfo> = {
   },
 };
 
+const ACTIVE_STATUS_SEQUENCE: StatusKey[] = ['animating', 'generating', 'polling', 'watermarking'];
+
+const STUDIO_PHRASES = [
+  'Spinning up studio engines',
+  'Brewing the style model',
+  'Calibrating the color brain',
+  'Sampling secret sauce layers',
+  'Rendering brush physics',
+  'Fusing Wondertone style DNA',
+  'Distilling composition rules',
+  'Resolving fine edges',
+  'Anti-blur shields engaged',
+  'Finalizing render pass',
+  'Squeezing paint tubes',
+  'Buttering the canvas',
+  'Shaking the glitter',
+];
+
+const PROGRESS_MILESTONES = [0, 0.1, 0.25, 0.4, 0.6, 0.75, 0.9, 0.95, 1];
+
+const STAGE_PROGRESS_FLOOR: Partial<Record<StatusKey, number>> = {
+  animating: 0.1,
+  generating: 0.25,
+  polling: 0.6,
+  watermarking: 0.9,
+  ready: 1,
+  error: 1,
+};
+
+const SIMULATION_DURATION_MS = 20000;
+
 interface StyleForgeOverlayProps {
   status: StatusKey;
   styleName: string;
@@ -45,9 +77,123 @@ interface StyleForgeOverlayProps {
 }
 
 const StyleForgeOverlay = ({ status, styleName, message, isError, errorMessage }: StyleForgeOverlayProps) => {
+  const [progress, setProgress] = useState(0);
+  const [phraseIndex, setPhraseIndex] = useState(() => Math.floor(Math.random() * STUDIO_PHRASES.length));
+  const previousStatusRef = useRef<StatusKey | null>(null);
+  const phraseTimerRef = useRef<number | null>(null);
+  const simulationStartRef = useRef<number | null>(null);
+
   const progressIndexRaw = STATUS_ORDER.indexOf(status);
   const progressIndex = Math.max(0, Math.min(progressIndexRaw, STATUS_ORDER.length - 2));
   const info = STATUS_COPY[status] ?? STATUS_COPY.animating;
+  const isActiveStage = !isError && ACTIVE_STATUS_SEQUENCE.includes(status);
+  const activePhrase = STUDIO_PHRASES[phraseIndex % STUDIO_PHRASES.length];
+  const primaryMessage = isError
+    ? errorMessage ?? 'We could not finish this preview. Try again in a moment.'
+    : isActiveStage
+      ? activePhrase
+      : message ?? info.label;
+  const progressPercent = Math.min(100, Math.max(0, progress * 100));
+
+  useEffect(() => {
+    const previousStatus = previousStatusRef.current;
+    if (status === 'animating' && previousStatus !== 'animating') {
+      simulationStartRef.current = Date.now();
+      setProgress(STAGE_PROGRESS_FLOOR.animating ?? 0);
+      setPhraseIndex(Math.floor(Math.random() * STUDIO_PHRASES.length));
+    } else if (ACTIVE_STATUS_SEQUENCE.includes(status) && simulationStartRef.current === null) {
+      simulationStartRef.current = Date.now();
+    }
+    if ((status === 'ready' || status === 'error') && previousStatus !== status) {
+      setProgress(1);
+    }
+    if (status === 'ready' || status === 'error') {
+      simulationStartRef.current = null;
+    }
+    previousStatusRef.current = status;
+  }, [status]);
+
+  useEffect(() => {
+    if (status === 'ready' || status === 'error') {
+      setProgress(1);
+      return;
+    }
+
+    let frameId: number;
+    const stepTowardTarget = () => {
+      const startAt = simulationStartRef.current;
+      const stageFloor = STAGE_PROGRESS_FLOOR[status] ?? 0;
+      let target = stageFloor;
+
+      if (startAt) {
+        const elapsed = Date.now() - startAt;
+        const normalized = Math.min(1, Math.max(0, elapsed / SIMULATION_DURATION_MS));
+        const cappedIndex = PROGRESS_MILESTONES.length - 2;
+        const scaled = normalized * cappedIndex;
+        const lowerIndex = Math.floor(scaled);
+        const upperIndex = Math.min(cappedIndex, lowerIndex + 1);
+        const fraction = scaled - lowerIndex;
+        const lowerValue = PROGRESS_MILESTONES[lowerIndex] ?? 0;
+        const upperValue = PROGRESS_MILESTONES[upperIndex] ?? lowerValue;
+        const milestoneProgress = lowerValue + (upperValue - lowerValue) * fraction;
+        target = Math.max(target, milestoneProgress);
+      }
+
+      target = Math.min(target, PROGRESS_MILESTONES[PROGRESS_MILESTONES.length - 2]);
+
+      setProgress((prev) => {
+        const diff = target - prev;
+        if (Math.abs(diff) < 0.001) {
+          return target;
+        }
+
+        const delta = Math.max(Math.abs(diff) * 0.12, 0.003);
+        return diff > 0 ? Math.min(prev + delta, target) : Math.max(prev - delta, target);
+      });
+
+      frameId = requestAnimationFrame(stepTowardTarget);
+    };
+
+    frameId = requestAnimationFrame(stepTowardTarget);
+    return () => cancelAnimationFrame(frameId);
+  }, [status]);
+
+  useEffect(() => {
+    if (!ACTIVE_STATUS_SEQUENCE.includes(status)) {
+      if (phraseTimerRef.current) {
+        window.clearInterval(phraseTimerRef.current);
+        phraseTimerRef.current = null;
+      }
+      return;
+    }
+
+    if (phraseTimerRef.current) {
+      window.clearInterval(phraseTimerRef.current);
+    }
+
+    phraseTimerRef.current = window.setInterval(() => {
+      setPhraseIndex((prev) => {
+        if (STUDIO_PHRASES.length <= 1) {
+          return prev;
+        }
+
+        let next = Math.floor(Math.random() * STUDIO_PHRASES.length);
+        let attempts = 0;
+        while (next === prev && attempts < 4) {
+          next = Math.floor(Math.random() * STUDIO_PHRASES.length);
+          attempts += 1;
+        }
+        return next;
+      });
+    }, 2600);
+
+    return () => {
+      if (phraseTimerRef.current) {
+        window.clearInterval(phraseTimerRef.current);
+        phraseTimerRef.current = null;
+      }
+    };
+  }, [status]);
 
   return (
     <div className="absolute inset-0 z-30 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm" role="presentation">
@@ -67,7 +213,7 @@ const StyleForgeOverlay = ({ status, styleName, message, isError, errorMessage }
           {isError ? 'Something interrupted the magic' : `Crafting ${styleName}`}
         </h3>
         <p className="mt-2 text-sm text-white/70">
-          {isError ? errorMessage ?? 'We could not finish this preview. Try again in a moment.' : message ?? info.label}
+          {primaryMessage}
         </p>
 
         {!isError && info.sublabel && (
@@ -98,7 +244,7 @@ const StyleForgeOverlay = ({ status, styleName, message, isError, errorMessage }
         <div className="relative h-2 overflow-hidden rounded-full bg-white/10">
           <div
             className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 transition-all duration-500 ease-out"
-            style={{ width: `${Math.min(100, progressIndex / (STATUS_ORDER.length - 1) * 100)}%` }}
+            style={{ width: `${progressPercent}%` }}
           />
         </div>
         </div>

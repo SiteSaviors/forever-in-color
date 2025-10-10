@@ -20,9 +20,13 @@ const ProductHeroSection = () => {
   }, [preselectedStyleId, styles]);
 
   return (
-    <section className="relative overflow-hidden bg-gradient-hero">
+    <section
+      className="relative overflow-hidden bg-gradient-hero"
+      data-founder-hero
+      id="founder-hero"
+    >
       <div className="absolute inset-0 opacity-30 bg-[url('https://www.transparenttextures.com/patterns/nice-snow.png')]" />
-      <Section className="py-24 relative">
+      <Section className="relative pt-44 pb-24">
         <div className="mx-auto max-w-4xl text-center text-white space-y-10">
           <div className="space-y-6">
             <h1 className="text-4xl md:text-6xl font-semibold leading-tight drop-shadow-2xl">
@@ -52,7 +56,7 @@ const ProductHeroSection = () => {
             <span className="hidden sm:block h-px w-16 bg-white/30" aria-hidden="true" />
           </div>
         </div>
-        <div className="mt-16 space-y-6">
+        <div className="mt-16 space-y-6" data-founder-anchor="styles">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 text-center lg:text-left">
             <div>
               <p className="text-sm uppercase tracking-[0.3em] text-brand-pink">Curated Styles</p>

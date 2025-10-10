@@ -4,6 +4,7 @@ import LaunchpadLayout from '@/sections/LaunchpadLayout';
 import StudioConfigurator from '@/sections/StudioConfigurator';
 import ProductHeroSection from '@/sections/ProductHeroSection';
 import { useFounderStore } from '@/store/useFounderStore';
+import FounderNavigation from '@/components/navigation/FounderNavigation';
 
 const StudioPage = () => {
   const [searchParams] = useSearchParams();
@@ -25,6 +26,7 @@ const StudioPage = () => {
 
   return (
     <div className="bg-slate-950 min-h-screen text-white">
+      <FounderNavigation />
       <ProductHeroSection />
       <LaunchpadLayout />
       <StudioConfigurator />
