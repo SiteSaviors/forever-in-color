@@ -5,8 +5,14 @@ import type { CanvasSize } from '@/store/useFounderStore';
 import { getRoomAsset } from './roomAssets';
 
 export interface CanvasInRoomPreviewProps {
+  enableHoverEffect?: boolean;
   showDimensions?: boolean;
   className?: string;
+}
+
+interface CanvasTransform {
+  rotateX: string;
+  rotateY: string;
 }
 
 const TRANSITIONS = {
@@ -14,10 +20,17 @@ const TRANSITIONS = {
   PREVIEW_FADE_IN: 300,
   ORIENTATION_MORPH: 400,
   SHIMMER_DURATION: 800,
+  HOVER_RESPONSE: 300,
 } as const;
 
 const EASINGS = {
   SMOOTH: 'cubic-bezier(0.4, 0.0, 0.2, 1)',
+  SPRING: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+} as const;
+
+const BREAKPOINTS = {
+  mobile: 640,
+  tablet: 1024,
 } as const;
 
 const SIZE_SCALE_MAP: Record<CanvasSize, number> = {
@@ -42,6 +55,7 @@ const SHADOW_LOOKUP: Record<ShadowPreset, string> = {
 };
 
 const CanvasInRoomPreview = ({
+  enableHoverEffect = true,
   showDimensions = false,
   className = '',
 }: CanvasInRoomPreviewProps) => {
@@ -53,19 +67,11 @@ const CanvasInRoomPreview = ({
 
   const { previewUrl, fallbackStyleImage } = useFounderStore((state) => {
     const currentStyle = state.styles.find((style) => style.id === state.selectedStyleId);
-    if (!currentStyle) {
-      return { previewUrl: null, fallbackStyleImage: null };
-    }
-
-    const cached =
-      state.stylePreviewCache[currentStyle.id]?.[state.orientation]?.url ?? null;
-
     return {
-      previewUrl:
-        state.previews[currentStyle.id]?.data?.previewUrl ??
-        cached ??
-        null,
-      fallbackStyleImage: currentStyle.preview ?? null,
+      previewUrl: currentStyle
+        ? state.previews[currentStyle.id]?.data?.previewUrl ?? null
+        : null,
+      fallbackStyleImage: currentStyle?.preview ?? null,
     };
   });
 
@@ -88,6 +94,11 @@ const CanvasInRoomPreview = ({
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
   const [imageLoaded, setImageLoaded] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [hoverActive, setHoverActive] = useState(false);
+  const [canvasTransform, setCanvasTransform] = useState<CanvasTransform>({
+    rotateX: '0deg',
+    rotateY: '0deg',
+  });
   const [showShimmer, setShowShimmer] = useState(false);
 
   const previousImageRef = useRef<string | null>(null);
@@ -198,6 +209,33 @@ const CanvasInRoomPreview = ({
     setImageLoaded(true);
   };
 
+  const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (!enableHoverEffect || window.innerWidth < BREAKPOINTS.tablet) return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = (event.clientX - rect.left) / rect.width - 0.5;
+    const y = (event.clientY - rect.top) / rect.height - 0.5;
+    const rotateY = x * 3;
+    const rotateX = -y * 3;
+    setCanvasTransform({
+      rotateX: `${rotateX}deg`,
+      rotateY: `${rotateY}deg`,
+    });
+  };
+
+  const handleMouseEnter = () => {
+    if (enableHoverEffect && window.innerWidth >= BREAKPOINTS.tablet) {
+      setHoverActive(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setHoverActive(false);
+    setCanvasTransform({
+      rotateX: '0deg',
+      rotateY: '0deg',
+    });
+  };
+
   return (
     <div
       ref={containerRef}
@@ -206,6 +244,9 @@ const CanvasInRoomPreview = ({
         aspectRatio: '1 / 1',
         minHeight: '400px',
       }}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <img
         src={roomAsset.src}
@@ -240,6 +281,9 @@ const CanvasInRoomPreview = ({
                 className="relative h-full w-full overflow-hidden bg-white"
                 style={{
                   boxShadow,
+                  transform: `perspective(1000px) rotateX(${canvasTransform.rotateX}) rotateY(${canvasTransform.rotateY}) scale(${hoverActive ? 1.02 : 1})`,
+                  transformStyle: 'preserve-3d',
+                  transition: `transform ${TRANSITIONS.HOVER_RESPONSE}ms ${EASINGS.SPRING}`,
                 }}
               >
                 <img
