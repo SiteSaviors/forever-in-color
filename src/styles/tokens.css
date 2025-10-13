@@ -1,0 +1,47 @@
+:root {
+  --brand-indigo: 231 89% 62%;
+  --brand-purple: 267 86% 65%;
+  --brand-pink: 316 92% 72%;
+  --brand-emerald: 157 68% 56%;
+  --brand-slate-950: 222 47% 5%;
+
+  /* Enhanced gradient system for emotional energy */
+  --gradient-hero: linear-gradient(135deg, hsl(var(--brand-indigo)) 0%, hsl(var(--brand-purple)) 40%, hsl(var(--brand-pink)) 100%);
+  --gradient-callout: linear-gradient(135deg, rgba(99, 102, 241, 0.8), rgba(168, 85, 247, 0.8));
+  --gradient-card: linear-gradient(135deg, rgba(15, 23, 42, 0.8), rgba(30, 64, 175, 0.5));
+
+  /* New: Upload zone gradient with purple glow */
+  --gradient-upload: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(99, 102, 241, 0.15) 100%);
+  --gradient-upload-hover: linear-gradient(135deg, rgba(139, 92, 246, 0.25) 0%, rgba(99, 102, 241, 0.25) 100%);
+
+  /* New: CTA gradient with multi-color blend */
+  --gradient-cta: linear-gradient(135deg, #a855f7 0%, #6366f1 50%, #3b82f6 100%);
+  --gradient-cta-hover: linear-gradient(135deg, #9333ea 0%, #4f46e5 50%, #2563eb 100%);
+
+  /* New: Preview card gradient backgrounds */
+  --gradient-preview-bg: linear-gradient(180deg, rgba(30, 27, 75, 0.4) 0%, rgba(49, 46, 129, 0.6) 100%);
+
+  /* New: Glow effects for CTAs and highlights */
+  --glow-purple: 0 0 40px rgba(168, 85, 247, 0.6), 0 0 80px rgba(168, 85, 247, 0.3);
+  --glow-blue: 0 0 40px rgba(59, 130, 246, 0.5), 0 0 80px rgba(59, 130, 246, 0.2);
+  --glow-soft: 0 10px 40px rgba(139, 92, 246, 0.4);
+
+  --shadow-xl: 0 30px 60px rgba(15, 23, 42, 0.45);
+  --shadow-inner: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --glass-bg: rgba(15, 23, 42, 0.55);
+  --glass-border: rgba(255, 255, 255, 0.12);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .glow-ring {
+    position: relative;
+  }
+  .glow-ring::after {
+    content: '';
+    position: absolute;
+    inset: -40%;
+    background: radial-gradient(circle, rgba(168, 85, 247, 0.25), transparent 60%);
+    filter: blur(50px);
+    z-index: -1;
+  }
+}
