@@ -1,3 +1,4 @@
+import FounderNavigation from '@/components/navigation/FounderNavigation';
 import HeroSection from '@/sections/HeroSection';
 import StyleShowcase from '@/sections/StyleShowcase';
 import LivingCanvasStory from '@/sections/LivingCanvasStory';
@@ -6,7 +7,8 @@ import FooterCTA from '@/sections/FooterCTA';
 
 const LandingPage = () => {
   return (
-    <div className="bg-slate-950 text-white">
+    <div className="bg-slate-950 text-white min-h-screen">
+      <FounderNavigation />
       <HeroSection />
       <StyleShowcase />
       <LivingCanvasStory />

@@ -5,7 +5,7 @@ import Badge from '@/components/ui/Badge';
 
 const HeroSection = () => {
   return (
-    <section className="relative overflow-hidden bg-gradient-hero">
+    <section className="relative overflow-hidden bg-gradient-hero" data-founder-hero>
       <div className="absolute inset-0 opacity-30 bg-[url('https://www.transparenttextures.com/patterns/nice-snow.png')]" />
       <Section className="py-24 lg:py-28 relative">
         <div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-12 items-center">

@@ -1,14 +1,12 @@
 import { clsx } from 'clsx';
-import { ReactNode } from 'react';
+import type { HTMLAttributes, ReactNode } from 'react';
 
-type SectionProps = {
-  id?: string;
-  className?: string;
+type SectionProps = HTMLAttributes<HTMLElement> & {
   children: ReactNode;
 };
 
-const Section = ({ id, className, children }: SectionProps) => (
-  <section id={id} className={clsx('section-shell py-20', className)}>
+const Section = ({ className, children, ...rest }: SectionProps) => (
+  <section className={clsx('section-shell py-20', className)} {...rest}>
     {children}
   </section>
 );

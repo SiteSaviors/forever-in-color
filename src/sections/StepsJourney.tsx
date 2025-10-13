@@ -27,7 +27,7 @@ const steps = [
 const StepsJourney = () => {
   return (
     <section className="bg-slate-900 py-20">
-      <Section id="support">
+      <Section id="support" data-founder-anchor="support">
         <p className="text-sm uppercase tracking-[0.3em] text-brand-indigo">How Wondertone Works</p>
         <h2 className="text-3xl font-semibold mt-3 mb-10">A journey engineered for instant wow and long-term love</h2>
         <div className="grid md:grid-cols-4 gap-6">

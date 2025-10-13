@@ -79,18 +79,18 @@ const FounderNavigation = () => {
               : 'bg-black/70 border-white/15 backdrop-blur-xl'
           )}
         >
-          <div className="flex items-center gap-3 text-white">
+          <Link to="/" className="flex items-center gap-3 text-white transition hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/80 rounded-2xl">
             <span className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-purple-500 via-indigo-500 to-blue-600 text-lg font-semibold tracking-tight">
               <span className="absolute inset-0 rounded-2xl bg-white/10 blur-xl" />
               <span className="relative">W</span>
             </span>
-            <div className="flex flex-col">
+            <div className="flex flex-col text-left">
               <span className="text-sm font-semibold uppercase tracking-[0.35em] text-white/60">
                 Wondertone
               </span>
               <span className="text-xl font-semibold tracking-tight text-white">AI Studio</span>
             </div>
-          </div>
+          </Link>
 
           <nav className="hidden items-center gap-6 md:flex lg:gap-8" aria-label="Primary">
             {NAV_LINKS.map((link) => (

@@ -24,7 +24,7 @@ const styleCards = [
 
 const StyleShowcase = () => {
   return (
-    <Section id="styles">
+    <Section id="styles" data-founder-anchor="styles">
       <div className="flex items-center justify-between mb-6">
         <div>
           <p className="text-sm uppercase tracking-[0.3em] text-brand-pink">Curated Styles</p>

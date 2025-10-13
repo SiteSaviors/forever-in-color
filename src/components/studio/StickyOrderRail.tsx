@@ -28,7 +28,6 @@ const StickyOrderRail = () => {
   const setOrientationTip = useFounderStore((state) => state.setOrientationTip);
   const orientationChanging = useFounderStore((state) => state.orientationChanging);
   const setOrientationChanging = useFounderStore((state) => state.setOrientationChanging);
-  const shouldAutoGeneratePreviews = useFounderStore((state) => state.shouldAutoGeneratePreviews);
   const selectedSize = useFounderStore((state) => state.selectedCanvasSize);
   const setCanvasSize = useFounderStore((state) => state.setCanvasSize);
   const selectedFrame = useFounderStore((state) => state.selectedFrame);
@@ -162,20 +161,20 @@ const StickyOrderRail = () => {
       ? Boolean(snapshot.stylePreviewCache[currentStyle.id]?.[targetOrientation])
       : false;
 
-    if (shouldAutoGeneratePreviews() && currentStyle && currentStyle.id !== 'original-image' && !hasCachedPreview) {
+    const shouldRegeneratePreview = Boolean(currentStyle) && currentStyle?.id !== 'original-image';
+
+    if (shouldRegeneratePreview && currentStyle && !hasCachedPreview) {
       try {
         setOrientationPreviewPending(true);
         await startStylePreview(currentStyle, { force: true, orientationOverride: targetOrientation });
+      } catch (error) {
+        console.error('[StickyOrderRail] Failed to regenerate preview for orientation change', error);
       } finally {
         setOrientationPreviewPending(false);
       }
     } else {
       setOrientationPreviewPending(false);
-      if (!shouldAutoGeneratePreviews()) {
-        console.log(
-          '[StickyOrderRail] Auto-preview regeneration disabled (testing mode). Click styles in Studio to generate.'
-        );
-      } else if (hasCachedPreview) {
+      if (hasCachedPreview) {
         console.log('[StickyOrderRail] Reusing cached preview for orientation change.');
       }
     }
