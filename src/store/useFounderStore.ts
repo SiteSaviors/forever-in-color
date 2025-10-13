@@ -6,6 +6,7 @@ import type { SmartCropResult } from '@/utils/smartCrop';
 import { emitStepOneEvent } from '@/utils/telemetry';
 import { logPreviewStage } from '@/utils/previewAnalytics';
 import { playPreviewChime } from '@/utils/playPreviewChime';
+import { CANVAS_SIZE_OPTIONS, CanvasSizeKey, getCanvasSizeOption, getDefaultSizeForOrientation } from '@/utils/canvasSizes';
 
 /**
  * TESTING MODE FLAG
@@ -16,6 +17,8 @@ import { playPreviewChime } from '@/utils/playPreviewChime';
  */
 const ENABLE_AUTO_PREVIEWS = false;
 const STYLE_PREVIEW_CACHE_LIMIT = 12;
+const DEFAULT_SQUARE_SIZE = getDefaultSizeForOrientation('square');
+const DEFAULT_SQUARE_PRICE = getCanvasSizeOption(DEFAULT_SQUARE_SIZE)?.price ?? 0;
 
 const ORIENTATION_TO_ASPECT: Record<Orientation, string> = {
   square: '1:1',
@@ -58,7 +61,7 @@ export type StyleCarouselCard = {
   ctaLabel: string;
 };
 
-export type CanvasSize = '8x10' | '12x16' | '16x20' | '20x24';
+export type CanvasSize = CanvasSizeKey;
 export type FrameColor = 'black' | 'white' | 'none';
 
 type PreviewState = {
@@ -408,7 +411,7 @@ export const useFounderStore = create<FounderState>((set, get) => ({
   styles: mockStyles,
   enhancements: mockEnhancements,
   selectedStyleId: mockStyles[0]?.id ?? null,
-  basePrice: 129,
+  basePrice: DEFAULT_SQUARE_PRICE,
   previewStatus: 'idle',
   previewGenerationPromise: null,
   previews: Object.fromEntries(mockStyles.map((style) => [style.id, { status: 'idle' as const }])),
@@ -445,7 +448,7 @@ export const useFounderStore = create<FounderState>((set, get) => ({
   orientationPreviewPending: false,
   setOrientationChanging: (loading) => set({ orientationChanging: loading }),
   setOrientationPreviewPending: (pending) => set({ orientationPreviewPending: pending }),
-  selectedCanvasSize: '12x16',
+  selectedCanvasSize: DEFAULT_SQUARE_SIZE,
   setCanvasSize: (size) => set({ selectedCanvasSize: size }),
   selectedFrame: 'none',
   setFrame: (frame) => set({ selectedFrame: frame }),
@@ -948,8 +951,12 @@ export const useFounderStore = create<FounderState>((set, get) => ({
     const current = get();
     if (current.orientation === orientation) return;
 
+    const availableOptions = CANVAS_SIZE_OPTIONS[orientation];
+    const hasCurrentSize = availableOptions.some((option) => option.id === current.selectedCanvasSize);
+    const nextCanvasSize = hasCurrentSize ? current.selectedCanvasSize : getDefaultSizeForOrientation(orientation);
+
     const previousOrientation = current.orientation;
-    set({ orientation });
+    set({ orientation, selectedCanvasSize: nextCanvasSize });
 
     const updated = get();
     if (updated.pendingStyleId) return;
@@ -1014,12 +1021,13 @@ export const useFounderStore = create<FounderState>((set, get) => ({
   markCropReady: () => set({ cropReadyAt: Date.now() }),
   setDragging: (isDragging) => set({ isDragging }),
   computedTotal: () => {
-    const { basePrice, enhancements, styles, selectedStyleId } = get();
+    const { basePrice, enhancements, styles, selectedStyleId, selectedCanvasSize } = get();
     const styleMod = styles.find((style) => style.id === selectedStyleId)?.priceModifier ?? 0;
+    const sizePrice = getCanvasSizeOption(selectedCanvasSize)?.price ?? basePrice;
     const enhancementsTotal = enhancements
       .filter((item) => item.enabled)
       .reduce((sum, item) => sum + item.price, 0);
-    return basePrice + styleMod + enhancementsTotal;
+    return sizePrice + styleMod + enhancementsTotal;
   },
   currentStyle: () => {
     const { styles, selectedStyleId } = get();

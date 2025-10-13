@@ -3,6 +3,7 @@ import Card from '@/components/ui/Card';
 import { useFounderStore } from '@/store/useFounderStore';
 import { cacheSmartCropResult, generateSmartCrop, ORIENTATION_PRESETS, SmartCropResult } from '@/utils/smartCrop';
 import type { Orientation } from '@/utils/imageUtils';
+import { CANVAS_SIZE_OPTIONS, getCanvasSizeOption, getDefaultSizeForOrientation } from '@/utils/canvasSizes';
 import CropperModal from '@/components/launchpad/cropper/CropperModal';
 
 const StickyOrderRail = () => {
@@ -33,13 +34,6 @@ const StickyOrderRail = () => {
   const selectedFrame = useFounderStore((state) => state.selectedFrame);
   const setFrame = useFounderStore((state) => state.setFrame);
   const setOrientationPreviewPending = useFounderStore((state) => state.setOrientationPreviewPending);
-
-  const sizeOptions = [
-    { id: '8x10', label: '8×10"', price: 49 },
-    { id: '12x16', label: '12×16"', price: 89 },
-    { id: '16x20', label: '16×20"', price: 129 },
-    { id: '20x24', label: '20×24"', price: 169 },
-  ] as const;
 
   const floatingFrame = enhancements.find((e) => e.id === 'floating-frame');
   const livingCanvas = enhancements.find((e) => e.id === 'living-canvas');
@@ -104,6 +98,10 @@ const StickyOrderRail = () => {
     if (!originalImage) {
       setOrientation(orient);
       setOrientationTip(ORIENTATION_PRESETS[orient].description);
+      const sizeOptionsForOrientation = CANVAS_SIZE_OPTIONS[orient];
+      if (!sizeOptionsForOrientation.find((option) => option.id === selectedSize)) {
+        setCanvasSize(getDefaultSizeForOrientation(orient));
+      }
       return;
     }
 
@@ -156,6 +154,11 @@ const StickyOrderRail = () => {
     setOrientation(targetOrientation);
     setOrientationTip(ORIENTATION_PRESETS[targetOrientation].description);
 
+    const sizeOptionsForOrientation = CANVAS_SIZE_OPTIONS[targetOrientation];
+    if (!sizeOptionsForOrientation.find((option) => option.id === selectedSize)) {
+      setCanvasSize(getDefaultSizeForOrientation(targetOrientation));
+    }
+
     const snapshot = useFounderStore.getState();
     const hasCachedPreview = currentStyle
       ? Boolean(snapshot.stylePreviewCache[currentStyle.id]?.[targetOrientation])
@@ -183,6 +186,7 @@ const StickyOrderRail = () => {
   };
 
   const activeOrientationValue = pendingOrientation ?? orientation;
+  const sizeOptionsForOrientation = CANVAS_SIZE_OPTIONS[activeOrientationValue];
 
   return (
     <aside className="md:sticky md:top-24 space-y-4">
@@ -215,18 +219,25 @@ const StickyOrderRail = () => {
       <Card glass className="space-y-4 border-2 border-white/20 p-5">
         <h3 className="text-base font-bold text-white">Canvas Size</h3>
         <div className="space-y-2">
-          {sizeOptions.map((size) => (
+          {sizeOptionsForOrientation.map((size) => (
             <button
               key={size.id}
               onClick={() => setCanvasSize(size.id)}
-              className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-sm font-semibold transition-all ${
+              className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all ${
                 selectedSize === size.id
                   ? 'bg-purple-500 text-white shadow-glow-soft'
                   : 'bg-white/10 text-white/70 border border-white/20 hover:bg-white/20'
               }`}
             >
-              <span>{size.label}</span>
-              <span>${size.price}</span>
+              <div className="flex flex-col text-left">
+                <span className="text-sm font-semibold">{size.label}</span>
+                {size.nickname && (
+                  <span className="text-[11px] uppercase tracking-[0.25em] text-white/50">
+                    {size.nickname}
+                  </span>
+                )}
+              </div>
+              <span className="text-sm font-semibold">${size.price}</span>
             </button>
           ))}
         </div>
@@ -397,8 +408,12 @@ const StickyOrderRail = () => {
 
         <div className="space-y-2">
           <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 text-sm">
-            <span className="text-white/70">{currentStyle?.name ?? 'Canvas'} • {selectedSize}</span>
-            <span className="font-bold text-white">${sizeOptions.find(s => s.id === selectedSize)?.price ?? basePrice}</span>
+            <span className="text-white/70">
+              {currentStyle?.name ?? 'Canvas'} • {getCanvasSizeOption(selectedSize)?.label ?? '—'}
+            </span>
+            <span className="font-bold text-white">
+              ${getCanvasSizeOption(selectedSize)?.price ?? basePrice}
+            </span>
           </div>
 
           {enabledEnhancements.map((item) => (

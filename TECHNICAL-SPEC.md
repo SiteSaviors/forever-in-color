@@ -1,7 +1,7 @@
 # Wondertone Technical Specification
-**Version**: 2.0
-**Last Updated**: October 6, 2025
-**Implementation Target**: Founder Playground (`/founder`)
+**Version**: 2.1
+**Last Updated**: October 12, 2025
+**Implementation Target**: Wondertone Main App (`/src`)
 **For**: Claude & CODEX Alignment
 
 ---
@@ -21,7 +21,7 @@
 
 ## Architecture Overview
 
-### Technology Stack (Founder Playground)
+### Technology Stack (Wondertone Main App)
 
 ```
 React 18.3.1 + TypeScript 5.6.3
@@ -36,35 +36,32 @@ React 18.3.1 + TypeScript 5.6.3
 ### Directory Structure
 
 ```
-founder/
-├── src/
-│   ├── components/
-│   │   ├── ui/              # Base UI components (Button, Card, Badge)
-│   │   ├── layout/          # Layout wrappers (Section)
-│   │   ├── launchpad/       # Upload & crop components
-│   │   │   ├── PhotoUploader.tsx
-│   │   │   ├── ConfettiBurst.tsx
-│   │   │   └── cropper/
-│   │   │       └── CropperModal.tsx
-│   │   └── studio/          # Studio customization components
-│   │       ├── StickyOrderRail.tsx
-│   │       ├── LivingCanvasModal.tsx
-│   │       └── StyleCarousel.tsx         # NEW - To implement
-│   ├── sections/
-│   │   ├── HeroSection.tsx               # NEW - To upgrade with carousel
-│   │   ├── LaunchpadLayout.tsx           # Photo upload + style selection
-│   │   └── StudioConfigurator.tsx        # Enhancement selection
-│   ├── modals/                           # NEW - Modal components
-│   │   └── AccountPromptModal.tsx        # NEW - After 3rd generation
-│   ├── store/
-│   │   └── useFounderStore.ts            # Zustand store (EXTEND)
-│   ├── utils/
-│   │   ├── previewClient.ts              # Preview generation API
-│   │   ├── telemetry.ts                  # Event tracking
-│   │   └── imageUtils.ts                 # Image processing
-│   └── pages/
-│       ├── LandingPage.tsx               # Homepage (STATE 0)
-│       └── StudioPage.tsx                # Full flow (STATE 1-6)
+src/
+├── components/
+│   ├── navigation/FounderNavigation.tsx   # Global nav (home + studio)
+├── components/launchpad/                 # Upload & crop experience
+│   ├── PhotoUploader.tsx
+│   ├── ConfettiBurst.tsx
+│   └── cropper/CropperModal.tsx
+├── components/studio/                    # Studio + ordering UI
+│   ├── StickyOrderRail.tsx
+│   ├── CanvasInRoomPreview.tsx
+│   ├── StyleForgeOverlay.tsx
+│   └── LivingCanvasModal.tsx
+├── sections/                             # Landing & studio sections
+│   ├── HeroSection.tsx
+│   ├── StyleShowcase.tsx
+│   ├── LaunchpadLayout.tsx
+│   └── StudioConfigurator.tsx
+├── store/useFounderStore.ts              # Central Zustand store
+├── utils/
+│   ├── canvasSizes.ts                    # Orientation-aware canvas pricing
+│   ├── stylePreviewApi.ts
+│   ├── smartCrop.ts
+│   └── telemetry.ts
+└── pages/
+    ├── LandingPage.tsx                   # Public homepage
+    └── StudioPage.tsx                    # End-to-end configurator
 ```
 
 ---
@@ -73,64 +70,83 @@ founder/
 
 ### Zustand Store Extensions (`useFounderStore.ts`)
 
-**Current Schema** (already implemented):
+**Current Core Schema** (implemented in `useFounderStore.ts`):
 ```typescript
 type FounderState = {
-  // Photo & Style
+  // Assets & Styles
   uploadedImage: string | null;
   croppedImage: string | null;
-  orientation: Orientation;
+  originalImage: string | null;
+  orientation: Orientation;                    // 'horizontal' | 'vertical' | 'square'
+  selectedCanvasSize: CanvasSize;              // orientation-aware ID, e.g. 'landscape-24x18'
   styles: StyleOption[];
   selectedStyleId: string | null;
 
-  // Preview State
+  // Preview Pipeline
   previewStatus: 'idle' | 'generating' | 'ready';
   previews: Record<string, PreviewState>;
-  firstPreviewCompleted: boolean;
-  celebrationAt: number | null;
+  pendingStyleId: string | null;
+  stylePreviewStatus: StylePreviewStatus;
+  stylePreviewCache: StylePreviewCache;        // Per-style, per-orientation cached renders
+  orientationPreviewPending: boolean;
 
-  // Enhancements
+  // Crop + Orientation Metadata
+  smartCrops: Record<Orientation, SmartCropResult>;
+  orientationChanging: boolean;
+  orientationTip: string | null;
+
+  // Generation Counters & Gating
+  generationCount: number;
+  generationLimit: number;                     // derived via selectors
+  isAuthenticated: boolean;
+  accountPromptShown: boolean;
+  accountPromptDismissed: boolean;
+  accountPromptTriggerAt: number | null;
+  subscriptionTier: 'free' | 'creator' | 'plus' | 'pro' | null;
+
+  // Commerce & Pricing
+  basePrice: number;                           // fallback when size price unavailable
   enhancements: Enhancement[];
+  selectedFrame: FrameColor;
   livingCanvasModalOpen: boolean;
-
-  // Pricing
-  basePrice: number;
   computedTotal: () => number;
-}
+
+  // Homepage / marketing
+  styleCarouselData: StyleCarouselCard[];
+  hoveredStyleId: string | null;
+
+  // Actions (selected sample)
+  incrementGenerationCount: () => void;
+  setOrientation: (next: Orientation) => void;
+  setCanvasSize: (id: CanvasSize) => void;
+  canGenerateMore: () => boolean;
+  getGenerationLimit: () => number;
+  shouldShowAccountPrompt: () => boolean;
+  setAuthenticated: (flag: boolean) => void;
+  setSubscriptionTier: (tier: FounderState['subscriptionTier']) => void;
+};
 ```
 
-**NEW Schema Extensions** (to implement):
+**Planned Extensions** (post-auth & billing rollout):
 
 ```typescript
 type FounderState = {
-  // ... existing state ...
+  // Token Ledger
+  freeTokensRemaining: number;                 // anonymous or bonus tokens (local/session)
+  monthlyTokenQuota: number;                   // server-synced quota from Supabase
+  monthlyTokensUsed: number;                   // resets via webhook/cron
+  entitlementWatermark: boolean;               // true = watermark required
 
-  // Generation Counter & Account Gating
-  generationCount: number;                    // Total generations this session
-  isAuthenticated: boolean;                   // User auth status
-  accountPromptShown: boolean;                // Have we shown the modal?
-  accountPromptDismissed: boolean;            // Did user dismiss it?
-  subscriptionTier: 'free' | 'creator' | 'pro' | null;
-
-  // Style Carousel (Homepage/Product Page)
-  styleCarouselData: StyleCarouselCard[];     // Pre-loaded style examples
-  hoveredStyleId: string | null;              // Track hover state
-
-  // Watermark Management
-  watermarkedPreviews: Set<string>;           // Which previews have watermarks
-  watermarkRemovalOffered: boolean;           // Upsell shown?
+  // Auth Session & Profile
+  userId: string | null;
+  subscriptionRenewAt: string | null;          // ISO timestamp from Stripe webhook
+  anonymousSessionId: string | null;           // cookie/localStorage key for non-auth users
 
   // Actions
-  incrementGenerationCount: () => void;
-  setAuthenticated: (status: boolean) => void;
-  setAccountPromptShown: (shown: boolean) => void;
-  dismissAccountPrompt: () => void;
-  setSubscriptionTier: (tier: FounderState['subscriptionTier']) => void;
-  setHoveredStyle: (id: string | null) => void;
-  shouldShowAccountPrompt: () => boolean;     // Logic: count === 3 && !shown && !dismissed
-  canGenerateMore: () => boolean;             // Logic: Check generation limits
-  getGenerationLimit: () => number;           // Logic: 3 (anon) | 8 (auth) | unlimited (sub)
-}
+  hydrateEntitlements: () => Promise<void>;    // fetch token counts + tier from Supabase
+  spendToken: (count?: number) => Promise<boolean>;
+  resetMonthlyTokens: (quota: number) => void;
+};
 ```
 
 ### Storage Strategy
@@ -408,15 +424,16 @@ const enhancements: Enhancement[] = [
 
 ## Generation Counter Logic
 
-### Rules (As Per FLOWMAP.md)
+### Rules (Updated October 2025)
 
 | User Type | Limit | Behavior |
 |-----------|-------|----------|
-| **Anonymous** | 3 generations | After 3rd: Show soft account prompt (dismissible) |
-| **Anonymous (Dismissed)** | Hard gate at 9th | Must create account to continue |
-| **Authenticated (Free)** | 8 generations/month | After 8th: Subscription gate (hard) |
-| **Creator Tier** | Unlimited | Watermarks on previews (removable for $4.99 each) |
-| **Pro Tier** | Unlimited | No watermarks |
+| **Anonymous** | 5 generations | After 5th: show soft account prompt (dismissible). Previews remain watermarked. |
+| **Anonymous (Dismissed)** | Hard gate at 10th | Must create account to continue. |
+| **Authenticated (Free)** | 10 generations / calendar month | After 10th: subscription gate (hard). |
+| **Creator Tier** | 50 generations / month | Unwatermarked previews, priority queue, instant download. |
+| **Plus Tier** | 250 generations / month | Unwatermarked previews. |
+| **Pro Tier** | 500 generations / month | Unwatermarked previews. |
 
 ### Implementation Flow
 
@@ -458,36 +475,41 @@ generatePreviews: async (ids) => {
 ```typescript
 // In useFounderStore
 canGenerateMore: () => {
-  const { generationCount, isAuthenticated, subscriptionTier } = get();
+  const {
+    generationCount,
+    isAuthenticated,
+    subscriptionTier,
+    accountPromptDismissed,
+  } = get();
 
-  // Pro tier: unlimited
-  if (subscriptionTier === 'pro') return true;
+  if (subscriptionTier === 'pro') return generationCount < 500;
+  if (subscriptionTier === 'plus') return generationCount < 250;
+  if (subscriptionTier === 'creator') return generationCount < 50;
 
-  // Creator tier: unlimited (but watermarked)
-  if (subscriptionTier === 'creator') return true;
+  if (isAuthenticated) {
+    return generationCount < 10;
+  }
 
-  // Authenticated free tier: 8 limit
-  if (isAuthenticated) return generationCount < 8;
-
-  // Anonymous: 9 hard limit (soft prompt at 3)
-  return generationCount < 9;
+  if (generationCount < 5) return true;
+  if (!accountPromptDismissed && generationCount < 10) return true;
+  return false;
 },
 
 getGenerationLimit: () => {
   const { isAuthenticated, subscriptionTier } = get();
 
-  if (subscriptionTier === 'creator' || subscriptionTier === 'pro') {
-    return Infinity;
-  }
+  if (subscriptionTier === 'pro') return 500;
+  if (subscriptionTier === 'plus') return 250;
+  if (subscriptionTier === 'creator') return 50;
 
-  return isAuthenticated ? 8 : 9;
+  return isAuthenticated ? 10 : 5;
 },
 
 shouldShowAccountPrompt: () => {
   const { generationCount, isAuthenticated, accountPromptShown, accountPromptDismissed } = get();
 
   return (
-    generationCount === 3 &&
+    generationCount === 5 &&
     !isAuthenticated &&
     !accountPromptShown &&
     !accountPromptDismissed
@@ -501,45 +523,42 @@ shouldShowAccountPrompt: () => {
 
 ### Pricing Structure
 
-| Tier | Price | Generations | Watermarks | Living Canvas | Priority Support |
-|------|-------|-------------|------------|---------------|-----------------|
-| **Free (Anonymous)** | $0 | 3 (soft gate) <br> 9 (hard gate) | Yes | No | No |
-| **Free (Authenticated)** | $0 | 8/month | Yes | No | Email only |
-| **Creator** | $9.99/mo | Unlimited | Yes (removable $4.99/ea) | Included | Email + Chat |
-| **Pro** | $29.99/mo | Unlimited | No | Included | Priority + Phone |
+| Tier | Price | Generations / Month | Watermarks | Living Canvas | Priority |
+|------|-------|----------------------|------------|---------------|----------|
+| **Anonymous** | $0 | 5 soft gate / 10 hard gate | Yes | No | N/A |
+| **Free (Authenticated)** | $0 | 10 | Yes | No | Email only |
+| **Creator** | $9.99/mo | 50 | No | Included | Email + chat |
+| **Plus** | $29.99/mo | 250 | No | Included | Priority queue |
+| **Pro** | $59.99/mo | 500 | No | Included | Priority queue + phone |
 
 ### Stripe Product IDs (Placeholder - Replace in Production)
 
 ```typescript
 const STRIPE_PRODUCTS = {
-  creator: {
-    monthly: 'price_creator_monthly',
-    yearly: 'price_creator_yearly',  // Optional 20% discount
-  },
-  pro: {
-    monthly: 'price_pro_monthly',
-    yearly: 'price_pro_yearly',
-  },
-  watermark_removal: 'price_watermark_removal_single',
+  creator: { monthly: 'price_creator_monthly' },
+  plus: { monthly: 'price_plus_monthly' },
+  pro: { monthly: 'price_pro_monthly' },
 };
 ```
 
 ### Subscription Benefits
 
-**Creator Tier**:
-- Unlimited preview generations
-- Watermarked downloads (pay $4.99 to remove per image)
-- Living Canvas AR included on all orders
-- Access to new styles first (beta features)
-- Email + chat support
+**Creator Tier ($9.99/mo)**
+- 50 preview generations per billing month
+- Unwatermarked previews + instant download button
+- Living Canvas AR included on shipped canvases
+- Priority rendering queue over free users
+- Email and chat support
 
-**Pro Tier**:
-- Everything in Creator
-- **No watermarks** on any downloads
-- Bulk export tools
-- API access (future)
-- Priority rendering queue
-- Phone support
+**Plus Tier ($29.99/mo)**
+- 250 preview generations per month
+- Everything in Creator + higher queue priority
+- Ideal for photographers and boutique studios
+
+**Pro Tier ($59.99/mo)**
+- 500 preview generations per month
+- Fastest queue priority + concierge support (email + phone)
+- Team-friendly roadmap (multi-user accounts planned)
 
 ---
 
@@ -547,12 +566,12 @@ const STRIPE_PRODUCTS = {
 
 ### Where Alignment is Critical (CODEX must follow)
 
-1. **Generation Counter Logic** → User MUST see soft prompt at exactly 3 generations (not 4, not 5)
-2. **Style Carousel Hover Interaction** → Must show original photo on hover (NOT video, NOT animation loop)
-3. **Account Prompt Timing** → Must appear 2 seconds after 3rd generation completes (to not ruin WOW moment)
-4. **Collapsible Sidebar in Studio** → Must be collapsible (not always-visible), default to expanded on desktop, collapsed on mobile
-5. **Watermark Placement** → Centered, semi-transparent Wondertone logo, cannot obscure face/subject
-6. **Living Memory Upload** → Must happen POST-checkout (not during main flow)
+1. **Generation Counter Logic** → Prompt must appear immediately after the 5th anonymous generation; hard gate enforced at 10th.
+2. **Style Carousel Hover Interaction** → Must show original photo on hover (NOT video, NOT animation loop).
+3. **Account Prompt Timing** → Delay modal by ~2s after the triggering generation to preserve the reveal moment.
+4. **Collapsible Sidebar in Studio** → Must remain collapsible (expanded by default on desktop, collapsed on mobile).
+5. **Watermark Placement** → Centered, semi-transparent Wondertone logo, never obscure faces/subjects.
+6. **Living Memory Upload** → Must happen post-checkout (not during the main preview flow).
 
 ### Where Flexibility is OK (CODEX can iterate)
 
@@ -575,94 +594,97 @@ const STRIPE_PRODUCTS = {
 
 ## Integration Strategy
 
-### Phase 1: Build in Founder Playground (Current)
+### Phase 1: Auth & Token Foundation
 
-**Timeline**: 1-2 weeks
-**Focus**: Validate complete FLOWMAP flow without production dependencies
+**Timeline**: ~2 weeks
+**Focus**: Reintroduce Supabase Auth, anonymous session tracking, entitlement counters in the main app.
 
 **Deliverables**:
-- ✅ Phase 1 visual transformation (complete)
-- [ ] Hero section with style carousel
-- [ ] Account prompt modal
-- [ ] Generation counter logic (mock auth)
-- [ ] Collapsible Studio sidebar
-- [ ] Watermark removal upsells
+- Supabase client reinstated (`src/lib/supabaseClient.ts`).
+- Anonymous session token issued + stored (cookie/localStorage + Supabase `anonymous_tokens`).
+- Zustand store hydrated with `freeTokensRemaining`, `anonymousSessionId`.
+- Soft prompt + hard gate wired to new limits (5 / 10).
 
 **Testing**:
-- Manual QA of complete flow
-- Gather user feedback on UX
-- Measure time-to-WOW metric
-- Test on mobile devices
+- Manual QA across fresh/incognito sessions.
+- Verify counters persist after refresh, reset after sign-up.
+- Ensure studio UI disables preview button when quota exhausted.
 
 ---
 
-### Phase 2: Port to Production (Future)
+### Phase 2: Stripe Subscription Integration
 
-**Timeline**: 2-3 weeks (after Founder validation)
-**Focus**: Integrate with Supabase, Stripe, and existing production infrastructure
+**Timeline**: ~3 weeks
+**Focus**: Wire Stripe Billing → Supabase profiles via webhooks, implement monthly token quotas for Creator/Plus/Pro.
 
 **Tasks**:
 
-1. **State Management Migration**:
-   - Evaluate: Keep Zustand vs. integrate with existing `useProductFlow` hook
-   - Recommendation: **Keep Zustand** for this feature, create adapter layer if needed
+1. **Identity & Profiles**
+   - Store `stripe_customer_id`, `subscription_tier`, `monthlyTokenQuota`, `monthlyTokensUsed`, `renew_at` in Supabase `profiles`.
+   - Provide `hydrateEntitlements()` action to sync store on page load.
 
-2. **Database Schema** (Supabase):
+2. **Database Schema** (Supabase additions):
    ```sql
    -- Add to existing schema
-   CREATE TABLE generation_sessions (
-     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-     user_id UUID REFERENCES users(id),
-     session_id TEXT NOT NULL,
-     generation_count INT DEFAULT 0,
-     created_at TIMESTAMP DEFAULT NOW(),
-     last_activity_at TIMESTAMP DEFAULT NOW()
-   );
+  CREATE TABLE anonymous_tokens (
+    token TEXT PRIMARY KEY,
+    free_tokens_remaining INT DEFAULT 5,
+    dismissed_prompt BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT NOW(),
+    last_seen_ip TEXT,
+    last_user_agent TEXT
+  );
 
-   CREATE TABLE generations (
-     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-     session_id UUID REFERENCES generation_sessions(id),
-     style_id TEXT NOT NULL,
-     preview_url TEXT,
-     has_watermark BOOLEAN DEFAULT TRUE,
-     created_at TIMESTAMP DEFAULT NOW()
-   );
+  CREATE TABLE preview_usage (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID,
+    anonymous_token TEXT,
+    style_id TEXT,
+    requires_watermark BOOLEAN,
+    created_at TIMESTAMP DEFAULT NOW()
+  );
 
-   CREATE TABLE subscriptions (
-     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-     user_id UUID REFERENCES users(id),
-     stripe_subscription_id TEXT UNIQUE,
-     tier TEXT CHECK (tier IN ('creator', 'pro')),
-     status TEXT,
-     current_period_end TIMESTAMP,
-     created_at TIMESTAMP DEFAULT NOW()
-   );
-   ```
+  CREATE TABLE subscriptions (
+    user_id UUID PRIMARY KEY REFERENCES auth.users(id),
+    tier TEXT NOT NULL,
+    renew_at TIMESTAMP,
+    stripe_subscription_id TEXT,
+    tokens_used INT DEFAULT 0,
+    tokens_quota INT NOT NULL
+  );
 
-3. **API Integration**:
-   - Create Supabase Edge Function: `generate-preview`
-   - Integrate Stripe Checkout for subscriptions
-   - Add watermark overlay service (Canvas API or image processing library)
+  CREATE TABLE preview_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID,
+    anonymous_token TEXT,
+    style_id TEXT NOT NULL,
+    orientation TEXT,
+    watermark BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT NOW()
+  );
+  ```
 
-4. **Component Porting**:
-   - Copy `StyleCarousel.tsx` → `src/components/carousel/`
-   - Copy `AccountPromptModal.tsx` → `src/components/modals/`
-   - Integrate with existing `ProductStateManager.tsx`
+3. **Edge Function Enforcement**:
+   - Extend `generate-style-preview` to:
+     - Validate token/quota before invoking the generation pipeline.
+     - Mark response with `requires_watermark` flag.
+     - Deduct tokens + insert into `preview_logs` transactionally.
+   - Add helper endpoint `GET /entitlements` returning current quota/usage for the client.
 
-5. **A/B Testing**:
-   - Feature flag: `ENABLE_NEW_FLOW` (default: false)
-   - Split traffic: 10% new flow, 90% old flow
-   - Metrics to track:
-     - Conversion rate (upload → purchase)
-     - Time to first preview
-     - Account creation rate
-     - Subscription conversion rate
+4. **Client Integration**:
+   - Rehydrate entitlements on app load (`hydrateEntitlements`).
+   - Gate “Generate Preview” button via `canGenerateMore()`; display remaining token count in StickyOrderRail.
+   - Trigger upgrade modal when entitlements exhausted; link to Stripe Checkout session.
+   - Ensure watermark badge (or overlay) reflects `requires_watermark` flag from preview response.
+
+5. **Telemetry & Analytics**:
+   - Stream preview events to Supabase `preview_logs` + PostHog (or chosen analytics) with tier and watermark info.
+   - Emit alerts (Sentry/PostHog) on suspected abuse (e.g., repeated anonymous hard gate attempts beyond threshold).
 
 6. **Rollout Plan**:
-   - Week 1: 10% traffic
-   - Week 2: 25% traffic (if metrics positive)
-   - Week 3: 50% traffic
-   - Week 4: 100% rollout (deprecate old flow)
+   - Phase 2 complete → release to 10% of traffic behind feature flag.
+   - Monitor conversion (anonymous → signup, signup → subscribe), error rates, preview latency.
+   - Incrementally ramp to 100% once metrics stable; document fallback to disable new gating if needed.
 
 ---
 
@@ -687,7 +709,7 @@ const STRIPE_PRODUCTS = {
 
 ## Notes for CODEX
 
-**Context**: This spec defines the complete implementation strategy for the FLOWMAP.md product flow. We're building this first in the Founder playground (`/founder`) to validate the UX before porting to production.
+**Context**: This spec defines the end-to-end implementation strategy for the Wondertone studio flow. The founder playground has been merged into the main application; all future work happens directly inside `src/`.
 
 **Your Role**: Implement components and logic according to this spec. When you encounter ambiguity:
 1. Check [Key Decision Points](#key-decision-points) section first
