@@ -191,8 +191,8 @@ shouldShowAccountPrompt: () => {
 
 | Tier | Price | Generations / Month | Watermarks | Living Canvas | Priority |
 |------|-------|----------------------|------------|---------------|----------|
-| **Anonymous** | $0 | 5 soft gate / 10 hard gate | Yes | No | N/A |
-| **Free (Authenticated)** | $0 | 10 | Yes | No | Email only |
+| **Anonymous** | $0 | 5 soft gate / 10 hard gate | Yes | Included | N/A 
+| **Free (Authenticated)** | $0 | 10 | Yes | Included | Email only |
 | **Creator** | $9.99/mo | 50 | No | Included | Email + chat |
 | **Plus** | $29.99/mo | 250 | No | Included | Priority queue |
 | **Pro** | $59.99/mo | 500 | No | Included | Priority queue + phone |
