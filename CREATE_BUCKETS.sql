@@ -23,47 +23,55 @@ VALUES (
 )
 ON CONFLICT (id) DO NOTHING;
 
--- 3. Set policies for public bucket
-CREATE POLICY IF NOT EXISTS "Public watermarked previews are publicly accessible"
-ON storage.objects FOR SELECT
-TO public
-USING (bucket_id = 'preview-cache-public');
+-- 3. Set policies for public bucket (drop if exists, then create)
+DROP POLICY IF EXISTS "Public watermarked previews are publicly accessible" ON storage.objects;
+CREATE POLICY "Public watermarked previews are publicly accessible"
+  ON storage.objects FOR SELECT
+  TO public
+  USING (bucket_id = 'preview-cache-public');
 
-CREATE POLICY IF NOT EXISTS "Service role can upload watermarked previews"
-ON storage.objects FOR INSERT
-TO service_role
-WITH CHECK (bucket_id = 'preview-cache-public');
+DROP POLICY IF EXISTS "Service role can upload watermarked previews" ON storage.objects;
+CREATE POLICY "Service role can upload watermarked previews"
+  ON storage.objects FOR INSERT
+  TO service_role
+  WITH CHECK (bucket_id = 'preview-cache-public');
 
-CREATE POLICY IF NOT EXISTS "Service role can update watermarked previews"
-ON storage.objects FOR UPDATE
-TO service_role
-USING (bucket_id = 'preview-cache-public');
+DROP POLICY IF EXISTS "Service role can update watermarked previews" ON storage.objects;
+CREATE POLICY "Service role can update watermarked previews"
+  ON storage.objects FOR UPDATE
+  TO service_role
+  USING (bucket_id = 'preview-cache-public');
 
-CREATE POLICY IF NOT EXISTS "Service role can delete watermarked previews"
-ON storage.objects FOR DELETE
-TO service_role
-USING (bucket_id = 'preview-cache-public');
+DROP POLICY IF EXISTS "Service role can delete watermarked previews" ON storage.objects;
+CREATE POLICY "Service role can delete watermarked previews"
+  ON storage.objects FOR DELETE
+  TO service_role
+  USING (bucket_id = 'preview-cache-public');
 
--- 4. Set policies for premium bucket
-CREATE POLICY IF NOT EXISTS "Service role can upload premium previews"
-ON storage.objects FOR INSERT
-TO service_role
-WITH CHECK (bucket_id = 'preview-cache-premium');
+-- 4. Set policies for premium bucket (drop if exists, then create)
+DROP POLICY IF EXISTS "Service role can upload premium previews" ON storage.objects;
+CREATE POLICY "Service role can upload premium previews"
+  ON storage.objects FOR INSERT
+  TO service_role
+  WITH CHECK (bucket_id = 'preview-cache-premium');
 
-CREATE POLICY IF NOT EXISTS "Service role can update premium previews"
-ON storage.objects FOR UPDATE
-TO service_role
-USING (bucket_id = 'preview-cache-premium');
+DROP POLICY IF EXISTS "Service role can update premium previews" ON storage.objects;
+CREATE POLICY "Service role can update premium previews"
+  ON storage.objects FOR UPDATE
+  TO service_role
+  USING (bucket_id = 'preview-cache-premium');
 
-CREATE POLICY IF NOT EXISTS "Service role can delete premium previews"
-ON storage.objects FOR DELETE
-TO service_role
-USING (bucket_id = 'preview-cache-premium');
+DROP POLICY IF EXISTS "Service role can delete premium previews" ON storage.objects;
+CREATE POLICY "Service role can delete premium previews"
+  ON storage.objects FOR DELETE
+  TO service_role
+  USING (bucket_id = 'preview-cache-premium');
 
-CREATE POLICY IF NOT EXISTS "Authenticated users can read premium previews via signed URLs"
-ON storage.objects FOR SELECT
-TO authenticated
-USING (bucket_id = 'preview-cache-premium');
+DROP POLICY IF EXISTS "Authenticated users can read premium previews via signed URLs" ON storage.objects;
+CREATE POLICY "Authenticated users can read premium previews via signed URLs"
+  ON storage.objects FOR SELECT
+  TO authenticated
+  USING (bucket_id = 'preview-cache-premium');
 
 -- 5. Verify buckets were created
 SELECT id, name, public FROM storage.buckets WHERE id LIKE 'preview-cache%';

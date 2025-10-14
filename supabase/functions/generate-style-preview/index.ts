@@ -915,32 +915,65 @@ serve(async (req) => {
           const storagePath = computeStoragePath(styleMetadata.styleId, normalizedAspectRatio, normalizedQuality, imageDigest);
           const ttlExpiresAt = new Date(Date.now() + ttlMs).toISOString();
 
-          // Upload to appropriate bucket based on watermark requirement
-          const uploadResult = await storageClient.uploadFromUrl(processedOutput, storagePath, {}, effectiveWatermark);
-          finalPreviewUrl = uploadResult.publicUrl;
+          if (effectiveWatermark) {
+            // For free/anonymous users: Upload BOTH versions
+            // 1. Watermarked version to public bucket (for display)
+            const watermarkedUpload = await storageClient.uploadFromUrl(processedOutput, storagePath, {}, true);
+            finalPreviewUrl = watermarkedUpload.publicUrl;
 
-          await cacheMetadataService.upsert({
-            cacheKey,
-            styleId: styleMetadata.styleId,
-            styleVersion: styleMetadata.styleVersion,
-            imageDigest,
-            aspectRatio: normalizedAspectRatio,
-            quality: normalizedQuality,
-            watermark: effectiveWatermark,
-            storagePath: uploadResult.storagePath,
-            previewUrl: uploadResult.publicUrl,
-            ttlExpiresAt,
-            sourceRequestId: requestId
-          });
+            // 2. Clean version to premium bucket (for premium downloads)
+            await storageClient.uploadFromUrl(rawOutput, storagePath, {}, false);
 
-          memoryCache.set(cacheKey, uploadResult.publicUrl, ttlMs);
+            logger.info('Dual-upload complete: watermarked (public) + clean (premium)', {
+              requestId,
+              watermarkedUrl: watermarkedUpload.publicUrl,
+              storagePath
+            });
+
+            await cacheMetadataService.upsert({
+              cacheKey,
+              styleId: styleMetadata.styleId,
+              styleVersion: styleMetadata.styleVersion,
+              imageDigest,
+              aspectRatio: normalizedAspectRatio,
+              quality: normalizedQuality,
+              watermark: effectiveWatermark,
+              storagePath: watermarkedUpload.storagePath,
+              previewUrl: watermarkedUpload.publicUrl,
+              ttlExpiresAt,
+              sourceRequestId: requestId
+            });
+
+            memoryCache.set(cacheKey, watermarkedUpload.publicUrl, ttlMs);
+          } else {
+            // For premium users: Upload clean version only to premium bucket
+            const uploadResult = await storageClient.uploadFromUrl(rawOutput, storagePath, {}, false);
+            finalPreviewUrl = uploadResult.publicUrl;
+
+            await cacheMetadataService.upsert({
+              cacheKey,
+              styleId: styleMetadata.styleId,
+              styleVersion: styleMetadata.styleVersion,
+              imageDigest,
+              aspectRatio: normalizedAspectRatio,
+              quality: normalizedQuality,
+              watermark: effectiveWatermark,
+              storagePath: uploadResult.storagePath,
+              previewUrl: uploadResult.publicUrl,
+              ttlExpiresAt,
+              sourceRequestId: requestId
+            });
+
+            memoryCache.set(cacheKey, uploadResult.publicUrl, ttlMs);
+
+            logger.info('Premium upload complete: clean version only', {
+              requestId,
+              bucket: 'premium',
+              storagePath
+            });
+          }
+
           cacheStatus = 'hit';
-
-          logger.info('Preview cached successfully', {
-            requestId,
-            bucket: uploadResult.isPublicBucket ? 'public' : 'premium',
-            watermarked: effectiveWatermark
-          });
         } catch (error) {
           logger.warn('Failed to cache preview output', { error: error instanceof Error ? error.message : String(error), cacheKey, requestId });
         }

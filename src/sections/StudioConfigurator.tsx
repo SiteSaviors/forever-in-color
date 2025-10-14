@@ -1,14 +1,30 @@
-import { useEffect, useState } from 'react';
+import { Suspense, lazy, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Bookmark, BookmarkCheck } from 'lucide-react';
+import { Bookmark, BookmarkCheck, Download, Lock } from 'lucide-react';
 import { useFounderStore, StylePreviewStatus } from '@/store/useFounderStore';
 import StickyOrderRail from '@/components/studio/StickyOrderRail';
-import LivingCanvasModal from '@/components/studio/LivingCanvasModal';
-import CanvasInRoomPreview from '@/components/studio/CanvasInRoomPreview';
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
-import StyleForgeOverlay from '@/components/studio/StyleForgeOverlay';
 import TokenWarningBanner from '@/components/studio/TokenWarningBanner';
 import { saveToGallery } from '@/utils/galleryApi';
+import { downloadCleanImage } from '@/utils/premiumDownload';
+
+const LivingCanvasModal = lazy(() => import('@/components/studio/LivingCanvasModal'));
+const CanvasInRoomPreview = lazy(() => import('@/components/studio/CanvasInRoomPreview'));
+const StyleForgeOverlay = lazy(() => import('@/components/studio/StyleForgeOverlay'));
+const DownloadUpgradeModal = lazy(() => import('@/components/modals/DownloadUpgradeModal'));
+
+const CanvasPreviewFallback = () => (
+  <div className="w-full h-[360px] rounded-[2.5rem] bg-slate-800/60 border border-white/10 animate-pulse" />
+);
+
+const StyleForgeOverlayFallback = ({ styleName }: { styleName: string }) => (
+  <div className="absolute inset-0 z-30 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm" role="presentation">
+    <div className="flex flex-col items-center gap-3 text-center">
+      <div className="w-12 h-12 border-4 border-purple-400/40 border-t-purple-400 rounded-full animate-spin" />
+      <p className="text-sm font-medium text-white/80">Preparing {styleName}…</p>
+    </div>
+  </div>
+);
 
 type CheckoutNotice = {
   variant: 'success' | 'warning';
@@ -44,6 +60,7 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
   const orientationPreviewPending = useFounderStore((state) => state.orientationPreviewPending);
   const anonToken = useFounderStore((state) => state.anonToken);
   const setAccountPromptShown = useFounderStore((state) => state.setAccountPromptShown);
+  const livingCanvasModalOpen = useFounderStore((state) => state.livingCanvasModalOpen);
   const cachedPreviewEntry = useFounderStore((state) => {
     const styleId = state.selectedStyleId;
     if (!styleId) return null;
@@ -52,9 +69,61 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
   const orientationMeta = ORIENTATION_PRESETS[orientation];
   const previewOrientationLabel = preview?.orientation ? ORIENTATION_PRESETS[preview.orientation].label : null;
   const orientationMismatch = Boolean(preview?.orientation && preview.orientation !== orientation);
+  const overlayStyleName =
+    (pendingStyleId ? styles.find((style) => style.id === pendingStyleId)?.name : currentStyle?.name) ??
+    'Selected Style';
 
   const [savingToGallery, setSavingToGallery] = useState(false);
   const [savedToGallery, setSavedToGallery] = useState(false);
+  const [showDownloadUpgradeModal, setShowDownloadUpgradeModal] = useState(false);
+  const [downloadingHD, setDownloadingHD] = useState(false);
+
+  // Get user tier from entitlements
+  const userTier = useFounderStore((state) => state.entitlements?.tier ?? 'anonymous');
+  const isPremiumUser = ['creator', 'plus', 'pro'].includes(userTier);
+
+  const handleDownloadHD = async () => {
+    if (!currentStyle || !preview?.data?.previewUrl) {
+      alert('No preview available to download');
+      return;
+    }
+
+    // Check if user has premium access
+    if (!isPremiumUser) {
+      // Show upgrade modal for free/anonymous users
+      setShowDownloadUpgradeModal(true);
+      return;
+    }
+
+    // Premium users: download clean version
+    setDownloadingHD(true);
+    try {
+      // Extract storage path from preview URL
+      // URL format: https://.../storage/v1/object/public/preview-cache-public/{storagePath}
+      const previewUrl = preview.data.previewUrl;
+      const match = previewUrl.match(/preview-cache-(public|premium)\/(.+)$/);
+
+      if (!match) {
+        throw new Error('Could not extract storage path from preview URL');
+      }
+
+      const storagePath = match[2];
+      const filename = `wondertone-${currentStyle.name.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}.jpg`;
+
+      await downloadCleanImage({
+        storagePath,
+        filename,
+        accessToken: sessionAccessToken,
+      });
+
+      console.log('[StudioConfigurator] Clean image downloaded successfully');
+    } catch (error) {
+      console.error('Failed to download HD image:', error);
+      alert('Failed to download image. Please try again.');
+    } finally {
+      setDownloadingHD(false);
+    }
+  };
 
   const handleSaveToGallery = async () => {
     if (!currentStyle || !preview?.data?.previewUrl) {
@@ -317,24 +386,16 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
                 maxHeight: orientation === 'vertical' ? '85vh' : undefined
               }}
             >
-              {canRefreshPreview && currentStyle && (
-                <button
-                  type="button"
-                  onClick={() => void startStylePreview(currentStyle, { force: true })}
-                  className="absolute right-4 top-4 z-30 rounded-full border border-white/30 bg-white/10 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm transition hover:bg-white/20"
-                >
-                  Refresh Preview
-                </button>
-              )}
-
               {stylePreviewStatus !== 'idle' && (
-                <StyleForgeOverlay
-                  status={overlayStatus}
-                  styleName={pendingStyleId ? styles.find((style) => style.id === pendingStyleId)?.name ?? 'Selected Style' : currentStyle?.name ?? 'Selected Style'}
-                  message={stylePreviewMessage}
-                  isError={stylePreviewStatus === 'error'}
-                  errorMessage={stylePreviewError}
-                />
+                <Suspense fallback={<StyleForgeOverlayFallback styleName={overlayStyleName} />}>
+                  <StyleForgeOverlay
+                    status={overlayStatus}
+                    styleName={overlayStyleName}
+                    message={stylePreviewMessage}
+                    isError={stylePreviewStatus === 'error'}
+                    errorMessage={stylePreviewError}
+                  />
+                </Suspense>
               )}
               {/* Orientation changing overlay */}
               {orientationChanging && (
@@ -374,7 +435,16 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
                 <img
                   src={preview?.data?.previewUrl ?? currentStyle?.preview}
                   alt="Canvas preview"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover select-none"
+                  onContextMenu={(e) => {
+                    // Prevent right-click download for all preview images
+                    e.preventDefault();
+                  }}
+                  onDragStart={(e) => {
+                    // Prevent drag-and-drop download for all preview images
+                    e.preventDefault();
+                  }}
+                  draggable={false}
                 />
               ) : (
                 <div className="absolute inset-0 flex items-center justify-center text-white/40 text-center p-8">
@@ -396,8 +466,8 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
                 {orientationMeta.label}
               </div>
 
-              {/* Ready Badge */}
-              {preview?.status === 'ready' && !orientationPreviewPending && !orientationMismatch && (
+              {/* Ready Badge - Only show for AI-generated style previews, not original image */}
+              {preview?.status === 'ready' && currentStyle && currentStyle.id !== 'original-image' && !orientationPreviewPending && !orientationMismatch && (
                 <div className="absolute top-6 right-6 px-4 py-2 rounded-full bg-purple-500/95 text-white text-sm font-semibold shadow-glow-soft backdrop-blur-sm animate-scaleIn">
                   <span className="flex items-center gap-2">
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -423,50 +493,73 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
                   {`Preview uses ${previewOrientationLabel} crop • Refresh to update`}
                 </div>
               )}
-
-              {/* Watermark overlay (mock) */}
-              {preview?.status === 'ready' && (
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div
-                    className="text-white/20 text-6xl font-bold tracking-wider"
-                    style={{ transform: 'rotate(-45deg)' }}
-                  >
-                    WONDERTONE
-                  </div>
-                </div>
-              )}
             </div>
 
-            {/* Save to Gallery Button */}
+            {/* Action Buttons */}
             {preview?.status === 'ready' && currentStyle && (
-              <div className="mt-6 flex items-center justify-center gap-4">
-                <button
-                  onClick={handleSaveToGallery}
-                  disabled={savingToGallery}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all ${
-                    savedToGallery
-                      ? 'bg-emerald-500/20 text-emerald-300 border-2 border-emerald-400/50'
-                      : 'bg-white/10 hover:bg-white/15 text-white border-2 border-white/20 hover:border-brand-indigo/50'
-                  } disabled:opacity-50 disabled:cursor-not-allowed`}
-                >
-                  {savedToGallery ? (
-                    <>
-                      <BookmarkCheck className="w-5 h-5" />
-                      <span>Saved to Gallery</span>
-                    </>
-                  ) : (
-                    <>
-                      <Bookmark className="w-5 h-5" />
-                      <span>{savingToGallery ? 'Saving...' : 'Save to Gallery'}</span>
-                    </>
+              <div className="mt-6 flex flex-col items-center gap-4">
+                <div className="flex items-center gap-3">
+                  {/* Download HD Image Button */}
+                  <button
+                    onClick={handleDownloadHD}
+                    disabled={downloadingHD}
+                    className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all bg-brand-indigo hover:bg-brand-indigo/90 text-white border-2 border-brand-indigo/50 hover:border-brand-indigo disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isPremiumUser ? (
+                      <>
+                        <Download className="w-5 h-5" />
+                        <span>{downloadingHD ? 'Downloading...' : 'Download HD Image'}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Lock className="w-5 h-5" />
+                        <span>Download HD Image</span>
+                      </>
+                    )}
+                  </button>
+
+                  {/* Save to Gallery Button */}
+                  <button
+                    onClick={handleSaveToGallery}
+                    disabled={savingToGallery}
+                    className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all ${
+                      savedToGallery
+                        ? 'bg-emerald-500/20 text-emerald-300 border-2 border-emerald-400/50'
+                        : 'bg-white/10 hover:bg-white/15 text-white border-2 border-white/20 hover:border-white/30'
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                  >
+                    {savedToGallery ? (
+                      <>
+                        <BookmarkCheck className="w-5 h-5" />
+                        <span>Saved to Gallery</span>
+                      </>
+                    ) : (
+                      <>
+                        <Bookmark className="w-5 h-5" />
+                        <span>{savingToGallery ? 'Saving...' : 'Save to Gallery'}</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Refresh Preview & View Gallery Links */}
+                <div className="flex items-center gap-4">
+                  {canRefreshPreview && (
+                    <button
+                      type="button"
+                      onClick={() => void startStylePreview(currentStyle, { force: true })}
+                      className="text-sm text-white/60 hover:text-white transition-colors underline"
+                    >
+                      Refresh Preview
+                    </button>
                   )}
-                </button>
-                <Link
-                  to="/studio/gallery"
-                  className="text-sm text-white/60 hover:text-white transition-colors underline"
-                >
-                  View Gallery
-                </Link>
+                  <Link
+                    to="/studio/gallery"
+                    className="text-sm text-white/60 hover:text-white transition-colors underline"
+                  >
+                    View Gallery
+                  </Link>
+                </div>
               </div>
             )}
 
@@ -480,7 +573,9 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
                   Visualize how your canvas will look in a real living room
                 </p>
               </div>
-              <CanvasInRoomPreview enableHoverEffect={true} showDimensions={false} />
+              <Suspense fallback={<CanvasPreviewFallback />}>
+                <CanvasInRoomPreview enableHoverEffect={true} showDimensions={false} />
+              </Suspense>
             </div>
           </div>
         </main>
@@ -494,7 +589,17 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
       </div>
 
       {/* Living Canvas Modal */}
-      <LivingCanvasModal />
+      <Suspense fallback={null}>
+        {livingCanvasModalOpen && <LivingCanvasModal />}
+      </Suspense>
+
+      {/* Download Upgrade Modal */}
+      <Suspense fallback={null}>
+        <DownloadUpgradeModal
+          isOpen={showDownloadUpgradeModal}
+          onClose={() => setShowDownloadUpgradeModal(false)}
+        />
+      </Suspense>
     </section>
   );
 };

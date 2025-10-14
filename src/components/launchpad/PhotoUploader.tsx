@@ -1,9 +1,8 @@
-import { ChangeEvent, DragEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ChangeEvent, DragEvent, useCallback, useEffect, useMemo, useRef, useState, lazy, Suspense } from 'react';
 import { clsx } from 'clsx';
 import Card from '@/components/ui/Card';
 import { useFounderStore } from '@/store/useFounderStore';
 import { readFileAsDataURL, getImageDimensions, determineOrientationFromDimensions } from '@/utils/imageUtils';
-import CropperModal from '@/components/launchpad/cropper/CropperModal';
 import SmartCropPreview from '@/components/launchpad/SmartCropPreview';
 import AIAnalysisOverlay from '@/components/launchpad/AIAnalysisOverlay';
 import { emitStepOneEvent } from '@/utils/telemetry';
@@ -13,6 +12,9 @@ import type { Orientation } from '@/utils/imageUtils';
 const SAMPLE_IMAGE = 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=900&q=80';
 
 type UploadStage = 'idle' | 'analyzing' | 'preview' | 'cropper' | 'complete';
+
+const loadCropperModal = () => import('@/components/launchpad/cropper/CropperModal');
+const CropperModal = lazy(loadCropperModal);
 
 const PhotoUploader = () => {
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -200,12 +202,14 @@ const PhotoUploader = () => {
 
   const handleCustomizeCrop = () => {
     if (!originalImage) return;
+    void loadCropperModal();
     setCropperOpen(true);
     setStage('cropper');
   };
 
   const handleOpenCropper = () => {
     if (!originalImage) return;
+    void loadCropperModal();
     setCropperOpen(true);
     setStage('cropper');
   };
@@ -249,23 +253,25 @@ const PhotoUploader = () => {
 
   if (stage === 'cropper' && originalImage) {
     return (
-      <CropperModal
-        open={isCropperOpen}
-        originalImage={originalImage}
-        originalDimensions={originalImageDimensions}
-        initialOrientation={orientation}
-        smartCropCache={smartCrops}
-        onClose={() => {
-          setCropperOpen(false);
-          if (croppedImage) {
-            setStage('complete');
-          } else {
-            setStage('idle');
-          }
-        }}
-        onComplete={handleCropComplete}
-        onSmartCropReady={handleSmartCropReady}
-      />
+      <Suspense fallback={null}>
+        <CropperModal
+          open={isCropperOpen}
+          originalImage={originalImage}
+          originalDimensions={originalImageDimensions}
+          initialOrientation={orientation}
+          smartCropCache={smartCrops}
+          onClose={() => {
+            setCropperOpen(false);
+            if (croppedImage) {
+              setStage('complete');
+            } else {
+              setStage('idle');
+            }
+          }}
+          onComplete={handleCropComplete}
+          onSmartCropReady={handleSmartCropReady}
+        />
+      </Suspense>
     );
   }
 

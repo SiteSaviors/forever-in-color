@@ -7,15 +7,15 @@ interface AIAnalysisOverlayProps {
   duration?: number; // milliseconds
 }
 
+const ANALYSIS_PHASES = [
+  { label: 'Analyzing composition', icon: '🎨', delay: 0 },
+  { label: 'Detecting subjects', icon: '👤', delay: 800 },
+  { label: 'Optimizing framing', icon: '✨', delay: 1600 },
+];
+
 const AIAnalysisOverlay = ({ imageUrl, onComplete, duration = 2500 }: AIAnalysisOverlayProps) => {
   const [progress, setProgress] = useState(0);
   const [currentPhase, setCurrentPhase] = useState(0);
-
-  const phases = [
-    { label: 'Analyzing composition', icon: '🎨', delay: 0 },
-    { label: 'Detecting subjects', icon: '👤', delay: 800 },
-    { label: 'Optimizing framing', icon: '✨', delay: 1600 },
-  ];
 
   useEffect(() => {
     // Smooth progress animation
@@ -30,7 +30,7 @@ const AIAnalysisOverlay = ({ imageUrl, onComplete, duration = 2500 }: AIAnalysis
     }, duration / 50);
 
     // Phase transitions
-    const phaseTimers = phases.map((phase, index) => {
+    const phaseTimers = ANALYSIS_PHASES.map((phase, index) => {
       return setTimeout(() => {
         setCurrentPhase(index);
       }, phase.delay);
@@ -117,7 +117,7 @@ const AIAnalysisOverlay = ({ imageUrl, onComplete, duration = 2500 }: AIAnalysis
 
         {/* Phase messages */}
         <div className="text-center space-y-2 min-h-[80px]">
-          {phases.map((phase, index) => (
+          {ANALYSIS_PHASES.map((phase, index) => (
             <div
               key={index}
               className={clsx(

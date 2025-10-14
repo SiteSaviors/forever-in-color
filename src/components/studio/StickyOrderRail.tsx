@@ -1,12 +1,13 @@
-import { useRef, useState } from 'react';
+import { lazy, Suspense, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Card from '@/components/ui/Card';
 import { useFounderStore } from '@/store/useFounderStore';
 import { cacheSmartCropResult, generateSmartCrop, ORIENTATION_PRESETS, SmartCropResult } from '@/utils/smartCrop';
 import type { Orientation } from '@/utils/imageUtils';
 import { CANVAS_SIZE_OPTIONS, getCanvasSizeOption, getDefaultSizeForOrientation } from '@/utils/canvasSizes';
-import CropperModal from '@/components/launchpad/cropper/CropperModal';
 import { useCheckoutStore } from '@/store/useCheckoutStore';
+
+const CropperModal = lazy(() => import('@/components/launchpad/cropper/CropperModal'));
 
 const StickyOrderRail = () => {
   const inFlightCropsRef = useRef<Map<Orientation, Promise<SmartCropResult>>>(new Map());
@@ -273,16 +274,20 @@ const StickyOrderRail = () => {
         </div>
       </Card>
 
-      <CropperModal
-        open={cropperOpen}
-        originalImage={originalImage}
-        originalDimensions={originalImageDimensions}
-        initialOrientation={pendingOrientation ?? orientation}
-        smartCropCache={smartCrops}
-        onClose={handleCropperDismiss}
-        onComplete={handleCropperComplete}
-        onSmartCropReady={(result) => setSmartCropForOrientation(result.orientation, result)}
-      />
+      <Suspense fallback={null}>
+        {(cropperOpen || pendingOrientation !== null) && (
+          <CropperModal
+            open={cropperOpen}
+            originalImage={originalImage}
+            originalDimensions={originalImageDimensions}
+            initialOrientation={pendingOrientation ?? orientation}
+            smartCropCache={smartCrops}
+            onClose={handleCropperDismiss}
+            onComplete={handleCropperComplete}
+            onSmartCropReady={(result) => setSmartCropForOrientation(result.orientation, result)}
+          />
+        )}
+      </Suspense>
 
       {/* Enhancements */}
       <Card glass className="space-y-4 border-2 border-white/20 p-5">

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Download, Heart, Trash2, ArrowLeft, Filter, Sparkles } from 'lucide-react';
@@ -38,7 +38,7 @@ const GalleryPage = () => {
   const requiresWatermark = entitlements.requiresWatermark;
 
   // Fetch gallery items
-  const loadGallery = async () => {
+  const loadGallery = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -54,11 +54,11 @@ const GalleryPage = () => {
     setItems(result.items);
     setTotal(result.total);
     setLoading(false);
-  };
+  }, [anonToken, filters, sessionAccessToken]);
 
   useEffect(() => {
     void loadGallery();
-  }, [filters]);
+  }, [loadGallery]);
 
   const handleDelete = async (itemId: string) => {
     if (!confirm('Are you sure you want to delete this from your gallery?')) {
