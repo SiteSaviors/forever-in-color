@@ -15,8 +15,6 @@ const NAV_LINKS = [
 const FounderNavigation = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const generationCount = useFounderStore((state) => state.generationCount);
-  const getGenerationLimit = useFounderStore((state) => state.getGenerationLimit);
   const cartItemCount = useFounderStore(
     (state) => state.enhancements.filter((enhancement) => enhancement.enabled).length
   );
@@ -58,17 +56,17 @@ const FounderNavigation = () => {
     return () => observer.disconnect();
   }, [location.pathname]);
 
-  const generationLimit = getGenerationLimit();
   const tokensRemaining = useMemo(() => {
-    if (!Number.isFinite(generationLimit)) {
+    const remaining = entitlements.remainingTokens;
+    if (remaining == null) {
       return '∞';
     }
-    const remaining = Math.max(0, generationLimit - generationCount);
-    if (remaining >= 1000) {
-      return `${Math.floor(remaining / 100) / 10}k`;
+    const value = Math.max(0, remaining);
+    if (value >= 1000) {
+      return `${Math.floor(value / 100) / 10}k`;
     }
-    return remaining.toString();
-  }, [generationCount, generationLimit]);
+    return value.toString();
+  }, [entitlements.remainingTokens]);
 
   const tierLabel = useMemo(() => {
     switch (entitlements.tier) {
@@ -243,15 +241,35 @@ const FounderNavigation = () => {
                 <DropdownMenu.Separator className="my-2 h-px bg-white/10" />
                 {sessionHydrated ? (
                   isAuthenticated ? (
-                    <DropdownMenu.Item
-                      className="cursor-pointer rounded-xl px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
-                      onSelect={(event) => {
-                        event.preventDefault();
-                        void signOut();
-                      }}
-                    >
-                      Sign out
-                    </DropdownMenu.Item>
+                    <>
+                      <DropdownMenu.Item
+                        className="cursor-pointer rounded-xl px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+                        onSelect={(event) => {
+                          event.preventDefault();
+                          navigate('/studio/gallery');
+                        }}
+                      >
+                        My Gallery
+                      </DropdownMenu.Item>
+                      <DropdownMenu.Item
+                        className="cursor-pointer rounded-xl px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+                        onSelect={(event) => {
+                          event.preventDefault();
+                          navigate('/studio/usage');
+                        }}
+                      >
+                        Token History
+                      </DropdownMenu.Item>
+                      <DropdownMenu.Item
+                        className="cursor-pointer rounded-xl px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+                        onSelect={(event) => {
+                          event.preventDefault();
+                          void signOut();
+                        }}
+                      >
+                        Sign out
+                      </DropdownMenu.Item>
+                    </>
                   ) : (
                     <div className="flex flex-col gap-2">
                       <DropdownMenu.Item

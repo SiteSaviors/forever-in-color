@@ -1,12 +1,18 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Bookmark, BookmarkCheck } from 'lucide-react';
 import { useFounderStore, StylePreviewStatus } from '@/store/useFounderStore';
 import StickyOrderRail from '@/components/studio/StickyOrderRail';
 import LivingCanvasModal from '@/components/studio/LivingCanvasModal';
 import CanvasInRoomPreview from '@/components/studio/CanvasInRoomPreview';
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
 import StyleForgeOverlay from '@/components/studio/StyleForgeOverlay';
+import TokenWarningBanner from '@/components/studio/TokenWarningBanner';
+import { saveToGallery } from '@/utils/galleryApi';
 
 const StudioConfigurator = () => {
+  const sessionUser = useFounderStore((state) => state.sessionUser);
+  const sessionAccessToken = useFounderStore((state) => state.sessionAccessToken);
   const styles = useFounderStore((state) => state.styles);
   const selectedStyleId = useFounderStore((state) => state.selectedStyleId);
   const selectStyle = useFounderStore((state) => state.selectStyle);
@@ -26,6 +32,7 @@ const StudioConfigurator = () => {
   const stylePreviewError = useFounderStore((state) => state.stylePreviewError);
   const startStylePreview = useFounderStore((state) => state.startStylePreview);
   const orientationPreviewPending = useFounderStore((state) => state.orientationPreviewPending);
+  const anonToken = useFounderStore((state) => state.anonToken);
   const cachedPreviewEntry = useFounderStore((state) => {
     const styleId = state.selectedStyleId;
     if (!styleId) return null;
@@ -34,6 +41,40 @@ const StudioConfigurator = () => {
   const orientationMeta = ORIENTATION_PRESETS[orientation];
   const previewOrientationLabel = preview?.orientation ? ORIENTATION_PRESETS[preview.orientation].label : null;
   const orientationMismatch = Boolean(preview?.orientation && preview.orientation !== orientation);
+
+  const [savingToGallery, setSavingToGallery] = useState(false);
+  const [savedToGallery, setSavedToGallery] = useState(false);
+
+  const handleSaveToGallery = async () => {
+    if (!currentStyle || !preview?.data?.previewUrl) {
+      alert('No preview available to save');
+      return;
+    }
+
+    setSavingToGallery(true);
+
+    const result = await saveToGallery({
+      styleId: currentStyle.id,
+      styleName: currentStyle.name,
+      orientation,
+      watermarkedUrl: preview.data.previewUrl,
+      cleanUrl: preview.data.watermarkApplied ? undefined : preview.data.previewUrl,
+      anonToken: sessionUser ? undefined : anonToken,
+      accessToken: sessionAccessToken || null,
+    });
+
+    setSavingToGallery(false);
+
+    if (result.success) {
+      setSavedToGallery(true);
+      setTimeout(() => setSavedToGallery(false), 3000);
+      if (result.alreadyExists) {
+        alert('This preview is already in your gallery');
+      }
+    } else {
+      alert(`Failed to save: ${result.error}`);
+    }
+  };
 
   const handleStyleClick = (styleId: string) => {
     selectStyle(styleId);
@@ -105,6 +146,9 @@ const StudioConfigurator = () => {
         </div>
       </div>
 
+      {/* Token Warning Banner */}
+      <TokenWarningBanner />
+
       {/* Main 3-Column Layout: Left Sidebar | Center Canvas | Right Sidebar */}
       <div className="flex max-w-[1800px] mx-auto">
         {/* LEFT SIDEBAR: Style Selection (Fixed Width) */}
@@ -121,6 +165,12 @@ const StudioConfigurator = () => {
               <p className="text-sm text-white/70 mb-1">Generations Remaining</p>
               <p className="text-2xl font-bold text-white">{remainingLabel} left</p>
               <p className="text-xs text-white/60 mt-2">Tier: {entitlements.tier.toUpperCase()} · Quota {quotaLabel}</p>
+              <Link
+                to="/studio/usage"
+                className="mt-3 block text-xs font-semibold text-purple-400 hover:text-purple-300 transition"
+              >
+                View Usage History →
+              </Link>
             </div>
 
             {/* Style list */}
@@ -321,6 +371,39 @@ const StudioConfigurator = () => {
                 </div>
               )}
             </div>
+
+            {/* Save to Gallery Button */}
+            {preview?.status === 'ready' && currentStyle && (
+              <div className="mt-6 flex items-center justify-center gap-4">
+                <button
+                  onClick={handleSaveToGallery}
+                  disabled={savingToGallery}
+                  className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all ${
+                    savedToGallery
+                      ? 'bg-emerald-500/20 text-emerald-300 border-2 border-emerald-400/50'
+                      : 'bg-white/10 hover:bg-white/15 text-white border-2 border-white/20 hover:border-brand-indigo/50'
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                >
+                  {savedToGallery ? (
+                    <>
+                      <BookmarkCheck className="w-5 h-5" />
+                      <span>Saved to Gallery</span>
+                    </>
+                  ) : (
+                    <>
+                      <Bookmark className="w-5 h-5" />
+                      <span>{savingToGallery ? 'Saving...' : 'Save to Gallery'}</span>
+                    </>
+                  )}
+                </button>
+                <Link
+                  to="/studio/gallery"
+                  className="text-sm text-white/60 hover:text-white transition-colors underline"
+                >
+                  View Gallery
+                </Link>
+              </div>
+            )}
 
             {/* Canvas In Room Preview */}
             <div className="w-full max-w-2xl mt-12 hidden sm:block">

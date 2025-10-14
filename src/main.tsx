@@ -5,24 +5,28 @@ import './styles/tailwind.css';
 import LandingPage from './pages/LandingPage';
 import StudioPage from './pages/StudioPage';
 import PricingPage from './pages/PricingPage';
+import UsagePage from './pages/UsagePage';
+import GalleryPage from './pages/GalleryPage';
 import AuthProvider from './providers/AuthProvider';
 
 const App = () => {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/create" element={<StudioPage />} />
-        <Route path="/pricing" element={<PricingPage />} />
-      </Routes>
-    </BrowserRouter>
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/create" element={<StudioPage />} />
+      <Route path="/pricing" element={<PricingPage />} />
+      <Route path="/studio/usage" element={<UsagePage />} />
+      <Route path="/studio/gallery" element={<GalleryPage />} />
+    </Routes>
   );
 };
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
-    <AuthProvider>
-      <App />
-    </AuthProvider>
+    <BrowserRouter>
+      <AuthProvider>
+        <App />
+      </AuthProvider>
+    </BrowserRouter>
   </React.StrictMode>
 );

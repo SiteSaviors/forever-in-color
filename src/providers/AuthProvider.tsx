@@ -2,6 +2,8 @@ import { useEffect, type ReactNode } from 'react';
 import { supabaseClient } from '@/utils/supabaseClient';
 import { useFounderStore } from '@/store/useFounderStore';
 import AuthModal from '@/components/modals/AuthModal';
+import TokenDecrementToast from '@/components/ui/TokenDecrementToast';
+import QuotaExhaustedModal from '@/components/modals/QuotaExhaustedModal';
 
 type AuthProviderProps = {
   children: ReactNode;
@@ -9,6 +11,12 @@ type AuthProviderProps = {
 
 const AuthProvider = ({ children }: AuthProviderProps) => {
   const setSession = useFounderStore((state) => state.setSession);
+  const showTokenToast = useFounderStore((state) => state.showTokenToast);
+  const setShowTokenToast = useFounderStore((state) => state.setShowTokenToast);
+  const showQuotaModal = useFounderStore((state) => state.showQuotaModal);
+  const setShowQuotaModal = useFounderStore((state) => state.setShowQuotaModal);
+  const entitlements = useFounderStore((state) => state.entitlements);
+  const remainingTokens = entitlements.remainingTokens;
 
   useEffect(() => {
     if (!supabaseClient) {
@@ -58,6 +66,19 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
     <>
       {children}
       <AuthModal />
+      <TokenDecrementToast
+        visible={showTokenToast}
+        remaining={remainingTokens}
+        onClose={() => setShowTokenToast(false)}
+      />
+      <QuotaExhaustedModal
+        open={showQuotaModal}
+        onClose={() => setShowQuotaModal(false)}
+        currentTier={entitlements.tier}
+        remainingTokens={entitlements.remainingTokens}
+        quota={entitlements.quota}
+        renewAt={entitlements.renewAt}
+      />
     </>
   );
 };

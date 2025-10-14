@@ -185,6 +185,10 @@ type FounderState = {
   accessToken: string | null;
   sessionHydrated: boolean;
   anonToken: string | null;
+  showTokenToast: boolean;
+  setShowTokenToast: (show: boolean) => void;
+  showQuotaModal: boolean;
+  setShowQuotaModal: (show: boolean) => void;
   uploadIntentAt: number | null;
   generationCount: number;
   isAuthenticated: boolean;
@@ -526,6 +530,8 @@ export const useFounderStore = create<FounderState>((set, get) => ({
   accessToken: null,
   sessionHydrated: false,
   anonToken: null,
+  showTokenToast: false,
+  showQuotaModal: false,
   uploadIntentAt: null,
   generationCount: parseInt(sessionStorage.getItem('generation_count') || '0'),
   isAuthenticated: false,
@@ -692,11 +698,12 @@ export const useFounderStore = create<FounderState>((set, get) => ({
 
     if (!get().canGenerateMore()) {
       set({
-        stylePreviewStatus: 'error',
-        stylePreviewMessage: 'Preview limit reached. Upgrade to continue.',
-        stylePreviewError: 'ENTITLEMENT_EXCEEDED',
+        stylePreviewStatus: 'idle',
+        stylePreviewMessage: null,
+        stylePreviewError: null,
         pendingStyleId: null,
         orientationPreviewPending: false,
+        showQuotaModal: true,
       });
       return;
     }
@@ -811,6 +818,9 @@ export const useFounderStore = create<FounderState>((set, get) => ({
       });
       get().incrementGenerationCount();
 
+      // Show token decrement toast
+      set({ showTokenToast: true });
+
       set({
         pendingStyleId: null,
         stylePreviewStatus: 'ready',
@@ -902,6 +912,8 @@ export const useFounderStore = create<FounderState>((set, get) => ({
     })),
   clearSmartCrops: () => set({ smartCrops: {} }),
   setAnonToken: (token) => set({ anonToken: token }),
+  setShowTokenToast: (show) => set({ showTokenToast: show }),
+  setShowQuotaModal: (show) => set({ showQuotaModal: show }),
   hydrateEntitlements: async () => {
     const state = get();
     if (state.entitlements.status === 'loading') {
