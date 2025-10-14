@@ -20,6 +20,7 @@ import { createImageDigest, buildCacheKey } from './cache/cacheKey.ts';
 import { LruMemoryCache } from './cache/memoryCache.ts';
 import { createRequestLogger } from './logging.ts';
 import type { CacheStatus } from './types.ts';
+import { resolveEntitlements, computeRemainingAfterDebet, type EntitlementContext } from './entitlements.ts';
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -39,6 +40,24 @@ const webhookBaseUrl = Deno.env.get('PREVIEW_WEBHOOK_BASE_URL');
 const webhookSecret = Deno.env.get('PREVIEW_WEBHOOK_SECRET');
 
 const memoryCache = new LruMemoryCache<string>(memoryCapacity);
+
+const entitlementsFlag = (Deno.env.get('WT_FLAG_ENTITLEMENTS_V1') ?? 'true').toLowerCase() === 'true';
+
+const parseDevBypassEmails = (): Set<string> => {
+  const raw = Deno.env.get('WT_DEV_BYPASS_EMAILS');
+  if (!raw) return new Set();
+  try {
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      return new Set(parsed.map((value) => String(value).toLowerCase()));
+    }
+  } catch (error) {
+    console.warn('[entitlements] Failed to parse WT_DEV_BYPASS_EMAILS', error);
+  }
+  return new Set();
+};
+
+const devBypassEmails = parseDevBypassEmails();
 
 const initializeWarmup = (() => {
   let initialized = false;
@@ -101,14 +120,14 @@ const computeStoragePath = (styleId: number, aspectRatio: string, quality: strin
   return `${styleId}/${sanitizedQuality}/${sanitizedAspect}/${imageDigest}.jpg`;
 };
 
-async function handleWebhookRequest(req: Request, url: URL): Promise<Response> {
+async function handleWebhookRequest(req: Request, url: URL, origin: string | null): Promise<Response> {
   if (!webhookSecret) {
-    return createCorsResponse(JSON.stringify({ ok: false, error: 'webhook_not_configured' }), 500);
+    return createCorsResponse(JSON.stringify({ ok: false, error: 'webhook_not_configured' }), 500, origin ?? undefined);
   }
 
   const token = url.searchParams.get('token');
   if (token !== webhookSecret) {
-    return createCorsResponse(JSON.stringify({ ok: false, error: 'unauthorized' }), 401);
+    return createCorsResponse(JSON.stringify({ ok: false, error: 'unauthorized' }), 401, origin ?? undefined);
   }
 
   try {
@@ -139,7 +158,7 @@ async function handleWebhookRequest(req: Request, url: URL): Promise<Response> {
     const identifier = requestId ?? predictionId;
 
     if (!identifier) {
-      return createCorsResponse(JSON.stringify({ ok: false, error: 'missing_request' }), 400);
+      return createCorsResponse(JSON.stringify({ ok: false, error: 'missing_request' }), 400, origin ?? undefined);
     }
 
     const { data: statusRow, error: statusError } = await supabase
@@ -149,7 +168,7 @@ async function handleWebhookRequest(req: Request, url: URL): Promise<Response> {
       .single();
 
     if (statusError || !statusRow) {
-      return createCorsResponse(JSON.stringify({ ok: false, error: 'status_not_found' }), 404);
+      return createCorsResponse(JSON.stringify({ ok: false, error: 'status_not_found' }), 404, origin ?? undefined);
     }
 
     let previewUrl: string | null = statusRow.preview_url ?? null;
@@ -234,24 +253,24 @@ async function handleWebhookRequest(req: Request, url: URL): Promise<Response> {
       hasPreview: Boolean(previewUrl)
     });
 
-    return createCorsResponse(JSON.stringify({ ok: true, cacheStatus }), 200);
+    return createCorsResponse(JSON.stringify({ ok: true, cacheStatus }), 200, origin ?? undefined);
   } catch (error) {
     console.error('Webhook handling failed', error);
-    return createCorsResponse(JSON.stringify({ ok: false, error: 'webhook_error' }), 500);
+    return createCorsResponse(JSON.stringify({ ok: false, error: 'webhook_error' }), 500, origin ?? undefined);
   }
 }
 
-async function handleStatusRequest(url: URL): Promise<Response> {
+async function handleStatusRequest(url: URL, origin: string | null): Promise<Response> {
   const requestId = url.searchParams.get('requestId');
   if (!requestId) {
-    return createCorsResponse(JSON.stringify({ error: 'missing_requestId' }), 400);
+    return createCorsResponse(JSON.stringify({ error: 'missing_requestId' }), 400, origin ?? undefined);
   }
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL');
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
   if (!supabaseUrl || !supabaseServiceKey) {
-    return createCorsResponse(JSON.stringify({ error: 'configuration_error' }), 500);
+    return createCorsResponse(JSON.stringify({ error: 'configuration_error' }), 500, origin ?? undefined);
   }
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -262,30 +281,33 @@ async function handleStatusRequest(url: URL): Promise<Response> {
     .single();
 
   if (error || !data) {
-    return createCorsResponse(JSON.stringify({ error: 'not_found' }), 404);
+    return createCorsResponse(JSON.stringify({ error: 'not_found' }), 404, origin ?? undefined);
   }
 
-  return createCorsResponse(JSON.stringify(data), 200);
+  return createCorsResponse(JSON.stringify(data), 200, origin ?? undefined);
 }
 
 serve(async (req) => {
   const url = new URL(req.url);
   const pathname = url.pathname;
+  const originHeader = req.headers.get('origin');
+  const respond = (body: string, status = 200) =>
+    createCorsResponse(body, status, originHeader ?? undefined);
 
   if (req.method === 'OPTIONS') {
-    return handleCorsPreflightRequest();
+    return handleCorsPreflightRequest(originHeader ?? undefined);
   }
 
   if (req.method === 'POST' && pathname.endsWith('/webhook')) {
-    return handleWebhookRequest(req, url);
+    return handleWebhookRequest(req, url, originHeader);
   }
 
   if (req.method === 'GET' && pathname.endsWith('/status')) {
-    return handleStatusRequest(url);
+    return handleStatusRequest(url, originHeader);
   }
 
   if (req.method !== 'POST') {
-    return createCorsResponse(
+    return respond(
       JSON.stringify(createErrorResponse('method_not_allowed', 'Method not allowed')),
       405
     );
@@ -301,7 +323,7 @@ serve(async (req) => {
 
     if (!validation.isValid) {
       logger.warn('Request validation failed', { error: validation.error });
-      return createCorsResponse(
+      return respond(
         JSON.stringify(createErrorResponse('invalid_request', validation.error!)),
         400
       );
@@ -331,14 +353,13 @@ serve(async (req) => {
       quality: normalizedQuality
     });
 
-    const envValidation = await validateEnvironment(req, requestId);
+    const envValidation = await validateEnvironment(req, requestId, originHeader);
     if (!envValidation.isValid || !envValidation.replicateApiToken) {
       logger.error('Environment validation failed');
-      const response = envValidation.error ?? createCorsResponse(
+      return envValidation.error ?? respond(
         JSON.stringify(createErrorResponse('configuration_error', 'AI service configuration error', requestId)),
         500
       );
-      return response;
     }
 
     const replicateApiToken = envValidation.replicateApiToken;
@@ -350,18 +371,202 @@ serve(async (req) => {
 
     if (!supabaseUrl || !supabaseServiceKey) {
       logger.error('Missing required environment configuration');
-      return createCorsResponse(
+      return respond(
         JSON.stringify(createErrorResponse('configuration_error', 'AI service configuration error', requestId)),
         500
       );
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    const authorizationHeader = req.headers.get('authorization') ?? req.headers.get('Authorization');
+    const anonHeader = req.headers.get('x-wt-anon') ?? req.headers.get('X-WT-Anon');
+    const idempotencyKey = req.headers.get('x-idempotency-key') ?? req.headers.get('X-Idempotency-Key');
+
+    if (!idempotencyKey) {
+      logger.warn('Missing idempotency key header');
+      return respond(
+        JSON.stringify(createErrorResponse('missing_idempotency_key', 'X-Idempotency-Key header is required', requestId, 'MISSING_IDEMPOTENCY')),
+        400
+      );
+    }
+
+    let entitlementContext: EntitlementContext | null = null;
+
+    if (entitlementsFlag) {
+      try {
+        const { context } = await resolveEntitlements({
+          supabase,
+          accessToken: authorizationHeader,
+          anonToken: anonHeader,
+          devBypassEmails
+        });
+        entitlementContext = context;
+
+        if (!context.devBypass && context.remainingBefore !== null && context.remainingBefore <= 0) {
+          logger.info('Entitlement exceeded', {
+            requestId,
+            tier: context.tierLabel
+          });
+          const errorPayload = createErrorResponse(
+            'ENTITLEMENT_EXCEEDED',
+            'Preview quota exceeded',
+            requestId,
+            'ENTITLEMENT_EXCEEDED'
+          );
+          return respond(
+            JSON.stringify({
+              ...errorPayload,
+              remainingTokens: 0,
+              tier: context.tierLabel
+            }),
+            429
+          );
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        logger.warn('Failed to resolve entitlements', { requestId, message });
+
+        if (message === 'UNAUTHORIZED') {
+          return respond(
+            JSON.stringify(createErrorResponse('unauthorized', 'Valid Supabase session required', requestId, 'UNAUTHORIZED')),
+            401
+          );
+        }
+
+        if (message === 'ANON_TOKEN_MISSING') {
+          return respond(
+            JSON.stringify(createErrorResponse('anonymous_session_required', 'Anonymous token is required. Call /api/anon/mint first.', requestId, 'ANON_TOKEN_MISSING')),
+            401
+          );
+        }
+
+        return respond(
+          JSON.stringify(createErrorResponse('entitlement_error', 'Unable to evaluate entitlements', requestId, 'ENTITLEMENT_ERROR')),
+          500
+        );
+      }
+    }
+
     const stylePromptService = new StylePromptService(supabase);
     initializeWarmup(stylePromptService);
 
     const cacheMetadataService = new CacheMetadataService(supabase);
     const storageClient = new PreviewStorageClient(supabase, cacheBucket);
+
+    let previewLogId: string | null = null;
+    const existingLogResult = await supabase
+      .from('preview_logs')
+      .select('id, preview_url, outcome, requires_watermark, priority, tier, tokens_spent, error_code, user_id, anon_token')
+      .eq('idempotency_key', idempotencyKey)
+      .maybeSingle();
+
+    const existingLog = existingLogResult.data ?? null;
+
+    if (existingLog) {
+      previewLogId = existingLog.id;
+
+      if (
+        entitlementContext &&
+        entitlementContext.actor === 'authenticated' &&
+        existingLog.user_id &&
+        entitlementContext.userId &&
+        existingLog.user_id !== entitlementContext.userId
+      ) {
+        logger.warn('Idempotency key belongs to another user', {
+          requestId,
+          userId: entitlementContext.userId,
+          existingUserId: existingLog.user_id
+        });
+        return respond(
+          JSON.stringify(createErrorResponse('idempotency_conflict', 'Idempotency key conflict', requestId, 'IDEMPOTENCY_CONFLICT')),
+          409
+        );
+      }
+
+      if (
+        entitlementContext &&
+        entitlementContext.actor === 'anonymous' &&
+        existingLog.anon_token &&
+        entitlementContext.anonToken &&
+        existingLog.anon_token !== entitlementContext.anonToken
+      ) {
+        logger.warn('Idempotency key belongs to another anonymous token', {
+          requestId,
+          anonToken: entitlementContext.anonToken,
+          existingAnon: existingLog.anon_token
+        });
+        return respond(
+          JSON.stringify(createErrorResponse('idempotency_conflict', 'Idempotency key conflict', requestId, 'IDEMPOTENCY_CONFLICT')),
+          409
+        );
+      }
+
+      if (existingLog.outcome === 'success' && existingLog.preview_url) {
+        const duration = Date.now() - startTime;
+        const remainingTokens = entitlementContext
+          ? entitlementContext.devBypass
+            ? null
+            : entitlementContext.remainingBefore
+          : null;
+
+        const tierLabel = entitlementContext?.tierLabel ?? existingLog.tier ?? undefined;
+        const priority = entitlementContext?.priority ?? existingLog.priority ?? 'normal';
+        const requiresWatermark = entitlementContext?.requiresWatermark ?? existingLog.requires_watermark ?? true;
+
+        logger.info('Returning cached idempotent preview result', {
+          requestId,
+          idempotencyKey,
+          tier: tierLabel
+        });
+
+        return respond(
+          JSON.stringify(
+            createSuccessResponse({
+              previewUrl: existingLog.preview_url,
+              requestId,
+              duration,
+              cacheStatus: 'hit',
+              tier: tierLabel,
+              requiresWatermark,
+              remainingTokens,
+              priority
+            })
+          ),
+          200
+        );
+      }
+
+      if (existingLog.outcome === 'error') {
+        logger.info('Returning cached error for idempotent key', {
+          requestId,
+          idempotencyKey,
+          errorCode: existingLog.error_code
+        });
+        const errorPayload = createErrorResponse(
+          existingLog.error_code ?? 'previous_error',
+          'Previous preview attempt failed',
+          requestId,
+          existingLog.error_code ?? 'PREVIOUS_ERROR'
+        );
+        return respond(
+          JSON.stringify(errorPayload),
+          400
+        );
+      }
+
+      if (existingLog.outcome === 'pending') {
+        logger.info('Preview still pending for idempotent key', { requestId, idempotencyKey });
+        return respond(
+          JSON.stringify({
+            status: 'pending',
+            requestId,
+            message: 'Preview generation is still in progress'
+          }),
+          202
+        );
+      }
+    }
 
     // Check in-memory prompt cache FIRST before hitting the database
     let stylePrompt: string;
@@ -446,6 +651,115 @@ serve(async (req) => {
       };
     }
 
+    const effectiveWatermark = entitlementContext?.requiresWatermark ?? watermark;
+
+    if (!previewLogId) {
+      const insertPayload = {
+        idempotency_key: idempotencyKey,
+        user_id: entitlementContext?.userId ?? null,
+        anon_token: entitlementContext?.anonToken ?? null,
+        tier: entitlementContext?.tierForDb ?? null,
+        style_id: String(styleMetadata.styleId),
+        orientation: normalizedAspectRatio,
+        watermark: effectiveWatermark,
+        requires_watermark: effectiveWatermark,
+        priority: entitlementContext?.priority ?? 'normal',
+        outcome: 'pending',
+        tokens_spent: 0
+      };
+
+      const insertResult = await supabase
+        .from('preview_logs')
+        .insert(insertPayload)
+        .select('id')
+        .single();
+
+      if (insertResult.error) {
+        logger.error('Failed to insert preview log', {
+          requestId,
+          error: insertResult.error.message
+        });
+        return respond(
+          JSON.stringify(createErrorResponse('log_write_failed', 'Failed to initialize preview log', requestId, 'LOG_WRITE_FAILED')),
+          500
+        );
+      } else {
+        previewLogId = insertResult.data?.id ?? null;
+      }
+    }
+
+    const recordPreviewFailure = async (code: string, message: string, statusCode: number): Promise<Response> => {
+      if (previewLogId) {
+        await supabase
+          .from('preview_logs')
+          .update({
+            outcome: 'error',
+            error_code: code,
+            tokens_spent: 0
+          })
+          .eq('id', previewLogId);
+      }
+
+      const payload = createErrorResponse(code, message, requestId, code);
+      return respond(JSON.stringify(payload), statusCode);
+    };
+
+    const recordPreviewSuccess = async (previewUrl: string, cacheStatus: CacheStatus, statusCode = 200): Promise<Response> => {
+      const tokensDebit = entitlementContext && !entitlementContext.devBypass ? 1 : 0;
+
+      if (previewLogId) {
+        await supabase
+          .from('preview_logs')
+          .update({
+            outcome: 'success',
+            preview_url: previewUrl,
+            tokens_spent: tokensDebit,
+            watermark: effectiveWatermark,
+            requires_watermark: effectiveWatermark,
+            priority: entitlementContext?.priority ?? 'normal',
+            tier: entitlementContext?.tierForDb ?? null
+          })
+          .eq('id', previewLogId);
+      }
+
+      if (
+        entitlementContext &&
+        entitlementContext.actor === 'anonymous' &&
+        entitlementContext.anonToken &&
+        !entitlementContext.devBypass
+      ) {
+        const nextSoftRemaining = entitlementContext.softRemaining != null
+          ? Math.max(entitlementContext.softRemaining - tokensDebit, 0)
+          : null;
+
+        if (nextSoftRemaining != null) {
+          await supabase
+            .from('anonymous_tokens')
+            .update({ free_tokens_remaining: nextSoftRemaining })
+            .eq('token', entitlementContext.anonToken);
+        }
+      }
+
+      const remainingTokens = entitlementContext
+        ? (entitlementContext.devBypass
+            ? null
+            : computeRemainingAfterDebet(entitlementContext, tokensDebit))
+        : null;
+
+      const payload = createSuccessResponse({
+        previewUrl,
+        requestId,
+        duration: Date.now() - startTime,
+        cacheStatus,
+        tier: entitlementContext?.tierLabel,
+        requiresWatermark: effectiveWatermark,
+        remainingTokens,
+        priority: entitlementContext?.priority ?? 'normal'
+      });
+
+      return respond(JSON.stringify(payload), statusCode);
+    };
+
     // Build cache key from RAW imageUrl (before normalization)
     const cacheAllowedForRequest = cacheEnabledGlobally && !cacheBypass;
     let cacheStatus: CacheStatus = cacheBypass ? 'bypass' : 'miss';
@@ -459,7 +773,7 @@ serve(async (req) => {
         styleVersion: styleMetadata.styleVersion,
         aspectRatio: normalizedAspectRatio,
         quality: normalizedQuality,
-        watermark
+        watermark: effectiveWatermark
       });
 
       // Check memory cache FIRST
@@ -473,10 +787,7 @@ serve(async (req) => {
         cacheMetadataService.recordHit(cacheKey).catch((error) => {
           logger.warn('Failed to record cache hit', { error: error?.message ?? 'unknown', cacheKey });
         });
-        const duration = Date.now() - startTime;
-        return createCorsResponse(
-          JSON.stringify(createSuccessResponse(cachedFromMemory, requestId, duration, cacheStatus))
-        );
+        return await recordPreviewSuccess(cachedFromMemory, cacheStatus);
       }
 
       // Check storage cache SECOND
@@ -495,10 +806,7 @@ serve(async (req) => {
           cacheMetadataService.recordHit(cacheKey).catch((error) => {
             logger.warn('Failed to record cache hit', { error: error?.message ?? 'unknown', cacheKey });
           });
-          const duration = Date.now() - startTime;
-          return createCorsResponse(
-            JSON.stringify(createSuccessResponse(metadataEntry.preview_url, requestId, duration, cacheStatus))
-          );
+          return await recordPreviewSuccess(metadataEntry.preview_url, cacheStatus);
         } else if (metadataEntry && metadataEntry.preview_url) {
           logger.info('Cache entry expired, regenerating', { cacheKey });
         }
@@ -539,7 +847,7 @@ serve(async (req) => {
             imageDigest,
             aspectRatio: normalizedAspectRatio,
             quality: normalizedQuality,
-            watermark,
+            watermark: effectiveWatermark,
             storagePath: uploadResult.storagePath,
             previewUrl: uploadResult.publicUrl,
             ttlExpiresAt,
@@ -557,8 +865,6 @@ serve(async (req) => {
 
       return finalPreviewUrl;
     };
-
-    const isAuthenticated = Boolean(body?.isAuthenticated);
 
     if (asyncEnabled && (!webhookBaseUrl || !webhookSecret)) {
       logger.warn('Async preview enabled but webhook configuration is incomplete. Falling back to synchronous mode.', {
@@ -599,10 +905,7 @@ serve(async (req) => {
       if (!asyncResp.ok) {
         const errTxt = await asyncResp.text();
         logger.error('Replicate async create failed', { requestId, status: asyncResp.status, errTxt });
-        return createCorsResponse(
-          JSON.stringify(createErrorResponse('generation_failed', `SeeDream API request failed: ${asyncResp.status} - ${errTxt}`, requestId)),
-          503
-        );
+        return await recordPreviewFailure('generation_failed', `SeeDream API request failed: ${asyncResp.status} - ${errTxt}`, 503);
       }
 
       const asyncData = await asyncResp.json();
@@ -610,7 +913,6 @@ serve(async (req) => {
       if (asyncData?.status === 'succeeded' && asyncData?.output) {
         const immediateOutput = Array.isArray(asyncData.output) ? asyncData.output[0] : asyncData.output;
         const finalPreviewUrl = await persistGeneratedPreview(immediateOutput);
-        const duration = Date.now() - startTime;
 
         await supabase.from('previews_status').upsert({
           request_id: requestId,
@@ -623,17 +925,14 @@ serve(async (req) => {
           style_version: styleMetadata.styleVersion,
           aspect_ratio: normalizedAspectRatio,
           quality: normalizedQuality,
-          watermark,
+          watermark: effectiveWatermark,
           cache_allowed: cacheAllowedForRequest,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         }, { onConflict: 'request_id' });
 
         logger.info('Replicate returned immediate result', { requestId, cacheStatus });
-        return createCorsResponse(
-          JSON.stringify(createSuccessResponse(finalPreviewUrl, requestId, duration, cacheStatus)),
-          200
-        );
+        return await recordPreviewSuccess(finalPreviewUrl, cacheStatus);
       }
 
       await supabase.from('previews_status').upsert({
@@ -647,7 +946,7 @@ serve(async (req) => {
         style_version: styleMetadata.styleVersion,
         aspect_ratio: normalizedAspectRatio,
         quality: normalizedQuality,
-        watermark,
+        watermark: effectiveWatermark,
         cache_allowed: cacheAllowedForRequest,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
@@ -659,8 +958,15 @@ serve(async (req) => {
         cacheAllowedForRequest
       });
 
-      return createCorsResponse(
-        JSON.stringify({ requestId, status: asyncData?.status ?? 'processing', isAuthenticated }),
+      return respond(
+        JSON.stringify({
+          requestId,
+          status: asyncData?.status ?? 'processing',
+          requires_watermark: entitlementContext?.requiresWatermark ?? effectiveWatermark,
+          remainingTokens: entitlementContext?.remainingBefore ?? null,
+          tier: entitlementContext?.tierLabel,
+          priority: entitlementContext?.priority ?? 'normal'
+        }),
         202
       );
     }
@@ -683,7 +989,6 @@ serve(async (req) => {
     if (result.ok && result.output) {
       const rawOutput = Array.isArray(result.output) ? result.output[0] : result.output;
       const finalPreviewUrl = await persistGeneratedPreview(rawOutput);
-      const duration = Date.now() - startTime;
 
       if (asyncEnabled && webhookBaseUrl && webhookSecret) {
         await supabase.from('previews_status').upsert({
@@ -697,7 +1002,7 @@ serve(async (req) => {
           style_version: styleMetadata.styleVersion,
           aspect_ratio: normalizedAspectRatio,
           quality: normalizedQuality,
-          watermark,
+          watermark: effectiveWatermark,
           cache_allowed: cacheAllowedForRequest,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
@@ -705,10 +1010,7 @@ serve(async (req) => {
       }
 
       logger.info('Replicate generation success', { requestId, replicateDurationMs, cacheStatus });
-      return createCorsResponse(
-        JSON.stringify(createSuccessResponse(finalPreviewUrl, requestId, duration, cacheStatus)),
-        200
-      );
+      return await recordPreviewSuccess(finalPreviewUrl, cacheStatus);
     }
 
     logger.error('SeeDream generation failed', { error: result.error, requestId });
@@ -728,7 +1030,6 @@ serve(async (req) => {
       if (fallbackResult.ok && fallbackResult.output) {
         const fallbackOutput = Array.isArray(fallbackResult.output) ? fallbackResult.output[0] : fallbackResult.output;
         const finalPreviewUrl = await persistGeneratedPreview(fallbackOutput);
-        const duration = Date.now() - startTime;
 
         logger.info('GPT-Image-1 fallback succeeded', {
           requestId,
@@ -736,10 +1037,7 @@ serve(async (req) => {
           cacheStatus
         });
 
-        return createCorsResponse(
-          JSON.stringify(createSuccessResponse(finalPreviewUrl, requestId, duration, cacheStatus)),
-          200
-        );
+        return await recordPreviewSuccess(finalPreviewUrl, cacheStatus);
       }
 
       logger.error('GPT-Image-1 fallback failed', {
@@ -749,15 +1047,9 @@ serve(async (req) => {
       });
     }
 
-    return createCorsResponse(
-      JSON.stringify(createErrorResponse('generation_failed', result.error || 'AI service is temporarily unavailable. Please try again.', requestId)),
-      503
-    );
+    return await recordPreviewFailure('generation_failed', result.error || 'AI service is temporarily unavailable. Please try again.', 503);
   } catch (error) {
     logger.error('Unhandled error in preview generation', { error: error instanceof Error ? error.message : String(error), requestId });
-    return createCorsResponse(
-      JSON.stringify(createErrorResponse('internal_error', 'Internal server error. Please try again.', requestId)),
-      500
-    );
+    return await recordPreviewFailure('internal_error', 'Internal server error. Please try again.', 500);
   }
 });

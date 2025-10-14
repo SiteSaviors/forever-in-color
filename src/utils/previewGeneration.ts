@@ -6,11 +6,17 @@ export interface GeneratePreviewOptions {
   watermark?: boolean;
   quality?: 'low' | 'medium' | 'high' | 'auto';
   onStage?: (stage: 'generating' | 'polling' | 'watermarking') => void;
+  idempotencyKey?: string;
+  anonToken?: string | null;
+  accessToken?: string | null;
 }
 
 export interface GeneratePreviewResult {
   previewUrl: string;
-  isAuthenticated: boolean;
+  requiresWatermark: boolean;
+  remainingTokens: number | null;
+  tier?: string;
+  priority?: string;
 }
 
 export const generateAndWatermarkPreview = async (
@@ -25,13 +31,19 @@ export const generateAndWatermarkPreview = async (
   onStage?.('generating');
 
   const requestId = `${styleId}-${Date.now()}`;
-  const generationResult = await generateStylePreview(
+  const generationResult = await generateStylePreview({
     imageUrl,
-    styleName,
-    requestId,
+    style: styleName,
+    photoId: requestId,
     aspectRatio,
-    { watermark }
-  );
+    options: {
+      watermark,
+      quality: options.quality,
+      idempotencyKey: options.idempotencyKey ?? requestId,
+      anonToken: options.anonToken ?? null,
+      accessToken: options.accessToken ?? null
+    }
+  });
 
   let rawPreviewUrl: string;
 
@@ -46,13 +58,18 @@ export const generateAndWatermarkPreview = async (
     throw new Error('Failed to generate preview');
   }
 
-  if (watermark) {
+  const shouldApplyLocalWatermark = watermark && generationResult.requiresWatermark;
+
+  if (shouldApplyLocalWatermark) {
     onStage?.('watermarking');
     try {
       const watermarked = await watermarkManager.addWatermark(rawPreviewUrl);
       return {
         previewUrl: watermarked,
-        isAuthenticated: generationResult.status === 'complete' ? generationResult.isAuthenticated : false,
+        requiresWatermark: true,
+        remainingTokens: generationResult.remainingTokens ?? null,
+        tier: generationResult.tier,
+        priority: generationResult.priority
       };
     } catch (error) {
       console.warn('[FounderPreviewGeneration] Watermarking failed, using raw preview.', error);
@@ -61,6 +78,9 @@ export const generateAndWatermarkPreview = async (
 
   return {
     previewUrl: rawPreviewUrl,
-    isAuthenticated: generationResult.status === 'complete' ? generationResult.isAuthenticated : false,
+    requiresWatermark: Boolean(generationResult.requiresWatermark),
+    remainingTokens: generationResult.remainingTokens ?? null,
+    tier: generationResult.tier,
+    priority: generationResult.priority
   };
 };

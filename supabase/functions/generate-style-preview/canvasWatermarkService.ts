@@ -11,9 +11,9 @@ export class CanvasWatermarkService {
    * This prevents the ImageScript "Unsupported image type" error
    */
   static async createWatermarkedImage(
-    imageUrl: string, 
-    sessionId: string, 
-    isPreview: boolean = true
+    imageUrl: string,
+    sessionId: string,
+    _isPreview: boolean = true
   ): Promise<string> {
     
     // Check if the image URL is a data URL (base64 encoded image)
@@ -21,19 +21,13 @@ export class CanvasWatermarkService {
       return imageUrl;
     }
     
-    try {
-      // Verify the image URL is accessible before returning it
-      const response = await fetch(imageUrl, { method: 'HEAD' });
-      if (!response.ok) {
-        throw new Error(`Image not accessible: ${response.status}`);
-      }
-      
-      
-      return imageUrl;
-      
-    } catch (_error) {
-      throw error;
+    // Verify the image URL is accessible before returning it
+    const response = await fetch(imageUrl, { method: 'HEAD' });
+    if (!response.ok) {
+      throw new Error(`Image not accessible: ${response.status}`);
     }
+
+    return imageUrl;
   }
 
   static generateSessionId(): string {

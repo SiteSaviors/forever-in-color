@@ -1,4 +1,4 @@
-import { corsHeaders } from './corsUtils.ts';
+import { buildCorsHeaders } from './corsUtils.ts';
 import { logSecurityEvent } from './securityLogger.ts';
 
 export interface EnvironmentValidationResult {
@@ -8,7 +8,7 @@ export interface EnvironmentValidationResult {
   error?: Response;
 }
 
-export async function validateEnvironment(req: Request, requestId: string): Promise<EnvironmentValidationResult> {
+export async function validateEnvironment(req: Request, requestId: string, origin?: string | null): Promise<EnvironmentValidationResult> {
   const replicateApiToken = Deno.env.get('REPLICATE_API_TOKEN');
   const openAiApiKey = Deno.env.get('OPENAI_API_KEY') ?? Deno.env.get('OPEN_AI_KEY') ?? '';
 
@@ -30,7 +30,7 @@ export async function validateEnvironment(req: Request, requestId: string): Prom
         }),
         {
           status: 503,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          headers: { ...buildCorsHeaders(origin ?? undefined), 'Content-Type': 'application/json' }
         }
       )
     };

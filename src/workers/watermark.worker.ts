@@ -1,4 +1,11 @@
-const handleWatermark = async (request: any) => {
+type WatermarkRequest = {
+  type: 'watermark';
+  imageUrl: string;
+  watermarkUrl: string;
+  requestId: string;
+};
+
+const handleWatermark = async (request: WatermarkRequest) => {
   const { imageUrl, watermarkUrl, requestId } = request;
 
   try {
@@ -41,7 +48,7 @@ const handleWatermark = async (request: any) => {
   }
 };
 
-self.onmessage = (event: MessageEvent) => {
+self.onmessage = (event: MessageEvent<WatermarkRequest>) => {
   const data = event.data;
   if (!data || data.type !== 'watermark') return;
   handleWatermark(data);

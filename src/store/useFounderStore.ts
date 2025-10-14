@@ -7,6 +7,8 @@ import { emitStepOneEvent } from '@/utils/telemetry';
 import { logPreviewStage } from '@/utils/previewAnalytics';
 import { playPreviewChime } from '@/utils/playPreviewChime';
 import { CANVAS_SIZE_OPTIONS, CanvasSizeKey, getCanvasSizeOption, getDefaultSizeForOrientation } from '@/utils/canvasSizes';
+import { mintAnonymousToken, fetchAuthenticatedEntitlements } from '@/utils/entitlementsApi';
+import { supabaseClient } from '@/utils/supabaseClient';
 
 /**
  * TESTING MODE FLAG
@@ -34,6 +36,45 @@ const STAGE_MESSAGES = {
   ready: 'Preview ready',
   error: 'Generation failed',
 } as const;
+
+const tierFromServer = (value?: string | null, devOverride = false): EntitlementTier => {
+  if (devOverride) return 'dev';
+  switch ((value ?? '').toLowerCase()) {
+    case 'anonymous':
+      return 'anonymous';
+    case 'authenticated':
+      return 'free';
+    case 'creator':
+    case 'plus':
+    case 'pro':
+      return value as EntitlementTier;
+    case 'free':
+    default:
+      return 'free';
+  }
+};
+
+const priorityFromTier = (tier: EntitlementTier): EntitlementPriority => {
+  switch (tier) {
+    case 'pro':
+    case 'dev':
+      return 'pro';
+    case 'creator':
+    case 'plus':
+      return 'priority';
+    default:
+      return 'normal';
+  }
+};
+
+const requiresWatermarkFromTier = (tier: EntitlementTier): boolean => tier === 'anonymous' || tier === 'free';
+
+const generateIdempotencyKey = (styleId: string): string => {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return `${styleId}-${crypto.randomUUID()}`;
+  }
+  return `${styleId}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+};
 
 export type StyleOption = {
   id: string;
@@ -86,6 +127,24 @@ export type StylePreviewStatus =
   | 'ready'
   | 'error';
 
+export type EntitlementTier = 'anonymous' | 'free' | 'creator' | 'plus' | 'pro' | 'dev';
+export type EntitlementPriority = 'normal' | 'priority' | 'pro';
+
+type EntitlementState = {
+  status: 'idle' | 'loading' | 'ready' | 'error';
+  tier: EntitlementTier;
+  quota: number | null;
+  remainingTokens: number | null;
+  requiresWatermark: boolean;
+  priority: EntitlementPriority;
+  renewAt: string | null;
+  hardLimit: number | null;
+  softRemaining: number | null;
+  dismissedPrompt: boolean;
+  lastSyncedAt: number | null;
+  error: string | null;
+};
+
 type StartPreviewOptions = {
   force?: boolean;
   orientationOverride?: Orientation;
@@ -118,6 +177,8 @@ type FounderState = {
   styleCarouselData: StyleCarouselCard[];
   hoveredStyleId: string | null;
   preselectedStyleId: string | null;
+  entitlements: EntitlementState;
+  anonToken: string | null;
   uploadIntentAt: number | null;
   generationCount: number;
   isAuthenticated: boolean;
@@ -172,6 +233,14 @@ type FounderState = {
   canGenerateMore: () => boolean;
   getGenerationLimit: () => number;
   shouldAutoGeneratePreviews: () => boolean;
+  hydrateEntitlements: () => Promise<void>;
+  updateEntitlementsFromResponse: (payload: {
+    remainingTokens?: number | null;
+    requiresWatermark?: boolean;
+    tier?: string;
+    priority?: string;
+  }) => void;
+  setAnonToken: (token: string | null) => void;
   computedTotal: () => number;
   currentStyle: () => StyleOption | undefined;
   livingCanvasEnabled: () => boolean;
@@ -434,6 +503,21 @@ export const useFounderStore = create<FounderState>((set, get) => ({
   styleCarouselData: mockCarouselData,
   hoveredStyleId: null,
   preselectedStyleId: null,
+  entitlements: {
+    status: 'idle',
+    tier: 'anonymous',
+    quota: 10,
+    remainingTokens: 10,
+    requiresWatermark: true,
+    priority: 'normal',
+    renewAt: null,
+    hardLimit: 10,
+    softRemaining: 5,
+    dismissedPrompt: false,
+    lastSyncedAt: null,
+    error: null
+  },
+  anonToken: null,
   uploadIntentAt: null,
   generationCount: parseInt(sessionStorage.getItem('generation_count') || '0'),
   isAuthenticated: !!localStorage.getItem('user_id'),
@@ -582,6 +666,34 @@ export const useFounderStore = create<FounderState>((set, get) => ({
       return;
     }
 
+    if (state.entitlements.status === 'idle' || state.entitlements.status === 'error') {
+      await get().hydrateEntitlements();
+    }
+
+    const entitlementState = get().entitlements;
+
+    if (entitlementState.status === 'error') {
+      set({
+        stylePreviewStatus: 'error',
+        stylePreviewMessage: 'Unable to verify preview allowance. Please try again.',
+        stylePreviewError: entitlementState.error ?? 'Entitlement check failed',
+        pendingStyleId: null,
+        orientationPreviewPending: false,
+      });
+      return;
+    }
+
+    if (!get().canGenerateMore()) {
+      set({
+        stylePreviewStatus: 'error',
+        stylePreviewMessage: 'Preview limit reached. Upgrade to continue.',
+        stylePreviewError: 'ENTITLEMENT_EXCEEDED',
+        pendingStyleId: null,
+        orientationPreviewPending: false,
+      });
+      return;
+    }
+
     const cached = !force ? state.getCachedStylePreview(style.id, targetOrientation) : undefined;
     const startTime = Date.now();
     set({ stylePreviewStartAt: startTime });
@@ -592,7 +704,7 @@ export const useFounderStore = create<FounderState>((set, get) => ({
         status: 'ready',
         data: {
           previewUrl: cached.url,
-          watermarkApplied: false,
+          watermarkApplied: get().entitlements.requiresWatermark,
           startedAt: cached.generatedAt ?? timestamp,
           completedAt: cached.generatedAt ?? timestamp,
         },
@@ -633,11 +745,23 @@ export const useFounderStore = create<FounderState>((set, get) => ({
         orientation: existing?.orientation,
         error: existing?.error,
       });
+      const anonToken = get().anonToken;
+      let accessToken: string | null = null;
+      if (supabaseClient && get().isAuthenticated) {
+        const { data } = await supabaseClient.auth.getSession();
+        accessToken = data.session?.access_token ?? null;
+      }
+
+      const idempotencyKey = generateIdempotencyKey(style.id);
+
       const result = await startFounderPreviewGeneration({
         imageUrl: sourceImage,
         styleId: style.id,
         styleName: style.name,
         aspectRatio,
+        anonToken,
+        accessToken,
+        idempotencyKey,
         onStage: (stage) => {
           if (get().pendingStyleId !== style.id) {
             return;
@@ -668,12 +792,20 @@ export const useFounderStore = create<FounderState>((set, get) => ({
         status: 'ready',
         data: {
           previewUrl: result.previewUrl,
-          watermarkApplied: false,
+          watermarkApplied: result.requiresWatermark,
           startedAt: timestamp,
           completedAt: timestamp,
         },
         orientation: targetOrientation,
       });
+
+      get().updateEntitlementsFromResponse({
+        remainingTokens: result.remainingTokens,
+        requiresWatermark: result.requiresWatermark,
+        tier: result.tier,
+        priority: result.priority,
+      });
+      get().incrementGenerationCount();
 
       set({
         pendingStyleId: null,
@@ -726,6 +858,11 @@ export const useFounderStore = create<FounderState>((set, get) => ({
         message: error instanceof Error ? error.message : String(error),
       });
 
+      if (error instanceof Error && (error as Error & { code?: string }).code === 'ENTITLEMENT_EXCEEDED') {
+        const remaining = (error as Error & { remainingTokens?: number | null }).remainingTokens ?? 0;
+        get().updateEntitlementsFromResponse({ remainingTokens: remaining });
+      }
+
       window.setTimeout(() => {
         if (get().stylePreviewStatus === 'error') {
           set({ stylePreviewStatus: 'idle', stylePreviewMessage: null });
@@ -760,6 +897,136 @@ export const useFounderStore = create<FounderState>((set, get) => ({
       },
     })),
   clearSmartCrops: () => set({ smartCrops: {} }),
+  setAnonToken: (token) => set({ anonToken: token }),
+  hydrateEntitlements: async () => {
+    const state = get();
+    if (state.entitlements.status === 'loading') {
+      return;
+    }
+
+    set((current) => ({
+      entitlements: {
+        ...current.entitlements,
+        status: 'loading',
+        error: null
+      }
+    }));
+
+    try {
+      if (state.isAuthenticated && supabaseClient) {
+        const snapshot = await fetchAuthenticatedEntitlements();
+        if (!snapshot) {
+          set((current) => ({
+            entitlements: {
+              ...current.entitlements,
+              status: 'ready',
+              tier: 'free',
+              quota: 10,
+              remainingTokens: 10,
+              requiresWatermark: true,
+              priority: 'normal',
+              renewAt: null,
+              hardLimit: 10,
+              softRemaining: null,
+              lastSyncedAt: Date.now(),
+              error: null
+            }
+          }));
+        } else {
+          set({
+            entitlements: {
+              status: 'ready',
+              tier: snapshot.tier,
+              quota: snapshot.quota,
+              remainingTokens: snapshot.remainingTokens,
+              requiresWatermark: snapshot.requiresWatermark,
+              priority: snapshot.priority,
+              renewAt: snapshot.renewAt,
+              hardLimit: snapshot.quota,
+              softRemaining: null,
+              dismissedPrompt: get().entitlements.dismissedPrompt,
+              lastSyncedAt: Date.now(),
+              error: null
+            }
+          });
+        }
+      } else {
+        const minted = await mintAnonymousToken({
+          token: state.anonToken ?? undefined,
+          dismissedPrompt: state.accountPromptDismissed
+        });
+
+        sessionStorage.setItem('account_prompt_dismissed', minted.dismissed_prompt ? 'true' : 'false');
+
+        set({
+          anonToken: minted.anon_token,
+          accountPromptDismissed: minted.dismissed_prompt,
+          entitlements: {
+            status: 'ready',
+            tier: 'anonymous',
+            quota: minted.hard_limit,
+            remainingTokens: minted.hard_remaining,
+            requiresWatermark: true,
+            priority: 'normal',
+            renewAt: null,
+            hardLimit: minted.hard_limit,
+            softRemaining: minted.free_tokens_remaining,
+            dismissedPrompt: minted.dismissed_prompt,
+            lastSyncedAt: Date.now(),
+            error: null
+          }
+        });
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to load entitlements';
+      set((current) => ({
+        entitlements: {
+          ...current.entitlements,
+          status: 'error',
+          error: message,
+          lastSyncedAt: Date.now()
+        }
+      }));
+    }
+  },
+  updateEntitlementsFromResponse: ({ remainingTokens, requiresWatermark, tier, priority }) => {
+    set((current) => {
+      const next: EntitlementState = {
+        ...current.entitlements,
+        status: 'ready',
+        lastSyncedAt: Date.now(),
+        error: null
+      };
+
+      if (typeof remainingTokens === 'number') {
+        next.remainingTokens = remainingTokens;
+      }
+
+      if (typeof requiresWatermark === 'boolean') {
+        next.requiresWatermark = requiresWatermark;
+      }
+
+      if (tier) {
+        const mappedTier = tierFromServer(tier, next.tier === 'dev');
+        next.tier = mappedTier;
+        next.priority = priorityFromTier(mappedTier);
+        next.requiresWatermark = requiresWatermark ?? requiresWatermarkFromTier(mappedTier);
+      }
+
+      if (priority) {
+        const normalized = priority.toLowerCase();
+        if (normalized === 'normal' || normalized === 'priority' || normalized === 'pro') {
+          next.priority = normalized as EntitlementPriority;
+        }
+      }
+
+      if (next.tier === 'anonymous' && next.softRemaining != null) {
+        next.softRemaining = Math.max(next.softRemaining - 1, 0);
+      }
+
+      return { entitlements: next };
+    });
+  },
   setHoveredStyle: (id) => set({ hoveredStyleId: id ?? null }),
   setPreselectedStyle: (id) =>
     set((state) => {
@@ -1040,8 +1307,9 @@ export const useFounderStore = create<FounderState>((set, get) => ({
     sessionStorage.setItem('generation_count', newCount.toString());
 
     const shouldPrompt =
-      newCount === 3 &&
-      !state.isAuthenticated &&
+      state.entitlements.tier === 'anonymous' &&
+      typeof state.entitlements.softRemaining === 'number' &&
+      state.entitlements.softRemaining <= 0 &&
       !state.accountPromptDismissed &&
       !state.accountPromptShown;
 
@@ -1063,6 +1331,7 @@ export const useFounderStore = create<FounderState>((set, get) => ({
       accountPromptTriggerAt: status ? null : state.accountPromptTriggerAt,
       accountPromptDismissed: status ? false : state.accountPromptDismissed,
     }));
+    void get().hydrateEntitlements();
   },
   setAccountPromptShown: (shown) =>
     set({
@@ -1072,6 +1341,25 @@ export const useFounderStore = create<FounderState>((set, get) => ({
   dismissAccountPrompt: () => {
     sessionStorage.setItem('account_prompt_dismissed', 'true');
     set({ accountPromptDismissed: true, accountPromptShown: false, accountPromptTriggerAt: null });
+
+    const token = get().anonToken;
+    if (token) {
+      void mintAnonymousToken({ token, dismissedPrompt: true }).then((response) => {
+        set((current) => ({
+          anonToken: response.anon_token,
+          entitlements: {
+            ...current.entitlements,
+            dismissedPrompt: response.dismissed_prompt,
+            softRemaining: response.free_tokens_remaining,
+            hardLimit: response.hard_limit,
+            quota: response.hard_limit,
+            remainingTokens: response.hard_remaining
+          }
+        }));
+      }).catch(() => {
+        // silent fail - local dismissal already applied
+      });
+    }
   },
   setSubscriptionTier: (tier) => {
     if (tier) {
@@ -1082,32 +1370,35 @@ export const useFounderStore = create<FounderState>((set, get) => ({
     set({ subscriptionTier: tier });
   },
   shouldShowAccountPrompt: () => {
-    const { generationCount, isAuthenticated, accountPromptShown, accountPromptDismissed } = get();
-    return generationCount >= 3 && !isAuthenticated && !accountPromptShown && !accountPromptDismissed;
+    const { entitlements, accountPromptShown, accountPromptDismissed } = get();
+    const softRemaining = entitlements.softRemaining;
+    const shouldPrompt =
+      entitlements.tier === 'anonymous' &&
+      typeof softRemaining === 'number' &&
+      softRemaining <= 0;
+
+    return shouldPrompt && !accountPromptShown && !accountPromptDismissed;
   },
   canGenerateMore: () => {
-    const { generationCount, isAuthenticated, subscriptionTier } = get();
+    const { entitlements } = get();
 
-    // Pro tier: unlimited
-    if (subscriptionTier === 'pro') return true;
+    if (entitlements.status !== 'ready') {
+      return true;
+    }
 
-    // Creator tier: unlimited (but watermarked)
-    if (subscriptionTier === 'creator') return true;
+    if (entitlements.remainingTokens == null) {
+      return true;
+    }
 
-    // Authenticated free tier: 8 limit
-    if (isAuthenticated) return generationCount < 8;
-
-    // Anonymous: 9 hard limit (soft prompt at 3)
-    return generationCount < 9;
+    return entitlements.remainingTokens > 0;
   },
   getGenerationLimit: () => {
-    const { isAuthenticated, subscriptionTier } = get();
-
-    if (subscriptionTier === 'creator' || subscriptionTier === 'pro') {
+    const { entitlements } = get();
+    if (entitlements.quota == null) {
       return Infinity;
     }
 
-    return isAuthenticated ? 8 : 9;
+    return entitlements.quota;
   },
   shouldAutoGeneratePreviews: () => {
     return ENABLE_AUTO_PREVIEWS;

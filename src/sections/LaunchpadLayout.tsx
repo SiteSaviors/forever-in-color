@@ -7,9 +7,10 @@ import AccountPromptModal from '@/components/modals/AccountPromptModal';
 const LaunchpadLayout = () => {
   const uploadedImage = useFounderStore((state) => state.uploadedImage);
   const croppedImage = useFounderStore((state) => state.croppedImage);
-  const cropReadyAt = useFounderStore((state) => state.cropReadyAt);
   const accountPromptShown = useFounderStore((state) => state.accountPromptShown);
   const accountPromptTriggerAt = useFounderStore((state) => state.accountPromptTriggerAt);
+  const entitlementsStatus = useFounderStore((state) => state.entitlements.status);
+  const hydrateEntitlements = useFounderStore((state) => state.hydrateEntitlements);
   const [showAccountModal, setShowAccountModal] = useState(false);
 
   useEffect(() => {
@@ -28,6 +29,12 @@ const LaunchpadLayout = () => {
       setShowAccountModal(false);
     }
   }, [accountPromptShown]);
+
+  useEffect(() => {
+    if (entitlementsStatus === 'idle') {
+      void hydrateEntitlements();
+    }
+  }, [entitlementsStatus, hydrateEntitlements]);
 
   const hasImage = !!uploadedImage;
   const hasCrop = !!croppedImage;

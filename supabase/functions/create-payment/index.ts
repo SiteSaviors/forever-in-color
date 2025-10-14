@@ -14,7 +14,12 @@ serve(async (req) => {
   }
 
   try {
-    const { amount: _amount, currency = "usd", customerEmail = "guest@example.com", items } = await req.json();
+    const { amount: _amount, currency = "usd", customerEmail = "guest@example.com", items } = await req.json() as {
+      amount?: number;
+      currency?: string;
+      customerEmail?: string;
+      items: Array<{ name: string; description?: string; amount: number; quantity?: number }>;
+    };
 
     // Initialize Stripe
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
@@ -22,7 +27,7 @@ serve(async (req) => {
     });
 
     // Create line items from the provided items
-    const lineItems = items.map((item: any) => ({
+    const lineItems = (items ?? []).map((item) => ({
       price_data: {
         currency: currency,
         product_data: {
@@ -54,9 +59,10 @@ serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
-  } catch (_error) {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
     console.error('Payment creation error:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });

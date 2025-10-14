@@ -1,4 +1,4 @@
-import Section from '@/components/layout/Section';
+import { useEffect } from 'react';
 import { useFounderStore, StylePreviewStatus } from '@/store/useFounderStore';
 import StickyOrderRail from '@/components/studio/StickyOrderRail';
 import LivingCanvasModal from '@/components/studio/LivingCanvasModal';
@@ -13,8 +13,8 @@ const StudioConfigurator = () => {
   const previews = useFounderStore((state) => state.previews);
   const currentStyle = useFounderStore((state) => state.currentStyle());
   const preview = currentStyle ? previews[currentStyle.id] : undefined;
-  const generationCount = useFounderStore((state) => state.generationCount);
-  const getGenerationLimit = useFounderStore((state) => state.getGenerationLimit);
+  const entitlements = useFounderStore((state) => state.entitlements);
+  const hydrateEntitlements = useFounderStore((state) => state.hydrateEntitlements);
   const canGenerateMore = useFounderStore((state) => state.canGenerateMore);
   const setPreviewState = useFounderStore((state) => state.setPreviewState);
   const croppedImage = useFounderStore((state) => state.croppedImage);
@@ -61,8 +61,18 @@ const StudioConfigurator = () => {
     void startStylePreview(style);
   };
 
-  const limit = getGenerationLimit();
-  const remaining = limit === Infinity ? '∞' : Math.max(0, limit - generationCount);
+  useEffect(() => {
+    if (entitlements.status === 'idle') {
+      void hydrateEntitlements();
+    }
+  }, [entitlements.status, hydrateEntitlements]);
+
+  const remainingLabel = entitlements.status === 'ready'
+    ? entitlements.remainingTokens == null
+      ? '∞'
+      : Math.max(0, entitlements.remainingTokens)
+    : '—';
+  const quotaLabel = entitlements.quota == null ? '∞' : entitlements.quota;
   type OverlayStatus = Exclude<StylePreviewStatus, 'idle'>;
   const overlayStatus: OverlayStatus = stylePreviewStatus === 'idle' ? 'animating' : stylePreviewStatus;
   const canRefreshPreview =
@@ -70,6 +80,7 @@ const StudioConfigurator = () => {
     currentStyle?.id !== 'original-image' &&
     !pendingStyleId &&
     stylePreviewStatus === 'idle' &&
+    canGenerateMore() &&
     Boolean(cachedPreviewEntry || preview?.status === 'ready');
 
   return (
@@ -108,8 +119,8 @@ const StudioConfigurator = () => {
             {/* Generation counter */}
             <div className="p-4 rounded-xl bg-white/5 border border-white/10">
               <p className="text-sm text-white/70 mb-1">Generations Remaining</p>
-              <p className="text-2xl font-bold text-white">{remaining} left today</p>
-              <p className="text-xs text-white/60 mt-2">Create an account for 5 more</p>
+              <p className="text-2xl font-bold text-white">{remainingLabel} left</p>
+              <p className="text-xs text-white/60 mt-2">Tier: {entitlements.tier.toUpperCase()} · Quota {quotaLabel}</p>
             </div>
 
             {/* Style list */}
@@ -119,7 +130,10 @@ const StudioConfigurator = () => {
                 const stylePreview = previews[style.id];
                 const isReady = stylePreview?.status === 'ready';
 
-                const isLocked = Boolean(pendingStyleId && pendingStyleId !== style.id) || stylePreviewStatus === 'error' && pendingStyleId !== style.id;
+                const isLocked =
+                  Boolean(pendingStyleId && pendingStyleId !== style.id) ||
+                  (stylePreviewStatus === 'error' && pendingStyleId !== style.id) ||
+                  !canGenerateMore();
                 return (
                   <button
                     key={style.id}
