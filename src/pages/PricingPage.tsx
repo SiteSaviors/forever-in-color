@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { clsx } from 'clsx';
 import FounderNavigation from '@/components/navigation/FounderNavigation';
 import Section from '@/components/layout/Section';
-import Card from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
+import TierCard from '@/components/ui/TierCard';
+import PricingBenefitsStrip from '@/components/ui/PricingBenefitsStrip';
+import FloatingOrbs from '@/components/ui/FloatingOrbs';
 import { useFounderStore } from '@/store/useFounderStore';
 import { useAuthModal } from '@/store/useAuthModal';
 import { createCheckoutSession } from '@/utils/checkoutApi';
@@ -24,24 +24,25 @@ type Tier = {
   gradient: string;
 };
 
-const TIERS: Tier[] = [
-  {
-    id: 'free',
-    name: 'Wondertone Free',
-    tagline: 'Perfect for exploring styles and testing ideas',
-    description: '10 watermarked generations per month, access to all core styles, and Living Canvas previews.',
-    price: '$0',
-    priceDetail: 'Forever',
-    tokensPerMonth: 10,
-    tokensLabel: 'Tokens',
-    features: [
-      'Watermarked previews',
-      'Living Canvas demo access',
-      'Smart style recommendations',
-      'Community momentum feed',
-    ],
-    gradient: 'from-[#1f243b] via-[#1a1f38] to-[#171a2f]',
-  },
+const FREE_TIER: Tier = {
+  id: 'free',
+  name: 'Wondertone Free',
+  tagline: 'Perfect for exploring styles and testing ideas',
+  description: 'Begin your creative journey with 10 watermarked generations per month and full access to our core features.',
+  price: '$0',
+  priceDetail: 'Forever',
+  tokensPerMonth: 10,
+  tokensLabel: 'Tokens',
+  features: [
+    'Watermarked previews',
+    'Living Canvas demo access',
+    'Smart style recommendations',
+    'Community momentum feed',
+  ],
+  gradient: 'from-[#1f243b] via-[#1a1f38] to-[#171a2f]',
+};
+
+const PREMIUM_TIERS: Tier[] = [
   {
     id: 'creator',
     name: 'Creator',
@@ -160,115 +161,120 @@ const PricingPage = () => {
     }
   };
 
-  const renderTierCard = (tier: Tier) => {
-    const isCurrent = tier.id === currentTier;
-    const isLoading = loadingTier === tier.id;
-
-    return (
-      <Card
-        key={tier.id}
-        glass
-        className={clsx(
-          'relative overflow-hidden rounded-[28px] border border-white/15 backdrop-blur-xl',
-          tier.id === 'free' ? 'bg-[#1d2035]/80' : `bg-gradient-to-br ${tier.gradient}`
-        )}
-      >
-        <div className="relative flex h-full flex-col rounded-[inherit] border border-white/10 bg-black/20 px-7 py-9">
-          <div className="space-y-3">
-            <div className="space-y-1">
-              <h3 className="text-2xl font-semibold text-white">{tier.name}</h3>
-              <p className="text-sm text-white/65">{tier.tagline}</p>
-            </div>
-            <div className="flex items-baseline gap-2 text-white">
-              <span className="text-4xl font-semibold">{tier.price}</span>
-              <span className="text-sm text-white/60">{tier.priceDetail}</span>
-            </div>
-            <p className="text-sm text-white/65">{tier.description}</p>
-          </div>
-          <div className="mt-8 flex flex-col gap-4 rounded-2xl border border-white/20 bg-white/10 p-6 text-sm text-white/80">
-            <div className="flex items-baseline justify-between text-xs uppercase tracking-[0.45em] text-white/60">
-              <span>Monthly Tokens</span>
-              <span className="text-xl font-semibold tracking-normal text-white">
-                {tier.tokensPerMonth}
-                <span className="ml-1 text-xs font-medium uppercase text-white/60">{tier.tokensLabel ?? 'tokens'}</span>
-              </span>
-            </div>
-            <ul className="space-y-2 text-white/72">
-              {tier.features.map((feature) => (
-                <li key={feature} className="flex items-start gap-3">
-                  <span className="mt-1 inline-flex h-4 w-4 items-center justify-center rounded-full border border-white/20 bg-white/15 text-[10px] text-white/80">
-                    ✓
-                  </span>
-                  <span>{feature}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="mt-auto pt-6">
-            <Button
-              className={clsx(
-                'w-full rounded-full py-3 text-sm font-semibold transition-transform duration-200',
-                tier.id === 'free'
-                  ? 'bg-white text-slate-900 shadow-[0_20px_55px_rgba(15,23,42,0.35)] hover:-translate-y-[2px]'
-                  : 'bg-white text-slate-900 shadow-[0_22px_60px_rgba(76,29,149,0.45)] hover:-translate-y-[2px]'
-              )}
-              disabled={isCurrent || isLoading}
-              onClick={() => handleSelectTier(tier.id)}
-            >
-              {isCurrent
-                ? 'Current plan'
-                : isLoading
-                  ? 'Preparing checkout…'
-                  : tier.id === 'free'
-                    ? 'Start creating'
-                    : 'Upgrade with Wondertone'}
-            </Button>
-          </div>
-        </div>
-      </Card>
-    );
-  };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[linear-gradient(135deg,#120a3b_0%,#1f1680_45%,#032758_100%)] text-white">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,rgba(116,62,255,0.35),transparent_55%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_85%,rgba(9,211,239,0.25),transparent_60%)]" />
+    <div className="noise-texture relative min-h-screen overflow-hidden bg-[linear-gradient(135deg,#0a0520_0%,#1a0d4d_35%,#0d1b3a_70%,#041628_100%)] text-white">
+      {/* Base gradient overlays */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,rgba(116,62,255,0.4),transparent_50%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_85%,rgba(9,211,239,0.3),transparent_55%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(168,85,247,0.15),transparent_65%)]" />
+
+      {/* Floating orbs background */}
+      <FloatingOrbs />
+
+      {/* Navigation */}
       <FounderNavigation />
-      <main className="relative pt-32 pb-24">
-        <Section className="space-y-16">
-          <div className="mx-auto max-w-4xl space-y-6 text-center">
-            <h1 className="text-4xl font-semibold md:text-5xl">Choose the Wondertone plan that fits your story</h1>
-            <p className="text-lg text-white/70">
-              Scale from personal keepsakes to live pop-up studios with membership tiers designed for emotion-rich art. All plans include Wondertone&apos;s Living Canvas engine, curated style library, and social momentum intelligence.
+
+      <main className="relative pb-24 pt-32">
+        <Section className="space-y-20">
+          {/* Hero section */}
+          <div className="mx-auto max-w-4xl space-y-8 text-center">
+            {/* Badge for logged-in users */}
+            {sessionUser && currentTier && currentTier !== 'free' && (
+              <div className="animate-fadeIn inline-flex items-center gap-2 rounded-full border border-purple-400/30 bg-purple-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-purple-200 backdrop-blur-sm">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-purple-400 opacity-75"></span>
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-purple-500"></span>
+                </span>
+                Current: {currentTier} tier
+              </div>
+            )}
+
+            {/* Main headline with gradient */}
+            <h1 className="animate-scaleIn text-5xl font-bold leading-tight md:text-6xl lg:text-7xl">
+              <span className="bg-gradient-to-r from-white via-purple-100 to-cyan-100 bg-clip-text text-transparent">
+                Choose the plan
+              </span>
+              <br />
+              <span className="bg-gradient-to-r from-purple-300 via-pink-300 to-orange-300 bg-clip-text text-transparent">
+                that fits your story
+              </span>
+            </h1>
+
+            {/* Subheadline */}
+            <p className="mx-auto max-w-3xl text-lg leading-relaxed text-white/75 md:text-xl">
+              Scale from personal keepsakes to live pop-up studios with membership tiers designed for emotion-rich art.
+              All plans include Wondertone&apos;s{' '}
+              <span className="font-semibold text-purple-300">Living Canvas engine</span>,{' '}
+              <span className="font-semibold text-cyan-300">curated style library</span>, and{' '}
+              <span className="font-semibold text-pink-300">social momentum intelligence</span>.
             </p>
+
+            {/* Status messages */}
             {successMessage && (
-              <div className="mx-auto max-w-2xl rounded-2xl border border-emerald-400/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
-                {successMessage}
+              <div className="animate-scaleIn mx-auto max-w-2xl rounded-2xl border border-emerald-400/40 bg-emerald-500/10 px-5 py-4 text-sm text-emerald-200 shadow-lg backdrop-blur-sm">
+                <div className="flex items-center gap-3">
+                  <span className="text-xl">✓</span>
+                  <span>{successMessage}</span>
+                </div>
               </div>
             )}
             {errorMessage && (
-              <div className="mx-auto max-w-2xl rounded-2xl border border-red-400/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
-                {errorMessage}
+              <div className="animate-scaleIn mx-auto max-w-2xl rounded-2xl border border-red-400/40 bg-red-500/10 px-5 py-4 text-sm text-red-200 shadow-lg backdrop-blur-sm">
+                <div className="flex items-center gap-3">
+                  <span className="text-xl">⚠</span>
+                  <span>{errorMessage}</span>
+                </div>
               </div>
             )}
           </div>
 
-          <div className="mx-auto grid max-w-6xl gap-8 sm:grid-cols-2 xl:grid-cols-4">
-            {TIERS.map(renderTierCard)}
+          {/* Hero: Free Tier */}
+          <div className="mx-auto max-w-[900px]">
+            <TierCard
+              key={FREE_TIER.id}
+              id={FREE_TIER.id}
+              name={FREE_TIER.name}
+              tagline={FREE_TIER.tagline}
+              description={FREE_TIER.description}
+              price={FREE_TIER.price}
+              priceDetail={FREE_TIER.priceDetail}
+              tokensPerMonth={FREE_TIER.tokensPerMonth}
+              tokensLabel={FREE_TIER.tokensLabel}
+              features={FREE_TIER.features}
+              gradient={FREE_TIER.gradient}
+              isCurrent={FREE_TIER.id === currentTier}
+              isLoading={loadingTier === FREE_TIER.id}
+              onSelect={() => handleSelectTier(FREE_TIER.id)}
+              variant="wide"
+            />
           </div>
 
-          <div className="mx-auto max-w-5xl space-y-6 rounded-[36px] border border-white/10 bg-gradient-to-br from-[#14152d]/90 via-[#101226]/90 to-[#13182c]/90 p-10 text-left shadow-[0_45px_110px_rgba(76,29,149,0.4)] backdrop-blur-xl">
-            <h2 className="text-2xl font-semibold text-white">Every Wondertone membership unlocks:</h2>
-            <ul className="grid gap-4 text-sm text-white/70 md:grid-cols-2">
-              <li>✨ Guided studio flow with Living Canvas AR previews</li>
-              <li>📦 Concierge production with archival-grade materials</li>
-              <li>🧠 Smart style recommendations tuned by Wondertone analysts</li>
-              <li>📈 Social momentum console to drive word-of-mouth in seconds</li>
-            </ul>
-            <p className="text-xs text-white/40">
-              Prices shown in USD. Stripe handles all payments securely. Cancel anytime. Tokens renew monthly based on your tier and reset at the beginning of each billing cycle.
-            </p>
+          {/* Premium Tiers: 3-column grid */}
+          <div className="mx-auto grid max-w-[1400px] gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
+            {PREMIUM_TIERS.map((tier, index) => (
+              <TierCard
+                key={tier.id}
+                id={tier.id}
+                name={tier.name}
+                tagline={tier.tagline}
+                description={tier.description}
+                price={tier.price}
+                priceDetail={tier.priceDetail}
+                tokensPerMonth={tier.tokensPerMonth}
+                tokensLabel={tier.tokensLabel}
+                features={tier.features}
+                gradient={tier.gradient}
+                isCurrent={tier.id === currentTier}
+                isLoading={loadingTier === tier.id}
+                onSelect={() => handleSelectTier(tier.id)}
+                animationDelay={index * 100}
+              />
+            ))}
           </div>
+
+          {/* Benefits strip */}
+          <PricingBenefitsStrip />
         </Section>
       </main>
     </div>

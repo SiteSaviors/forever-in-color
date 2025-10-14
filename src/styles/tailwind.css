@@ -58,3 +58,48 @@ body {
   opacity: 0.85;
   animation: confetti 1.2s ease-out forwards;
 }
+
+/* Pricing page utilities */
+.noise-texture {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+}
+
+.scan-line {
+  background: linear-gradient(to right, transparent, rgba(168, 85, 247, 0.5), transparent);
+}
+
+.tier-glow-creator {
+  box-shadow: 0 0 60px rgba(108, 61, 242, 0.4), 0 0 100px rgba(108, 61, 242, 0.2);
+}
+
+.tier-glow-plus {
+  box-shadow: 0 0 60px rgba(49, 168, 255, 0.4), 0 0 100px rgba(49, 168, 255, 0.2);
+}
+
+.tier-glow-pro {
+  box-shadow: 0 0 60px rgba(255, 166, 46, 0.4), 0 0 100px rgba(255, 166, 46, 0.2);
+}
+
+/* Gradient text utilities */
+.gradient-text-purple {
+  @apply bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent;
+}
+
+.gradient-text-cyan {
+  @apply bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent;
+}
+
+.gradient-text-warm {
+  @apply bg-gradient-to-r from-orange-400 to-pink-400 bg-clip-text text-transparent;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .animate-float,
+  .animate-float-slow,
+  .animate-rotate-slow,
+  .animate-shimmer,
+  .animate-scan-slow {
+    animation: none;
+  }
+}
