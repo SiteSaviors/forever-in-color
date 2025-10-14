@@ -21,6 +21,7 @@ export interface GalleryListResponse {
   total: number;
   limit: number;
   offset: number;
+  requiresWatermark?: boolean;
 }
 
 export interface SaveToGalleryParams {
@@ -298,9 +299,12 @@ export async function incrementGalleryDownload(
 }
 
 /**
- * Get download URL for a gallery item based on user's tier
- * Returns clean URL if user has access, otherwise watermarked URL
+ * Get download URL for a gallery item based on entitlement requirements.
+ * Returns watermarked URLs when the current user requires watermarks.
  */
-export function getGalleryDownloadUrl(item: GalleryItem, hasCleanAccess: boolean): string {
-  return hasCleanAccess && item.cleanUrl ? item.cleanUrl : item.watermarkedUrl;
+export function getGalleryDownloadUrl(item: GalleryItem, requiresWatermark: boolean): string {
+  if (!requiresWatermark && item.cleanUrl) {
+    return item.cleanUrl;
+  }
+  return item.watermarkedUrl;
 }

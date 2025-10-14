@@ -1,0 +1,130 @@
+import { useMemo } from 'react';
+import Card from '@/components/ui/Card';
+import { useFounderStore } from '@/store/useFounderStore';
+import { getCanvasSizeOption } from '@/utils/canvasSizes';
+import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
+
+const CheckoutSummary = () => {
+  const currentStyle = useFounderStore((state) => state.currentStyle());
+  const selectedCanvasSize = useFounderStore((state) => state.selectedCanvasSize);
+  const orientation = useFounderStore((state) => state.orientation);
+  const enhancements = useFounderStore((state) => state.enhancements.filter((item) => item.enabled));
+  const previews = useFounderStore((state) => state.previews);
+  const croppedImage = useFounderStore((state) => state.croppedImage);
+  const entitlements = useFounderStore((state) => state.entitlements);
+
+  const previewUrl = useMemo(() => {
+    if (currentStyle?.id) {
+      const record = previews[currentStyle.id];
+      if (record?.status === 'ready' && record.data?.previewUrl) {
+        return record.data.previewUrl;
+      }
+    }
+    return croppedImage;
+  }, [currentStyle?.id, croppedImage, previews]);
+
+  const sizeOption = getCanvasSizeOption(selectedCanvasSize);
+  const orientationLabel = ORIENTATION_PRESETS[orientation]?.label ?? 'Square';
+
+  return (
+    <div className="space-y-6">
+      <Card glass className="overflow-hidden border border-white/10 bg-white/5">
+        <div className="relative aspect-square w-full bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950">
+          {previewUrl ? (
+            <img
+              src={previewUrl}
+              alt={currentStyle?.name ?? 'Wondertone preview'}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center text-white/40 text-sm tracking-[0.35em] uppercase">
+              Preview Coming Soon
+            </div>
+          )}
+          <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full bg-black/60 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 backdrop-blur">
+            {orientationLabel}
+          </div>
+        </div>
+        <div className="space-y-4 border-t border-white/10 p-5">
+          <div>
+            <h2 className="text-lg font-semibold text-white">
+              {currentStyle?.name ?? 'Choose your style'}
+            </h2>
+            <p className="text-xs text-white/60">
+              {sizeOption?.label ?? 'Select a canvas size'} · {orientationLabel}
+            </p>
+          </div>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between rounded-xl bg-white/5 px-3 py-2 text-sm text-white/70">
+              <span>Canvas size</span>
+              <span className="font-semibold text-white">
+                {sizeOption?.label ?? 'Select size'}
+              </span>
+            </div>
+            <div className="flex items-center justify-between rounded-xl bg-white/5 px-3 py-2 text-sm text-white/70">
+              <span>Orientation</span>
+              <span className="font-semibold text-white">{orientationLabel}</span>
+            </div>
+            <div className="space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-[0.35em] text-white/50">
+                Enhancements
+              </p>
+              {enhancements.length === 0 ? (
+                <p className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/50">
+                  No extras selected
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {enhancements.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex items-center justify-between rounded-xl border border-purple-400/20 bg-purple-500/10 px-3 py-2 text-sm text-white"
+                    >
+                      <span>{item.name}</span>
+                      <span className="font-semibold">${item.price.toFixed(2)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      <Card glass className="space-y-4 border border-white/10 bg-white/5 p-5">
+        <div>
+          <h3 className="text-sm font-semibold uppercase tracking-[0.35em] text-white/60">
+            Wondertone Promise
+          </h3>
+          <p className="mt-1 text-sm text-white/70">
+            Hand-stretched canvas, archival inks, and concierge support from the Wondertone studio.
+          </p>
+        </div>
+        <div className="space-y-3 text-sm text-white/70">
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-emerald-400" />
+            Ships in 3–5 business days
+          </div>
+            <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-purple-400" />
+            {entitlements.tier === 'anonymous' || entitlements.tier === 'free'
+              ? 'Watermarked preview until purchase completes'
+              : 'Includes clean, watermark-free download'}
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-blue-400" />
+            Studio concierge monitors every order for color accuracy
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-xs text-white/60">
+          <p>
+            Need adjustments after checkout? Our artisans will reach out within 24 hours before your canvas goes to print.
+          </p>
+        </div>
+      </Card>
+    </div>
+  );
+};
+
+export default CheckoutSummary;

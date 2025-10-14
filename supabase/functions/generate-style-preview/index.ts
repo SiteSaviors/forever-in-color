@@ -14,13 +14,14 @@ import {
   schedulePromptWarmup,
   type PromptWarmupResult
 } from './promptCache.ts';
-import { CacheMetadataService } from './cache/cacheMetadataService.ts';
+import { CacheMetadataService, type CacheMetadataRecord } from './cache/cacheMetadataService.ts';
 import { PreviewStorageClient } from './cache/storageClient.ts';
 import { createImageDigest, buildCacheKey } from './cache/cacheKey.ts';
 import { LruMemoryCache } from './cache/memoryCache.ts';
 import { createRequestLogger } from './logging.ts';
 import type { CacheStatus } from './types.ts';
 import { resolveEntitlements, computeRemainingAfterDebet, type EntitlementContext } from './entitlements.ts';
+import { WatermarkService } from './watermarkService.ts';
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -195,7 +196,22 @@ async function handleWebhookRequest(req: Request, url: URL, origin: string | nul
           });
 
           const storagePath = computeStoragePath(styleId, aspectRatio, quality, imageDigest);
-          const uploadResult = await storageClient.uploadFromUrl(output, storagePath);
+          let processedOutput = output;
+
+          if (watermark) {
+            try {
+              const { buffer, contentType } = await loadImageBuffer(output);
+              const watermarkedBuffer = await WatermarkService.createWatermarkedImage(buffer, statusRow.request_id ?? 'webhook');
+              processedOutput = bufferToDataUrl(watermarkedBuffer, contentType);
+            } catch (error) {
+              webhookLogger.warn('Failed to apply watermark during webhook processing', {
+                message: error instanceof Error ? error.message : String(error),
+                requestId: statusRow.request_id
+              });
+            }
+          }
+
+          const uploadResult = await storageClient.uploadFromUrl(processedOutput, storagePath);
           previewUrl = uploadResult.publicUrl;
 
           await cacheMetadataService.upsert({
@@ -215,7 +231,21 @@ async function handleWebhookRequest(req: Request, url: URL, origin: string | nul
           memoryCache.set(cacheKey, uploadResult.publicUrl, ttlMs);
           cacheStatus = 'hit';
         } else {
-          previewUrl = typeof output === 'string' ? output : null;
+          if (typeof output === 'string' && watermark) {
+            try {
+              const { buffer, contentType } = await loadImageBuffer(output);
+              const watermarkedBuffer = await WatermarkService.createWatermarkedImage(buffer, statusRow.request_id ?? 'webhook');
+              previewUrl = bufferToDataUrl(watermarkedBuffer, contentType);
+            } catch (error) {
+              webhookLogger.warn('Failed to watermark webhook output (cache bypass)', {
+                message: error instanceof Error ? error.message : String(error),
+                requestId: statusRow.request_id
+              });
+              previewUrl = output;
+            }
+          } else {
+            previewUrl = typeof output === 'string' ? output : null;
+          }
           cacheStatus = 'bypass';
         }
       } catch (cacheError) {
@@ -513,6 +543,9 @@ serve(async (req) => {
         const tierLabel = entitlementContext?.tierLabel ?? existingLog.tier ?? undefined;
         const priority = entitlementContext?.priority ?? existingLog.priority ?? 'normal';
         const requiresWatermark = entitlementContext?.requiresWatermark ?? existingLog.requires_watermark ?? true;
+        const previewUrlForResponse = requiresWatermark
+          ? await ensureWatermarkedPreview(existingLog.preview_url, requestId, storageClient)
+          : existingLog.preview_url;
 
         logger.info('Returning cached idempotent preview result', {
           requestId,
@@ -523,7 +556,7 @@ serve(async (req) => {
         return respond(
           JSON.stringify(
             createSuccessResponse({
-              previewUrl: existingLog.preview_url,
+              previewUrl: previewUrlForResponse,
               requestId,
               duration,
               cacheStatus: 'hit',
@@ -766,6 +799,8 @@ serve(async (req) => {
     const imageDigest = await createImageDigest(imageUrl);
     let cacheKey: string | null = null;
 
+    let metadataEntry: CacheMetadataRecord | null = null;
+
     if (cacheAllowedForRequest) {
       cacheKey = buildCacheKey({
         imageDigest,
@@ -787,12 +822,33 @@ serve(async (req) => {
         cacheMetadataService.recordHit(cacheKey).catch((error) => {
           logger.warn('Failed to record cache hit', { error: error?.message ?? 'unknown', cacheKey });
         });
-        return await recordPreviewSuccess(cachedFromMemory, cacheStatus);
+        if (!metadataEntry) {
+          try {
+            metadataEntry = await cacheMetadataService.get(cacheKey);
+          } catch (error) {
+            logger.warn('Failed to load cache metadata for memory hit', { error: error instanceof Error ? error.message : String(error), cacheKey });
+          }
+        }
+        const hydratedUrl = effectiveWatermark
+          ? await ensureWatermarkedPreview(
+              cachedFromMemory,
+              requestId,
+              metadataEntry?.storage_path ? storageClient : undefined,
+              metadataEntry?.storage_path ?? undefined
+            )
+          : cachedFromMemory;
+        if (cacheKey) {
+          const ttlForEntry = metadataEntry?.ttl_expires_at ? Math.max(Date.parse(metadataEntry.ttl_expires_at) - Date.now(), 1000) : ttlMs;
+          memoryCache.set(cacheKey, hydratedUrl, ttlForEntry);
+        }
+        return await recordPreviewSuccess(hydratedUrl, cacheStatus);
       }
 
       // Check storage cache SECOND
       try {
-        const metadataEntry = await cacheMetadataService.get(cacheKey);
+        if (!metadataEntry) {
+          metadataEntry = await cacheMetadataService.get(cacheKey);
+        }
         if (metadataEntry && metadataEntry.preview_url && !isExpired(metadataEntry.ttl_expires_at)) {
           cacheStatus = 'hit';
           const ttlRemaining = Date.parse(metadataEntry.ttl_expires_at) - Date.now();
@@ -806,7 +862,13 @@ serve(async (req) => {
           cacheMetadataService.recordHit(cacheKey).catch((error) => {
             logger.warn('Failed to record cache hit', { error: error?.message ?? 'unknown', cacheKey });
           });
-          return await recordPreviewSuccess(metadataEntry.preview_url, cacheStatus);
+          const hydratedUrl = effectiveWatermark
+            ? await ensureWatermarkedPreview(metadataEntry.preview_url, requestId, storageClient, metadataEntry.storage_path ?? undefined)
+            : metadataEntry.preview_url;
+          if (cacheKey) {
+            memoryCache.set(cacheKey, hydratedUrl, ttlMs);
+          }
+          return await recordPreviewSuccess(hydratedUrl, cacheStatus);
         } else if (metadataEntry && metadataEntry.preview_url) {
           logger.info('Cache entry expired, regenerating', { cacheKey });
         }
@@ -831,13 +893,28 @@ serve(async (req) => {
     });
 
     const persistGeneratedPreview = async (rawOutput: string): Promise<string> => {
-      let finalPreviewUrl = rawOutput;
+      let processedOutput = rawOutput;
+
+      if (effectiveWatermark) {
+        try {
+          const { buffer, contentType } = await loadImageBuffer(rawOutput);
+          const watermarkedBuffer = await WatermarkService.createWatermarkedImage(buffer, requestId, true);
+          processedOutput = bufferToDataUrl(watermarkedBuffer, contentType);
+        } catch (error) {
+          logger.warn('[watermark] Failed to apply server watermark, falling back to raw output', {
+            requestId,
+            message: error instanceof Error ? error.message : String(error)
+          });
+        }
+      }
+
+      let finalPreviewUrl = processedOutput;
 
       if (cacheAllowedForRequest && cacheKey) {
         try {
           const storagePath = computeStoragePath(styleMetadata.styleId, normalizedAspectRatio, normalizedQuality, imageDigest);
           const ttlExpiresAt = new Date(Date.now() + ttlMs).toISOString();
-          const uploadResult = await storageClient.uploadFromUrl(rawOutput, storagePath);
+          const uploadResult = await storageClient.uploadFromUrl(processedOutput, storagePath);
           finalPreviewUrl = uploadResult.publicUrl;
 
           await cacheMetadataService.upsert({
@@ -1053,3 +1130,79 @@ serve(async (req) => {
     return await recordPreviewFailure('internal_error', 'Internal server error. Please try again.', 500);
   }
 });
+const bufferToDataUrl = (buffer: ArrayBuffer, contentType: string): string => {
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  for (let i = 0; i < bytes.byteLength; i += 1) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  const base64 = btoa(binary);
+  return `data:${contentType};base64,${base64}`;
+};
+
+const loadImageBuffer = async (source: string): Promise<{ buffer: ArrayBuffer; contentType: string }> => {
+  if (source.startsWith('data:image/')) {
+    const [header, data] = source.split(',');
+    if (!data) {
+      throw new Error('Invalid data URL supplied for watermarking');
+    }
+    const match = header.match(/^data:(.+);base64$/);
+    const contentType = match?.[1] ?? 'image/jpeg';
+    const binary = atob(data);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i += 1) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return { buffer: bytes.buffer, contentType };
+  }
+
+  const response = await fetch(source);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch preview asset for watermarking: ${response.status}`);
+  }
+  const contentType = response.headers.get('content-type') ?? 'image/jpeg';
+  const buffer = await response.arrayBuffer();
+  return { buffer, contentType };
+};
+
+const extractStoragePath = (sourceUrl: string): string | null => {
+  try {
+    const url = new URL(sourceUrl);
+    const marker = `/storage/v1/object/public/${cacheBucket.replace(/\//g, '/')}/`;
+    const index = url.pathname.indexOf(marker);
+    if (index === -1) return null;
+    return decodeURIComponent(url.pathname.slice(index + marker.length));
+  } catch (_error) {
+    return null;
+  }
+};
+
+const ensureWatermarkedPreview = async (
+  sourceUrl: string,
+  sessionId: string,
+  storageClient?: PreviewStorageClient,
+  storagePath?: string
+): Promise<string> => {
+  try {
+    const { buffer, contentType } = await loadImageBuffer(sourceUrl);
+    const watermarkedBuffer = await WatermarkService.createWatermarkedImage(buffer, sessionId, true);
+
+    if (storageClient) {
+      const targetPath = storagePath ?? extractStoragePath(sourceUrl);
+      if (targetPath) {
+        const uploadResult = await storageClient.uploadFromBuffer(watermarkedBuffer, targetPath, {
+          contentType
+        });
+        return uploadResult.publicUrl;
+      }
+    }
+
+    return bufferToDataUrl(watermarkedBuffer, contentType);
+  } catch (error) {
+    console.warn('[watermark] Failed to enforce watermark on cached preview', {
+      sessionId,
+      message: error instanceof Error ? error.message : String(error)
+    });
+    return sourceUrl;
+  }
+};

@@ -1,5 +1,7 @@
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+import type { Orientation } from '@/utils/imageUtils';
+import type { ContactInfo, ShippingInfo } from '@/store/useCheckoutStore';
 
 type CheckoutTier = 'creator' | 'plus' | 'pro';
 
@@ -93,4 +95,55 @@ export const createOrderCheckoutSession = async (options: {
   }
 
   return response.json() as Promise<{ url: string; sessionId: string }>;
+};
+
+export type OrderPaymentIntentRequest = {
+  styleId: string | null;
+  styleName: string | null;
+  canvasSizeId: string | null;
+  orientation: Orientation;
+  enhancementIds: string[];
+  previewUrl?: string | null;
+  contact: ContactInfo;
+  shipping: ShippingInfo;
+  currency?: string;
+};
+
+export type OrderPaymentIntentResponse = {
+  paymentIntentId: string;
+  clientSecret: string;
+  amount: number;
+  currency: string;
+};
+
+export const createOrderPaymentIntent = async ({
+  payload,
+  accessToken,
+}: {
+  payload: OrderPaymentIntentRequest;
+  accessToken: string | null;
+}): Promise<OrderPaymentIntentResponse> => {
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    throw new Error('Supabase configuration missing');
+  }
+
+  const authToken = accessToken ?? SUPABASE_ANON_KEY ?? null;
+
+  const response = await fetch(`${SUPABASE_URL}/functions/v1/create-order-payment-intent`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      apikey: SUPABASE_ANON_KEY,
+      ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+    },
+    credentials: accessToken ? 'include' : 'omit',
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    throw new Error(text || 'Failed to create payment intent');
+  }
+
+  return response.json() as Promise<OrderPaymentIntentResponse>;
 };

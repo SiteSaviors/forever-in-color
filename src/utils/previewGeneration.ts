@@ -1,4 +1,3 @@
-import { watermarkManager } from './watermarkManager';
 import { generateStylePreview } from './stylePreviewApi';
 import { pollPreviewStatusUntilReady } from './previewPolling';
 
@@ -58,22 +57,8 @@ export const generateAndWatermarkPreview = async (
     throw new Error('Failed to generate preview');
   }
 
-  const shouldApplyLocalWatermark = watermark && generationResult.requiresWatermark;
-
-  if (shouldApplyLocalWatermark) {
+  if (generationResult.requiresWatermark) {
     onStage?.('watermarking');
-    try {
-      const watermarked = await watermarkManager.addWatermark(rawPreviewUrl);
-      return {
-        previewUrl: watermarked,
-        requiresWatermark: true,
-        remainingTokens: generationResult.remainingTokens ?? null,
-        tier: generationResult.tier,
-        priority: generationResult.priority
-      };
-    } catch (error) {
-      console.warn('[FounderPreviewGeneration] Watermarking failed, using raw preview.', error);
-    }
   }
 
   return {

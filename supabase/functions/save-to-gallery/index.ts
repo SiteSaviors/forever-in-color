@@ -30,7 +30,7 @@ serve(async (req: Request) => {
   try {
     // Parse request body
     const body: SaveToGalleryRequest = await req.json();
-    const { previewLogId, styleId, styleName, orientation, watermarkedUrl, cleanUrl, anonToken } = body;
+    const { previewLogId, styleId, styleName, orientation, watermarkedUrl, cleanUrl } = body;
 
     // Validate required fields
     if (!styleId || !styleName || !orientation || !watermarkedUrl) {
@@ -62,7 +62,6 @@ serve(async (req: Request) => {
 
     // Determine user identity
     let userId: string | null = null;
-    let effectiveAnonToken: string | null = null;
 
     if (token && token !== SUPABASE_SERVICE_ROLE_KEY) {
       // Authenticated user
@@ -75,14 +74,10 @@ serve(async (req: Request) => {
       }
       userId = user.id;
     } else {
-      // Anonymous user
-      effectiveAnonToken = anonToken || req.headers.get('X-WT-Anon') || null;
-      if (!effectiveAnonToken) {
-        return new Response(
-          JSON.stringify({ error: 'Anonymous token required for unauthenticated requests' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
+      return new Response(
+        JSON.stringify({ error: 'Authentication required to save to gallery' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     // Check if this preview is already saved
@@ -90,7 +85,7 @@ serve(async (req: Request) => {
       .from('user_gallery')
       .select('id')
       .eq('is_deleted', false)
-      .eq(userId ? 'user_id' : 'anon_token', userId || effectiveAnonToken)
+      .eq('user_id', userId)
       .eq('style_id', styleId)
       .eq('orientation', orientation)
       .eq('watermarked_url', watermarkedUrl)
@@ -120,7 +115,7 @@ serve(async (req: Request) => {
       .from('user_gallery')
       .insert({
         user_id: userId,
-        anon_token: effectiveAnonToken,
+        anon_token: null,
         preview_log_id: previewLogId || null,
         style_id: styleId,
         style_name: styleName,

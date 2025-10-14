@@ -76,6 +76,19 @@ serve(async (req: Request) => {
       }
     }
 
+    let requiresWatermark = true;
+    if (userId) {
+      const { data: entitlementRow } = await supabase
+        .from('v_entitlements')
+        .select('tier, dev_override')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      const tier = (entitlementRow?.tier ?? 'free').toString().toLowerCase();
+      const devOverride = Boolean(entitlementRow?.dev_override);
+      requiresWatermark = !(devOverride || tier === 'creator' || tier === 'plus' || tier === 'pro');
+    }
+
     // GET: Fetch gallery items
     if (req.method === 'GET') {
       // Parse query parameters
@@ -147,12 +160,20 @@ serve(async (req: Request) => {
         updatedAt: item.updated_at,
       }));
 
+      const responsePayload = {
+        items: galleryItems.map((item) => ({
+          ...item,
+          cleanUrl: requiresWatermark ? null : item.cleanUrl
+        })),
+        total: count || 0,
+        limit,
+        offset,
+      };
+
       return new Response(
         JSON.stringify({
-          items: galleryItems,
-          total: count || 0,
-          limit,
-          offset,
+          ...responsePayload,
+          requiresWatermark
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );

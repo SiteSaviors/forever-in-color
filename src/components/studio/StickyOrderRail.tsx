@@ -1,11 +1,12 @@
 import { useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Card from '@/components/ui/Card';
 import { useFounderStore } from '@/store/useFounderStore';
 import { cacheSmartCropResult, generateSmartCrop, ORIENTATION_PRESETS, SmartCropResult } from '@/utils/smartCrop';
 import type { Orientation } from '@/utils/imageUtils';
 import { CANVAS_SIZE_OPTIONS, getCanvasSizeOption, getDefaultSizeForOrientation } from '@/utils/canvasSizes';
 import CropperModal from '@/components/launchpad/cropper/CropperModal';
-import { createOrderCheckoutSession, type OrderLineItem } from '@/utils/checkoutApi';
+import { useCheckoutStore } from '@/store/useCheckoutStore';
 
 const StickyOrderRail = () => {
   const inFlightCropsRef = useRef<Map<Orientation, Promise<SmartCropResult>>>(new Map());
@@ -37,8 +38,8 @@ const StickyOrderRail = () => {
   const setFrame = useFounderStore((state) => state.setFrame);
   const orientationPreviewPending = useFounderStore((state) => state.orientationPreviewPending);
   const setOrientationPreviewPending = useFounderStore((state) => state.setOrientationPreviewPending);
-  const sessionUser = useFounderStore((state) => state.sessionUser);
-  const accessToken = useFounderStore((state) => state.accessToken);
+  const resetCheckout = useCheckoutStore((state) => state.resetCheckout);
+  const navigate = useNavigate();
 
   const floatingFrame = enhancements.find((e) => e.id === 'floating-frame');
   const livingCanvas = enhancements.find((e) => e.id === 'living-canvas');
@@ -46,7 +47,6 @@ const StickyOrderRail = () => {
   const enabledEnhancements = enhancements.filter((item) => item.enabled);
   const hasEnhancements = enabledEnhancements.length > 0;
 
-  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   const handleLivingCanvasToggle = () => {
@@ -203,7 +203,7 @@ const StickyOrderRail = () => {
     !selectedSizeOption ||
     orientationPreviewPending ||
     orientationChanging ||
-    isPlacingOrder;
+    false;
 
   const handleCheckout = async () => {
     if (checkoutDisabled) return;
@@ -214,55 +214,8 @@ const StickyOrderRail = () => {
     }
 
     setCheckoutError(null);
-    setIsPlacingOrder(true);
-
-    try {
-      const items: OrderLineItem[] = [
-        {
-          name: `${currentStyle.name} Canvas`,
-          description: `${selectedSizeOption.label} • ${ORIENTATION_PRESETS[orientation].label}`,
-          amount: Math.round(selectedSizeOption.price * 100),
-        },
-      ];
-
-      const styleModifier = currentStyle.priceModifier ?? 0;
-      if (styleModifier > 0) {
-        items.push({
-          name: `${currentStyle.name} Style Upgrade`,
-          amount: Math.round(styleModifier * 100),
-        });
-      }
-
-      enhancements
-        .filter((item) => item.enabled)
-        .forEach((item) => {
-          items.push({
-            name: `Enhancement: ${item.name}`,
-            description: item.description,
-            amount: Math.round(item.price * 100),
-          });
-        });
-
-      const successUrl =
-        typeof window !== 'undefined' ? `${window.location.origin}/create?checkout=success` : undefined;
-      const cancelUrl =
-        typeof window !== 'undefined' ? `${window.location.origin}/create?checkout=cancelled` : undefined;
-
-      const { url } = await createOrderCheckoutSession({
-        items,
-        accessToken,
-        customerEmail: sessionUser?.email ?? null,
-        successUrl,
-        cancelUrl,
-      });
-
-      window.location.href = url;
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : 'Unable to start checkout. Please try again.';
-      setCheckoutError(message);
-      setIsPlacingOrder(false);
-    }
+    resetCheckout();
+    navigate('/checkout');
   };
 
   return (
@@ -527,7 +480,7 @@ const StickyOrderRail = () => {
             checkoutDisabled ? 'opacity-60 cursor-not-allowed' : 'hover:shadow-glow-purple hover:scale-[1.02]'
           }`}
         >
-          {isPlacingOrder ? 'Redirecting to Checkout…' : 'Complete Your Order →'}
+          Complete Your Order →
         </button>
 
         {checkoutError && (

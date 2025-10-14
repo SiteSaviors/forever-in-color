@@ -17,7 +17,6 @@ import Button from '@/components/ui/Button';
 
 const GalleryPage = () => {
   const navigate = useNavigate();
-  const sessionUser = useFounderStore((state) => state.sessionUser);
   const sessionAccessToken = useFounderStore((state) => state.sessionAccessToken);
   const entitlements = useFounderStore((state) => state.entitlements);
   const anonToken = useFounderStore((state) => state.anonToken);
@@ -36,7 +35,7 @@ const GalleryPage = () => {
   const [showFilters, setShowFilters] = useState(false);
 
   // Check if user has access to clean (watermark-free) downloads
-  const hasCleanAccess = entitlements.tier !== 'free' && sessionUser !== null;
+  const requiresWatermark = entitlements.requiresWatermark;
 
   // Fetch gallery items
   const loadGallery = async () => {
@@ -98,7 +97,11 @@ const GalleryPage = () => {
   };
 
   const handleDownload = async (item: GalleryItem) => {
-    const downloadUrl = getGalleryDownloadUrl(item, hasCleanAccess);
+    const downloadUrl = getGalleryDownloadUrl(item, requiresWatermark);
+
+    if (requiresWatermark) {
+      alert('Upgrade to unlock clean, watermark-free downloads.');
+    }
 
     // Track download
     const accessToken = sessionAccessToken || null;

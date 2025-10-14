@@ -2,6 +2,7 @@ import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
 
 interface UploadOptions {
   cacheControl?: string;
+  contentType?: string;
 }
 
 export interface StorageUploadResult {
@@ -17,7 +18,7 @@ export class PreviewStorageClient {
 
   async uploadFromUrl(sourceUrl: string, storagePath: string, options: UploadOptions = {}): Promise<StorageUploadResult> {
     let arrayBuffer: ArrayBuffer;
-    let contentType = 'image/jpeg';
+    let contentType = options.contentType ?? 'image/jpeg';
 
     if (sourceUrl.startsWith('data:image/')) {
       const [header, data] = sourceUrl.split(',');
@@ -41,12 +42,20 @@ export class PreviewStorageClient {
       arrayBuffer = await response.arrayBuffer();
     }
 
+    return this.uploadFromBuffer(arrayBuffer, storagePath, {
+      cacheControl: options.cacheControl,
+      contentType
+    });
+  }
+
+  async uploadFromBuffer(buffer: ArrayBuffer, storagePath: string, options: UploadOptions = {}): Promise<StorageUploadResult> {
     const cacheControl = options.cacheControl ?? 'public, max-age=2592000';
+    const contentType = options.contentType ?? 'image/jpeg';
 
     const uploadResponse = await this.supabase
       .storage
       .from(this.bucket)
-      .upload(storagePath, arrayBuffer, {
+      .upload(storagePath, buffer, {
         contentType,
         upsert: true,
         cacheControl
@@ -73,5 +82,16 @@ export class PreviewStorageClient {
       storagePath,
       publicUrl
     };
+  }
+
+  getPublicUrl(storagePath: string): string | null {
+    const publicUrlResponse = this.supabase
+      .storage
+      .from(this.bucket)
+      .getPublicUrl(storagePath, {
+        transform: undefined
+      });
+
+    return publicUrlResponse.data?.publicUrl ?? null;
   }
 }

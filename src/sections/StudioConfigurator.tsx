@@ -43,6 +43,7 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
   const startStylePreview = useFounderStore((state) => state.startStylePreview);
   const orientationPreviewPending = useFounderStore((state) => state.orientationPreviewPending);
   const anonToken = useFounderStore((state) => state.anonToken);
+  const setAccountPromptShown = useFounderStore((state) => state.setAccountPromptShown);
   const cachedPreviewEntry = useFounderStore((state) => {
     const styleId = state.selectedStyleId;
     if (!styleId) return null;
@@ -58,6 +59,11 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
   const handleSaveToGallery = async () => {
     if (!currentStyle || !preview?.data?.previewUrl) {
       alert('No preview available to save');
+      return;
+    }
+
+    if (!sessionUser) {
+      setAccountPromptShown(true);
       return;
     }
 

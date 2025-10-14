@@ -7,6 +7,7 @@ import StudioPage from './pages/StudioPage';
 import PricingPage from './pages/PricingPage';
 import UsagePage from './pages/UsagePage';
 import GalleryPage from './pages/GalleryPage';
+import CheckoutPage from './pages/CheckoutPage';
 import AuthProvider from './providers/AuthProvider';
 
 const App = () => {
@@ -17,6 +18,7 @@ const App = () => {
       <Route path="/pricing" element={<PricingPage />} />
       <Route path="/studio/usage" element={<UsagePage />} />
       <Route path="/studio/gallery" element={<GalleryPage />} />
+      <Route path="/checkout" element={<CheckoutPage />} />
     </Routes>
   );
 };
