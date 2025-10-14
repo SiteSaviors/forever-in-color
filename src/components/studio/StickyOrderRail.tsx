@@ -5,6 +5,7 @@ import { cacheSmartCropResult, generateSmartCrop, ORIENTATION_PRESETS, SmartCrop
 import type { Orientation } from '@/utils/imageUtils';
 import { CANVAS_SIZE_OPTIONS, getCanvasSizeOption, getDefaultSizeForOrientation } from '@/utils/canvasSizes';
 import CropperModal from '@/components/launchpad/cropper/CropperModal';
+import { createOrderCheckoutSession, type OrderLineItem } from '@/utils/checkoutApi';
 
 const StickyOrderRail = () => {
   const inFlightCropsRef = useRef<Map<Orientation, Promise<SmartCropResult>>>(new Map());
@@ -21,6 +22,7 @@ const StickyOrderRail = () => {
   const startStylePreview = useFounderStore((state) => state.startStylePreview);
   const setPreviewState = useFounderStore((state) => state.setPreviewState);
   const originalImage = useFounderStore((state) => state.originalImage);
+  const croppedImage = useFounderStore((state) => state.croppedImage);
   const originalImageDimensions = useFounderStore((state) => state.originalImageDimensions);
   const smartCrops = useFounderStore((state) => state.smartCrops);
   const setSmartCropForOrientation = useFounderStore((state) => state.setSmartCropForOrientation);
@@ -33,13 +35,19 @@ const StickyOrderRail = () => {
   const setCanvasSize = useFounderStore((state) => state.setCanvasSize);
   const selectedFrame = useFounderStore((state) => state.selectedFrame);
   const setFrame = useFounderStore((state) => state.setFrame);
+  const orientationPreviewPending = useFounderStore((state) => state.orientationPreviewPending);
   const setOrientationPreviewPending = useFounderStore((state) => state.setOrientationPreviewPending);
+  const sessionUser = useFounderStore((state) => state.sessionUser);
+  const accessToken = useFounderStore((state) => state.accessToken);
 
   const floatingFrame = enhancements.find((e) => e.id === 'floating-frame');
   const livingCanvas = enhancements.find((e) => e.id === 'living-canvas');
 
   const enabledEnhancements = enhancements.filter((item) => item.enabled);
   const hasEnhancements = enabledEnhancements.length > 0;
+
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   const handleLivingCanvasToggle = () => {
     if (!livingCanvas?.enabled) {
@@ -187,6 +195,75 @@ const StickyOrderRail = () => {
 
   const activeOrientationValue = pendingOrientation ?? orientation;
   const sizeOptionsForOrientation = CANVAS_SIZE_OPTIONS[activeOrientationValue];
+  const selectedSizeOption = getCanvasSizeOption(selectedSize);
+  const hasFinalizedPhoto = Boolean(croppedImage);
+  const checkoutDisabled =
+    !currentStyle ||
+    !hasFinalizedPhoto ||
+    !selectedSizeOption ||
+    orientationPreviewPending ||
+    orientationChanging ||
+    isPlacingOrder;
+
+  const handleCheckout = async () => {
+    if (checkoutDisabled) return;
+
+    if (!currentStyle || !selectedSizeOption || !croppedImage) {
+      setCheckoutError('Select your style and finalize your photo before checking out.');
+      return;
+    }
+
+    setCheckoutError(null);
+    setIsPlacingOrder(true);
+
+    try {
+      const items: OrderLineItem[] = [
+        {
+          name: `${currentStyle.name} Canvas`,
+          description: `${selectedSizeOption.label} • ${ORIENTATION_PRESETS[orientation].label}`,
+          amount: Math.round(selectedSizeOption.price * 100),
+        },
+      ];
+
+      const styleModifier = currentStyle.priceModifier ?? 0;
+      if (styleModifier > 0) {
+        items.push({
+          name: `${currentStyle.name} Style Upgrade`,
+          amount: Math.round(styleModifier * 100),
+        });
+      }
+
+      enhancements
+        .filter((item) => item.enabled)
+        .forEach((item) => {
+          items.push({
+            name: `Enhancement: ${item.name}`,
+            description: item.description,
+            amount: Math.round(item.price * 100),
+          });
+        });
+
+      const successUrl =
+        typeof window !== 'undefined' ? `${window.location.origin}/create?checkout=success` : undefined;
+      const cancelUrl =
+        typeof window !== 'undefined' ? `${window.location.origin}/create?checkout=cancelled` : undefined;
+
+      const { url } = await createOrderCheckoutSession({
+        items,
+        accessToken,
+        customerEmail: sessionUser?.email ?? null,
+        successUrl,
+        cancelUrl,
+      });
+
+      window.location.href = url;
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Unable to start checkout. Please try again.';
+      setCheckoutError(message);
+      setIsPlacingOrder(false);
+    }
+  };
 
   return (
     <aside className="md:sticky md:top-24 space-y-4">
@@ -409,10 +486,10 @@ const StickyOrderRail = () => {
         <div className="space-y-2">
           <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 text-sm">
             <span className="text-white/70">
-              {currentStyle?.name ?? 'Canvas'} • {getCanvasSizeOption(selectedSize)?.label ?? '—'}
+              {currentStyle?.name ?? 'Canvas'} • {selectedSizeOption?.label ?? '—'}
             </span>
             <span className="font-bold text-white">
-              ${getCanvasSizeOption(selectedSize)?.price ?? basePrice}
+              ${selectedSizeOption?.price ?? basePrice}
             </span>
           </div>
 
@@ -443,9 +520,21 @@ const StickyOrderRail = () => {
           <span className="text-2xl font-bold text-white">${total.toFixed(2)}</span>
         </div>
 
-        <button className="w-full bg-gradient-cta text-white font-bold text-base px-6 py-4 rounded-xl shadow-glow-purple hover:shadow-glow-purple hover:scale-[1.02] transition-all duration-300">
-          Complete Your Order →
+        <button
+          onClick={() => void handleCheckout()}
+          disabled={checkoutDisabled}
+          className={`w-full bg-gradient-cta text-white font-bold text-base px-6 py-4 rounded-xl shadow-glow-purple transition-all duration-300 ${
+            checkoutDisabled ? 'opacity-60 cursor-not-allowed' : 'hover:shadow-glow-purple hover:scale-[1.02]'
+          }`}
+        >
+          {isPlacingOrder ? 'Redirecting to Checkout…' : 'Complete Your Order →'}
         </button>
+
+        {checkoutError && (
+          <div className="rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-xs text-red-200">
+            {checkoutError}
+          </div>
+        )}
 
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-xs text-white/60">
