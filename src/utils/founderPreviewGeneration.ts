@@ -72,13 +72,13 @@ export const startFounderPreviewGeneration = async ({
     };
   }
 
+  // Server determines watermarking based on entitlements - frontend doesn't control this
   const result = await generateAndWatermarkPreview(
     imageUrl,
     styleName,
     styleId,
     aspectRatio,
     {
-      watermark: true,
       onStage: (stage) => onStage?.(stage),
       anonToken,
       accessToken,

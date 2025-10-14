@@ -211,7 +211,7 @@ async function handleWebhookRequest(req: Request, url: URL, origin: string | nul
             }
           }
 
-          const uploadResult = await storageClient.uploadFromUrl(processedOutput, storagePath);
+          const uploadResult = await storageClient.uploadFromUrl(processedOutput, storagePath, {}, watermark);
           previewUrl = uploadResult.publicUrl;
 
           await cacheMetadataService.upsert({
@@ -914,7 +914,9 @@ serve(async (req) => {
         try {
           const storagePath = computeStoragePath(styleMetadata.styleId, normalizedAspectRatio, normalizedQuality, imageDigest);
           const ttlExpiresAt = new Date(Date.now() + ttlMs).toISOString();
-          const uploadResult = await storageClient.uploadFromUrl(processedOutput, storagePath);
+
+          // Upload to appropriate bucket based on watermark requirement
+          const uploadResult = await storageClient.uploadFromUrl(processedOutput, storagePath, {}, effectiveWatermark);
           finalPreviewUrl = uploadResult.publicUrl;
 
           await cacheMetadataService.upsert({
@@ -933,6 +935,12 @@ serve(async (req) => {
 
           memoryCache.set(cacheKey, uploadResult.publicUrl, ttlMs);
           cacheStatus = 'hit';
+
+          logger.info('Preview cached successfully', {
+            requestId,
+            bucket: uploadResult.isPublicBucket ? 'public' : 'premium',
+            watermarked: effectiveWatermark
+          });
         } catch (error) {
           logger.warn('Failed to cache preview output', { error: error instanceof Error ? error.message : String(error), cacheKey, requestId });
         }

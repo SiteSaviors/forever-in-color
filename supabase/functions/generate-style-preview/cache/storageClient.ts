@@ -8,15 +8,32 @@ interface UploadOptions {
 export interface StorageUploadResult {
   storagePath: string;
   publicUrl: string;
+  isPublicBucket: boolean;
+}
+
+export interface SignedUrlResult {
+  signedUrl: string;
+  expiresAt: number;
 }
 
 export class PreviewStorageClient {
+  private readonly publicBucket: string;
+  private readonly premiumBucket: string;
+
   constructor(
     private readonly supabase: SupabaseClient,
-    private readonly bucket: string
-  ) {}
+    bucket: string
+  ) {
+    // Dual-bucket system: public for watermarked, premium for clean
+    this.publicBucket = `${bucket}-public`;
+    this.premiumBucket = `${bucket}-premium`;
+  }
 
-  async uploadFromUrl(sourceUrl: string, storagePath: string, options: UploadOptions = {}): Promise<StorageUploadResult> {
+  /**
+   * Upload to appropriate bucket based on watermark requirement
+   * @param requiresWatermark - If true, uploads to public bucket; if false, uploads to premium bucket
+   */
+  async uploadFromUrl(sourceUrl: string, storagePath: string, options: UploadOptions = {}, requiresWatermark = true): Promise<StorageUploadResult> {
     let arrayBuffer: ArrayBuffer;
     let contentType = options.contentType ?? 'image/jpeg';
 
@@ -45,16 +62,24 @@ export class PreviewStorageClient {
     return this.uploadFromBuffer(arrayBuffer, storagePath, {
       cacheControl: options.cacheControl,
       contentType
-    });
+    }, requiresWatermark);
   }
 
-  async uploadFromBuffer(buffer: ArrayBuffer, storagePath: string, options: UploadOptions = {}): Promise<StorageUploadResult> {
+  /**
+   * Upload buffer to appropriate bucket based on watermark requirement
+   * @param requiresWatermark - If true, uploads to public bucket; if false, uploads to premium bucket
+   */
+  async uploadFromBuffer(buffer: ArrayBuffer, storagePath: string, options: UploadOptions = {}, requiresWatermark = true): Promise<StorageUploadResult> {
     const cacheControl = options.cacheControl ?? 'public, max-age=2592000';
     const contentType = options.contentType ?? 'image/jpeg';
 
+    // Select bucket based on watermark requirement
+    const targetBucket = requiresWatermark ? this.publicBucket : this.premiumBucket;
+    const isPublicBucket = requiresWatermark;
+
     const uploadResponse = await this.supabase
       .storage
-      .from(this.bucket)
+      .from(targetBucket)
       .upload(storagePath, buffer, {
         contentType,
         upsert: true,
@@ -65,9 +90,11 @@ export class PreviewStorageClient {
       throw new Error(`Supabase storage upload failed: ${uploadResponse.error.message}`);
     }
 
+    // For public bucket, return public URL
+    // For premium bucket, we'll generate signed URLs on-demand
     const publicUrlResponse = this.supabase
       .storage
-      .from(this.bucket)
+      .from(targetBucket)
       .getPublicUrl(storagePath, {
         transform: undefined
       });
@@ -80,18 +107,57 @@ export class PreviewStorageClient {
 
     return {
       storagePath,
-      publicUrl
+      publicUrl,
+      isPublicBucket
     };
   }
 
-  getPublicUrl(storagePath: string): string | null {
+  getPublicUrl(storagePath: string, isPublicBucket = true): string | null {
+    const bucket = isPublicBucket ? this.publicBucket : this.premiumBucket;
     const publicUrlResponse = this.supabase
       .storage
-      .from(this.bucket)
+      .from(bucket)
       .getPublicUrl(storagePath, {
         transform: undefined
       });
 
     return publicUrlResponse.data?.publicUrl ?? null;
+  }
+
+  /**
+   * Generate a signed URL for premium bucket access
+   * @param storagePath - Path in premium bucket
+   * @param expiresInSeconds - URL expiry time (default: 24 hours)
+   */
+  async createSignedUrl(storagePath: string, expiresInSeconds = 86400): Promise<SignedUrlResult> {
+    const { data, error } = await this.supabase
+      .storage
+      .from(this.premiumBucket)
+      .createSignedUrl(storagePath, expiresInSeconds);
+
+    if (error || !data?.signedUrl) {
+      throw new Error(`Failed to create signed URL: ${error?.message ?? 'Unknown error'}`);
+    }
+
+    return {
+      signedUrl: data.signedUrl,
+      expiresAt: Date.now() + (expiresInSeconds * 1000)
+    };
+  }
+
+  /**
+   * Check if a storage path exists in the specified bucket
+   */
+  async exists(storagePath: string, isPublicBucket = true): Promise<boolean> {
+    const bucket = isPublicBucket ? this.publicBucket : this.premiumBucket;
+    const { data, error } = await this.supabase
+      .storage
+      .from(bucket)
+      .list(storagePath.split('/').slice(0, -1).join('/'), {
+        search: storagePath.split('/').pop()
+      });
+
+    if (error) return false;
+    return data && data.length > 0;
   }
 }

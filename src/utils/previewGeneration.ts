@@ -2,7 +2,6 @@ import { generateStylePreview } from './stylePreviewApi';
 import { pollPreviewStatusUntilReady } from './previewPolling';
 
 export interface GeneratePreviewOptions {
-  watermark?: boolean;
   quality?: 'low' | 'medium' | 'high' | 'auto';
   onStage?: (stage: 'generating' | 'polling' | 'watermarking') => void;
   idempotencyKey?: string;
@@ -25,18 +24,19 @@ export const generateAndWatermarkPreview = async (
   aspectRatio: string,
   options: GeneratePreviewOptions = {}
 ): Promise<GeneratePreviewResult> => {
-  const { watermark = true, onStage } = options;
+  const { onStage } = options;
 
   onStage?.('generating');
 
   const requestId = `${styleId}-${Date.now()}`;
+  // Note: Watermarking is now determined server-side based on user entitlements
+  // Frontend no longer controls watermark parameter
   const generationResult = await generateStylePreview({
     imageUrl,
     style: styleName,
     photoId: requestId,
     aspectRatio,
     options: {
-      watermark,
       quality: options.quality,
       idempotencyKey: options.idempotencyKey ?? requestId,
       anonToken: options.anonToken ?? null,

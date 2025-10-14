@@ -69,12 +69,14 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
 
     setSavingToGallery(true);
 
+    // Only provide cleanUrl if user has premium access (preview not watermarked)
+    // Server will validate this matches their tier
     const result = await saveToGallery({
       styleId: currentStyle.id,
       styleName: currentStyle.name,
       orientation,
       watermarkedUrl: preview.data.previewUrl,
-      cleanUrl: preview.data.watermarkApplied ? undefined : preview.data.previewUrl,
+      cleanUrl: preview.data.requiresWatermark ? undefined : preview.data.previewUrl,
       anonToken: sessionUser ? undefined : anonToken,
       accessToken: sessionAccessToken || null,
     });

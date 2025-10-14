@@ -44,7 +44,6 @@ export interface GeneratePreviewParams {
   photoId: string;
   aspectRatio: string;
   options?: {
-    watermark?: boolean;
     quality?: 'low' | 'medium' | 'high' | 'auto';
     idempotencyKey: string;
     anonToken?: string | null;
@@ -80,12 +79,12 @@ export const generateStylePreview = async (
 
   headers['X-Idempotency-Key'] = options.idempotencyKey;
 
+  // Note: watermark parameter removed - server determines based on entitlements
   const requestBody = {
     imageUrl,
     style,
     photoId,
     aspectRatio,
-    watermark: options.watermark !== false,
     quality: options.quality ?? 'medium',
     isAuthenticated: Boolean(options.accessToken),
   };
