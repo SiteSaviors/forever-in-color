@@ -1,19 +1,20 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { clsx } from 'clsx';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { useFounderStore } from '@/store/useFounderStore';
 import { useAuthModal } from '@/store/useAuthModal';
 
 const NAV_LINKS = [
-  { id: 'studio', label: 'STUDIO', to: '/create#studio' },
-  { id: 'styles', label: 'STYLES', to: '/#styles' },
-  { id: 'pricing', label: 'PRICING', to: '/#pricing' },
-  { id: 'support', label: 'SUPPORT', to: '/#support' },
+  { id: 'studio', label: 'STUDIO', to: '/create#studio', type: 'anchor' as const },
+  { id: 'styles', label: 'STYLES', to: '/#styles', type: 'anchor' as const },
+  { id: 'pricing', label: 'PRICING', to: '/pricing', type: 'route' as const },
+  { id: 'support', label: 'SUPPORT', to: '/#support', type: 'anchor' as const },
 ];
 
 const FounderNavigation = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const generationCount = useFounderStore((state) => state.generationCount);
   const getGenerationLimit = useFounderStore((state) => state.getGenerationLimit);
   const cartItemCount = useFounderStore(
@@ -133,12 +134,14 @@ const FounderNavigation = () => {
                 to={link.to}
                 className="group relative inline-flex items-center text-xs font-semibold tracking-[0.55em] text-white/70 transition duration-200 ease-out hover:text-white"
                 onClick={(event) => {
-                  const anchor = document.querySelector<HTMLElement>(
-                    `[data-founder-anchor="${link.id}"]`
-                  );
-                  if (anchor) {
-                    event.preventDefault();
-                    anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  if (link.type === 'anchor') {
+                    const anchor = document.querySelector<HTMLElement>(
+                      `[data-founder-anchor="${link.id}"]`
+                    );
+                    if (anchor) {
+                      event.preventDefault();
+                      anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
                   }
                 }}
               >
@@ -269,10 +272,30 @@ const FounderNavigation = () => {
                       >
                         Create account
                       </DropdownMenu.Item>
+                      <DropdownMenu.Item
+                        className="cursor-pointer rounded-xl px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+                        onSelect={(event) => {
+                          event.preventDefault();
+                          navigate('/pricing');
+                        }}
+                      >
+                        Explore plans
+                      </DropdownMenu.Item>
                     </div>
                   )
                 ) : (
                   <p className="px-3 py-2 text-center text-xs text-white/50">Preparing your studio…</p>
+                )}
+                {isAuthenticated && entitlements.tier !== 'pro' && (
+                  <div className="mt-2 px-3">
+                    <button
+                      type="button"
+                      onClick={() => navigate('/pricing')}
+                      className="w-full rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/15"
+                    >
+                      Upgrade membership
+                    </button>
+                  </div>
                 )}
               </DropdownMenu.Content>
             </DropdownMenu.Root>
