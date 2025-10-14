@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { clsx } from 'clsx';
 import FounderNavigation from '@/components/navigation/FounderNavigation';
 import Section from '@/components/layout/Section';
 import Card from '@/components/ui/Card';
@@ -17,10 +18,10 @@ type Tier = {
   description: string;
   price: string;
   priceDetail: string;
-  tokensPerMonth: string;
+  tokensPerMonth: number;
+  tokensLabel?: string;
   features: string[];
   gradient: string;
-  badge?: string;
 };
 
 const TIERS: Tier[] = [
@@ -31,14 +32,15 @@ const TIERS: Tier[] = [
     description: '10 watermarked generations per month, access to all core styles, and Living Canvas previews.',
     price: '$0',
     priceDetail: 'Forever',
-    tokensPerMonth: '10 tokens',
+    tokensPerMonth: 10,
+    tokensLabel: 'Tokens',
     features: [
       'Watermarked previews',
       'Living Canvas demo access',
       'Smart style recommendations',
       'Community momentum feed',
     ],
-    gradient: 'from-slate-800 via-slate-900 to-slate-950',
+    gradient: 'from-[#1f243b] via-[#1a1f38] to-[#171a2f]',
   },
   {
     id: 'creator',
@@ -47,7 +49,8 @@ const TIERS: Tier[] = [
     description: 'Unlock watermark-free previews, download-ready exports, and elevated social proof modules.',
     price: '$9.99',
     priceDetail: 'per month',
-    tokensPerMonth: '50 tokens',
+    tokensPerMonth: 50,
+    tokensLabel: 'Tokens',
     features: [
       'Watermark-free previews & downloads',
       '50 premium generations per month',
@@ -55,8 +58,7 @@ const TIERS: Tier[] = [
       'Priority in Wondertone queues',
       'Creator badge in Studio & marketplace',
     ],
-    gradient: 'from-purple-500/70 via-indigo-500/70 to-blue-500/70',
-    badge: 'Most Loved',
+    gradient: 'from-[#6c3df2]/85 via-[#4a50ff]/85 to-[#1ca7ff]/85',
   },
   {
     id: 'plus',
@@ -65,7 +67,8 @@ const TIERS: Tier[] = [
     description: 'High-throughput generations, batch downloads, and concierge support for mobile pop-ups or live events.',
     price: '$29.99',
     priceDetail: 'per month',
-    tokensPerMonth: '250 tokens',
+    tokensPerMonth: 250,
+    tokensLabel: 'Tokens',
     features: [
       '250 premium generations / month',
       'Batch watermarked & clean exports',
@@ -73,7 +76,7 @@ const TIERS: Tier[] = [
       'Priority queue (2× speed boost)',
       'Shared brand assets & style kits',
     ],
-    gradient: 'from-blue-500/80 via-cyan-500/80 to-emerald-500/80',
+    gradient: 'from-[#31a8ff]/85 via-[#09d3ef]/80 to-[#26f0b9]/80',
   },
   {
     id: 'pro',
@@ -82,7 +85,8 @@ const TIERS: Tier[] = [
     description: 'Unlock Wondertone concierge, white-label experiences, and 500 tokens for large activations.',
     price: '$59.99',
     priceDetail: 'per month',
-    tokensPerMonth: '500 tokens',
+    tokensPerMonth: 500,
+    tokensLabel: 'Tokens',
     features: [
       '500 premium generations / month',
       'Wondertone concierge team & white-label support',
@@ -90,8 +94,7 @@ const TIERS: Tier[] = [
       'Priority queue (3× speed boost)',
       'Guaranteed Living Canvas production in 48h',
     ],
-    gradient: 'from-amber-400/80 via-orange-500/80 to-rose-500/80',
-    badge: 'Studio Favorite',
+    gradient: 'from-[#ffa62e]/85 via-[#ff6b45]/85 to-[#f63b81]/85',
   },
 ];
 
@@ -165,56 +168,73 @@ const PricingPage = () => {
       <Card
         key={tier.id}
         glass
-        className={
-          tier.id === 'free'
-            ? 'relative border-white/10 bg-white/5'
-            : `relative border-transparent bg-gradient-to-br ${tier.gradient}`
-        }
-      >
-        {tier.badge && (
-          <span className="absolute right-4 top-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.35em] text-white/80">
-            {tier.badge}
-          </span>
+        className={clsx(
+          'relative overflow-hidden rounded-[28px] border border-white/15 backdrop-blur-xl',
+          tier.id === 'free' ? 'bg-[#1d2035]/80' : `bg-gradient-to-br ${tier.gradient}`
         )}
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <h3 className="text-2xl font-semibold text-white">{tier.name}</h3>
-            <p className="text-sm text-white/70">{tier.tagline}</p>
+      >
+        <div className="relative flex h-full flex-col rounded-[inherit] border border-white/10 bg-black/20 px-7 py-9">
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <h3 className="text-2xl font-semibold text-white">{tier.name}</h3>
+              <p className="text-sm text-white/65">{tier.tagline}</p>
+            </div>
+            <div className="flex items-baseline gap-2 text-white">
+              <span className="text-4xl font-semibold">{tier.price}</span>
+              <span className="text-sm text-white/60">{tier.priceDetail}</span>
+            </div>
+            <p className="text-sm text-white/65">{tier.description}</p>
           </div>
-          <div className="flex items-baseline gap-2 text-white">
-            <span className="text-4xl font-semibold">{tier.price}</span>
-            <span className="text-sm text-white/60">{tier.priceDetail}</span>
-          </div>
-          <p className="text-sm text-white/70">{tier.description}</p>
-          <div className="space-y-2 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/80">
-            <p className="font-semibold">{tier.tokensPerMonth}</p>
-            <ul className="space-y-1 text-white/70">
+          <div className="mt-8 flex flex-col gap-4 rounded-2xl border border-white/20 bg-white/10 p-6 text-sm text-white/80">
+            <div className="flex items-baseline justify-between text-xs uppercase tracking-[0.45em] text-white/60">
+              <span>Monthly Tokens</span>
+              <span className="text-xl font-semibold tracking-normal text-white">
+                {tier.tokensPerMonth}
+                <span className="ml-1 text-xs font-medium uppercase text-white/60">{tier.tokensLabel ?? 'tokens'}</span>
+              </span>
+            </div>
+            <ul className="space-y-2 text-white/72">
               {tier.features.map((feature) => (
-                <li key={feature} className="flex items-center gap-2">
-                  <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-white/20 bg-white/10 text-xs text-white/80">
+                <li key={feature} className="flex items-start gap-3">
+                  <span className="mt-1 inline-flex h-4 w-4 items-center justify-center rounded-full border border-white/20 bg-white/15 text-[10px] text-white/80">
                     ✓
                   </span>
-                  {feature}
+                  <span>{feature}</span>
                 </li>
               ))}
             </ul>
           </div>
-          <Button
-            className="w-full"
-            disabled={isCurrent || isLoading}
-            onClick={() => handleSelectTier(tier.id)}
-          >
-            {isCurrent ? 'Current plan' : isLoading ? 'Preparing checkout…' : tier.id === 'free' ? 'Start creating' : 'Upgrade with Wondertone' }
-          </Button>
+          <div className="mt-auto pt-6">
+            <Button
+              className={clsx(
+                'w-full rounded-full py-3 text-sm font-semibold transition-transform duration-200',
+                tier.id === 'free'
+                  ? 'bg-white text-slate-900 shadow-[0_20px_55px_rgba(15,23,42,0.35)] hover:-translate-y-[2px]'
+                  : 'bg-white text-slate-900 shadow-[0_22px_60px_rgba(76,29,149,0.45)] hover:-translate-y-[2px]'
+              )}
+              disabled={isCurrent || isLoading}
+              onClick={() => handleSelectTier(tier.id)}
+            >
+              {isCurrent
+                ? 'Current plan'
+                : isLoading
+                  ? 'Preparing checkout…'
+                  : tier.id === 'free'
+                    ? 'Start creating'
+                    : 'Upgrade with Wondertone'}
+            </Button>
+          </div>
         </div>
       </Card>
     );
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="relative min-h-screen overflow-hidden bg-[linear-gradient(135deg,#120a3b_0%,#1f1680_45%,#032758_100%)] text-white">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,rgba(116,62,255,0.35),transparent_55%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_85%,rgba(9,211,239,0.25),transparent_60%)]" />
       <FounderNavigation />
-      <main className="pt-32 pb-24">
+      <main className="relative pt-32 pb-24">
         <Section className="space-y-16">
           <div className="mx-auto max-w-4xl space-y-6 text-center">
             <h1 className="text-4xl font-semibold md:text-5xl">Choose the Wondertone plan that fits your story</h1>
@@ -233,11 +253,11 @@ const PricingPage = () => {
             )}
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <div className="mx-auto grid max-w-6xl gap-8 sm:grid-cols-2 xl:grid-cols-4">
             {TIERS.map(renderTierCard)}
           </div>
 
-          <div className="mx-auto max-w-4xl space-y-6 rounded-[36px] border border-white/10 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950/80 p-10 text-left shadow-[0_35px_100px_rgba(76,29,149,0.35)]">
+          <div className="mx-auto max-w-5xl space-y-6 rounded-[36px] border border-white/10 bg-gradient-to-br from-[#14152d]/90 via-[#101226]/90 to-[#13182c]/90 p-10 text-left shadow-[0_45px_110px_rgba(76,29,149,0.4)] backdrop-blur-xl">
             <h2 className="text-2xl font-semibold text-white">Every Wondertone membership unlocks:</h2>
             <ul className="grid gap-4 text-sm text-white/70 md:grid-cols-2">
               <li>✨ Guided studio flow with Living Canvas AR previews</li>
