@@ -248,7 +248,7 @@ with base as (
     coalesce(s.current_period_start, date_trunc('month', timezone('utc', now()))) as period_start,
     coalesce(s.current_period_end, (date_trunc('month', timezone('utc', now())) + interval '1 month')) as period_end
   from public.profiles p
-  left join public.subscriptions s on s.user_id = p.user_id
+  left join public.subscriptions s on s.user_id = p.id
 )
 select
   b.user_id,
