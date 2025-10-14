@@ -87,7 +87,7 @@ export const generateStylePreview = async (
     aspectRatio,
     watermark: options.watermark !== false,
     quality: options.quality ?? 'medium',
-    isAuthenticated: false,
+    isAuthenticated: Boolean(options.accessToken),
   };
 
   const response = await fetch(`${SUPABASE_URL}/functions/v1/generate-style-preview`, {

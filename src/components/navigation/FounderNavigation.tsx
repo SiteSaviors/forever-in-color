@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { clsx } from 'clsx';
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { useFounderStore } from '@/store/useFounderStore';
+import { useAuthModal } from '@/store/useAuthModal';
 
 const NAV_LINKS = [
   { id: 'studio', label: 'STUDIO', to: '/create#studio' },
@@ -17,6 +19,11 @@ const FounderNavigation = () => {
   const cartItemCount = useFounderStore(
     (state) => state.enhancements.filter((enhancement) => enhancement.enabled).length
   );
+  const entitlements = useFounderStore((state) => state.entitlements);
+  const sessionUser = useFounderStore((state) => state.sessionUser);
+  const sessionHydrated = useFounderStore((state) => state.sessionHydrated);
+  const signOut = useFounderStore((state) => state.signOut);
+  const openAuthModal = useAuthModal((state) => state.openModal);
   const [isAtTop, setIsAtTop] = useState(true);
   const [heroVisible, setHeroVisible] = useState(true);
 
@@ -61,6 +68,33 @@ const FounderNavigation = () => {
     }
     return remaining.toString();
   }, [generationCount, generationLimit]);
+
+  const tierLabel = useMemo(() => {
+    switch (entitlements.tier) {
+      case 'creator':
+        return 'Creator';
+      case 'plus':
+        return 'Plus';
+      case 'pro':
+        return 'Pro';
+      case 'dev':
+        return 'Wonder Lab';
+      case 'free':
+        return 'Free';
+      default:
+        return 'Guest';
+    }
+  }, [entitlements.tier]);
+
+  const remainingTokenDisplay = useMemo(() => {
+    const value = entitlements.remainingTokens;
+    if (value == null) return '∞';
+    return Math.max(0, value).toString();
+  }, [entitlements.remainingTokens]);
+
+  const accountInitial = sessionUser?.email?.charAt(0).toUpperCase() ?? '✦';
+  const userEmail = sessionUser?.email ?? 'Wondertone Creator';
+  const isAuthenticated = Boolean(sessionUser);
 
   return (
     <div
@@ -161,27 +195,87 @@ const FounderNavigation = () => {
               </span>
             </button>
 
-            <button
-              type="button"
-              className="group relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/5 text-white transition-all duration-200 hover:scale-105 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/80"
-              aria-label="Account"
-            >
-              <span className="absolute inset-0 bg-gradient-to-br from-white/15 via-white/5 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.7"
-                className="h-5 w-5"
+            <DropdownMenu.Root>
+              <DropdownMenu.Trigger asChild>
+                <button
+                  type="button"
+                  className="group relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/5 text-white transition-all duration-200 hover:scale-105 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/80"
+                  aria-label={isAuthenticated ? 'Account menu' : 'Sign in'}
+                >
+                  <span className="absolute inset-0 bg-gradient-to-br from-white/15 via-white/5 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+                  <span className="relative inline-flex h-8 w-8 items-center justify-center rounded-2xl border border-white/20 bg-gradient-to-br from-purple-500/40 via-indigo-500/40 to-blue-500/40 text-sm font-semibold text-white">
+                    {accountInitial}
+                  </span>
+                </button>
+              </DropdownMenu.Trigger>
+              <DropdownMenu.Content
+                sideOffset={12}
+                align="end"
+                className="z-50 w-64 rounded-2xl border border-white/10 bg-slate-950/95 p-3 shadow-[0_25px_80px_rgba(76,29,149,0.45)] backdrop-blur-xl"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M5 20.5V19a4 4 0 014-4h6a4 4 0 014 4v1.5M12 11a4 4 0 100-8 4 4 0 000 8z"
-                />
-              </svg>
-            </button>
+                <DropdownMenu.Label className="px-3 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-white/40">
+                  {sessionHydrated ? (isAuthenticated ? 'Signed In' : 'Guest Mode') : 'Loading…'}
+                </DropdownMenu.Label>
+                <div className="space-y-2 px-3 pb-3 text-sm text-white/80">
+                  {isAuthenticated ? (
+                    <>
+                      <p className="font-semibold text-white">{userEmail}</p>
+                      <div className="flex items-center justify-between text-xs text-white/60">
+                        <span>Tier</span>
+                        <span className="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-white/70">
+                          {tierLabel}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs text-white/60">
+                        <span>Tokens left</span>
+                        <span>{remainingTokenDisplay}</span>
+                      </div>
+                    </>
+                  ) : (
+                    <p className="text-white/60">
+                      Sign in to sync your creations, unlock more tokens, and pick up where you left off.
+                    </p>
+                  )}
+                </div>
+                <DropdownMenu.Separator className="my-2 h-px bg-white/10" />
+                {sessionHydrated ? (
+                  isAuthenticated ? (
+                    <DropdownMenu.Item
+                      className="cursor-pointer rounded-xl px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+                      onSelect={(event) => {
+                        event.preventDefault();
+                        void signOut();
+                      }}
+                    >
+                      Sign out
+                    </DropdownMenu.Item>
+                  ) : (
+                    <div className="flex flex-col gap-2">
+                      <DropdownMenu.Item
+                        className="cursor-pointer rounded-xl px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+                        onSelect={(event) => {
+                          event.preventDefault();
+                          openAuthModal('signin');
+                        }}
+                      >
+                        Sign in
+                      </DropdownMenu.Item>
+                      <DropdownMenu.Item
+                        className="cursor-pointer rounded-xl px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+                        onSelect={(event) => {
+                          event.preventDefault();
+                          openAuthModal('signup');
+                        }}
+                      >
+                        Create account
+                      </DropdownMenu.Item>
+                    </div>
+                  )
+                ) : (
+                  <p className="px-3 py-2 text-center text-xs text-white/50">Preparing your studio…</p>
+                )}
+              </DropdownMenu.Content>
+            </DropdownMenu.Root>
           </div>
         </div>
       </div>

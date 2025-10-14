@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { useFounderStore } from '@/store/useFounderStore';
 import { useMemo } from 'react';
+import { useAuthModal } from '@/store/useAuthModal';
 
 interface AccountPromptModalProps {
   open: boolean;
@@ -11,7 +12,7 @@ interface AccountPromptModalProps {
 
 const AccountPromptModal = ({ open, onClose }: AccountPromptModalProps) => {
   const dismissAccountPrompt = useFounderStore((state) => state.dismissAccountPrompt);
-  const setAuthenticated = useFounderStore((state) => state.setAuthenticated);
+  const openAuthModal = useAuthModal((state) => state.openModal);
   const previews = useFounderStore((state) => state.previews);
   const styles = useFounderStore((state) => state.styles);
 
@@ -36,12 +37,9 @@ const AccountPromptModal = ({ open, onClose }: AccountPromptModalProps) => {
   }, [previews, styles]);
 
   const handleCreateAccount = () => {
-    // Mock account creation - in production, this would open signup flow
-    setAuthenticated(true);
+    openAuthModal('signup');
+    dismissAccountPrompt();
     onClose();
-
-    // TODO: Implement actual signup flow with Supabase
-    // For now, just set authenticated state
   };
 
   const handleDismiss = () => {

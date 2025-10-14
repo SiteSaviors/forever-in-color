@@ -77,8 +77,8 @@ const parseJwtBearer = (headerValue?: string | null): string | null => {
 
 const ensureProfile = async (supabase: SupabaseClient, userId: string) => {
   await supabase.from('profiles').upsert(
-    { user_id: userId },
-    { onConflict: 'user_id' }
+    { id: userId },
+    { onConflict: 'id' }
   );
 };
 
@@ -109,7 +109,7 @@ export const resolveEntitlements = async ({
     const { data: profileRow } = await supabase
       .from('profiles')
       .select('dev_override, stripe_customer_id')
-      .eq('user_id', userId)
+      .eq('id', userId)
       .maybeSingle();
 
     const devOverride = Boolean(profileRow?.dev_override);

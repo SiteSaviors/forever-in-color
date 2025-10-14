@@ -37,13 +37,16 @@ const STAGE_MESSAGES = {
   error: 'Generation failed',
 } as const;
 
+type SessionUser = {
+  id: string;
+  email: string | null;
+};
+
 const tierFromServer = (value?: string | null, devOverride = false): EntitlementTier => {
   if (devOverride) return 'dev';
   switch ((value ?? '').toLowerCase()) {
     case 'anonymous':
       return 'anonymous';
-    case 'authenticated':
-      return 'free';
     case 'creator':
     case 'plus':
     case 'pro':
@@ -178,13 +181,15 @@ type FounderState = {
   hoveredStyleId: string | null;
   preselectedStyleId: string | null;
   entitlements: EntitlementState;
+  sessionUser: SessionUser | null;
+  accessToken: string | null;
+  sessionHydrated: boolean;
   anonToken: string | null;
   uploadIntentAt: number | null;
   generationCount: number;
   isAuthenticated: boolean;
   accountPromptShown: boolean;
   accountPromptDismissed: boolean;
-  subscriptionTier: 'free' | 'creator' | 'pro' | null;
   accountPromptTriggerAt: number | null;
   originalImage: string | null;
   originalImageDimensions: { width: number; height: number } | null;
@@ -225,10 +230,10 @@ type FounderState = {
   setSmartCropForOrientation: (orientation: Orientation, result: SmartCropResult) => void;
   clearSmartCrops: () => void;
   incrementGenerationCount: () => void;
-  setAuthenticated: (status: boolean) => void;
+  setSession: (user: SessionUser | null, accessToken: string | null) => void;
+  signOut: () => Promise<void>;
   setAccountPromptShown: (shown: boolean) => void;
   dismissAccountPrompt: () => void;
-  setSubscriptionTier: (tier: FounderState['subscriptionTier']) => void;
   shouldShowAccountPrompt: () => boolean;
   canGenerateMore: () => boolean;
   getGenerationLimit: () => number;
@@ -517,13 +522,15 @@ export const useFounderStore = create<FounderState>((set, get) => ({
     lastSyncedAt: null,
     error: null
   },
+  sessionUser: null,
+  accessToken: null,
+  sessionHydrated: false,
   anonToken: null,
   uploadIntentAt: null,
   generationCount: parseInt(sessionStorage.getItem('generation_count') || '0'),
-  isAuthenticated: !!localStorage.getItem('user_id'),
+  isAuthenticated: false,
   accountPromptShown: false,
   accountPromptDismissed: sessionStorage.getItem('account_prompt_dismissed') === 'true',
-  subscriptionTier: (localStorage.getItem('subscription_tier') as FounderState['subscriptionTier']) || null,
   accountPromptTriggerAt: null,
   originalImage: null,
   originalImageDimensions: null,
@@ -745,12 +752,9 @@ export const useFounderStore = create<FounderState>((set, get) => ({
         orientation: existing?.orientation,
         error: existing?.error,
       });
-      const anonToken = get().anonToken;
-      let accessToken: string | null = null;
-      if (supabaseClient && get().isAuthenticated) {
-        const { data } = await supabaseClient.auth.getSession();
-        accessToken = data.session?.access_token ?? null;
-      }
+      const sessionUser = get().sessionUser;
+      const anonToken = sessionUser ? null : get().anonToken;
+      const accessToken = get().accessToken;
 
       const idempotencyKey = generateIdempotencyKey(style.id);
 
@@ -913,7 +917,7 @@ export const useFounderStore = create<FounderState>((set, get) => ({
     }));
 
     try {
-      if (state.isAuthenticated && supabaseClient) {
+      if (state.sessionUser && supabaseClient) {
         const snapshot = await fetchAuthenticatedEntitlements();
         if (!snapshot) {
           set((current) => ({
@@ -933,7 +937,7 @@ export const useFounderStore = create<FounderState>((set, get) => ({
             }
           }));
         } else {
-          set({
+          set((current) => ({
             entitlements: {
               status: 'ready',
               tier: snapshot.tier,
@@ -944,11 +948,11 @@ export const useFounderStore = create<FounderState>((set, get) => ({
               renewAt: snapshot.renewAt,
               hardLimit: snapshot.quota,
               softRemaining: null,
-              dismissedPrompt: get().entitlements.dismissedPrompt,
+              dismissedPrompt: current.entitlements.dismissedPrompt,
               lastSyncedAt: Date.now(),
               error: null
             }
-          });
+          }));
         }
       } else {
         const minted = await mintAnonymousToken({
@@ -1319,19 +1323,35 @@ export const useFounderStore = create<FounderState>((set, get) => ({
       accountPromptTriggerAt: shouldPrompt ? Date.now() : state.accountPromptTriggerAt,
     });
   },
-  setAuthenticated: (status) => {
-    if (status) {
-      localStorage.setItem('user_id', 'temp_user_' + Date.now());
-    } else {
-      localStorage.removeItem('user_id');
+  setSession: (user, accessToken) => {
+    const current = get();
+    const currentUserId = current.sessionUser?.id ?? null;
+    const nextUserId = user?.id ?? null;
+    const tokenChanged = current.accessToken !== accessToken;
+
+    if (current.sessionHydrated && currentUserId === nextUserId && !tokenChanged) {
+      return;
     }
+
     set((state) => ({
-      isAuthenticated: status,
-      accountPromptShown: status ? false : state.accountPromptShown,
-      accountPromptTriggerAt: status ? null : state.accountPromptTriggerAt,
-      accountPromptDismissed: status ? false : state.accountPromptDismissed,
+      sessionHydrated: true,
+      sessionUser: user,
+      accessToken: accessToken ?? null,
+      isAuthenticated: Boolean(user),
+      accountPromptShown: user ? false : state.accountPromptShown,
+      accountPromptTriggerAt: user ? null : state.accountPromptTriggerAt,
+      accountPromptDismissed: user ? false : state.accountPromptDismissed,
+      anonToken: user ? state.anonToken : null,
     }));
+
     void get().hydrateEntitlements();
+  },
+  signOut: async () => {
+    if (supabaseClient) {
+      await supabaseClient.auth.signOut();
+    } else {
+      get().setSession(null, null);
+    }
   },
   setAccountPromptShown: (shown) =>
     set({
@@ -1360,14 +1380,6 @@ export const useFounderStore = create<FounderState>((set, get) => ({
         // silent fail - local dismissal already applied
       });
     }
-  },
-  setSubscriptionTier: (tier) => {
-    if (tier) {
-      localStorage.setItem('subscription_tier', tier);
-    } else {
-      localStorage.removeItem('subscription_tier');
-    }
-    set({ subscriptionTier: tier });
   },
   shouldShowAccountPrompt: () => {
     const { entitlements, accountPromptShown, accountPromptDismissed } = get();

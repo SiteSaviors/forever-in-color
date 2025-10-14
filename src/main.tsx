@@ -4,6 +4,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import './styles/tailwind.css';
 import LandingPage from './pages/LandingPage';
 import StudioPage from './pages/StudioPage';
+import AuthProvider from './providers/AuthProvider';
 
 const App = () => {
   return (
@@ -18,6 +19,8 @@ const App = () => {
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
-    <App />
+    <AuthProvider>
+      <App />
+    </AuthProvider>
   </React.StrictMode>
 );
