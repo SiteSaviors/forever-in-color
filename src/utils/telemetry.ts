@@ -9,3 +9,61 @@ export function emitStepOneEvent(event: StepOneEvent) {
   // Placeholder adapter: log to console now, replace with analytics pipeline later.
   console.log('[FounderTelemetry]', event);
 }
+
+// Phase 2: Progressive Disclosure Analytics Events
+export type ProgressiveDisclosureEvent =
+  | { type: 'cta_download_click'; userTier: string; isPremium: boolean; timestamp: number }
+  | { type: 'cta_canvas_click'; userTier: string; timestamp: number }
+  | { type: 'canvas_panel_open'; userTier: string; timestamp: number }
+  | { type: 'download_success'; userTier: string; styleId: string; timestamp: number }
+  | { type: 'order_started'; userTier: string; orderTotal: number; hasEnhancements: boolean; timestamp: number };
+
+export function trackDownloadCTAClick(userTier: string, isPremium: boolean) {
+  const event: ProgressiveDisclosureEvent = {
+    type: 'cta_download_click',
+    userTier,
+    isPremium,
+    timestamp: Date.now(),
+  };
+  console.log('[ProgressiveDisclosure]', event);
+  // TODO: Send to analytics pipeline (PostHog, Mixpanel, etc.)
+}
+
+export function trackCanvasCTAClick(userTier: string) {
+  const event: ProgressiveDisclosureEvent = {
+    type: 'cta_canvas_click',
+    userTier,
+    timestamp: Date.now(),
+  };
+  console.log('[ProgressiveDisclosure]', event);
+}
+
+export function trackCanvasPanelOpen(userTier: string) {
+  const event: ProgressiveDisclosureEvent = {
+    type: 'canvas_panel_open',
+    userTier,
+    timestamp: Date.now(),
+  };
+  console.log('[ProgressiveDisclosure]', event);
+}
+
+export function trackDownloadSuccess(userTier: string, styleId: string) {
+  const event: ProgressiveDisclosureEvent = {
+    type: 'download_success',
+    userTier,
+    styleId,
+    timestamp: Date.now(),
+  };
+  console.log('[ProgressiveDisclosure]', event);
+}
+
+export function trackOrderStarted(userTier: string, orderTotal: number, hasEnhancements: boolean) {
+  const event: ProgressiveDisclosureEvent = {
+    type: 'order_started',
+    userTier,
+    orderTotal,
+    hasEnhancements,
+    timestamp: Date.now(),
+  };
+  console.log('[ProgressiveDisclosure]', event);
+}

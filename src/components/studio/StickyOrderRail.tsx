@@ -8,6 +8,7 @@ import { CANVAS_SIZE_OPTIONS, getCanvasSizeOption, getDefaultSizeForOrientation 
 import { useCheckoutStore } from '@/store/useCheckoutStore';
 import ActionRow from '@/components/studio/ActionRow';
 import CanvasConfig from '@/components/studio/CanvasConfig';
+import { trackOrderStarted } from '@/utils/telemetry';
 
 const CropperModal = lazy(() => import('@/components/launchpad/cropper/CropperModal'));
 
@@ -222,6 +223,10 @@ const StickyOrderRail = ({ mobileRoomPreview, onDownloadClick, downloadingHD, is
       setCheckoutError('Select your style and finalize your photo before checking out.');
       return;
     }
+
+    // Track order started
+    const userTier = useFounderStore.getState().entitlements?.tier ?? 'anonymous';
+    trackOrderStarted(userTier, total, enabledEnhancements.length > 0);
 
     setCheckoutError(null);
     resetCheckout();

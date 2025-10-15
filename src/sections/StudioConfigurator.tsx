@@ -7,12 +7,14 @@ import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
 import TokenWarningBanner from '@/components/studio/TokenWarningBanner';
 import { saveToGallery } from '@/utils/galleryApi';
 import { downloadCleanImage } from '@/utils/premiumDownload';
+import { trackDownloadSuccess } from '@/utils/telemetry';
 
 const LivingCanvasModal = lazy(() => import('@/components/studio/LivingCanvasModal'));
 const CanvasInRoomPreview = lazy(() => import('@/components/studio/CanvasInRoomPreview'));
 const StyleForgeOverlay = lazy(() => import('@/components/studio/StyleForgeOverlay'));
 const DownloadUpgradeModal = lazy(() => import('@/components/modals/DownloadUpgradeModal'));
 const MobileStyleDrawer = lazy(() => import('@/components/studio/MobileStyleDrawer'));
+const CanvasUpsellToast = lazy(() => import('@/components/studio/CanvasUpsellToast'));
 
 const CanvasPreviewFallback = () => (
   <div className="w-full h-[360px] rounded-[2.5rem] bg-slate-800/60 border border-white/10 animate-pulse" />
@@ -79,6 +81,7 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
   const [showDownloadUpgradeModal, setShowDownloadUpgradeModal] = useState(false);
   const [downloadingHD, setDownloadingHD] = useState(false);
   const [mobileStyleDrawerOpen, setMobileStyleDrawerOpen] = useState(false);
+  const [showCanvasUpsellToast, setShowCanvasUpsellToast] = useState(false);
 
   // Get user tier from entitlements
   const userTier = useFounderStore((state) => state.entitlements?.tier ?? 'anonymous');
@@ -119,6 +122,13 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
       });
 
       console.log('[StudioConfigurator] Clean image downloaded successfully');
+
+      // Track successful download
+      trackDownloadSuccess(userTier, currentStyle.id);
+
+      // Show canvas upsell toast after successful download
+      setShowCanvasUpsellToast(true);
+      setTimeout(() => setShowCanvasUpsellToast(false), 8000); // Auto-dismiss after 8s
     } catch (error) {
       console.error('Failed to download HD image:', error);
       alert('Failed to download image. Please try again.');
@@ -664,6 +674,19 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
           pendingStyleId={pendingStyleId}
           remainingTokens={entitlements.remainingTokens}
           userTier={entitlements.tier}
+        />
+      </Suspense>
+
+      {/* Canvas Upsell Toast - After Download Success */}
+      <Suspense fallback={null}>
+        <CanvasUpsellToast
+          show={showCanvasUpsellToast}
+          onDismiss={() => setShowCanvasUpsellToast(false)}
+          onCanvasClick={() => {
+            setShowCanvasUpsellToast(false);
+            // Scroll to right rail (canvas config will be expanded by default in Phase 2 future enhancement)
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
         />
       </Suspense>
     </section>

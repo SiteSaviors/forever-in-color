@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Card from '@/components/ui/Card';
 import type { Orientation } from '@/utils/imageUtils';
@@ -62,6 +63,19 @@ export default function CanvasConfig({
   mobileRoomPreview,
 }: CanvasConfigProps) {
   const hasEnhancements = enabledEnhancements.length > 0;
+  const sizeCardRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to first card on expand
+  useEffect(() => {
+    if (isExpanded && sizeCardRef.current) {
+      setTimeout(() => {
+        sizeCardRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+        });
+      }, 250); // Wait for expand animation
+    }
+  }, [isExpanded]);
 
   return (
     <AnimatePresence>
@@ -73,8 +87,14 @@ export default function CanvasConfig({
           transition={{ duration: 0.2, ease: 'easeInOut' }}
           className="space-y-4 overflow-hidden"
         >
-          {/* Canvas Size Selector */}
-          <Card glass className="space-y-4 border-2 border-white/20 p-5">
+          {/* Canvas Size Selector - with stagger animation */}
+          <motion.div
+            ref={sizeCardRef}
+            initial={{ y: -10, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.05 }}
+          >
+            <Card glass className="space-y-4 border-2 border-white/20 p-5">
             <h3 className="text-base font-bold text-white">Canvas Size</h3>
             <div className="space-y-2">
               {sizeOptions.map((size) => (
@@ -100,8 +120,14 @@ export default function CanvasConfig({
               ))}
             </div>
           </Card>
+          </motion.div>
 
-          {/* Enhancements */}
+          {/* Enhancements - with stagger animation */}
+          <motion.div
+            initial={{ y: -10, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.1 }}
+          >
           <Card glass className="space-y-4 border-2 border-white/20 p-5">
             <h3 className="text-base font-bold text-white">Enhancements</h3>
 
@@ -238,11 +264,17 @@ export default function CanvasConfig({
               </button>
             )}
           </Card>
+          </motion.div>
 
           {/* Mobile Room Preview - Only on mobile, between Enhancements and Order */}
           {mobileRoomPreview && <div className="lg:hidden">{mobileRoomPreview}</div>}
 
-          {/* Order Summary */}
+          {/* Order Summary - with stagger animation */}
+          <motion.div
+            initial={{ y: -10, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.15 }}
+          >
           <Card glass className="space-y-4 border-2 border-white/20 p-5">
             <div className="space-y-2">
               <h3 className="text-lg font-bold text-white">Your Order</h3>
@@ -282,6 +314,16 @@ export default function CanvasConfig({
             <div className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-2 border-purple-400/40">
               <span className="text-base font-bold text-white">Total</span>
               <span className="text-2xl font-bold text-white">${total.toFixed(2)}</span>
+            </div>
+
+            {/* Social Proof */}
+            <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-400/30">
+              <p className="text-xs text-emerald-300 flex items-center gap-2">
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+                <span className="font-semibold">Rated 4.9/5 by 1,200+ customers</span>
+              </p>
             </div>
 
             <button
@@ -342,6 +384,7 @@ export default function CanvasConfig({
               </div>
             )}
           </Card>
+          </motion.div>
         </motion.div>
       )}
     </AnimatePresence>
