@@ -1,6 +1,6 @@
 import { Suspense, lazy, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Bookmark, BookmarkCheck, Download, Lock } from 'lucide-react';
+import { Bookmark, BookmarkCheck } from 'lucide-react';
 import { useFounderStore, StylePreviewStatus } from '@/store/useFounderStore';
 import StickyOrderRail from '@/components/studio/StickyOrderRail';
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
@@ -550,49 +550,28 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
             {/* Action Buttons */}
             {preview?.status === 'ready' && currentStyle && (
               <div className="mt-6 flex flex-col items-center gap-4">
-                <div className="flex items-center gap-3">
-                  {/* Download HD Image Button */}
-                  <button
-                    onClick={handleDownloadHD}
-                    disabled={downloadingHD}
-                    className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all bg-brand-indigo hover:bg-brand-indigo/90 text-white border-2 border-brand-indigo/50 hover:border-brand-indigo disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isPremiumUser ? (
-                      <>
-                        <Download className="w-5 h-5" />
-                        <span>{downloadingHD ? 'Downloading...' : 'Download HD Image'}</span>
-                      </>
-                    ) : (
-                      <>
-                        <Lock className="w-5 h-5" />
-                        <span>Download HD Image</span>
-                      </>
-                    )}
-                  </button>
-
-                  {/* Save to Gallery Button */}
-                  <button
-                    onClick={handleSaveToGallery}
-                    disabled={savingToGallery}
-                    className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all ${
-                      savedToGallery
-                        ? 'bg-emerald-500/20 text-emerald-300 border-2 border-emerald-400/50'
-                        : 'bg-white/10 hover:bg-white/15 text-white border-2 border-white/20 hover:border-white/30'
-                    } disabled:opacity-50 disabled:cursor-not-allowed`}
-                  >
-                    {savedToGallery ? (
-                      <>
-                        <BookmarkCheck className="w-5 h-5" />
-                        <span>Saved to Gallery</span>
-                      </>
-                    ) : (
-                      <>
-                        <Bookmark className="w-5 h-5" />
-                        <span>{savingToGallery ? 'Saving...' : 'Save to Gallery'}</span>
-                      </>
-                    )}
-                  </button>
-                </div>
+                {/* Save to Gallery Button */}
+                <button
+                  onClick={handleSaveToGallery}
+                  disabled={savingToGallery}
+                  className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all ${
+                    savedToGallery
+                      ? 'bg-emerald-500/20 text-emerald-300 border-2 border-emerald-400/50'
+                      : 'bg-white/10 hover:bg-white/15 text-white border-2 border-white/20 hover:border-white/30'
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                >
+                  {savedToGallery ? (
+                    <>
+                      <BookmarkCheck className="w-5 h-5" />
+                      <span>Saved to Gallery</span>
+                    </>
+                  ) : (
+                    <>
+                      <Bookmark className="w-5 h-5" />
+                      <span>{savingToGallery ? 'Saving...' : 'Save to Gallery'}</span>
+                    </>
+                  )}
+                </button>
 
                 {/* Refresh Preview & View Gallery Links */}
                 <div className="flex items-center gap-4">
@@ -636,6 +615,9 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
         <aside className="w-full lg:w-[420px]">
           <div className="lg:sticky lg:top-[57px] px-4 py-6 lg:p-6">
             <StickyOrderRail
+              onDownloadClick={handleDownloadHD}
+              downloadingHD={downloadingHD}
+              isPremiumUser={isPremiumUser}
               mobileRoomPreview={
                 <div className="lg:hidden w-full">
                   <div className="mb-4 text-center space-y-1">
