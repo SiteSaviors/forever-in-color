@@ -2,227 +2,201 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Overview
+## Project Overview
 
-Wondertone is a premium AI-generated canvas artwork platform where users upload photos, explore AI art styles, and order custom canvas prints. Built with React + TypeScript + Vite, the app emphasizes fast performance, refined UX, and long-term maintainability.
+Wondertone is a premium AI-generated canvas artwork e-commerce platform. Users upload photos, select from curated AI art styles, configure canvas sizing, and purchase custom canvas prints. The app includes an optional "Living Memory" AR feature that links video moments to physical canvases via QR code.
 
-**Key value proposition**: Four-step configurator (photo/style selection → sizing → customization → checkout) with optional AR "Living Memory" video moments.
+**Tech Stack**: React 18 + TypeScript + Vite + Tailwind CSS + shadcn/ui + Zustand + React Query + Supabase (Postgres, Auth, Storage, Edge Functions) + Replicate/OpenAI (AI providers) + Stripe (payments)
 
-## Essential Commands
+## Development Commands
 
-### Development
 ```bash
-npm install              # Install dependencies
+# Development
 npm run dev              # Start Vite dev server on port 4175
-npm run preview          # Preview production build locally
-```
 
-### Quality Checks (run before committing)
-```bash
-npm run lint             # ESLint check
+# Building
 npm run build            # Production build
-npm run build:analyze    # Build + open bundle treemap at dist/stats.html
-npm run deps:check       # Find unused dependencies (depcheck)
-```
+npm run build:dev        # Development build (with sourcemaps)
+npm run build:analyze    # Production build + open bundle treemap (dist/stats.html)
+npm run preview          # Preview production build locally
 
-### Dead Code Analysis
-```bash
-npm run dead-code:check    # Run all dead code checks
-npm run dead-code:exports  # Find unused exports
-npm run dead-code:files    # Find unimported files
-npm run dead-code:deps     # Show unresolved dependencies
-npm run deps:analyze       # Check for circular dependencies
+# Code Quality (run before commits)
+npm run lint             # ESLint checks
+npm run dead-code:check  # Detect unused exports, files, and dependencies
+npm run deps:check       # Check for unused dependencies (depcheck)
+npm run deps:analyze     # Detect circular dependencies (madge)
 ```
 
 ## Architecture
 
-### Application Structure
+### Application Entry & Routing
 
-```
-src/
-├── main.tsx                    # Entry point: BrowserRouter setup, routes
-├── pages/                      # Top-level route pages
-│   ├── LandingPage.tsx        # "/" - marketing landing
-│   ├── StudioPage.tsx         # "/create" - main configurator
-│   └── PricingPage.tsx        # "/pricing" - subscription tiers
-├── components/
-│   ├── launchpad/             # Photo upload, cropper modal
-│   ├── studio/                # Canvas preview, sticky order rail, style carousel
-│   ├── navigation/            # Top nav, auth UI
-│   ├── modals/                # Auth modal, confirmation dialogs
-│   ├── layout/                # Layout wrappers
-│   └── ui/                    # shadcn/ui primitives (Button, Card, Badge, etc.)
-├── sections/                   # Page sections (HeroSection, StyleShowcase, etc.)
-├── store/
-│   ├── useFounderStore.ts     # Main Zustand store (product state, previews, entitlements)
-│   └── useAuthModal.ts        # Auth modal state
-├── providers/
-│   └── AuthProvider.tsx       # Supabase auth context
-└── utils/
-    ├── supabaseClient.ts      # Typed Supabase client
-    ├── canvasSizes.ts         # Canvas size definitions + pricing
-    ├── previewClient.ts       # Preview API calls
-    ├── previewPolling.ts      # Long-polling for preview generation
-    ├── stylePreviewApi.ts     # Style preview generation requests
-    ├── entitlementsApi.ts     # User entitlement + token management
-    ├── smartCrop.ts           # AI smart cropping logic
-    ├── imageUtils.ts          # Image upload, HEIC conversion, orientation detection
-    ├── telemetry.ts           # Event tracking
-    └── checkoutApi.ts         # Stripe checkout integration
-```
+- **Entry**: [src/main.tsx](src/main.tsx) mounts the React app with BrowserRouter and AuthProvider
+- **Routes**:
+  - `/` → [LandingPage.tsx](src/pages/LandingPage.tsx)
+  - `/create` → [StudioPage.tsx](src/pages/StudioPage.tsx) (main configurator)
+  - `/pricing` → [PricingPage.tsx](src/pages/PricingPage.tsx)
+  - `/studio/usage` → [UsagePage.tsx](src/pages/UsagePage.tsx)
+  - `/studio/gallery` → [GalleryPage.tsx](src/pages/GalleryPage.tsx)
+  - `/checkout` → [CheckoutPage.tsx](src/pages/CheckoutPage.tsx)
 
 ### State Management
 
-**Primary store**: `useFounderStore` (Zustand) - single source of truth for:
-- Uploaded/cropped images and orientation (`horizontal` | `vertical` | `square`)
-- Selected style, canvas size, enhancements, frame color
-- Preview generation state and cache (per-style previews)
-- Entitlements: generation counts, subscription tier, watermarking
-- Smart crop results per orientation
-- Commerce: pricing, cart total
+**Primary Store**: [src/store/useFounderStore.ts](src/store/useFounderStore.ts) (Zustand)
 
-**Critical patterns**:
-- All product state mutations flow through `useFounderStore` actions
-- Preview generation is managed via `previewClient.ts` → Supabase Edge Functions
-- Orientation changes trigger smart crop recalculation and preview invalidation
-- Generation limits are enforced client-side based on tier (anonymous: 5/10, free: 10/month, creator: 50/month, plus: 250/month, pro: 500/month)
+Core state includes:
+- **Image pipeline**: `uploadedImage`, `croppedImage`, `originalImage`, `smartCrops` (per orientation)
+- **Style & previews**: `styles`, `selectedStyleId`, `previews` (Record<styleId, PreviewState>), `stylePreviewCache`, `stylePreviewStatus`
+- **Canvas config**: `orientation` (horizontal/vertical/square), `selectedCanvasSize`, `selectedFrame`, `enhancements`
+- **Entitlements**: `entitlements` object with `tier`, `tokensRemaining`, `tokensQuota`, `priority`, `requiresWatermark`, `anonToken`
+- **Generation tracking**: `generationCount`, plus helpers like `canGenerateMore()`, `getGenerationLimit()`, `shouldShowAccountPrompt()`
 
-### Supabase Integration
+**Other stores**:
+- [useCheckoutStore.ts](src/store/useCheckoutStore.ts) - Stripe checkout state
+- [useAuthModal.ts](src/store/useAuthModal.ts) - Auth modal visibility
 
-**Edge Functions** (under `supabase/functions/`):
-- `generate-style-preview` - Main preview generation with polling, caching, watermarking
-- `generate-style-preview-v2` - Updated generation endpoint
-- `create-checkout-session` - Stripe checkout for canvas orders
-- `create-payment` - Legacy payment flow
-- `purchase-tokens` - Token purchase flow
-- `remove-watermark` - Token-gated watermark removal
+### User Flow: Launchpad → Studio → Checkout
+
+1. **Launchpad** ([src/sections/LaunchpadLayout.tsx](src/sections/LaunchpadLayout.tsx)): Photo upload, cropping, and AI image analysis
+   - [PhotoUploader.tsx](src/components/launchpad/PhotoUploader.tsx) handles HEIC conversion, drag-drop, file selection
+   - [CropperModal](src/components/launchpad/cropper/CropperModal.tsx) uses react-easy-crop for user-driven cropping
+   - [SmartCropPreview.tsx](src/components/launchpad/SmartCropPreview.tsx) shows AI-generated crop suggestions
+   - [AIAnalysisOverlay.tsx](src/components/launchpad/AIAnalysisOverlay.tsx) displays AI analysis results
+
+2. **Studio** ([src/sections/StudioConfigurator.tsx](src/sections/StudioConfigurator.tsx)): Style selection, canvas customization, preview generation
+   - [StyleCarousel.tsx](src/components/studio/StyleCarousel.tsx) displays available art styles
+   - [CanvasConfig.tsx](src/components/studio/CanvasConfig.tsx) for orientation, size, frame selection
+   - [StyleForgeOverlay.tsx](src/components/studio/StyleForgeOverlay.tsx) shows preview generation progress
+   - [CanvasInRoomPreview.tsx](src/components/studio/CanvasInRoomPreview.tsx) AR-style room visualization
+   - [StickyOrderRail.tsx](src/components/studio/StickyOrderRail.tsx) displays order summary and pricing
+   - [TokenWarningBanner.tsx](src/components/studio/TokenWarningBanner.tsx) shows generation limits
+
+3. **Checkout** ([src/pages/CheckoutPage.tsx](src/pages/CheckoutPage.tsx)): Stripe payment flow
+
+### Preview Generation Pipeline
+
+**Critical**: The preview pipeline has two parallel paths:
+
+1. **Initial preview generation** (launchpad → studio transition):
+   - [src/utils/founderPreviewGeneration.ts](src/utils/founderPreviewGeneration.ts) - Orchestrates initial generation
+   - Called when user completes photo upload and cropping
+
+2. **Style-specific preview generation** (user changes style in studio):
+   - `startStylePreview()` in [useFounderStore.ts](src/store/useFounderStore.ts)
+   - Calls [src/utils/previewClient.ts](src/utils/previewClient.ts) → invokes edge function
+   - Uses [src/utils/previewPolling.ts](src/utils/previewPolling.ts) for async status checks
+   - Caches results in `stylePreviewCache` keyed by `[styleId][orientation]`
+
+**Key behaviors**:
+- Orientation changes clear preview cache and trigger regeneration
+- Watermarking applied based on entitlement tier (anonymous/free get watermarks)
+- Preview polling has exponential backoff with jitter
+- `ENABLE_AUTO_PREVIEWS` flag in store controls automatic generation (currently `false` for cost control)
+
+### Supabase Edge Functions
+
+Located in [supabase/functions/](supabase/functions/):
+
+**Core functions**:
+- `generate-style-preview` - Main preview generation orchestrator
+  - Validates entitlements, checks cache, invokes Replicate API
+  - Applies watermarking for free/anonymous users
+  - Supports async webhook-based generation
+  - Multi-layer caching: memory (LRU) + metadata table + storage bucket
+- `anon-mint` - Creates anonymous tokens for unregistered users
+- `create-checkout-session` - Stripe subscription checkout
+- `create-order-payment-intent` - Canvas order payments
+- `remove-watermark` - Premium watermark removal (token-based)
+- `get-gallery`, `save-to-gallery` - User gallery management
 - `stripe-webhook` - Stripe event handling
-- `anon-mint` - Anonymous session token minting
 
-**Client usage**: Import from `@/utils/supabaseClient.ts`. Never call AI providers (Replicate, OpenAI) or Stripe directly from frontend—always use edge functions.
+**Edge function integration**:
+- Client imports [src/utils/supabaseClient.ts](src/utils/supabaseClient.ts)
+- API wrappers: [stylePreviewApi.ts](src/utils/stylePreviewApi.ts), [galleryApi.ts](src/utils/galleryApi.ts), [checkoutApi.ts](src/utils/checkoutApi.ts), [entitlementsApi.ts](src/utils/entitlementsApi.ts)
 
-**Migrations**: Database schema under `supabase/migrations/`
+### Entitlements System
 
-### Routing
+**Tiers** (defined in [TECHNICAL-SPEC.md](TECHNICAL-SPEC.md)):
+- **Anonymous**: 5 generations (soft gate), 10 hard gate, watermarked
+- **Free (authenticated)**: 10 generations/month, watermarked
+- **Creator** ($9.99/mo): 50/month, no watermarks, priority queue
+- **Plus** ($29.99/mo): 250/month, no watermarks
+- **Pro** ($59.99/mo): 500/month, no watermarks, priority support
 
-Routes defined in `src/main.tsx`:
-- `/` - Landing page
-- `/create` - Studio configurator
-- `/pricing` - Pricing/subscription page
+**Client enforcement**:
+- `canGenerateMore()`, `getGenerationLimit()`, `shouldShowAccountPrompt()` in store
+- Anonymous users get soft prompt at 5th generation, hard gate at 10th
+- Authenticated users hit subscription paywall after quota exhausted
 
-To add a new route: create page in `src/pages/`, add `<Route>` in `main.tsx`.
+**Server enforcement** (future):
+- Edge function validates every preview request
+- Deducts tokens transactionally in `preview_logs` table
+- Returns `requires_watermark` flag to control overlay
 
-### Styling
+### Critical Workflows & Conventions
 
-- **Tailwind CSS** with custom design tokens
-- **shadcn/ui** components in `src/components/ui/`
-- **Framer Motion** for animations
-- Favor Tailwind utilities over custom CSS; watch for heavy `filter` usage (prefer GPU-friendly transforms)
+**Image Processing**:
+- [src/utils/imageUtils.ts](src/utils/imageUtils.ts) - Orientation detection, image loading, HEIC handling
+- [src/utils/smartCrop.ts](src/utils/smartCrop.ts) - AI-powered crop suggestions per orientation
+- Cropping results cached in `smartCrops` (Record<Orientation, SmartCropResult>)
 
-## Critical Workflows
+**Canvas Sizing**:
+- [src/utils/canvasSizes.ts](src/utils/canvasSizes.ts) - Size options, pricing, defaults per orientation
+- Sizes keyed like `'landscape-24x18'`, `'square-20x20'`, `'portrait-18x24'`
 
-### Preview Generation Flow
-1. User uploads photo → smart crop analysis runs for all orientations
-2. User selects style → `stylePreviewApi.ts` calls `generate-style-preview` edge function
-3. Edge function generates preview via Replicate/OpenAI, applies watermark (if tier requires), stores in Supabase Storage
-4. Client polls via `previewPolling.ts` until ready
-5. Preview cached in `useFounderStore.stylePreviewCache` (max 12 styles)
+**Analytics & Telemetry**:
+- [src/utils/telemetry.ts](src/utils/telemetry.ts) - Web Vitals, custom events
+- [src/utils/previewAnalytics.ts](src/utils/previewAnalytics.ts) - Preview pipeline logging
 
-**Key constraint**: Orientation changes invalidate cached previews and trigger regeneration.
+**UI Components**:
+- shadcn/ui primitives in [src/components/ui/](src/components/ui/)
+- Custom components organized by feature: `launchpad/`, `studio/`, `checkout/`, `modals/`, `navigation/`
 
-### Entitlement & Watermarking
-- Anonymous users: 5 free generations (soft prompt at 5, hard gate at 10), always watermarked
-- Authenticated free: 10/month, watermarked
-- Creator/Plus/Pro: unwatermarked, higher monthly quotas, priority queue
-- Token spend tracked in Supabase; edge functions enforce limits
+## Important Guardrails
 
-### Order Flow
-1. User configures canvas (style, size, frame, enhancements)
-2. `StickyOrderRail` displays live pricing via `useFounderStore.computedTotal()`
-3. Click "Order" → `checkoutApi.ts` calls `create-checkout-session` → redirect to Stripe Checkout
-4. On success, Stripe webhook updates database
+1. **Preview generation is expensive** - respect `ENABLE_AUTO_PREVIEWS` flag and don't trigger unnecessary generations
+2. **Entitlements must gate previews** - always check `canGenerateMore()` before generation
+3. **Orientation changes invalidate previews** - ensure cache clearing logic stays intact
+4. **Edge functions are the source of truth** - don't bypass them to call AI providers directly
+5. **Watermarking depends on tier** - free/anonymous users must receive watermarked previews
+6. **Bundle size matters** - current baseline ~567 KB; run `npm run build:analyze` before/after changes
+7. **Style landing pages are variants** - changes to one may need replication to others (ClassicOilPainting.tsx, WatercolorDreams.tsx, etc.)
 
-## Development Workflow
+## Configuration Files
 
-**Recommended process** (per `FOUNDER_WORKFLOW.md`):
-1. Create feature branch in VS Code (bottom-left branch switcher)
-2. Make changes, review diffs in Source Control panel
-3. Run quality checks: `npm run lint && npm run build && npm run deps:check`
-4. Commit small, focused changes
-5. Push branch, open PR on GitHub
-6. Merge to `main` triggers Vercel deployment
+- **Vite**: [vite.config.ts](vite.config.ts) - dev server on port 4175, path alias `@` → `src`
+- **TypeScript**: [tsconfig.json](tsconfig.json), [tsconfig.app.json](tsconfig.app.json)
+- **Tailwind**: [tailwind.config.ts](tailwind.config.ts) + [src/styles/tailwind.css](src/styles/tailwind.css)
+- **ESLint**: [eslint.config.js](eslint.config.js)
+- **Supabase**: Connection configured via `.env` (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`)
 
-**Pre-commit hooks**: Husky runs ESLint on staged files (see `lint-staged` in `package.json`)
+## Testing & Deployment
 
-## Important Constraints
+**Pre-commit checks** (see [agents.md](agents.md)):
+```bash
+npm run lint
+npm run build
+npm run build:analyze  # optional, confirms bundle size
+npm run deps:check
+```
 
-### State Management Contract
-- **Do not create alternate stores** - all product state lives in `useFounderStore`
-- Event handlers follow signature patterns (e.g., `onPhotoAndStyleComplete`, `onOrientationSelect`)
-- Preview state must stay in sync with orientation via `usePreviewGeneration` hooks
+**Branching**: Feature branches off `main`, no direct pushes to main (see [FOUNDER_WORKFLOW.md](FOUNDER_WORKFLOW.md))
 
-### File Reduction Mandate
-- Check existing components before creating new files
-- Run `npm run dead-code:check` before deletions
-- Merge small related components within feature folders
+**Husky**: Pre-commit hooks configured in [.husky/](.husky/) for lint-staged
 
-### Performance
-- Current production bundle: ~567 KB gzipped (baseline ceiling)
-- Use `npm run build:analyze` to inspect bundle composition
-- Minimize dependency additions; audit with `npm run deps:check`
+## Key Files Reference
 
-### Error Handling
-- Wrap risky UI in `CascadeErrorBoundary` for retry/backoff behavior
-- Edge functions return structured errors; client displays user-friendly messages
+- **State**: [src/store/useFounderStore.ts](src/store/useFounderStore.ts) - single source of truth
+- **Main configurator**: [src/sections/StudioConfigurator.tsx](src/sections/StudioConfigurator.tsx)
+- **Preview orchestration**: [src/utils/founderPreviewGeneration.ts](src/utils/founderPreviewGeneration.ts), [src/utils/previewClient.ts](src/utils/previewClient.ts)
+- **Edge preview handler**: [supabase/functions/generate-style-preview/index.ts](supabase/functions/generate-style-preview/index.ts)
+- **Entitlements logic**: [supabase/functions/generate-style-preview/entitlements.ts](supabase/functions/generate-style-preview/entitlements.ts)
+- **Canvas sizing**: [src/utils/canvasSizes.ts](src/utils/canvasSizes.ts)
+- **Smart cropping**: [src/utils/smartCrop.ts](src/utils/smartCrop.ts)
 
-## Project Conventions
+## Additional Context
 
-### TypeScript
-- Strict mode enabled
-- Type definitions in component files or co-located `types/` folders
-- Product state types in `store/useFounderStore.ts`
-
-### Component Patterns
-- Props-down, hooks-up: parent components pass props, children use hooks for shared state
-- React Query available for server state (not yet widely used)
-- UI-specific state stays local or in `useFounderStore` slices
-
-### Import Aliases
-- `@/` resolves to `src/` (configured in `vite.config.ts`)
-
-### Environment Variables
-- `.env` required for local dev (at minimum `VITE_SUPABASE_URL`)
-- Other secrets provided through Supabase edge functions
-
-## Testing
-
-**Status**: No test suite currently configured (no test files in repo)
-
-## Deployment
-
-- **Vercel** auto-deploys on push to `main`
-- **Supabase Edge Functions** deployed separately via Supabase CLI
-
-## Reference Documents
-
-For deeper context, refer to these in-repo docs:
-- `agents.md` - Detailed guardrails, acceptance criteria, derived goals
-- `FOUNDER_WORKFLOW.md` - VS Code-first workflow guide for non-technical users
-- `.github/copilot-instructions.md` - AI coding agent instructions (architecture deep-dive)
-- `TECHNICAL-SPEC.md` - State schema, entitlement logic, subscription tiers
-- `README.md` - Quick-start guide
-
-## When Making Changes
-
-**Always**:
-1. Run `npm run lint && npm run build` before committing
-2. Verify changes don't break configurator step gating or preview generation
-3. Check bundle size impact with `npm run build:analyze` for large changes
-4. Test orientation changes clear preview caches correctly
-5. Ensure entitlement logic (generation limits, watermarking) remains intact
-
-**Never**:
-- Bypass `useFounderStore` for product state
-- Call Replicate, OpenAI, or Stripe APIs directly from frontend
-- Break the four-step configurator flow
-- Skip quality checks before merging to `main`
+- **Detailed architecture**: Read [.github/copilot-instructions.md](.github/copilot-instructions.md) for component hierarchy and cross-component communication patterns
+- **Development workflow**: See [FOUNDER_WORKFLOW.md](FOUNDER_WORKFLOW.md) for VS Code-first process
+- **Living guardrails**: [agents.md](agents.md) contains derived guardrails and acceptance criteria
+- **Full spec**: [TECHNICAL-SPEC.md](TECHNICAL-SPEC.md) details state schema, subscription tiers, edge API integration, and rollout phases
