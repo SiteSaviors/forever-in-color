@@ -13,32 +13,46 @@ import AnimatedTransformBadge from '@/components/hero/AnimatedTransformBadge';
 // Style pills data
 const STYLE_PILLS = [
   {
+    id: 'watercolor-dreams',
+    name: 'Watercolor',
+    tagline: 'Soft washes & light',
+    thumbnail: '/art-style-hero-generations/family-watercolor.jpg',
+    previewImage: '/art-style-hero-generations/family-watercolor.jpg',
+  },
+  {
     id: 'classic-oil-painting',
     name: 'Classic Oil',
     tagline: 'Traditional brushstrokes',
-    thumbnail: '/art-style-hero-generations/kids-classic-oil.jpg',
-    previewImage: '/art-style-hero-generations/kids-classic-oil.jpg',
+    thumbnail: '/art-style-hero-generations/family-classic-oil.jpg',
+    previewImage: '/art-style-hero-generations/family-classic-oil.jpg',
   },
   {
     id: 'neon-splash',
     name: 'Neon Splash',
     tagline: 'Electric drip energy',
-    thumbnail: '/art-style-hero-generations/kids-neon-splash.jpg',
-    previewImage: '/art-style-hero-generations/kids-neon-splash.jpg',
-  },
-  {
-    id: 'watercolor-dreams',
-    name: 'Watercolor Dreams',
-    tagline: 'Soft washes & light',
-    thumbnail: '/art-style-hero-generations/kids-watercolor.jpg',
-    previewImage: '/art-style-hero-generations/kids-watercolor.jpg',
+    thumbnail: '/art-style-hero-generations/family-neon-splash.jpg',
+    previewImage: '/art-style-hero-generations/family-neon-splash.jpg',
   },
   {
     id: 'pop-art-burst',
     name: 'Pop Art Burst',
     tagline: 'Bold comic vibes',
-    thumbnail: '/art-style-hero-generations/kids-pop-art.jpg',
-    previewImage: '/art-style-hero-generations/kids-pop-art.jpg',
+    thumbnail: '/art-style-hero-generations/family-pop-art.jpg',
+    previewImage: '/art-style-hero-generations/family-pop-art.jpg',
+  },
+  {
+    id: '3d-storybook',
+    name: '3D Storybook',
+    tagline: 'Playful depth & charm',
+    thumbnail: '/art-style-hero-generations/family-storybook.jpg',
+    previewImage: '/art-style-hero-generations/family-storybook.jpg',
+  },
+  {
+    id: 'artisan-charcoal',
+    name: 'Artisan Charcoal',
+    tagline: 'Raw sketch texture',
+    thumbnail: '/art-style-hero-generations/family-charcoal.jpg',
+    previewImage: '/art-style-hero-generations/family-charcoal.jpg',
   },
 ];
 
@@ -46,6 +60,8 @@ const ProductHeroSection = () => {
   const setLaunchpadExpanded = useFounderStore((state) => state.setLaunchpadExpanded);
   const launchpadExpanded = useFounderStore((state) => state.launchpadExpanded);
   const [currentStyleImage, setCurrentStyleImage] = useState(STYLE_PILLS[0].previewImage);
+  const [currentStyleName, setCurrentStyleName] = useState(STYLE_PILLS[0].name);
+  const [currentStyleTagline, setCurrentStyleTagline] = useState(STYLE_PILLS[0].tagline);
 
   const handleHeroUploadClick = () => {
     if (!launchpadExpanded) {
@@ -59,8 +75,13 @@ const ProductHeroSection = () => {
     }
   };
 
-  const handleStyleChange = (_styleId: string, previewImage: string) => {
-    setCurrentStyleImage(previewImage);
+  const handleStyleChange = (styleId: string, previewImage: string) => {
+    const selectedStyle = STYLE_PILLS.find(pill => pill.id === styleId);
+    if (selectedStyle) {
+      setCurrentStyleImage(previewImage);
+      setCurrentStyleName(selectedStyle.name);
+      setCurrentStyleTagline(selectedStyle.tagline);
+    }
   };
 
   return (
@@ -111,6 +132,8 @@ const ProductHeroSection = () => {
               >
                 <GeneratingCanvasAnimation
                   defaultStyleImage={currentStyleImage}
+                  styleName={currentStyleName}
+                  styleTagline={currentStyleTagline}
                   generationDuration={2500}
                 />
               </motion.div>

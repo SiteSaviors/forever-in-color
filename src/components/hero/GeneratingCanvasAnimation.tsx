@@ -4,6 +4,8 @@ import { Loader2 } from 'lucide-react';
 
 type GeneratingCanvasAnimationProps = {
   defaultStyleImage: string;
+  styleName?: string;
+  styleTagline?: string;
   videoSrc?: string;
   posterImage?: string;
   generationDuration?: number;
@@ -13,6 +15,8 @@ type GeneratingCanvasAnimationProps = {
 
 const GeneratingCanvasAnimation = ({
   defaultStyleImage,
+  styleName = 'Classic Oil Painting',
+  styleTagline = 'Traditional brush strokes',
   videoSrc,
   posterImage,
   generationDuration = 2500,
@@ -184,8 +188,8 @@ const GeneratingCanvasAnimation = ({
       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-950/90 to-transparent p-4">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-white">Classic Oil Painting</p>
-            <p className="text-xs text-white/60">Traditional brush strokes</p>
+            <p className="text-sm font-medium text-white">{styleName}</p>
+            <p className="text-xs text-white/60">{styleTagline}</p>
           </div>
           {phase === 'complete' && (
             <div className="text-xs text-emerald-400 font-medium">
