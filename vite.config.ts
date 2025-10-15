@@ -30,6 +30,9 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
-    sourcemap: Boolean(process.env.ANALYZE),
+    sourcemap: true,
+  },
+  css: {
+    devSourcemap: true,
   },
 }));
