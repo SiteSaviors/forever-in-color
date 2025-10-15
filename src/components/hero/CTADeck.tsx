@@ -11,7 +11,7 @@ type CTADeckProps = {
 const defaultFrictionReducers = [
   'Free preview',
   'No credit card',
-  '2,341 canvases this week',
+  'Ready in 60 seconds',
 ];
 
 const CTADeck = ({
@@ -22,17 +22,18 @@ const CTADeck = ({
   className = '',
 }: CTADeckProps) => {
   return (
-    <div className={`flex flex-col items-center gap-4 ${className}`}>
+    <div className={`flex flex-col items-center gap-3 ${className}`}>
       {/* Primary CTA */}
-      <div className="flex flex-col sm:flex-row items-center gap-4 w-full max-w-xl px-4">
+      <div className="flex flex-col sm:flex-row items-center gap-4 w-full max-w-4xl px-4">
         <button
           type="button"
           onClick={onUploadClick}
-          className="w-full btn-primary px-8 py-5 md:px-16 md:py-6 text-lg md:text-2xl font-bold shadow-[0_25px_60px_rgba(99,102,241,0.7)] hover:shadow-[0_32px_75px_rgba(99,102,241,0.85)] hover:scale-105 transition-all duration-300 leading-tight"
+          className="w-full max-w-2xl mx-auto btn-primary px-8 py-5 md:px-16 md:py-7 text-lg md:text-[24px] font-bold tracking-wide drop-shadow-lg shadow-[0_-4px_20px_rgba(255,255,255,0.1),_0_25px_60px_rgba(99,102,241,0.7)] hover:shadow-[0_-6px_30px_rgba(255,255,255,0.15),_0_32px_75px_rgba(99,102,241,0.85)] hover:scale-105 transition-all duration-300 whitespace-nowrap flex items-center justify-center"
+          style={{
+            background: 'linear-gradient(135deg, rgb(192 132 252) 0%, rgb(59 130 246) 100%)'
+          }}
         >
-          <span className="block sm:inline">Upload Your Photo</span>
-          <br className="sm:hidden" />
-          <span className="block sm:inline sm:ml-1.5">To Create Magic →</span>
+          Create Your Masterpiece →
         </button>
 
         {/* Optional Demo CTA */}

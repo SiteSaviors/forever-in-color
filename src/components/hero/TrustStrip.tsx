@@ -15,8 +15,6 @@ const TrustStrip = ({
   customerPhotos = [],
   className = '',
 }: TrustStripProps) => {
-  const fullStars = Math.floor(rating);
-
   return (
     <div className={`flex flex-wrap items-center justify-center gap-x-4 gap-y-3 px-4 ${className}`}>
       {/* Customer Photos Stack + Customer Count - Combined on mobile */}
@@ -42,17 +40,13 @@ const TrustStrip = ({
         </div>
       )}
 
-      {/* Star Rating + Score - Single compact unit */}
+      {/* Star Rating + Score - Single compact unit - All 5 stars filled */}
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-0.5">
           {[...Array(5)].map((_, index) => (
             <Star
               key={index}
-              className={`w-4 h-4 sm:w-5 sm:h-5 ${
-                index < fullStars
-                  ? 'fill-yellow-400 text-yellow-400'
-                  : 'text-yellow-400/30'
-              }`}
+              className="w-4 h-4 sm:w-5 sm:h-5 fill-yellow-400 text-yellow-400"
             />
           ))}
         </div>

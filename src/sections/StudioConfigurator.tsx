@@ -144,6 +144,14 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
   const orientationMeta = ORIENTATION_PRESETS[orientation];
   const previewOrientationLabel = preview?.orientation ? ORIENTATION_PRESETS[preview.orientation].label : null;
   const orientationMismatch = Boolean(preview?.orientation && preview.orientation !== orientation);
+  const [savingToGallery, setSavingToGallery] = useState(false);
+  const [savedToGallery, setSavedToGallery] = useState(false);
+  const [showDownloadUpgradeModal, setShowDownloadUpgradeModal] = useState(false);
+  const [downloadingHD, setDownloadingHD] = useState(false);
+  const [mobileStyleDrawerOpen, setMobileStyleDrawerOpen] = useState(false);
+  const [showCanvasUpsellToast, setShowCanvasUpsellToast] = useState(false);
+  const [welcomeDismissed, setWelcomeDismissed] = useState(false);
+
   const overlayStyleName =
     (pendingStyleId ? styles.find((style) => style.id === pendingStyleId)?.name : currentStyle?.name) ??
     'Selected Style';
@@ -155,14 +163,6 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
     return firstPreviewCompleted || generationCount > 0;
   }, [generationCount, firstPreviewCompleted, hasCroppedImage, launchpadExpanded]);
   const showReturningBanner = returningUser && !welcomeDismissed;
-
-  const [savingToGallery, setSavingToGallery] = useState(false);
-  const [savedToGallery, setSavedToGallery] = useState(false);
-  const [showDownloadUpgradeModal, setShowDownloadUpgradeModal] = useState(false);
-  const [downloadingHD, setDownloadingHD] = useState(false);
-  const [mobileStyleDrawerOpen, setMobileStyleDrawerOpen] = useState(false);
-  const [showCanvasUpsellToast, setShowCanvasUpsellToast] = useState(false);
-  const [welcomeDismissed, setWelcomeDismissed] = useState(false);
 
   // Get user tier from entitlements
   const userTier = useFounderStore((state) => state.entitlements?.tier ?? 'anonymous');
