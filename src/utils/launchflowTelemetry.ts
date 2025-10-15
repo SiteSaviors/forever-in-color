@@ -9,8 +9,9 @@ export type LaunchflowOpenSource =
   | 'empty_state'
   | 'style_card'
   | 'system'
-  | 'welcome_banner';
-export type LaunchflowEditSource = 'slim_bar' | 'fab' | 'toast' | 'welcome_banner';
+  | 'welcome_banner'
+  | 'resume_banner';
+export type LaunchflowEditSource = 'slim_bar' | 'fab' | 'toast' | 'welcome_banner' | 'resume_banner';
 export type LaunchflowEmptyStateAction = 'open_launchflow' | 'browse_styles';
 
 type LaunchflowHealthEvent = 'open' | 'complete';
