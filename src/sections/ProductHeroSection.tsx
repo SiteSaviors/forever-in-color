@@ -1,40 +1,56 @@
-import { Suspense, lazy, useMemo } from 'react';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Section from '@/components/layout/Section';
 import { useFounderStore } from '@/store/useFounderStore';
 import { trackLaunchflowOpened } from '@/utils/launchflowTelemetry';
+import GeneratingCanvasAnimation from '@/components/hero/GeneratingCanvasAnimation';
+import StylePills from '@/components/hero/StylePills';
+import CTADeck from '@/components/hero/CTADeck';
+import TrustStrip from '@/components/hero/TrustStrip';
+import MomentumTicker from '@/components/hero/MomentumTicker';
+import AnimatedTransformBadge from '@/components/hero/AnimatedTransformBadge';
 
-const StyleCarousel = lazy(() => import('@/components/studio/StyleCarousel'));
-
-const HeroStyleSkeleton = () => (
-  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-    {Array.from({ length: 4 }).map((_, index) => (
-      <div key={index} className="h-56 rounded-3xl border border-white/15 bg-white/5 animate-pulse" />
-    ))}
-  </div>
-);
+// Style pills data
+const STYLE_PILLS = [
+  {
+    id: 'classic-oil-painting',
+    name: 'Classic Oil',
+    tagline: 'Traditional brushstrokes',
+    thumbnail: '/art-style-thumbnails/classic-oil-painting.jpg',
+    previewImage: '/art-style-thumbnails/classic-oil-painting.jpg',
+  },
+  {
+    id: 'neon-splash',
+    name: 'Neon Splash',
+    tagline: 'Electric drip energy',
+    thumbnail: '/art-style-thumbnails/neon-splash.jpg',
+    previewImage: '/art-style-thumbnails/neon-splash.jpg',
+  },
+  {
+    id: 'watercolor-dreams',
+    name: 'Watercolor Dreams',
+    tagline: 'Soft washes & light',
+    thumbnail: '/art-style-thumbnails/watercolor-dreams.jpg',
+    previewImage: '/art-style-thumbnails/watercolor-dreams.jpg',
+  },
+  {
+    id: 'pop-art-burst',
+    name: 'Pop Art Burst',
+    tagline: 'Bold comic vibes',
+    thumbnail: '/art-style-thumbnails/pop-art-burst.jpg',
+    previewImage: '/art-style-thumbnails/pop-art-burst.jpg',
+  },
+];
 
 const ProductHeroSection = () => {
   const setLaunchpadExpanded = useFounderStore((state) => state.setLaunchpadExpanded);
   const launchpadExpanded = useFounderStore((state) => state.launchpadExpanded);
-  const styles = useFounderStore((state) => state.styles);
-  const preselectedStyleId = useFounderStore((state) => state.preselectedStyleId);
-
-  const preselectedStyleName = useMemo(() => {
-    if (!preselectedStyleId) return null;
-    const matching = styles.find((style) => style.id === preselectedStyleId);
-    if (matching) return matching.name;
-
-    return preselectedStyleId
-      .split('-')
-      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-      .join(' ');
-  }, [preselectedStyleId, styles]);
+  const [currentStyleImage, setCurrentStyleImage] = useState(STYLE_PILLS[0].previewImage);
 
   const handleHeroUploadClick = () => {
     if (!launchpadExpanded) {
       trackLaunchflowOpened('hero');
     }
-
     setLaunchpadExpanded(true);
 
     const launchflowSection = document.getElementById('launchflow');
@@ -43,11 +59,8 @@ const ProductHeroSection = () => {
     }
   };
 
-  const handleBrowseStyles = () => {
-    const stylesAnchor = document.querySelector('[data-founder-anchor="styles"]');
-    if (stylesAnchor) {
-      stylesAnchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+  const handleStyleChange = (_styleId: string, previewImage: string) => {
+    setCurrentStyleImage(previewImage);
   };
 
   return (
@@ -56,54 +69,74 @@ const ProductHeroSection = () => {
       data-founder-hero
       id="founder-hero"
     >
+      {/* Background Texture */}
       <div className="absolute inset-0 opacity-30 bg-[url('https://www.transparenttextures.com/patterns/nice-snow.png')]" />
-      <Section className="relative pt-44 pb-24">
-        <div className="mx-auto max-w-4xl text-center text-white space-y-10">
-          <div className="space-y-6">
-            <h1 className="text-4xl md:text-6xl font-semibold leading-tight drop-shadow-2xl">
-              Transform Your Memories Into Museum-Quality Art
+
+      <Section className="relative pt-32 pb-20">
+        <div className="mx-auto max-w-6xl space-y-12">
+
+          {/* Animated Transform Badge + Headline */}
+          <div className="text-center text-white space-y-4 max-w-4xl mx-auto">
+            <div className="flex justify-center mb-4">
+              <AnimatedTransformBadge />
+            </div>
+            <h1 className="text-4xl md:text-6xl font-bold leading-tight drop-shadow-2xl">
+              <span className="hidden md:inline">Transform Your Memories Into </span>
+              <span className="md:hidden">Transform Your Memories Into<br /></span>
+              <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
+                Museum-Quality Art
+              </span>
             </h1>
-            <p className="text-lg md:text-xl text-white/80 leading-relaxed max-w-3xl mx-auto">
-              AI-powered canvas art that brings your photos to life.
+            <p className="text-lg md:text-xl text-white/70 leading-relaxed">
+              AI-powered canvas art. Multiple styles. In 60 seconds.
             </p>
           </div>
-          {preselectedStyleName && (
-            <div className="inline-flex items-center gap-2 rounded-full bg-purple-500/15 border border-purple-400/30 px-5 py-2 text-sm font-semibold text-purple-200">
-              ✨ {preselectedStyleName} selected
-            </div>
-          )}
-          <div className="flex justify-center">
-            <button
-              type="button"
-              onClick={handleHeroUploadClick}
-              className="btn-primary whitespace-nowrap px-12 sm:px-16 md:px-24 py-6 text-xl sm:text-2xl md:text-3xl tracking-wide shadow-[0_25px_60px_rgba(99,102,241,0.65)] hover:shadow-[0_32px_75px_rgba(99,102,241,0.75)]"
-            >
-              Upload Your Photo to Start the Magic →
-            </button>
+
+          {/* CTA Deck */}
+          <CTADeck
+            onUploadClick={handleHeroUploadClick}
+            showDemo={false}
+          />
+
+          {/* Trust Strip */}
+          <TrustStrip
+            rating={4.9}
+            reviewCount={2341}
+            customerCount="10,000+"
+            customerPhotos={[
+              '/lovable-uploads/0c7d3c87-930b-4e39-98a8-2e9893b05344.png',
+              '/lovable-uploads/c0f1ce8f-22e6-44e5-89d9-2b3327371fea.png',
+              '/lovable-uploads/f9da9750-5b5c-40c0-adeb-92bb010bc33c.png',
+            ]}
+          />
+
+          {/* Hero Canvas Panel with Generation Animation */}
+          <div className="max-w-4xl mx-auto">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentStyleImage}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.4 }}
+              >
+                <GeneratingCanvasAnimation
+                  defaultStyleImage={currentStyleImage}
+                  generationDuration={2500}
+                />
+              </motion.div>
+            </AnimatePresence>
           </div>
-          <div className="flex items-center justify-center gap-4 text-sm text-white/70 uppercase tracking-[0.3em]">
-            <span className="hidden sm:block h-px w-16 bg-white/30" aria-hidden="true" />
-            <button
-              type="button"
-              onClick={handleBrowseStyles}
-              className="rounded-full px-3 py-1 text-white/70 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
-            >
-              Or Browse Styles First
-            </button>
-            <span className="hidden sm:block h-px w-16 bg-white/30" aria-hidden="true" />
-          </div>
-        </div>
-        <div className="mt-16 space-y-6" data-founder-anchor="styles">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 text-center lg:text-left">
-            <div>
-              <p className="text-sm uppercase tracking-[0.3em] text-brand-pink">Curated Styles</p>
-              <h2 className="text-2xl font-semibold text-white mt-2">Hover to see the original • Click to try the style</h2>
-            </div>
-            <span className="text-sm text-white/60">First preview prioritizes your selected style.</span>
-          </div>
-          <Suspense fallback={<HeroStyleSkeleton />}>
-            <StyleCarousel />
-          </Suspense>
+
+          {/* Style Pills */}
+          <StylePills
+            pills={STYLE_PILLS}
+            onStyleChange={handleStyleChange}
+          />
+
+          {/* Momentum Ticker */}
+          <MomentumTicker interval={4000} />
+
         </div>
       </Section>
     </section>
