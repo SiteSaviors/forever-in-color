@@ -615,13 +615,13 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
               </div>
             )}
 
-            {/* Canvas In Room Preview - Visible on all devices */}
-            <div className="w-full max-w-2xl mt-8 lg:mt-12">
-              <div className="mb-4 lg:mb-6 text-center space-y-1 lg:space-y-2">
-                <h3 className="text-xl lg:text-2xl font-bold text-white">
+            {/* Canvas In Room Preview - Desktop Only (below canvas) */}
+            <div className="hidden lg:block w-full max-w-2xl mt-12">
+              <div className="mb-6 text-center space-y-2">
+                <h3 className="text-2xl font-bold text-white">
                   See It In Your Space
                 </h3>
-                <p className="text-xs lg:text-sm text-white/60 max-w-md mx-auto px-4">
+                <p className="text-sm text-white/60 max-w-md mx-auto">
                   Visualize how your canvas will look in a real living room
                 </p>
               </div>
@@ -635,7 +635,23 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
         {/* RIGHT SIDEBAR: Options + Order Summary (Full-width on mobile, fixed on desktop) */}
         <aside className="w-full lg:w-[420px]">
           <div className="lg:sticky lg:top-[57px] px-4 py-6 lg:p-6">
-            <StickyOrderRail />
+            <StickyOrderRail
+              mobileRoomPreview={
+                <div className="lg:hidden w-full">
+                  <div className="mb-4 text-center space-y-1">
+                    <h3 className="text-xl font-bold text-white">
+                      See It In Your Space
+                    </h3>
+                    <p className="text-xs text-white/60 max-w-md mx-auto px-4">
+                      Visualize how your canvas will look in a real living room
+                    </p>
+                  </div>
+                  <Suspense fallback={<CanvasPreviewFallback />}>
+                    <CanvasInRoomPreview enableHoverEffect={true} showDimensions={false} />
+                  </Suspense>
+                </div>
+              }
+            />
           </div>
         </aside>
       </div>

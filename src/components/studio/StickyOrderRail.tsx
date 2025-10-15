@@ -9,7 +9,11 @@ import { useCheckoutStore } from '@/store/useCheckoutStore';
 
 const CropperModal = lazy(() => import('@/components/launchpad/cropper/CropperModal'));
 
-const StickyOrderRail = () => {
+type StickyOrderRailProps = {
+  mobileRoomPreview?: React.ReactNode;
+};
+
+const StickyOrderRail = ({ mobileRoomPreview }: StickyOrderRailProps) => {
   const inFlightCropsRef = useRef<Map<Orientation, Promise<SmartCropResult>>>(new Map());
   const [cropperOpen, setCropperOpen] = useState(false);
   const [pendingOrientation, setPendingOrientation] = useState<Orientation | null>(null);
@@ -433,6 +437,13 @@ const StickyOrderRail = () => {
           </button>
         )}
       </Card>
+
+      {/* Mobile Room Preview - Only on mobile, between Enhancements and Order */}
+      {mobileRoomPreview && (
+        <div className="lg:hidden">
+          {mobileRoomPreview}
+        </div>
+      )}
 
       {/* Order Summary */}
       <Card glass className="space-y-4 border-2 border-white/20 p-5">
