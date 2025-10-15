@@ -4,7 +4,7 @@ import PhotoUploader from '@/components/launchpad/PhotoUploader';
 import AccountPromptModal from '@/components/modals/AccountPromptModal';
 import { useFounderStore } from '@/store/useFounderStore';
 import { emitStepOneEvent } from '@/utils/telemetry';
-import { trackLaunchflowCompleted, trackLaunchflowEditReopen, trackLaunchflowOpened, type LaunchflowOpenSource } from '@/utils/launchflowTelemetry';
+import { trackLaunchflowCompleted, trackLaunchflowEditReopen, trackLaunchflowOpened, type LaunchflowEditSource, type LaunchflowOpenSource } from '@/utils/launchflowTelemetry';
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
 
 const successMessage = 'Photo ready! Explore styles below.';
@@ -209,6 +209,50 @@ const MobileLaunchflowFab = ({ onClick, hasCroppedImage, disabled }: MobileFabPr
   </button>
 );
 
+type ResumeBannerProps = {
+  onResume: () => void;
+  onDismiss: () => void;
+};
+
+const ResumeBanner = ({ onResume, onDismiss }: ResumeBannerProps) => (
+  <div className="rounded-3xl border border-white/10 bg-white/5 px-6 py-5 shadow-[0_25px_60px_rgba(30,64,175,0.35)] backdrop-blur">
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-start gap-3">
+        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500/30 via-indigo-500/30 to-blue-500/30 border border-white/15">
+          <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14m7-7H5" />
+          </svg>
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-white">Resume your photo setup</p>
+          <p className="text-xs text-white/70">
+            We saved your upload. Jump back into cropping or continue styling in the studio.
+          </p>
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={onResume}
+          className="rounded-xl bg-gradient-to-r from-purple-500 to-blue-500 px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_35px_rgba(99,102,241,0.4)] transition hover:scale-105"
+        >
+          Resume upload
+        </button>
+        <button
+          type="button"
+          onClick={onDismiss}
+          className="flex h-8 w-8 items-center justify-center rounded-full text-white/60 transition hover:bg-white/10 hover:text-white"
+          aria-label="Dismiss resume message"
+        >
+          <svg className="h-4 w-4" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8} fill="none">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
 const LaunchflowAccordion = () => {
   const launchpadExpanded = useFounderStore((state) => state.launchpadExpanded);
   const setLaunchpadExpanded = useFounderStore((state) => state.setLaunchpadExpanded);
@@ -222,10 +266,28 @@ const LaunchflowAccordion = () => {
   const accountPromptTriggerAt = useFounderStore((state) => state.accountPromptTriggerAt);
   const entitlementsStatus = useFounderStore((state) => state.entitlements.status);
   const hydrateEntitlements = useFounderStore((state) => state.hydrateEntitlements);
+  const firstPreviewCompleted = useFounderStore((state) => state.firstPreviewCompleted);
+  const generationCount = useFounderStore((state) => state.generationCount);
 
   const [showAccountModal, setShowAccountModal] = useState(false);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [resumeDismissed, setResumeDismissed] = useState(false);
   const prefersReducedMotion = usePrefersReducedMotion();
+
+  const returningUser = useMemo(() => {
+    if (croppedImage) {
+      return firstPreviewCompleted || generationCount > 0;
+    }
+    if (uploadedImage) {
+      return generationCount > 0 || firstPreviewCompleted;
+    }
+    return false;
+  }, [croppedImage, uploadedImage, firstPreviewCompleted, generationCount]);
+
+  const showResumeBanner = useMemo(
+    () => Boolean(uploadedImage && !croppedImage && returningUser && !resumeDismissed && !launchpadExpanded),
+    [uploadedImage, croppedImage, returningUser, resumeDismissed, launchpadExpanded]
+  );
 
   const previousCropRef = useRef<string | null>(null);
   const initialRenderRef = useRef(true);
@@ -260,12 +322,21 @@ const LaunchflowAccordion = () => {
   }, [entitlementsStatus, hydrateEntitlements]);
 
   useEffect(() => {
-    if (uploadedImage && !croppedImage && !launchpadExpanded) {
+    if (uploadedImage && !croppedImage) {
+      setResumeDismissed(false);
+    }
+    if (croppedImage) {
+      setResumeDismissed(true);
+    }
+  }, [uploadedImage, croppedImage]);
+
+  useEffect(() => {
+    if (uploadedImage && !croppedImage && !launchpadExpanded && !returningUser) {
       trackLaunchflowOpened('system');
       launchflowStartRef.current = Date.now();
       setLaunchpadExpanded(true);
     }
-  }, [uploadedImage, croppedImage, launchpadExpanded, setLaunchpadExpanded]);
+  }, [uploadedImage, croppedImage, launchpadExpanded, returningUser, setLaunchpadExpanded]);
 
   useEffect(() => {
     if (initialRenderRef.current) {
@@ -352,7 +423,11 @@ const LaunchflowAccordion = () => {
     }
 
     if (isEdit) {
-      const editSource = source === 'fab' ? 'fab' : 'slim_bar';
+      let editSource: LaunchflowEditSource = 'slim_bar';
+      if (source === 'fab') editSource = 'fab';
+      else if (source === 'welcome_banner') editSource = 'welcome_banner';
+      else if (source === 'resume_banner') editSource = 'resume_banner';
+      else if (source === 'toast') editSource = 'toast';
       trackLaunchflowEditReopen(editSource);
     }
   };
@@ -385,6 +460,16 @@ const LaunchflowAccordion = () => {
     >
       <div className="mx-auto flex max-w-[1400px] flex-col gap-4 px-6">
         <SuccessToast show={showSuccessToast} onDismiss={() => setShowSuccessToast(false)} />
+
+        {showResumeBanner && (
+          <ResumeBanner
+            onResume={() => {
+              openLaunchflow('resume_banner', true);
+              setResumeDismissed(true);
+            }}
+            onDismiss={() => setResumeDismissed(true)}
+          />
+        )}
 
         {!launchpadExpanded && launchpadSlimMode && (
           <SlimBar

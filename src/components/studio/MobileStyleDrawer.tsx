@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, type TouchEvent } from 'react';
 import type { StyleOption } from '@/store/useFounderStore';
 
 type PreviewState = {
@@ -33,6 +33,7 @@ export default function MobileStyleDrawer({
   userTier,
 }: MobileStyleDrawerProps) {
   const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
+  const touchStartYRef = useRef<number | null>(null);
 
   // iOS Safari scroll lock - prevents body bounce
   useEffect(() => {
@@ -110,6 +111,26 @@ export default function MobileStyleDrawer({
     ? { duration: 0.15, ease: 'easeOut' }
     : { type: 'spring', damping: 30, stiffness: 300 };
 
+  const handleTouchStart = (event: TouchEvent<HTMLDivElement>) => {
+    touchStartYRef.current = event.touches[0]?.clientY ?? null;
+  };
+
+  const handleTouchMove = (event: TouchEvent<HTMLDivElement>) => {
+    if (touchStartYRef.current == null) return;
+    const currentY = event.touches[0]?.clientY ?? null;
+    if (currentY != null) {
+      const delta = currentY - touchStartYRef.current;
+      if (delta > 90) {
+        touchStartYRef.current = null;
+        onClose();
+      }
+    }
+  };
+
+  const handleTouchEnd = () => {
+    touchStartYRef.current = null;
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -142,6 +163,9 @@ export default function MobileStyleDrawer({
             aria-modal="true"
             aria-labelledby="mobile-drawer-title"
             aria-describedby="mobile-drawer-desc"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
           >
             {/* Drag Handle (visual affordance) */}
             <div className="flex justify-center pt-3 pb-2">
@@ -149,15 +173,15 @@ export default function MobileStyleDrawer({
             </div>
 
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 max-[360px]:px-4 max-[360px]:py-3">
               <div>
                 <h2
                   id="mobile-drawer-title"
-                  className="text-xl font-bold text-white"
+                  className="text-xl font-bold text-white max-[360px]:text-lg"
                 >
                   Choose AI Style
                 </h2>
-                <p id="mobile-drawer-desc" className="text-xs text-white/60 mt-1">
+                <p id="mobile-drawer-desc" className="text-xs text-white/60 mt-1 max-[360px]:text-[11px]">
                   {styles.length} styles available • Tap to preview
                 </p>
               </div>
@@ -173,8 +197,10 @@ export default function MobileStyleDrawer({
             </div>
 
             {/* Scrollable Grid */}
-            <div className="flex-1 overflow-y-auto px-4 py-6">
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pb-6">
+            <div className="relative flex-1 overflow-y-auto px-4 py-6 max-[360px]:px-3">
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-slate-900 to-transparent" />
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-slate-900 to-transparent" />
+              <div className="relative grid grid-cols-2 sm:grid-cols-3 gap-4 pb-6 max-[360px]:gap-3">
                 {styles.map((style) => {
                   const isSelected = style.id === selectedStyleId;
                   const isPending = style.id === pendingStyleId;
@@ -196,6 +222,7 @@ export default function MobileStyleDrawer({
                             : 'bg-white/5 border-2 border-white/10 active:bg-white/10 active:border-white/20'
                         }
                         ${isLocked ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
+                        max-[360px]:min-h-[160px]
                       `}
                       style={{
                         touchAction: 'manipulation',
@@ -245,10 +272,10 @@ export default function MobileStyleDrawer({
 
                       {/* Text Content */}
                       <div className="flex-1 flex flex-col">
-                        <h3 className="text-sm font-bold text-white line-clamp-1">
+                        <h3 className="text-sm font-bold text-white line-clamp-1 max-[360px]:text-[13px]">
                           {style.name}
                         </h3>
-                        <p className="text-xs text-white/60 mt-1 line-clamp-2 flex-1">
+                        <p className="text-xs text-white/60 mt-1 line-clamp-2 flex-1 max-[360px]:text-[11px]">
                           {style.description}
                         </p>
                       </div>
@@ -260,11 +287,11 @@ export default function MobileStyleDrawer({
 
             {/* Footer with Token Counter */}
             <div
-              className="px-6 py-4 border-t border-white/10 bg-slate-950/50"
+              className="px-6 py-4 border-t border-white/10 bg-slate-950/50 max-[360px]:px-4 max-[360px]:py-3"
               style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))' }}
             >
-              <div className="flex items-center justify-between gap-4">
-                <p className="text-xs text-white/60">
+              <div className="flex items-center justify-between gap-4 max-[360px]:gap-3">
+                <p className="text-xs text-white/60 max-[360px]:text-[11px]">
                   Tap a style to generate your preview
                 </p>
 
