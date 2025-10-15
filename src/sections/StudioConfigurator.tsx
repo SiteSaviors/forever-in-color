@@ -12,6 +12,7 @@ const LivingCanvasModal = lazy(() => import('@/components/studio/LivingCanvasMod
 const CanvasInRoomPreview = lazy(() => import('@/components/studio/CanvasInRoomPreview'));
 const StyleForgeOverlay = lazy(() => import('@/components/studio/StyleForgeOverlay'));
 const DownloadUpgradeModal = lazy(() => import('@/components/modals/DownloadUpgradeModal'));
+const MobileStyleDrawer = lazy(() => import('@/components/studio/MobileStyleDrawer'));
 
 const CanvasPreviewFallback = () => (
   <div className="w-full h-[360px] rounded-[2.5rem] bg-slate-800/60 border border-white/10 animate-pulse" />
@@ -77,6 +78,7 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
   const [savedToGallery, setSavedToGallery] = useState(false);
   const [showDownloadUpgradeModal, setShowDownloadUpgradeModal] = useState(false);
   const [downloadingHD, setDownloadingHD] = useState(false);
+  const [mobileStyleDrawerOpen, setMobileStyleDrawerOpen] = useState(false);
 
   // Get user tier from entitlements
   const userTier = useFounderStore((state) => state.entitlements?.tier ?? 'anonymous');
@@ -283,10 +285,58 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
         </div>
       )}
 
+      {/* Mobile Floating Action Button - Style Picker */}
+      {croppedImage && (
+        <div className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-40">
+          <button
+            type="button"
+            onClick={() => setMobileStyleDrawerOpen(true)}
+            className="flex items-center gap-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white px-5 py-3.5 rounded-full shadow-glow-purple active:scale-95 transition-transform duration-150"
+            aria-label="Open style picker"
+            style={{
+              paddingBottom: 'calc(0.875rem + env(safe-area-inset-bottom, 0px))',
+            }}
+          >
+            {/* Current style thumbnail */}
+            {currentStyle?.thumbnail && (
+              <div className="w-11 h-11 rounded-lg overflow-hidden border-2 border-white/30 flex-shrink-0 bg-slate-800">
+                <img
+                  src={currentStyle.thumbnail}
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+
+            {/* Label */}
+            <div className="flex flex-col items-start gap-0.5">
+              <span className="text-[10px] text-white/70 uppercase tracking-wider font-semibold leading-tight">
+                Style
+              </span>
+              <span className="text-sm font-bold leading-tight">
+                {currentStyle?.name ?? 'Select Style'}
+              </span>
+            </div>
+
+            {/* Chevron indicator */}
+            <svg
+              className="w-5 h-5 flex-shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2.5}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+        </div>
+      )}
+
       {/* Main 3-Column Layout: Left Sidebar | Center Canvas | Right Sidebar */}
-      <div className="flex max-w-[1800px] mx-auto">
-        {/* LEFT SIDEBAR: Style Selection (Fixed Width) */}
-        <aside className="w-80 bg-slate-950/50 border-r border-white/10 h-screen sticky top-[57px] overflow-y-auto">
+      {/* Mobile: Vertical stack | Desktop (≥1024px): 3-column flex row */}
+      <div className="block lg:flex max-w-[1800px] mx-auto">
+        {/* LEFT SIDEBAR: Style Selection (Desktop Only - Hidden on Mobile) */}
+        <aside className="hidden lg:block lg:w-80 bg-slate-950/50 border-r border-white/10 lg:h-screen lg:sticky lg:top-[57px] overflow-y-auto">
           <div className="p-6 space-y-6">
             {/* Header */}
             <div>
@@ -375,8 +425,8 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
           </div>
         </aside>
 
-        {/* CENTER: Canvas Preview (Flexible) */}
-        <main className="flex-1 p-8 flex flex-col items-center justify-start">
+        {/* CENTER: Canvas Preview (Full-width on mobile, flexible on desktop) */}
+        <main className="w-full lg:flex-1 px-4 py-6 lg:p-8 flex flex-col items-center justify-start">
           <div className="w-full max-w-2xl mx-auto">
             {/* Canvas Preview */}
             <div
@@ -580,9 +630,9 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
           </div>
         </main>
 
-        {/* RIGHT SIDEBAR: Options + Order Summary (Fixed Width) */}
-        <aside className="w-[420px]">
-          <div className="sticky top-[57px] p-6">
+        {/* RIGHT SIDEBAR: Options + Order Summary (Full-width on mobile, fixed on desktop) */}
+        <aside className="w-full lg:w-[420px]">
+          <div className="lg:sticky lg:top-[57px] px-4 py-6 lg:p-6">
             <StickyOrderRail />
           </div>
         </aside>
@@ -598,6 +648,22 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
         <DownloadUpgradeModal
           isOpen={showDownloadUpgradeModal}
           onClose={() => setShowDownloadUpgradeModal(false)}
+        />
+      </Suspense>
+
+      {/* Mobile Style Drawer */}
+      <Suspense fallback={null}>
+        <MobileStyleDrawer
+          isOpen={mobileStyleDrawerOpen}
+          onClose={() => setMobileStyleDrawerOpen(false)}
+          styles={styles}
+          selectedStyleId={selectedStyleId}
+          onStyleSelect={handleStyleClick}
+          previews={previews}
+          canGenerateMore={canGenerateMore()}
+          pendingStyleId={pendingStyleId}
+          remainingTokens={entitlements.remainingTokens}
+          userTier={entitlements.tier}
         />
       </Suspense>
     </section>
