@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Card from '@/components/ui/Card';
 import type { Orientation } from '@/utils/imageUtils';
@@ -13,6 +13,7 @@ type Enhancement = {
 
 type CanvasConfigProps = {
   isExpanded: boolean;
+  isLocked: boolean;
   // Size selector props
   orientation: Orientation;
   sizeOptions: Array<{ id: string; label: string; nickname?: string; price: number }>;
@@ -41,6 +42,7 @@ type CanvasConfigProps = {
 
 export default function CanvasConfig({
   isExpanded,
+  isLocked,
   orientation: _orientation,
   sizeOptions,
   selectedSize,
@@ -64,27 +66,72 @@ export default function CanvasConfig({
 }: CanvasConfigProps) {
   const hasEnhancements = enabledEnhancements.length > 0;
   const sizeCardRef = useRef<HTMLDivElement>(null);
+  const firstInteractiveRef = useRef<HTMLButtonElement>(null);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  // Listen for reduced-motion preference
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const handleChange = (event: MediaQueryListEvent) => setPrefersReducedMotion(event.matches);
+
+    setPrefersReducedMotion(mediaQuery.matches);
+
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handleChange);
+      return () => mediaQuery.removeEventListener('change', handleChange);
+    }
+
+    mediaQuery.addListener(handleChange);
+    return () => mediaQuery.removeListener(handleChange);
+  }, []);
 
   // Auto-scroll to first card on expand
   useEffect(() => {
-    if (isExpanded && sizeCardRef.current) {
-      setTimeout(() => {
-        sizeCardRef.current?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'nearest',
-        });
-      }, 250); // Wait for expand animation
+    if (!isExpanded || !sizeCardRef.current) return;
+
+    if (prefersReducedMotion) {
+      sizeCardRef.current.scrollIntoView({ behavior: 'auto', block: 'nearest' });
+      return;
     }
-  }, [isExpanded]);
+
+    const timer = window.setTimeout(() => {
+      sizeCardRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+      });
+    }, 250);
+
+    return () => window.clearTimeout(timer);
+  }, [isExpanded, prefersReducedMotion]);
+
+  // Focus first interactive control when expanded (if unlocked)
+  useEffect(() => {
+    if (!isExpanded || isLocked || !firstInteractiveRef.current) return;
+
+    const focusControl = () => {
+      firstInteractiveRef.current?.focus({ preventScroll: true });
+    };
+
+    if (prefersReducedMotion) {
+      focusControl();
+      return;
+    }
+
+    const timer = window.setTimeout(focusControl, 220);
+    return () => window.clearTimeout(timer);
+  }, [isExpanded, isLocked, prefersReducedMotion]);
 
   return (
     <AnimatePresence>
       {isExpanded && (
         <motion.div
+          id="canvas-options-panel"
+          role="region"
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: 'auto', opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
-          transition={{ duration: 0.2, ease: 'easeInOut' }}
+          transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.2, ease: 'easeInOut' }}
           className="space-y-4 overflow-hidden"
         >
           {/* Canvas Size Selector - with stagger animation */}
@@ -92,41 +139,50 @@ export default function CanvasConfig({
             ref={sizeCardRef}
             initial={{ y: -10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.05 }}
+            transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.05 }}
           >
             <Card glass className="space-y-4 border-2 border-white/20 p-5">
-            <h3 className="text-base font-bold text-white">Canvas Size</h3>
-            <div className="space-y-2">
-              {sizeOptions.map((size) => (
-                <button
-                  key={size.id}
-                  onClick={() => onSizeChange(size.id)}
-                  className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all ${
-                    selectedSize === size.id
-                      ? 'bg-purple-500 text-white shadow-glow-soft'
-                      : 'bg-white/10 text-white/70 border border-white/20 hover:bg-white/20'
-                  }`}
-                >
-                  <div className="flex flex-col text-left">
-                    <span className="text-sm font-semibold">{size.label}</span>
-                    {size.nickname && (
-                      <span className="text-[11px] uppercase tracking-[0.25em] text-white/50">
-                        {size.nickname}
-                      </span>
-                    )}
-                  </div>
-                  <span className="text-sm font-semibold">${size.price}</span>
-                </button>
-              ))}
-            </div>
-          </Card>
+              <div className="flex items-start justify-between">
+                <h3 className="text-base font-bold text-white">Canvas Size</h3>
+                {isLocked && (
+                  <span className="text-[10px] uppercase tracking-[0.2em] text-white/60">
+                    Finalize your photo to unlock
+                  </span>
+                )}
+              </div>
+              <div className="space-y-2">
+                {sizeOptions.map((size, index) => (
+                  <button
+                    key={size.id}
+                    onClick={() => onSizeChange(size.id)}
+                    disabled={isLocked}
+                    ref={index === 0 ? firstInteractiveRef : undefined}
+                    className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all ${
+                      selectedSize === size.id
+                        ? 'bg-purple-500 text-white shadow-glow-soft'
+                        : 'bg-white/10 text-white/70 border border-white/20 hover:bg-white/20'
+                    } disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white/10`}
+                  >
+                    <div className="flex flex-col text-left">
+                      <span className="text-sm font-semibold">{size.label}</span>
+                      {size.nickname && (
+                        <span className="text-[11px] uppercase tracking-[0.25em] text-white/50">
+                          {size.nickname}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-sm font-semibold">${size.price}</span>
+                  </button>
+                ))}
+              </div>
+            </Card>
           </motion.div>
 
           {/* Enhancements - with stagger animation */}
           <motion.div
             initial={{ y: -10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.1 }}
+            transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.1 }}
           >
           <Card glass className="space-y-4 border-2 border-white/20 p-5">
             <h3 className="text-base font-bold text-white">Enhancements</h3>
@@ -135,12 +191,16 @@ export default function CanvasConfig({
             {floatingFrame && (
               <div className="space-y-3">
                 <button
-                  onClick={onToggleFloatingFrame}
+                  onClick={() => {
+                    if (isLocked) return;
+                    onToggleFloatingFrame();
+                  }}
+                  disabled={isLocked}
                   className={`w-full flex items-start gap-3 p-4 rounded-xl text-left transition-all ${
                     floatingFrame.enabled
                       ? 'bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-2 border-purple-400'
                       : 'bg-white/5 border-2 border-white/10 hover:bg-white/10 hover:border-white/20'
-                  }`}
+                  } disabled:opacity-40 disabled:cursor-not-allowed`}
                 >
                   <div
                     className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all ${
@@ -176,23 +236,25 @@ export default function CanvasConfig({
                     <p className="text-xs font-medium text-white/80">Frame Color</p>
                     <div className="flex gap-2">
                       <button
-                        onClick={() => onFrameChange('black')}
+                        onClick={() => !isLocked && onFrameChange('black')}
+                        disabled={isLocked}
                         className={`flex-1 px-3 py-2.5 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-2 ${
                           selectedFrame === 'black'
                             ? 'bg-purple-500 text-white shadow-glow-soft'
                             : 'bg-white/10 text-white/70 hover:bg-white/20'
-                        }`}
+                        } disabled:opacity-40 disabled:cursor-not-allowed`}
                       >
                         <div className="w-4 h-4 rounded-full bg-black border border-white/20" />
                         Black
                       </button>
                       <button
-                        onClick={() => onFrameChange('white')}
+                        onClick={() => !isLocked && onFrameChange('white')}
+                        disabled={isLocked}
                         className={`flex-1 px-3 py-2.5 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-2 ${
                           selectedFrame === 'white'
                             ? 'bg-purple-500 text-white shadow-glow-soft'
                             : 'bg-white/10 text-white/70 hover:bg-white/20'
-                        }`}
+                        } disabled:opacity-40 disabled:cursor-not-allowed`}
                       >
                         <div className="w-4 h-4 rounded-full bg-white border border-gray-300" />
                         White
@@ -206,12 +268,16 @@ export default function CanvasConfig({
             {/* Living Canvas AR */}
             {livingCanvas && (
               <button
-                onClick={onToggleLivingCanvas}
+                onClick={() => {
+                  if (isLocked) return;
+                  onToggleLivingCanvas();
+                }}
+                disabled={isLocked}
                 className={`w-full flex items-start gap-3 p-4 rounded-xl text-left transition-all ${
                   livingCanvas.enabled
                     ? 'bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-2 border-purple-400'
                     : 'bg-white/5 border-2 border-white/10 hover:bg-white/10 hover:border-white/20'
-                }`}
+                } disabled:opacity-40 disabled:cursor-not-allowed`}
               >
                 <div
                   className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all ${
@@ -273,7 +339,7 @@ export default function CanvasConfig({
           <motion.div
             initial={{ y: -10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.15 }}
+            transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.15 }}
           >
           <Card glass className="space-y-4 border-2 border-white/20 p-5">
             <div className="space-y-2">

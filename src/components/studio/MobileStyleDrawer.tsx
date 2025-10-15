@@ -74,9 +74,12 @@ export default function MobileStyleDrawer({
 
     return () => {
       window.removeEventListener('popstate', handlePopState);
-      // Clean up history if drawer programmatically closed
-      if (window.history.state?.drawer === 'open') {
-        window.history.back();
+      try {
+        if (window.history.state?.drawer === 'open') {
+          window.history.back();
+        }
+      } catch (error) {
+        console.warn('[MobileStyleDrawer] Unable to pop history state', error);
       }
     };
   }, [isOpen, onClose]);

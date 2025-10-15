@@ -24,6 +24,7 @@ const StickyOrderRail = ({ mobileRoomPreview, onDownloadClick, downloadingHD, is
   const [cropperOpen, setCropperOpen] = useState(false);
   const [pendingOrientation, setPendingOrientation] = useState<Orientation | null>(null);
   const [canvasConfigExpanded, setCanvasConfigExpanded] = useState(false);
+  const canvasToggleRef = useRef<HTMLButtonElement>(null);
   const enhancements = useFounderStore((state) => state.enhancements);
   const toggleEnhancement = useFounderStore((state) => state.toggleEnhancement);
   const setLivingCanvasModalOpen = useFounderStore((state) => state.setLivingCanvasModalOpen);
@@ -216,6 +217,15 @@ const StickyOrderRail = ({ mobileRoomPreview, onDownloadClick, downloadingHD, is
     orientationChanging ||
     false;
 
+  const downloadDisabled =
+    !currentStyle ||
+    !hasFinalizedPhoto ||
+    orientationPreviewPending ||
+    orientationChanging;
+
+  const canvasButtonDisabled = orientationChanging || cropperOpen;
+  const canvasLocked = !hasFinalizedPhoto || orientationPreviewPending;
+
   const handleCheckout = async () => {
     if (checkoutDisabled) return;
 
@@ -231,6 +241,16 @@ const StickyOrderRail = ({ mobileRoomPreview, onDownloadClick, downloadingHD, is
     setCheckoutError(null);
     resetCheckout();
     navigate('/checkout');
+  };
+
+  const handleCanvasToggle = () => {
+    setCanvasConfigExpanded((prev) => {
+      const next = !prev;
+      if (prev && canvasToggleRef.current) {
+        window.requestAnimationFrame(() => canvasToggleRef.current?.focus({ preventScroll: true }));
+      }
+      return next;
+    });
   };
 
   return (
@@ -263,16 +283,20 @@ const StickyOrderRail = ({ mobileRoomPreview, onDownloadClick, downloadingHD, is
       {/* Action Row - Download Image & Create Canvas CTAs */}
       <ActionRow
         onDownloadClick={onDownloadClick}
-        onCanvasClick={() => setCanvasConfigExpanded(!canvasConfigExpanded)}
+        onCanvasClick={handleCanvasToggle}
         downloadingHD={downloadingHD}
         isPremiumUser={isPremiumUser}
         canvasConfigExpanded={canvasConfigExpanded}
-        disabled={!hasFinalizedPhoto || orientationChanging}
+        downloadDisabled={downloadDisabled}
+        canvasButtonDisabled={canvasButtonDisabled}
+        canvasLocked={canvasLocked}
+        canvasButtonRef={canvasToggleRef}
       />
 
       {/* Canvas Config - Collapsible */}
       <CanvasConfig
         isExpanded={canvasConfigExpanded}
+        isLocked={canvasLocked}
         orientation={activeOrientationValue}
         sizeOptions={sizeOptionsForOrientation}
         selectedSize={selectedSize}
