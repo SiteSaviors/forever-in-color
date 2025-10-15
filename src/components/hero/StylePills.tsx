@@ -34,7 +34,7 @@ const StylePills = ({ pills, onStyleChange, className = '' }: StylePillsProps) =
   };
 
   return (
-    <div className={`flex flex-wrap items-center justify-center gap-3 ${className}`}>
+    <div className={`grid grid-cols-2 sm:flex sm:flex-wrap items-center justify-center gap-2 sm:gap-3 px-4 max-w-xl sm:max-w-none mx-auto ${className}`}>
       {pills.map((pill) => {
         const isActive = activeStyleId === pill.id;
 
@@ -44,7 +44,7 @@ const StylePills = ({ pills, onStyleChange, className = '' }: StylePillsProps) =
             type="button"
             onClick={() => handlePillClick(pill)}
             onKeyDown={(e) => handleKeyDown(e, pill)}
-            className={`relative flex items-center gap-3 px-4 py-3 rounded-full transition-all duration-300 ${
+            className={`relative flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-full transition-all duration-300 ${
               isActive
                 ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg shadow-purple-500/30 scale-105'
                 : 'bg-white/10 border border-white/20 text-white/80 hover:bg-white/15 hover:border-white/30 hover:text-white'
@@ -56,7 +56,7 @@ const StylePills = ({ pills, onStyleChange, className = '' }: StylePillsProps) =
           >
             {/* Thumbnail */}
             <div
-              className={`w-10 h-10 rounded-full overflow-hidden border-2 transition-colors ${
+              className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden border-2 transition-colors flex-shrink-0 ${
                 isActive ? 'border-white/50' : 'border-white/20'
               }`}
             >
@@ -68,11 +68,11 @@ const StylePills = ({ pills, onStyleChange, className = '' }: StylePillsProps) =
             </div>
 
             {/* Text */}
-            <div className="flex flex-col items-start text-left">
-              <span className={`text-sm font-semibold ${isActive ? 'text-white' : 'text-white/90'}`}>
+            <div className="flex flex-col items-start text-left min-w-0 flex-1">
+              <span className={`text-xs sm:text-sm font-semibold truncate w-full ${isActive ? 'text-white' : 'text-white/90'}`}>
                 {pill.name}
               </span>
-              <span className={`text-xs ${isActive ? 'text-white/80' : 'text-white/60'}`}>
+              <span className={`text-[10px] sm:text-xs truncate w-full ${isActive ? 'text-white/80' : 'text-white/60'}`}>
                 {pill.tagline}
               </span>
             </div>
