@@ -132,6 +132,7 @@ const ProductHeroSection = () => {
               >
                 <GeneratingCanvasAnimation
                   defaultStyleImage={currentStyleImage}
+                  originalImage="/art-style-hero-generations/family-original.jpg"
                   styleName={currentStyleName}
                   styleTagline={currentStyleTagline}
                   generationDuration={2500}

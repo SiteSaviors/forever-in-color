@@ -93,6 +93,22 @@ body {
   @apply bg-gradient-to-r from-orange-400 to-pink-400 bg-clip-text text-transparent;
 }
 
+/* Disable context menu and long-press behavior */
+.no-context-menu {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  pointer-events: auto;
+}
+
+.no-context-menu img {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  pointer-events: none;
+}
+
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
   .animate-float,

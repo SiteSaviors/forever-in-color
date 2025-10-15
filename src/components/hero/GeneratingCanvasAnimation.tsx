@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ArrowLeftRight } from 'lucide-react';
 
 type GeneratingCanvasAnimationProps = {
   defaultStyleImage: string;
+  originalImage?: string;
   styleName?: string;
   styleTagline?: string;
   videoSrc?: string;
@@ -15,6 +16,7 @@ type GeneratingCanvasAnimationProps = {
 
 const GeneratingCanvasAnimation = ({
   defaultStyleImage,
+  originalImage,
   styleName = 'Classic Oil Painting',
   styleTagline = 'Traditional brush strokes',
   videoSrc,
@@ -25,6 +27,8 @@ const GeneratingCanvasAnimation = ({
 }: GeneratingCanvasAnimationProps) => {
   const [phase, setPhase] = useState<'loading' | 'generating' | 'complete'>('loading');
   const [hasPlayed, setHasPlayed] = useState(false);
+  const [showingOriginal, setShowingOriginal] = useState(false);
+  const [showHint, setShowHint] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -67,15 +71,101 @@ const GeneratingCanvasAnimation = ({
     };
   }, [videoSrc, generationDuration, onGenerationComplete]);
 
+  // Auto-fade hint text after 4 seconds when complete
+  useEffect(() => {
+    if (phase === 'complete' && originalImage) {
+      const hintTimer = setTimeout(() => {
+        setShowHint(false);
+      }, 4000);
+      return () => clearTimeout(hintTimer);
+    }
+  }, [phase, originalImage]);
+
+  // Mobile touch handlers - instant "light switch" behavior
+  const handleTouchStart = (e: React.TouchEvent) => {
+    e.preventDefault();
+    setShowingOriginal(true);
+    // Haptic feedback for mobile
+    if (navigator.vibrate) {
+      navigator.vibrate(10);
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    e.preventDefault();
+    setShowingOriginal(false);
+  };
+
+  // Desktop hover handlers
+  const handleMouseEnter = () => {
+    setShowingOriginal(true);
+  };
+
+  const handleMouseLeave = () => {
+    setShowingOriginal(false);
+  };
+
   return (
-    <div className={`relative w-full rounded-3xl overflow-hidden bg-slate-900 shadow-2xl ${className}`}>
+    <div
+      className={`relative w-full rounded-3xl overflow-hidden bg-slate-900 shadow-2xl ${className}`}
+    >
       {/* Canvas Image (always present) */}
-      <div className="relative w-full" style={{ aspectRatio: '16 / 9' }}>
+      <div
+        className="relative w-full"
+        style={{ aspectRatio: '16 / 9' }}
+      >
+        {/* Generated Image */}
         <img
           src={defaultStyleImage}
           alt="AI Generated Canvas"
-          className="w-full h-full object-cover"
+          className={`w-full h-full object-cover transition-opacity duration-300 ${
+            showingOriginal ? 'opacity-0' : 'opacity-100'
+          }`}
+          draggable="false"
+          style={{
+            pointerEvents: 'none',
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
+            WebkitTouchCallout: 'none'
+          }}
         />
+
+        {/* Original Image Overlay (revealed on hover/press) */}
+        {originalImage && (
+          <img
+            src={originalImage}
+            alt="Original Photo"
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${
+              showingOriginal ? 'opacity-100' : 'opacity-0'
+            }`}
+            draggable="false"
+            style={{
+              pointerEvents: 'none',
+              userSelect: 'none',
+              WebkitUserSelect: 'none',
+              WebkitTouchCallout: 'none'
+            }}
+          />
+        )}
+
+        {/* Transparent Interaction Overlay - captures all touch/mouse events */}
+        {phase === 'complete' && originalImage && (
+          <div
+            className="absolute inset-0 w-full h-full cursor-pointer"
+            style={{
+              touchAction: 'none',
+              WebkitTouchCallout: 'none',
+              WebkitUserSelect: 'none',
+              userSelect: 'none'
+            }}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+            onTouchCancel={handleTouchEnd}
+            onContextMenu={(e) => e.preventDefault()}
+          />
+        )}
 
         {/* Video Overlay (if provided and generating) */}
         {videoSrc && phase === 'generating' && (
@@ -182,6 +272,40 @@ const GeneratingCanvasAnimation = ({
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Comparison Icon (appears after generation, persists) */}
+        <AnimatePresence>
+          {phase === 'complete' && hasPlayed && originalImage && (
+            <motion.div
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{
+                scale: 1,
+                opacity: 1,
+              }}
+              transition={{
+                delay: 0.5,
+                type: 'spring',
+                stiffness: 200,
+                damping: 15
+              }}
+              className="absolute top-4 right-4 bg-white/10 backdrop-blur-sm text-white/70 p-2 rounded-full shadow-lg"
+              aria-label="Hover to compare with original"
+            >
+              <motion.div
+                animate={{
+                  scale: [1, 1.1, 1],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              >
+                <ArrowLeftRight className="w-5 h-5" />
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Bottom info strip */}
@@ -192,9 +316,37 @@ const GeneratingCanvasAnimation = ({
             <p className="text-xs text-white/60">{styleTagline}</p>
           </div>
           {phase === 'complete' && (
-            <div className="text-xs text-emerald-400 font-medium">
-              Ready in 2.3s ⚡
-            </div>
+            <AnimatePresence mode="wait">
+              {originalImage ? (
+                <motion.div
+                  key={showHint ? 'hint' : 'faded'}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="text-xs font-medium"
+                >
+                  {showHint ? (
+                    <>
+                      <span className="hidden md:inline text-purple-300">
+                        🖱️ Hover to compare
+                      </span>
+                      <span className="md:hidden text-purple-300">
+                        👆 Hold to compare
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-emerald-400">
+                      Ready in 2.3s ⚡
+                    </span>
+                  )}
+                </motion.div>
+              ) : (
+                <div className="text-xs text-emerald-400 font-medium">
+                  Ready in 2.3s ⚡
+                </div>
+              )}
+            </AnimatePresence>
           )}
         </div>
       </div>
