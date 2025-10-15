@@ -185,8 +185,8 @@ const CropperModal = ({
     <Dialog.Root open={open} onOpenChange={(value) => !value && onClose()}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur" />
-        <Dialog.Content className="fixed inset-0 z-50 flex items-center justify-center p-6">
-          <div className="bg-slate-900 border border-white/10 rounded-[2rem] shadow-founder w-full max-w-4xl p-6 space-y-5">
+        <Dialog.Content className="fixed inset-0 z-50 flex items-center justify-center p-4 lg:p-6">
+          <div className="bg-slate-900 border border-white/10 rounded-2xl lg:rounded-[2rem] shadow-founder w-full max-w-4xl p-4 lg:p-6 space-y-4 lg:space-y-5 max-h-[95vh] overflow-y-auto">
             <Dialog.Title className="text-xl font-semibold text-white">Adjust Crop</Dialog.Title>
             <Dialog.Description className="text-sm text-white/60">
               Refine the framing or explore different orientations. We keep the canvas ratio synced so
@@ -218,7 +218,9 @@ const CropperModal = ({
             <div
               className="relative bg-black/40 rounded-2xl overflow-hidden border border-white/5"
               style={{
-                height: activeOrientation === 'vertical' ? '75vh' : '60vh'
+                height: activeOrientation === 'vertical'
+                  ? 'min(55vh, 600px)' // Portrait: shorter on mobile, max 600px
+                  : 'min(50vh, 500px)'  // Landscape/Square: even shorter, max 500px
               }}
             >
               {originalImage ? (
@@ -254,7 +256,12 @@ const CropperModal = ({
               </div>
             </div>
 
-            <div className="flex flex-col md:flex-row gap-4">
+            <div
+              className="flex flex-col md:flex-row gap-3 lg:gap-4"
+              style={{
+                paddingBottom: 'env(safe-area-inset-bottom, 0px)'
+              }}
+            >
               <Button
                 variant="ghost"
                 className="flex-1"

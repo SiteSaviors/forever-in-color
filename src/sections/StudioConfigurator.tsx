@@ -512,22 +512,24 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
                 </div>
               )}
 
-              <div className="absolute top-6 left-6 px-4 py-2 rounded-full bg-white/10 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 backdrop-blur">
+              {/* Orientation Badge - Smaller on mobile */}
+              <div className="absolute top-3 left-3 lg:top-6 lg:left-6 px-2 py-1 lg:px-4 lg:py-2 rounded-full bg-white/10 text-[10px] lg:text-xs font-semibold uppercase tracking-[0.2em] lg:tracking-[0.3em] text-white/80 backdrop-blur">
                 {orientationMeta.label}
               </div>
 
-              {/* Ready Badge - Only show for AI-generated style previews, not original image */}
+              {/* Ready Badge - Smaller on mobile, only show for AI-generated style previews */}
               {preview?.status === 'ready' && currentStyle && currentStyle.id !== 'original-image' && !orientationPreviewPending && !orientationMismatch && (
-                <div className="absolute top-6 right-6 px-4 py-2 rounded-full bg-purple-500/95 text-white text-sm font-semibold shadow-glow-soft backdrop-blur-sm animate-scaleIn">
-                  <span className="flex items-center gap-2">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <div className="absolute top-3 right-3 lg:top-6 lg:right-6 px-2 py-1 lg:px-4 lg:py-2 rounded-full bg-purple-500/95 text-white text-xs lg:text-sm font-semibold shadow-glow-soft backdrop-blur-sm animate-scaleIn">
+                  <span className="flex items-center gap-1 lg:gap-2">
+                    <svg className="w-3 h-3 lg:w-4 lg:h-4" fill="currentColor" viewBox="0 0 20 20">
                       <path
                         fillRule="evenodd"
                         d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
                         clipRule="evenodd"
                       />
                     </svg>
-                    Ready to print
+                    <span className="hidden sm:inline">Ready to print</span>
+                    <span className="sm:hidden">Ready</span>
                   </span>
                 </div>
               )}
@@ -613,13 +615,13 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
               </div>
             )}
 
-            {/* Canvas In Room Preview */}
-            <div className="w-full max-w-2xl mt-12 hidden sm:block">
-              <div className="mb-6 text-center space-y-2">
-                <h3 className="text-2xl font-bold text-white">
+            {/* Canvas In Room Preview - Visible on all devices */}
+            <div className="w-full max-w-2xl mt-8 lg:mt-12">
+              <div className="mb-4 lg:mb-6 text-center space-y-1 lg:space-y-2">
+                <h3 className="text-xl lg:text-2xl font-bold text-white">
                   See It In Your Space
                 </h3>
-                <p className="text-sm text-white/60 max-w-md mx-auto">
+                <p className="text-xs lg:text-sm text-white/60 max-w-md mx-auto px-4">
                   Visualize how your canvas will look in a real living room
                 </p>
               </div>
