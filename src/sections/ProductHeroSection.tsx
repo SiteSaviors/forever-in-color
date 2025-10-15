@@ -1,10 +1,21 @@
-import { useMemo } from 'react';
+import { Suspense, lazy, useMemo } from 'react';
 import Section from '@/components/layout/Section';
-import StyleCarousel from '@/components/studio/StyleCarousel';
 import { useFounderStore } from '@/store/useFounderStore';
+import { trackLaunchflowOpened } from '@/utils/launchflowTelemetry';
+
+const StyleCarousel = lazy(() => import('@/components/studio/StyleCarousel'));
+
+const HeroStyleSkeleton = () => (
+  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    {Array.from({ length: 4 }).map((_, index) => (
+      <div key={index} className="h-56 rounded-3xl border border-white/15 bg-white/5 animate-pulse" />
+    ))}
+  </div>
+);
 
 const ProductHeroSection = () => {
-  const requestUpload = useFounderStore((state) => state.requestUpload);
+  const setLaunchpadExpanded = useFounderStore((state) => state.setLaunchpadExpanded);
+  const launchpadExpanded = useFounderStore((state) => state.launchpadExpanded);
   const styles = useFounderStore((state) => state.styles);
   const preselectedStyleId = useFounderStore((state) => state.preselectedStyleId);
 
@@ -18,6 +29,26 @@ const ProductHeroSection = () => {
       .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
       .join(' ');
   }, [preselectedStyleId, styles]);
+
+  const handleHeroUploadClick = () => {
+    if (!launchpadExpanded) {
+      trackLaunchflowOpened('hero');
+    }
+
+    setLaunchpadExpanded(true);
+
+    const launchflowSection = document.getElementById('launchflow');
+    if (launchflowSection) {
+      launchflowSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  const handleBrowseStyles = () => {
+    const stylesAnchor = document.querySelector('[data-founder-anchor="styles"]');
+    if (stylesAnchor) {
+      stylesAnchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
   return (
     <section
@@ -44,7 +75,7 @@ const ProductHeroSection = () => {
           <div className="flex justify-center">
             <button
               type="button"
-              onClick={() => requestUpload()}
+              onClick={handleHeroUploadClick}
               className="btn-primary whitespace-nowrap px-12 sm:px-16 md:px-24 py-6 text-xl sm:text-2xl md:text-3xl tracking-wide shadow-[0_25px_60px_rgba(99,102,241,0.65)] hover:shadow-[0_32px_75px_rgba(99,102,241,0.75)]"
             >
               Upload Your Photo to Start the Magic →
@@ -52,7 +83,13 @@ const ProductHeroSection = () => {
           </div>
           <div className="flex items-center justify-center gap-4 text-sm text-white/70 uppercase tracking-[0.3em]">
             <span className="hidden sm:block h-px w-16 bg-white/30" aria-hidden="true" />
-            <span>Or Browse Styles First</span>
+            <button
+              type="button"
+              onClick={handleBrowseStyles}
+              className="rounded-full px-3 py-1 text-white/70 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+            >
+              Or Browse Styles First
+            </button>
             <span className="hidden sm:block h-px w-16 bg-white/30" aria-hidden="true" />
           </div>
         </div>
@@ -64,7 +101,9 @@ const ProductHeroSection = () => {
             </div>
             <span className="text-sm text-white/60">First preview prioritizes your selected style.</span>
           </div>
-          <StyleCarousel />
+          <Suspense fallback={<HeroStyleSkeleton />}>
+            <StyleCarousel />
+          </Suspense>
         </div>
       </Section>
     </section>

@@ -1,4 +1,17 @@
-import { supabaseClient } from './supabaseClient';
+let cachedSupabaseClient: Awaited<ReturnType<typeof importSupabaseClient>> | undefined;
+
+async function importSupabaseClient() {
+  const module = await import('./supabaseClient');
+  return module.supabaseClient;
+}
+
+const getSupabaseClient = async () => {
+  if (typeof cachedSupabaseClient !== 'undefined') {
+    return cachedSupabaseClient;
+  }
+  cachedSupabaseClient = await importSupabaseClient();
+  return cachedSupabaseClient;
+};
 
 interface DownloadCleanImageParams {
   storagePath: string;
@@ -15,6 +28,7 @@ export async function downloadCleanImage({
     throw new Error('Authentication required for clean image download');
   }
 
+  const supabaseClient = await getSupabaseClient();
   if (!supabaseClient) {
     throw new Error('Supabase client not initialized');
   }

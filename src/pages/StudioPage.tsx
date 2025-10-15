@@ -1,10 +1,28 @@
-import { useEffect, useState } from 'react';
+import { Suspense, lazy, useEffect, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import LaunchpadLayout from '@/sections/LaunchpadLayout';
-import StudioConfigurator from '@/sections/StudioConfigurator';
 import ProductHeroSection from '@/sections/ProductHeroSection';
 import { useFounderStore } from '@/store/useFounderStore';
 import FounderNavigation from '@/components/navigation/FounderNavigation';
+
+const LaunchflowAccordionLazy = lazy(() => import('@/sections/LaunchpadLayout'));
+const StudioConfiguratorLazy = lazy(() => import('@/sections/StudioConfigurator'));
+
+const LaunchflowSkeleton = () => (
+  <section className="border-b border-white/10 bg-slate-950/60 py-16">
+    <div className="mx-auto flex max-w-[1400px] flex-col gap-4 px-6">
+      <div className="h-16 rounded-3xl bg-white/5 animate-pulse" />
+    </div>
+  </section>
+);
+
+const StudioConfiguratorSkeleton = () => (
+  <section className="bg-slate-900 py-16">
+    <div className="mx-auto flex max-w-[1800px] flex-col gap-6 px-6">
+      <div className="h-10 w-48 rounded-full bg-white/5 animate-pulse" />
+      <div className="h-[360px] rounded-[2.5rem] bg-white/5 animate-pulse" />
+    </div>
+  </section>
+);
 
 const StudioPage = () => {
   const [searchParams] = useSearchParams();
@@ -54,11 +72,15 @@ const StudioPage = () => {
     <div className="bg-slate-950 min-h-screen text-white">
       <FounderNavigation />
       <ProductHeroSection />
-      <LaunchpadLayout />
-      <StudioConfigurator
-        checkoutNotice={checkoutNotice}
-        onDismissCheckoutNotice={() => setCheckoutNotice(null)}
-      />
+      <Suspense fallback={<LaunchflowSkeleton />}>
+        <LaunchflowAccordionLazy />
+      </Suspense>
+      <Suspense fallback={<StudioConfiguratorSkeleton />}>
+        <StudioConfiguratorLazy
+          checkoutNotice={checkoutNotice}
+          onDismissCheckoutNotice={() => setCheckoutNotice(null)}
+        />
+      </Suspense>
     </div>
   );
 };

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { clsx } from 'clsx';
 import Card from '@/components/ui/Card';
 import { useFounderStore } from '@/store/useFounderStore';
+import { trackLaunchflowOpened } from '@/utils/launchflowTelemetry';
 
 const StyleCarousel = () => {
   const cards = useFounderStore((state) => state.styleCarouselData);
@@ -20,6 +21,7 @@ const StyleCarousel = () => {
 
   const handleTryStyle = (cardId: string) => {
     setTappedCard(null);
+    trackLaunchflowOpened('style_card');
     requestUpload({ preselectedStyleId: cardId });
   };
 

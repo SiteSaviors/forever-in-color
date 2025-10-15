@@ -1,14 +1,16 @@
-import { Suspense, lazy, useEffect, useState } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
+import { clsx } from 'clsx';
 import { Link } from 'react-router-dom';
 import { Bookmark, BookmarkCheck } from 'lucide-react';
 import { useFounderStore, StylePreviewStatus } from '@/store/useFounderStore';
-import StickyOrderRail from '@/components/studio/StickyOrderRail';
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
-import TokenWarningBanner from '@/components/studio/TokenWarningBanner';
 import { saveToGallery } from '@/utils/galleryApi';
 import { downloadCleanImage } from '@/utils/premiumDownload';
 import { trackDownloadSuccess } from '@/utils/telemetry';
+import { trackLaunchflowEditReopen, trackLaunchflowEmptyStateInteraction, trackLaunchflowOpened } from '@/utils/launchflowTelemetry';
 
+const TokenWarningBanner = lazy(() => import('@/components/studio/TokenWarningBanner'));
+const StickyOrderRailLazy = lazy(() => import('@/components/studio/StickyOrderRail'));
 const LivingCanvasModal = lazy(() => import('@/components/studio/LivingCanvasModal'));
 const CanvasInRoomPreview = lazy(() => import('@/components/studio/CanvasInRoomPreview'));
 const StyleForgeOverlay = lazy(() => import('@/components/studio/StyleForgeOverlay'));
@@ -20,11 +22,77 @@ const CanvasPreviewFallback = () => (
   <div className="w-full h-[360px] rounded-[2.5rem] bg-slate-800/60 border border-white/10 animate-pulse" />
 );
 
+const StickyOrderRailFallback = () => (
+  <div className="rounded-3xl border border-white/10 bg-slate-900/60 p-6">
+    <div className="flex flex-col gap-4">
+      <div className="h-6 w-32 rounded-full bg-white/10 animate-pulse" />
+      <div className="space-y-3">
+        <div className="h-10 rounded-2xl bg-white/5 animate-pulse" />
+        <div className="h-10 rounded-2xl bg-white/5 animate-pulse" />
+        <div className="h-10 rounded-2xl bg-white/5 animate-pulse" />
+      </div>
+      <div className="h-12 rounded-2xl bg-gradient-to-r from-purple-500/30 to-blue-500/30 animate-pulse" />
+    </div>
+  </div>
+);
+
 const StyleForgeOverlayFallback = ({ styleName }: { styleName: string }) => (
   <div className="absolute inset-0 z-30 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm" role="presentation">
     <div className="flex flex-col items-center gap-3 text-center">
       <div className="w-12 h-12 border-4 border-purple-400/40 border-t-purple-400 rounded-full animate-spin" />
       <p className="text-sm font-medium text-white/80">Preparing {styleName}…</p>
+    </div>
+  </div>
+);
+
+type StudioEmptyStateProps = {
+  onUpload: () => void;
+  onBrowseStyles: () => void;
+  launchflowOpen: boolean;
+};
+
+const StudioEmptyState = ({ onUpload, onBrowseStyles, launchflowOpen }: StudioEmptyStateProps) => (
+  <div className="absolute inset-0 flex items-center justify-center p-6">
+    <div className="relative w-full max-w-xl overflow-hidden rounded-[2.75rem] border-2 border-dashed border-white/15 bg-slate-950/70 px-8 py-12 text-center shadow-[0_32px_120px_rgba(35,48,94,0.55)] backdrop-blur-xl">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(99,102,241,0.2),transparent_60%)] opacity-75" />
+      <div className="relative space-y-6">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-blue-500 shadow-glow-purple">
+          <svg className="h-8 w-8 text-white" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8} fill="none">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M12 4v9" />
+          </svg>
+        </div>
+        <div className="space-y-3">
+          <h3 className="text-2xl font-semibold text-white">Upload your photo to preview here</h3>
+          <p className="text-sm text-white/70">
+            Launchflow expands inline so you can crop smartly without losing sight of the configurator.
+          </p>
+        </div>
+        <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
+          <button
+            type="button"
+            onClick={onUpload}
+            disabled={launchflowOpen}
+            className={clsx(
+              'rounded-full px-6 py-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950',
+              launchflowOpen
+                ? 'cursor-default bg-white/15 text-white/70'
+                : 'bg-gradient-cta text-white shadow-glow-purple hover:shadow-glow-purple'
+            )}
+          >
+            {launchflowOpen ? 'Launchflow open…' : 'Upload photo'}
+          </button>
+          <button
+            type="button"
+            onClick={onBrowseStyles}
+            className="rounded-full border border-white/30 px-6 py-3 text-sm font-semibold text-white/80 transition hover:border-white/50 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+          >
+            Browse styles first
+          </button>
+        </div>
+        <p className="text-xs uppercase tracking-[0.3em] text-white/40">
+          No demo previews • Your photo leads the canvas
+        </p>
+      </div>
     </div>
   </div>
 );
@@ -50,6 +118,8 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
   const preview = currentStyle ? previews[currentStyle.id] : undefined;
   const entitlements = useFounderStore((state) => state.entitlements);
   const hydrateEntitlements = useFounderStore((state) => state.hydrateEntitlements);
+  const firstPreviewCompleted = useFounderStore((state) => state.firstPreviewCompleted);
+  const generationCount = useFounderStore((state) => state.generationCount);
   const canGenerateMore = useFounderStore((state) => state.canGenerateMore);
   const setPreviewState = useFounderStore((state) => state.setPreviewState);
   const croppedImage = useFounderStore((state) => state.croppedImage);
@@ -64,6 +134,8 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
   const anonToken = useFounderStore((state) => state.anonToken);
   const setAccountPromptShown = useFounderStore((state) => state.setAccountPromptShown);
   const livingCanvasModalOpen = useFounderStore((state) => state.livingCanvasModalOpen);
+  const launchpadExpanded = useFounderStore((state) => state.launchpadExpanded);
+  const setLaunchpadExpanded = useFounderStore((state) => state.setLaunchpadExpanded);
   const cachedPreviewEntry = useFounderStore((state) => {
     const styleId = state.selectedStyleId;
     if (!styleId) return null;
@@ -75,6 +147,14 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
   const overlayStyleName =
     (pendingStyleId ? styles.find((style) => style.id === pendingStyleId)?.name : currentStyle?.name) ??
     'Selected Style';
+  const hasCroppedImage = Boolean(croppedImage);
+  const displayPreviewUrl = preview?.data?.previewUrl ?? (croppedImage ?? undefined);
+  const previewHasData = Boolean(preview?.data?.previewUrl);
+  const returningUser = useMemo(() => {
+    if (!hasCroppedImage || launchpadExpanded) return false;
+    return firstPreviewCompleted || generationCount > 0;
+  }, [generationCount, firstPreviewCompleted, hasCroppedImage, launchpadExpanded]);
+  const showReturningBanner = returningUser && !welcomeDismissed;
 
   const [savingToGallery, setSavingToGallery] = useState(false);
   const [savedToGallery, setSavedToGallery] = useState(false);
@@ -82,6 +162,7 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
   const [downloadingHD, setDownloadingHD] = useState(false);
   const [mobileStyleDrawerOpen, setMobileStyleDrawerOpen] = useState(false);
   const [showCanvasUpsellToast, setShowCanvasUpsellToast] = useState(false);
+  const [welcomeDismissed, setWelcomeDismissed] = useState(false);
 
   // Get user tier from entitlements
   const userTier = useFounderStore((state) => state.entitlements?.tier ?? 'anonymous');
@@ -175,6 +256,37 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
     }
   };
 
+  const handleOpenLaunchflowFromEmptyState = () => {
+    trackLaunchflowEmptyStateInteraction('open_launchflow');
+    if (!launchpadExpanded) {
+      trackLaunchflowOpened('empty_state');
+    }
+    setLaunchpadExpanded(true);
+    const launchflowSection = document.getElementById('launchflow');
+    if (launchflowSection) {
+      launchflowSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  const handleBrowseStylesFromEmptyState = () => {
+    trackLaunchflowEmptyStateInteraction('browse_styles');
+    const stylesAnchor = document.querySelector('[data-founder-anchor="styles"]');
+    if (stylesAnchor) {
+      stylesAnchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  const handleEditFromWelcome = () => {
+    trackLaunchflowOpened('welcome_banner');
+    trackLaunchflowEditReopen('welcome_banner');
+    setLaunchpadExpanded(true);
+    setWelcomeDismissed(true);
+  };
+
+  const handleDismissWelcome = () => {
+    setWelcomeDismissed(true);
+  };
+
   const handleStyleClick = (styleId: string) => {
     selectStyle(styleId);
     const style = styles.find((item) => item.id === styleId);
@@ -206,6 +318,12 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
       void hydrateEntitlements();
     }
   }, [entitlements.status, hydrateEntitlements]);
+
+  useEffect(() => {
+    if (launchpadExpanded) {
+      setWelcomeDismissed(true);
+    }
+  }, [launchpadExpanded]);
 
   const remainingLabel = entitlements.status === 'ready'
     ? entitlements.remainingTokens == null
@@ -245,8 +363,42 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
         </div>
       </div>
 
+      {showReturningBanner && (
+        <div className="max-w-[1800px] mx-auto px-6 pt-4">
+          <div className="flex flex-col gap-3 rounded-2xl border border-emerald-400/30 bg-emerald-500/15 px-5 py-4 text-white shadow-[0_15px_45px_rgba(16,185,129,0.25)] backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-1">
+              <p className="text-sm font-semibold text-emerald-100">Welcome back! Your photo is ready to style.</p>
+              <p className="text-xs text-emerald-200/80">
+                Edit the crop or jump straight into exploring new canvases.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleEditFromWelcome}
+                className="rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 px-4 py-2 text-sm font-semibold text-white shadow-[0_10px_30px_rgba(16,185,129,0.35)] transition hover:scale-105"
+              >
+                Edit photo
+              </button>
+              <button
+                type="button"
+                onClick={handleDismissWelcome}
+                className="flex h-8 w-8 items-center justify-center rounded-full text-emerald-200/70 transition hover:bg-white/10 hover:text-white"
+                aria-label="Dismiss returning user message"
+              >
+                <svg className="h-4 w-4" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8} fill="none">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M18 6L6 18M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Token Warning Banner */}
-      <TokenWarningBanner />
+      <Suspense fallback={null}>
+        <TokenWarningBanner />
+      </Suspense>
 
       {checkoutNotice?.message && (
         <div className="max-w-[1800px] mx-auto px-6 pt-4">
@@ -346,8 +498,19 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
       {/* Mobile: Vertical stack | Desktop (≥1024px): 3-column flex row */}
       <div className="block lg:flex max-w-[1800px] mx-auto">
         {/* LEFT SIDEBAR: Style Selection (Desktop Only - Hidden on Mobile) */}
-        <aside className="hidden lg:block lg:w-80 bg-slate-950/50 border-r border-white/10 lg:h-screen lg:sticky lg:top-[57px] overflow-y-auto">
+        <aside
+          className={clsx(
+            'hidden lg:block lg:w-80 bg-slate-950/50 border-r border-white/10 lg:h-screen lg:sticky lg:top-[57px] overflow-y-auto transition-opacity duration-200',
+            !hasCroppedImage && 'pointer-events-none opacity-40 saturate-50'
+          )}
+          aria-disabled={!hasCroppedImage}
+        >
           <div className="p-6 space-y-6">
+            {!hasCroppedImage && (
+              <div className="rounded-xl border border-white/12 bg-white/5 p-4 text-sm text-white/70">
+                Upload your photo above to unlock style previews.
+              </div>
+            )}
             {/* Header */}
             <div>
               <h3 className="text-xl font-bold text-white">All Styles</h3>
@@ -446,114 +609,113 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
                 maxHeight: orientation === 'vertical' ? '85vh' : undefined
               }}
             >
-              {stylePreviewStatus !== 'idle' && (
-                <Suspense fallback={<StyleForgeOverlayFallback styleName={overlayStyleName} />}>
-                  <StyleForgeOverlay
-                    status={overlayStatus}
-                    styleName={overlayStyleName}
-                    message={stylePreviewMessage}
-                    isError={stylePreviewStatus === 'error'}
-                    errorMessage={stylePreviewError}
-                  />
-                </Suspense>
-              )}
-              {/* Orientation changing overlay */}
-              {orientationChanging && (
-                <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-20">
-                  <div className="flex flex-col items-center gap-3">
-                    <div className="w-12 h-12 border-4 border-purple-400/30 border-t-purple-400 rounded-full animate-spin" />
-                    <p className="text-white text-sm font-medium">Updating orientation...</p>
-                  </div>
-                </div>
-              )}
-
-              {preview?.status === 'loading' && (
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 to-blue-900/20">
-                  <div className="absolute inset-0 preview-skeleton" />
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <div className="w-16 h-16 border-4 border-purple-400/30 border-t-purple-400 rounded-full animate-spin" />
-                    <p className="text-white mt-4 text-sm">Creating your masterpiece...</p>
-                  </div>
-                </div>
-              )}
-
-              {preview?.status === 'error' && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8 bg-red-500/10 border-2 border-red-400/30">
-                  <svg className="w-12 h-12 text-red-400 mb-3" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                      clipRule="evenodd"
+              {hasCroppedImage ? (
+                <>
+                  {stylePreviewStatus !== 'idle' && (
+                    <Suspense fallback={<StyleForgeOverlayFallback styleName={overlayStyleName} />}>
+                      <StyleForgeOverlay
+                        status={overlayStatus}
+                        styleName={overlayStyleName}
+                        message={stylePreviewMessage}
+                        isError={stylePreviewStatus === 'error'}
+                        errorMessage={stylePreviewError}
+                      />
+                    </Suspense>
+                  )}
+                  {orientationChanging && (
+                    <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-20">
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="w-12 h-12 border-4 border-purple-400/30 border-t-purple-400 rounded-full animate-spin" />
+                        <p className="text-white text-sm font-medium">Updating orientation...</p>
+                      </div>
+                    </div>
+                  )}
+                  {preview?.status === 'loading' && (
+                    <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 to-blue-900/20">
+                      <div className="absolute inset-0 preview-skeleton" />
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <div className="w-16 h-16 border-4 border-purple-400/30 border-t-purple-400 rounded-full animate-spin" />
+                        <p className="text-white mt-4 text-sm">Creating your masterpiece...</p>
+                      </div>
+                    </div>
+                  )}
+                  {preview?.status === 'error' && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8 bg-red-500/10 border-2 border-red-400/30">
+                      <svg className="w-12 h-12 text-red-400 mb-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <p className="text-base font-semibold text-red-300">Preview generation failed</p>
+                      <p className="text-sm text-white/60 mt-1">Try selecting a different style</p>
+                    </div>
+                  )}
+                  {displayPreviewUrl ? (
+                    <img
+                      src={displayPreviewUrl}
+                      alt="Canvas preview"
+                      className="w-full h-full object-cover select-none"
+                      onContextMenu={(e) => e.preventDefault()}
+                      onDragStart={(e) => e.preventDefault()}
+                      draggable={false}
                     />
-                  </svg>
-                  <p className="text-base font-semibold text-red-300">Preview generation failed</p>
-                  <p className="text-sm text-white/60 mt-1">Try selecting a different style</p>
-                </div>
-              )}
-
-              {preview?.data?.previewUrl || currentStyle?.preview ? (
-                <img
-                  src={preview?.data?.previewUrl ?? currentStyle?.preview}
-                  alt="Canvas preview"
-                  className="w-full h-full object-cover select-none"
-                  onContextMenu={(e) => {
-                    // Prevent right-click download for all preview images
-                    e.preventDefault();
-                  }}
-                  onDragStart={(e) => {
-                    // Prevent drag-and-drop download for all preview images
-                    e.preventDefault();
-                  }}
-                  draggable={false}
-                />
-              ) : (
-                <div className="absolute inset-0 flex items-center justify-center text-white/40 text-center p-8">
-                  <div>
-                    <svg className="w-16 h-16 mx-auto mb-4 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.5}
-                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
-                    </svg>
-                    <p className="text-sm">Select a style from the left to see your transformed image</p>
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center text-white/40 text-center p-8">
+                      <div>
+                        <svg className="w-16 h-16 mx-auto mb-4 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          />
+                        </svg>
+                        <p className="text-sm">Select a style from the left to see your transformed image</p>
+                      </div>
+                    </div>
+                  )}
+                  <div className="absolute top-3 left-3 lg:top-6 lg:left-6 px-2 py-1 lg:px-4 lg:py-2 rounded-full bg-white/10 text-[10px] lg:text-xs font-semibold uppercase tracking-[0.2em] lg:tracking-[0.3em] text-white/80 backdrop-blur">
+                    {orientationMeta.label}
                   </div>
-                </div>
-              )}
-
-              {/* Orientation Badge - Smaller on mobile */}
-              <div className="absolute top-3 left-3 lg:top-6 lg:left-6 px-2 py-1 lg:px-4 lg:py-2 rounded-full bg-white/10 text-[10px] lg:text-xs font-semibold uppercase tracking-[0.2em] lg:tracking-[0.3em] text-white/80 backdrop-blur">
-                {orientationMeta.label}
-              </div>
-
-              {/* Ready Badge - Smaller on mobile, only show for AI-generated style previews */}
-              {preview?.status === 'ready' && currentStyle && currentStyle.id !== 'original-image' && !orientationPreviewPending && !orientationMismatch && (
-                <div className="absolute top-3 right-3 lg:top-6 lg:right-6 px-2 py-1 lg:px-4 lg:py-2 rounded-full bg-purple-500/95 text-white text-xs lg:text-sm font-semibold shadow-glow-soft backdrop-blur-sm animate-scaleIn">
-                  <span className="flex items-center gap-1 lg:gap-2">
-                    <svg className="w-3 h-3 lg:w-4 lg:h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path
-                        fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    <span className="hidden sm:inline">Ready to print</span>
-                    <span className="sm:hidden">Ready</span>
-                  </span>
-                </div>
-              )}
-
-              {orientationPreviewPending && (
-                <div className="absolute bottom-6 right-6 px-4 py-2 rounded-full bg-white/15 text-white text-xs font-semibold uppercase tracking-[0.2em] backdrop-blur animate-pulse">
-                  Adapting to {orientationMeta.label}
-                </div>
-              )}
-
-              {!orientationPreviewPending && orientationMismatch && previewOrientationLabel && (
-                <div className="absolute bottom-6 right-6 px-4 py-2 rounded-full bg-amber-500/90 text-slate-900 text-xs font-semibold shadow-glow-soft backdrop-blur-sm">
-                  {`Preview uses ${previewOrientationLabel} crop • Refresh to update`}
-                </div>
+                  {preview?.status === 'ready' && currentStyle && currentStyle.id !== 'original-image' && !orientationPreviewPending && !orientationMismatch && (
+                    <div className="absolute top-3 right-3 lg:top-6 lg:right-6 px-2 py-1 lg:px-4 lg:py-2 rounded-full bg-purple-500/95 text-white text-xs lg:text-sm font-semibold shadow-glow-soft backdrop-blur-sm animate-scaleIn">
+                      <span className="flex items-center gap-1 lg:gap-2">
+                        <svg className="w-3 h-3 lg:w-4 lg:h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path
+                            fillRule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        <span className="hidden sm:inline">Ready to print</span>
+                        <span className="sm:hidden">Ready</span>
+                      </span>
+                    </div>
+                  )}
+                  {orientationPreviewPending && (
+                    <div className="absolute bottom-6 right-6 px-4 py-2 rounded-full bg-white/15 text-white text-xs font-semibold uppercase tracking-[0.2em] backdrop-blur animate-pulse">
+                      Adapting to {orientationMeta.label}
+                    </div>
+                  )}
+                  {!orientationPreviewPending && orientationMismatch && previewOrientationLabel && (
+                    <div className="absolute bottom-6 right-6 px-4 py-2 rounded-full bg-amber-500/90 text-slate-900 text-xs font-semibold shadow-glow-soft backdrop-blur-sm">
+                      {`Preview uses ${previewOrientationLabel} crop • Refresh to update`}
+                    </div>
+                  )}
+                  {!previewHasData && croppedImage && (
+                    <div className="pointer-events-none absolute bottom-6 left-1/2 w-[90%] max-w-sm -translate-x-1/2 rounded-full border border-white/20 bg-slate-950/70 px-5 py-3 text-center text-xs font-semibold uppercase tracking-[0.3em] text-white/60">
+                      Choose a style to transform your photo
+                    </div>
+                  )}
+                </>
+              ) : (
+                <StudioEmptyState
+                  onUpload={handleOpenLaunchflowFromEmptyState}
+                  onBrowseStyles={handleBrowseStylesFromEmptyState}
+                  launchflowOpen={launchpadExpanded}
+                />
               )}
             </div>
 
@@ -622,28 +784,41 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
         </main>
 
         {/* RIGHT SIDEBAR: Options + Order Summary (Full-width on mobile, fixed on desktop) */}
-        <aside className="w-full lg:w-[420px]">
+        <aside
+          className={clsx(
+            'w-full lg:w-[420px] transition-opacity duration-200',
+            !hasCroppedImage && 'pointer-events-none opacity-50'
+          )}
+          aria-disabled={!hasCroppedImage}
+        >
           <div className="lg:sticky lg:top-[57px] px-4 py-6 lg:p-6">
-            <StickyOrderRail
-              onDownloadClick={handleDownloadHD}
-              downloadingHD={downloadingHD}
-              isPremiumUser={isPremiumUser}
-              mobileRoomPreview={
-                <div className="lg:hidden w-full">
-                  <div className="mb-4 text-center space-y-1">
-                    <h3 className="text-xl font-bold text-white">
-                      See It In Your Space
-                    </h3>
-                    <p className="text-xs text-white/60 max-w-md mx-auto px-4">
-                      Visualize how your canvas will look in a real living room
-                    </p>
+            {!hasCroppedImage && (
+              <div className="mb-4 rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-white/70">
+                Upload a photo to customize canvas options and checkout.
+              </div>
+            )}
+            <Suspense fallback={<StickyOrderRailFallback />}>
+              <StickyOrderRailLazy
+                onDownloadClick={handleDownloadHD}
+                downloadingHD={downloadingHD}
+                isPremiumUser={isPremiumUser}
+                mobileRoomPreview={
+                  <div className="lg:hidden w-full">
+                    <div className="mb-4 text-center space-y-1">
+                      <h3 className="text-xl font-bold text-white">
+                        See It In Your Space
+                      </h3>
+                      <p className="text-xs text-white/60 max-w-md mx-auto px-4">
+                        Visualize how your canvas will look in a real living room
+                      </p>
+                    </div>
+                    <Suspense fallback={<CanvasPreviewFallback />}>
+                      <CanvasInRoomPreview enableHoverEffect={true} showDimensions={false} />
+                    </Suspense>
                   </div>
-                  <Suspense fallback={<CanvasPreviewFallback />}>
-                    <CanvasInRoomPreview enableHoverEffect={true} showDimensions={false} />
-                  </Suspense>
-                </div>
-              }
-            />
+                }
+              />
+            </Suspense>
           </div>
         </aside>
       </div>

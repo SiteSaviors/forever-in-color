@@ -1,7 +1,21 @@
-import { supabaseClient } from '@/utils/supabaseClient';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+
+let cachedSupabaseClient: Awaited<ReturnType<typeof importSupabaseClient>> | undefined;
+
+async function importSupabaseClient() {
+  const module = await import('@/utils/supabaseClient');
+  return module.supabaseClient;
+}
+
+const getSupabaseClient = async () => {
+  if (typeof cachedSupabaseClient !== 'undefined') {
+    return cachedSupabaseClient;
+  }
+  cachedSupabaseClient = await importSupabaseClient();
+  return cachedSupabaseClient;
+};
 
 type MintResponse = {
   anon_token: string;
@@ -85,6 +99,7 @@ const priorityForTier = (tier: EntitlementTier): EntitlementPriority => {
 };
 
 export const fetchAuthenticatedEntitlements = async (): Promise<EntitlementSnapshot | null> => {
+  const supabaseClient = await getSupabaseClient();
   if (!supabaseClient) {
     throw new Error('Supabase client not configured');
   }

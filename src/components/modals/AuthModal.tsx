@@ -2,8 +2,22 @@ import { FormEvent, useEffect, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 import Button from '@/components/ui/Button';
-import { supabaseClient } from '@/utils/supabaseClient';
 import { useAuthModal } from '@/store/useAuthModal';
+
+let cachedSupabaseClient: Awaited<ReturnType<typeof importSupabaseClient>> | undefined;
+
+async function importSupabaseClient() {
+  const module = await import('@/utils/supabaseClient');
+  return module.supabaseClient;
+}
+
+const getSupabaseClient = async () => {
+  if (typeof cachedSupabaseClient !== 'undefined') {
+    return cachedSupabaseClient;
+  }
+  cachedSupabaseClient = await importSupabaseClient();
+  return cachedSupabaseClient;
+};
 
 const AuthModal = () => {
   const { open, mode, closeModal, setMode } = useAuthModal();
@@ -32,15 +46,15 @@ const AuthModal = () => {
       return;
     }
 
-    if (!supabaseClient) {
-      setError('Authentication is not configured.');
-      return;
-    }
-
     try {
       setSubmitting(true);
       setStatus('idle');
       setError(null);
+
+      const supabaseClient = await getSupabaseClient();
+      if (!supabaseClient) {
+        throw new Error('Authentication is not configured.');
+      }
 
       const redirectTo = window.location.origin + '/create';
 

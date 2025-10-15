@@ -8,7 +8,6 @@ import { logPreviewStage } from '@/utils/previewAnalytics';
 import { playPreviewChime } from '@/utils/playPreviewChime';
 import { CANVAS_SIZE_OPTIONS, CanvasSizeKey, getCanvasSizeOption, getDefaultSizeForOrientation } from '@/utils/canvasSizes';
 import { mintAnonymousToken, fetchAuthenticatedEntitlements } from '@/utils/entitlementsApi';
-import { supabaseClient } from '@/utils/supabaseClient';
 
 /**
  * TESTING MODE FLAG
@@ -77,6 +76,23 @@ const generateIdempotencyKey = (styleId: string): string => {
     return `${styleId}-${crypto.randomUUID()}`;
   }
   return `${styleId}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+};
+
+type SupabaseClientInstance = Awaited<ReturnType<typeof importSupabaseClient>>;
+
+let cachedSupabaseClient: SupabaseClientInstance | undefined;
+
+async function importSupabaseClient() {
+  const module = await import('@/utils/supabaseClient');
+  return module.supabaseClient;
+}
+
+const getSupabaseClient = async (): Promise<SupabaseClientInstance> => {
+  if (typeof cachedSupabaseClient !== 'undefined') {
+    return cachedSupabaseClient;
+  }
+  cachedSupabaseClient = await importSupabaseClient();
+  return cachedSupabaseClient;
 };
 
 export type StyleOption = {
@@ -180,6 +196,8 @@ type FounderState = {
   styleCarouselData: StyleCarouselCard[];
   hoveredStyleId: string | null;
   preselectedStyleId: string | null;
+  launchpadExpanded: boolean;
+  launchpadSlimMode: boolean;
   entitlements: EntitlementState;
   sessionUser: SessionUser | null;
   accessToken: string | null;
@@ -227,6 +245,8 @@ type FounderState = {
   setOrientationPreviewPending: (pending: boolean) => void;
   markCropReady: () => void;
   setDragging: (dragging: boolean) => void;
+  setLaunchpadExpanded: (expanded: boolean) => void;
+  setLaunchpadSlimMode: (slim: boolean) => void;
   setHoveredStyle: (id: string | null) => void;
   setPreselectedStyle: (id: string | null) => void;
   requestUpload: (options?: { preselectedStyleId?: string }) => void;
@@ -512,6 +532,8 @@ export const useFounderStore = create<FounderState>((set, get) => ({
   styleCarouselData: mockCarouselData,
   hoveredStyleId: null,
   preselectedStyleId: null,
+  launchpadExpanded: false,
+  launchpadSlimMode: false,
   entitlements: {
     status: 'idle',
     tier: 'anonymous',
@@ -545,6 +567,8 @@ export const useFounderStore = create<FounderState>((set, get) => ({
   orientationPreviewPending: false,
   setOrientationChanging: (loading) => set({ orientationChanging: loading }),
   setOrientationPreviewPending: (pending) => set({ orientationPreviewPending: pending }),
+  setLaunchpadExpanded: (expanded) => set({ launchpadExpanded: expanded }),
+  setLaunchpadSlimMode: (slim) => set({ launchpadSlimMode: slim }),
   selectedCanvasSize: DEFAULT_SQUARE_SIZE,
   setCanvasSize: (size) => set({ selectedCanvasSize: size }),
   selectedFrame: 'none',
@@ -929,7 +953,11 @@ export const useFounderStore = create<FounderState>((set, get) => ({
     }));
 
     try {
-      if (state.sessionUser && supabaseClient) {
+      if (state.sessionUser) {
+        const supabaseClient = await getSupabaseClient();
+        if (!supabaseClient) {
+          throw new Error('Supabase client unavailable');
+        }
         const snapshot = await fetchAuthenticatedEntitlements();
         if (!snapshot) {
           set((current) => ({
@@ -1066,6 +1094,7 @@ export const useFounderStore = create<FounderState>((set, get) => ({
       const timestamp = state.uploadIntentAt && state.uploadIntentAt >= now ? state.uploadIntentAt + 1 : now;
       const next: Partial<FounderState> = {
         uploadIntentAt: timestamp,
+        launchpadExpanded: true,
       };
 
       const desiredStyleId = options?.preselectedStyleId?.trim().toLowerCase();
@@ -1226,8 +1255,13 @@ export const useFounderStore = create<FounderState>((set, get) => ({
       stylePreviewError: null,
       stylePreviewStartAt: null,
       orientationPreviewPending: false,
+      launchpadExpanded: true,
     }),
-  setCroppedImage: (dataUrl) => set({ croppedImage: dataUrl }),
+  setCroppedImage: (dataUrl) =>
+    set({
+      croppedImage: dataUrl,
+      launchpadSlimMode: !!dataUrl,
+    }),
   setOriginalImage: (dataUrl) => set({ originalImage: dataUrl }),
   setOriginalImageDimensions: (dimensions) => set({ originalImageDimensions: dimensions }),
   setOrientation: (orientation) => {
@@ -1301,7 +1335,12 @@ export const useFounderStore = create<FounderState>((set, get) => ({
     }
   },
   setOrientationTip: (tip) => set({ orientationTip: tip }),
-  markCropReady: () => set({ cropReadyAt: Date.now() }),
+  markCropReady: () =>
+    set((state) => ({
+      cropReadyAt: Date.now(),
+      launchpadSlimMode: true,
+      launchpadExpanded: state.launchpadExpanded,
+    })),
   setDragging: (isDragging) => set({ isDragging }),
   computedTotal: () => {
     const { basePrice, enhancements, styles, selectedStyleId, selectedCanvasSize } = get();
@@ -1359,11 +1398,11 @@ export const useFounderStore = create<FounderState>((set, get) => ({
     void get().hydrateEntitlements();
   },
   signOut: async () => {
+    const supabaseClient = await getSupabaseClient();
     if (supabaseClient) {
       await supabaseClient.auth.signOut();
-    } else {
-      get().setSession(null, null);
     }
+    get().setSession(null, null);
   },
   setAccountPromptShown: (shown) =>
     set({
