@@ -2,18 +2,9 @@ import { create } from 'zustand';
 import type { Orientation } from '@/utils/imageUtils';
 import type { SmartCropResult } from '@/utils/smartCrop';
 import { CANVAS_SIZE_OPTIONS, CanvasSizeKey, getCanvasSizeOption, getDefaultSizeForOrientation } from '@/utils/canvasSizes';
-import {
-  createPreviewSlice,
-  type PreviewSlice,
-} from './founder/previewSlice';
-import {
-  createEntitlementSlice,
-  type EntitlementSlice,
-} from './founder/entitlementSlice';
-import {
-  createSessionSlice,
-  type SessionSlice,
-} from './founder/sessionSlice';
+import { createPreviewSlice, type PreviewSlice } from './founder/previewSlice';
+import { createEntitlementSlice, type EntitlementSlice } from './founder/entitlementSlice';
+import { createSessionSlice, type SessionSlice } from './founder/sessionSlice';
 
 export type { StylePreviewStatus } from './founder/previewSlice';
 export type { EntitlementTier, EntitlementPriority } from './founder/entitlementSlice';
