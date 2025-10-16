@@ -22,6 +22,13 @@ import { createRequestLogger } from './logging.ts';
 import type { CacheStatus } from './types.ts';
 import { resolveEntitlements, computeRemainingAfterDebet, type EntitlementContext } from './entitlements.ts';
 import { WatermarkService } from './watermarkService.ts';
+import {
+  downloadStorageObject,
+  parseStoragePath,
+  parseStorageUrl,
+  type StorageObjectRef
+} from '../_shared/storageUtils.ts';
+import { generateIpHash, generateSubnetHash } from '../_shared/ipUtils.ts';
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -85,19 +92,23 @@ const initializeWarmup = (() => {
   };
 })();
 
-async function normalizeImageInput(image: string): Promise<string> {
+async function normalizeImageInput(
+  image: string,
+  supabase: ReturnType<typeof createClient>
+): Promise<string> {
   if (image.startsWith('data:image/')) {
     return image;
   }
 
   try {
-    const response = await fetch(image);
-    if (!response.ok) {
-      throw new Error(`Image fetch failed with status ${response.status}`);
+    const storageRef: StorageObjectRef | null =
+      parseStorageUrl(image) ?? parseStoragePath(image);
+
+    if (!storageRef) {
+      throw new Error('Only Wondertone storage paths are allowed for remote images');
     }
 
-    const contentType = response.headers.get('content-type') ?? 'image/jpeg';
-    const buffer = await response.arrayBuffer();
+    const { buffer, contentType } = await downloadStorageObject(supabase, storageRef);
     const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
     return `data:${contentType};base64,${base64}`;
   } catch (error) {
@@ -345,7 +356,8 @@ serve(async (req) => {
       aspectRatio,
       quality,
       watermark = true,
-      cacheBypass = false
+      cacheBypass = false,
+      fingerprintHash = null
     } = validation.data!;
 
     const normalizedAspectRatio = aspectRatio.toLowerCase();
@@ -389,6 +401,15 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    const forwardedFor = req.headers.get('x-forwarded-for') ?? req.headers.get('X-Forwarded-For');
+    const ipAddress = forwardedFor?.split(',')[0]?.trim()
+      ?? req.headers.get('cf-connecting-ip')
+      ?? req.headers.get('CF-Connecting-IP')
+      ?? '';
+
+    const ipHash = await generateIpHash(ipAddress);
+    const subnetHash = await generateSubnetHash(ipAddress);
+
     const authorizationHeader = req.headers.get('authorization') ?? req.headers.get('Authorization');
     const anonHeader = req.headers.get('x-wt-anon') ?? req.headers.get('X-WT-Anon');
     const idempotencyKey = req.headers.get('x-idempotency-key') ?? req.headers.get('X-Idempotency-Key');
@@ -409,7 +430,9 @@ serve(async (req) => {
           supabase,
           accessToken: authorizationHeader,
           anonToken: anonHeader,
-          devBypassEmails
+          devBypassEmails,
+          fingerprintHash,
+          ipAddress
         });
         entitlementContext = context;
 
@@ -718,38 +741,27 @@ serve(async (req) => {
 
     const recordPreviewSuccess = async (previewUrl: string, cacheStatus: CacheStatus, statusCode = 200): Promise<Response> => {
       const tokensDebit = entitlementContext && !entitlementContext.devBypass ? 1 : 0;
+      const cleanStorageUrl = previewUrl;
+      const storagePath = extractStoragePath(previewUrl);
+      let updatedSoftRemaining: number | null = entitlementContext?.softRemaining ?? null;
 
       // OPUS PLAN: Apply watermark on-the-fly before returning to client
       let finalPreviewUrl = previewUrl;
 
       if (effectiveWatermark && previewUrl) {
         try {
-          // Fetch clean image from storage
-          const imageResponse = await fetch(previewUrl);
-          if (imageResponse.ok) {
-            const imageBuffer = await imageResponse.arrayBuffer();
+    const { buffer, contentType } = await loadImageBuffer(previewUrl, supabase);
 
-            // Apply watermark in-memory
-            const watermarkedBuffer = await WatermarkService.createWatermarkedImage(
-              imageBuffer,
-              'preview', // context
-              requestId
-            );
+          // Apply watermark in-memory
+          const watermarkedBuffer = await WatermarkService.createWatermarkedImage(
+            buffer,
+            'preview', // context
+            requestId
+          );
 
-            // Convert to data URL to return directly
-            const base64 = btoa(
-              new Uint8Array(watermarkedBuffer)
-                .reduce((data, byte) => data + String.fromCharCode(byte), '')
-            );
-            finalPreviewUrl = `data:image/jpeg;base64,${base64}`;
+          finalPreviewUrl = bufferToDataUrl(watermarkedBuffer, contentType ?? 'image/jpeg');
 
-            logger.info('[on-the-fly] Applied watermark before returning to client', { requestId });
-          } else {
-            logger.warn('[on-the-fly] Failed to fetch clean image for watermarking, returning storage URL', {
-              requestId,
-              status: imageResponse.status
-            });
-          }
+          logger.info('[on-the-fly] Applied watermark before returning to client', { requestId });
         } catch (error) {
           logger.error('[on-the-fly] Watermark application failed, returning clean URL', {
             requestId,
@@ -788,6 +800,31 @@ serve(async (req) => {
             .from('anonymous_tokens')
             .update({ free_tokens_remaining: nextSoftRemaining })
             .eq('token', entitlementContext.anonToken);
+          updatedSoftRemaining = nextSoftRemaining;
+        }
+
+        if (entitlementContext.fingerprintHash) {
+          const now = new Date();
+          const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+          const monthBucket = monthStart.toISOString().slice(0, 10);
+          const currentCount = entitlementContext.fingerprintGenerationCount ?? 0;
+          const nextCount = currentCount + tokensDebit;
+
+          await supabase
+            .from('anonymous_usage')
+            .upsert({
+              fingerprint_hash: entitlementContext.fingerprintHash,
+              month_bucket: monthBucket,
+              generation_count: nextCount,
+              ip_hash: ipHash ?? null,
+              subnet_hash: subnetHash ?? null,
+              anon_token: entitlementContext.anonToken ?? null,
+              soft_remaining: updatedSoftRemaining ?? entitlementContext.softRemaining ?? null,
+              first_seen: entitlementContext.fingerprintFirstSeen ?? new Date().toISOString(),
+              last_seen: new Date().toISOString()
+            }, {
+              onConflict: 'fingerprint_hash,month_bucket'
+            });
         }
       }
 
@@ -797,6 +834,8 @@ serve(async (req) => {
             : computeRemainingAfterDebet(entitlementContext, tokensDebit))
         : null;
 
+      const effectiveSoftRemaining = updatedSoftRemaining ?? entitlementContext?.softRemaining ?? null;
+
       const payload = createSuccessResponse({
         previewUrl: finalPreviewUrl, // Return watermarked data URL for free users, clean URL for paid
         requestId,
@@ -805,7 +844,10 @@ serve(async (req) => {
         tier: entitlementContext?.tierLabel,
         requiresWatermark: effectiveWatermark,
         remainingTokens,
-        priority: entitlementContext?.priority ?? 'normal'
+        priority: entitlementContext?.priority ?? 'normal',
+        storageUrl: cleanStorageUrl,
+        storagePath,
+        softRemaining: effectiveSoftRemaining
       });
 
       return respond(JSON.stringify(payload), statusCode);
@@ -893,7 +935,7 @@ serve(async (req) => {
       cacheStatus
     });
     const normalizationStart = Date.now();
-    const normalizedImageUrl = await normalizeImageInput(imageUrl);
+    const normalizedImageUrl = await normalizeImageInput(imageUrl, supabase);
     const normalizationDurationMs = Date.now() - normalizationStart;
     logger.info('Normalization complete', {
       requestId,
@@ -1147,7 +1189,10 @@ const bufferToDataUrl = (buffer: ArrayBuffer, contentType: string): string => {
   return `data:${contentType};base64,${base64}`;
 };
 
-const loadImageBuffer = async (source: string): Promise<{ buffer: ArrayBuffer; contentType: string }> => {
+const loadImageBuffer = async (
+  source: string,
+  supabase: ReturnType<typeof createClient>
+): Promise<{ buffer: ArrayBuffer; contentType: string }> => {
   if (source.startsWith('data:image/')) {
     const [header, data] = source.split(',');
     if (!data) {
@@ -1163,25 +1208,20 @@ const loadImageBuffer = async (source: string): Promise<{ buffer: ArrayBuffer; c
     return { buffer: bytes.buffer, contentType };
   }
 
-  const response = await fetch(source);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch preview asset for watermarking: ${response.status}`);
+  const storageRef =
+    parseStorageUrl(source) ?? parseStoragePath(source);
+
+  if (!storageRef) {
+    throw new Error('Preview URL must reference a Wondertone storage path');
   }
-  const contentType = response.headers.get('content-type') ?? 'image/jpeg';
-  const buffer = await response.arrayBuffer();
-  return { buffer, contentType };
+
+  return await downloadStorageObject(supabase, storageRef);
 };
 
 const extractStoragePath = (sourceUrl: string): string | null => {
-  try {
-    const url = new URL(sourceUrl);
-    const marker = `/storage/v1/object/public/${cacheBucket.replace(/\//g, '/')}/`;
-    const index = url.pathname.indexOf(marker);
-    if (index === -1) return null;
-    return decodeURIComponent(url.pathname.slice(index + marker.length));
-  } catch (_error) {
-    return null;
-  }
+  const ref = parseStorageUrl(sourceUrl) ?? parseStoragePath(sourceUrl);
+  if (!ref) return null;
+  return `${ref.bucket}/${ref.path}`;
 };
 
 // LEGACY FUNCTION REMOVED: ensureWatermarkedPreview

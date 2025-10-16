@@ -5,6 +5,9 @@ export type PreviewResult = {
   watermarkApplied: boolean;
   startedAt: number;
   completedAt: number;
+  storageUrl?: string | null;
+  storagePath?: string | null;
+  softRemaining?: number | null;
 };
 
 const simulateDelay = (min = 400, max = 900) =>
@@ -57,6 +60,8 @@ export async function fetchPreviewForStyle(style: StyleOption, baseImage?: strin
     watermarkApplied: true,
     startedAt,
     completedAt: Date.now(),
+    storageUrl: previewUrl,
+    storagePath: null
   };
 }
 

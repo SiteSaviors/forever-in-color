@@ -6,7 +6,9 @@ export interface GalleryItem {
   styleId: string;
   styleName: string;
   orientation: 'horizontal' | 'vertical' | 'square';
-  imageUrl: string; // OPUS PLAN: Single clean URL, watermarks applied on-the-fly
+  imageUrl: string;
+  displayUrl: string;
+  storagePath: string;
   isFavorited: boolean;
   isDeleted: boolean;
   downloadCount: number;
@@ -28,7 +30,7 @@ export interface SaveToGalleryParams {
   styleId: string;
   styleName: string;
   orientation: 'horizontal' | 'vertical' | 'square';
-  imageUrl: string; // OPUS PLAN: Single clean URL
+  storagePath: string;
   anonToken?: string | null;
   accessToken?: string | null;
 }
@@ -43,6 +45,12 @@ export interface GalleryFilters {
 }
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
+const STORAGE_PATH_REGEX = /(preview-cache(?:-public|-premium)?\/.+)$/;
+
+const extractStoragePathFromUrl = (url: string): string | null => {
+  const match = url.match(STORAGE_PATH_REGEX);
+  return match ? match[1] : null;
+};
 
 /**
  * Save a preview to the user's gallery
@@ -54,7 +62,19 @@ export async function saveToGallery(params: SaveToGalleryParams): Promise<{
   error?: string;
 }> {
   try {
-    const { anonToken, accessToken, ...body } = params;
+    const { anonToken, accessToken, storagePath, ...rest } = params;
+
+    if (!storagePath) {
+      return {
+        success: false,
+        error: 'Missing storage path for gallery item',
+      };
+    }
+
+    const body = {
+      ...rest,
+      storagePath,
+    };
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -298,10 +318,55 @@ export async function incrementGalleryDownload(
 
 /**
  * Get download URL for a gallery item.
- * OPUS PLAN: Returns clean URL always. Client can request watermarked version via ?context=download
+ * Returns clean storage URL for premium users, watermarked data URL for free tiers.
  */
-export function getGalleryDownloadUrl(item: GalleryItem, requiresWatermark: boolean): string {
-  // If user requires watermark, client should append ?context=download to apply watermark on-the-fly
-  // For now, return clean URL (watermarking endpoint will be implemented separately)
-  return item.imageUrl;
+export async function getGalleryDownloadUrl(
+  item: GalleryItem,
+  requiresWatermark: boolean,
+  anonToken?: string | null,
+  accessToken?: string | null
+): Promise<string> {
+  if (!requiresWatermark) {
+    return item.imageUrl;
+  }
+
+  const params = new URLSearchParams({
+    id: item.id,
+    download: 'true',
+  });
+
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY as string,
+  };
+
+  const token = accessToken || import.meta.env.VITE_SUPABASE_ANON_KEY;
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  if (anonToken) {
+    headers['X-WT-Anon'] = anonToken;
+  }
+
+  const storagePath = item.storagePath || extractStoragePathFromUrl(item.imageUrl);
+  if (!storagePath) {
+    throw new Error('Missing storage path for download');
+  }
+
+  const response = await fetch(
+    `${SUPABASE_URL}/functions/v1/get-gallery?${params.toString()}`,
+    {
+      method: 'GET',
+      headers,
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+    throw new Error(errorData.error || `Failed to fetch download (${response.status})`);
+  }
+
+  const data = await response.json() as { downloadUrl?: string };
+  return data.downloadUrl ?? item.imageUrl;
 }

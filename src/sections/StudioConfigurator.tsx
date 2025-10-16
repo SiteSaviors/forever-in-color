@@ -45,6 +45,14 @@ const StyleForgeOverlayFallback = ({ styleName }: { styleName: string }) => (
   </div>
 );
 
+const STORAGE_PATH_REGEX = /(preview-cache(?:-public|-premium)?\/.+)$/;
+
+const extractStoragePathFromUrl = (url?: string | null): string | null => {
+  if (!url) return null;
+  const match = url.match(STORAGE_PATH_REGEX);
+  return match ? match[1] : null;
+};
+
 type StudioEmptyStateProps = {
   onUpload: () => void;
   onBrowseStyles: () => void;
@@ -233,12 +241,23 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
 
     // Only provide cleanUrl if user has premium access (preview not watermarked)
     // Server will validate this matches their tier
+    const storagePath =
+      preview.data.storagePath ??
+      (preview.data.storageUrl ? extractStoragePathFromUrl(preview.data.storageUrl) : null) ??
+      extractStoragePathFromUrl(preview.data.previewUrl);
+
+    if (!storagePath) {
+      console.error('[StudioConfigurator] Missing storage path when saving to gallery', preview.data);
+      alert('Unable to save preview. Please regenerate and try again.');
+      setSavingToGallery(false);
+      return;
+    }
+
     const result = await saveToGallery({
       styleId: currentStyle.id,
       styleName: currentStyle.name,
       orientation,
-      watermarkedUrl: preview.data.previewUrl,
-      cleanUrl: preview.data.requiresWatermark ? undefined : preview.data.previewUrl,
+      storagePath,
       anonToken: sessionUser ? undefined : anonToken,
       accessToken: sessionAccessToken || null,
     });

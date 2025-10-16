@@ -8,6 +8,9 @@ import { logPreviewStage } from '@/utils/previewAnalytics';
 import { playPreviewChime } from '@/utils/playPreviewChime';
 import { CANVAS_SIZE_OPTIONS, CanvasSizeKey, getCanvasSizeOption, getDefaultSizeForOrientation } from '@/utils/canvasSizes';
 import { mintAnonymousToken, fetchAuthenticatedEntitlements } from '@/utils/entitlementsApi';
+import { loadAnonTokenFromStorage, persistAnonToken } from './utils/anonTokenStorage';
+import { getSupabaseClient } from './utils/supabaseClient';
+import { getOrCreateFingerprintHash, getStoredFingerprintHash } from '@/utils/deviceFingerprint';
 
 /**
  * TESTING MODE FLAG
@@ -77,23 +80,6 @@ const generateIdempotencyKey = (styleId: string): string => {
   return `${styleId}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 };
 
-type SupabaseClientInstance = Awaited<ReturnType<typeof importSupabaseClient>>;
-
-let cachedSupabaseClient: SupabaseClientInstance | undefined;
-
-async function importSupabaseClient() {
-  const module = await import('@/utils/supabaseClient');
-  return module.supabaseClient;
-}
-
-const getSupabaseClient = async (): Promise<SupabaseClientInstance> => {
-  if (typeof cachedSupabaseClient !== 'undefined') {
-    return cachedSupabaseClient;
-  }
-  cachedSupabaseClient = await importSupabaseClient();
-  return cachedSupabaseClient;
-};
-
 export type StyleOption = {
   id: string;
   name: string;
@@ -134,6 +120,8 @@ type StylePreviewCacheEntry = {
   url: string;
   orientation: Orientation;
   generatedAt: number;
+  storageUrl?: string | null;
+  storagePath?: string | null;
 };
 
 export type StylePreviewStatus =
@@ -201,6 +189,8 @@ type FounderState = {
   accessToken: string | null;
   sessionHydrated: boolean;
   anonToken: string | null;
+  fingerprintHash: string | null;
+  ensureFingerprintHash: () => Promise<string | null>;
   showTokenToast: boolean;
   setShowTokenToast: (show: boolean) => void;
   showQuotaModal: boolean;
@@ -266,7 +256,9 @@ type FounderState = {
     requiresWatermark?: boolean;
     tier?: string;
     priority?: string;
+    softRemaining?: number | null;
   }) => void;
+  reconcileEntitlements: () => Promise<void>;
   setAnonToken: (token: string | null) => void;
   computedTotal: () => number;
   currentStyle: () => StyleOption | undefined;
@@ -549,7 +541,22 @@ export const useFounderStore = create<FounderState>((set, get) => ({
   sessionUser: null,
   accessToken: null,
   sessionHydrated: false,
-  anonToken: null,
+  anonToken: loadAnonTokenFromStorage(),
+  fingerprintHash: typeof window !== 'undefined' ? getStoredFingerprintHash() : null,
+  ensureFingerprintHash: async () => {
+    const existing = get().fingerprintHash;
+    if (existing) return existing;
+    try {
+      const hash = await getOrCreateFingerprintHash();
+      if (hash) {
+        set({ fingerprintHash: hash });
+      }
+      return hash ?? null;
+    } catch (error) {
+      console.warn('[FounderStore] Failed to resolve device fingerprint', error);
+      return null;
+    }
+  },
   showTokenToast: false,
   showQuotaModal: false,
   uploadIntentAt: null,
@@ -670,6 +677,8 @@ export const useFounderStore = create<FounderState>((set, get) => ({
             watermarkApplied: false,
             startedAt: timestamp,
             completedAt: timestamp,
+            storageUrl: source,
+            storagePath: null
           },
           orientation: targetOrientation,
         });
@@ -743,6 +752,8 @@ export const useFounderStore = create<FounderState>((set, get) => ({
           watermarkApplied: get().entitlements.requiresWatermark,
           startedAt: cached.generatedAt ?? timestamp,
           completedAt: cached.generatedAt ?? timestamp,
+          storageUrl: cached.storageUrl ?? cached.url,
+          storagePath: cached.storagePath ?? null
         },
         orientation: targetOrientation,
       });
@@ -784,6 +795,7 @@ export const useFounderStore = create<FounderState>((set, get) => ({
       const sessionUser = get().sessionUser;
       const anonToken = sessionUser ? null : get().anonToken;
       const accessToken = get().accessToken;
+      const fingerprintHash = await get().ensureFingerprintHash();
 
       const idempotencyKey = generateIdempotencyKey(style.id);
 
@@ -795,6 +807,7 @@ export const useFounderStore = create<FounderState>((set, get) => ({
         anonToken,
         accessToken,
         idempotencyKey,
+        fingerprintHash,
         onStage: (stage) => {
           if (get().pendingStyleId !== style.id) {
             return;
@@ -820,6 +833,8 @@ export const useFounderStore = create<FounderState>((set, get) => ({
         url: result.previewUrl,
         orientation: targetOrientation,
         generatedAt: timestamp,
+        storageUrl: result.storageUrl ?? null,
+        storagePath: result.storagePath ?? null
       });
       state.setPreviewState(style.id, {
         status: 'ready',
@@ -828,6 +843,8 @@ export const useFounderStore = create<FounderState>((set, get) => ({
           watermarkApplied: result.requiresWatermark,
           startedAt: timestamp,
           completedAt: timestamp,
+          storageUrl: result.storageUrl ?? null,
+          storagePath: result.storagePath ?? null
         },
         orientation: targetOrientation,
       });
@@ -837,6 +854,7 @@ export const useFounderStore = create<FounderState>((set, get) => ({
         requiresWatermark: result.requiresWatermark,
         tier: result.tier,
         priority: result.priority,
+        softRemaining: result.softRemaining,
       });
       get().incrementGenerationCount();
 
@@ -933,7 +951,10 @@ export const useFounderStore = create<FounderState>((set, get) => ({
       },
     })),
   clearSmartCrops: () => set({ smartCrops: {} }),
-  setAnonToken: (token) => set({ anonToken: token }),
+  setAnonToken: (token) => {
+    persistAnonToken(token);
+    set({ anonToken: token });
+  },
   setShowTokenToast: (show) => set({ showTokenToast: show }),
   setShowQuotaModal: (show) => set({ showQuotaModal: show }),
   hydrateEntitlements: async () => {
@@ -999,7 +1020,9 @@ export const useFounderStore = create<FounderState>((set, get) => ({
         });
 
         sessionStorage.setItem('account_prompt_dismissed', minted.dismissed_prompt ? 'true' : 'false');
+        persistAnonToken(minted.anon_token);
 
+        persistAnonToken(minted.anon_token);
         set({
           anonToken: minted.anon_token,
           accountPromptDismissed: minted.dismissed_prompt,
@@ -1007,7 +1030,7 @@ export const useFounderStore = create<FounderState>((set, get) => ({
             status: 'ready',
             tier: 'anonymous',
             quota: minted.hard_limit,
-            remainingTokens: minted.hard_remaining,
+            remainingTokens: Math.min(minted.hard_remaining, minted.free_tokens_remaining),
             requiresWatermark: true,
             priority: 'normal',
             renewAt: null,
@@ -1031,7 +1054,48 @@ export const useFounderStore = create<FounderState>((set, get) => ({
       }));
     }
   },
-  updateEntitlementsFromResponse: ({ remainingTokens, requiresWatermark, tier, priority }) => {
+  reconcileEntitlements: async () => {
+    const state = get();
+    if (state.sessionUser) {
+      return;
+    }
+
+    const anonToken = state.anonToken ?? loadAnonTokenFromStorage();
+    if (!anonToken) {
+      return;
+    }
+
+    try {
+      const minted = await mintAnonymousToken({
+        token: anonToken,
+        dismissedPrompt: state.accountPromptDismissed,
+      });
+
+      persistAnonToken(minted.anon_token);
+
+      set({
+        anonToken: minted.anon_token,
+        accountPromptDismissed: minted.dismissed_prompt,
+        entitlements: {
+          status: 'ready',
+          tier: 'anonymous',
+          quota: minted.hard_limit,
+          remainingTokens: Math.min(minted.hard_remaining, minted.free_tokens_remaining),
+          requiresWatermark: true,
+          priority: 'normal',
+          renewAt: null,
+          hardLimit: minted.hard_limit,
+          softRemaining: minted.free_tokens_remaining,
+          dismissedPrompt: minted.dismissed_prompt,
+          lastSyncedAt: Date.now(),
+          error: null,
+        },
+      });
+    } catch (error) {
+      console.warn('[FounderStore] Failed to reconcile anonymous entitlements', error);
+    }
+  },
+  updateEntitlementsFromResponse: ({ remainingTokens, requiresWatermark, tier, priority, softRemaining }) => {
     set((current) => {
       const next: EntitlementState = {
         ...current.entitlements,
@@ -1042,6 +1106,10 @@ export const useFounderStore = create<FounderState>((set, get) => ({
 
       if (typeof remainingTokens === 'number') {
         next.remainingTokens = remainingTokens;
+      }
+
+      if (typeof softRemaining === 'number') {
+        next.softRemaining = softRemaining;
       }
 
       if (typeof requiresWatermark === 'boolean') {
@@ -1060,10 +1128,6 @@ export const useFounderStore = create<FounderState>((set, get) => ({
         if (normalized === 'normal' || normalized === 'priority' || normalized === 'pro') {
           next.priority = normalized as EntitlementPriority;
         }
-      }
-
-      if (next.tier === 'anonymous' && next.softRemaining != null) {
-        next.softRemaining = Math.max(next.softRemaining - 1, 0);
       }
 
       return { entitlements: next };
@@ -1390,7 +1454,7 @@ export const useFounderStore = create<FounderState>((set, get) => ({
       accountPromptShown: user ? false : state.accountPromptShown,
       accountPromptTriggerAt: user ? null : state.accountPromptTriggerAt,
       accountPromptDismissed: user ? false : state.accountPromptDismissed,
-      anonToken: user ? state.anonToken : null,
+      anonToken: state.anonToken ?? loadAnonTokenFromStorage(),
     }));
 
     void get().hydrateEntitlements();
@@ -1414,6 +1478,7 @@ export const useFounderStore = create<FounderState>((set, get) => ({
     const token = get().anonToken;
     if (token) {
       void mintAnonymousToken({ token, dismissedPrompt: true }).then((response) => {
+        persistAnonToken(response.anon_token);
         set((current) => ({
           anonToken: response.anon_token,
           entitlements: {
@@ -1422,7 +1487,7 @@ export const useFounderStore = create<FounderState>((set, get) => ({
             softRemaining: response.free_tokens_remaining,
             hardLimit: response.hard_limit,
             quota: response.hard_limit,
-            remainingTokens: response.hard_remaining
+            remainingTokens: Math.min(response.hard_remaining, response.free_tokens_remaining)
           }
         }));
       }).catch(() => {

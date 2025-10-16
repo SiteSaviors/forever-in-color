@@ -20,6 +20,11 @@ export interface EntitlementContext {
   softRemaining?: number | null;
   hardLimit?: number | null;
   usedThisPeriod?: number;
+  fingerprintHash?: string | null;
+  fingerprintGenerationCount?: number;
+  fingerprintFirstSeen?: string | null;
+  fingerprintRemaining?: number | null;
+  ipAddress?: string | null;
 }
 
 export interface ResolveEntitlementsParams {
@@ -27,6 +32,8 @@ export interface ResolveEntitlementsParams {
   accessToken?: string | null;
   anonToken?: string | null;
   devBypassEmails: Set<string>;
+  fingerprintHash?: string | null;
+  ipAddress?: string | null;
 }
 
 export interface ResolveResult {
@@ -86,7 +93,9 @@ export const resolveEntitlements = async ({
   supabase,
   accessToken,
   anonToken,
-  devBypassEmails
+  devBypassEmails,
+  fingerprintHash,
+  ipAddress
 }: ResolveEntitlementsParams): Promise<ResolveResult> => {
   const bearer = parseJwtBearer(accessToken ?? undefined);
   const bearerIsAnonKey = Boolean(SUPABASE_ANON_KEY && bearer && bearer === SUPABASE_ANON_KEY);
@@ -96,7 +105,14 @@ export const resolveEntitlements = async ({
     if (userError || !userData?.user) {
       if (anonToken) {
         // Fall back to anonymous entitlements when bearer token is invalid but anon token is present
-        return resolveEntitlements({ supabase, accessToken: null, anonToken, devBypassEmails });
+        return resolveEntitlements({
+          supabase,
+          accessToken: null,
+          anonToken,
+          devBypassEmails,
+          fingerprintHash,
+          ipAddress
+        });
       }
       throw new Error('UNAUTHORIZED');
     }
@@ -177,6 +193,8 @@ export const resolveEntitlements = async ({
     1
   ));
 
+  const normalizedFingerprint = fingerprintHash?.trim().toLowerCase() ?? null;
+
   const { data: anonRow } = await supabase
     .from('anonymous_tokens')
     .select('*')
@@ -212,7 +230,56 @@ export const resolveEntitlements = async ({
 
   const tokensUsed = usageRows?.reduce((sum, row) => sum + (row.tokens_spent ?? 0), 0) ?? 0;
   const hardRemaining = Math.max(HARD_LIMIT_ANON - tokensUsed, 0);
-  const softRemaining = Math.max(SOFT_LIMIT_ANON - Math.min(tokensUsed, SOFT_LIMIT_ANON), 0);
+  const tokenSoftRemaining = Math.max(SOFT_LIMIT_ANON - Math.min(tokensUsed, SOFT_LIMIT_ANON), 0);
+
+  let fingerprintGenerationCount = 0;
+  let fingerprintFirstSeen: string | null = null;
+  let fingerprintRemaining: number | null = null;
+
+  if (normalizedFingerprint) {
+    const { data: fingerprintRow } = await supabase
+      .from('anonymous_usage')
+      .select('id, generation_count, first_seen, ip_address')
+      .eq('fingerprint_hash', normalizedFingerprint)
+      .eq('month_bucket', monthStart.toISOString().slice(0, 10))
+      .maybeSingle();
+
+    if (!fingerprintRow) {
+      const nowIso = new Date().toISOString();
+      await supabase
+        .from('anonymous_usage')
+        .insert({
+          fingerprint_hash: normalizedFingerprint,
+          month_bucket: monthStart.toISOString().slice(0, 10),
+          generation_count: 0,
+          first_seen: nowIso,
+          last_seen: nowIso,
+          ip_address: ipAddress ?? null
+        });
+      fingerprintFirstSeen = nowIso;
+      fingerprintGenerationCount = 0;
+    } else {
+      fingerprintGenerationCount = fingerprintRow.generation_count ?? 0;
+      fingerprintFirstSeen = fingerprintRow.first_seen ?? null;
+      await supabase
+        .from('anonymous_usage')
+        .update({
+          last_seen: new Date().toISOString(),
+          ip_address: ipAddress ?? fingerprintRow.ip_address ?? null
+        })
+        .eq('id', fingerprintRow.id);
+    }
+
+    fingerprintRemaining = Math.max(
+      SOFT_LIMIT_ANON - Math.min(fingerprintGenerationCount, SOFT_LIMIT_ANON),
+      0
+    );
+  }
+
+  const softRemaining = Math.min(
+    tokenSoftRemaining,
+    fingerprintRemaining ?? tokenSoftRemaining
+  );
 
   await supabase
     .from('anonymous_tokens')
@@ -229,14 +296,19 @@ export const resolveEntitlements = async ({
       tierLabel: 'anonymous',
       tierForDb: null,
       quota: HARD_LIMIT_ANON,
-      remainingBefore: hardRemaining,
+      remainingBefore: Math.min(hardRemaining, fingerprintRemaining ?? hardRemaining),
       requiresWatermark: true,
       priority: 'normal',
       devBypass: false,
       softLimit: SOFT_LIMIT_ANON,
       softRemaining,
       hardLimit: HARD_LIMIT_ANON,
-      usedThisPeriod: tokensUsed
+      usedThisPeriod: tokensUsed,
+      fingerprintHash: normalizedFingerprint,
+      fingerprintGenerationCount,
+      fingerprintFirstSeen,
+      fingerprintRemaining,
+      ipAddress: ipAddress ?? null
     }
   };
 };

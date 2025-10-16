@@ -9,6 +9,9 @@ export type PreviewGenerationResult =
       remainingTokens: number | null;
       tier?: string;
       priority?: string;
+      storageUrl?: string | null;
+      storagePath?: string | null;
+      softRemaining?: number | null;
     }
   | {
       status: 'processing';
@@ -18,6 +21,9 @@ export type PreviewGenerationResult =
       remainingTokens: number | null;
       tier?: string;
       priority?: string;
+      storageUrl?: string | null;
+      storagePath?: string | null;
+      softRemaining?: number | null;
     };
 
 export interface PreviewStatusResult {
@@ -48,6 +54,7 @@ export interface GeneratePreviewParams {
     idempotencyKey: string;
     anonToken?: string | null;
     accessToken?: string | null;
+    fingerprintHash?: string | null;
   };
 }
 
@@ -87,6 +94,7 @@ export const generateStylePreview = async (
     aspectRatio,
     quality: options.quality ?? 'medium',
     isAuthenticated: Boolean(options.accessToken),
+    fingerprintHash: options.fingerprintHash ?? null,
   };
 
   const response = await fetch(`${SUPABASE_URL}/functions/v1/generate-style-preview`, {
@@ -121,7 +129,10 @@ export const generateStylePreview = async (
       ),
       remainingTokens: typeof data.remainingTokens === 'number' ? data.remainingTokens : null,
       tier: data.tier as string | undefined,
-      priority: data.priority as string | undefined
+      priority: data.priority as string | undefined,
+      softRemaining: typeof data.softRemaining === 'number' ? data.softRemaining : null,
+      storageUrl: (data.storageUrl ?? null) as string | null,
+      storagePath: (data.storagePath ?? null) as string | null
     };
   }
 
@@ -135,7 +146,10 @@ export const generateStylePreview = async (
       ),
       remainingTokens: typeof data.remainingTokens === 'number' ? data.remainingTokens : null,
       tier: data.tier as string | undefined,
-      priority: data.priority as string | undefined
+      priority: data.priority as string | undefined,
+      softRemaining: typeof data.softRemaining === 'number' ? data.softRemaining : null,
+      storageUrl: (data.storageUrl ?? null) as string | null,
+      storagePath: (data.storagePath ?? null) as string | null
     };
   }
 

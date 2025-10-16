@@ -29,6 +29,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
   const setShowTokenToast = useFounderStore((state) => state.setShowTokenToast);
   const showQuotaModal = useFounderStore((state) => state.showQuotaModal);
   const setShowQuotaModal = useFounderStore((state) => state.setShowQuotaModal);
+  const reconcileEntitlements = useFounderStore((state) => state.reconcileEntitlements);
   const entitlements = useFounderStore((state) => state.entitlements);
   const remainingTokens = entitlements.remainingTokens;
 
@@ -80,6 +81,24 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
       unsubscribe?.();
     };
   }, [setSession]);
+
+  useEffect(() => {
+    const handleFocus = () => {
+      void reconcileEntitlements();
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('focus', handleFocus, { passive: true });
+      // Reconcile once on mount in case the page was backgrounded before hydration
+      void reconcileEntitlements();
+    }
+
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('focus', handleFocus);
+      }
+    };
+  }, [reconcileEntitlements]);
 
   return (
     <>

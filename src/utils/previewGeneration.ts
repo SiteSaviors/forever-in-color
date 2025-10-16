@@ -7,6 +7,7 @@ export interface GeneratePreviewOptions {
   idempotencyKey?: string;
   anonToken?: string | null;
   accessToken?: string | null;
+  fingerprintHash?: string | null;
 }
 
 export interface GeneratePreviewResult {
@@ -15,6 +16,9 @@ export interface GeneratePreviewResult {
   remainingTokens: number | null;
   tier?: string;
   priority?: string;
+  storageUrl?: string | null;
+  storagePath?: string | null;
+  softRemaining?: number | null;
 }
 
 export const generateAndWatermarkPreview = async (
@@ -40,7 +44,8 @@ export const generateAndWatermarkPreview = async (
       quality: options.quality,
       idempotencyKey: options.idempotencyKey ?? requestId,
       anonToken: options.anonToken ?? null,
-      accessToken: options.accessToken ?? null
+      accessToken: options.accessToken ?? null,
+      fingerprintHash: options.fingerprintHash ?? null
     }
   });
 
@@ -66,6 +71,9 @@ export const generateAndWatermarkPreview = async (
     requiresWatermark: Boolean(generationResult.requiresWatermark),
     remainingTokens: generationResult.remainingTokens ?? null,
     tier: generationResult.tier,
-    priority: generationResult.priority
+    priority: generationResult.priority,
+    storageUrl: generationResult.storageUrl ?? null,
+    storagePath: generationResult.storagePath ?? null,
+    softRemaining: generationResult.softRemaining ?? null
   };
 };

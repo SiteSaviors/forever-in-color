@@ -11,6 +11,7 @@ export interface FounderPreviewParams {
   anonToken?: string | null;
   accessToken?: string | null;
   idempotencyKey?: string;
+  fingerprintHash?: string | null;
 }
 
 export interface FounderPreviewResult {
@@ -19,6 +20,9 @@ export interface FounderPreviewResult {
   remainingTokens: number | null;
   tier?: string;
   priority?: string;
+  storageUrl?: string | null;
+  storagePath?: string | null;
+  softRemaining?: number | null;
 }
 
 const PREVIEW_MODE = import.meta.env.VITE_FOUNDER_PREVIEW_MODE ?? 'live';
@@ -50,6 +54,7 @@ export const startFounderPreviewGeneration = async ({
   anonToken,
   accessToken,
   idempotencyKey,
+  fingerprintHash,
 }: FounderPreviewParams): Promise<FounderPreviewResult> => {
   if (!imageUrl) {
     throw new Error('No base image available for style generation');
@@ -68,7 +73,10 @@ export const startFounderPreviewGeneration = async ({
       requiresWatermark: true,
       remainingTokens: null,
       tier: 'anonymous',
-      priority: 'normal'
+      priority: 'normal',
+      storageUrl: imageUrl,
+      storagePath: null,
+      softRemaining: null
     };
   }
 
@@ -82,7 +90,8 @@ export const startFounderPreviewGeneration = async ({
       onStage: (stage) => onStage?.(stage),
       anonToken,
       accessToken,
-      idempotencyKey
+      idempotencyKey,
+      fingerprintHash
     }
   );
 

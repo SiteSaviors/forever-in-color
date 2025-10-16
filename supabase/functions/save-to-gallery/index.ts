@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+import { buildPublicUrl, ensureObjectExists, parseStoragePath, type StorageObjectRef } from '../_shared/storageUtils.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -10,8 +11,7 @@ interface SaveToGalleryRequest {
   styleId: string;
   styleName: string;
   orientation: 'horizontal' | 'vertical' | 'square';
-  watermarkedUrl: string;
-  cleanUrl?: string;
+  storagePath: string;
   anonToken?: string;
 }
 
@@ -30,12 +30,12 @@ serve(async (req: Request) => {
   try {
     // Parse request body
     const body: SaveToGalleryRequest = await req.json();
-    const { previewLogId, styleId, styleName, orientation, watermarkedUrl, cleanUrl } = body;
+    const { previewLogId, styleId, styleName, orientation, storagePath } = body;
 
     // Validate required fields
-    if (!styleId || !styleName || !orientation || !watermarkedUrl) {
+    if (!styleId || !styleName || !orientation || !storagePath) {
       return new Response(
-        JSON.stringify({ error: 'Missing required fields: styleId, styleName, orientation, watermarkedUrl' }),
+        JSON.stringify({ error: 'Missing required fields: styleId, styleName, orientation, storagePath' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -44,6 +44,14 @@ serve(async (req: Request) => {
     if (!['horizontal', 'vertical', 'square'].includes(orientation)) {
       return new Response(
         JSON.stringify({ error: 'Invalid orientation. Must be: horizontal, vertical, or square' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const storageRef: StorageObjectRef | null = parseStoragePath(storagePath);
+    if (!storageRef) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid storage path supplied' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -80,6 +88,15 @@ serve(async (req: Request) => {
       );
     }
 
+    if (!(await ensureObjectExists(supabase, storageRef))) {
+      return new Response(
+        JSON.stringify({ error: 'Storage object not found or not accessible' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const publicUrl = buildPublicUrl(storageRef);
+
     // Check if this preview is already saved
     const { data: existing, error: checkError } = await supabase
       .from('user_gallery')
@@ -88,7 +105,7 @@ serve(async (req: Request) => {
       .eq('user_id', userId)
       .eq('style_id', styleId)
       .eq('orientation', orientation)
-      .eq('watermarked_url', watermarkedUrl)
+      .eq('watermarked_url', publicUrl)
       .maybeSingle();
 
     if (checkError) {
@@ -120,8 +137,8 @@ serve(async (req: Request) => {
         style_id: styleId,
         style_name: styleName,
         orientation,
-        watermarked_url: watermarkedUrl,
-        clean_url: cleanUrl || null,
+        watermarked_url: publicUrl,
+        clean_url: publicUrl,
         is_favorited: false,
         is_deleted: false,
         download_count: 0,
@@ -147,8 +164,8 @@ serve(async (req: Request) => {
           styleId: galleryItem.style_id,
           styleName: galleryItem.style_name,
           orientation: galleryItem.orientation,
-          watermarkedUrl: galleryItem.watermarked_url,
-          cleanUrl: galleryItem.clean_url,
+          imageUrl: galleryItem.watermarked_url,
+          storagePath: `${storageRef.bucket}/${storageRef.path}`,
           createdAt: galleryItem.created_at,
         },
       }),

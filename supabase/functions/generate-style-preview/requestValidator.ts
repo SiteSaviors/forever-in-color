@@ -1,3 +1,5 @@
+import { parseStoragePath, parseStorageUrl } from '../_shared/storageUtils.ts';
+
 export interface GenerationRequest {
   imageUrl: string;
   style: string;
@@ -6,6 +8,7 @@ export interface GenerationRequest {
   watermark?: boolean;
   quality?: 'low' | 'medium' | 'high' | 'auto';
   cacheBypass?: boolean;
+  fingerprintHash?: string | null;
 }
 
 export function validateRequest(body: unknown): { isValid: boolean; error?: string; data?: GenerationRequest } {
@@ -16,13 +19,34 @@ export function validateRequest(body: unknown): { isValid: boolean; error?: stri
     aspectRatio = '1:1',
     watermark = true,
     quality = 'medium',
-    cacheBypass = false
+    cacheBypass = false,
+    fingerprintHash = null
   } = body;
 
   if (!imageUrl || !style) {
     return {
       isValid: false,
       error: 'Missing required fields: imageUrl and style'
+    };
+  }
+
+  if (typeof imageUrl !== 'string') {
+    return {
+      isValid: false,
+      error: 'Invalid imageUrl value'
+    };
+  }
+
+  const trimmedImageUrl = imageUrl.trim();
+
+  if (
+    !trimmedImageUrl.startsWith('data:image/') &&
+    !parseStorageUrl(trimmedImageUrl) &&
+    !parseStoragePath(trimmedImageUrl)
+  ) {
+    return {
+      isValid: false,
+      error: 'Unsupported imageUrl. Only data URIs or Wondertone storage paths are allowed.'
     };
   }
 
@@ -44,6 +68,6 @@ export function validateRequest(body: unknown): { isValid: boolean; error?: stri
 
   return {
     isValid: true,
-    data: { imageUrl, style, photoId, aspectRatio, watermark, quality: normalizedQuality, cacheBypass }
+    data: { imageUrl, style, photoId, aspectRatio, watermark, quality: normalizedQuality, cacheBypass, fingerprintHash }
   };
 }

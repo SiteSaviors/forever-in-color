@@ -1,6 +1,14 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+import { WatermarkService } from '../generate-style-preview/watermarkService.ts';
+import {
+  buildPublicUrl,
+  downloadStorageObject,
+  parseStoragePath,
+  parseStorageUrl,
+  type StorageObjectRef
+} from '../_shared/storageUtils.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -27,6 +35,46 @@ const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-wt-anon',
   'Access-Control-Allow-Methods': 'GET, DELETE, PATCH, OPTIONS',
+};
+
+const bufferToDataUrl = (buffer: ArrayBuffer, contentType: string): string => {
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  for (let i = 0; i < bytes.byteLength; i += 1) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  const base64 = btoa(binary);
+  return `data:${contentType};base64,${base64}`;
+};
+
+const buildDisplayUrl = async (
+  supabase: ReturnType<typeof createClient>,
+  storageRef: StorageObjectRef,
+  context: 'preview' | 'download',
+  requiresWatermark: boolean
+): Promise<string> => {
+  const publicUrl = buildPublicUrl(storageRef);
+  if (!requiresWatermark) {
+    return publicUrl;
+  }
+
+  try {
+    const { buffer, contentType } = await downloadStorageObject(supabase, storageRef);
+    const watermarkedBuffer = await WatermarkService.createWatermarkedImage(
+      buffer,
+      context,
+      WatermarkService.generateSessionId()
+    );
+    return bufferToDataUrl(watermarkedBuffer, contentType ?? 'image/jpeg');
+  } catch (error) {
+    console.error('[get-gallery] Failed to apply watermark on-the-fly', error);
+    return publicUrl;
+  }
+};
+
+const resolveStorageRef = (value: string | null | undefined): StorageObjectRef | null => {
+  if (!value) return null;
+  return parseStoragePath(value) ?? parseStorageUrl(value);
 };
 
 serve(async (req: Request) => {
@@ -91,6 +139,85 @@ serve(async (req: Request) => {
 
     // GET: Fetch gallery items
     if (req.method === 'GET') {
+      const itemIdParam = url.searchParams.get('id');
+      const downloadRequested = url.searchParams.get('download') === 'true';
+
+      if (itemIdParam) {
+        const { data: itemRow, error: itemError } = await supabase
+          .from('user_gallery')
+          .select('*')
+          .eq('is_deleted', false)
+          .eq(userId ? 'user_id' : 'anon_token', userId || effectiveAnonToken)
+          .eq('id', itemIdParam)
+          .maybeSingle();
+
+        if (itemError) {
+          console.error('[get-gallery] Single item fetch error:', itemError);
+          return new Response(
+            JSON.stringify({ error: 'Failed to fetch gallery item' }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        if (!itemRow) {
+          return new Response(
+            JSON.stringify({ error: 'Gallery item not found' }),
+            { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        const storageRef =
+          resolveStorageRef(itemRow.clean_url) ??
+          resolveStorageRef(itemRow.watermarked_url);
+
+        if (!storageRef) {
+          return new Response(
+            JSON.stringify({ error: 'Gallery item is missing a valid storage reference' }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        if (downloadRequested) {
+          const downloadUrl = await buildDisplayUrl(supabase, storageRef, 'download', requiresWatermark);
+          const payload = {
+            downloadUrl,
+            storageUrl: buildPublicUrl(storageRef),
+            storagePath: `${storageRef.bucket}/${storageRef.path}`,
+            requiresWatermark
+          };
+          return new Response(
+            JSON.stringify(payload),
+            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        const displayUrl = await buildDisplayUrl(supabase, storageRef, 'preview', requiresWatermark);
+
+        const singlePayload = {
+          item: {
+            id: itemRow.id,
+            styleId: itemRow.style_id,
+            styleName: itemRow.style_name,
+            orientation: itemRow.orientation,
+            imageUrl: buildPublicUrl(storageRef),
+            displayUrl,
+            storagePath: `${storageRef.bucket}/${storageRef.path}`,
+            isFavorited: itemRow.is_favorited,
+            isDeleted: itemRow.is_deleted,
+            downloadCount: itemRow.download_count,
+            lastDownloadedAt: itemRow.last_downloaded_at,
+            createdAt: itemRow.created_at,
+            updatedAt: itemRow.updated_at
+          },
+          requiresWatermark
+        };
+
+        return new Response(
+          JSON.stringify(singlePayload),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
       // Parse query parameters
       const limit = parseInt(url.searchParams.get('limit') || '50', 10);
       const offset = parseInt(url.searchParams.get('offset') || '0', 10);
@@ -160,11 +287,45 @@ serve(async (req: Request) => {
         updatedAt: item.updated_at,
       }));
 
+      const resolvedItems = (
+        await Promise.all(
+          galleryItems.map(async (item) => {
+            const storageRef =
+              resolveStorageRef(item.cleanUrl) ??
+              resolveStorageRef(item.watermarkedUrl);
+
+            if (!storageRef) {
+              console.warn('[get-gallery] Skipping item with invalid storage reference', { id: item.id });
+              return null;
+            }
+
+            const displayUrl = await buildDisplayUrl(supabase, storageRef, 'preview', requiresWatermark);
+            const imageUrl = buildPublicUrl(storageRef);
+
+            return {
+              id: item.id,
+              userId: item.userId,
+              anonToken: item.anonToken,
+              previewLogId: item.previewLogId,
+              styleId: item.styleId,
+              styleName: item.styleName,
+              orientation: item.orientation,
+              imageUrl,
+              displayUrl,
+              storagePath: `${storageRef.bucket}/${storageRef.path}`,
+              isFavorited: item.isFavorited,
+              isDeleted: item.isDeleted,
+              downloadCount: item.downloadCount,
+              lastDownloadedAt: item.lastDownloadedAt,
+              createdAt: item.createdAt,
+              updatedAt: item.updatedAt
+            };
+          })
+        )
+      ).filter((item): item is NonNullable<typeof item> => item !== null);
+
       const responsePayload = {
-        items: galleryItems.map((item) => ({
-          ...item,
-          cleanUrl: requiresWatermark ? null : item.cleanUrl
-        })),
+        items: resolvedItems,
         total: count || 0,
         limit,
         offset,

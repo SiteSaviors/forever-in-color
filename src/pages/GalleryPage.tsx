@@ -97,8 +97,6 @@ const GalleryPage = () => {
   };
 
   const handleDownload = async (item: GalleryItem) => {
-    const downloadUrl = getGalleryDownloadUrl(item, requiresWatermark);
-
     if (requiresWatermark) {
       alert('Upgrade to unlock clean, watermark-free downloads.');
     }
@@ -106,6 +104,15 @@ const GalleryPage = () => {
     // Track download
     const accessToken = sessionAccessToken || null;
     await incrementGalleryDownload(item.id, anonToken, accessToken);
+
+    let downloadUrl: string;
+    try {
+      downloadUrl = await getGalleryDownloadUrl(item, requiresWatermark, anonToken, accessToken);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to prepare download.';
+      alert(message);
+      return;
+    }
 
     // Trigger download
     const link = document.createElement('a');
@@ -275,7 +282,7 @@ const GalleryPage = () => {
                 {/* Preview Image */}
                 <div className="aspect-square relative overflow-hidden">
                   <img
-                    src={item.watermarkedUrl}
+                    src={item.displayUrl}
                     alt={item.styleName}
                     className="w-full h-full object-cover"
                   />

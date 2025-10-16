@@ -9,6 +9,9 @@ export interface SuccessResponseMeta {
   requiresWatermark?: boolean;
   remainingTokens?: number | null;
   priority?: string;
+  storageUrl?: string | null;
+  storagePath?: string | null;
+  softRemaining?: number | null;
 }
 
 export function createSuccessResponse({
@@ -19,7 +22,10 @@ export function createSuccessResponse({
   tier,
   requiresWatermark,
   remainingTokens,
-  priority
+  priority,
+  storageUrl,
+  storagePath,
+  softRemaining
 }: SuccessResponseMeta) {
   return {
     preview_url: previewUrl,
@@ -31,6 +37,9 @@ export function createSuccessResponse({
     requires_watermark: requiresWatermark,
     remainingTokens,
     priority,
+    storageUrl,
+    storagePath,
+    softRemaining,
     timestamp: new Date().toISOString()
   };
 }

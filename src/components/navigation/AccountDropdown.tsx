@@ -1,4 +1,4 @@
-import { Suspense, forwardRef } from 'react';
+import { Suspense, forwardRef, type ComponentPropsWithoutRef } from 'react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 
 type AccountDropdownProps = {
@@ -14,25 +14,34 @@ type AccountDropdownProps = {
   canUpgrade: boolean;
 };
 
+type AccountButtonProps = {
+  accountInitial: string;
+  label: string;
+} & ComponentPropsWithoutRef<'button'>;
+
 const AccountButton = forwardRef<
   HTMLButtonElement,
-  {
-    accountInitial: string;
-    label: string;
-  }
->(({ accountInitial, label }, ref) => (
+  AccountButtonProps
+>(({ accountInitial, label, className, type = 'button', ...rest }, ref) => {
+  const baseClassName =
+    'group relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/5 text-white transition-all duration-200 hover:scale-105 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/80';
+  const mergedClassName = className ? `${baseClassName} ${className}` : baseClassName;
+
+  return (
   <button
     ref={ref}
-    type="button"
-    className="group relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/5 text-white transition-all duration-200 hover:scale-105 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/80"
+    type={type}
+    className={mergedClassName}
     aria-label={label}
+    {...rest}
   >
     <span className="absolute inset-0 bg-gradient-to-br from-white/15 via-white/5 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
     <span className="relative inline-flex h-8 w-8 items-center justify-center rounded-2xl border border-white/20 bg-gradient-to-br from-purple-500/40 via-indigo-500/40 to-blue-500/40 text-sm font-semibold text-white">
       {accountInitial}
     </span>
   </button>
-));
+  );
+});
 
 AccountButton.displayName = 'AccountButton';
 
