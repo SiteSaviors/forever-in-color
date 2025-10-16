@@ -9,6 +9,7 @@ import UsagePage from './pages/UsagePage';
 import GalleryPage from './pages/GalleryPage';
 import CheckoutPage from './pages/CheckoutPage';
 import AuthProvider from './providers/AuthProvider';
+import ReactQueryBoundary from './providers/ReactQueryBoundary';
 
 const App = () => {
   return (
@@ -26,9 +27,11 @@ const App = () => {
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <BrowserRouter>
-      <AuthProvider>
-        <App />
-      </AuthProvider>
+      <ReactQueryBoundary>
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      </ReactQueryBoundary>
     </BrowserRouter>
   </React.StrictMode>
 );

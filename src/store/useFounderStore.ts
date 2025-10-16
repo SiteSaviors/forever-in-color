@@ -1,16 +1,23 @@
 import { create } from 'zustand';
-import { fetchPreviewForStyle, PreviewResult } from '@/utils/previewClient';
-import { startFounderPreviewGeneration } from '@/utils/founderPreviewGeneration';
 import type { Orientation } from '@/utils/imageUtils';
 import type { SmartCropResult } from '@/utils/smartCrop';
-import { emitStepOneEvent } from '@/utils/telemetry';
-import { logPreviewStage } from '@/utils/previewAnalytics';
-import { playPreviewChime } from '@/utils/playPreviewChime';
 import { CANVAS_SIZE_OPTIONS, CanvasSizeKey, getCanvasSizeOption, getDefaultSizeForOrientation } from '@/utils/canvasSizes';
-import { mintAnonymousToken, fetchAuthenticatedEntitlements } from '@/utils/entitlementsApi';
-import { loadAnonTokenFromStorage, persistAnonToken } from './utils/anonTokenStorage';
-import { getSupabaseClient } from './utils/supabaseClient';
-import { getOrCreateFingerprintHash, getStoredFingerprintHash } from '@/utils/deviceFingerprint';
+import {
+  createPreviewSlice,
+  type PreviewSlice,
+} from './founder/previewSlice';
+import {
+  createEntitlementSlice,
+  type EntitlementSlice,
+} from './founder/entitlementSlice';
+import {
+  createSessionSlice,
+  type SessionSlice,
+} from './founder/sessionSlice';
+
+export type { StylePreviewStatus } from './founder/previewSlice';
+export type { EntitlementTier, EntitlementPriority } from './founder/entitlementSlice';
+export type { SessionUser } from './founder/sessionSlice';
 
 /**
  * TESTING MODE FLAG
@@ -20,65 +27,8 @@ import { getOrCreateFingerprintHash, getStoredFingerprintHash } from '@/utils/de
  * When disabled, previews only generate when user manually clicks a style in Studio
  */
 const ENABLE_AUTO_PREVIEWS = false;
-const STYLE_PREVIEW_CACHE_LIMIT = 12;
 const DEFAULT_SQUARE_SIZE = getDefaultSizeForOrientation('square');
 const DEFAULT_SQUARE_PRICE = getCanvasSizeOption(DEFAULT_SQUARE_SIZE)?.price ?? 0;
-
-const ORIENTATION_TO_ASPECT: Record<Orientation, string> = {
-  square: '1:1',
-  horizontal: '3:2',
-  vertical: '2:3',
-};
-
-const STAGE_MESSAGES = {
-  animating: 'Summoning the Wondertone studio…',
-  generating: 'Sketching base strokes…',
-  polling: 'Layering textures…',
-  ready: 'Preview ready',
-  error: 'Generation failed',
-} as const;
-
-type SessionUser = {
-  id: string;
-  email: string | null;
-};
-
-const tierFromServer = (value?: string | null, devOverride = false): EntitlementTier => {
-  if (devOverride) return 'dev';
-  switch ((value ?? '').toLowerCase()) {
-    case 'anonymous':
-      return 'anonymous';
-    case 'creator':
-    case 'plus':
-    case 'pro':
-      return value as EntitlementTier;
-    case 'free':
-    default:
-      return 'free';
-  }
-};
-
-const priorityFromTier = (tier: EntitlementTier): EntitlementPriority => {
-  switch (tier) {
-    case 'pro':
-    case 'dev':
-      return 'pro';
-    case 'creator':
-    case 'plus':
-      return 'priority';
-    default:
-      return 'normal';
-  }
-};
-
-const requiresWatermarkFromTier = (tier: EntitlementTier): boolean => tier === 'anonymous' || tier === 'free';
-
-const generateIdempotencyKey = (styleId: string): string => {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return `${styleId}-${crypto.randomUUID()}`;
-  }
-  return `${styleId}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-};
 
 export type StyleOption = {
   id: string;
@@ -109,73 +59,21 @@ export type StyleCarouselCard = {
 export type CanvasSize = CanvasSizeKey;
 export type FrameColor = 'black' | 'white' | 'none';
 
-type PreviewState = {
-  status: 'idle' | 'loading' | 'ready' | 'error';
-  data?: PreviewResult;
-  orientation?: Orientation;
-  error?: string;
-};
-
-type StylePreviewCacheEntry = {
-  url: string;
-  orientation: Orientation;
-  generatedAt: number;
-  storageUrl?: string | null;
-  storagePath?: string | null;
-};
-
-export type StylePreviewStatus =
-  | 'idle'
-  | 'animating'
-  | 'generating'
-  | 'polling'
-  | 'ready'
-  | 'error';
-
-export type EntitlementTier = 'anonymous' | 'free' | 'creator' | 'plus' | 'pro' | 'dev';
-export type EntitlementPriority = 'normal' | 'priority' | 'pro';
-
-type EntitlementState = {
-  status: 'idle' | 'loading' | 'ready' | 'error';
-  tier: EntitlementTier;
-  quota: number | null;
-  remainingTokens: number | null;
-  requiresWatermark: boolean;
-  priority: EntitlementPriority;
-  renewAt: string | null;
-  hardLimit: number | null;
-  softRemaining: number | null;
-  dismissedPrompt: boolean;
-  lastSyncedAt: number | null;
-  error: string | null;
-};
-
-type StartPreviewOptions = {
-  force?: boolean;
-  orientationOverride?: Orientation;
-};
-
-type FounderState = {
+type FounderBaseState = {
   styles: StyleOption[];
   enhancements: Enhancement[];
   selectedStyleId: string | null;
   basePrice: number;
-  previewStatus: 'idle' | 'generating' | 'ready';
-  previewGenerationPromise: Promise<void> | null;
-  previews: Record<string, PreviewState>;
-  pendingStyleId: string | null;
-  stylePreviewStatus: StylePreviewStatus;
-  stylePreviewMessage: string | null;
-  stylePreviewError: string | null;
-  stylePreviewCache: Record<string, Partial<Record<Orientation, StylePreviewCacheEntry>>>;
-  stylePreviewCacheOrder: string[];
-  stylePreviewStartAt: number | null;
-  firstPreviewCompleted: boolean;
   livingCanvasModalOpen: boolean;
   uploadedImage: string | null;
   croppedImage: string | null;
+  originalImage: string | null;
+  originalImageDimensions: { width: number; height: number } | null;
+  smartCrops: Partial<Record<Orientation, SmartCropResult>>;
   orientation: Orientation;
   orientationTip: string | null;
+  orientationChanging: boolean;
+  orientationPreviewPending: boolean;
   cropReadyAt: number | null;
   isDragging: boolean;
   celebrationAt: number | null;
@@ -184,52 +82,19 @@ type FounderState = {
   preselectedStyleId: string | null;
   launchpadExpanded: boolean;
   launchpadSlimMode: boolean;
-  entitlements: EntitlementState;
-  sessionUser: SessionUser | null;
-  accessToken: string | null;
-  sessionHydrated: boolean;
-  anonToken: string | null;
-  fingerprintHash: string | null;
-  ensureFingerprintHash: () => Promise<string | null>;
-  showTokenToast: boolean;
-  setShowTokenToast: (show: boolean) => void;
-  showQuotaModal: boolean;
-  setShowQuotaModal: (show: boolean) => void;
   uploadIntentAt: number | null;
-  generationCount: number;
-  isAuthenticated: boolean;
-  accountPromptShown: boolean;
-  accountPromptDismissed: boolean;
-  accountPromptTriggerAt: number | null;
-  originalImage: string | null;
-  originalImageDimensions: { width: number; height: number } | null;
-  smartCrops: Partial<Record<Orientation, SmartCropResult>>;
-  orientationChanging: boolean;
-  orientationPreviewPending: boolean;
-  setOrientationChanging: (loading: boolean) => void;
   selectedCanvasSize: CanvasSize;
-  setCanvasSize: (size: CanvasSize) => void;
   selectedFrame: FrameColor;
-  setFrame: (frame: FrameColor) => void;
-  selectStyle: (id: string) => void;
-  toggleEnhancement: (id: string) => void;
-  setEnhancementEnabled: (id: string, enabled: boolean) => void;
-  setPreviewStatus: (status: FounderState['previewStatus']) => void;
-  setPreviewState: (id: string, state: PreviewState) => void;
-  setPendingStyle: (styleId: string | null) => void;
-  setStylePreviewState: (status: StylePreviewStatus, message?: string | null, error?: string | null) => void;
-  cacheStylePreview: (styleId: string, entry: StylePreviewCacheEntry) => void;
-  getCachedStylePreview: (styleId: string, orientation: Orientation) => StylePreviewCacheEntry | undefined;
-  clearStylePreviewCache: () => void;
-  startStylePreview: (style: StyleOption, options?: StartPreviewOptions) => Promise<void>;
-  generatePreviews: (ids?: string[], options?: { force?: boolean; orientationOverride?: Orientation }) => Promise<void>;
   setLivingCanvasModalOpen: (open: boolean) => void;
   setUploadedImage: (dataUrl: string | null) => void;
   setCroppedImage: (dataUrl: string | null) => void;
   setOriginalImage: (dataUrl: string | null) => void;
   setOriginalImageDimensions: (dimensions: { width: number; height: number } | null) => void;
-  setOrientation: (orientation: FounderState['orientation']) => void;
+  setSmartCropForOrientation: (orientation: Orientation, result: SmartCropResult) => void;
+  clearSmartCrops: () => void;
+  setOrientation: (orientation: Orientation) => void;
   setOrientationTip: (tip: string | null) => void;
+  setOrientationChanging: (loading: boolean) => void;
   setOrientationPreviewPending: (pending: boolean) => void;
   markCropReady: () => void;
   setDragging: (dragging: boolean) => void;
@@ -238,32 +103,18 @@ type FounderState = {
   setHoveredStyle: (id: string | null) => void;
   setPreselectedStyle: (id: string | null) => void;
   requestUpload: (options?: { preselectedStyleId?: string }) => void;
-  resetPreviews: () => void;
-  setSmartCropForOrientation: (orientation: Orientation, result: SmartCropResult) => void;
-  clearSmartCrops: () => void;
-  incrementGenerationCount: () => void;
-  setSession: (user: SessionUser | null, accessToken: string | null) => void;
-  signOut: () => Promise<void>;
-  setAccountPromptShown: (shown: boolean) => void;
-  dismissAccountPrompt: () => void;
-  shouldShowAccountPrompt: () => boolean;
-  canGenerateMore: () => boolean;
-  getGenerationLimit: () => number;
-  shouldAutoGeneratePreviews: () => boolean;
-  hydrateEntitlements: () => Promise<void>;
-  updateEntitlementsFromResponse: (payload: {
-    remainingTokens?: number | null;
-    requiresWatermark?: boolean;
-    tier?: string;
-    priority?: string;
-    softRemaining?: number | null;
-  }) => void;
-  reconcileEntitlements: () => Promise<void>;
-  setAnonToken: (token: string | null) => void;
+  setCanvasSize: (size: CanvasSize) => void;
+  setFrame: (frame: FrameColor) => void;
+  selectStyle: (id: string) => void;
+  toggleEnhancement: (id: string) => void;
+  setEnhancementEnabled: (id: string, enabled: boolean) => void;
   computedTotal: () => number;
   currentStyle: () => StyleOption | undefined;
   livingCanvasEnabled: () => boolean;
+  shouldAutoGeneratePreviews: () => boolean;
 };
+
+export type FounderState = FounderBaseState & PreviewSlice & EntitlementSlice & SessionSlice;
 
 const mockStyles: StyleOption[] = [
   {
@@ -495,22 +346,11 @@ const mockCarouselData: StyleCarouselCard[] = [
   },
 ];
 
-export const useFounderStore = create<FounderState>((set, get) => ({
+export const useFounderStore = create<FounderState>((set, get, api) => ({
   styles: mockStyles,
   enhancements: mockEnhancements,
   selectedStyleId: mockStyles[0]?.id ?? null,
   basePrice: DEFAULT_SQUARE_PRICE,
-  previewStatus: 'idle',
-  previewGenerationPromise: null,
-  previews: Object.fromEntries(mockStyles.map((style) => [style.id, { status: 'idle' as const }])),
-  pendingStyleId: null,
-  stylePreviewStatus: 'idle',
-  stylePreviewMessage: null,
-  stylePreviewError: null,
-  stylePreviewCache: {},
-  stylePreviewCacheOrder: [],
-  stylePreviewStartAt: null,
-  firstPreviewCompleted: false,
   livingCanvasModalOpen: false,
   uploadedImage: null,
   croppedImage: null,
@@ -524,47 +364,7 @@ export const useFounderStore = create<FounderState>((set, get) => ({
   preselectedStyleId: null,
   launchpadExpanded: false,
   launchpadSlimMode: false,
-  entitlements: {
-    status: 'idle',
-    tier: 'anonymous',
-    quota: 10,
-    remainingTokens: 10,
-    requiresWatermark: true,
-    priority: 'normal',
-    renewAt: null,
-    hardLimit: 10,
-    softRemaining: 5,
-    dismissedPrompt: false,
-    lastSyncedAt: null,
-    error: null
-  },
-  sessionUser: null,
-  accessToken: null,
-  sessionHydrated: false,
-  anonToken: loadAnonTokenFromStorage(),
-  fingerprintHash: typeof window !== 'undefined' ? getStoredFingerprintHash() : null,
-  ensureFingerprintHash: async () => {
-    const existing = get().fingerprintHash;
-    if (existing) return existing;
-    try {
-      const hash = await getOrCreateFingerprintHash();
-      if (hash) {
-        set({ fingerprintHash: hash });
-      }
-      return hash ?? null;
-    } catch (error) {
-      console.warn('[FounderStore] Failed to resolve device fingerprint', error);
-      return null;
-    }
-  },
-  showTokenToast: false,
-  showQuotaModal: false,
   uploadIntentAt: null,
-  generationCount: parseInt(sessionStorage.getItem('generation_count') || '0'),
-  isAuthenticated: false,
-  accountPromptShown: false,
-  accountPromptDismissed: sessionStorage.getItem('account_prompt_dismissed') === 'true',
-  accountPromptTriggerAt: null,
   originalImage: null,
   originalImageDimensions: null,
   smartCrops: {},
@@ -597,352 +397,9 @@ export const useFounderStore = create<FounderState>((set, get) => ({
       ),
       livingCanvasModalOpen: id === 'living-canvas' && enabled ? false : state.livingCanvasModalOpen,
     })),
-  setPreviewStatus: (status) => set({ previewStatus: status }),
-  setPreviewState: (id, previewState) =>
-    set((state) => ({
-      previews: {
-        ...state.previews,
-        [id]: previewState,
-      },
-    })),
-  setPendingStyle: (styleId) =>
-    set({ pendingStyleId: styleId }),
-  setStylePreviewState: (status, message = null, error = null) =>
-    set((state) => ({
-      stylePreviewStatus: status,
-      stylePreviewMessage: message,
-      stylePreviewError: status === 'error' ? (error ?? state.stylePreviewError ?? 'Preview failed') : null,
-    })),
-  cacheStylePreview: (styleId, entry) =>
-    set((state) => {
-      const existingForStyle = state.stylePreviewCache[styleId] ?? {};
-      const key = `${styleId}:${entry.orientation}`;
-
-      const filteredOrder = state.stylePreviewCacheOrder.filter((existingKey) => existingKey !== key);
-      filteredOrder.push(key);
-
-      const cacheCopy: Record<string, Partial<Record<Orientation, StylePreviewCacheEntry>>> = {
-        ...state.stylePreviewCache,
-        [styleId]: {
-          ...existingForStyle,
-          [entry.orientation]: entry,
-        },
-      };
-
-      while (filteredOrder.length > STYLE_PREVIEW_CACHE_LIMIT) {
-        const oldestKey = filteredOrder.shift();
-        if (!oldestKey) break;
-        const [oldStyleId, oldOrientation] = oldestKey.split(':') as [string, Orientation];
-        const map = cacheCopy[oldStyleId];
-        if (map && map[oldOrientation]) {
-        const { [oldOrientation]: _removed, ...rest } = map;
-        if (Object.keys(rest).length === 0) {
-          delete cacheCopy[oldStyleId];
-        } else {
-          cacheCopy[oldStyleId] = rest as Partial<Record<Orientation, StylePreviewCacheEntry>>;
-        }
-        }
-      }
-
-      return {
-        stylePreviewCache: cacheCopy,
-        stylePreviewCacheOrder: filteredOrder,
-      };
-    }),
-  getCachedStylePreview: (styleId, orientation) => {
-    const state = get();
-    return state.stylePreviewCache[styleId]?.[orientation];
-  },
-  clearStylePreviewCache: () =>
-    set({ stylePreviewCache: {}, stylePreviewCacheOrder: [] }),
-  startStylePreview: async (style, options: StartPreviewOptions = {}) => {
-    const state = get();
-    const { force = false, orientationOverride } = options;
-    const targetOrientation = orientationOverride ?? state.orientation;
-
-    if (state.pendingStyleId && state.pendingStyleId !== style.id) {
-      return;
-    }
-
-    set({ selectedStyleId: style.id });
-
-    if (style.id === 'original-image') {
-      const source = state.croppedImage ?? state.uploadedImage;
-      if (source) {
-        const timestamp = Date.now();
-        state.setPreviewState('original-image', {
-          status: 'ready',
-          data: {
-            previewUrl: source,
-            watermarkApplied: false,
-            startedAt: timestamp,
-            completedAt: timestamp,
-            storageUrl: source,
-            storagePath: null
-          },
-          orientation: targetOrientation,
-        });
-        set({
-          pendingStyleId: null,
-          stylePreviewStatus: 'idle',
-          stylePreviewMessage: null,
-          stylePreviewError: null,
-          orientationPreviewPending: false,
-        });
-      }
-      return;
-    }
-
-    const sourceImage =
-      state.croppedImage ??
-      state.smartCrops[targetOrientation]?.dataUrl ??
-      state.uploadedImage ??
-      state.originalImage ??
-      null;
-    if (!sourceImage) {
-      set({
-        stylePreviewStatus: 'error',
-        stylePreviewMessage: 'Upload a photo to generate a preview.',
-        stylePreviewError: 'No image uploaded',
-        pendingStyleId: null,
-        orientationPreviewPending: false,
-      });
-      return;
-    }
-
-    if (state.entitlements.status === 'idle' || state.entitlements.status === 'error') {
-      await get().hydrateEntitlements();
-    }
-
-    const entitlementState = get().entitlements;
-
-    if (entitlementState.status === 'error') {
-      set({
-        stylePreviewStatus: 'error',
-        stylePreviewMessage: 'Unable to verify preview allowance. Please try again.',
-        stylePreviewError: entitlementState.error ?? 'Entitlement check failed',
-        pendingStyleId: null,
-        orientationPreviewPending: false,
-      });
-      return;
-    }
-
-    if (!get().canGenerateMore()) {
-      set({
-        stylePreviewStatus: 'idle',
-        stylePreviewMessage: null,
-        stylePreviewError: null,
-        pendingStyleId: null,
-        orientationPreviewPending: false,
-        showQuotaModal: true,
-      });
-      return;
-    }
-
-    const cached = !force ? state.getCachedStylePreview(style.id, targetOrientation) : undefined;
-    const startTime = Date.now();
-    set({ stylePreviewStartAt: startTime });
-    logPreviewStage({ styleId: style.id, stage: 'start', elapsedMs: 0, timestamp: startTime });
-    if (cached) {
-      const timestamp = Date.now();
-      state.setPreviewState(style.id, {
-        status: 'ready',
-        data: {
-          previewUrl: cached.url,
-          watermarkApplied: get().entitlements.requiresWatermark,
-          startedAt: cached.generatedAt ?? timestamp,
-          completedAt: cached.generatedAt ?? timestamp,
-          storageUrl: cached.storageUrl ?? cached.url,
-          storagePath: cached.storagePath ?? null
-        },
-        orientation: targetOrientation,
-      });
-      set({
-        pendingStyleId: null,
-        stylePreviewStatus: 'idle',
-        stylePreviewMessage: null,
-        stylePreviewError: null,
-        stylePreviewStartAt: null,
-        orientationPreviewPending: false,
-      });
-      playPreviewChime();
-      logPreviewStage({
-        styleId: style.id,
-        stage: 'complete',
-        elapsedMs: Date.now() - startTime,
-        timestamp: Date.now(),
-      });
-      return;
-    }
-
-    set({
-      pendingStyleId: style.id,
-      stylePreviewStatus: 'animating',
-      stylePreviewMessage: STAGE_MESSAGES.animating,
-      stylePreviewError: null,
-    });
-
-    const aspectRatio = ORIENTATION_TO_ASPECT[targetOrientation] ?? '1:1';
-    emitStepOneEvent({ type: 'preview', styleId: style.id, status: 'start' });
-    try {
-      const existing = state.previews[style.id];
-      state.setPreviewState(style.id, {
-        status: 'loading',
-        data: existing?.data,
-        orientation: existing?.orientation,
-        error: existing?.error,
-      });
-      const sessionUser = get().sessionUser;
-      const anonToken = sessionUser ? null : get().anonToken;
-      const accessToken = get().accessToken;
-      const fingerprintHash = await get().ensureFingerprintHash();
-
-      const idempotencyKey = generateIdempotencyKey(style.id);
-
-      const result = await startFounderPreviewGeneration({
-        imageUrl: sourceImage,
-        styleId: style.id,
-        styleName: style.name,
-        aspectRatio,
-        anonToken,
-        accessToken,
-        idempotencyKey,
-        fingerprintHash,
-        onStage: (stage) => {
-          if (get().pendingStyleId !== style.id) {
-            return;
-          }
-          set({
-            stylePreviewStatus: stage,
-            stylePreviewMessage: STAGE_MESSAGES[stage],
-            stylePreviewError: null,
-          });
-          emitStepOneEvent({ type: 'preview', styleId: style.id, status: stage });
-          const startAt = get().stylePreviewStartAt ?? startTime;
-          logPreviewStage({
-            styleId: style.id,
-            stage,
-            elapsedMs: Date.now() - startAt,
-            timestamp: Date.now(),
-          });
-        },
-      });
-
-      const timestamp = Date.now();
-      state.cacheStylePreview(style.id, {
-        url: result.previewUrl,
-        orientation: targetOrientation,
-        generatedAt: timestamp,
-        storageUrl: result.storageUrl ?? null,
-        storagePath: result.storagePath ?? null
-      });
-      state.setPreviewState(style.id, {
-        status: 'ready',
-        data: {
-          previewUrl: result.previewUrl,
-          watermarkApplied: result.requiresWatermark,
-          startedAt: timestamp,
-          completedAt: timestamp,
-          storageUrl: result.storageUrl ?? null,
-          storagePath: result.storagePath ?? null
-        },
-        orientation: targetOrientation,
-      });
-
-      get().updateEntitlementsFromResponse({
-        remainingTokens: result.remainingTokens,
-        requiresWatermark: result.requiresWatermark,
-        tier: result.tier,
-        priority: result.priority,
-        softRemaining: result.softRemaining,
-      });
-      get().incrementGenerationCount();
-
-      // Show token decrement toast
-      set({ showTokenToast: true });
-
-      set({
-        pendingStyleId: null,
-        stylePreviewStatus: 'ready',
-        stylePreviewMessage: STAGE_MESSAGES.ready,
-        stylePreviewError: null,
-        stylePreviewStartAt: null,
-        orientationPreviewPending: get().orientation === targetOrientation ? false : get().orientationPreviewPending,
-      });
-      emitStepOneEvent({ type: 'preview', styleId: style.id, status: 'complete' });
-      playPreviewChime();
-      logPreviewStage({
-        styleId: style.id,
-        stage: 'complete',
-        elapsedMs: Date.now() - startTime,
-        timestamp: Date.now(),
-      });
-
-      window.setTimeout(() => {
-        if (get().stylePreviewStatus === 'ready') {
-          set({ stylePreviewStatus: 'idle', stylePreviewMessage: null });
-        }
-      }, 400);
-    } catch (error) {
-      if (error instanceof DOMException && error.name === 'AbortError') {
-        return;
-      }
-
-      const existingPreview = get().previews[style.id];
-      state.setPreviewState(style.id, {
-        status: 'error',
-        data: existingPreview?.data,
-        orientation: existingPreview?.orientation ?? targetOrientation,
-        error: error instanceof Error ? error.message : 'Preview failed',
-      });
-
-      set({
-        pendingStyleId: null,
-        stylePreviewStatus: 'error',
-        stylePreviewMessage: STAGE_MESSAGES.error,
-        stylePreviewError: error instanceof Error ? error.message : 'Preview failed',
-        stylePreviewStartAt: null,
-      });
-      emitStepOneEvent({ type: 'preview', styleId: style.id, status: 'error' });
-      logPreviewStage({
-        styleId: style.id,
-        stage: 'error',
-        elapsedMs: Date.now() - startTime,
-        timestamp: Date.now(),
-        message: error instanceof Error ? error.message : String(error),
-      });
-
-      if (error instanceof Error && (error as Error & { code?: string }).code === 'ENTITLEMENT_EXCEEDED') {
-        const remaining = (error as Error & { remainingTokens?: number | null }).remainingTokens ?? 0;
-        get().updateEntitlementsFromResponse({ remainingTokens: remaining });
-      }
-
-      window.setTimeout(() => {
-        if (get().stylePreviewStatus === 'error') {
-          set({ stylePreviewStatus: 'idle', stylePreviewMessage: null });
-        }
-      }, 1600);
-
-      if (get().orientation === targetOrientation) {
-        set({ orientationPreviewPending: false });
-      }
-    }
-  },
-  resetPreviews: () =>
-    set((state) => ({
-      previews: Object.fromEntries(
-        state.styles.map((style) => [style.id, { status: 'idle' as const }])
-      ),
-      previewStatus: 'idle',
-      stylePreviewCache: {},
-      stylePreviewCacheOrder: [],
-      pendingStyleId: null,
-      stylePreviewStatus: 'idle',
-      stylePreviewMessage: null,
-      stylePreviewError: null,
-      stylePreviewStartAt: null,
-      orientationPreviewPending: false,
-    })),
+  ...createPreviewSlice(mockStyles)(set, get, api),
+  ...createEntitlementSlice(set, get, api),
+  ...createSessionSlice(set, get, api),
   setSmartCropForOrientation: (orientation, result) =>
     set((state) => ({
       smartCrops: {
@@ -951,188 +408,6 @@ export const useFounderStore = create<FounderState>((set, get) => ({
       },
     })),
   clearSmartCrops: () => set({ smartCrops: {} }),
-  setAnonToken: (token) => {
-    persistAnonToken(token);
-    set({ anonToken: token });
-  },
-  setShowTokenToast: (show) => set({ showTokenToast: show }),
-  setShowQuotaModal: (show) => set({ showQuotaModal: show }),
-  hydrateEntitlements: async () => {
-    const state = get();
-    if (state.entitlements.status === 'loading') {
-      return;
-    }
-
-    set((current) => ({
-      entitlements: {
-        ...current.entitlements,
-        status: 'loading',
-        error: null
-      }
-    }));
-
-    try {
-      if (state.sessionUser) {
-        const supabaseClient = await getSupabaseClient();
-        if (!supabaseClient) {
-          throw new Error('Supabase client unavailable');
-        }
-        const snapshot = await fetchAuthenticatedEntitlements();
-        if (!snapshot) {
-          set((current) => ({
-            entitlements: {
-              ...current.entitlements,
-              status: 'ready',
-              tier: 'free',
-              quota: 10,
-              remainingTokens: 10,
-              requiresWatermark: true,
-              priority: 'normal',
-              renewAt: null,
-              hardLimit: 10,
-              softRemaining: null,
-              lastSyncedAt: Date.now(),
-              error: null
-            }
-          }));
-        } else {
-          set((current) => ({
-            entitlements: {
-              status: 'ready',
-              tier: snapshot.tier,
-              quota: snapshot.quota,
-              remainingTokens: snapshot.remainingTokens,
-              requiresWatermark: snapshot.requiresWatermark,
-              priority: snapshot.priority,
-              renewAt: snapshot.renewAt,
-              hardLimit: snapshot.quota,
-              softRemaining: null,
-              dismissedPrompt: current.entitlements.dismissedPrompt,
-              lastSyncedAt: Date.now(),
-              error: null
-            }
-          }));
-        }
-      } else {
-        const minted = await mintAnonymousToken({
-          token: state.anonToken ?? undefined,
-          dismissedPrompt: state.accountPromptDismissed
-        });
-
-        sessionStorage.setItem('account_prompt_dismissed', minted.dismissed_prompt ? 'true' : 'false');
-        persistAnonToken(minted.anon_token);
-
-        persistAnonToken(minted.anon_token);
-        set({
-          anonToken: minted.anon_token,
-          accountPromptDismissed: minted.dismissed_prompt,
-          entitlements: {
-            status: 'ready',
-            tier: 'anonymous',
-            quota: minted.hard_limit,
-            remainingTokens: Math.min(minted.hard_remaining, minted.free_tokens_remaining),
-            requiresWatermark: true,
-            priority: 'normal',
-            renewAt: null,
-            hardLimit: minted.hard_limit,
-            softRemaining: minted.free_tokens_remaining,
-            dismissedPrompt: minted.dismissed_prompt,
-            lastSyncedAt: Date.now(),
-            error: null
-          }
-        });
-      }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to load entitlements';
-      set((current) => ({
-        entitlements: {
-          ...current.entitlements,
-          status: 'error',
-          error: message,
-          lastSyncedAt: Date.now()
-        }
-      }));
-    }
-  },
-  reconcileEntitlements: async () => {
-    const state = get();
-    if (state.sessionUser) {
-      return;
-    }
-
-    const anonToken = state.anonToken ?? loadAnonTokenFromStorage();
-    if (!anonToken) {
-      return;
-    }
-
-    try {
-      const minted = await mintAnonymousToken({
-        token: anonToken,
-        dismissedPrompt: state.accountPromptDismissed,
-      });
-
-      persistAnonToken(minted.anon_token);
-
-      set({
-        anonToken: minted.anon_token,
-        accountPromptDismissed: minted.dismissed_prompt,
-        entitlements: {
-          status: 'ready',
-          tier: 'anonymous',
-          quota: minted.hard_limit,
-          remainingTokens: Math.min(minted.hard_remaining, minted.free_tokens_remaining),
-          requiresWatermark: true,
-          priority: 'normal',
-          renewAt: null,
-          hardLimit: minted.hard_limit,
-          softRemaining: minted.free_tokens_remaining,
-          dismissedPrompt: minted.dismissed_prompt,
-          lastSyncedAt: Date.now(),
-          error: null,
-        },
-      });
-    } catch (error) {
-      console.warn('[FounderStore] Failed to reconcile anonymous entitlements', error);
-    }
-  },
-  updateEntitlementsFromResponse: ({ remainingTokens, requiresWatermark, tier, priority, softRemaining }) => {
-    set((current) => {
-      const next: EntitlementState = {
-        ...current.entitlements,
-        status: 'ready',
-        lastSyncedAt: Date.now(),
-        error: null
-      };
-
-      if (typeof remainingTokens === 'number') {
-        next.remainingTokens = remainingTokens;
-      }
-
-      if (typeof softRemaining === 'number') {
-        next.softRemaining = softRemaining;
-      }
-
-      if (typeof requiresWatermark === 'boolean') {
-        next.requiresWatermark = requiresWatermark;
-      }
-
-      if (tier) {
-        const mappedTier = tierFromServer(tier, next.tier === 'dev');
-        next.tier = mappedTier;
-        next.priority = priorityFromTier(mappedTier);
-        next.requiresWatermark = requiresWatermark ?? requiresWatermarkFromTier(mappedTier);
-      }
-
-      if (priority) {
-        const normalized = priority.toLowerCase();
-        if (normalized === 'normal' || normalized === 'priority' || normalized === 'pro') {
-          next.priority = normalized as EntitlementPriority;
-        }
-      }
-
-      return { entitlements: next };
-    });
-  },
   setHoveredStyle: (id) => set({ hoveredStyleId: id ?? null }),
   setPreselectedStyle: (id) =>
     set((state) => {
@@ -1172,139 +447,6 @@ export const useFounderStore = create<FounderState>((set, get) => ({
 
       return next;
     }),
-  generatePreviews: async (ids, options = {}) => {
-    const store = get();
-    const state = get();
-    const targetOrientation = options.orientationOverride ?? state.orientation;
-
-    if (state.previewGenerationPromise) {
-      console.warn('[generatePreviews] In-flight request detected, reusing existing promise');
-      return state.previewGenerationPromise;
-    }
-
-    let targetStyles: StyleOption[];
-    if (ids && ids.length > 0) {
-      targetStyles = store.styles.filter((style) => ids.includes(style.id));
-    } else {
-      const prioritized: StyleOption[] = [];
-      if (state.selectedStyleId) {
-        const selected = store.styles.find((style) => style.id === state.selectedStyleId);
-        if (selected) {
-          prioritized.push(selected);
-        }
-      }
-
-      for (const style of store.styles) {
-        if (prioritized.length >= 3) break;
-        if (prioritized.some((item) => item.id === style.id)) continue;
-        prioritized.push(style);
-      }
-
-      targetStyles = prioritized;
-    }
-
-    if (!targetStyles.length) return;
-
-    const shouldGenerate = targetStyles.some((style) => {
-      if (options.force) return true;
-      const previewState = state.previews[style.id];
-      return previewState?.status !== 'ready';
-    });
-
-    if (!shouldGenerate) {
-      return;
-    }
-
-    let generatedAny = false;
-
-    const generationRun = (async () => {
-      set({ previewStatus: 'generating' });
-
-      await Promise.all(
-        targetStyles.map(async (style) => {
-          const stateBefore = get();
-
-          if (!options.force && stateBefore.previews[style.id]?.status === 'ready') {
-            return;
-          }
-
-      if (!stateBefore.canGenerateMore()) {
-        const existing = stateBefore.previews[style.id];
-        store.setPreviewState(style.id, {
-          status: 'idle',
-          data: existing?.data,
-          orientation: existing?.orientation,
-          error: existing?.error,
-        });
-        return;
-      }
-
-      store.setPreviewState(style.id, {
-        status: 'loading',
-        data: stateBefore.previews[style.id]?.data,
-        orientation: stateBefore.previews[style.id]?.orientation,
-        error: stateBefore.previews[style.id]?.error,
-      });
-
-      try {
-        const baseImage =
-          stateBefore.croppedImage ??
-          stateBefore.smartCrops[targetOrientation]?.dataUrl ??
-          stateBefore.uploadedImage ??
-          stateBefore.originalImage ??
-          undefined;
-
-            if (!baseImage) {
-              const previous = get().previews[style.id];
-              store.setPreviewState(style.id, {
-                status: 'idle',
-                data: previous?.data,
-                orientation: previous?.orientation,
-                error: previous?.error,
-              });
-              return;
-            }
-
-        const result = await fetchPreviewForStyle(style, baseImage);
-        store.setPreviewState(style.id, {
-          status: 'ready',
-          data: result,
-          orientation: targetOrientation,
-        });
-        generatedAny = true;
-        store.incrementGenerationCount();
-          } catch (error) {
-            const previous = get().previews[style.id];
-            store.setPreviewState(style.id, {
-              status: 'error',
-              data: previous?.data,
-              orientation: previous?.orientation,
-              error: error instanceof Error ? error.message : 'Unknown error',
-            });
-          }
-        })
-      );
-
-      set((current) => {
-        const nextState: Partial<FounderState> = {
-          previewStatus: 'ready',
-        };
-        if (generatedAny && !current.firstPreviewCompleted) {
-          nextState.firstPreviewCompleted = true;
-          nextState.celebrationAt = Date.now();
-        }
-        return nextState;
-      });
-    })();
-
-    set({ previewGenerationPromise: generationRun });
-
-    try {
-      await generationRun;
-    } finally {
-      set({ previewGenerationPromise: null });
-    }
-  },
   setLivingCanvasModalOpen: (open) => set({ livingCanvasModalOpen: open }),
   setUploadedImage: (dataUrl) =>
     set({
@@ -1418,114 +560,6 @@ export const useFounderStore = create<FounderState>((set, get) => ({
     return styles.find((style) => style.id === selectedStyleId);
   },
   livingCanvasEnabled: () => get().enhancements.find((item) => item.id === 'living-canvas')?.enabled ?? false,
-  incrementGenerationCount: () => {
-    const state = get();
-    const newCount = state.generationCount + 1;
-    sessionStorage.setItem('generation_count', newCount.toString());
-
-    const shouldPrompt =
-      state.entitlements.tier === 'anonymous' &&
-      typeof state.entitlements.softRemaining === 'number' &&
-      state.entitlements.softRemaining <= 0 &&
-      !state.accountPromptDismissed &&
-      !state.accountPromptShown;
-
-    set({
-      generationCount: newCount,
-      accountPromptShown: shouldPrompt ? true : state.accountPromptShown,
-      accountPromptTriggerAt: shouldPrompt ? Date.now() : state.accountPromptTriggerAt,
-    });
-  },
-  setSession: (user, accessToken) => {
-    const current = get();
-    const currentUserId = current.sessionUser?.id ?? null;
-    const nextUserId = user?.id ?? null;
-    const tokenChanged = current.accessToken !== accessToken;
-
-    if (current.sessionHydrated && currentUserId === nextUserId && !tokenChanged) {
-      return;
-    }
-
-    set((state) => ({
-      sessionHydrated: true,
-      sessionUser: user,
-      accessToken: accessToken ?? null,
-      isAuthenticated: Boolean(user),
-      accountPromptShown: user ? false : state.accountPromptShown,
-      accountPromptTriggerAt: user ? null : state.accountPromptTriggerAt,
-      accountPromptDismissed: user ? false : state.accountPromptDismissed,
-      anonToken: state.anonToken ?? loadAnonTokenFromStorage(),
-    }));
-
-    void get().hydrateEntitlements();
-  },
-  signOut: async () => {
-    const supabaseClient = await getSupabaseClient();
-    if (supabaseClient) {
-      await supabaseClient.auth.signOut();
-    }
-    get().setSession(null, null);
-  },
-  setAccountPromptShown: (shown) =>
-    set({
-      accountPromptShown: shown,
-      accountPromptTriggerAt: shown ? Date.now() : null,
-    }),
-  dismissAccountPrompt: () => {
-    sessionStorage.setItem('account_prompt_dismissed', 'true');
-    set({ accountPromptDismissed: true, accountPromptShown: false, accountPromptTriggerAt: null });
-
-    const token = get().anonToken;
-    if (token) {
-      void mintAnonymousToken({ token, dismissedPrompt: true }).then((response) => {
-        persistAnonToken(response.anon_token);
-        set((current) => ({
-          anonToken: response.anon_token,
-          entitlements: {
-            ...current.entitlements,
-            dismissedPrompt: response.dismissed_prompt,
-            softRemaining: response.free_tokens_remaining,
-            hardLimit: response.hard_limit,
-            quota: response.hard_limit,
-            remainingTokens: Math.min(response.hard_remaining, response.free_tokens_remaining)
-          }
-        }));
-      }).catch(() => {
-        // silent fail - local dismissal already applied
-      });
-    }
-  },
-  shouldShowAccountPrompt: () => {
-    const { entitlements, accountPromptShown, accountPromptDismissed } = get();
-    const softRemaining = entitlements.softRemaining;
-    const shouldPrompt =
-      entitlements.tier === 'anonymous' &&
-      typeof softRemaining === 'number' &&
-      softRemaining <= 0;
-
-    return shouldPrompt && !accountPromptShown && !accountPromptDismissed;
-  },
-  canGenerateMore: () => {
-    const { entitlements } = get();
-
-    if (entitlements.status !== 'ready') {
-      return true;
-    }
-
-    if (entitlements.remainingTokens == null) {
-      return true;
-    }
-
-    return entitlements.remainingTokens > 0;
-  },
-  getGenerationLimit: () => {
-    const { entitlements } = get();
-    if (entitlements.quota == null) {
-      return Infinity;
-    }
-
-    return entitlements.quota;
-  },
   shouldAutoGeneratePreviews: () => {
     return ENABLE_AUTO_PREVIEWS;
   },

@@ -1,174 +1,109 @@
-# Wondertone World-Class Hardening Plan
+# Wondertone Studio Hardening Plan
 
-## Overview
+## 0. Context & Guardrails
+- Preserve the four-step configurator contract (`useProductFlow`, `Product`, `ProductStepsManager`) and StepOne telemetry stack (StepOneExperience provider, SmartProgressIndicator, contextual help).
+- `usePreviewGeneration` remains the single API entry to the Supabase edge function; orientation changes must continue to invalidate caches through `useProductFlow`.
+- Style landing pages must keep parity; style recommendation hooks and social momentum widgets rely on StepOneExperience state.
+- Existing bundle ceiling: `dist/assets/index-CJh0zBXk.js` ≈ 567 KB. Refactor must not regress performance.
+- Mandatory checks post-change: `npm run lint`, `npm run build`, `npm run build:analyze`, `npm run deps:check`.
 
-This document captures the end-to-end roadmap for taking Wondertone from “leaning” to **world-class**. Each initiative is prioritized by security impact, customer risk, and long-term maintainability. For every task you’ll find:
+## 1. Current-State Observations
+### 1.1 Global store (`src/store/useFounderStore.ts`)
+- 1 532 lines, combining:
+  - **Session & Entitlements**: Supabase session wiring, anonymous token minting, quota tracking, account prompts.
+  - **Media Pipeline**: Upload state, cropping outputs, orientation state, smart crops.
+  - **Preview Orchestration**: Cache management, polling, telemetry, token deductions, toast/modals.
+  - **UI Flags & Telemetry**: Launchpad expansion, modals, celebration states, StepOne event emission.
+- `startStylePreview` handles entitlements, cache lookup, fetch orchestration, analytics, and cache mutation in-line; concurrency relies on ad-hoc flags instead of request cancellation.
 
-- **Risk** — What breaks if we ignore it.
-- **Implementation Plan** — Concrete steps, owners, and dependencies.
-- **Signals of Success** — How we know the fix sticks.
-- **Notes & Open Questions** — Anything we still need to clarify before shipping.
+### 1.2 Studio configurator (`src/sections/StudioConfigurator.tsx`)
+- 890 lines with 20+ store selectors and 10+ `useState` hooks.
+- Responsible for:
+  - Style list rendering, selection logic, and disabled states.
+  - Preview canvas orchestration (overlay, orientation mismatch messaging).
+  - Gallery save flow, premium download gating, toast handling.
+  - Mobile drawer, Launchpad re-open, upsell banners, StepOne telemetry.
+- Dense handler logic mixes UI orchestration with business rules (entitlement hydration, preview state mutation, Supabase download calls).
 
-## Prioritized Initiatives
+### 1.3 Preview pipeline
+- `startFounderPreviewGeneration` → `generateAndWatermarkPreview` → `generateStylePreview`, relying on manual polling (`previewPolling.ts`) and store-driven state updates.
+- No AbortController across async stack; repeated clicks create overlapping fetches guarded only by `pendingStyleId`.
+- React Query dependency exists but unused; no centralized query client/provider.
 
-| Order | Initiative | Core Theme | Primary Owner |
-| ----- | ---------- | ---------- | ------------- |
-| 1 | Lock down gallery image ingestion | Security | Edge / Backend |
-| 2 | Harden preview generation inputs | Security | Edge / Backend |
-| 3 | Normalize gallery persistence | Data integrity | Edge / Backend |
-| 4 | Streamline gallery delivery pipeline | Performance / Cost | Edge + Frontend |
-| 5 | Modularize state & studio flows | Architecture | Frontend |
-| 6 | Establish automated test coverage | Quality | Platform |
-| 7 | Add CI guardrails (bundle + lint/test gates) | DX | Platform |
-| 8 | Trim dependencies & centralize fetch headers | Maintainability | Frontend |
-| 9 | Document architectural guardrails | Culture | Platform |
+## 2. Target Architecture
+### 2.1 Store modularization
+- Create `src/store/founder/` with composable slices:
+  1. **sessionSlice** – session user, Supabase access token, hydration, sign-out controls.
+  2. **entitlementSlice** – anonymous token persistence, entitlements state machine, prompts, token toasts.
+  3. **mediaSlice** – upload lifecycle, crops, orientation state, smart crop cache, launchpad layout flags.
+  4. **previewSlice** – preview records, cache, pending style state, toast visibility, React Query integration (mutation results).
+  5. **uiSlice** – modal toggles, celebration cues, hovered/preselected style metadata.
+- Shared helper types/constants extracted to `src/store/founder/types.ts` and `constants.ts`.
+- Expose `createFounderStore` that composes slices while preserving the existing `useFounderStore` API to minimize breakage.
+- Maintain selector re-exports in `src/store/selectors.ts` with backwards-compatible signatures.
 
----
+### 2.2 React Query orchestration
+- Introduce a `QueryClientProvider` at app root:
+  ```tsx
+  import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+  const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: 0, retry: 1 } } });
+  ```
+- Build service layer `src/features/preview/previewQueries.ts`:
+  - `useStartPreviewMutation` – wraps Supabase edge function call, accepts `AbortController`.
+  - `usePreviewStatusQuery` – polling query for long-running requests, auto-cancel on success/error.
+  - Normalizes payloads into `PreviewResult` DTOs consumed by preview slice.
+- Encapsulate side-effects (telemetry, token decrement) within the slice via mutation lifecycle callbacks to keep UI components minimal.
+- Reuse React Query cache keys keyed by `{photoId, styleId, orientation}` to dedupe concurrent requests and share results across components.
 
-## 1. Lock Down Gallery Image Ingestion
+### 2.3 Studio configurator decomposition
+- Split into domain components under `src/sections/studio/`:
+  1. `StudioLayout` – top-level container handling Suspense boundary, notices, layout.
+  2. `StyleSidebar` – style list, generation limits, upgrade CTA; subscribes to a memoized selector or hook.
+  3. `CanvasPreviewPanel` – preview canvas, overlays, orientation messaging; consumes preview slice hook and React Query results.
+  4. `PreviewActionBar` – gallery save, download, toast trigger logic (using dedicated hooks).
+  5. `MobileStyleDrawer` remains separate but receives slim props & callbacks.
+- Extract side-effect heavy handlers into hooks (`usePreviewActions`, `useGalleryActions`) to keep components declarative.
+- Reuse StepOne telemetry utilities within hooks to ensure event contracts remain unchanged.
 
-- **Risk**
-  - Current `save-to-gallery` accepts any `imageUrl`, enabling SSRF against internal services or storing arbitrary payloads.
-  - If exploited, attackers can exfiltrate metadata or poison storage/CDN.
-- **Implementation Plan**
-  1. Update `save-to-gallery` to require a signed Supabase storage path (`bucket/object`), rejecting absolute URLs.
-  2. Verify the supplied path belongs to Wondertone’s public bucket using Supabase SDK before insertion.
-  3. Add unit tests + integration test with Supabase CLI to cover valid/invalid submissions.
-  4. Create migration/backfill script to normalize existing rows (drop non-Wondertone URLs).
-- **Signals of Success**
-  - Supabase audit logs show no external-origin URLs stored in `user_gallery`.
-  - Integration tests run in CI and fail on malicious payloads.
-- **Notes & Open Questions**
-  - Confirm whether legacy mobile apps rely on absolute URLs. If yes, coordinate migration plan.
-  - Decide if we want to rotate gallery tokens post-cleanup.
+## 3. Migration Phases
+| Phase | Objectives | Key Tasks | Verification |
+| --- | --- | --- | --- |
+| **0. Baseline & Scaffolding** | Preserve behavior while preparing structure | Snapshot current selectors/usages; add unit typings; introduce `src/store/founder/` directory with shared types (no behavior change). **Status: ✅ Completed** | `npm run lint`, smoke upload → preview flow |
+| **1. React Query Infrastructure** | Enable provider without refactoring store yet | Add `QueryClientProvider` in `src/main.tsx`; create preview query utilities returning typed results; write thin wrapper hook `usePreviewGenerationService` consumed by the existing store but gated behind feature flag. **Status: ✅ Completed (flag toggled via VITE_ENABLE_PREVIEW_QUERY)** | Build, verify preview works when flag off/on |
+| **2. Preview Slice Extraction** | Migrate preview logic from monolith | Move cache, pending state, and `startStylePreview` into a dedicated slice using React Query mutation; wire AbortController; update `useFounderStore` to delegate to slice; ensure StepOne events & telem continue. **Status: ✅ Completed** | Run required scripts, manual tests for concurrent preview clicks/orientation change |
+| **3. Session & Entitlements Slices** | Isolate auth/entitlement concerns | Extract session + entitlements logic into slices, refactor consumers (`AuthProvider`, `entitlementsApi`) to use new helpers; ensure anonymous token storage continues until security hardening project replaces it. | Lint/build, verify login/logout, quota depletion, anonymous mint |
+| **4. Media & UI Slices** | Finalize store modularization | Relocate upload/orientation + UI flags into slices; expose typed selectors; remove legacy helpers from root store. | Manual tests: upload, recrop, orientation change, prompts |
+| **5. Studio Component Decomposition** | Reduce component complexity | Incrementally extract `StyleSidebar` and `CanvasPreviewPanel`; replace direct store calls with memoized selectors/hooks; ensure existing props (e.g., `checkoutNotice`) continue to function. | Visual QA desktop/mobile, orientation/responsive checks |
+| **6. Cleanup & Documentation** | Remove legacy paths, solidify patterns | Delete unused functions, update docs, ensure `selectors.ts` references new slices; document store architecture in README/CLAUDE. | `npm run lint && npm run build && npm run build:analyze && npm run deps:check` |
 
-## 2. Harden Preview Generation Inputs
+## 4. React Query Integration Details
+- **Cancellation**: Each preview mutation instantiates an `AbortController`; `useEffect` cleanup or new mutations trigger `abort()` to prevent stale dispatches.
+- **Cache Invalidation**: On upload/orientation changes, preview slice issues `queryClient.invalidateQueries(['preview', imageHash])` to ensure stale previews regenerate.
+- **Reducer Interaction**: Mutation success updates store cache via action `previewSlice.onPreviewSuccess`, keeping Zustand the single source of truth for UI state while React Query manages network lifecycles.
+- **Error Handling**: Mutation `onError` surfaces entitlement errors, triggers toast/modal hooks, and logs via telemetry util to preserve analytics.
 
-- **Risk**
-  - `generate-style-preview` fetches arbitrary URLs supplied by the client.
-  - Attackers can leverage SSRF or force large file downloads, DoS-ing the edge.
-- **Implementation Plan**
-  1. Restrict preview inputs to Wondertone storage paths or vetted signed URLs.
-  2. Implement allowlist + private CIDR guard before fetch.
-  3. Enforce payload size limits (e.g., abort requests >15 MB).
-  4. Add structured logging and metrics for rejected requests.
-- **Signals of Success**
-  - Edge function rejects non-Wondertone origins with `4xx`.
-  - Resource usage on Supabase edge decreases during known scraping spikes.
-- **Notes**
-  - Coordinate with frontend to ensure uploads go through the blessed pipeline (no regression of legitimate flows).
+## 5. Risks & Mitigations
+- **Telemetry Drift**: Centralize StepOne event emission inside preview slice; write regression checklist to compare events before/after.
+- **Selector Breakage**: Maintain existing selector signatures; add unit (or runtime) assertions ensuring required keys exist after slice split.
+- **Concurrent Store Refactors**: Work behind feature flags (e.g., `ENABLE_PREVIEW_QUERY`) enabling gradual rollout.
+- **Bundle Regression**: Monitor `npm run build:analyze` after each phase; ensure new modules tree-shake (prefer named exports, avoid large static data duplication).
 
-## 3. Normalize Gallery Persistence
+## 6. Testing & QA
+- Automated: run mandatory scripts after each phase; add focused tests (if feasible) for preview hook once infrastructure exists.
+- Manual scenarios:
+  1. Anonymous user uploads photo → generates multiple styles quickly (verify throttling, cancellation, token decrement).
+  2. Orientation change mid-generation resets preview and recomputes orientation tip.
+  3. Premium user downloads HD version (ensures entitlements, React Query state sync).
+  4. Mobile drawer interactions and Launchpad re-open flows.
+- Phase 2 results: verified multi-click preview generation (cancellation preserves latest run), orientation flips restore pending flag/telemetry, and quota exhaustion still triggers `showQuotaModal`; StepOne preview events continue logging (`start`, staged updates, `complete`/`error`).
 
-- **Risk**
-  - `user_gallery` rows store full URLs (possibly data URIs) in both `watermarked_url` and `clean_url`.
-  - Bloat, inconsistent data, and easier attack surface.
-- **Implementation Plan**
-  1. Add migration that introduces `storage_path` (bucket/object) column.
-  2. Backfill existing rows → parse and store canonical path; drop raw URL columns after verification.
-  3. Update edge functions + frontend API helpers to read/write `storage_path` and construct URLs server-side.
-- **Signals of Success**
-  - Database size drops; columns normalized.
-  - API clients consume only derived URLs (no raw persisted strings).
-- **Notes**
-  - Ensure RLS policies still hold after schema change.
+## 7. Rollout & Communication
+- Keep commits phase-scoped for easier review.
+- Update `CLAUDE.md` or new `docs/state-architecture.md` with slice diagrams.
+- Coordinate with stakeholders before enabling React Query-backed preview globally.
 
-## 4. Streamline Gallery Delivery Pipeline
-
-- **Risk**
-  - Listing the gallery currently composites a watermark per item in real time, forcing dozens of storage fetches and ImageScript conversions.
-  - Directly impacts latency and edge costs as usage grows.
-- **Implementation Plan**
-  1. Decide on strategy: (a) pre-generate watermarked thumbnails on save, or (b) serve signed clean URLs to the client and watermark lazily on demand.
-  2. Update edge function to skip watermarking on list if thumbnails exist (or if client handles it).
-  3. Add caching headers to gallery responses.
-  4. Benchmark before/after to ensure speedup.
-- **Signals of Success**
-  - Gallery load time and Supabase storage egress drop measurably.
-  - Edge function CPU usage decreases.
-- **Notes**
-  - Align with product on acceptable watermark strength for thumbnails vs downloads.
-
-## 5. Modularize State & Studio Flows
-
-- **Risk**
-  - `useFounderStore` (1.5 K lines) and `StudioConfigurator` (870 lines) act as god modules; they inflate bundle size, complicate testing, and cause over-rendering.
-- **Implementation Plan**
-  1. Identify natural slices: upload/crop, preview generation, entitlements, checkout, gallery.
-  2. Move each slice to its own file using Zustand’s `create` + compose pattern; export typed selectors.
-  3. For the UI, split `StudioConfigurator`/`LaunchpadLayout` into smaller, single-responsibility components.
-  4. Introduce lazy loading (React.lazy/Suspense) for heavy, non-critical slices.
-- **Signals of Success**
-  - Main bundle shrinks below 450 KB gzip.
-  - Individual slice files drop below 300 lines.
-  - Component render profiling shows reduced re-renders (tracked via React DevTools).
-- **Notes**
-  - Prioritize profiling to ensure we don’t introduce regressions during refactor.
-
-## 6. Establish Automated Test Coverage
-
-- **Risk**
-  - No unit/integration tests; complex flows are brittle.
-- **Implementation Plan**
-  1. Adopt Vitest (or Jest) for unit tests; wire into `npm test`.
-  2. Start with critical slices: entitlements logic, preview orchestration, gallery reducers.
-  3. Use Supabase CLI to run edge-function integration tests locally.
-  4. Add coverage threshold and fail CI if it regresses.
-- **Signals of Success**
-  - CI runs tests on every PR.
-  - Coverage report for core modules exceeds 60% and trending upward.
-- **Notes**
-  - Document testing patterns to ease onboarding (mocking Supabase, Zustand store resets, etc.).
-
-## 7. Add CI Guardrails
-
-- **Risk**
-  - Without automated checks, bundle bloat and lint drift reappear.
-- **Implementation Plan**
-  1. Integrate a GitHub Action (or equivalent) that runs: lint, tests, `npm run build`, bundle-size check (e.g., `bundlesize` or custom script).
-  2. Define budgets: main bundle <= 500 KB gzip, lint/test must pass.
-  3. Block merges when thresholds fail.
-- **Signals of Success**
-  - PRs cannot merge without passing guardrails.
-  - Bundle size growth is caught early.
-- **Notes**
-  - Ensure secret management in CI is tight (read-only Supabase anon key only).
-
-## 8. Trim Dependencies & Centralize Headers
-
-- **Risk**
-  - Unused packages and repeated request header logic add drift and onboarding fatigue.
-- **Implementation Plan**
-  1. Run `npm run deps:check`, remove unused deps, adjust code if anything legitimate pops up.
-  2. Create `utils/supabaseRequest.ts` with a shared `buildFunctionRequest({ method, body, anonToken, accessToken })`.
-  3. Update gallery/entitlement/style preview APIs to consume the helper.
-- **Signals of Success**
-  - `depcheck` returns clean slate.
-  - API helper code shrinks; new functions automatically inherit best practices.
-- **Notes**
-  - Communicate removal timeline so authors relying on stale packages aren’t surprised.
-
-## 9. Document Architectural Guardrails
-
-- **Risk**
-  - Without explicit guidance, new contributors may reintroduce direct URL storage, bypass state slices, or drift from testing standards.
-- **Implementation Plan**
-  1. Create `docs/ARCHITECTURE-GUARDRAILS.md` summarizing storage path validation, store slicing patterns, testing requirements, CI gates, and performance budgets.
-  2. Reference the doc from `README.md` and onboarding materials.
-  3. Review quarterly to keep aligned with evolving product needs.
-- **Signals of Success**
-  - New PRs reference guardrails, reducing review churn.
-  - Onboarding time decreases because expectations are codified.
-- **Notes**
-  - Pair documentation rollout with lunch-and-learn / Loom to socialize the changes.
-
----
-
-## What “World-Class” Looks Like Once Complete
-
-- All edge functions reject malicious input by construction; security incidents move from “possible” to “unlikely.”
-- Bundle size and state complexity are predictable and constantly monitored.
-- Automated tests and CI gates ensure refactors land safely.
-- Engineers can contribute without memorizing tribal knowledge because guardrails are in writing.
-
-This plan should be revisited after each major milestone to confirm priorities and add any new risks uncovered along the journey.
+## 8. Definition of Done
+- `useFounderStore` reduced to thin composer; each domain slice under 250 lines with clear responsibilities.
+- `StudioConfigurator` < 300 lines, delegating UI/logic to subcomponents/hooks.
+- Preview generation managed by React Query with AbortController-based cancellation and no race-condition regressions.
+- Mandatory checks pass; StepOne telemetry events verified; preview, entitlements, and checkout flows smoke-tested on desktop & mobile.
