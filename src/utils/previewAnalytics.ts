@@ -1,4 +1,4 @@
-export type PreviewStage = 'start' | 'animating' | 'generating' | 'polling' | 'watermarking' | 'complete' | 'error';
+export type PreviewStage = 'start' | 'animating' | 'generating' | 'polling' | 'complete' | 'error';
 
 export interface PreviewMetricEvent {
   styleId: string;

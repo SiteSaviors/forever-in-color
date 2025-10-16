@@ -185,33 +185,20 @@ async function handleWebhookRequest(req: Request, url: URL, origin: string | nul
         const watermark = statusRow.watermark as boolean | null;
         const cacheAllowed = (statusRow.cache_allowed as boolean | null) ?? true;
 
-        if (cacheAllowed && imageDigest && styleId && styleVersion && aspectRatio && quality && typeof watermark === 'boolean') {
+        if (cacheAllowed && imageDigest && styleId && styleVersion && aspectRatio && quality) {
           const cacheKey = buildCacheKey({
             imageDigest,
             styleId,
             styleVersion,
             aspectRatio,
             quality,
-            watermark
+            watermark: false // Always false - watermarks applied on-demand
           });
 
           const storagePath = computeStoragePath(styleId, aspectRatio, quality, imageDigest);
-          let processedOutput = output;
 
-          if (watermark) {
-            try {
-              const { buffer, contentType } = await loadImageBuffer(output);
-              const watermarkedBuffer = await WatermarkService.createWatermarkedImage(buffer, statusRow.request_id ?? 'webhook');
-              processedOutput = bufferToDataUrl(watermarkedBuffer, contentType);
-            } catch (error) {
-              webhookLogger.warn('Failed to apply watermark during webhook processing', {
-                message: error instanceof Error ? error.message : String(error),
-                requestId: statusRow.request_id
-              });
-            }
-          }
-
-          const uploadResult = await storageClient.uploadFromUrl(processedOutput, storagePath, {}, watermark);
+          // OPUS PLAN: Store clean output only, no pre-watermarking
+          const uploadResult = await storageClient.uploadFromUrl(output, storagePath, {}, false);
           previewUrl = uploadResult.publicUrl;
 
           await cacheMetadataService.upsert({
@@ -221,7 +208,7 @@ async function handleWebhookRequest(req: Request, url: URL, origin: string | nul
             imageDigest,
             aspectRatio,
             quality,
-            watermark,
+            watermark: false, // Always false - watermarks applied on-demand
             storagePath: uploadResult.storagePath,
             previewUrl: uploadResult.publicUrl,
             ttlExpiresAt: new Date(Date.now() + ttlMs).toISOString(),
@@ -230,22 +217,15 @@ async function handleWebhookRequest(req: Request, url: URL, origin: string | nul
 
           memoryCache.set(cacheKey, uploadResult.publicUrl, ttlMs);
           cacheStatus = 'hit';
+
+          webhookLogger.info('Clean preview cached from webhook (watermark will be applied on-the-fly)', {
+            requestId: statusRow.request_id,
+            storagePath,
+            requiresWatermark: watermark
+          });
         } else {
-          if (typeof output === 'string' && watermark) {
-            try {
-              const { buffer, contentType } = await loadImageBuffer(output);
-              const watermarkedBuffer = await WatermarkService.createWatermarkedImage(buffer, statusRow.request_id ?? 'webhook');
-              previewUrl = bufferToDataUrl(watermarkedBuffer, contentType);
-            } catch (error) {
-              webhookLogger.warn('Failed to watermark webhook output (cache bypass)', {
-                message: error instanceof Error ? error.message : String(error),
-                requestId: statusRow.request_id
-              });
-              previewUrl = output;
-            }
-          } else {
-            previewUrl = typeof output === 'string' ? output : null;
-          }
+          // Cache bypass: return clean output (watermark will be applied on-the-fly)
+          previewUrl = typeof output === 'string' ? output : null;
           cacheStatus = 'bypass';
         }
       } catch (cacheError) {
@@ -543,9 +523,8 @@ serve(async (req) => {
         const tierLabel = entitlementContext?.tierLabel ?? existingLog.tier ?? undefined;
         const priority = entitlementContext?.priority ?? existingLog.priority ?? 'normal';
         const requiresWatermark = entitlementContext?.requiresWatermark ?? existingLog.requires_watermark ?? true;
-        const previewUrlForResponse = requiresWatermark
-          ? await ensureWatermarkedPreview(existingLog.preview_url, requestId, storageClient)
-          : existingLog.preview_url;
+        // OPUS PLAN: Return clean URL always, watermarking happens on-the-fly via separate endpoint
+        const previewUrlForResponse = existingLog.preview_url;
 
         logger.info('Returning cached idempotent preview result', {
           requestId,
@@ -829,19 +808,12 @@ serve(async (req) => {
             logger.warn('Failed to load cache metadata for memory hit', { error: error instanceof Error ? error.message : String(error), cacheKey });
           }
         }
-        const hydratedUrl = effectiveWatermark
-          ? await ensureWatermarkedPreview(
-              cachedFromMemory,
-              requestId,
-              metadataEntry?.storage_path ? storageClient : undefined,
-              metadataEntry?.storage_path ?? undefined
-            )
-          : cachedFromMemory;
+        // OPUS PLAN: Return clean URL, client will request watermarked version via ?context=download if needed
         if (cacheKey) {
           const ttlForEntry = metadataEntry?.ttl_expires_at ? Math.max(Date.parse(metadataEntry.ttl_expires_at) - Date.now(), 1000) : ttlMs;
-          memoryCache.set(cacheKey, hydratedUrl, ttlForEntry);
+          memoryCache.set(cacheKey, cachedFromMemory, ttlForEntry);
         }
-        return await recordPreviewSuccess(hydratedUrl, cacheStatus);
+        return await recordPreviewSuccess(cachedFromMemory, cacheStatus);
       }
 
       // Check storage cache SECOND
@@ -862,13 +834,11 @@ serve(async (req) => {
           cacheMetadataService.recordHit(cacheKey).catch((error) => {
             logger.warn('Failed to record cache hit', { error: error?.message ?? 'unknown', cacheKey });
           });
-          const hydratedUrl = effectiveWatermark
-            ? await ensureWatermarkedPreview(metadataEntry.preview_url, requestId, storageClient, metadataEntry.storage_path ?? undefined)
-            : metadataEntry.preview_url;
+          // OPUS PLAN: Return clean URL, client will request watermarked version via ?context=download if needed
           if (cacheKey) {
-            memoryCache.set(cacheKey, hydratedUrl, ttlMs);
+            memoryCache.set(cacheKey, metadataEntry.preview_url, ttlMs);
           }
-          return await recordPreviewSuccess(hydratedUrl, cacheStatus);
+          return await recordPreviewSuccess(metadataEntry.preview_url, cacheStatus);
         } else if (metadataEntry && metadataEntry.preview_url) {
           logger.info('Cache entry expired, regenerating', { cacheKey });
         }
@@ -893,85 +863,42 @@ serve(async (req) => {
     });
 
     const persistGeneratedPreview = async (rawOutput: string): Promise<string> => {
-      let processedOutput = rawOutput;
+      // OPUS PLAN: Store ONLY clean images, apply watermarks on-the-fly during serving
+      // No pre-watermarking before storage
 
-      if (effectiveWatermark) {
-        try {
-          const { buffer, contentType } = await loadImageBuffer(rawOutput);
-          const watermarkedBuffer = await WatermarkService.createWatermarkedImage(buffer, requestId, true);
-          processedOutput = bufferToDataUrl(watermarkedBuffer, contentType);
-        } catch (error) {
-          logger.warn('[watermark] Failed to apply server watermark, falling back to raw output', {
-            requestId,
-            message: error instanceof Error ? error.message : String(error)
-          });
-        }
-      }
-
-      let finalPreviewUrl = processedOutput;
+      let finalPreviewUrl = rawOutput;
 
       if (cacheAllowedForRequest && cacheKey) {
         try {
           const storagePath = computeStoragePath(styleMetadata.styleId, normalizedAspectRatio, normalizedQuality, imageDigest);
           const ttlExpiresAt = new Date(Date.now() + ttlMs).toISOString();
 
-          if (effectiveWatermark) {
-            // For free/anonymous users: Upload BOTH versions
-            // 1. Watermarked version to public bucket (for display)
-            const watermarkedUpload = await storageClient.uploadFromUrl(processedOutput, storagePath, {}, true);
-            finalPreviewUrl = watermarkedUpload.publicUrl;
+          // Single-source storage: Upload clean version only
+          // Watermarking will be applied on-the-fly based on user entitlements
+          const uploadResult = await storageClient.uploadFromUrl(rawOutput, storagePath, {}, false);
+          finalPreviewUrl = uploadResult.publicUrl;
 
-            // 2. Clean version to premium bucket (for premium downloads)
-            await storageClient.uploadFromUrl(rawOutput, storagePath, {}, false);
+          await cacheMetadataService.upsert({
+            cacheKey,
+            styleId: styleMetadata.styleId,
+            styleVersion: styleMetadata.styleVersion,
+            imageDigest,
+            aspectRatio: normalizedAspectRatio,
+            quality: normalizedQuality,
+            watermark: false, // Always false - watermarks applied on-demand
+            storagePath: uploadResult.storagePath,
+            previewUrl: uploadResult.publicUrl,
+            ttlExpiresAt,
+            sourceRequestId: requestId
+          });
 
-            logger.info('Dual-upload complete: watermarked (public) + clean (premium)', {
-              requestId,
-              watermarkedUrl: watermarkedUpload.publicUrl,
-              storagePath
-            });
+          memoryCache.set(cacheKey, uploadResult.publicUrl, ttlMs);
 
-            await cacheMetadataService.upsert({
-              cacheKey,
-              styleId: styleMetadata.styleId,
-              styleVersion: styleMetadata.styleVersion,
-              imageDigest,
-              aspectRatio: normalizedAspectRatio,
-              quality: normalizedQuality,
-              watermark: effectiveWatermark,
-              storagePath: watermarkedUpload.storagePath,
-              previewUrl: watermarkedUpload.publicUrl,
-              ttlExpiresAt,
-              sourceRequestId: requestId
-            });
-
-            memoryCache.set(cacheKey, watermarkedUpload.publicUrl, ttlMs);
-          } else {
-            // For premium users: Upload clean version only to premium bucket
-            const uploadResult = await storageClient.uploadFromUrl(rawOutput, storagePath, {}, false);
-            finalPreviewUrl = uploadResult.publicUrl;
-
-            await cacheMetadataService.upsert({
-              cacheKey,
-              styleId: styleMetadata.styleId,
-              styleVersion: styleMetadata.styleVersion,
-              imageDigest,
-              aspectRatio: normalizedAspectRatio,
-              quality: normalizedQuality,
-              watermark: effectiveWatermark,
-              storagePath: uploadResult.storagePath,
-              previewUrl: uploadResult.publicUrl,
-              ttlExpiresAt,
-              sourceRequestId: requestId
-            });
-
-            memoryCache.set(cacheKey, uploadResult.publicUrl, ttlMs);
-
-            logger.info('Premium upload complete: clean version only', {
-              requestId,
-              bucket: 'premium',
-              storagePath
-            });
-          }
+          logger.info('Clean preview cached (watermark will be applied on-the-fly)', {
+            requestId,
+            storagePath,
+            requiresWatermark: effectiveWatermark
+          });
 
           cacheStatus = 'hit';
         } catch (error) {
@@ -1218,32 +1145,6 @@ const extractStoragePath = (sourceUrl: string): string | null => {
   }
 };
 
-const ensureWatermarkedPreview = async (
-  sourceUrl: string,
-  sessionId: string,
-  storageClient?: PreviewStorageClient,
-  storagePath?: string
-): Promise<string> => {
-  try {
-    const { buffer, contentType } = await loadImageBuffer(sourceUrl);
-    const watermarkedBuffer = await WatermarkService.createWatermarkedImage(buffer, sessionId, true);
-
-    if (storageClient) {
-      const targetPath = storagePath ?? extractStoragePath(sourceUrl);
-      if (targetPath) {
-        const uploadResult = await storageClient.uploadFromBuffer(watermarkedBuffer, targetPath, {
-          contentType
-        });
-        return uploadResult.publicUrl;
-      }
-    }
-
-    return bufferToDataUrl(watermarkedBuffer, contentType);
-  } catch (error) {
-    console.warn('[watermark] Failed to enforce watermark on cached preview', {
-      sessionId,
-      message: error instanceof Error ? error.message : String(error)
-    });
-    return sourceUrl;
-  }
-};
+// LEGACY FUNCTION REMOVED: ensureWatermarkedPreview
+// OPUS PLAN: Watermarking now happens on-the-fly via separate download/serve endpoint
+// All previews are stored clean, watermarks applied on-demand based on ?context=download param

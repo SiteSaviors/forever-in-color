@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { clsx } from 'clsx';
 
-const STATUS_ORDER = ['animating', 'generating', 'polling', 'watermarking', 'ready', 'error'] as const;
+const STATUS_ORDER = ['animating', 'generating', 'polling', 'ready', 'error'] as const;
 
 type StatusKey = typeof STATUS_ORDER[number];
 
@@ -23,10 +23,6 @@ const STATUS_COPY: Record<StatusKey, StatusInfo> = {
     label: 'Layering textures…',
     sublabel: 'Fine-tuning lighting, palette, and signature flourishes',
   },
-  watermarking: {
-    label: 'Applying finishing varnish…',
-    sublabel: 'Protecting your preview with a subtle Wondertone mark',
-  },
   ready: {
     label: 'Preview ready',
     sublabel: 'Take a look inside the Wondertone atelier',
@@ -37,7 +33,7 @@ const STATUS_COPY: Record<StatusKey, StatusInfo> = {
   },
 };
 
-const ACTIVE_STATUS_SEQUENCE: StatusKey[] = ['animating', 'generating', 'polling', 'watermarking'];
+const ACTIVE_STATUS_SEQUENCE: StatusKey[] = ['animating', 'generating', 'polling'];
 
 const STUDIO_PHRASES = [
   'Spinning up studio engines',
@@ -60,8 +56,7 @@ const PROGRESS_MILESTONES = [0, 0.1, 0.25, 0.4, 0.6, 0.75, 0.9, 0.95, 1];
 const STAGE_PROGRESS_FLOOR: Partial<Record<StatusKey, number>> = {
   animating: 0.1,
   generating: 0.25,
-  polling: 0.6,
-  watermarking: 0.9,
+  polling: 0.75,
   ready: 1,
   error: 1,
 };
@@ -222,7 +217,7 @@ const StyleForgeOverlay = ({ status, styleName, message, isError, errorMessage }
 
         <div className="mt-8 flex flex-col gap-4">
           <div className="flex items-center justify-between text-xs text-white/60">
-            {STATUS_ORDER.slice(0, 4).map((key, idx) => (
+            {STATUS_ORDER.slice(0, 3).map((key, idx) => (
               <div key={key} className="flex-1">
                 <div className="flex items-center gap-2">
                   <span

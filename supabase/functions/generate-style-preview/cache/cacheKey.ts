@@ -1,6 +1,6 @@
 const textEncoder = new TextEncoder();
 
-export const CACHE_KEY_VERSION = 'v2';
+export const CACHE_KEY_VERSION = 'v3'; // Incremented: removed watermark from cache key
 
 export interface CacheKeyParts {
   imageDigest: string;
@@ -8,7 +8,7 @@ export interface CacheKeyParts {
   styleVersion: string;
   aspectRatio: string;
   quality: string;
-  watermark: boolean;
+  watermark?: boolean; // Optional for backwards compat, ignored in v3
 }
 
 const base64Url = (buffer: ArrayBuffer): string => {
@@ -33,13 +33,12 @@ export const buildCacheKey = (parts: CacheKeyParts): string => {
     styleId,
     styleVersion,
     aspectRatio,
-    quality,
-    watermark
+    quality
+    // watermark param removed - single clean cache entry per image
   } = parts;
 
   const normalizedAspectRatio = aspectRatio.toLowerCase();
   const normalizedQuality = quality.toLowerCase();
-  const watermarkFlag = watermark ? 'with-watermark' : 'no-watermark';
 
   return [
     'preview',
@@ -48,7 +47,6 @@ export const buildCacheKey = (parts: CacheKeyParts): string => {
     styleVersion,
     normalizedAspectRatio,
     normalizedQuality,
-    watermarkFlag,
     imageDigest
   ].join(':');
 };
@@ -89,28 +87,50 @@ export const createImageDigestWithMetadata = async (
 
 export const parseCacheKey = (cacheKey: string): CacheKeyParts | null => {
   const parts = cacheKey.split(':');
-  if (parts.length !== 8) {
-    return null;
+
+  // Support both v3 (7 parts, no watermark) and v2 (8 parts, with watermark) for migration
+  if (parts.length === 7) {
+    // v3 format: preview:v3:styleId:styleVersion:aspectRatio:quality:imageDigest
+    const [prefix, version, styleId, styleVersion, aspectRatio, quality, imageDigest] = parts;
+
+    if (prefix !== 'preview' || version !== CACHE_KEY_VERSION) {
+      return null;
+    }
+
+    const parsedStyleId = Number.parseInt(styleId, 10);
+    if (Number.isNaN(parsedStyleId)) {
+      return null;
+    }
+
+    return {
+      imageDigest,
+      styleId: parsedStyleId,
+      styleVersion,
+      aspectRatio,
+      quality
+    };
+  } else if (parts.length === 8) {
+    // v2 format (legacy): preview:v2:styleId:styleVersion:aspectRatio:quality:watermarkFlag:imageDigest
+    const [prefix, version, styleId, styleVersion, aspectRatio, quality, _watermarkFlag, imageDigest] = parts;
+
+    if (prefix !== 'preview' || version !== 'v2') {
+      return null;
+    }
+
+    const parsedStyleId = Number.parseInt(styleId, 10);
+    if (Number.isNaN(parsedStyleId)) {
+      return null;
+    }
+
+    return {
+      imageDigest,
+      styleId: parsedStyleId,
+      styleVersion,
+      aspectRatio,
+      quality
+      // watermark param ignored for v2 compatibility
+    };
   }
 
-  const [prefix, version, styleId, styleVersion, aspectRatio, quality, watermarkFlag, imageDigest] = parts;
-
-  if (prefix !== 'preview' || version !== CACHE_KEY_VERSION) {
-    return null;
-  }
-
-  const watermark = watermarkFlag === 'with-watermark';
-  const parsedStyleId = Number.parseInt(styleId, 10);
-  if (Number.isNaN(parsedStyleId)) {
-    return null;
-  }
-
-  return {
-    imageDigest,
-    styleId: parsedStyleId,
-    styleVersion,
-    aspectRatio,
-    quality,
-    watermark
-  };
+  return null;
 };

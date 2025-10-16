@@ -6,8 +6,7 @@ export interface GalleryItem {
   styleId: string;
   styleName: string;
   orientation: 'horizontal' | 'vertical' | 'square';
-  watermarkedUrl: string;
-  cleanUrl: string | null;
+  imageUrl: string; // OPUS PLAN: Single clean URL, watermarks applied on-the-fly
   isFavorited: boolean;
   isDeleted: boolean;
   downloadCount: number;
@@ -29,8 +28,7 @@ export interface SaveToGalleryParams {
   styleId: string;
   styleName: string;
   orientation: 'horizontal' | 'vertical' | 'square';
-  watermarkedUrl: string;
-  cleanUrl?: string;
+  imageUrl: string; // OPUS PLAN: Single clean URL
   anonToken?: string | null;
   accessToken?: string | null;
 }
@@ -299,12 +297,11 @@ export async function incrementGalleryDownload(
 }
 
 /**
- * Get download URL for a gallery item based on entitlement requirements.
- * Returns watermarked URLs when the current user requires watermarks.
+ * Get download URL for a gallery item.
+ * OPUS PLAN: Returns clean URL always. Client can request watermarked version via ?context=download
  */
 export function getGalleryDownloadUrl(item: GalleryItem, requiresWatermark: boolean): string {
-  if (!requiresWatermark && item.cleanUrl) {
-    return item.cleanUrl;
-  }
-  return item.watermarkedUrl;
+  // If user requires watermark, client should append ?context=download to apply watermark on-the-fly
+  // For now, return clean URL (watermarking endpoint will be implemented separately)
+  return item.imageUrl;
 }

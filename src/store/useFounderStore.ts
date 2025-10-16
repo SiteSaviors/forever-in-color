@@ -31,7 +31,6 @@ const STAGE_MESSAGES = {
   animating: 'Summoning the Wondertone studio…',
   generating: 'Sketching base strokes…',
   polling: 'Layering textures…',
-  watermarking: 'Applying finishing varnish…',
   ready: 'Preview ready',
   error: 'Generation failed',
 } as const;
@@ -142,7 +141,6 @@ export type StylePreviewStatus =
   | 'animating'
   | 'generating'
   | 'polling'
-  | 'watermarking'
   | 'ready'
   | 'error';
 

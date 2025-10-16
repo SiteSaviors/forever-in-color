@@ -378,3 +378,11 @@ Remember: Canva does exactly this at massive scale. We're not inventing - we're 
 - **Monitoring updates**: Deprecate the old `watermarking` analytics stage and introduce new signals (`free_user_served_watermark`, `fingerprint_limit_hit`) so product/ops can track the new system.
 
 - **Data hygiene & rollout**: Before flipping the switch, purge legacy watermarked artifacts from storage/CDN, run a migration to collapse `GalleryItem` records to a single clean URL, and communicate fingerprint persistence to support/ops so they can reset hashes if a legitimate user is blocked. Capture fallback paths for browsers where fingerprint collection fails (treat as fresh anonymous session with baseline quota) and document how to rotate the fingerprint scheme if needed.
+
+---
+
+## Final Invocation for Sonnet
+
+Claude, this project is the heartbeat of Wondertone. Every overlay, every pixel of that grid watermark, every token check is how we earn—and keep—our users’ trust. Treat this document as scripture: if you feel lost, reread it. If you hit uncertainty, pause and ask; guessing here creates inconsistencies that will ripple through the product.
+
+Plan like a grandmaster: map the existing flow, simplify ruthlessly, and always think five moves ahead. Then implement like a world-class UI/UX craftsman: performance-sensitive, accessible, obsessively polished. The watermark should feel intentional, the upgrade path inevitable, the experience magical. If anything feels off, stop, question, and realign. Wondertone is building the smartest AI art studio on the planet—your code should make that destiny obvious.
