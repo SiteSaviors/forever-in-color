@@ -719,12 +719,51 @@ serve(async (req) => {
     const recordPreviewSuccess = async (previewUrl: string, cacheStatus: CacheStatus, statusCode = 200): Promise<Response> => {
       const tokensDebit = entitlementContext && !entitlementContext.devBypass ? 1 : 0;
 
+      // OPUS PLAN: Apply watermark on-the-fly before returning to client
+      let finalPreviewUrl = previewUrl;
+
+      if (effectiveWatermark && previewUrl) {
+        try {
+          // Fetch clean image from storage
+          const imageResponse = await fetch(previewUrl);
+          if (imageResponse.ok) {
+            const imageBuffer = await imageResponse.arrayBuffer();
+
+            // Apply watermark in-memory
+            const watermarkedBuffer = await WatermarkService.createWatermarkedImage(
+              imageBuffer,
+              'preview', // context
+              requestId
+            );
+
+            // Convert to data URL to return directly
+            const base64 = btoa(
+              new Uint8Array(watermarkedBuffer)
+                .reduce((data, byte) => data + String.fromCharCode(byte), '')
+            );
+            finalPreviewUrl = `data:image/jpeg;base64,${base64}`;
+
+            logger.info('[on-the-fly] Applied watermark before returning to client', { requestId });
+          } else {
+            logger.warn('[on-the-fly] Failed to fetch clean image for watermarking, returning storage URL', {
+              requestId,
+              status: imageResponse.status
+            });
+          }
+        } catch (error) {
+          logger.error('[on-the-fly] Watermark application failed, returning clean URL', {
+            requestId,
+            error: error instanceof Error ? error.message : String(error)
+          });
+        }
+      }
+
       if (previewLogId) {
         await supabase
           .from('preview_logs')
           .update({
             outcome: 'success',
-            preview_url: previewUrl,
+            preview_url: previewUrl, // Store clean URL
             tokens_spent: tokensDebit,
             watermark: effectiveWatermark,
             requires_watermark: effectiveWatermark,
@@ -759,7 +798,7 @@ serve(async (req) => {
         : null;
 
       const payload = createSuccessResponse({
-        previewUrl,
+        previewUrl: finalPreviewUrl, // Return watermarked data URL for free users, clean URL for paid
         requestId,
         duration: Date.now() - startTime,
         cacheStatus,

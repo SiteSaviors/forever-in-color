@@ -25,7 +25,9 @@ create index if not exists previews_status_status_idx
 
 alter table public.previews_status enable row level security;
 
-create policy if not exists previews_status_service_role_policy
+drop policy if exists previews_status_service_role_policy on public.previews_status;
+
+create policy previews_status_service_role_policy
   on public.previews_status
   for all
   using (auth.role() = 'service_role')

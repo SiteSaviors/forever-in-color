@@ -82,6 +82,8 @@ const CanvasInRoomPreview = ({
     [selectedSize]
   );
 
+  // Server returns watermarked image for free users, clean for paid users
+  // No client-side watermarking needed - just display what server provides
   const displayImage =
     previewUrl ?? croppedImage ?? uploadedImage ?? fallbackStyleImage ?? null;
 

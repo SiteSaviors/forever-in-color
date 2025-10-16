@@ -25,7 +25,9 @@ create index if not exists preview_cache_entries_digest_idx
 
 alter table public.preview_cache_entries enable row level security;
 
-create policy if not exists preview_cache_entries_service_role_policy
+drop policy if exists preview_cache_entries_service_role_policy on public.preview_cache_entries;
+
+create policy preview_cache_entries_service_role_policy
   on public.preview_cache_entries
   for all
   using (auth.role() = 'service_role')

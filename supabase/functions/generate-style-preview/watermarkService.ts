@@ -1,132 +1,181 @@
+/**
+ * Wondertone Canva-Style Grid Watermark Service
+ *
+ * Applies professional diagonal grid watermark using pre-rendered orientation-specific PNGs.
+ * Each PNG contains the full Canva-style grid + centered Wondertone logo at full opacity.
+ * This service scales and composites them with context-specific opacity.
+ *
+ * @see docs/watermark-specification.md for full technical specification
+ */
+
+export type WatermarkContext = 'preview' | 'download' | 'canvas';
+export type WatermarkOrientation = 'horizontal' | 'vertical' | 'square';
+
 export class WatermarkService {
-  private static fontCache: ArrayBuffer | null = null;
+  private static watermarkCache: Map<WatermarkOrientation, ArrayBuffer> = new Map();
+  private static readonly SUPABASE_URL = Deno.env.get('SUPABASE_URL');
 
   /**
-   * Load Agbalumo font from Google Fonts for text rendering
+   * Opacity levels by context (conversion-optimized)
    */
-  private static async loadFont(): Promise<ArrayBuffer | null> {
-    if (this.fontCache) {
-      return this.fontCache;
+  private static readonly OPACITY_MAP: Record<WatermarkContext, number> = {
+    preview: 0.80,   // Style generation viewport - highly visible
+    download: 0.80,  // Downloads - same as preview
+    canvas: 0.50,    // Canvas in-room viewport - moderately visible
+  };
+
+  /**
+   * Get watermark PNG URL for orientation
+   */
+  private static getWatermarkUrl(orientation: WatermarkOrientation): string {
+    const fileName = orientation === 'horizontal' ? 'Horizontal.png'
+                   : orientation === 'vertical' ? 'Vertical.png'
+                   : 'Square.png';
+
+    return `${this.SUPABASE_URL}/storage/v1/object/public/assets/orientation-watermarks/${fileName}`;
+  }
+
+  /**
+   * Load and cache watermark PNG for orientation
+   */
+  private static async loadWatermark(orientation: WatermarkOrientation): Promise<ArrayBuffer | null> {
+    // Check cache first
+    if (this.watermarkCache.has(orientation)) {
+      return this.watermarkCache.get(orientation)!;
     }
 
     try {
-      // Fetch Agbalumo font from Google Fonts
-      const fontUrl = 'https://fonts.gstatic.com/s/agbalumo/v6/55xvey5uMdT2N37KZcMF.ttf';
-      const response = await fetch(fontUrl);
+      const url = this.getWatermarkUrl(orientation);
+      const response = await fetch(url);
+
       if (!response.ok) {
-        console.error('[WatermarkService] Failed to fetch Agbalumo font:', response.status);
-        throw new Error(`Font fetch failed: ${response.status}`);
+        console.error(`[WatermarkService] Failed to fetch ${orientation} watermark:`, response.status);
+        return null;
       }
-      this.fontCache = await response.arrayBuffer();
-      console.log('[WatermarkService] Agbalumo font loaded successfully');
-      return this.fontCache;
+
+      const buffer = await response.arrayBuffer();
+      this.watermarkCache.set(orientation, buffer);
+      console.log(`[WatermarkService] Loaded and cached ${orientation} watermark (${(buffer.byteLength / 1024).toFixed(1)} KB)`);
+
+      return buffer;
     } catch (error) {
-      console.error('[WatermarkService] Font loading failed:', error);
-      throw error; // Re-throw to be caught by createWatermarkedImage
+      console.error(`[WatermarkService] Failed to load ${orientation} watermark:`, error);
+      return null;
     }
   }
 
   /**
-   * Apply Wondertone's five-point watermark treatment:
-   *  - Four "WONDERTONE" text watermarks in each corner
-   *  - One large diagonal "WONDERTONE" text watermark across center
-   * Falls back to the original buffer on any failure to avoid breaking preview delivery.
+   * Detect orientation from image dimensions
+   */
+  private static detectOrientation(width: number, height: number): WatermarkOrientation {
+    const aspectRatio = width / height;
+
+    if (Math.abs(aspectRatio - 1) < 0.1) {
+      return 'square'; // Within 10% of 1:1
+    } else if (aspectRatio > 1) {
+      return 'horizontal'; // Landscape
+    } else {
+      return 'vertical'; // Portrait
+    }
+  }
+
+  /**
+   * Apply Canva-style diagonal grid watermark using pre-rendered PNG
+   *
+   * Process:
+   * 1. Detect image orientation from aspect ratio
+   * 2. Load corresponding pre-rendered watermark PNG (with full Canva grid + logo)
+   * 3. Scale watermark to match image dimensions
+   * 4. Apply context-specific opacity (preview: 38%, download: 40%, canvas: 23%)
+   * 5. Composite watermark over base image
+   *
+   * Falls back to original buffer on any failure to avoid breaking preview delivery.
+   *
+   * @param imageBuffer - Source image as ArrayBuffer
+   * @param context - Watermark context (determines opacity)
+   * @param sessionId - Session identifier for logging
+   * @returns Watermarked image as JPEG ArrayBuffer
    */
   static async createWatermarkedImage(
     imageBuffer: ArrayBuffer,
-    _sessionId: string,
-    _isPreview: boolean = true
+    context: WatermarkContext = 'preview',
+    sessionId: string = 'unknown'
   ): Promise<ArrayBuffer> {
     const { Image } = await import('https://deno.land/x/imagescript@1.2.15/mod.ts');
 
     try {
+      // Decode source image
       const baseImage = await Image.decode(new Uint8Array(imageBuffer));
       const width = baseImage.width;
       const height = baseImage.height;
-      const baseDimension = Math.min(width, height);
 
-      // Load font for text rendering
-      let fontBuffer: ArrayBuffer | null;
-      try {
-        fontBuffer = await this.loadFont();
-      } catch (error) {
-        console.error('[WatermarkService] Font loading failed, returning original image:', error);
-        return imageBuffer; // Return unwatermarked image if font fails
-      }
+      // Detect orientation
+      const orientation = this.detectOrientation(width, height);
 
-      if (!fontBuffer) {
-        console.error('[WatermarkService] No font available, returning original image');
+      console.log(`[WatermarkService] Applying ${context} watermark to ${width}x${height} image (${orientation} orientation, session: ${sessionId})`);
+
+      // Get context-specific opacity
+      const opacity = this.OPACITY_MAP[context];
+
+      // Load pre-rendered watermark PNG for orientation
+      const watermarkBuffer = await this.loadWatermark(orientation);
+
+      if (!watermarkBuffer) {
+        console.error('[WatermarkService] Failed to load watermark PNG, returning original image');
         return imageBuffer;
       }
 
-      // ImageScript.renderText expects font as Uint8Array buffer directly
-      const fontBytes = new Uint8Array(fontBuffer);
-      const watermarkText = 'WONDERTONE';
+      // Decode watermark PNG
+      const watermarkImage = await Image.decode(new Uint8Array(watermarkBuffer));
 
-      // Corner watermarks - small text, 35% opacity, white
-      const cornerFontSize = Math.floor(baseDimension * 0.025); // Smaller, more subtle
-      const margin = Math.max(Math.round(baseDimension * 0.02), 10);
+      // Scale watermark to match base image dimensions
+      const scaledWatermark = watermarkImage.resize(width, height);
 
-      const cornerPositions = [
-        [margin, margin], // Top-left
-        [width - margin, margin], // Top-right (will adjust after measuring)
-        [margin, height - margin], // Bottom-left (will adjust after measuring)
-        [width - margin, height - margin], // Bottom-right (will adjust after measuring)
-      ];
+      // Apply context-specific opacity to watermark
+      scaledWatermark.opacity(opacity);
 
-      // Apply corner watermarks
-      for (let i = 0; i < cornerPositions.length; i++) {
-        const [baseX, baseY] = cornerPositions[i];
-        try {
-          // Image.renderText(fontBuffer, fontSize, text, color)
-          const textImage = await Image.renderText(fontBytes, cornerFontSize, watermarkText, 0xFFFFFFFF);
-          if (textImage) {
-            textImage.opacity(0.35); // 35% opacity for subtlety
+      // Composite watermark over base image
+      baseImage.composite(scaledWatermark, 0, 0);
 
-            // Adjust positioning based on corner
-            let x = baseX;
-            let y = baseY;
-            if (i === 1 || i === 3) { // Right side
-              x = baseX - textImage.width;
-            }
-            if (i === 2 || i === 3) { // Bottom side
-              y = baseY - textImage.height;
-            }
+      // Encode as JPEG (92% quality for good balance of size/quality)
+      const output = await baseImage.encodeJPEG(92);
 
-            baseImage.composite(textImage, Math.max(0, x), Math.max(0, y));
-          }
-        } catch (error) {
-          console.warn(`[WatermarkService] Failed to render corner watermark ${i}:`, error);
-        }
-      }
+      console.log(`[WatermarkService] Successfully applied ${orientation} watermark grid (${context}, ${(opacity * 100).toFixed(0)}% opacity)`);
 
-      // Center watermark - large diagonal text, 20% opacity
-      const centerFontSize = Math.floor(baseDimension * 0.06);
-      try {
-        const centerText = await Image.renderText(fontBytes, centerFontSize, watermarkText, 0xFFFFFFFF);
-        if (centerText) {
-          centerText.opacity(0.20); // Very subtle
-          const rotated = centerText.rotate(-30); // Diagonal
-
-          const centerX = Math.floor((width - rotated.width) / 2);
-          const centerY = Math.floor((height - rotated.height) / 2);
-
-          baseImage.composite(rotated, Math.max(0, centerX), Math.max(0, centerY));
-        }
-      } catch (error) {
-        console.warn('[WatermarkService] Failed to render center watermark:', error);
-      }
-
-      const output = await baseImage.encodeJPEG(90);
-      console.log('[WatermarkService] Successfully applied 5-point text watermark');
       return output.buffer;
     } catch (error) {
-      console.error('[WatermarkService] Failed to apply watermark', error);
-      return imageBuffer;
+      console.error('[WatermarkService] Failed to apply watermark, returning original:', error);
+      return imageBuffer; // Fail gracefully
     }
   }
 
+  /**
+   * Preload all watermark PNGs into cache (call on function cold start)
+   */
+  static async preloadWatermarks(): Promise<void> {
+    console.log('[WatermarkService] Preloading watermark assets...');
+
+    const orientations: WatermarkOrientation[] = ['horizontal', 'vertical', 'square'];
+
+    await Promise.all(
+      orientations.map(orientation => this.loadWatermark(orientation))
+    );
+
+    console.log('[WatermarkService] Watermark preloading complete');
+  }
+
+  /**
+   * Clear watermark cache (for testing/debugging)
+   */
+  static clearCache(): void {
+    this.watermarkCache.clear();
+    console.log('[WatermarkService] Watermark cache cleared');
+  }
+
+  /**
+   * Generate unique session ID
+   */
   static generateSessionId(): string {
-    return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `wm_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 }
