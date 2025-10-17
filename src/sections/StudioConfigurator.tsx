@@ -76,6 +76,7 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
   const livingCanvasModalOpen = useFounderStore((state) => state.livingCanvasModalOpen);
   const launchpadExpanded = useFounderStore((state) => state.launchpadExpanded);
   const setLaunchpadExpanded = useFounderStore((state) => state.setLaunchpadExpanded);
+  const displayRemainingTokens = useFounderStore((state) => state.getDisplayableRemainingTokens());
   const cachedPreviewEntry = useFounderStore((state) => {
     const styleId = state.selectedStyleId;
     if (!styleId) return null;
@@ -339,7 +340,7 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
           entitlements={{
             tier: entitlements.tier,
             status: entitlements.status,
-            remainingTokens: entitlements.remainingTokens,
+            remainingTokens: displayRemainingTokens,
             quota: entitlements.quota,
           }}
           previews={previews}
@@ -439,7 +440,7 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
           previews={previews}
           canGenerateMore={canGenerateMore()}
           pendingStyleId={pendingStyleId}
-          remainingTokens={entitlements.remainingTokens}
+          remainingTokens={displayRemainingTokens}
           userTier={entitlements.tier}
         />
       </Suspense>

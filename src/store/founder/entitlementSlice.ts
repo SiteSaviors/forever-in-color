@@ -18,6 +18,8 @@ export type EntitlementState = {
   renewAt: string | null;
   hardLimit: number | null;
   softRemaining: number | null;
+  hardRemaining: number | null;
+  softLimit: number | null;
   dismissedPrompt: boolean;
   lastSyncedAt: number | null;
   error: string | null;
@@ -27,6 +29,8 @@ export type EntitlementSlice = {
   entitlements: EntitlementState;
   anonToken: string | null;
   fingerprintHash: string | null;
+  fingerprintStatus: 'idle' | 'resolving' | 'ready' | 'error';
+  fingerprintError: string | null;
   showTokenToast: boolean;
   showQuotaModal: boolean;
   generationCount: number;
@@ -43,6 +47,7 @@ export type EntitlementSlice = {
     tier?: string;
     priority?: string;
     softRemaining?: number | null;
+    hardRemaining?: number | null;
   }) => void;
   setAnonToken: (token: string | null) => void;
   incrementGenerationCount: () => void;
@@ -51,7 +56,62 @@ export type EntitlementSlice = {
   shouldShowAccountPrompt: () => boolean;
   canGenerateMore: () => boolean;
   getGenerationLimit: () => number;
+  getDisplayableRemainingTokens: () => number | null;
   ensureFingerprintHash: () => Promise<string | null>;
+};
+
+const getInitialGenerationCount = (): number => {
+  if (typeof window === 'undefined') return 0;
+  try {
+    const raw = window.sessionStorage.getItem('generation_count');
+    const parsed = raw ? parseInt(raw, 10) : 0;
+    return Number.isFinite(parsed) ? parsed : 0;
+  } catch {
+    return 0;
+  }
+};
+
+const getInitialAccountPromptDismissed = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  try {
+    return window.sessionStorage.getItem('account_prompt_dismissed') === 'true';
+  } catch {
+    return false;
+  }
+};
+
+const persistGenerationCount = (value: number) => {
+  if (typeof window === 'undefined') return;
+  try {
+    window.sessionStorage.setItem('generation_count', value.toString());
+  } catch {
+    // ignore session storage failures silently
+  }
+};
+
+const persistAccountPromptDismissed = (dismissed: boolean) => {
+  if (typeof window === 'undefined') return;
+  try {
+    window.sessionStorage.setItem('account_prompt_dismissed', dismissed ? 'true' : 'false');
+  } catch {
+    // ignore session storage failures silently
+  }
+};
+
+const debugToken = (message: string, payload?: unknown) => {
+  const isDev = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV;
+  const hasWindow = typeof window !== 'undefined';
+  const debugFlag = hasWindow ? (window as typeof window & { DEBUG_TOKENS?: boolean }).DEBUG_TOKENS : false;
+  if (!isDev && !debugFlag) {
+    return;
+  }
+
+  if (typeof payload === 'undefined') {
+    console.log(`[FounderStore][Token] ${message}`);
+    return;
+  }
+
+  console.log(`[FounderStore][Token] ${message}`, payload);
 };
 
 const tierFromServer = (value?: string | null, devOverride = false): EntitlementTier => {
@@ -84,31 +144,69 @@ const priorityFromTier = (tier: EntitlementTier): EntitlementPriority => {
 
 const requiresWatermarkFromTier = (tier: EntitlementTier): boolean => tier === 'anonymous' || tier === 'free';
 
-export const createEntitlementSlice: StateCreator<FounderState, [], [], EntitlementSlice> = (set, get) => ({
-  entitlements: {
-    status: 'idle',
-    tier: 'anonymous',
-    quota: 10,
-    remainingTokens: 10,
-    requiresWatermark: true,
-    priority: 'normal',
-    renewAt: null,
-    hardLimit: 10,
-    softRemaining: 5,
-    dismissedPrompt: false,
-    lastSyncedAt: null,
-    error: null,
-  },
-  anonToken: loadAnonTokenFromStorage(),
-  fingerprintHash: typeof window !== 'undefined' ? getStoredFingerprintHash() : null,
-  showTokenToast: false,
-  showQuotaModal: false,
-  generationCount: parseInt(sessionStorage.getItem('generation_count') || '0'),
-  accountPromptShown: false,
-  accountPromptDismissed: sessionStorage.getItem('account_prompt_dismissed') === 'true',
-  accountPromptTriggerAt: null,
-  setShowTokenToast: (show) => set({ showTokenToast: show }),
-  setShowQuotaModal: (show) => set({ showQuotaModal: show }),
+const computeAnonymousRemaining = (entitlements: EntitlementState, generationCount: number): number | null => {
+  if (entitlements.tier !== 'anonymous') {
+    return entitlements.remainingTokens;
+  }
+
+  const candidates: number[] = [];
+
+  if (typeof entitlements.softRemaining === 'number') {
+    candidates.push(Math.max(0, entitlements.softRemaining));
+  }
+
+  if (typeof entitlements.softLimit === 'number') {
+    const used = Math.min(generationCount, entitlements.softLimit);
+    candidates.push(Math.max(entitlements.softLimit - used, 0));
+  }
+
+  if (typeof entitlements.remainingTokens === 'number') {
+    candidates.push(Math.max(0, entitlements.remainingTokens));
+  }
+
+  if (typeof entitlements.hardRemaining === 'number') {
+    candidates.push(Math.max(0, entitlements.hardRemaining));
+  }
+
+  if (candidates.length === 0) {
+    return null;
+  }
+
+  return Math.min(...candidates);
+};
+
+export const createEntitlementSlice: StateCreator<FounderState, [], [], EntitlementSlice> = (set, get) => {
+  const storedFingerprintHash = typeof window !== 'undefined' ? getStoredFingerprintHash() : null;
+
+  return {
+    entitlements: {
+      status: 'idle',
+      tier: 'anonymous',
+      quota: 10,
+      remainingTokens: 10,
+      requiresWatermark: true,
+      priority: 'normal',
+      renewAt: null,
+      hardLimit: 10,
+      softRemaining: 5,
+      hardRemaining: 10,
+      softLimit: 5,
+      dismissedPrompt: false,
+      lastSyncedAt: null,
+      error: null,
+    },
+    anonToken: loadAnonTokenFromStorage(),
+    fingerprintHash: storedFingerprintHash,
+    fingerprintStatus: storedFingerprintHash ? 'ready' : 'idle',
+    fingerprintError: null,
+    showTokenToast: false,
+    showQuotaModal: false,
+    generationCount: getInitialGenerationCount(),
+    accountPromptShown: false,
+    accountPromptDismissed: getInitialAccountPromptDismissed(),
+    accountPromptTriggerAt: null,
+    setShowTokenToast: (show) => set({ showTokenToast: show }),
+    setShowQuotaModal: (show) => set({ showQuotaModal: show }),
   hydrateEntitlements: async () => {
     const state = get();
     if (state.entitlements.status === 'loading') {
@@ -131,23 +229,22 @@ export const createEntitlementSlice: StateCreator<FounderState, [], [], Entitlem
         }
         const snapshot = await fetchAuthenticatedEntitlements();
         if (!snapshot) {
+          debugToken('Authenticated entitlements unavailable, awaiting provisioning');
           set((current) => ({
             entitlements: {
               ...current.entitlements,
-              status: 'ready',
-              tier: 'free',
-              quota: 10,
-              remainingTokens: 10,
-              requiresWatermark: true,
-              priority: 'normal',
-              renewAt: null,
-              hardLimit: 10,
-              softRemaining: null,
-              lastSyncedAt: Date.now(),
+              status: 'loading',
               error: null,
             },
           }));
         } else {
+          debugToken('Fetched authenticated entitlements', snapshot);
+          const tokensUsedRaw =
+            typeof snapshot.quota === 'number' && typeof snapshot.remainingTokens === 'number'
+              ? snapshot.quota - snapshot.remainingTokens
+              : 0;
+          const tokensUsed = Math.max(0, tokensUsedRaw);
+          persistGenerationCount(tokensUsed);
           set((current) => ({
             entitlements: {
               status: 'ready',
@@ -155,15 +252,21 @@ export const createEntitlementSlice: StateCreator<FounderState, [], [], Entitlem
               quota: snapshot.quota,
               remainingTokens: snapshot.remainingTokens,
               requiresWatermark: snapshot.requiresWatermark,
-              priority: snapshot.priority,
-              renewAt: snapshot.renewAt,
-              hardLimit: snapshot.quota,
-              softRemaining: null,
-              dismissedPrompt: current.entitlements.dismissedPrompt,
-              lastSyncedAt: Date.now(),
-              error: null,
-            },
-          }));
+          priority: snapshot.priority,
+          renewAt: snapshot.renewAt,
+          hardLimit: snapshot.quota,
+          hardRemaining:
+            typeof snapshot.remainingTokens === 'number'
+              ? Math.max(0, snapshot.remainingTokens)
+              : snapshot.remainingTokens ?? null,
+          softRemaining: null,
+          softLimit: null,
+          dismissedPrompt: current.entitlements.dismissedPrompt,
+          lastSyncedAt: Date.now(),
+          error: null,
+        },
+        generationCount: tokensUsed,
+      }));
         }
       } else {
         const minted = await mintAnonymousToken({
@@ -171,30 +274,40 @@ export const createEntitlementSlice: StateCreator<FounderState, [], [], Entitlem
           dismissedPrompt: state.accountPromptDismissed,
         });
 
-        sessionStorage.setItem('account_prompt_dismissed', minted.dismissed_prompt ? 'true' : 'false');
+        debugToken('Minted anonymous token', minted);
+        persistAccountPromptDismissed(minted.dismissed_prompt);
         persistAnonToken(minted.anon_token);
+        const hardUsedRaw = minted.hard_limit - minted.hard_remaining;
+        const hardUsed = Math.max(0, hardUsedRaw);
+        persistGenerationCount(hardUsed);
 
         set({
           anonToken: minted.anon_token,
           accountPromptDismissed: minted.dismissed_prompt,
+          generationCount: hardUsed,
           entitlements: {
             status: 'ready',
             tier: 'anonymous',
             quota: minted.hard_limit,
-            remainingTokens: Math.min(minted.hard_remaining, minted.free_tokens_remaining),
+            remainingTokens: minted.free_tokens_remaining,
             requiresWatermark: true,
             priority: 'normal',
             renewAt: null,
             hardLimit: minted.hard_limit,
             softRemaining: minted.free_tokens_remaining,
+            hardRemaining: minted.hard_remaining,
+            softLimit: minted.soft_limit,
             dismissedPrompt: minted.dismissed_prompt,
             lastSyncedAt: Date.now(),
             error: null,
           },
+          accountPromptShown: false,
+          accountPromptTriggerAt: null,
         });
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to load entitlements';
+      debugToken('Failed to hydrate entitlements', message);
       set((current) => ({
         entitlements: {
           ...current.entitlements,
@@ -222,31 +335,48 @@ export const createEntitlementSlice: StateCreator<FounderState, [], [], Entitlem
         dismissedPrompt: state.accountPromptDismissed,
       });
 
+      debugToken('Reconciled anonymous entitlements', minted);
       persistAnonToken(minted.anon_token);
+      persistAccountPromptDismissed(minted.dismissed_prompt);
+      const hardUsedRaw = minted.hard_limit - minted.hard_remaining;
+      const hardUsed = Math.max(0, hardUsedRaw);
+      persistGenerationCount(hardUsed);
 
       set({
         anonToken: minted.anon_token,
         accountPromptDismissed: minted.dismissed_prompt,
+        generationCount: hardUsed,
         entitlements: {
           status: 'ready',
           tier: 'anonymous',
           quota: minted.hard_limit,
-          remainingTokens: Math.min(minted.hard_remaining, minted.free_tokens_remaining),
+          remainingTokens: minted.free_tokens_remaining,
           requiresWatermark: true,
           priority: 'normal',
           renewAt: null,
           hardLimit: minted.hard_limit,
           softRemaining: minted.free_tokens_remaining,
+          hardRemaining: minted.hard_remaining,
+          softLimit: minted.soft_limit,
           dismissedPrompt: minted.dismissed_prompt,
           lastSyncedAt: Date.now(),
           error: null,
         },
+        accountPromptShown: false,
+        accountPromptTriggerAt: null,
       });
     } catch (error) {
       console.warn('[FounderStore] Failed to reconcile anonymous entitlements', error);
     }
   },
-  updateEntitlementsFromResponse: ({ remainingTokens, requiresWatermark, tier, priority, softRemaining }) => {
+  updateEntitlementsFromResponse: ({
+    remainingTokens,
+    requiresWatermark,
+    tier,
+    priority,
+    softRemaining,
+    hardRemaining,
+  }) => {
     set((current) => {
       const next: EntitlementState = {
         ...current.entitlements,
@@ -261,6 +391,10 @@ export const createEntitlementSlice: StateCreator<FounderState, [], [], Entitlem
 
       if (typeof softRemaining === 'number') {
         next.softRemaining = softRemaining;
+      }
+
+      if (typeof hardRemaining === 'number') {
+        next.hardRemaining = hardRemaining;
       }
 
       if (typeof requiresWatermark === 'boolean') {
@@ -291,12 +425,13 @@ export const createEntitlementSlice: StateCreator<FounderState, [], [], Entitlem
   incrementGenerationCount: () => {
     const state = get();
     const newCount = state.generationCount + 1;
-    sessionStorage.setItem('generation_count', newCount.toString());
+    persistGenerationCount(newCount);
 
+    const remainingAfter = computeAnonymousRemaining(state.entitlements, newCount);
     const shouldPrompt =
       state.entitlements.tier === 'anonymous' &&
-      typeof state.entitlements.softRemaining === 'number' &&
-      state.entitlements.softRemaining <= 0 &&
+      typeof remainingAfter === 'number' &&
+      remainingAfter <= 0 &&
       !state.accountPromptDismissed &&
       !state.accountPromptShown;
 
@@ -312,23 +447,31 @@ export const createEntitlementSlice: StateCreator<FounderState, [], [], Entitlem
       accountPromptTriggerAt: shown ? Date.now() : null,
     }),
   dismissAccountPrompt: () => {
-    sessionStorage.setItem('account_prompt_dismissed', 'true');
+    persistAccountPromptDismissed(true);
     set({ accountPromptDismissed: true, accountPromptShown: false, accountPromptTriggerAt: null });
 
     const token = get().anonToken;
     if (token) {
       void mintAnonymousToken({ token, dismissedPrompt: true })
         .then((response) => {
+          debugToken('Dismissed account prompt, refreshed anon token', response);
           persistAnonToken(response.anon_token);
+          persistAccountPromptDismissed(response.dismissed_prompt);
+          const hardUsedRaw = response.hard_limit - response.hard_remaining;
+          const hardUsed = Math.max(0, hardUsedRaw);
+          persistGenerationCount(hardUsed);
           set((current) => ({
             anonToken: response.anon_token,
+            generationCount: hardUsed,
             entitlements: {
               ...current.entitlements,
               dismissedPrompt: response.dismissed_prompt,
               softRemaining: response.free_tokens_remaining,
               hardLimit: response.hard_limit,
+              hardRemaining: response.hard_remaining,
+              softLimit: response.soft_limit ?? current.entitlements.softLimit,
               quota: response.hard_limit,
-              remainingTokens: Math.min(response.hard_remaining, response.free_tokens_remaining),
+              remainingTokens: response.free_tokens_remaining,
             },
           }));
         })
@@ -338,19 +481,40 @@ export const createEntitlementSlice: StateCreator<FounderState, [], [], Entitlem
     }
   },
   shouldShowAccountPrompt: () => {
-    const { entitlements, accountPromptShown, accountPromptDismissed } = get();
-    const softRemaining = entitlements.softRemaining;
-    const shouldPrompt =
-      entitlements.tier === 'anonymous' &&
-      typeof softRemaining === 'number' &&
-      softRemaining <= 0;
+    const { entitlements, accountPromptShown, accountPromptDismissed, generationCount } = get();
+    if (entitlements.tier !== 'anonymous') {
+      return false;
+    }
+
+    const remaining = computeAnonymousRemaining(entitlements, generationCount);
+    const shouldPrompt = typeof remaining === 'number' && remaining <= 0;
 
     return shouldPrompt && !accountPromptShown && !accountPromptDismissed;
   },
   canGenerateMore: () => {
-    const { entitlements } = get();
+    const { entitlements, sessionUser, fingerprintStatus, generationCount } = get();
 
     if (entitlements.status !== 'ready') {
+      // Block authenticated users until their quota loads to avoid inconsistent UX
+      return !sessionUser;
+    }
+
+    if (entitlements.tier === 'anonymous') {
+      if (fingerprintStatus === 'error') {
+        return false;
+      }
+
+      if (
+        typeof entitlements.hardRemaining === 'number' &&
+        entitlements.hardRemaining <= 0
+      ) {
+        return false;
+      }
+
+      const remaining = computeAnonymousRemaining(entitlements, generationCount);
+      if (typeof remaining === 'number') {
+        return remaining > 0;
+      }
       return true;
     }
 
@@ -368,18 +532,43 @@ export const createEntitlementSlice: StateCreator<FounderState, [], [], Entitlem
 
     return entitlements.quota;
   },
+  getDisplayableRemainingTokens: () => {
+    const { entitlements, generationCount } = get();
+    if (entitlements.tier === 'anonymous') {
+      return computeAnonymousRemaining(entitlements, generationCount);
+    }
+    return entitlements.remainingTokens;
+  },
   ensureFingerprintHash: async () => {
-    const existing = get().fingerprintHash;
-    if (existing) return existing;
+    const { fingerprintHash, fingerprintStatus } = get();
+    if (fingerprintHash) {
+      if (fingerprintStatus !== 'ready') {
+        set({ fingerprintStatus: 'ready', fingerprintError: null });
+      }
+      return fingerprintHash;
+    }
+    if (fingerprintStatus === 'resolving') {
+      return null;
+    }
+
+    set({ fingerprintStatus: 'resolving', fingerprintError: null });
     try {
       const hash = await getOrCreateFingerprintHash();
       if (hash) {
-        set({ fingerprintHash: hash });
+        set({ fingerprintHash: hash, fingerprintStatus: 'ready', fingerprintError: null });
+        return hash;
       }
-      return hash ?? null;
+      debugToken('Fingerprint generation returned empty hash');
+      set({ fingerprintStatus: 'error', fingerprintError: 'Fingerprint required for free previews' });
+      return null;
     } catch (error) {
       console.warn('[FounderStore] Failed to resolve device fingerprint', error);
+      set({
+        fingerprintStatus: 'error',
+        fingerprintError: error instanceof Error ? error.message : 'Fingerprint blocked',
+      });
       return null;
     }
   },
-});
+  };
+};

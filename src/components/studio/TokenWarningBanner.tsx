@@ -1,4 +1,4 @@
-import { X, AlertTriangle, TrendingUp } from 'lucide-react';
+import { X, AlertTriangle, TrendingUp, ShieldOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -17,20 +17,61 @@ const TIER_RECOMMENDATIONS: Record<EntitlementTier, { nextTier: string; quota: n
 const TokenWarningBanner = () => {
   const navigate = useNavigate();
   const [dismissed, setDismissed] = useState(false);
+  const [fingerprintDismissed, setFingerprintDismissed] = useState(false);
   const entitlements = useFounderStore((state) => state.entitlements);
+  const fingerprintStatus = useFounderStore((state) => state.fingerprintStatus);
+  const fingerprintError = useFounderStore((state) => state.fingerprintError);
+  const displayRemainingTokens = useFounderStore((state) => state.getDisplayableRemainingTokens());
+
+  if (fingerprintStatus === 'error' && !fingerprintDismissed) {
+    return (
+      <AnimatePresence>
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ type: 'spring', stiffness: 200, damping: 25 }}
+          className="sticky top-[57px] z-20 border-b border-amber-500/30 bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 backdrop-blur-sm"
+        >
+          <div className="mx-auto flex max-w-[1800px] items-center justify-between gap-4 px-6 py-3">
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-amber-400/30 to-orange-400/30 border border-amber-400/40">
+                <ShieldOff className="h-4 w-4 text-amber-300" />
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <p className="text-sm font-semibold text-white">
+                  Please enable browser features to continue generating previews.
+                </p>
+                <p className="text-xs text-white/70">
+                  {fingerprintError ?? 'Fingerprinting powers free tokens. Browser privacy settings are blocking it.'}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setFingerprintDismissed(true)}
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-white/60 transition hover:bg-white/10 hover:text-white"
+              aria-label="Dismiss fingerprint warning"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </motion.div>
+      </AnimatePresence>
+    );
+  }
 
   const shouldShow = () => {
     if (dismissed || entitlements.status !== 'ready') return false;
 
-    const { remainingTokens, quota } = entitlements;
-    if (remainingTokens == null || quota == null) return false;
+    const { quota } = entitlements;
+    if (displayRemainingTokens == null || quota == null) return false;
 
-    const percentageRemaining = remainingTokens / quota;
+    const percentageRemaining = displayRemainingTokens / quota;
     return percentageRemaining <= 0.2 && percentageRemaining > 0;
   };
 
   const recommendation = TIER_RECOMMENDATIONS[entitlements.tier];
-  const tokensRemaining = entitlements.remainingTokens ?? 0;
+  const tokensRemaining = displayRemainingTokens ?? entitlements.remainingTokens ?? 0;
 
   if (!shouldShow() || !recommendation) return null;
 

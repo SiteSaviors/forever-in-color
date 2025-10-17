@@ -30,6 +30,8 @@ export type FounderEntitlementStateSnapshot = Pick<
   | 'accountPromptShown'
   | 'accountPromptDismissed'
   | 'accountPromptTriggerAt'
+  | 'fingerprintStatus'
+  | 'fingerprintError'
 >;
 
 export type FounderEntitlementActionsSnapshot = Pick<
@@ -46,6 +48,7 @@ export type FounderEntitlementActionsSnapshot = Pick<
   | 'shouldShowAccountPrompt'
   | 'canGenerateMore'
   | 'getGenerationLimit'
+  | 'getDisplayableRemainingTokens'
 >;
 
 /**

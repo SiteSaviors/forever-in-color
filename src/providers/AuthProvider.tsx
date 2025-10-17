@@ -31,7 +31,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
   const setShowQuotaModal = useFounderStore((state) => state.setShowQuotaModal);
   const reconcileEntitlements = useFounderStore((state) => state.reconcileEntitlements);
   const entitlements = useFounderStore((state) => state.entitlements);
-  const remainingTokens = entitlements.remainingTokens;
+  const displayRemainingTokens = useFounderStore((state) => state.getDisplayableRemainingTokens());
 
   useEffect(() => {
     let isMounted = true;
@@ -106,14 +106,14 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
       <AuthModal />
       <TokenDecrementToast
         visible={showTokenToast}
-        remaining={remainingTokens}
+        remaining={displayRemainingTokens}
         onClose={() => setShowTokenToast(false)}
       />
       <QuotaExhaustedModal
         open={showQuotaModal}
         onClose={() => setShowQuotaModal(false)}
         currentTier={entitlements.tier}
-        remainingTokens={entitlements.remainingTokens}
+        remainingTokens={displayRemainingTokens ?? entitlements.remainingTokens}
         quota={entitlements.quota}
         renewAt={entitlements.renewAt}
       />
