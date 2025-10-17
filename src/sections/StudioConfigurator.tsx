@@ -1,7 +1,9 @@
-import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react';
 import { clsx } from 'clsx';
 import { useFounderStore, StylePreviewStatus } from '@/store/useFounderStore';
 import { useToneSections } from '@/store/hooks/useToneSections';
+import { useStudioFeedback } from '@/hooks/useStudioFeedback';
+import type { GateResult } from '@/utils/entitlementGate';
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
 import { saveToGallery } from '@/utils/galleryApi';
 import { downloadCleanImage } from '@/utils/premiumDownload';
@@ -91,7 +93,57 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
   const [mobileStyleDrawerOpen, setMobileStyleDrawerOpen] = useState(false);
   const [showCanvasUpsellToast, setShowCanvasUpsellToast] = useState(false);
   const [welcomeDismissed, setWelcomeDismissed] = useState(false);
-  const handleStyleSelect = useHandleStyleSelect();
+  const { showToast, showUpgradeModal, renderFeedback } = useStudioFeedback();
+
+  const handleGateDenied = useCallback(
+    (gate: GateResult) => {
+      switch (gate.reason) {
+        case 'style_locked': {
+          const requiredLabel = gate.requiredTier
+            ? gate.requiredTier.charAt(0).toUpperCase() + gate.requiredTier.slice(1)
+            : 'premium';
+          showUpgradeModal({
+            title: 'Unlock Premium Tone',
+            description:
+              gate.message ??
+              `Upgrade to the ${requiredLabel} plan to explore this signature Wondertone tone.`,
+            ctaLabel: 'View Plans',
+            onCta: () => {
+              window.open('/pricing', '_self');
+            },
+            secondaryLabel: 'Maybe later',
+          });
+          break;
+        }
+        case 'fingerprint_required':
+          showToast({
+            title: 'Enable Browser Features',
+            description: gate.message ?? 'Please enable device permissions to continue generating previews.',
+            variant: 'warning',
+          });
+          break;
+        case 'entitlements_loading':
+          showToast({
+            title: 'Checking your plan',
+            description: gate.message ?? 'Hang tight while we load your usage limits.',
+            variant: 'info',
+          });
+          break;
+        default:
+          if (gate.reason !== 'quota_exceeded' && gate.message) {
+            showToast({
+              title: 'Preview unavailable',
+              description: gate.message,
+              variant: 'warning',
+            });
+          }
+          break;
+      }
+    },
+    [showToast, showUpgradeModal]
+  );
+
+  const handleStyleSelect = useHandleStyleSelect({ onGateDenied: handleGateDenied });
   const toneSections = useToneSections();
 
   const generalGate = evaluateStyleGate(null);
@@ -115,7 +167,11 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
 
   const handleDownloadHD = async () => {
     if (!currentStyle || !preview?.data?.previewUrl) {
-      alert('No preview available to download');
+      showToast({
+        title: 'Download unavailable',
+        description: 'Generate a preview before downloading.',
+        variant: 'warning',
+      });
       return;
     }
 
@@ -157,7 +213,11 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
       setTimeout(() => setShowCanvasUpsellToast(false), 8000); // Auto-dismiss after 8s
     } catch (error) {
       console.error('Failed to download HD image:', error);
-      alert('Failed to download image. Please try again.');
+      showToast({
+        title: 'Download failed',
+        description: 'Please try again in a moment.',
+        variant: 'error',
+      });
     } finally {
       setDownloadingHD(false);
     }
@@ -165,7 +225,11 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
 
   const handleSaveToGallery = async () => {
     if (!currentStyle || !preview?.data?.previewUrl) {
-      alert('No preview available to save');
+      showToast({
+        title: 'Nothing to save',
+        description: 'Generate a preview before saving to your gallery.',
+        variant: 'warning',
+      });
       return;
     }
 
@@ -185,7 +249,11 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
 
     if (!storagePath) {
       console.error('[StudioConfigurator] Missing storage path when saving to gallery', preview.data);
-      alert('Unable to save preview. Please regenerate and try again.');
+      showToast({
+        title: 'Save failed',
+        description: 'Unable to save preview. Please regenerate and try again.',
+        variant: 'error',
+      });
       setSavingToGallery(false);
       return;
     }
@@ -205,10 +273,24 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
       setSavedToGallery(true);
       setTimeout(() => setSavedToGallery(false), 3000);
       if (result.alreadyExists) {
-        alert('This preview is already in your gallery');
+        showToast({
+          title: 'Already saved',
+          description: 'This preview already lives in your gallery.',
+          variant: 'info',
+        });
+      } else {
+        showToast({
+          title: 'Saved to gallery',
+          description: `${currentStyle.name} is now in your gallery.`,
+          variant: 'success',
+        });
       }
     } else {
-      alert(`Failed to save: ${result.error}`);
+      showToast({
+        title: 'Save failed',
+        description: result.error ?? 'Unexpected error while saving.',
+        variant: 'error',
+      });
     }
   };
 
@@ -457,6 +539,8 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
           }}
         />
       </Suspense>
+
+      {renderFeedback()}
     </section>
   );
 };

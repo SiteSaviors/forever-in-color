@@ -1,7 +1,8 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
-import { useEffect, useRef, useState, type TouchEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type TouchEvent } from 'react';
 import type { ToneSection } from '@/store/hooks/useToneSections';
+import { useToneSectionPrefetch } from '@/hooks/useToneSectionPrefetch';
 
 type PreviewState = {
   status: 'idle' | 'loading' | 'ready' | 'error';
@@ -32,6 +33,27 @@ export default function MobileStyleDrawer({
   const touchStartYRef = useRef<number | null>(null);
 
   const totalStyles = sections.reduce((sum, section) => sum + section.styles.length, 0);
+  const sectionKeys = useMemo(() => sections.map((section) => section.tone), [sections]);
+
+  const handlePrefetch = useCallback(
+    (tone: string) => {
+      const target = sections.find((section) => section.tone === tone);
+      if (!target) return;
+      target.styles.forEach(({ option }) => {
+        const image = new Image();
+        image.src = option.thumbnail;
+      });
+    },
+    [sections]
+  );
+
+  const { setActive } = useToneSectionPrefetch(sectionKeys, handlePrefetch);
+
+  useEffect(() => {
+    if (isOpen) {
+      sectionKeys.forEach((key) => setActive(key, true));
+    }
+  }, [isOpen, sectionKeys, setActive]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -258,6 +280,8 @@ export default function MobileStyleDrawer({
                               <img
                                 src={style.thumbnail}
                                 alt={`${style.name} thumbnail`}
+                                loading="lazy"
+                                decoding="async"
                                 className="w-full h-full object-cover"
                               />
                               {entry.isSelected && (

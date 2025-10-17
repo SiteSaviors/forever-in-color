@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 type SectionKey = string;
 
@@ -45,13 +45,15 @@ export const useToneSectionPrefetch = (
   }, [sectionKeys]);
 
   useEffect(() => {
+    const observers = observersRef.current;
     return () => {
-      observersRef.current.forEach((observer) => observer.disconnect());
-      observersRef.current.clear();
+      observers.forEach((observer) => observer.disconnect());
+      observers.clear();
     };
   }, []);
 
-  const setActive = (sectionKey: SectionKey, active: boolean) => {
+  const setActive = useCallback(
+    (sectionKey: SectionKey, active: boolean) => {
     setPrefetchMap((current) => {
       const state = current[sectionKey];
       if (!state || state.isActive === active) {
@@ -82,9 +84,12 @@ export const useToneSectionPrefetch = (
         };
       });
     }
-  };
+    },
+    [onPrefetch]
+  );
 
-  const registerNode = (sectionKey: SectionKey) => (node: HTMLElement | null) => {
+  const registerNode = useCallback(
+    (sectionKey: SectionKey) => (node: HTMLElement | null) => {
     const existingObserver = observersRef.current.get(sectionKey);
     if (existingObserver) {
       existingObserver.disconnect();
@@ -113,7 +118,9 @@ export const useToneSectionPrefetch = (
 
     observer.observe(node);
     observersRef.current.set(sectionKey, observer);
-  };
+  },
+    [setActive]
+  );
 
   return useMemo(
     () => ({
@@ -121,6 +128,6 @@ export const useToneSectionPrefetch = (
       setActive,
       registerNode,
     }),
-    [prefetchMap]
+    [prefetchMap, registerNode, setActive]
   );
 };

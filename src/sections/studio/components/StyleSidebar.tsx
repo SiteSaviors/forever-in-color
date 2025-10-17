@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom';
 import { clsx } from 'clsx';
+import { useCallback, useMemo } from 'react';
 import type { StylePreviewStatus } from '@/store/useFounderStore';
 import type { ToneSection } from '@/store/hooks/useToneSections';
+import { useToneSectionPrefetch } from '@/hooks/useToneSectionPrefetch';
 
 type StyleSidebarProps = {
   sections: ToneSection[];
@@ -27,6 +29,22 @@ const StyleSidebar = ({
   hasCroppedImage,
   onStyleSelect,
 }: StyleSidebarProps) => {
+  const sectionKeys = useMemo(() => sections.map((section) => section.tone), [sections]);
+
+  const handlePrefetch = useCallback(
+    (tone: string) => {
+      const target = sections.find((section) => section.tone === tone);
+      if (!target) return;
+      target.styles.forEach(({ option }) => {
+        const image = new Image();
+        image.src = option.thumbnail;
+      });
+    },
+    [sections]
+  );
+
+  const { registerNode } = useToneSectionPrefetch(sectionKeys, handlePrefetch);
+
   const remainingLabel = entitlements.status === 'ready'
     ? entitlements.remainingTokens == null
       ? '∞'
@@ -67,7 +85,7 @@ const StyleSidebar = ({
 
         <div className="space-y-6">
           {sections.map((section) => (
-            <div key={section.tone} className="space-y-3">
+            <div key={section.tone} className="space-y-3" ref={registerNode(section.tone)}>
               <div className="flex items-center justify-between">
                 <div>
                   <div className="flex items-center gap-2">
@@ -114,7 +132,13 @@ const StyleSidebar = ({
                       }`}
                     >
                       <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
-                        <img src={style.thumbnail} alt={style.name} className="w-full h-full object-cover" />
+                        <img
+                          src={style.thumbnail}
+                          alt={style.name}
+                          loading="lazy"
+                          decoding="async"
+                          className="w-full h-full object-cover"
+                        />
                         {entry.isSelected && (
                           <div className="absolute inset-0 flex items-center justify-center bg-purple-500/40">
                             <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">

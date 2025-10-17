@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Download, Heart, Trash2, ArrowLeft, Filter, Sparkles } from 'lucide-react';
 import { useFounderStore } from '@/store/useFounderStore';
+import { useStudioFeedback } from '@/hooks/useStudioFeedback';
 import {
   fetchGalleryItems,
   deleteGalleryItem,
@@ -20,6 +21,7 @@ const GalleryPage = () => {
   const sessionAccessToken = useFounderStore((state) => state.sessionAccessToken);
   const entitlements = useFounderStore((state) => state.entitlements);
   const anonToken = useFounderStore((state) => state.anonToken);
+  const { showToast, showUpgradeModal, renderFeedback } = useStudioFeedback();
 
   const [items, setItems] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -71,8 +73,17 @@ const GalleryPage = () => {
     if (result.success) {
       setItems((prev) => prev.filter((item) => item.id !== itemId));
       setTotal((prev) => prev - 1);
+      showToast({
+        title: 'Removed from gallery',
+        description: 'The preview has been deleted.',
+        variant: 'success',
+      });
     } else {
-      alert(`Failed to delete: ${result.error}`);
+      showToast({
+        title: 'Delete failed',
+        description: result.error ?? 'Unable to delete this gallery item.',
+        variant: 'error',
+      });
     }
   };
 
@@ -92,13 +103,25 @@ const GalleryPage = () => {
       setItems((prev) =>
         prev.map((i) => (i.id === item.id ? { ...i, isFavorited: !newFavoriteState } : i))
       );
-      alert(`Failed to update favorite: ${result.error}`);
+      showToast({
+        title: 'Update failed',
+        description: result.error ?? 'Unable to update favorite status.',
+        variant: 'error',
+      });
     }
   };
 
   const handleDownload = async (item: GalleryItem) => {
     if (requiresWatermark) {
-      alert('Upgrade to unlock clean, watermark-free downloads.');
+      showUpgradeModal({
+        title: 'Unlock Clean Downloads',
+        description: 'Upgrade your Wondertone plan to download watermark-free canvases.',
+        ctaLabel: 'View Plans',
+        onCta: () => {
+          window.open('/pricing', '_self');
+        },
+        secondaryLabel: 'Maybe later',
+      });
     }
 
     // Track download
@@ -110,7 +133,11 @@ const GalleryPage = () => {
       downloadUrl = await getGalleryDownloadUrl(item, requiresWatermark, anonToken, accessToken);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unable to prepare download.';
-      alert(message);
+      showToast({
+        title: 'Download failed',
+        description: message,
+        variant: 'error',
+      });
       return;
     }
 
@@ -347,6 +374,7 @@ const GalleryPage = () => {
           </div>
         )}
       </div>
+      {renderFeedback()}
     </div>
   );
 };
