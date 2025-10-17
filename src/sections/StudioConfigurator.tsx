@@ -424,18 +424,13 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
       {/* Mobile: Vertical stack | Desktop (≥1024px): 3-column flex row */}
       <div className="block lg:flex max-w-[1800px] mx-auto">
         <StyleSidebar
-          sections={toneSections}
-          pendingStyleId={pendingStyleId}
-          stylePreviewStatus={stylePreviewStatus}
           entitlements={{
             tier: entitlements.tier,
             status: entitlements.status,
             remainingTokens: displayRemainingTokens,
             quota: entitlements.quota,
           }}
-          previews={previews}
           hasCroppedImage={hasCroppedImage}
-          onStyleSelect={handleStyleSelect}
         />
         <CanvasPreviewPanel
           overlayStyleName={overlayStyleName}
@@ -524,10 +519,7 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
         <MobileStyleDrawer
           isOpen={mobileStyleDrawerOpen}
           onClose={() => setMobileStyleDrawerOpen(false)}
-          sections={toneSections}
-          onStyleSelect={handleStyleSelect}
-          previews={previews}
-          pendingStyleId={pendingStyleId}
+          hasCroppedImage={hasCroppedImage}
           remainingTokens={displayRemainingTokens}
           userTier={entitlements.tier}
         />

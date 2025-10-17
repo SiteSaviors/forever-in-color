@@ -32,6 +32,11 @@ export const useToneSections = (): ToneSection[] => {
     const toneBuckets = new Map<StyleTone, ToneSectionStyle[]>();
 
     styles.forEach((style) => {
+      // Skip original-image - it's handled separately in OriginalImageCard
+      if (style.id === 'original-image') {
+        return;
+      }
+
       const metadata = findStyleMetadata(style.id);
       const tone: StyleTone = metadata?.tone ?? 'classic';
       const gate = evaluateStyleGate(style.id);

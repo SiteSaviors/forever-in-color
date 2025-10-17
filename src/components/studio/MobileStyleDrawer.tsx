@@ -1,20 +1,14 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState, type TouchEvent } from 'react';
-import type { ToneSection } from '@/store/hooks/useToneSections';
-import { useToneSectionPrefetch } from '@/hooks/useToneSectionPrefetch';
-
-type PreviewState = {
-  status: 'idle' | 'loading' | 'ready' | 'error';
-};
+import { useEffect, useRef, useState, type TouchEvent } from 'react';
+import { useFounderStore } from '@/store/useFounderStore';
+import OriginalImageCard from '@/sections/studio/components/OriginalImageCard';
+import StyleAccordion from '@/sections/studio/components/StyleAccordion';
 
 type MobileStyleDrawerProps = {
   isOpen: boolean;
   onClose: () => void;
-  sections: ToneSection[];
-  onStyleSelect: (styleId: string, meta?: { tone?: string }) => void;
-  previews: Record<string, PreviewState>;
-  pendingStyleId: string | null;
+  hasCroppedImage: boolean;
   remainingTokens: number | null;
   userTier: string;
 };
@@ -22,39 +16,24 @@ type MobileStyleDrawerProps = {
 export default function MobileStyleDrawer({
   isOpen,
   onClose,
-  sections,
-  onStyleSelect,
-  previews,
-  pendingStyleId,
+  hasCroppedImage,
   remainingTokens,
   userTier,
 }: MobileStyleDrawerProps) {
   const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
   const touchStartYRef = useRef<number | null>(null);
+  const selectedStyleId = useFounderStore((state) => state.selectedStyleId);
+  const selectedStyleIdRef = useRef(selectedStyleId);
 
-  const totalStyles = sections.reduce((sum, section) => sum + section.styles.length, 0);
-  const sectionKeys = useMemo(() => sections.map((section) => section.tone), [sections]);
-
-  const handlePrefetch = useCallback(
-    (tone: string) => {
-      const target = sections.find((section) => section.tone === tone);
-      if (!target) return;
-      target.styles.forEach(({ option }) => {
-        const image = new Image();
-        image.src = option.thumbnail;
-      });
-    },
-    [sections]
-  );
-
-  const { setActive } = useToneSectionPrefetch(sectionKeys, handlePrefetch);
-
+  // Close drawer when user selects a style
   useEffect(() => {
-    if (isOpen) {
-      sectionKeys.forEach((key) => setActive(key, true));
+    if (isOpen && selectedStyleId && selectedStyleId !== selectedStyleIdRef.current) {
+      onClose();
     }
-  }, [isOpen, sectionKeys, setActive]);
+    selectedStyleIdRef.current = selectedStyleId;
+  }, [selectedStyleId, isOpen, onClose]);
 
+  // Lock body scroll when drawer is open
   useEffect(() => {
     if (!isOpen) return;
 
@@ -111,11 +90,6 @@ export default function MobileStyleDrawer({
     window.addEventListener('orientationchange', handleOrientationChange);
     return () => window.removeEventListener('orientationchange', handleOrientationChange);
   }, [isOpen, onClose]);
-
-  const handleStyleClick = (styleId: string, tone: string) => {
-    onStyleSelect(styleId, { tone });
-    onClose();
-  };
 
   const prefersReducedMotion =
     typeof window !== 'undefined' &&
@@ -189,10 +163,10 @@ export default function MobileStyleDrawer({
                   id="mobile-drawer-title"
                   className="text-xl font-bold text-white max-[360px]:text-lg"
                 >
-                  Choose AI Style
+                  Choose Your Style
                 </h2>
                 <p id="mobile-drawer-desc" className="text-xs text-white/60 mt-1 max-[360px]:text-[11px]">
-                  {totalStyles} styles available • Tap to preview
+                  Expand sections to browse styles
                 </p>
               </div>
               <button
@@ -215,115 +189,19 @@ export default function MobileStyleDrawer({
               </p>
             </div>
 
+            {/* ✅ CORRECTED: Preserve mobile scroll structure with accordion inside */}
             <div className="relative flex-1 overflow-y-auto px-4 py-6 max-[360px]:px-3">
-              <div className="pointer-events-none absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-slate-900 to-transparent" />
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-slate-900 to-transparent" />
+              {/* Scroll fade indicators */}
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-slate-900 to-transparent z-10" />
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-slate-900 to-transparent z-10" />
 
-              <div className="relative space-y-6 pb-8">
-                {sections.map((section) => (
-                  <div key={section.tone} className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          {section.definition.icon && (
-                            <span className="text-sm" aria-hidden="true">
-                              {section.definition.icon}
-                            </span>
-                          )}
-                          <h3 className="text-sm font-semibold text-white uppercase tracking-wide">
-                            {section.definition.label}
-                          </h3>
-                        </div>
-                        <p className="text-xs text-white/50 mt-1">{section.definition.description}</p>
-                      </div>
-                      {!section.lockedGate?.allowed && section.lockedGate?.reason === 'style_locked' && (
-                        <span className="text-[11px] font-semibold text-purple-300">
-                          {section.lockedGate.requiredTier
-                            ? `${section.lockedGate.requiredTier.toUpperCase()}+`
-                            : 'Upgrade'}
-                        </span>
-                      )}
-                    </div>
+              {/* Content */}
+              <div className="relative pb-8 space-y-4">
+                {/* Original Image Card - always visible */}
+                <OriginalImageCard />
 
-                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 max-[360px]:gap-3">
-                      {section.styles.map((entry) => {
-                        const style = entry.option;
-                        const previewState = previews[style.id];
-                        const isReady = previewState?.status === 'ready';
-                        const gate = entry.gate;
-                        const isLocked =
-                          Boolean(pendingStyleId && pendingStyleId !== style.id) || !gate.allowed;
-
-                        return (
-                          <button
-                            key={style.id}
-                            type="button"
-                            onClick={() => handleStyleClick(style.id, section.tone)}
-                            disabled={isLocked}
-                            data-mobile-style-card
-                            className={`
-                              flex flex-col gap-3 p-3 rounded-2xl text-left transition-all min-h-[180px]
-                              ${
-                                entry.isSelected
-                                  ? 'bg-gradient-to-br from-purple-500/30 to-blue-500/30 border-2 border-purple-400 shadow-glow-soft'
-                                  : 'bg-white/5 border-2 border-white/10 active:bg-white/10 active:border-white/20'
-                              }
-                              ${isLocked ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
-                              max-[360px]:min-h-[160px]
-                            `}
-                            style={{
-                              touchAction: 'manipulation',
-                              WebkitTapHighlightColor: 'transparent',
-                            }}
-                          >
-                            <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-slate-800">
-                              <img
-                                src={style.thumbnail}
-                                alt={`${style.name} thumbnail`}
-                                loading="lazy"
-                                decoding="async"
-                                className="w-full h-full object-cover"
-                              />
-                              {entry.isSelected && (
-                                <div className="absolute inset-0 flex items-center justify-center bg-purple-500/40">
-                                  <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                    <path
-                                      fillRule="evenodd"
-                                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                      clipRule="evenodd"
-                                    />
-                                  </svg>
-                                </div>
-                              )}
-                            </div>
-
-                            <div className="flex flex-col gap-1">
-                              <p className="text-sm font-semibold text-white line-clamp-1">{style.name}</p>
-                              <p className="text-xs text-white/60 line-clamp-2">{style.description}</p>
-                              {!gate.allowed && gate.reason === 'style_locked' && (
-                                <span className="inline-flex items-center gap-1 text-[10px] text-purple-300 font-semibold">
-                                  Locked · {gate.requiredTier ? `${gate.requiredTier.toUpperCase()}+` : 'Upgrade'}
-                                </span>
-                              )}
-                              {isReady && gate.allowed && (
-                                <span className="inline-flex items-center gap-1 text-[10px] text-green-400 font-semibold">
-                                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                    <path
-                                      fillRule="evenodd"
-                                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                      clipRule="evenodd"
-                                    />
-                                  </svg>
-                                  Cached
-                                </span>
-                              )}
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
+                {/* StyleAccordion component - handles selection and closes drawer */}
+                <StyleAccordion hasCroppedImage={hasCroppedImage} />
               </div>
             </div>
           </motion.div>

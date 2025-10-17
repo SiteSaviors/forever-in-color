@@ -34,6 +34,8 @@ export type StyleOptionSnapshot = {
 };
 
 export const STYLE_CATALOG: StyleCatalogEntry[] = [
+  // NOTE: 'original-image' is handled separately in OriginalImageCard component
+  // It's not a tone-based style, so it's excluded from accordion grouping
   {
     id: 'original-image',
     name: 'Original Image',
@@ -41,7 +43,7 @@ export const STYLE_CATALOG: StyleCatalogEntry[] = [
     thumbnail: '/art-style-thumbnails/original-image.jpg',
     preview: '/art-style-thumbnails/original-image.jpg',
     priceModifier: 0,
-    tone: 'classic',
+    tone: 'classic', // Keep for backwards compatibility, but filtered out in useToneSections
     tier: 'free',
     isPremium: false,
     badges: ['classic'],
@@ -243,7 +245,7 @@ export type StyleToneDefinition = {
 export const STYLE_TONE_DEFINITIONS: Record<StyleTone, StyleToneDefinition> = {
   trending: {
     id: 'trending',
-    label: '📈 Trending Tones',
+    label: 'Trending Tones',
     description: 'Most-loved styles from the Wondertone community this week.',
     icon: '📈',
     sortOrder: 10,
@@ -272,13 +274,13 @@ export const STYLE_TONE_DEFINITIONS: Record<StyleTone, StyleToneDefinition> = {
   electric: {
     id: 'electric',
     label: 'Electric/Digital Tones',
-    description: 'Vivid, high-voltage looks powered by Wondertone’s AI.',
+    description: 'Vivid, high-voltage looks powered by Wondertone AI.',
     icon: '⚡',
     sortOrder: 50,
   },
   signature: {
     id: 'signature',
-    label: '⭐ Signature Tones',
+    label: 'Signature Tones',
     description: 'Premium exclusives crafted by the Wondertone studio.',
     icon: '⭐',
     sortOrder: 60,
