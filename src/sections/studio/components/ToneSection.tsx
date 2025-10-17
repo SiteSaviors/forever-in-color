@@ -4,6 +4,13 @@ import { ChevronDown, Lock } from 'lucide-react';
 import { clsx } from 'clsx';
 import type { ToneSection as ToneSectionType } from '@/store/hooks/useToneSections';
 import type { ToneGradientConfig } from '@/config/toneGradients';
+
+type ToneHeadlineClass = 'font-fraunces' | 'font-agbalumo' | 'font-spartan' | 'font-display';
+const toneHeadlineFontClassOptions: ToneHeadlineClass[] = ['font-fraunces', 'font-agbalumo', 'font-spartan', 'font-display'];
+const envToneHeadline = import.meta.env?.VITE_TONE_HEADLINE_FONT as string | undefined;
+const toneHeadlineFontClass: ToneHeadlineClass = toneHeadlineFontClassOptions.includes(envToneHeadline as ToneHeadlineClass)
+  ? (envToneHeadline as ToneHeadlineClass)
+  : 'font-fraunces';
 import ToneStyleCard from './ToneStyleCard';
 import { getToneIcon } from './toneIcons';
 import {
@@ -89,18 +96,28 @@ export default function ToneSection({
             }}
             aria-hidden="true"
           >
-            <Icon stroke={toneMeta.iconStroke} strokeWidth={1.5} className="h-5 w-5" />
+            <Icon stroke={toneMeta.iconStroke} strokeWidth={1.5} className="h-6 w-6" />
           </span>
           <div className="flex flex-1 flex-col text-left">
             <div className="flex items-center gap-3">
-              <h3 className="text-sm font-display font-semibold uppercase tracking-[0.32em] text-white md:text-base">
+              <h3
+                className={clsx(
+                  'text-sm font-bold uppercase tracking-[0.02em] text-white md:text-base',
+                  'font-fraunces',
+                )}
+              >
                 {definition.label}
               </h3>
+              {tone === 'trending' && (
+                <span className="rounded-full bg-rose-500/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-rose-300 animate-pulse-slow">
+                  Hot
+                </span>
+              )}
               {locked && tone === 'signature' && (
-                <Lock className="h-4 w-4 text-yellow-300" aria-hidden="true" />
+                <Lock className="h-4 w-4 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]" aria-hidden="true" />
               )}
             </div>
-            <p className="mt-1 text-xs text-white/65 md:text-sm md:leading-relaxed">
+            <p className="mt-1 text-xs text-white/75 md:text-sm md:leading-relaxed">
               {definition.description}
             </p>
           </div>

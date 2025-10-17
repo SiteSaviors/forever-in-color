@@ -53,7 +53,7 @@ export const TONE_GRADIENTS: Record<StyleTone, ToneGradientConfig> = {
     iconStroke: 'rgba(250, 204, 21, 0.85)',
     panel: {
       collapsed:
-        'linear-gradient(135deg, rgba(244,234,210,0.85) 0%, rgba(209,168,102,0.72) 45%, rgba(40,26,12,0.9) 100%)',
+        'linear-gradient(135deg, rgba(244,234,210,0.88) 0%, rgba(209,168,102,0.76) 45%, rgba(40,26,12,0.9) 100%)',
       expanded:
         'linear-gradient(135deg, rgba(247,239,219,0.92) 0%, rgba(227,191,132,0.78) 42%, rgba(43,30,15,0.88) 100%)',
     },

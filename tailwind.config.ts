@@ -21,6 +21,9 @@ export default {
         poppins: ['Poppins', 'sans-serif'],
         sans: ['Inter', 'system-ui', 'sans-serif'],
         display: ['"Playfair Display"', 'serif'],
+        fraunces: ['"Fraunces"', 'serif'],
+        agbalumo: ['Agbalumo', 'cursive'],
+        spartan: ['"League Spartan"', 'sans-serif'],
       },
       boxShadow: {
         founder: 'var(--shadow-xl)',
