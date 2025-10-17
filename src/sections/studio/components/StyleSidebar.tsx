@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { clsx } from 'clsx';
+import type { GateResult } from '@/utils/entitlementGate';
 import type { StylePreviewStatus, StyleOption } from '@/store/useFounderStore';
 
 type StyleSidebarProps = {
@@ -7,7 +8,7 @@ type StyleSidebarProps = {
   selectedStyleId: string | null;
   pendingStyleId: string | null;
   stylePreviewStatus: StylePreviewStatus;
-  canGenerateMore: () => boolean;
+  evaluateStyleGate: (styleId: string | null) => GateResult;
   entitlements: {
     tier: string;
     status: string;
@@ -24,7 +25,7 @@ const StyleSidebar = ({
   selectedStyleId,
   pendingStyleId,
   stylePreviewStatus,
-  canGenerateMore,
+  evaluateStyleGate,
   entitlements,
   previews,
   hasCroppedImage,
@@ -36,6 +37,7 @@ const StyleSidebar = ({
       : Math.max(0, entitlements.remainingTokens)
     : '—';
   const quotaLabel = entitlements.quota == null ? '∞' : entitlements.quota;
+  const globalGate = evaluateStyleGate(null);
 
   return (
     <aside
@@ -73,10 +75,11 @@ const StyleSidebar = ({
             const isSelected = style.id === selectedStyleId;
             const stylePreview = previews[style.id];
             const isReady = stylePreview?.status === 'ready';
+            const gate = globalGate.allowed ? evaluateStyleGate(style.id) : globalGate;
             const isLocked =
               Boolean(pendingStyleId && pendingStyleId !== style.id) ||
               (stylePreviewStatus === 'error' && pendingStyleId !== style.id) ||
-              !canGenerateMore();
+              !gate.allowed;
 
             return (
               <button

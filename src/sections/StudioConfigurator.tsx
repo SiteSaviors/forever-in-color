@@ -62,7 +62,7 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
   const hydrateEntitlements = useFounderStore((state) => state.hydrateEntitlements);
   const firstPreviewCompleted = useFounderStore((state) => state.firstPreviewCompleted);
   const generationCount = useFounderStore((state) => state.generationCount);
-  const canGenerateMore = useFounderStore((state) => state.canGenerateMore);
+  const evaluateStyleGate = useFounderStore((state) => state.evaluateStyleGate);
   const croppedImage = useFounderStore((state) => state.croppedImage);
   const orientation = useFounderStore((state) => state.orientation);
   const pendingStyleId = useFounderStore((state) => state.pendingStyleId);
@@ -92,6 +92,9 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
   const [showCanvasUpsellToast, setShowCanvasUpsellToast] = useState(false);
   const [welcomeDismissed, setWelcomeDismissed] = useState(false);
   const handleStyleSelect = useHandleStyleSelect();
+
+  const generalGate = evaluateStyleGate(null);
+  const currentStyleGate = currentStyle ? evaluateStyleGate(currentStyle.id) : generalGate;
 
   const overlayStyleName =
     (pendingStyleId ? styles.find((style) => style.id === pendingStyleId)?.name : currentStyle?.name) ??
@@ -258,7 +261,7 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
     currentStyle?.id !== 'original-image' &&
     !pendingStyleId &&
     stylePreviewStatus === 'idle' &&
-    canGenerateMore() &&
+    currentStyleGate.allowed &&
     Boolean(cachedPreviewEntry || preview?.status === 'ready');
 
   return (
@@ -336,7 +339,7 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
           selectedStyleId={selectedStyleId}
           pendingStyleId={pendingStyleId}
           stylePreviewStatus={stylePreviewStatus}
-          canGenerateMore={canGenerateMore}
+          evaluateStyleGate={evaluateStyleGate}
           entitlements={{
             tier: entitlements.tier,
             status: entitlements.status,
@@ -438,7 +441,7 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
           selectedStyleId={selectedStyleId}
           onStyleSelect={handleStyleSelect}
           previews={previews}
-          canGenerateMore={canGenerateMore()}
+          evaluateStyleGate={evaluateStyleGate}
           pendingStyleId={pendingStyleId}
           remainingTokens={displayRemainingTokens}
           userTier={entitlements.tier}

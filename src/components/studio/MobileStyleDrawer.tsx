@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { useEffect, useRef, useState, type TouchEvent } from 'react';
+import type { GateResult } from '@/utils/entitlementGate';
 import type { StyleOption } from '@/store/useFounderStore';
 
 type PreviewState = {
@@ -14,7 +15,7 @@ type MobileStyleDrawerProps = {
   selectedStyleId: string | null;
   onStyleSelect: (styleId: string) => void;
   previews: Record<string, PreviewState>;
-  canGenerateMore: boolean;
+  evaluateStyleGate: (styleId: string | null) => GateResult;
   pendingStyleId: string | null;
   remainingTokens: number | null;
   userTier: string;
@@ -27,7 +28,7 @@ export default function MobileStyleDrawer({
   selectedStyleId,
   onStyleSelect,
   previews,
-  canGenerateMore,
+  evaluateStyleGate,
   pendingStyleId,
   remainingTokens,
   userTier,
@@ -130,6 +131,7 @@ export default function MobileStyleDrawer({
   const handleTouchEnd = () => {
     touchStartYRef.current = null;
   };
+  const globalGate = evaluateStyleGate(null);
 
   return (
     <AnimatePresence>
@@ -205,7 +207,8 @@ export default function MobileStyleDrawer({
                   const isSelected = style.id === selectedStyleId;
                   const isPending = style.id === pendingStyleId;
                   const isReady = previews[style.id]?.status === 'ready';
-                  const isLocked = (isPending || !canGenerateMore) && !isSelected;
+                  const gate = globalGate.allowed ? evaluateStyleGate(style.id) : globalGate;
+                  const isLocked = (isPending && !isSelected) || !gate.allowed;
 
                   return (
                     <button

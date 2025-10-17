@@ -17,3 +17,7 @@ export const selectHydrateEntitlements = (state: FounderStoreState) => state.hyd
 export const selectEntitlementStatus = (state: FounderStoreState) => state.entitlements.status;
 export const selectEntitlementQuota = (state: FounderStoreState) => state.entitlements.quota;
 export const selectReconcileEntitlements = (state: FounderStoreState) => state.reconcileEntitlements;
+export const selectEvaluateStyleGate =
+  (styleId: string | null) => (state: FounderStoreState) => state.evaluateStyleGate(styleId);
+export const selectCanUseStyle =
+  (styleId: string | null) => (state: FounderStoreState) => state.canUseStyle(styleId);

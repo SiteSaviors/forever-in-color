@@ -236,15 +236,16 @@ export const createPreviewSlice = (
         return;
       }
 
-      if (!get().canGenerateMore()) {
-        set({
+      const gate = get().evaluateStyleGate(style.id);
+      if (!gate.allowed) {
+        set((current) => ({
           stylePreviewStatus: 'idle',
-          stylePreviewMessage: null,
-          stylePreviewError: null,
+          stylePreviewMessage: gate.message ?? current.stylePreviewMessage,
+          stylePreviewError: gate.message ?? current.stylePreviewError,
           pendingStyleId: null,
           orientationPreviewPending: false,
-          showQuotaModal: true,
-        });
+          showQuotaModal: gate.reason === 'quota_exceeded' ? true : current.showQuotaModal,
+        }));
         return;
       }
 
@@ -534,7 +535,8 @@ export const createPreviewSlice = (
               return;
             }
 
-            if (!stateBefore.canGenerateMore()) {
+            const gate = stateBefore.evaluateStyleGate(style.id);
+            if (!gate.allowed) {
               const existing = stateBefore.previews[style.id];
               store.setPreviewState(style.id, {
                 status: 'idle',
@@ -542,6 +544,12 @@ export const createPreviewSlice = (
                 orientation: existing?.orientation,
                 error: existing?.error,
               });
+              if (gate.reason === 'quota_exceeded') {
+                set((current) => ({
+                  showQuotaModal: true,
+                  stylePreviewStatus: current.stylePreviewStatus === 'loading' ? 'idle' : current.stylePreviewStatus,
+                }));
+              }
               return;
             }
 

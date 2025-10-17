@@ -9,6 +9,8 @@ export const useHandleStyleSelect = () => {
     const style = state.styles.find((item) => item.id === styleId);
     if (!style) return;
 
+    const gate = state.evaluateStyleGate(styleId);
+
     if (style.id === 'original-image' && state.croppedImage) {
       const timestamp = Date.now();
       state.setPreviewState('original-image', {
@@ -24,7 +26,10 @@ export const useHandleStyleSelect = () => {
       return;
     }
 
-    if (!state.canGenerateMore()) {
+    if (!gate.allowed) {
+      if (gate.reason === 'quota_exceeded') {
+        state.setShowQuotaModal(true);
+      }
       return;
     }
 

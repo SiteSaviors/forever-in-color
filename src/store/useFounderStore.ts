@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import type { Orientation } from '@/utils/imageUtils';
 import type { SmartCropResult } from '@/utils/smartCrop';
 import { CANVAS_SIZE_OPTIONS, CanvasSizeKey, getCanvasSizeOption, getDefaultSizeForOrientation } from '@/utils/canvasSizes';
+import { loadInitialStyles } from '@/config/styleCatalog';
 import { createPreviewSlice, type PreviewSlice } from './founder/previewSlice';
 import { createEntitlementSlice, type EntitlementSlice } from './founder/entitlementSlice';
 import { createSessionSlice, type SessionSlice } from './founder/sessionSlice';
@@ -107,104 +108,7 @@ type FounderBaseState = {
 
 export type FounderState = FounderBaseState & PreviewSlice & EntitlementSlice & SessionSlice;
 
-const mockStyles: StyleOption[] = [
-  {
-    id: 'original-image',
-    name: 'Original Image',
-    description: 'Your photo untouched - classic canvas print.',
-    thumbnail: '/art-style-thumbnails/original-image.jpg',
-    preview: '/art-style-thumbnails/original-image.jpg',
-    priceModifier: 0,
-  },
-  {
-    id: 'classic-oil-painting',
-    name: 'Classic Oil Painting',
-    description: 'Traditional oil painting texture with bold brush strokes.',
-    thumbnail: '/art-style-thumbnails/classic-oil-painting.jpg',
-    preview: '/art-style-thumbnails/classic-oil-painting.jpg',
-    priceModifier: 0,
-  },
-  {
-    id: 'watercolor-dreams',
-    name: 'Watercolor Dreams',
-    description: 'Soft washes with gentle light leaks perfect for portraits.',
-    thumbnail: '/art-style-thumbnails/watercolor-dreams.jpg',
-    preview: '/art-style-thumbnails/watercolor-dreams.jpg',
-    priceModifier: 0,
-  },
-  {
-    id: 'pastel-bliss',
-    name: 'Pastel Bliss',
-    description: 'Gentle color washes with soft grain highlights.',
-    thumbnail: '/art-style-thumbnails/pastel-bliss.jpg',
-    preview: '/art-style-thumbnails/pastel-bliss.jpg',
-    priceModifier: 0,
-  },
-  {
-    id: '3d-storybook',
-    name: '3D Storybook',
-    description: 'Whimsical 3D illustrated style with storybook charm.',
-    thumbnail: '/art-style-thumbnails/3d-storybook.jpg',
-    preview: '/art-style-thumbnails/3d-storybook.jpg',
-    priceModifier: 0,
-  },
-  {
-    id: 'pop-art-burst',
-    name: 'Pop Art Burst',
-    description: 'Bold Warhol-inspired pop art with vibrant colors.',
-    thumbnail: '/art-style-thumbnails/pop-art-burst.jpg',
-    preview: '/art-style-thumbnails/pop-art-burst.jpg',
-    priceModifier: 0,
-  },
-  {
-    id: 'artisan-charcoal',
-    name: 'Artisan Charcoal',
-    description: 'Hand-drawn charcoal artistry with dramatic shading.',
-    thumbnail: '/art-style-thumbnails/artisan-charcoal.jpg',
-    preview: '/art-style-thumbnails/artisan-charcoal.jpg',
-    priceModifier: 0,
-  },
-  {
-    id: 'neon-splash',
-    name: 'Neon Splash',
-    description: 'Electric neon splashes with vibrant energy.',
-    thumbnail: '/art-style-thumbnails/neon-splash.jpg',
-    preview: '/art-style-thumbnails/neon-splash.jpg',
-    priceModifier: 0,
-  },
-  {
-    id: 'electric-bloom',
-    name: 'Electric Bloom',
-    description: 'Luminous bloom effects with electric color palettes.',
-    thumbnail: '/art-style-thumbnails/electric-bloom.jpg',
-    preview: '/art-style-thumbnails/electric-bloom.jpg',
-    priceModifier: 0,
-  },
-  {
-    id: 'deco-luxe',
-    name: 'Deco Luxe',
-    description: 'Art Deco elegance with geometric luxury.',
-    thumbnail: '/art-style-thumbnails/deco-luxe.jpg',
-    preview: '/art-style-thumbnails/deco-luxe.jpg',
-    priceModifier: 0,
-  },
-  {
-    id: 'abstract-fusion',
-    name: 'Abstract Fusion',
-    description: 'Bold geometric abstraction with luminous color blocking.',
-    thumbnail: '/art-style-thumbnails/abstract-fusion.jpg',
-    preview: '/art-style-thumbnails/abstract-fusion.jpg',
-    priceModifier: 0,
-  },
-  {
-    id: 'gemstone-poly',
-    name: 'Gemstone Poly',
-    description: 'Low-poly crystalline facets with gemstone brilliance.',
-    thumbnail: '/art-style-thumbnails/gemstone-poly.jpg',
-    preview: '/art-style-thumbnails/gemstone-poly.jpg',
-    priceModifier: 0,
-  },
-];
+const initialStyles: StyleOption[] = loadInitialStyles();
 
 const mockEnhancements: Enhancement[] = [
   {
@@ -338,9 +242,9 @@ const mockCarouselData: StyleCarouselCard[] = [
 ];
 
 export const useFounderStore = create<FounderState>((set, get, api) => ({
-  styles: mockStyles,
+  styles: initialStyles,
   enhancements: mockEnhancements,
-  selectedStyleId: mockStyles[0]?.id ?? null,
+  selectedStyleId: initialStyles[0]?.id ?? null,
   basePrice: DEFAULT_SQUARE_PRICE,
   livingCanvasModalOpen: false,
   uploadedImage: null,
@@ -388,7 +292,7 @@ export const useFounderStore = create<FounderState>((set, get, api) => ({
       ),
       livingCanvasModalOpen: id === 'living-canvas' && enabled ? false : state.livingCanvasModalOpen,
     })),
-  ...createPreviewSlice(mockStyles)(set, get, api),
+  ...createPreviewSlice(initialStyles)(set, get, api),
   ...createEntitlementSlice(set, get, api),
   ...createSessionSlice(set, get, api),
   setSmartCropForOrientation: (orientation, result) =>

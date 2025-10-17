@@ -1,6 +1,7 @@
 import type { StateCreator } from 'zustand';
 import { mintAnonymousToken, fetchAuthenticatedEntitlements } from '@/utils/entitlementsApi';
 import { getOrCreateFingerprintHash, getStoredFingerprintHash } from '@/utils/deviceFingerprint';
+import { canGenerateStylePreview, computeAnonymousRemaining, type GateResult } from '@/utils/entitlementGate';
 import { loadAnonTokenFromStorage, persistAnonToken } from '../utils/anonTokenStorage';
 import { getSupabaseClient } from '../utils/supabaseClient';
 import type { FounderState } from '../useFounderStore';
@@ -25,11 +26,13 @@ export type EntitlementState = {
   error: string | null;
 };
 
+export type FingerprintStatus = 'idle' | 'resolving' | 'ready' | 'error';
+
 export type EntitlementSlice = {
   entitlements: EntitlementState;
   anonToken: string | null;
   fingerprintHash: string | null;
-  fingerprintStatus: 'idle' | 'resolving' | 'ready' | 'error';
+  fingerprintStatus: FingerprintStatus;
   fingerprintError: string | null;
   showTokenToast: boolean;
   showQuotaModal: boolean;
@@ -55,6 +58,8 @@ export type EntitlementSlice = {
   dismissAccountPrompt: () => void;
   shouldShowAccountPrompt: () => boolean;
   canGenerateMore: () => boolean;
+  evaluateStyleGate: (styleId: string | null) => GateResult;
+  canUseStyle: (styleId: string | null) => boolean;
   getGenerationLimit: () => number;
   getDisplayableRemainingTokens: () => number | null;
   ensureFingerprintHash: () => Promise<string | null>;
@@ -143,37 +148,6 @@ const priorityFromTier = (tier: EntitlementTier): EntitlementPriority => {
 };
 
 const requiresWatermarkFromTier = (tier: EntitlementTier): boolean => tier === 'anonymous' || tier === 'free';
-
-const computeAnonymousRemaining = (entitlements: EntitlementState, generationCount: number): number | null => {
-  if (entitlements.tier !== 'anonymous') {
-    return entitlements.remainingTokens;
-  }
-
-  const candidates: number[] = [];
-
-  if (typeof entitlements.softRemaining === 'number') {
-    candidates.push(Math.max(0, entitlements.softRemaining));
-  }
-
-  if (typeof entitlements.softLimit === 'number') {
-    const used = Math.min(generationCount, entitlements.softLimit);
-    candidates.push(Math.max(entitlements.softLimit - used, 0));
-  }
-
-  if (typeof entitlements.remainingTokens === 'number') {
-    candidates.push(Math.max(0, entitlements.remainingTokens));
-  }
-
-  if (typeof entitlements.hardRemaining === 'number') {
-    candidates.push(Math.max(0, entitlements.hardRemaining));
-  }
-
-  if (candidates.length === 0) {
-    return null;
-  }
-
-  return Math.min(...candidates);
-};
 
 export const createEntitlementSlice: StateCreator<FounderState, [], [], EntitlementSlice> = (set, get) => {
   const storedFingerprintHash = typeof window !== 'undefined' ? getStoredFingerprintHash() : null;
@@ -492,37 +466,27 @@ export const createEntitlementSlice: StateCreator<FounderState, [], [], Entitlem
     return shouldPrompt && !accountPromptShown && !accountPromptDismissed;
   },
   canGenerateMore: () => {
-    const { entitlements, sessionUser, fingerprintStatus, generationCount } = get();
-
-    if (entitlements.status !== 'ready') {
-      // Block authenticated users until their quota loads to avoid inconsistent UX
-      return !sessionUser;
-    }
-
-    if (entitlements.tier === 'anonymous') {
-      if (fingerprintStatus === 'error') {
-        return false;
-      }
-
-      if (
-        typeof entitlements.hardRemaining === 'number' &&
-        entitlements.hardRemaining <= 0
-      ) {
-        return false;
-      }
-
-      const remaining = computeAnonymousRemaining(entitlements, generationCount);
-      if (typeof remaining === 'number') {
-        return remaining > 0;
-      }
-      return true;
-    }
-
-    if (entitlements.remainingTokens == null) {
-      return true;
-    }
-
-    return entitlements.remainingTokens > 0;
+    const state = get();
+    return canGenerateStylePreview({
+      styleId: null,
+      entitlements: state.entitlements,
+      sessionUser: state.sessionUser,
+      fingerprintStatus: state.fingerprintStatus,
+      generationCount: state.generationCount,
+    }).allowed;
+  },
+  evaluateStyleGate: (styleId) => {
+    const state = get();
+    return canGenerateStylePreview({
+      styleId,
+      entitlements: state.entitlements,
+      sessionUser: state.sessionUser,
+      fingerprintStatus: state.fingerprintStatus,
+      generationCount: state.generationCount,
+    });
+  },
+  canUseStyle: (styleId) => {
+    return get().evaluateStyleGate(styleId).allowed;
   },
   getGenerationLimit: () => {
     const { entitlements } = get();
