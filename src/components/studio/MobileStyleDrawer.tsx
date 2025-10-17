@@ -1,8 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { useEffect, useRef, useState, type TouchEvent } from 'react';
-import type { GateResult } from '@/utils/entitlementGate';
-import type { StyleOption } from '@/store/useFounderStore';
+import type { ToneSection } from '@/store/hooks/useToneSections';
 
 type PreviewState = {
   status: 'idle' | 'loading' | 'ready' | 'error';
@@ -11,11 +10,9 @@ type PreviewState = {
 type MobileStyleDrawerProps = {
   isOpen: boolean;
   onClose: () => void;
-  styles: StyleOption[];
-  selectedStyleId: string | null;
+  sections: ToneSection[];
   onStyleSelect: (styleId: string) => void;
   previews: Record<string, PreviewState>;
-  evaluateStyleGate: (styleId: string | null) => GateResult;
   pendingStyleId: string | null;
   remainingTokens: number | null;
   userTier: string;
@@ -24,11 +21,9 @@ type MobileStyleDrawerProps = {
 export default function MobileStyleDrawer({
   isOpen,
   onClose,
-  styles,
-  selectedStyleId,
+  sections,
   onStyleSelect,
   previews,
-  evaluateStyleGate,
   pendingStyleId,
   remainingTokens,
   userTier,
@@ -36,7 +31,8 @@ export default function MobileStyleDrawer({
   const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
   const touchStartYRef = useRef<number | null>(null);
 
-  // iOS Safari scroll lock - prevents body bounce
+  const totalStyles = sections.reduce((sum, section) => sum + section.styles.length, 0);
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -55,14 +51,12 @@ export default function MobileStyleDrawer({
     };
   }, [isOpen]);
 
-  // Track viewport height for iOS Safari (100vh bug fix)
   useEffect(() => {
     const handleResize = () => setViewportHeight(window.innerHeight);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Android back button support
   useEffect(() => {
     if (!isOpen) return;
 
@@ -70,7 +64,6 @@ export default function MobileStyleDrawer({
       onClose();
     };
 
-    // Add fake history state when drawer opens
     window.history.pushState({ drawer: 'open' }, '');
     window.addEventListener('popstate', handlePopState);
 
@@ -86,7 +79,6 @@ export default function MobileStyleDrawer({
     };
   }, [isOpen, onClose]);
 
-  // Close drawer on orientation change
   useEffect(() => {
     const handleOrientationChange = () => {
       if (isOpen) {
@@ -100,10 +92,9 @@ export default function MobileStyleDrawer({
 
   const handleStyleClick = (styleId: string) => {
     onStyleSelect(styleId);
-    onClose(); // Auto-close after selection
+    onClose();
   };
 
-  // Detect reduced motion preference
   const prefersReducedMotion =
     typeof window !== 'undefined' &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -131,13 +122,11 @@ export default function MobileStyleDrawer({
   const handleTouchEnd = () => {
     touchStartYRef.current = null;
   };
-  const globalGate = evaluateStyleGate(null);
 
   return (
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop with blur */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -148,7 +137,6 @@ export default function MobileStyleDrawer({
             aria-hidden="true"
           />
 
-          {/* Bottom Sheet Drawer */}
           <motion.div
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
@@ -169,12 +157,10 @@ export default function MobileStyleDrawer({
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
           >
-            {/* Drag Handle (visual affordance) */}
             <div className="flex justify-center pt-3 pb-2">
               <div className="w-12 h-1 bg-white/30 rounded-full" />
             </div>
 
-            {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 max-[360px]:px-4 max-[360px]:py-3">
               <div>
                 <h2
@@ -184,7 +170,7 @@ export default function MobileStyleDrawer({
                   Choose AI Style
                 </h2>
                 <p id="mobile-drawer-desc" className="text-xs text-white/60 mt-1 max-[360px]:text-[11px]">
-                  {styles.length} styles available • Tap to preview
+                  {totalStyles} styles available • Tap to preview
                 </p>
               </div>
               <button
@@ -198,140 +184,122 @@ export default function MobileStyleDrawer({
               </button>
             </div>
 
-            {/* Scrollable Grid */}
+            <div className="px-6 py-4 border-b border-white/10">
+              <p className="text-xs text-white/60">
+                Tier: <span className="font-semibold text-white">{userTier.toUpperCase()}</span> · Remaining:{' '}
+                <span className="font-semibold text-white">
+                  {remainingTokens == null ? '∞' : Math.max(0, remainingTokens)}
+                </span>
+              </p>
+            </div>
+
             <div className="relative flex-1 overflow-y-auto px-4 py-6 max-[360px]:px-3">
               <div className="pointer-events-none absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-slate-900 to-transparent" />
               <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-slate-900 to-transparent" />
-              <div className="relative grid grid-cols-2 sm:grid-cols-3 gap-4 pb-6 max-[360px]:gap-3">
-                {styles.map((style) => {
-                  const isSelected = style.id === selectedStyleId;
-                  const isPending = style.id === pendingStyleId;
-                  const isReady = previews[style.id]?.status === 'ready';
-                  const gate = globalGate.allowed ? evaluateStyleGate(style.id) : globalGate;
-                  const isLocked = (isPending && !isSelected) || !gate.allowed;
 
-                  return (
-                    <button
-                      key={style.id}
-                      type="button"
-                      onClick={() => handleStyleClick(style.id)}
-                      disabled={isLocked}
-                      data-mobile-style-card
-                      className={`
-                        flex flex-col gap-3 p-3 rounded-2xl text-left transition-all min-h-[180px]
-                        ${
-                          isSelected
-                            ? 'bg-gradient-to-br from-purple-500/30 to-blue-500/30 border-2 border-purple-400 shadow-glow-soft'
-                            : 'bg-white/5 border-2 border-white/10 active:bg-white/10 active:border-white/20'
-                        }
-                        ${isLocked ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
-                        max-[360px]:min-h-[160px]
-                      `}
-                      style={{
-                        touchAction: 'manipulation',
-                        WebkitTapHighlightColor: 'transparent',
-                      }}
-                    >
-                      {/* Thumbnail */}
-                      <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-slate-800">
-                        <img
-                          src={style.thumbnail}
-                          alt={`${style.name} preview`}
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                        />
+              <div className="relative space-y-6 pb-8">
+                {sections.map((section) => (
+                  <div key={section.tone} className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          {section.definition.icon && (
+                            <span className="text-sm" aria-hidden="true">
+                              {section.definition.icon}
+                            </span>
+                          )}
+                          <h3 className="text-sm font-semibold text-white uppercase tracking-wide">
+                            {section.definition.label}
+                          </h3>
+                        </div>
+                        <p className="text-xs text-white/50 mt-1">{section.definition.description}</p>
+                      </div>
+                      {!section.lockedGate?.allowed && section.lockedGate?.reason === 'style_locked' && (
+                        <span className="text-[11px] font-semibold text-purple-300">
+                          {section.lockedGate.requiredTier
+                            ? `${section.lockedGate.requiredTier.toUpperCase()}+`
+                            : 'Upgrade'}
+                        </span>
+                      )}
+                    </div>
 
-                        {/* Selected indicator overlay */}
-                        {isSelected && (
-                          <div className="absolute inset-0 flex items-center justify-center bg-purple-500/40 animate-fadeIn">
-                            <svg
-                              className="w-8 h-8 text-white drop-shadow-lg"
-                              fill="currentColor"
-                              viewBox="0 0 20 20"
-                            >
-                              <path
-                                fillRule="evenodd"
-                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                clipRule="evenodd"
+                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 max-[360px]:gap-3">
+                      {section.styles.map((entry) => {
+                        const style = entry.option;
+                        const previewState = previews[style.id];
+                        const isReady = previewState?.status === 'ready';
+                        const gate = entry.gate;
+                        const isLocked =
+                          Boolean(pendingStyleId && pendingStyleId !== style.id) || !gate.allowed;
+
+                        return (
+                          <button
+                            key={style.id}
+                            type="button"
+                            onClick={() => handleStyleClick(style.id)}
+                            disabled={isLocked}
+                            data-mobile-style-card
+                            className={`
+                              flex flex-col gap-3 p-3 rounded-2xl text-left transition-all min-h-[180px]
+                              ${
+                                entry.isSelected
+                                  ? 'bg-gradient-to-br from-purple-500/30 to-blue-500/30 border-2 border-purple-400 shadow-glow-soft'
+                                  : 'bg-white/5 border-2 border-white/10 active:bg-white/10 active:border-white/20'
+                              }
+                              ${isLocked ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
+                              max-[360px]:min-h-[160px]
+                            `}
+                            style={{
+                              touchAction: 'manipulation',
+                              WebkitTapHighlightColor: 'transparent',
+                            }}
+                          >
+                            <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-slate-800">
+                              <img
+                                src={style.thumbnail}
+                                alt={`${style.name} thumbnail`}
+                                className="w-full h-full object-cover"
                               />
-                            </svg>
-                          </div>
-                        )}
+                              {entry.isSelected && (
+                                <div className="absolute inset-0 flex items-center justify-center bg-purple-500/40">
+                                  <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <path
+                                      fillRule="evenodd"
+                                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                      clipRule="evenodd"
+                                    />
+                                  </svg>
+                                </div>
+                              )}
+                            </div>
 
-                        {/* Cached "Ready" badge */}
-                        {isReady && !isSelected && (
-                          <div className="absolute top-2 right-2 bg-emerald-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-lg">
-                            Ready
-                          </div>
-                        )}
-
-                        {/* Pending generation indicator */}
-                        {isPending && (
-                          <div className="absolute inset-0 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm">
-                            <div className="w-8 h-8 border-3 border-purple-400/30 border-t-purple-400 rounded-full animate-spin" />
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Text Content */}
-                      <div className="flex-1 flex flex-col">
-                        <h3 className="text-sm font-bold text-white line-clamp-1 max-[360px]:text-[13px]">
-                          {style.name}
-                        </h3>
-                        <p className="text-xs text-white/60 mt-1 line-clamp-2 flex-1 max-[360px]:text-[11px]">
-                          {style.description}
-                        </p>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Footer with Token Counter */}
-            <div
-              className="px-6 py-4 border-t border-white/10 bg-slate-950/50 max-[360px]:px-4 max-[360px]:py-3"
-              style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))' }}
-            >
-              <div className="flex items-center justify-between gap-4 max-[360px]:gap-3">
-                <p className="text-xs text-white/60 max-[360px]:text-[11px]">
-                  Tap a style to generate your preview
-                </p>
-
-                {/* Token Counter */}
-                {remainingTokens !== null && (
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-500/20 border border-purple-400/30 flex-shrink-0">
-                    <svg
-                      className="w-3.5 h-3.5 text-purple-300"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                    <span className="text-xs font-bold text-purple-200">
-                      {remainingTokens === Infinity || remainingTokens === null
-                        ? '∞'
-                        : Math.max(0, remainingTokens)}{' '}
-                      left
-                    </span>
+                            <div className="flex flex-col gap-1">
+                              <p className="text-sm font-semibold text-white line-clamp-1">{style.name}</p>
+                              <p className="text-xs text-white/60 line-clamp-2">{style.description}</p>
+                              {!gate.allowed && gate.reason === 'style_locked' && (
+                                <span className="inline-flex items-center gap-1 text-[10px] text-purple-300 font-semibold">
+                                  Locked · {gate.requiredTier ? `${gate.requiredTier.toUpperCase()}+` : 'Upgrade'}
+                                </span>
+                              )}
+                              {isReady && gate.allowed && (
+                                <span className="inline-flex items-center gap-1 text-[10px] text-green-400 font-semibold">
+                                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path
+                                      fillRule="evenodd"
+                                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                      clipRule="evenodd"
+                                    />
+                                  </svg>
+                                  Cached
+                                </span>
+                              )}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                )}
-
-                {/* Upgrade badge for free users */}
-                {userTier === 'anonymous' || userTier === 'free' ? (
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-400/30 flex-shrink-0">
-                    <svg
-                      className="w-3 h-3 text-purple-300"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                    <span className="text-[10px] font-bold text-purple-200 uppercase tracking-wider">
-                      Upgrade
-                    </span>
-                  </div>
-                ) : null}
+                ))}
               </div>
             </div>
           </motion.div>

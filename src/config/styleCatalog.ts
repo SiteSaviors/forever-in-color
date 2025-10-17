@@ -215,3 +215,62 @@ export const loadInitialStyles = (): StyleOptionSnapshot[] =>
       priceModifier,
     })
   );
+
+export type StyleToneDefinition = {
+  id: StyleTone;
+  label: string;
+  description: string;
+  icon?: string;
+  sortOrder: number;
+  requiredTier?: 'creator' | 'plus' | 'pro';
+};
+
+export const STYLE_TONE_DEFINITIONS: Record<StyleTone, StyleToneDefinition> = {
+  trending: {
+    id: 'trending',
+    label: '📈 Trending Tones',
+    description: 'Most-loved styles from the Wondertone community this week.',
+    icon: '📈',
+    sortOrder: 10,
+  },
+  classic: {
+    id: 'classic',
+    label: 'Classic Tones',
+    description: 'Timeless treatments that never go out of style.',
+    icon: '🎨',
+    sortOrder: 20,
+  },
+  modern: {
+    id: 'modern',
+    label: 'Modern Tones',
+    description: 'Fresh, design-forward looks for contemporary art lovers.',
+    icon: '✨',
+    sortOrder: 30,
+  },
+  stylized: {
+    id: 'stylized',
+    label: 'Stylized Tones',
+    description: 'Statement-making looks for bold storytellers.',
+    icon: '🎭',
+    sortOrder: 40,
+  },
+  electric: {
+    id: 'electric',
+    label: 'Electric/Digital Tones',
+    description: 'Vivid, high-voltage looks powered by Wondertone’s AI.',
+    icon: '⚡',
+    sortOrder: 50,
+  },
+  signature: {
+    id: 'signature',
+    label: '⭐ Signature Tones',
+    description: 'Premium exclusives crafted by the Wondertone studio.',
+    icon: '⭐',
+    sortOrder: 60,
+    requiredTier: 'creator',
+  },
+};
+
+export const STYLE_TONES_IN_ORDER: StyleTone[] = Object.values(STYLE_TONE_DEFINITIONS)
+  .sort((a, b) => a.sortOrder - b.sortOrder)
+  .map((definition) => definition.id);

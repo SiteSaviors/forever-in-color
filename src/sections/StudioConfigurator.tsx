@@ -1,6 +1,7 @@
 import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import { clsx } from 'clsx';
 import { useFounderStore, StylePreviewStatus } from '@/store/useFounderStore';
+import { useToneSections } from '@/store/hooks/useToneSections';
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
 import { saveToGallery } from '@/utils/galleryApi';
 import { downloadCleanImage } from '@/utils/premiumDownload';
@@ -54,7 +55,6 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
   const sessionUser = useFounderStore((state) => state.sessionUser);
   const sessionAccessToken = useFounderStore((state) => state.sessionAccessToken);
   const styles = useFounderStore((state) => state.styles);
-  const selectedStyleId = useFounderStore((state) => state.selectedStyleId);
   const previews = useFounderStore((state) => state.previews);
   const currentStyle = useFounderStore((state) => state.currentStyle());
   const preview = currentStyle ? previews[currentStyle.id] : undefined;
@@ -92,6 +92,7 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
   const [showCanvasUpsellToast, setShowCanvasUpsellToast] = useState(false);
   const [welcomeDismissed, setWelcomeDismissed] = useState(false);
   const handleStyleSelect = useHandleStyleSelect();
+  const toneSections = useToneSections();
 
   const generalGate = evaluateStyleGate(null);
   const currentStyleGate = currentStyle ? evaluateStyleGate(currentStyle.id) : generalGate;
@@ -335,11 +336,9 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
       {/* Mobile: Vertical stack | Desktop (≥1024px): 3-column flex row */}
       <div className="block lg:flex max-w-[1800px] mx-auto">
         <StyleSidebar
-          styles={styles}
-          selectedStyleId={selectedStyleId}
+          sections={toneSections}
           pendingStyleId={pendingStyleId}
           stylePreviewStatus={stylePreviewStatus}
-          evaluateStyleGate={evaluateStyleGate}
           entitlements={{
             tier: entitlements.tier,
             status: entitlements.status,
@@ -437,11 +436,9 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
         <MobileStyleDrawer
           isOpen={mobileStyleDrawerOpen}
           onClose={() => setMobileStyleDrawerOpen(false)}
-          styles={styles}
-          selectedStyleId={selectedStyleId}
+          sections={toneSections}
           onStyleSelect={handleStyleSelect}
           previews={previews}
-          evaluateStyleGate={evaluateStyleGate}
           pendingStyleId={pendingStyleId}
           remainingTokens={displayRemainingTokens}
           userTier={entitlements.tier}
