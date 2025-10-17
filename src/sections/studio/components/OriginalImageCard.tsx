@@ -2,7 +2,6 @@ import { Check } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useFounderStore } from '@/store/useFounderStore';
 import { useHandleStyleSelect } from '@/sections/studio/hooks/useHandleStyleSelect';
-import { emitStepOneEvent } from '@/utils/telemetry';
 
 export default function OriginalImageCard() {
   const croppedImage = useFounderStore((state) => state.croppedImage);
@@ -15,13 +14,9 @@ export default function OriginalImageCard() {
     return null;
   }
 
+  // FIXED: Remove duplicate analytics emission - handleStyleSelect already emits
   const handleSelect = () => {
     handleStyleSelect('original-image', { tone: 'original' });
-    emitStepOneEvent({
-      type: 'tone_style_select',
-      value: 'original-image',
-      metadata: { tone: 'original' },
-    });
   };
 
   return (

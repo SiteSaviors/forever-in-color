@@ -1,6 +1,7 @@
 import { ChevronDown, Lock } from 'lucide-react';
 import { clsx } from 'clsx';
 import type { ToneSection as ToneSectionType } from '@/store/hooks/useToneSections';
+import { TONE_GRADIENTS } from '@/config/toneGradients';
 import ToneStyleCard from './ToneStyleCard';
 
 type ToneSectionProps = {
@@ -17,18 +18,36 @@ export default function ToneSection({
   onToggle,
 }: ToneSectionProps) {
   const { tone, definition, styles, locked } = section;
+  const gradientConfig = TONE_GRADIENTS[tone];
 
   return (
-    <div className="border border-white/10 rounded-xl overflow-hidden bg-slate-900/40 backdrop-blur-sm">
+    <div
+      className={clsx(
+        'relative rounded-xl overflow-hidden border border-white/10',
+        'transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]',
+        'backdrop-blur-sm',
+        // Tone-specific gradient wash
+        isExpanded
+          ? `bg-gradient-to-br ${gradientConfig.expanded}`
+          : `bg-gradient-to-br ${gradientConfig.collapsed}`,
+        // Z-lift animation on expand
+        isExpanded && [
+          'scale-[1.02]',
+          'shadow-[0_8px_32px_rgba(0,0,0,0.3),0_2px_8px_rgba(0,0,0,0.2)]',
+          'will-change-transform'
+        ]
+      )}
+    >
       {/* Tone Header (clickable to expand/collapse) */}
       <button
         onClick={onToggle}
         className={clsx(
-          'w-full flex flex-col items-center justify-center p-5 transition-all duration-200 relative',
-          locked && tone === 'signature'
-            ? 'bg-gradient-to-r from-purple-500/10 to-blue-500/10 hover:from-purple-500/15 hover:to-blue-500/15'
-            : 'bg-white/5 hover:bg-white/10',
-          isExpanded && 'bg-white/10'
+          'w-full flex flex-col items-center justify-center p-5 relative',
+          'transition-all duration-300',
+          'hover:bg-white/5',
+          !isExpanded && 'hover:scale-[1.005]', // Subtle invite on hover when collapsed
+          // Neon glow on Trending hover
+          tone === 'trending' && !isExpanded && 'hover:shadow-[0_0_30px_rgba(245,158,11,0.4),0_0_60px_rgba(245,158,11,0.2)]'
         )}
         aria-expanded={isExpanded}
         aria-controls={`tone-section-${tone}`}

@@ -92,6 +92,34 @@ export default {
           '50%': { transform: 'rotate(180deg) scale(1.1)' },
           '100%': { transform: 'rotate(360deg) scale(1)' },
         },
+        // Aesthetic enhancements for gallery experience
+        'badge-shimmer': {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(100%)' },
+        },
+        'ink-ripple': {
+          '0%': {
+            transform: 'scale(0)',
+            opacity: '1',
+          },
+          '100%': {
+            transform: 'scale(2.5)',
+            opacity: '0',
+          },
+        },
+        'skeleton-shimmer': {
+          '0%': { backgroundPosition: '-200% 0' },
+          '100%': { backgroundPosition: '200% 0' },
+        },
+        'pulse-slow': {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.6' },
+        },
+        'border-rotate': {
+          '0%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+          '100%': { backgroundPosition: '0% 50%' },
+        },
       },
       animation: {
         shimmer: 'shimmer 1.5s linear infinite',
@@ -106,6 +134,12 @@ export default {
         float: 'float 5s ease-in-out infinite',
         'float-slow': 'float-slow 8s ease-in-out infinite',
         'rotate-slow': 'rotate-slow 20s ease-in-out infinite',
+        // Aesthetic animations
+        'badge-shimmer': 'badge-shimmer 1.5s ease-in-out 2s infinite',
+        'ink-ripple': 'ink-ripple 600ms cubic-bezier(0.4, 0, 0.2, 1) forwards',
+        'skeleton-shimmer': 'skeleton-shimmer 2s ease-in-out infinite',
+        'pulse-slow': 'pulse-slow 2s ease-in-out infinite',
+        'border-rotate': 'border-rotate 8s ease-in-out infinite',
       },
     },
   },

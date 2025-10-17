@@ -109,13 +109,46 @@ body {
   pointer-events: none;
 }
 
+/* Gold border animation for locked styles */
+@keyframes border-flow {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.bg-gradient-border-gold {
+  background:
+    linear-gradient(to bottom right, rgb(15 23 42 / 0.4), rgb(15 23 42 / 0.6)) padding-box,
+    linear-gradient(135deg, #d4af37, #f4e5c3, #d4af37, #f4e5c3) border-box;
+  background-size: 100% 100%, 200% 200%;
+  animation: border-flow 3s ease infinite;
+}
+
+/* Rotating gradient border for selected styles */
+.bg-gradient-border-selected {
+  position: relative;
+  background:
+    linear-gradient(to right, rgba(168, 85, 247, 0.2), rgba(59, 130, 246, 0.2)) padding-box,
+    linear-gradient(90deg, #a855f7, #3b82f6, #8b5cf6, #a855f7) border-box;
+  background-size: 100% 100%, 300% 100%;
+  animation: border-rotate 8s ease-in-out infinite;
+}
+
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
   .animate-float,
   .animate-float-slow,
   .animate-rotate-slow,
   .animate-shimmer,
-  .animate-scan-slow {
+  .animate-scan-slow,
+  .animate-badge-shimmer,
+  .animate-ink-ripple,
+  .animate-skeleton-shimmer,
+  .animate-pulse-slow {
+    animation: none;
+  }
+
+  .bg-gradient-border-gold,
+  .bg-gradient-border-selected {
     animation: none;
   }
 }

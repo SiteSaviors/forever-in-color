@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { Lock, Star, Sparkles, TrendingUp } from 'lucide-react';
 import { clsx } from 'clsx';
 import type { ToneSectionStyle } from '@/store/hooks/useToneSections';
+import { TONE_GRADIENTS } from '@/config/toneGradients';
 
 type ToneStyleCardProps = {
   styleEntry: ToneSectionStyle;
@@ -13,8 +15,20 @@ export default function ToneStyleCard({
   onSelect,
   showFavorite = false,
 }: ToneStyleCardProps) {
-  const { option, gate, isSelected, isFavorite } = styleEntry;
+  const { option, gate, isSelected, isFavorite, metadataTone } = styleEntry;
   const isLocked = !gate.allowed;
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  // Get tone accent color for ink ripple effect
+  const toneAccentColor = TONE_GRADIENTS[metadataTone]?.accent || '#8b5cf6';
+
+  const handleSelect = () => {
+    if (!isLocked) {
+      setIsAnimating(true);
+      setTimeout(() => setIsAnimating(false), 600);
+    }
+    onSelect();
+  };
 
   // Badge rendering helper
   const renderBadge = (badge: string) => {
@@ -44,8 +58,13 @@ export default function ToneStyleCard({
       <span
         key={badge}
         className={clsx(
+          'relative overflow-hidden',
           'inline-flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded',
-          config.className
+          config.className,
+          // Shimmer effect
+          'before:absolute before:inset-0 before:translate-x-[-100%]',
+          'before:bg-gradient-to-r before:from-transparent before:via-white/30 before:to-transparent',
+          'before:animate-badge-shimmer'
         )}
       >
         {config.icon}
@@ -56,7 +75,7 @@ export default function ToneStyleCard({
 
   return (
     <button
-      onClick={onSelect}
+      onClick={handleSelect}
       aria-disabled={isLocked ? 'true' : 'false'}
       aria-label={
         isLocked
@@ -64,15 +83,42 @@ export default function ToneStyleCard({
           : option.name
       }
       className={clsx(
-        'group w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200',
+        'group relative w-full flex items-center gap-3 p-3 rounded-lg overflow-hidden',
+        'transition-all duration-200',
         'focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:ring-offset-2 focus:ring-offset-slate-900',
         isSelected && !isLocked
-          ? 'bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-2 border-purple-400 shadow-lg shadow-purple-500/20'
+          ? 'bg-gradient-border-selected border-2 border-transparent shadow-lg shadow-purple-500/20'
           : isLocked
           ? 'bg-slate-800/40 border border-white/5 hover:border-purple-400/50 hover:shadow-md hover:shadow-purple-500/10 cursor-pointer'
-          : 'bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 hover:shadow-md'
+          : 'bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 hover:scale-[1.02]'
       )}
+      style={
+        !isLocked && !isSelected
+          ? ({
+              '--tone-glow': toneAccentColor,
+            } as React.CSSProperties)
+          : undefined
+      }
+      onMouseEnter={(e) => {
+        if (!isLocked && !isSelected) {
+          e.currentTarget.style.boxShadow = `0 10px 30px -5px ${toneAccentColor}40, 0 4px 10px -2px ${toneAccentColor}20`;
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!isLocked && !isSelected) {
+          e.currentTarget.style.boxShadow = '';
+        }
+      }}
     >
+      {/* Ink blot ripple effect on selection */}
+      {isAnimating && !isLocked && (
+        <div
+          className="absolute inset-0 pointer-events-none z-20 animate-ink-ripple"
+          style={{
+            background: `radial-gradient(circle, ${toneAccentColor}40 0%, transparent 70%)`,
+          }}
+        />
+      )}
       {/* Thumbnail */}
       <div className="relative w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 shadow-lg">
         <img
@@ -82,14 +128,25 @@ export default function ToneStyleCard({
           decoding="async"
           className={clsx(
             'w-full h-full object-cover transition-all duration-200',
-            isLocked && 'opacity-40 grayscale',
+            isLocked && 'opacity-60',
             !isLocked && 'group-hover:scale-105'
           )}
         />
-        {/* Lock Overlay */}
+        {/* Glass overlay with gold border for locked styles */}
         {isLocked && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-[2px]">
-            <Lock className="w-5 h-5 text-purple-300 drop-shadow-lg" />
+          <div className={clsx(
+            'absolute inset-0 z-10 rounded-lg flex items-center justify-center',
+            'bg-gradient-to-br from-slate-900/40 to-slate-900/60 backdrop-blur-md',
+            'border-2 border-transparent bg-gradient-border-gold',
+            'transition-all duration-300'
+          )}>
+            {/* Shimmer effect on hover */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent
+                          translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+
+            {/* Lock icon with pulsing glow */}
+            <Lock className="w-5 h-5 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]
+                           animate-pulse-slow relative z-10" />
           </div>
         )}
         {/* Selected Checkmark */}
