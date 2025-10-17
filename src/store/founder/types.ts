@@ -154,3 +154,13 @@ export type FounderUiActionsSnapshot = Pick<
   FounderStoreState,
   'setHoveredStyle' | 'setPreselectedStyle'
 >;
+
+/**
+ * Favourites state: tracked style ids for quick access across experiences.
+ */
+export type FounderFavoritesStateSnapshot = Pick<FounderStoreState, 'favoriteStyles'>;
+
+export type FounderFavoritesActionsSnapshot = Pick<
+  FounderStoreState,
+  'toggleFavoriteStyle' | 'isStyleFavorite' | 'setFavoriteStyles' | 'clearFavoriteStyles'
+>;

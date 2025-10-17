@@ -12,7 +12,7 @@ type MobileStyleDrawerProps = {
   isOpen: boolean;
   onClose: () => void;
   sections: ToneSection[];
-  onStyleSelect: (styleId: string) => void;
+  onStyleSelect: (styleId: string, meta?: { tone?: string }) => void;
   previews: Record<string, PreviewState>;
   pendingStyleId: string | null;
   remainingTokens: number | null;
@@ -112,8 +112,8 @@ export default function MobileStyleDrawer({
     return () => window.removeEventListener('orientationchange', handleOrientationChange);
   }, [isOpen, onClose]);
 
-  const handleStyleClick = (styleId: string) => {
-    onStyleSelect(styleId);
+  const handleStyleClick = (styleId: string, tone: string) => {
+    onStyleSelect(styleId, { tone });
     onClose();
   };
 
@@ -258,7 +258,7 @@ export default function MobileStyleDrawer({
                           <button
                             key={style.id}
                             type="button"
-                            onClick={() => handleStyleClick(style.id)}
+                            onClick={() => handleStyleClick(style.id, section.tone)}
                             disabled={isLocked}
                             data-mobile-style-card
                             className={`

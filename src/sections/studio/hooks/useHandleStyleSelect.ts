@@ -1,16 +1,27 @@
 import { useCallback } from 'react';
 import type { GateResult } from '@/utils/entitlementGate';
 import { useFounderStore } from '@/store/useFounderStore';
+import { emitStepOneEvent } from '@/utils/telemetry';
+
+type HandleStyleGateDeniedPayload = {
+  gate: GateResult;
+  styleId: string;
+  tone?: string;
+};
 
 type HandleStyleSelectOptions = {
-  onGateDenied?: (gate: GateResult) => void;
+  onGateDenied?: (payload: HandleStyleGateDeniedPayload) => void;
+};
+
+type HandleStyleSelectMeta = {
+  tone?: string;
 };
 
 export const useHandleStyleSelect = (options?: HandleStyleSelectOptions) => {
   const onGateDenied = options?.onGateDenied;
 
   return useCallback(
-    (styleId: string) => {
+    (styleId: string, meta?: HandleStyleSelectMeta) => {
       const state = useFounderStore.getState();
       state.selectStyle(styleId);
 
@@ -20,6 +31,7 @@ export const useHandleStyleSelect = (options?: HandleStyleSelectOptions) => {
       const gate = state.evaluateStyleGate(styleId);
 
       if (style.id === 'original-image' && state.croppedImage) {
+        emitStepOneEvent({ type: 'tone_style_select', styleId, tone: meta?.tone });
         const timestamp = Date.now();
         state.setPreviewState('original-image', {
           status: 'ready',
@@ -38,10 +50,17 @@ export const useHandleStyleSelect = (options?: HandleStyleSelectOptions) => {
         if (gate.reason === 'quota_exceeded') {
           state.setShowQuotaModal(true);
         }
-        onGateDenied?.(gate);
+        onGateDenied?.({ gate, styleId, tone: meta?.tone });
+        emitStepOneEvent({
+          type: 'tone_style_locked',
+          styleId,
+          requiredTier: gate.requiredTier ?? null,
+        });
         return;
       }
 
+      emitStepOneEvent({ type: 'tone_style_select', styleId, tone: meta?.tone });
+      emitStepOneEvent({ type: 'substep', value: 'style-selection' });
       void state.startStylePreview(style);
     },
     [onGateDenied]

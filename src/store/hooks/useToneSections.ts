@@ -21,10 +21,11 @@ export type ToneSection = {
 };
 
 export const useToneSections = (): ToneSection[] => {
-  const { styles, selectedStyleId, evaluateStyleGate } = useFounderStore((state) => ({
+  const { styles, selectedStyleId, evaluateStyleGate, favoriteStyles } = useFounderStore((state) => ({
     styles: state.styles,
     selectedStyleId: state.selectedStyleId,
     evaluateStyleGate: state.evaluateStyleGate,
+    favoriteStyles: state.favoriteStyles,
   }));
 
   return useMemo(() => {
@@ -35,7 +36,8 @@ export const useToneSections = (): ToneSection[] => {
       const tone: StyleTone = metadata?.tone ?? 'classic';
       const gate = evaluateStyleGate(style.id);
       const isSelected = selectedStyleId === style.id;
-      const isFavorite = false; // Placeholder until favourites feature is implemented.
+      const normalizedId = style.id.trim().toLowerCase();
+      const isFavorite = favoriteStyles.includes(normalizedId);
 
       const entry: ToneSectionStyle = {
         option: style,
@@ -68,5 +70,5 @@ export const useToneSections = (): ToneSection[] => {
         lockedGate,
       };
     });
-  }, [styles, selectedStyleId, evaluateStyleGate]);
+  }, [styles, selectedStyleId, favoriteStyles, evaluateStyleGate]);
 };

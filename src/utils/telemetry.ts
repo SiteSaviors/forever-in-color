@@ -3,7 +3,11 @@ export type StepOneEvent =
   | { type: 'preview'; styleId: string; status: 'generating' | 'ready' | 'error' }
   | { type: 'cta'; value: 'continue-to-studio' }
   | { type: 'upload_started' }
-  | { type: 'upload_success'; value: string };
+  | { type: 'upload_success'; value: string }
+  | { type: 'tone_section_view'; tone: string }
+  | { type: 'tone_style_select'; styleId: string; tone?: string }
+  | { type: 'tone_style_locked'; styleId: string; requiredTier?: string | null }
+  | { type: 'tone_upgrade_prompt'; styleId?: string; tone?: string; requiredTier?: string | null };
 
 export function emitStepOneEvent(event: StepOneEvent) {
   // Placeholder adapter: log to console now, replace with analytics pipeline later.

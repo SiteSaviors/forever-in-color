@@ -7,7 +7,7 @@ import type { GateResult } from '@/utils/entitlementGate';
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
 import { saveToGallery } from '@/utils/galleryApi';
 import { downloadCleanImage } from '@/utils/premiumDownload';
-import { trackDownloadSuccess } from '@/utils/telemetry';
+import { emitStepOneEvent, trackDownloadSuccess } from '@/utils/telemetry';
 import { trackLaunchflowEditReopen, trackLaunchflowEmptyStateInteraction, trackLaunchflowOpened } from '@/utils/launchflowTelemetry';
 import StudioHeader, { CheckoutNotice } from '@/sections/studio/components/StudioHeader';
 import StyleSidebar from '@/sections/studio/components/StyleSidebar';
@@ -96,7 +96,7 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
   const { showToast, showUpgradeModal, renderFeedback } = useStudioFeedback();
 
   const handleGateDenied = useCallback(
-    (gate: GateResult) => {
+    ({ gate, styleId, tone }: { gate: GateResult; styleId: string; tone?: string }) => {
       switch (gate.reason) {
         case 'style_locked': {
           const requiredLabel = gate.requiredTier
@@ -112,6 +112,12 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
               window.open('/pricing', '_self');
             },
             secondaryLabel: 'Maybe later',
+          });
+          emitStepOneEvent({
+            type: 'tone_upgrade_prompt',
+            styleId,
+            tone,
+            requiredTier: gate.requiredTier ?? null,
           });
           break;
         }

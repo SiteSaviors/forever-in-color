@@ -6,6 +6,7 @@ import { loadInitialStyles } from '@/config/styleCatalog';
 import { createPreviewSlice, type PreviewSlice } from './founder/previewSlice';
 import { createEntitlementSlice, type EntitlementSlice } from './founder/entitlementSlice';
 import { createSessionSlice, type SessionSlice } from './founder/sessionSlice';
+import { createFavoritesSlice, type FavoritesSlice } from './founder/favoritesSlice';
 
 export type { StylePreviewStatus } from './founder/previewSlice';
 export type { EntitlementTier, EntitlementPriority } from './founder/entitlementSlice';
@@ -104,9 +105,14 @@ type FounderBaseState = {
   currentStyle: () => StyleOption | undefined;
   livingCanvasEnabled: () => boolean;
   shouldAutoGeneratePreviews: () => boolean;
+  favoriteStyles: string[];
+  toggleFavoriteStyle: (styleId: string) => void;
+  isStyleFavorite: (styleId: string) => boolean;
+  setFavoriteStyles: (styleIds: string[]) => void;
+  clearFavoriteStyles: () => void;
 };
 
-export type FounderState = FounderBaseState & PreviewSlice & EntitlementSlice & SessionSlice;
+export type FounderState = FounderBaseState & PreviewSlice & EntitlementSlice & SessionSlice & FavoritesSlice;
 
 const initialStyles: StyleOption[] = loadInitialStyles();
 
@@ -458,4 +464,5 @@ export const useFounderStore = create<FounderState>((set, get, api) => ({
   shouldAutoGeneratePreviews: () => {
     return ENABLE_AUTO_PREVIEWS;
   },
+  ...createFavoritesSlice(set, get, api),
 }));

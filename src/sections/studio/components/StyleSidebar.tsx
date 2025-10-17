@@ -4,6 +4,7 @@ import { useCallback, useMemo } from 'react';
 import type { StylePreviewStatus } from '@/store/useFounderStore';
 import type { ToneSection } from '@/store/hooks/useToneSections';
 import { useToneSectionPrefetch } from '@/hooks/useToneSectionPrefetch';
+import { emitStepOneEvent } from '@/utils/telemetry';
 
 type StyleSidebarProps = {
   sections: ToneSection[];
@@ -17,7 +18,7 @@ type StyleSidebarProps = {
   };
   previews: Record<string, { status: string } | undefined>;
   hasCroppedImage: boolean;
-  onStyleSelect: (styleId: string) => void;
+  onStyleSelect: (styleId: string, meta?: { tone?: string }) => void;
 };
 
 const StyleSidebar = ({
@@ -39,6 +40,7 @@ const StyleSidebar = ({
         const image = new Image();
         image.src = option.thumbnail;
       });
+      emitStepOneEvent({ type: 'tone_section_view', tone });
     },
     [sections]
   );
@@ -123,7 +125,7 @@ const StyleSidebar = ({
                   return (
                     <button
                       key={style.id}
-                      onClick={() => onStyleSelect(style.id)}
+                      onClick={() => onStyleSelect(style.id, { tone: section.tone })}
                       disabled={isLocked}
                       className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
                         entry.isSelected
