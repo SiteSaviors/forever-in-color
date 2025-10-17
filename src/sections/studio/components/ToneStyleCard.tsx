@@ -1,26 +1,39 @@
-import { useState } from 'react';
+import { useState, type CSSProperties, type ReactNode } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Lock, Star, Sparkles, TrendingUp } from 'lucide-react';
 import { clsx } from 'clsx';
 import type { ToneSectionStyle } from '@/store/hooks/useToneSections';
 import { TONE_GRADIENTS } from '@/config/toneGradients';
+import { toneCardSpring } from '../motion/toneAccordionMotion';
 
 type ToneStyleCardProps = {
   styleEntry: ToneSectionStyle;
   onSelect: () => void;
   showFavorite?: boolean; // Optional: enable when favorites UI is ready
+  layout?: 'default' | 'hero';
+  heroDescription?: string;
+  prefersReducedMotion?: boolean;
 };
 
 export default function ToneStyleCard({
   styleEntry,
   onSelect,
   showFavorite = false,
+  layout = 'default',
+  heroDescription,
+  prefersReducedMotion: prefersReducedMotionProp,
 }: ToneStyleCardProps) {
   const { option, gate, isSelected, isFavorite, metadataTone } = styleEntry;
   const isLocked = !gate.allowed;
   const [isAnimating, setIsAnimating] = useState(false);
+  const isHero = layout === 'hero';
+  const reduceMotionFromContext = useReducedMotion();
+  const prefersReducedMotion = prefersReducedMotionProp ?? reduceMotionFromContext;
+  const [parallax, setParallax] = useState({ x: 0, y: 0 });
 
   // Get tone accent color for ink ripple effect
   const toneAccentColor = TONE_GRADIENTS[metadataTone]?.accent || '#8b5cf6';
+  const toneKeyline = TONE_GRADIENTS[metadataTone]?.keyline || 'rgba(147, 197, 253, 0.45)';
 
   const handleSelect = () => {
     if (!isLocked) {
@@ -30,9 +43,27 @@ export default function ToneStyleCard({
     onSelect();
   };
 
+  const handlePointerMove: React.PointerEventHandler<HTMLButtonElement> = (event) => {
+    if (prefersReducedMotion || isLocked) return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = (event.clientX - rect.left) / rect.width - 0.5;
+    const y = (event.clientY - rect.top) / rect.height - 0.5;
+    const intensity = isHero ? 12 : 8;
+    setParallax({
+      x: x * intensity,
+      y: y * (isHero ? 8 : 5),
+    });
+  };
+
+  const resetParallax = () => {
+    if (!prefersReducedMotion) {
+      setParallax({ x: 0, y: 0 });
+    }
+  };
+
   // Badge rendering helper
   const renderBadge = (badge: string) => {
-    const badgeConfig: Record<string, { icon: React.ReactNode; className: string }> = {
+    const badgeConfig: Record<string, { icon: ReactNode; className: string }> = {
       new: {
         icon: <Sparkles className="w-3 h-3" />,
         className: 'bg-green-500/20 text-green-300',
@@ -73,9 +104,33 @@ export default function ToneStyleCard({
     );
   };
 
+  const hoverMotion = !prefersReducedMotion && !isLocked
+    ? {
+        y: isHero ? -6 : -4,
+        scale: isHero ? 1.007 : 1.012,
+      }
+    : undefined;
+
+  const tapMotion = !prefersReducedMotion && !isLocked
+    ? {
+        scale: 0.97,
+      }
+    : undefined;
+
+  const thumbnailStyle: CSSProperties =
+    !prefersReducedMotion && !isLocked
+      ? {
+          transform: `translate3d(${parallax.x}px, ${parallax.y}px, 0)`,
+        }
+      : {};
+
   return (
-    <button
+    <motion.button
       onClick={handleSelect}
+      onPointerMove={handlePointerMove}
+      onPointerLeave={resetParallax}
+      onPointerDown={resetParallax}
+      onPointerUp={resetParallax}
       aria-disabled={isLocked ? 'true' : 'false'}
       aria-label={
         isLocked
@@ -83,20 +138,24 @@ export default function ToneStyleCard({
           : option.name
       }
       className={clsx(
-        'group relative w-full flex items-center gap-3 p-3 rounded-lg overflow-hidden',
-        'transition-all duration-200',
+        'group relative w-full rounded-xl overflow-hidden transition-all duration-200',
+        isHero
+          ? 'flex flex-col gap-5 bg-white/10 border border-white/15 px-5 py-5 md:flex-row md:items-center'
+          : 'flex items-center gap-4 rounded-lg px-4 py-3.5 md:py-4',
         'focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:ring-offset-2 focus:ring-offset-slate-900',
         isSelected && !isLocked
           ? 'bg-gradient-border-selected border-2 border-transparent shadow-lg shadow-purple-500/20'
           : isLocked
           ? 'bg-slate-800/40 border border-white/5 hover:border-purple-400/50 hover:shadow-md hover:shadow-purple-500/10 cursor-pointer'
+          : isHero
+          ? 'border border-white/20 hover:border-white/30 hover:bg-white/10'
           : 'bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 hover:scale-[1.02]'
       )}
       style={
         !isLocked && !isSelected
           ? ({
               '--tone-glow': toneAccentColor,
-            } as React.CSSProperties)
+            } as CSSProperties)
           : undefined
       }
       onMouseEnter={(e) => {
@@ -109,6 +168,9 @@ export default function ToneStyleCard({
           e.currentTarget.style.boxShadow = '';
         }
       }}
+      whileHover={hoverMotion}
+      whileTap={tapMotion}
+      transition={toneCardSpring}
     >
       {/* Ink blot ripple effect on selection */}
       {isAnimating && !isLocked && (
@@ -120,7 +182,13 @@ export default function ToneStyleCard({
         />
       )}
       {/* Thumbnail */}
-      <div className="relative w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 shadow-lg">
+      <div
+        className={clsx(
+          'relative overflow-hidden flex-shrink-0 shadow-lg',
+          isHero ? 'h-28 w-full rounded-2xl md:h-28 md:w-28' : 'h-14 w-14 rounded-xl'
+        )}
+        style={thumbnailStyle}
+      >
         <img
           src={option.thumbnail}
           alt=""
@@ -134,19 +202,24 @@ export default function ToneStyleCard({
         />
         {/* Glass overlay with gold border for locked styles */}
         {isLocked && (
-          <div className={clsx(
-            'absolute inset-0 z-10 rounded-lg flex items-center justify-center',
-            'bg-gradient-to-br from-slate-900/40 to-slate-900/60 backdrop-blur-md',
-            'border-2 border-transparent bg-gradient-border-gold',
-            'transition-all duration-300'
-          )}>
+          <div
+            className={clsx(
+              'absolute inset-0 z-10 rounded-lg flex items-center justify-center',
+              'bg-gradient-to-br from-slate-900/45 to-slate-900/70 backdrop-blur-md',
+              'border border-transparent bg-gradient-border-gold',
+              'transition-all duration-300'
+            )}
+          >
             {/* Shimmer effect on hover */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent
-                          translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+            <div
+              className={clsx(
+                'absolute inset-0 bg-gradient-to-r from-transparent via-white/16 to-transparent translate-x-[-120%]',
+                prefersReducedMotion ? '' : 'group-hover:translate-x-[120%] animate-premium-shimmer'
+              )}
+            />
 
             {/* Lock icon with pulsing glow */}
-            <Lock className="w-5 h-5 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]
-                           animate-pulse-slow relative z-10" />
+            <Lock className="w-5 h-5 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)] animate-pulse-slow relative z-10" />
           </div>
         )}
         {/* Selected Checkmark */}
@@ -164,16 +237,50 @@ export default function ToneStyleCard({
       </div>
 
       {/* Style Info */}
-      <div className="flex-1 text-left min-w-0">
-        <div className="flex items-center gap-2 flex-wrap mb-1">
-          <p
+      <div
+        className={clsx(
+          'flex-1 min-w-0 text-left',
+          isHero ? 'flex flex-col gap-2' : 'flex flex-col gap-1.5'
+        )}
+      >
+        <div
+          className={clsx(
+            'flex flex-wrap items-center gap-2',
+            isHero ? 'mb-1.5' : 'mb-1'
+          )}
+        >
+          <div
             className={clsx(
-              'text-sm font-semibold truncate',
-              isLocked ? 'text-white/50' : 'text-white'
+              'flex w-full flex-col gap-2',
+              isHero ? 'md:flex-row md:items-center md:justify-between md:gap-4' : 'sm:flex-row sm:items-center sm:gap-2'
             )}
           >
-            {option.name}
-          </p>
+            <p
+              className={clsx(
+                'font-display',
+                isHero
+                  ? 'text-lg uppercase tracking-[0.14em] md:text-xl'
+                  : 'text-base tracking-[0.08em] text-left',
+                isLocked ? 'text-white/55' : 'text-white'
+              )}
+              style={
+                isHero
+                  ? {
+                      borderBottom: `1px solid ${toneKeyline}`,
+                      paddingBottom: '0.25rem',
+                      letterSpacing: '0.08em',
+                    }
+                  : undefined
+              }
+            >
+              {option.name}
+            </p>
+            {gate.requiredTier && (
+              <span className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-2 py-0.5 text-[9px] font-semibold tracking-[0.25em] text-white/80">
+                {gate.requiredTier.toUpperCase()}
+              </span>
+            )}
+          </div>
           {/* Badges */}
           {option.badges && option.badges.length > 0 && (
             <div className="flex items-center gap-1 flex-wrap">
@@ -183,17 +290,24 @@ export default function ToneStyleCard({
         </div>
         <p
           className={clsx(
-            'text-xs mt-0.5 line-clamp-1',
-            isLocked ? 'text-white/30' : 'text-white/60'
+            isHero
+              ? 'text-sm text-left md:text-base md:leading-relaxed'
+              : 'mt-0.5 text-xs text-left leading-snug line-clamp-1',
+            isLocked ? 'text-white/35' : 'text-white/70'
           )}
         >
-          {option.description}
+          {isHero ? heroDescription : option.description}
         </p>
         {/* Lock Message */}
         {isLocked && gate.requiredTier && (
-          <span className="inline-flex items-center gap-1 mt-1.5 text-[10px] text-purple-400 font-semibold">
+          <span
+            className={clsx(
+              'inline-flex items-center gap-2 text-[10px] font-semibold text-purple-200/90',
+              isHero ? 'mt-2' : 'mt-1.5'
+            )}
+          >
             <Lock className="w-3 h-3" />
-            {gate.requiredTier.toUpperCase()} required
+            Unlock with {gate.requiredTier.toUpperCase()} plan
           </span>
         )}
       </div>
@@ -202,6 +316,6 @@ export default function ToneStyleCard({
       {showFavorite && isFavorite && (
         <Star className="w-4 h-4 text-yellow-400 fill-current flex-shrink-0 animate-in zoom-in-50 duration-200" />
       )}
-    </button>
+    </motion.button>
   );
 }

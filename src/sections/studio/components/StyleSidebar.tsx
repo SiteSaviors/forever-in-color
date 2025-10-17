@@ -27,12 +27,20 @@ const StyleSidebar = ({
   return (
     <aside
       className={clsx(
-        'hidden lg:block lg:w-80 bg-slate-950/50 border-r border-white/10 lg:h-screen lg:sticky lg:top-[57px] overflow-y-auto transition-opacity duration-200',
-        !hasCroppedImage && 'pointer-events-none opacity-40 saturate-50'
+        'hidden lg:block lg:w-[420px] bg-slate-950/50 border-r border-white/10 lg:h-screen lg:sticky lg:top-[57px] overflow-y-auto transition-opacity duration-200',
+        !hasCroppedImage && 'opacity-80 saturate-75'
       )}
-      aria-disabled={!hasCroppedImage}
     >
-      <div className="p-6 space-y-6">
+      <div className="relative p-6 space-y-6">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 rounded-[1.75rem] opacity-30 blur-3xl"
+          style={{
+            background:
+              'radial-gradient(120% 120% at 20% 0%, rgba(139, 92, 246, 0.25), transparent 70%), radial-gradient(120% 120% at 80% 20%, rgba(59, 130, 246, 0.2), transparent 70%)',
+          }}
+        />
+
         {!hasCroppedImage && (
           <div className="rounded-xl border border-white/12 bg-white/5 p-4 text-sm text-white/70">
             Upload your photo above to unlock style previews.
@@ -40,21 +48,34 @@ const StyleSidebar = ({
         )}
 
         {/* Header */}
-        <div>
-          <h3 className="text-xl font-bold text-white">Wondertone Styles</h3>
-          <p className="text-xs text-white/60 mt-1">Choose your artistic tone</p>
+        <div className="relative space-y-1.5">
+          <p className="text-[10px] uppercase tracking-[0.38em] text-white/50">Studio Curations</p>
+          <h3 className="text-base font-display tracking-[0.3em] uppercase text-white md:text-lg">Wondertone Styles</h3>
+          <p className="text-xs text-white/65 md:text-sm">Choose your artistic tone</p>
         </div>
 
         {/* Token Counter */}
-        <div className="p-4 rounded-xl bg-white/5 border border-white/10 shadow-lg">
-          <p className="text-sm text-white/70 mb-1">Generations Remaining</p>
-          <p className="text-2xl font-bold text-white">{remainingLabel} left</p>
-          <p className="text-xs text-white/60 mt-2">
-            Tier: <span className="text-purple-300 font-semibold">{entitlements.tier.toUpperCase()}</span> · Quota {quotaLabel}
+        <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/10 via-transparent to-white/5 p-5 shadow-inner">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -inset-10 opacity-40 blur-2xl"
+            style={{
+              background:
+                'radial-gradient(120% 80% at 0% 0%, rgba(79, 70, 229, 0.35), transparent 60%), radial-gradient(100% 80% at 100% 100%, rgba(14, 165, 233, 0.25), transparent 70%)',
+            }}
+          />
+          <p className="text-xs uppercase tracking-[0.32em] text-white/60">Remaining Generations</p>
+          <p className="mt-2 text-3xl font-display tracking-wider text-white">{remainingLabel}</p>
+          <p className="mt-3 text-xs text-white/70">
+            Tier{' '}
+            <span className="font-semibold text-purple-300">
+              {entitlements.tier.toUpperCase()}
+            </span>{' '}
+            · Quota {quotaLabel}
           </p>
           <Link
             to="/studio/usage"
-            className="mt-3 block text-xs font-semibold text-purple-400 hover:text-purple-300 transition"
+            className="mt-4 inline-flex text-xs font-semibold text-purple-300 transition hover:text-purple-200"
           >
             View Usage History →
           </Link>

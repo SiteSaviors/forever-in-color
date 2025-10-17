@@ -19,6 +19,8 @@ export default {
       },
       fontFamily: {
         poppins: ['Poppins', 'sans-serif'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        display: ['"Playfair Display"', 'serif'],
       },
       boxShadow: {
         founder: 'var(--shadow-xl)',
@@ -107,6 +109,24 @@ export default {
             opacity: '0',
           },
         },
+        'tone-icon-reveal': {
+          '0%': { opacity: '0', transform: 'translateY(6px) scale(0.92)' },
+          '60%': { opacity: '1', transform: 'translateY(-2px) scale(1.05)' },
+          '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
+        },
+        'tone-ambient-pulse': {
+          '0%': { opacity: '0.25', transform: 'scale(0.95)' },
+          '50%': { opacity: '0.6', transform: 'scale(1.05)' },
+          '100%': { opacity: '0.25', transform: 'scale(0.95)' },
+        },
+        'premium-shimmer': {
+          '0%': { backgroundPosition: '0% 50%' },
+          '100%': { backgroundPosition: '200% 50%' },
+        },
+        'card-press': {
+          '0%': { transform: 'scale(0.96)' },
+          '100%': { transform: 'scale(1)' },
+        },
         'skeleton-shimmer': {
           '0%': { backgroundPosition: '-200% 0' },
           '100%': { backgroundPosition: '200% 0' },
@@ -140,6 +160,10 @@ export default {
         'skeleton-shimmer': 'skeleton-shimmer 2s ease-in-out infinite',
         'pulse-slow': 'pulse-slow 2s ease-in-out infinite',
         'border-rotate': 'border-rotate 8s ease-in-out infinite',
+        'tone-icon-reveal': 'tone-icon-reveal 0.8s ease-out both',
+        'tone-ambient-pulse': 'tone-ambient-pulse 12s ease-in-out infinite',
+        'premium-shimmer': 'premium-shimmer 8s ease-in-out infinite',
+        'card-press': 'card-press 220ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
       },
     },
   },

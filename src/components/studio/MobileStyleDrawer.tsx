@@ -138,7 +138,7 @@ export default function MobileStyleDrawer({
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={transition}
-            className="fixed inset-x-0 bottom-0 z-50 bg-slate-900 rounded-t-3xl border-t-2 border-white/20 shadow-2xl flex flex-col"
+            className="fixed inset-x-0 bottom-0 z-50 flex flex-col overflow-hidden border-t border-white/15 bg-slate-950/95 backdrop-blur-2xl shadow-[0_-24px_60px_rgba(8,14,29,0.65)] rounded-t-[2.25rem]"
             style={{
               maxHeight: `min(85vh, ${viewportHeight * 0.85}px)`,
               paddingBottom: 'env(safe-area-inset-bottom, 0px)',
@@ -157,36 +157,63 @@ export default function MobileStyleDrawer({
               <div className="w-12 h-1 bg-white/30 rounded-full" />
             </div>
 
-            <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 max-[360px]:px-4 max-[360px]:py-3">
-              <div>
+            <div className="relative px-6 py-5 border-b border-white/10 max-[360px]:px-4">
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 opacity-40 blur-2xl"
+                style={{
+                  background:
+                    'radial-gradient(120% 80% at 0% 0%, rgba(139, 92, 246, 0.35), transparent 65%), radial-gradient(120% 80% at 100% 0%, rgba(59, 130, 246, 0.28), transparent 70%)',
+                }}
+              />
+              <div className="relative flex items-center justify-between gap-4">
                 <h2
                   id="mobile-drawer-title"
-                  className="text-xl font-bold text-white max-[360px]:text-lg"
+                  className="text-[1.05rem] font-display uppercase tracking-[0.32em] text-white"
                 >
-                  Choose Your Style
+                  Wondertone Styles
                 </h2>
-                <p id="mobile-drawer-desc" className="text-xs text-white/60 mt-1 max-[360px]:text-[11px]">
-                  Expand sections to browse styles
-                </p>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="w-11 h-11 flex items-center justify-center rounded-full border border-white/15 bg-white/10 text-white transition hover:bg-white/15 active:bg-white/20"
+                  aria-label="Close style picker"
+                  style={{ touchAction: 'manipulation' }}
+                >
+                  <X className="w-5 h-5" />
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={onClose}
-                className="w-11 h-11 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 active:bg-white/25 transition-colors"
-                aria-label="Close style picker"
-                style={{ touchAction: 'manipulation' }}
+              <p
+                id="mobile-drawer-desc"
+                className="relative mt-3 text-[11px] uppercase tracking-[0.28em] text-white/55"
               >
-                <X className="w-5 h-5 text-white" />
-              </button>
+                Choose your artistic tone
+              </p>
             </div>
 
-            <div className="px-6 py-4 border-b border-white/10">
-              <p className="text-xs text-white/60">
-                Tier: <span className="font-semibold text-white">{userTier.toUpperCase()}</span> · Remaining:{' '}
-                <span className="font-semibold text-white">
-                  {remainingTokens == null ? '∞' : Math.max(0, remainingTokens)}
-                </span>
-              </p>
+            <div className="relative border-b border-white/10 px-6 py-4 max-[360px]:px-4">
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 opacity-30 blur-2xl"
+                style={{
+                  background:
+                    'radial-gradient(120% 100% at 15% 0%, rgba(14, 165, 233, 0.25), transparent 70%), radial-gradient(110% 90% at 85% 20%, rgba(59, 130, 246, 0.22), transparent 75%)',
+                }}
+              />
+              <div className="relative flex items-center justify-between">
+                <div className="space-y-1">
+                  <p className="text-[10px] uppercase tracking-[0.34em] text-white/55">Remaining</p>
+                  <p className="text-2xl font-display tracking-[0.12em] text-white">
+                    {remainingTokens == null ? '∞' : Math.max(0, remainingTokens)}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] uppercase tracking-[0.34em] text-white/55">Tier</p>
+                  <span className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold tracking-[0.3em] text-white/80">
+                    {userTier.toUpperCase()}
+                  </span>
+                </div>
+              </div>
             </div>
 
             {/* ✅ CORRECTED: Preserve mobile scroll structure with accordion inside */}

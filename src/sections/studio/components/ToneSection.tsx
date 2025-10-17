@@ -1,11 +1,23 @@
+import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Lock } from 'lucide-react';
 import { clsx } from 'clsx';
 import type { ToneSection as ToneSectionType } from '@/store/hooks/useToneSections';
-import { TONE_GRADIENTS } from '@/config/toneGradients';
+import type { ToneGradientConfig } from '@/config/toneGradients';
 import ToneStyleCard from './ToneStyleCard';
+import { getToneIcon } from './toneIcons';
+import {
+  toneCardVariants,
+  tonePanelVariants,
+  toneSectionVariants,
+  reducedMotionSettings,
+  getStaggerOrNone,
+} from '../motion/toneAccordionMotion';
 
 type ToneSectionProps = {
   section: ToneSectionType;
+  toneMeta: ToneGradientConfig;
+  prefersReducedMotion: boolean;
   onStyleSelect: (styleId: string, meta: { tone: string }) => void;
   isExpanded: boolean;
   onToggle: () => void;
@@ -13,100 +25,132 @@ type ToneSectionProps = {
 
 export default function ToneSection({
   section,
+  toneMeta,
+  prefersReducedMotion,
   onStyleSelect,
   isExpanded,
   onToggle,
 }: ToneSectionProps) {
   const { tone, definition, styles, locked } = section;
-  const gradientConfig = TONE_GRADIENTS[tone];
+  const Icon = getToneIcon(tone);
+  const [iconAnimated, setIconAnimated] = useState(false);
+
+  useEffect(() => {
+    if (isExpanded && !iconAnimated) {
+      setIconAnimated(true);
+    }
+  }, [iconAnimated, isExpanded]);
+
+  const panelBackground = isExpanded ? toneMeta.panel.expanded : toneMeta.panel.collapsed;
 
   return (
-    <div
+    <motion.section
+      layout
+      initial={false}
+      variants={toneSectionVariants}
+      animate={isExpanded ? 'expanded' : 'collapsed'}
       className={clsx(
-        'relative rounded-xl overflow-hidden border border-white/10',
-        'transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]',
-        'backdrop-blur-sm',
-        // Tone-specific gradient wash
-        isExpanded
-          ? `bg-gradient-to-br ${gradientConfig.expanded}`
-          : `bg-gradient-to-br ${gradientConfig.collapsed}`,
-        // Z-lift animation on expand
-        isExpanded && [
-          'scale-[1.02]',
-          'shadow-[0_8px_32px_rgba(0,0,0,0.3),0_2px_8px_rgba(0,0,0,0.2)]',
-          'will-change-transform'
-        ]
+        'relative overflow-hidden rounded-2xl border border-white/10 backdrop-blur-sm transition-all duration-300',
+        isExpanded && 'shadow-[0_24px_48px_rgba(12,20,39,0.55)]'
       )}
+      style={{ background: panelBackground }}
     >
-      {/* Tone Header (clickable to expand/collapse) */}
+      <div
+        className={clsx(
+          'absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-500',
+          isExpanded && 'opacity-70'
+        )}
+          style={{
+            background: `radial-gradient(140% 80% at 50% -20%, ${toneMeta.highlight} 0%, transparent 60%)`,
+          }}
+        aria-hidden="true"
+      />
+
       <button
         onClick={onToggle}
         className={clsx(
-          'w-full flex flex-col items-center justify-center p-5 relative',
-          'transition-all duration-300',
-          'hover:bg-white/5',
-          !isExpanded && 'hover:scale-[1.005]', // Subtle invite on hover when collapsed
-          // Neon glow on Trending hover
-          tone === 'trending' && !isExpanded && 'hover:shadow-[0_0_30px_rgba(245,158,11,0.4),0_0_60px_rgba(245,158,11,0.2)]'
+          'relative w-full px-6 py-4 text-left transition-colors duration-200',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950',
+          'focus-visible:ring-white/70',
+          isExpanded ? 'bg-white/10' : 'hover:bg-white/5'
         )}
         aria-expanded={isExpanded}
         aria-controls={`tone-section-${tone}`}
       >
-        {/* Centered Content */}
-        <div className="flex flex-col items-center gap-2 w-full">
-          {/* Icon + Title Row */}
-          <div className="flex items-center gap-2">
-            <span className="text-xl flex-shrink-0" aria-hidden="true">
-              {definition.icon}
-            </span>
-            <h3 className="text-base font-bold text-white uppercase tracking-wide">
-              {definition.label}
-            </h3>
-            {/* Lock badge - only for Signature Tones, right-aligned, smaller */}
-            {locked && tone === 'signature' && (
-              <Lock className="w-3 h-3 text-purple-300 ml-1" aria-hidden="true" />
+        <div className="flex items-start gap-4">
+          <span
+            className={clsx(
+              'mt-0.5 flex h-11 w-11 items-center justify-center rounded-xl border border-white/15 bg-white/10 shadow-inner text-white',
+              !prefersReducedMotion && !iconAnimated && isExpanded ? 'animate-tone-icon-reveal' : ''
             )}
+            style={{
+              borderColor: toneMeta.keyline,
+              boxShadow: `0 0 24px ${toneMeta.highlight}`,
+            }}
+            aria-hidden="true"
+          >
+            <Icon stroke={toneMeta.iconStroke} strokeWidth={1.5} className="h-5 w-5" />
+          </span>
+          <div className="flex flex-1 flex-col text-left">
+            <div className="flex items-center gap-3">
+              <h3 className="text-sm font-display font-semibold uppercase tracking-[0.32em] text-white md:text-base">
+                {definition.label}
+              </h3>
+              {locked && tone === 'signature' && (
+                <Lock className="h-4 w-4 text-yellow-300" aria-hidden="true" />
+              )}
+            </div>
+            <p className="mt-1 text-xs text-white/65 md:text-sm md:leading-relaxed">
+              {definition.description}
+            </p>
           </div>
-
-          {/* Description - allow wrapping */}
-          <p className="text-xs text-white/60 text-center leading-relaxed max-w-xs">
-            {definition.description}
-          </p>
+          <motion.span
+            animate={isExpanded ? { rotate: 180 } : { rotate: 0 }}
+            transition={prefersReducedMotion ? reducedMotionSettings : { type: 'spring', stiffness: 360, damping: 28 }}
+            className="text-white/60"
+            aria-hidden="true"
+          >
+            <ChevronDown className="h-5 w-5" />
+          </motion.span>
         </div>
-
-        {/* Chevron - absolute positioned bottom right */}
-        <ChevronDown
-          className={clsx(
-            'w-5 h-5 text-white/60 transition-transform duration-200 absolute right-4 top-1/2 -translate-y-1/2',
-            isExpanded && 'rotate-180'
-          )}
-          aria-hidden="true"
-        />
       </button>
 
-      {/* Collapsible Style List */}
-      {isExpanded && (
-        <div
-          id={`tone-section-${tone}`}
-          className="p-2 space-y-2 animate-in fade-in-0 slide-in-from-top-2 duration-200"
-          role="region"
-          aria-label={`${definition.label} styles`}
-        >
-          {styles.length > 0 ? (
-            styles.map((styleEntry) => (
-              <ToneStyleCard
-                key={styleEntry.option.id}
-                styleEntry={styleEntry}
-                onSelect={() => onStyleSelect(styleEntry.option.id, { tone })}
-              />
-            ))
-          ) : (
-            <div className="text-center py-6 text-white/40 text-sm">
-              No styles available in this category
-            </div>
-          )}
-        </div>
-      )}
-    </div>
+      <AnimatePresence initial={false}>
+        {isExpanded && (
+          <motion.div
+            key="panel"
+            id={`tone-section-${tone}`}
+            role="region"
+            aria-label={`${definition.label} styles`}
+            variants={tonePanelVariants}
+            initial="hidden"
+            animate="visible"
+            exit="hidden"
+            transition={prefersReducedMotion ? reducedMotionSettings : undefined}
+            className="px-4 pb-5 pt-2"
+          >
+            <motion.div
+              className="space-y-2"
+              variants={getStaggerOrNone(prefersReducedMotion)}
+            >
+              {styles.map((styleEntry) => (
+                <motion.div key={styleEntry.option.id} variants={toneCardVariants}>
+                  <ToneStyleCard
+                    styleEntry={styleEntry}
+                    onSelect={() => onStyleSelect(styleEntry.option.id, { tone })}
+                    prefersReducedMotion={prefersReducedMotion}
+                  />
+                </motion.div>
+              ))}
+              {styles.length === 0 && (
+                <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-5 text-sm text-white/55">
+                  No styles in this tone yet. Check back soon.
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.section>
   );
 }

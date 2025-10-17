@@ -60,6 +60,13 @@ export const useHandleStyleSelect = (options?: HandleStyleSelectOptions) => {
       }
 
       emitStepOneEvent({ type: 'tone_style_select', styleId, tone: meta?.tone });
+
+      const hasBaseImage = Boolean(state.croppedImage || state.uploadedImage);
+      if (!hasBaseImage) {
+        state.requestUpload({ preselectedStyleId: styleId });
+        return;
+      }
+
       emitStepOneEvent({ type: 'substep', value: 'style-selection' });
       void state.startStylePreview(style);
     },

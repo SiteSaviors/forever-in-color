@@ -273,7 +273,7 @@ export const STYLE_TONE_DEFINITIONS: Record<StyleTone, StyleToneDefinition> = {
   },
   electric: {
     id: 'electric',
-    label: 'Electric/Digital Tones',
+    label: 'Electric Tones',
     description: 'Vivid, high-voltage looks powered by Wondertone AI.',
     icon: '⚡',
     sortOrder: 50,

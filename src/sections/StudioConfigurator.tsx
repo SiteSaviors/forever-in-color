@@ -1,18 +1,15 @@
-import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import { clsx } from 'clsx';
 import { useFounderStore, StylePreviewStatus } from '@/store/useFounderStore';
-import { useToneSections } from '@/store/hooks/useToneSections';
 import { useStudioFeedback } from '@/hooks/useStudioFeedback';
-import type { GateResult } from '@/utils/entitlementGate';
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
 import { saveToGallery } from '@/utils/galleryApi';
 import { downloadCleanImage } from '@/utils/premiumDownload';
-import { emitStepOneEvent, trackDownloadSuccess } from '@/utils/telemetry';
+import { trackDownloadSuccess } from '@/utils/telemetry';
 import { trackLaunchflowEditReopen, trackLaunchflowEmptyStateInteraction, trackLaunchflowOpened } from '@/utils/launchflowTelemetry';
 import StudioHeader, { CheckoutNotice } from '@/sections/studio/components/StudioHeader';
 import StyleSidebar from '@/sections/studio/components/StyleSidebar';
 import CanvasPreviewPanel from '@/sections/studio/components/CanvasPreviewPanel';
-import { useHandleStyleSelect } from '@/sections/studio/hooks/useHandleStyleSelect';
 
 const TokenWarningBanner = lazy(() => import('@/components/studio/TokenWarningBanner'));
 const StickyOrderRailLazy = lazy(() => import('@/components/studio/StickyOrderRail'));
@@ -93,64 +90,7 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
   const [mobileStyleDrawerOpen, setMobileStyleDrawerOpen] = useState(false);
   const [showCanvasUpsellToast, setShowCanvasUpsellToast] = useState(false);
   const [welcomeDismissed, setWelcomeDismissed] = useState(false);
-  const { showToast, showUpgradeModal, renderFeedback } = useStudioFeedback();
-
-  const handleGateDenied = useCallback(
-    ({ gate, styleId, tone }: { gate: GateResult; styleId: string; tone?: string }) => {
-      switch (gate.reason) {
-        case 'style_locked': {
-          const requiredLabel = gate.requiredTier
-            ? gate.requiredTier.charAt(0).toUpperCase() + gate.requiredTier.slice(1)
-            : 'premium';
-          showUpgradeModal({
-            title: 'Unlock Premium Tone',
-            description:
-              gate.message ??
-              `Upgrade to the ${requiredLabel} plan to explore this signature Wondertone tone.`,
-            ctaLabel: 'View Plans',
-            onCta: () => {
-              window.open('/pricing', '_self');
-            },
-            secondaryLabel: 'Maybe later',
-          });
-          emitStepOneEvent({
-            type: 'tone_upgrade_prompt',
-            styleId,
-            tone,
-            requiredTier: gate.requiredTier ?? null,
-          });
-          break;
-        }
-        case 'fingerprint_required':
-          showToast({
-            title: 'Enable Browser Features',
-            description: gate.message ?? 'Please enable device permissions to continue generating previews.',
-            variant: 'warning',
-          });
-          break;
-        case 'entitlements_loading':
-          showToast({
-            title: 'Checking your plan',
-            description: gate.message ?? 'Hang tight while we load your usage limits.',
-            variant: 'info',
-          });
-          break;
-        default:
-          if (gate.reason !== 'quota_exceeded' && gate.message) {
-            showToast({
-              title: 'Preview unavailable',
-              description: gate.message,
-              variant: 'warning',
-            });
-          }
-          break;
-      }
-    },
-    [showToast, showUpgradeModal]
-  );
-
-  const handleStyleSelect = useHandleStyleSelect({ onGateDenied: handleGateDenied });
-  const toneSections = useToneSections();
+  const { showToast, renderFeedback } = useStudioFeedback();
 
   const generalGate = evaluateStyleGate(null);
   const currentStyleGate = currentStyle ? evaluateStyleGate(currentStyle.id) : generalGate;
