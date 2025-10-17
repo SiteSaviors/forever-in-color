@@ -1,88 +1,107 @@
-# Wondertone Studio – Left Guardrail v2 Plan
+# Wondertone Studio – Left Rail Overhaul Readiness Brief
 
-## 0. Vision
-- **Goal**: Reimagine the left rail as a tone-focused accordion (“Trending”, “Classic”, “Modern”, “Stylized”, “Electric/Digital”, and premium-gated “Signature”) that scales with frequent style additions and future favourites.
-- **Tenets**: preserve configurator guardrails, keep `usePreviewGeneration` as the single API gateway, maintain telemetry, and uphold performance ceiling (bundle ≤ current 567 KB artifact).
-- **Future proofing**: data-driven style catalog, entitlement-aware rendering, lazy assets, reusable feedback surfaces, and hooks ready for favourites and premium experiments.
-
-## 1. Architecture Map
-| Layer | Responsibility | Current Touchpoints | Planned changes |
-| --- | --- | --- | --- |
-| **Catalog (new)** | Declarative style metadata: tone category, entitlement tier, badges, unlock copy, thumbnail asset, preview behaviour flags. | Hard-coded `mockStyles` in `src/store/useFounderStore.ts`. | Create `src/config/styleCatalog.ts`, typed schema, loaders for desktop/mobile. |
-| **Entitlements** | Token counts, gating, prompts, watermark requirements. | `src/store/founder/entitlementSlice.ts`, scattered checks in `StyleSidebar`, `LaunchpadLayout`, `StudioConfigurator`. | Centralize gating helpers (e.g. `selectIsStyleUnlocked(styleId)`), rely on server data, expose reason codes and premium messaging. |
-| **Store Selectors** | Map catalog + entitlements + user prefs into UI-ready collections. | Sidebar manually filters, mobile drawer duplicates logic. | Add selectors/hooks (`useToneSections`, `useUnlockedStyles`, `usePremiumStyles`) that both desktop and mobile use. |
-| **Presentation** | Accordion UI, cards, badges, locked messaging, favourites. | `src/sections/studio/components/StyleSidebar.tsx`, `MobileStyleDrawer.tsx`. | Factor into `AccordionSidebar`, `ToneSection`, `StyleCard`, shared `StyleList` primitives. |
-| **Preview orchestration** | Generations, toasts, disable states. | `previewSlice`, `useHandleStyleSelect`, `StyleSidebar` button state. | Ensure `canGenerateMore` uses new selectors; lazy thumbnail/prefetch on accordion expand. |
-| **Feedback & Upsell** | Toasts, modals, upgrade CTA, gating prompts. | Ad-hoc alerts, `TokenDecrementToast`, `QuotaExhaustedModal`. | Introduce shared toast/error helper (e.g. `useStudioFeedback`) reused by accordion interactions. |
-| **Instrumentation** | StepOne telemetry, style impressions, unlock funnel. | Telemetry scattered in `StudioConfigurator`, `LaunchpadLayout`. | Wrap new accordion interactions in StepOne events; add impression hook per tone section. |
-
-## 2. Ranked Prerequisites
-### MUST handle beforehand
-1. **Extract style catalog**  
-   - File: `src/store/useFounderStore.ts` → move `mockStyles` to `src/config/styleCatalog.ts`.  
-   - Provide type (`StyleCatalogEntry`) with fields: `id`, `name`, `tone`, `tier`, `isPremium`, `badge`, `thumbnail`, `preview`, `priceModifier`, `defaultUnlocked`, `marketingCopy`.
-   - Store ingests via new helper (`loadInitialStyles()`).
-2. **Consolidate entitlement gating**  
-   - Files: `src/store/founder/entitlementSlice.ts`, `src/store/selectors.ts`, `src/sections/studio/components/StyleSidebar.tsx`, `src/components/studio/MobileStyleDrawer.tsx`.  
-   - Add selectors (`selectCanUseStyle(styleId)`, `selectStyleLockReason(styleId)`); replace inline gating logic.
-3. **Introduce tone section selectors**  
-   - New hook `useToneSections()` in `src/store/hooks/useToneSections.ts` combining catalog + entitlements + (future) favourites.  
-   - Sidebar & mobile drawer rely on this hook to render sections.
-4. **Set up thumbnail lazy loading & prefetch**  
-   - Utility hook `useToneSectionPrefetch` (e.g. `src/hooks/useToneSectionPrefetch.ts`).  
-   - Apply `loading="lazy"` to thumbnails, only preload when section activated.
-5. **Shared feedback helper**  
-   - Create `src/hooks/useStudioFeedback.ts` returning `pushToast`, `pushModal`, `trackError`.  
-   - Replace `alert()` usages in `StudioConfigurator` & planned accordion interactions.
-6. **Regression tests (minimum smoke)**  
-   - Add RTL or Playwright spec under `tests/studio/tones.spec.ts`.  
-   - Covers: anonymous sees free tones, premium sees signature, locked messaging displayed with upgrade CTA.
-
-### SHOULD tackle next
-7. **Refine `useHandleStyleSelect`** to support section context (pass tone metadata, emit analytics).  
-8. **Prepare favourites slice scaffold** (`favoritesSlice` stub storing IDs, no UI yet).  
-9. **Instrument StepOne events** for section expand/collapse, premium click, upgrade CTA.
-10. **Audit Supabase entitlements** to ensure `softRemaining` + `hardRemaining` mirror new tier gating (especially for signature tones).
-
-### NICE to have before rollout
-11. **Storybook snippets** for `ToneSection` / `StyleCard` states (locked, selected, premium).  
-12. **ARIA & keyboard affordances** for accordion (use `@radix-ui/react-accordion` after confirming bundle impact or create lightweight wrapper).  
-13. **Dynamic marketing copy** per tone (pull from CMS or `styleCatalog` metadata).  
-14. **Telemetry dashboards** – add analytics schema for tone impressions/favourites.  
-15. **Anonymous token hardening** – migrate to HttpOnly cookie consumption per earlier roadmap.
-
-## 3. Files to Touch (initial pass)
-- `src/config/styleCatalog.ts` *(new)* – canonical style definitions.
-- `src/types/styleCatalog.ts` *(new)* – shared types.
-- `src/store/useFounderStore.ts` – load catalog, remove inline definitions.
-- `src/store/selectors.ts` – new selectors for tones/unlocks.
-- `src/store/founder/entitlementSlice.ts` – expose `selectCanUseStyle`, lock reasons, integrate with catalog.
-- `src/store/hooks/useToneSections.ts` *(new)* – derive accordion data.
-- `src/hooks/useToneSectionPrefetch.ts` *(new)* – lazy thumbnail/prefetch.
-- `src/hooks/useStudioFeedback.ts` *(new)* – toast/error helper.
-- `src/sections/studio/components/StyleSidebar.tsx` – refactor to accordion layout.
-- `src/components/studio/MobileStyleDrawer.tsx` – align with tone sections & lock states.
-- `src/sections/studio/hooks/useHandleStyleSelect.ts` – pass tone metadata, use new gating selectors.
-- `tests/studio/tones.spec.ts` *(new)* – entitlement-driven smoke test.
-- Optional: `src/components/ui/Accordion` *(new)* if we wrap Radix or author custom accordion.
-
-## 4. Implementation Outline
-1. **Housekeeping sprint** (tasks 1–6). Confirm lint/build/test pipeline green.
-2. **Accordion build**  
-   - Implement ToneSection primitives.  
-   - Wire sidebar + mobile drawer to selectors.  
-   - Layer in premium lock UI, upgrade CTA hooking into existing modals.
-3. **QA & telemetry**  
-   - Verify gating across anonymous/free/premium sessions.  
-   - Capture analytics events for marketing.
-4. **Follow-ups**  
-   - Roll out favourites slice once ready.  
-   - Continue entitlement/token hardening and performance tuning.
-
-## 5. Open Questions
-- Will signature tones require additional server validation (e.g. new Supabase column)? Coordinate with backend before exposing UI.
-- Do marketing teams need per-tone copy/images (affects catalog schema)?
-- Should we support per-user tone ordering (personalisation) later? If yes, ensure catalog IDs remain stable and selectors can sort dynamically.
+This document captures the current state of the Wondertone studio codebase following the preparation sprint. Claude can treat this as the authoritative roadmap for building the tone-based accordion, knowing what groundwork is complete, what gaps remain, and where telemetry/UX guardrails stand.
 
 ---
-Prepared to keep the Wondertone experience consistent while enabling rapid tone iteration and premium expansion.
+
+## 0. What’s Already Done
+
+### Data & Catalog
+- **Single source catalog** (`src/config/styleCatalog.ts`): All styles live in a typed catalog with tone metadata, premium flags, badges, marketing copy, and a canonical signature entry (`signature-aurora`). `useFounderStore` loads from the catalog via `loadInitialStyles`.
+- **Favorites scaffold** (`src/store/founder/favoritesSlice.ts`): Zustand slice tracks favorite style ids; `useToneSections` surfaces `isFavorite`.
+
+### Entitlements & Gating
+- **Centralized gate** (`src/utils/entitlementGate.ts`): `canGenerateStylePreview()` normalizes quota/fingerprint/premium checks for both free and premium tiers. `entitlementSlice` exposes `evaluateStyleGate` and `canUseStyle`.
+- **Shared gate usage**: `useHandleStyleSelect`, `previewSlice`, `StyleSidebar`, `MobileStyleDrawer`, and `StudioConfigurator` all call `evaluateStyleGate`, so gating logic is consistent across flows.
+
+### Tone Data Hooks
+- **`useToneSections`** (`src/store/hooks/useToneSections.ts`): Groups styles by tone, merges entitlement gate state, favorites, and selected flags. Sidebar/mobile drawer now render from sections, not the flat list.
+- **Thumbnail prefetch** (`src/hooks/useToneSectionPrefetch.ts`): IntersectionObserver-driven helper preloads tone thumbnails when a section enters view; applied to both sidebar and mobile drawer with `loading="lazy"` thumbnails.
+
+### UX Feedback & Upgrade Flow
+- **Unified feedback hook** (`src/hooks/useStudioFeedback.tsx`): Provides `showToast`, `showUpgradeModal`, and `renderFeedback()`. All `alert()` calls in `StudioConfigurator` and gallery flows are replaced with toasts or the new `UpgradePromptModal`.
+- **Upgrade prompt modal** (`src/components/modals/UpgradePromptModal.tsx`): Reusable modal surfaced when gated content is selected.
+
+### Telemetry
+- **StepOne analytics expanded** (`src/utils/telemetry.ts`): New events cover `tone_section_view`, `tone_style_select`, `tone_style_locked`, and `tone_upgrade_prompt`. `StyleSidebar`, `MobileStyleDrawer`, and `useHandleStyleSelect` emit the appropriate events.
+
+### Quality Gates
+- **Regression smoke test** (`tests/studio/tones.spec.ts`): Vitest-based test confirming free vs. premium gating and quota handling via the centralized gate.
+- **Build/test tooling**: `npm run test` (Vitest) added; lint/build/test all run clean.
+
+---
+
+## 1. Outstanding Work (Pre-Accordion)
+
+| Priority | Item | Notes |
+| --- | --- | --- |
+| ✅ Complete | Items above | No action needed |
+| ⚠️ Blocker | **None** | Preparatory blockers cleared |
+| 🟡 Next Up | StepOne instrumentation for accordion-specific actions | Need to fire events for accordion expand/collapse, premium CTAs initiated from the accordion UI |
+| 🟡 Next Up | Supabase entitlement audit | Verify `softRemaining`/`hardRemaining` align with the new signature tone defaults (currently handled client-side) |
+| 🟢 Optional | Storybook, ARIA, marketing copy, telemetry dashboards | Useful once Claude lands the UI |
+| 🟢 Optional | Anonymous token hardening (HttpOnly) | Remains on long-term roadmap |
+
+### Pending Analytics Enhancements
+- Accordion-specific StepOne events (expand/collapse, favorites toggles, CTA clicks) need to be wired when the UI lands.
+- Marketing/telemetry team may want additional Progressive Disclosure events; structure already exists in `src/utils/telemetry.ts`.
+
+---
+
+## 2. Implementation Guidance for Claude
+
+### Accordion UI (Tone Sections)
+- `useToneSections` already supplies `styles`, `tone`, `definition`, `locked`, `lockedGate`, and `isFavorite`. Claude can build `ToneSection`/`ToneStyleCard` components off this data.
+- `useHandleStyleSelect` now accepts a `{ tone }` meta argument—pass the tone from UI interactions so telemetry/future analytics stay consistent.
+- Replace the current flat list markup in `StyleSidebar`/`MobileStyleDrawer` with accordion primitives (Radix or custom). Current grouping logic can be transitioned into collapsible sections.
+- Utilize `lockedGate` to show tone-level gating copy (e.g., a pill badge or CTA button). Per-style gating is already handled inside `ToneSectionStyle`.
+
+### Favorites & CTA Surface
+- Favorites slice is live but unused in UI; a future PR can add star icons or a Favorites tab. Tone selectors already surface `isFavorite`.
+- Upgrade CTA: leverage `showUpgradeModal` with the required tier from gate result; `tone_upgrade_prompt` will fire automatically when `handleGateDenied` is invoked.
+
+### Performance & UX
+- Prefetching already kicks off when sections enter view. Accordion should call `setActive(tone, true)` when sections expand/collapse to ensure eager prefetch for open panels.
+- Ensure tone headers render accessible labels/ARIA attributes. Item-level `<button>` semantics are in place; accordion wrappers should add keyboard support (Radix recommends using `Accordion` primitives).
+
+### Testing Expectations
+- Add an integration test (RTL/Playwright) once UI is built to ensure:
+  - Free tones render unlocked for anonymous users.
+  - Signature tones show locked CTA for anonymous, unlocked for premium.
+  - Favorites toggling (when implemented) persists in the store.
+- Existing unit-level smoke test is available for gating; expand coverage to DOM-based behavior after UI lands.
+
+---
+
+## 3. File Map & Ownership Overview
+
+| Area | Files | Status |
+| --- | --- | --- |
+| Catalog | `src/config/styleCatalog.ts` | ✅ data-driven catalog, includes signature tone |
+| Store | `src/store/useFounderStore.ts`, `src/store/founder/*Slice.ts`, `src/store/hooks/useToneSections.ts` | ✅ gating + favorites ready |
+| Gating | `src/utils/entitlementGate.ts`, `src/store/founder/entitlementSlice.ts` | ✅ centralized gate |
+| Feedback | `src/hooks/useStudioFeedback.tsx`, `src/components/modals/UpgradePromptModal.tsx` | ✅ toasts/modals in place |
+| UI (current) | `src/sections/studio/components/StyleSidebar.tsx`, `src/components/studio/MobileStyleDrawer.tsx` | ✅ grouped list, ready for accordion refactor |
+| Interactions | `src/sections/studio/hooks/useHandleStyleSelect.ts` | ✅ returns tone metadata, emits telemetry |
+| Tests | `tests/studio/tones.spec.ts` | ✅ regression smoke test (Vitest) |
+
+---
+
+## 4. Suggested Next Steps (Claude)
+1. **Replace grouped list with accordion UI** (desktop and mobile) using tone sections. Preserve gating messaging and toast/modal flows.
+2. **Add favorites affordances** (optional) once design lands—state is ready.
+3. **Instrument additional StepOne events** for accordion expand/collapse and upgrade CTAs triggered from tone sections.
+4. **Expand tests** with a UI-level spec confirming locked messaging and upgrade prompts render as expected.
+
+---
+
+### Quick Reference Commands
+```bash
+npm run lint
+npm run build
+npm run test         # Vitest – includes tones smoke test
+```
+
+---
+
+Prepared by Codex. This document deprecates the earlier “Left Guardrail v2 Plan” and reflects the current readiness state for Claude’s accordion implementation. Let us know if you need deeper dives into any area.***

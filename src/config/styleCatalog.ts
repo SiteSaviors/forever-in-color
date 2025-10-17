@@ -202,6 +202,21 @@ export const STYLE_CATALOG: StyleCatalogEntry[] = [
     defaultUnlocked: true,
     marketingCopy: 'Cut portraits into shimmering gemstone-inspired facets.',
   },
+  {
+    id: 'signature-aurora',
+    name: 'Aurora Signature',
+    description: 'Premium aurora gradients layered with hand-painted highlights.',
+    thumbnail: '/art-style-thumbnails/signature-aurora.jpg',
+    preview: '/art-style-thumbnails/signature-aurora.jpg',
+    priceModifier: 10,
+    tone: 'signature',
+    tier: 'premium',
+    isPremium: true,
+    badges: ['exclusive', 'new'],
+    defaultUnlocked: false,
+    marketingCopy: 'Unlock Wondertone’s signature finish with luminous aurora light.',
+    requiredTier: 'plus',
+  },
 ];
 
 export const loadInitialStyles = (): StyleOptionSnapshot[] =>

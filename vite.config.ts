@@ -35,4 +35,9 @@ export default defineConfig(({ mode }) => ({
   css: {
     devSourcemap: true,
   },
+  test: {
+    globals: true,
+    environment: 'node',
+    include: ['tests/**/*.spec.ts'],
+  },
 }));

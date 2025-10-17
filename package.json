@@ -11,6 +11,7 @@
     "lint": "eslint .",
     "lint:unused": "eslint . --ext .ts,.tsx --fix",
     "preview": "vite preview",
+    "test": "vitest run",
     "dead-code:check": "npm run dead-code:exports && npm run dead-code:files && npm run dead-code:deps",
     "dead-code:exports": "ts-unused-exports tsconfig.json --excludePathsFromReport=src/main.tsx,src/App.tsx,src/pages",
     "dead-code:files": "unimported --flow --init --update",
@@ -77,7 +78,8 @@
     "typescript": "^5.6.3",
     "typescript-eslint": "^8.0.1",
     "unimported": "^1.31.1",
-    "vite": "^5.4.1"
+    "vite": "^5.4.1",
+    "vitest": "^1.6.0"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
