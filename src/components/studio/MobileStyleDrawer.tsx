@@ -22,16 +22,6 @@ export default function MobileStyleDrawer({
 }: MobileStyleDrawerProps) {
   const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
   const touchStartYRef = useRef<number | null>(null);
-  const selectedStyleId = useFounderStore((state) => state.selectedStyleId);
-  const selectedStyleIdRef = useRef(selectedStyleId);
-
-  // Close drawer when user selects a style
-  useEffect(() => {
-    if (isOpen && selectedStyleId && selectedStyleId !== selectedStyleIdRef.current) {
-      onClose();
-    }
-    selectedStyleIdRef.current = selectedStyleId;
-  }, [selectedStyleId, isOpen, onClose]);
 
   // Lock body scroll when drawer is open
   useEffect(() => {
@@ -149,11 +139,13 @@ export default function MobileStyleDrawer({
             aria-modal="true"
             aria-labelledby="mobile-drawer-title"
             aria-describedby="mobile-drawer-desc"
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
           >
-            <div className="flex justify-center pt-3 pb-2">
+            <div
+              className="flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing"
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
               <div className="w-12 h-1 bg-white/30 rounded-full" />
             </div>
 
