@@ -191,67 +191,68 @@ const StyleForgeOverlay = ({ status, styleName, message, isError, errorMessage }
   }, [status]);
 
   return (
-    <div className="absolute inset-0 z-30 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm" role="presentation">
-      <div
-        className="relative w-full max-w-xl rounded-3xl border border-white/15 bg-gradient-to-br from-slate-900/95 via-slate-900/90 to-slate-950/90 p-8 shadow-founder text-center text-white"
-        role="status"
-        aria-live="polite"
-        aria-busy={status !== 'ready'}
-      >
-        <div className="mb-6 flex items-center justify-center gap-3 text-sm uppercase tracking-[0.4em] text-white/60">
-          <span className="inline-flex h-2 w-2 rounded-full bg-purple-400" />
-          <span>Style Forge</span>
-          <span className="inline-flex h-2 w-2 rounded-full bg-blue-400" />
-        </div>
-
-        <h3 className="text-2xl font-semibold">
-          {isError ? 'Something interrupted the magic' : `Crafting ${styleName}`}
-        </h3>
-        <p className="mt-2 text-sm text-white/70">
-          {primaryMessage}
-        </p>
-
-        {!isError && info.sublabel && (
-          <p className="mt-2 text-xs text-white/50">{info.sublabel}</p>
-        )}
-
-        <div className="mt-8 flex flex-col gap-4">
-          <div className="flex items-center justify-between text-xs text-white/60">
-            {STATUS_ORDER.slice(0, 3).map((key, idx) => (
-              <div key={key} className="flex-1">
-                <div className="flex items-center gap-2">
-                  <span
-                    className={clsx(
-                      'inline-flex h-2 w-2 rounded-full transition-colors duration-300',
-                      idx <= progressIndex
-                        ? 'bg-gradient-to-r from-purple-400 to-blue-400'
-                        : 'bg-white/10'
-                    )}
-                  />
-                  <span className="text-[0.6rem] uppercase tracking-[0.2em] text-white/40">
-                    {key.replace(/^[a-z]/, (l) => l.toUpperCase())}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-
-        <div className="relative h-2 overflow-hidden rounded-full bg-white/10">
-          <div
-            className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 transition-all duration-500 ease-out"
-            style={{ width: `${progressPercent}%` }}
-          />
-        </div>
-        </div>
-
-        <div className="mt-8 flex items-center justify-center gap-4 text-xs text-white/50">
-          <div className="flex items-center gap-2">
+    <div
+      className="absolute inset-0 z-30 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm px-3 py-4 sm:px-6 sm:py-8"
+      role="presentation"
+    >
+      <div className="max-h-full w-full overflow-y-auto">
+        <div
+          className="relative mx-auto w-full max-w-[420px] sm:max-w-xl rounded-3xl border border-white/15 bg-gradient-to-br from-slate-900/95 via-slate-900/90 to-slate-950/90 p-6 text-center text-white shadow-founder sm:p-8"
+          role="status"
+          aria-live="polite"
+          aria-busy={status !== 'ready'}
+        >
+          <div className="mb-5 flex flex-col items-center justify-center gap-2 text-xs uppercase tracking-[0.35em] text-white/60 sm:mb-6 sm:flex-row sm:gap-3 sm:text-sm">
             <span className="inline-flex h-2 w-2 rounded-full bg-purple-400" />
-            <span>Wondertone studio engaged</span>
-          </div>
-          <div className="flex items-center gap-2">
+            <span>Style Forge</span>
             <span className="inline-flex h-2 w-2 rounded-full bg-blue-400" />
-            <span>GPT-Image-1 artistry in motion</span>
+          </div>
+
+          <h3 className="text-xl font-semibold sm:text-2xl">
+            {isError ? 'Something interrupted the magic' : `Crafting ${styleName}`}
+          </h3>
+          <p className="mt-2 text-sm text-white/70 sm:text-base">{primaryMessage}</p>
+
+          {!isError && info.sublabel && (
+            <p className="mt-2 text-xs text-white/50 sm:text-sm">{info.sublabel}</p>
+          )}
+
+          <div className="mt-6 flex flex-col gap-4 sm:mt-8">
+            <div className="flex flex-col gap-3 text-xs text-white/60 sm:flex-row sm:items-center sm:justify-between">
+              {STATUS_ORDER.slice(0, 3).map((key, idx) => (
+                <div key={key} className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={clsx(
+                        'inline-flex h-2 w-2 rounded-full transition-colors duration-300',
+                        idx <= progressIndex ? 'bg-gradient-to-r from-purple-400 to-blue-400' : 'bg-white/10'
+                      )}
+                    />
+                    <span className="text-[0.6rem] uppercase tracking-[0.2em] text-white/40">
+                      {key.replace(/^[a-z]/, (l) => l.toUpperCase())}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="relative h-2 overflow-hidden rounded-full bg-white/10">
+              <div
+                className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 transition-all duration-500 ease-out"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="mt-6 flex flex-col items-center justify-center gap-3 text-[0.7rem] text-white/50 sm:mt-8 sm:flex-row sm:gap-4 sm:text-xs">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex h-2 w-2 rounded-full bg-purple-400" />
+              <span>Wondertone studio engaged</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="inline-flex h-2 w-2 rounded-full bg-blue-400" />
+              <span>GPT-Image-1 artistry in motion</span>
+            </div>
           </div>
         </div>
       </div>

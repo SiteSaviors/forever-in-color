@@ -4,13 +4,6 @@ import { ChevronDown, Lock } from 'lucide-react';
 import { clsx } from 'clsx';
 import type { ToneSection as ToneSectionType } from '@/store/hooks/useToneSections';
 import type { ToneGradientConfig } from '@/config/toneGradients';
-
-type ToneHeadlineClass = 'font-fraunces' | 'font-agbalumo' | 'font-spartan' | 'font-display';
-const toneHeadlineFontClassOptions: ToneHeadlineClass[] = ['font-fraunces', 'font-agbalumo', 'font-spartan', 'font-display'];
-const envToneHeadline = import.meta.env?.VITE_TONE_HEADLINE_FONT as string | undefined;
-const toneHeadlineFontClass: ToneHeadlineClass = toneHeadlineFontClassOptions.includes(envToneHeadline as ToneHeadlineClass)
-  ? (envToneHeadline as ToneHeadlineClass)
-  : 'font-fraunces';
 import ToneStyleCard from './ToneStyleCard';
 import { getToneIcon } from './toneIcons';
 import {
@@ -18,7 +11,7 @@ import {
   tonePanelVariants,
   toneSectionVariants,
   reducedMotionSettings,
-  getStaggerOrNone,
+  toneCardStagger,
 } from '../motion/toneAccordionMotion';
 
 type ToneSectionProps = {
@@ -102,8 +95,7 @@ export default function ToneSection({
             <div className="flex items-center gap-3">
               <h3
                 className={clsx(
-                  'text-sm font-bold uppercase tracking-[0.02em] text-white md:text-base',
-                  'font-fraunces',
+                  'text-sm font-bold uppercase tracking-[0.02em] text-white md:text-base font-fraunces'
                 )}
               >
                 {definition.label}
@@ -148,7 +140,10 @@ export default function ToneSection({
           >
             <motion.div
               className="space-y-2"
-              variants={getStaggerOrNone(prefersReducedMotion)}
+              initial={prefersReducedMotion ? undefined : 'initial'}
+              animate={prefersReducedMotion ? undefined : 'enter'}
+              exit={prefersReducedMotion ? undefined : 'initial'}
+              transition={prefersReducedMotion ? undefined : toneCardStagger}
             >
               {styles.map((styleEntry) => (
                 <motion.div key={styleEntry.option.id} variants={toneCardVariants}>
