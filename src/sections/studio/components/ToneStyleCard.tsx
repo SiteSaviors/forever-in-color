@@ -187,11 +187,13 @@ export default function ToneStyleCard({
           'relative overflow-hidden flex-shrink-0 shadow-lg',
           isHero ? 'h-28 w-full rounded-2xl md:h-28 md:w-28' : 'h-14 w-14 rounded-xl'
         )}
-        style={thumbnailStyle}
+        style={{ ...thumbnailStyle, aspectRatio: isHero ? 'auto' : '1' }}
       >
         <img
           src={option.thumbnail}
           alt=""
+          width={isHero ? 112 : 56}
+          height={isHero ? 112 : 56}
           loading="lazy"
           decoding="async"
           className={clsx(
@@ -199,6 +201,7 @@ export default function ToneStyleCard({
             isLocked && 'opacity-60',
             !isLocked && 'group-hover:scale-105'
           )}
+          style={{ aspectRatio: '1', contentVisibility: 'auto' }}
         />
         {/* Glass overlay with gold border for locked styles */}
         {isLocked && (

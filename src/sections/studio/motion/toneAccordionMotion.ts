@@ -48,9 +48,11 @@ export const tonePanelVariants: Variants = {
   },
   visible: {
     opacity: 1,
-    height: 'auto',
+    height: 'var(--panel-height)',
     transition: {
-      ...toneSectionSpring,
+      duration: 0.26,
+      ease: [0.22, 0.61, 0.36, 1], // Smooth easeOutCubic - fewer frames than spring
+      opacity: { duration: 0.2 },
       when: 'beforeChildren',
     },
   },

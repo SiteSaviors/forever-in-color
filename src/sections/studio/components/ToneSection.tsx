@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Lock } from 'lucide-react';
 import { clsx } from 'clsx';
@@ -34,6 +34,9 @@ export default function ToneSection({
   const { tone, definition, styles, locked } = section;
   const Icon = getToneIcon(tone);
   const [iconAnimated, setIconAnimated] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [panelHeight, setPanelHeight] = useState<number | 'auto'>('auto');
+  const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isExpanded && !iconAnimated) {
@@ -41,19 +44,46 @@ export default function ToneSection({
     }
   }, [iconAnimated, isExpanded]);
 
+  // FLIP height measurement for smooth GPU-accelerated animation
+  useEffect(() => {
+    if (!panelRef.current) return;
+
+    if (isExpanded) {
+      // Measure scrollHeight before animation
+      const height = panelRef.current.scrollHeight;
+      setPanelHeight(height);
+      setIsAnimating(true);
+
+      // Return to auto after animation completes (prevents overflow issues)
+      const timer = setTimeout(() => {
+        setPanelHeight('auto');
+        setIsAnimating(false);
+      }, 350);
+      return () => clearTimeout(timer);
+    } else {
+      setIsAnimating(false);
+    }
+  }, [isExpanded]);
+
   const panelBackground = isExpanded ? toneMeta.panel.expanded : toneMeta.panel.collapsed;
 
   return (
     <motion.section
-      layout
       initial={false}
       variants={toneSectionVariants}
       animate={isExpanded ? 'expanded' : 'collapsed'}
       className={clsx(
         'relative overflow-hidden rounded-2xl border border-white/10 backdrop-blur-sm transition-all duration-300',
-        isExpanded && 'shadow-[0_24px_48px_rgba(12,20,39,0.55)]'
+        // Shadow moved to ::after pseudo-element for GPU acceleration
+        'after:absolute after:inset-0 after:pointer-events-none after:rounded-2xl after:-z-10',
+        'after:shadow-[0_24px_48px_rgba(12,20,39,0.55)] after:transition-opacity after:duration-300',
+        isExpanded ? 'after:opacity-100' : 'after:opacity-0'
       )}
-      style={{ background: panelBackground }}
+      style={{
+        background: panelBackground,
+        willChange: isAnimating ? 'height, opacity' : undefined,
+        pointerEvents: isAnimating ? 'none' : 'auto',
+      }}
     >
       <div
         className={clsx(
@@ -117,6 +147,10 @@ export default function ToneSection({
             animate={isExpanded ? { rotate: 180 } : { rotate: 0 }}
             transition={prefersReducedMotion ? reducedMotionSettings : { type: 'spring', stiffness: 360, damping: 28 }}
             className="text-white/60"
+            style={{
+              transform: 'translateZ(0)',
+              willChange: 'transform',
+            }}
             aria-hidden="true"
           >
             <ChevronDown className="h-5 w-5" />
@@ -127,6 +161,7 @@ export default function ToneSection({
       <AnimatePresence initial={false}>
         {isExpanded && (
           <motion.div
+            ref={panelRef}
             key="panel"
             id={`tone-section-${tone}`}
             role="region"
@@ -137,9 +172,17 @@ export default function ToneSection({
             exit="hidden"
             transition={prefersReducedMotion ? reducedMotionSettings : undefined}
             className="px-4 pb-5 pt-2"
+            style={{
+              '--panel-height': typeof panelHeight === 'number' ? `${panelHeight}px` : 'auto',
+              contain: 'layout style',
+              willChange: isAnimating ? 'height, opacity' : 'auto',
+            } as React.CSSProperties}
           >
             <motion.div
               className="space-y-2"
+              style={{
+                contain: 'layout paint',
+              }}
               initial={prefersReducedMotion ? undefined : 'initial'}
               animate={prefersReducedMotion ? undefined : 'enter'}
               exit={prefersReducedMotion ? undefined : 'initial'}

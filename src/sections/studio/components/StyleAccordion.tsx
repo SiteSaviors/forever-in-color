@@ -191,7 +191,6 @@ export default function StyleAccordion({ hasCroppedImage }: StyleAccordionProps)
         {toneSections.map((section) => (
           <motion.div
             key={section.tone}
-            layout
             initial={false}
             className="relative"
           >
