@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, type CSSProperties } from 'react';
+import { useState, useEffect, useMemo, type CSSProperties } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { clsx } from 'clsx';
@@ -6,10 +6,11 @@ import { useToneSections } from '@/store/hooks/useToneSections';
 import { useHandleStyleSelect } from '@/sections/studio/hooks/useHandleStyleSelect';
 import { useStudioFeedback } from '@/hooks/useStudioFeedback';
 import { emitStepOneEvent } from '@/utils/telemetry';
+import { useStyleThumbnailPrefetch } from '@/sections/studio/hooks/useStyleThumbnailPrefetch';
 import ToneSection from './ToneSection';
+import type { PrefetchGroupStatus } from '@/sections/studio/hooks/useStyleThumbnailPrefetch';
 import type { StyleTone } from '@/config/styleCatalog';
 import type { GateResult } from '@/utils/entitlementGate';
-import type { ToneSection as ToneSectionType } from '@/store/hooks/useToneSections';
 import { TONE_GRADIENTS } from '@/config/toneGradients';
 
 type StyleAccordionProps = {
@@ -25,35 +26,34 @@ export default function StyleAccordion({ hasCroppedImage }: StyleAccordionProps)
   const [activeTone, setActiveTone] = useState<StyleTone | null>('trending');
 
   // Track prefetched sections to prevent duplicate requests
-  const [prefetchedSections, setPrefetchedSections] = useState<Set<StyleTone>>(new Set());
-
   // Trending tooltip state for first-time users
   const [showTrendingTip, setShowTrendingTip] = useState(false);
 
-  // Direct thumbnail prefetching with tracking - FIXED: Memory leak prevention
-  const prefetchThumbnails = useCallback((section: ToneSectionType) => {
-    if (prefetchedSections.has(section.tone)) {
-      return; // Already prefetched, skip
-    }
+  const prefetchGroups = useMemo(
+    () =>
+      toneSections.map((section) => ({
+        id: section.tone,
+        thumbnails: section.styles.map(({ option }) => option.thumbnail),
+      })),
+    [toneSections]
+  );
 
-    section.styles.forEach(({ option }) => {
-      const img = new Image();
-      img.src = option.thumbnail;
-      // Preload eagerly - browser will cache for instant display
-    });
+  const { registerGroup, prefetchState, prefetchGroup } = useStyleThumbnailPrefetch({
+    groups: prefetchGroups,
+  });
 
-    setPrefetchedSections((prev) => new Set(prev).add(section.tone));
-  }, [prefetchedSections]);
+  const prefetchGroupMap = useMemo(
+    () => new Map(prefetchGroups.map((group) => [group.id, group])),
+    [prefetchGroups]
+  );
 
-  // Prefetch thumbnails for initially expanded section - FIXED: Dependencies
   useEffect(() => {
-    if (activeTone) {
-      const section = toneSections.find((s) => s.tone === activeTone);
-      if (section) {
-        prefetchThumbnails(section);
-      }
+    if (!activeTone) return;
+    const group = prefetchGroupMap.get(activeTone);
+    if (group) {
+      void prefetchGroup(group);
     }
-  }, [activeTone, toneSections, prefetchThumbnails]);
+  }, [activeTone, prefetchGroupMap, prefetchGroup]);
 
   // Emit view telemetry when a new tone expands
   useEffect(() => {
@@ -143,11 +143,10 @@ export default function StyleAccordion({ hasCroppedImage }: StyleAccordionProps)
     // REMOVED: Invalid analytics event type 'tone_section_expanded' doesn't exist
     // Can add to telemetry.ts union if needed for tracking
 
-    // Prefetch thumbnails when section opens
     if (!wasExpanded) {
-      const section = toneSections.find((s) => s.tone === tone);
-      if (section) {
-        prefetchThumbnails(section);
+      const group = prefetchGroupMap.get(tone);
+      if (group) {
+        void prefetchGroup(group);
       }
     }
   };
@@ -188,12 +187,17 @@ export default function StyleAccordion({ hasCroppedImage }: StyleAccordionProps)
       </div>
 
       <AnimatePresence initial={false}>
-        {toneSections.map((section) => (
-          <motion.div
-            key={section.tone}
-            initial={false}
-            className="relative"
-          >
+        {toneSections.map((section) => {
+          const group = prefetchGroupMap.get(section.tone);
+          const prefetchStatus: PrefetchGroupStatus = prefetchState[section.tone]?.status ?? 'idle';
+
+          return (
+            <motion.div
+              key={section.tone}
+              ref={group ? registerGroup(group) : undefined}
+              initial={false}
+              className="relative"
+            >
             {/* Trending tooltip for first-time users */}
             {section.tone === 'trending' && showTrendingTip && (
               <div
@@ -240,9 +244,11 @@ export default function StyleAccordion({ hasCroppedImage }: StyleAccordionProps)
               }}
               isExpanded={activeTone === section.tone}
               onToggle={() => toggleTone(section.tone)}
+              prefetchStatus={prefetchStatus}
             />
           </motion.div>
-        ))}
+          );
+        })}
       </AnimatePresence>
     </div>
   );

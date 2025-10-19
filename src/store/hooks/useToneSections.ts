@@ -28,6 +28,23 @@ export const useToneSections = (): ToneSection[] => {
     favoriteStyles: state.favoriteStyles,
   }));
 
+  const favoriteSet = useMemo(() => {
+    return new Set(favoriteStyles.map((id) => id.trim().toLowerCase()).filter(Boolean));
+  }, [favoriteStyles]);
+
+  const defaultGate = useMemo(() => evaluateStyleGate(null), [evaluateStyleGate]);
+
+  const gateCache = useMemo(() => {
+    const cache = new Map<string, GateResult>();
+    styles.forEach((style) => {
+      if (style.id === 'original-image') {
+        return;
+      }
+      cache.set(style.id, evaluateStyleGate(style.id));
+    });
+    return cache;
+  }, [styles, evaluateStyleGate]);
+
   return useMemo(() => {
     const toneBuckets = new Map<StyleTone, ToneSectionStyle[]>();
 
@@ -39,10 +56,10 @@ export const useToneSections = (): ToneSection[] => {
 
       const metadata = findStyleMetadata(style.id);
       const tone: StyleTone = metadata?.tone ?? 'classic';
-      const gate = evaluateStyleGate(style.id);
+      const gate = gateCache.get(style.id) ?? defaultGate;
       const isSelected = selectedStyleId === style.id;
       const normalizedId = style.id.trim().toLowerCase();
-      const isFavorite = favoriteStyles.includes(normalizedId);
+      const isFavorite = favoriteSet.has(normalizedId);
 
       const entry: ToneSectionStyle = {
         option: style,
@@ -64,7 +81,7 @@ export const useToneSections = (): ToneSection[] => {
 
       const locked = items.length > 0 ? !items.some((entry) => entry.gate.allowed) : false;
       const lockedGate = locked
-        ? items.find((entry) => !entry.gate.allowed)?.gate ?? evaluateStyleGate(null)
+        ? items.find((entry) => !entry.gate.allowed)?.gate ?? defaultGate
         : undefined;
 
       return {
@@ -75,5 +92,5 @@ export const useToneSections = (): ToneSection[] => {
         lockedGate,
       };
     });
-  }, [styles, selectedStyleId, favoriteStyles, evaluateStyleGate]);
+  }, [styles, selectedStyleId, favoriteSet, gateCache, defaultGate]);
 };

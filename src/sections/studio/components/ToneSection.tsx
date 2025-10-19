@@ -13,6 +13,7 @@ import {
   reducedMotionSettings,
   toneCardStagger,
 } from '../motion/toneAccordionMotion';
+import type { PrefetchGroupStatus } from '@/sections/studio/hooks/useStyleThumbnailPrefetch';
 
 type ToneSectionProps = {
   section: ToneSectionType;
@@ -21,6 +22,7 @@ type ToneSectionProps = {
   onStyleSelect: (styleId: string, meta: { tone: string }) => void;
   isExpanded: boolean;
   onToggle: () => void;
+  prefetchStatus: PrefetchGroupStatus;
 };
 
 export default function ToneSection({
@@ -30,6 +32,7 @@ export default function ToneSection({
   onStyleSelect,
   isExpanded,
   onToggle,
+  prefetchStatus,
 }: ToneSectionProps) {
   const { tone, definition, styles, locked } = section;
   const Icon = getToneIcon(tone);
@@ -49,6 +52,11 @@ export default function ToneSection({
     if (!panelRef.current) return;
 
     if (isExpanded) {
+      const canAnimate =
+        prefetchStatus === 'done' || prefetchStatus === 'error' || styles.length === 0;
+      if (!canAnimate) {
+        return;
+      }
       // Measure scrollHeight before animation
       const height = panelRef.current.scrollHeight;
       setPanelHeight(height);
@@ -58,12 +66,12 @@ export default function ToneSection({
       const timer = setTimeout(() => {
         setPanelHeight('auto');
         setIsAnimating(false);
-      }, 350);
+      }, 260);
       return () => clearTimeout(timer);
     } else {
       setIsAnimating(false);
     }
-  }, [isExpanded]);
+  }, [isExpanded, prefetchStatus, styles.length]);
 
   const panelBackground = isExpanded ? toneMeta.panel.expanded : toneMeta.panel.collapsed;
 

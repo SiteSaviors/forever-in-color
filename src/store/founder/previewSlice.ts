@@ -61,7 +61,27 @@ export type PreviewSlice = {
   generatePreviews: (ids?: string[], options?: { force?: boolean; orientationOverride?: Orientation }) => Promise<void>;
 };
 
-const STYLE_PREVIEW_CACHE_LIMIT = 12;
+const STYLE_PREVIEW_CACHE_LIMIT = 50;
+
+const cacheMetrics = {
+  hits: 0,
+  misses: 0,
+  evictions: 0,
+};
+
+const shouldLogMetrics = () =>
+  typeof window !== 'undefined' && (import.meta.env?.DEV || (window as typeof window & { DEBUG_PREVIEW_CACHE?: boolean }).DEBUG_PREVIEW_CACHE);
+
+const logCacheMetrics = () => {
+  if (!shouldLogMetrics()) {
+    return;
+  }
+  const total = cacheMetrics.hits + cacheMetrics.misses;
+  const hitRate = total > 0 ? Number(((cacheMetrics.hits / total) * 100).toFixed(1)) : 0;
+  console.info(
+    `[PreviewCache] hits=${cacheMetrics.hits} misses=${cacheMetrics.misses} evictions=${cacheMetrics.evictions} hitRate=${hitRate}%`
+  );
+};
 
 const ORIENTATION_TO_ASPECT: Record<Orientation, string> = {
   square: '1:1',
@@ -148,6 +168,8 @@ export const createPreviewSlice = (
               cacheCopy[oldStyleId] = rest as Partial<Record<Orientation, StylePreviewCacheEntry>>;
             }
           }
+          cacheMetrics.evictions += 1;
+          logCacheMetrics();
         }
 
         return {
@@ -157,12 +179,27 @@ export const createPreviewSlice = (
       }),
     getCachedStylePreview: (styleId, orientation) => {
       const state = get();
-      return state.stylePreviewCache[styleId]?.[orientation];
+      const entry = state.stylePreviewCache[styleId]?.[orientation];
+      if (entry) {
+        cacheMetrics.hits += 1;
+      } else {
+        cacheMetrics.misses += 1;
+      }
+      const totalLookups = cacheMetrics.hits + cacheMetrics.misses;
+      if (totalLookups % 10 === 0) {
+        logCacheMetrics();
+      }
+      return entry;
     },
     clearStylePreviewCache: () =>
-      set({
-        stylePreviewCache: {},
-        stylePreviewCacheOrder: [],
+      set(() => {
+        cacheMetrics.hits = 0;
+        cacheMetrics.misses = 0;
+        cacheMetrics.evictions = 0;
+        return {
+          stylePreviewCache: {},
+          stylePreviewCacheOrder: [],
+        };
       }),
     startStylePreview: async (style, options = {}) => {
       const state = get();
