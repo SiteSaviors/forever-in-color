@@ -33,6 +33,13 @@ This command generates:
 3. Drop the thumbnail(s) into `public/art-style-thumbnails/`.
 4. Run the generator + validator and commit results.
 
+### Supabase Prompt Workflow
+
+- Migrations in `supabase/migrations/*_style_prompts.sql` seed/update the `style_prompts` table. Run `supabase db push` before deploying new styles.
+- The edge runtime imports `EDGE_STYLE_REGISTRY`; prompt warmup iterates every enabled style with a numeric ID. No environment variable is required, but you can override with `PROMPT_CACHE_WARMUP_STYLES` if needed.
+- `StylePromptService.resolveStyleId` now throws when a style name/slug is unknown or missing a numeric ID, preventing silent fallbacks. Keep the registry and Supabase in sync to avoid runtime errors.
+- To validate prompts locally, refresh `docs/style_prompts_rows.json` from Supabase; `npm run build:registry` will fail if any numeric ID lacks a prompt.
+
 ### Runtime Notes
 
 - Feature flags default to `isEnabled: true`, `rolloutPercentage: 100`. Adjust as needed.

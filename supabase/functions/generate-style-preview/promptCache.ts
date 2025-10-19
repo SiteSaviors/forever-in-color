@@ -1,3 +1,5 @@
+import { EDGE_STYLE_REGISTRY } from '../_shared/styleRegistry.generated.ts';
+
 const DEFAULT_TTL_MS = 15 * 60 * 1000;
 
 interface PromptCacheEntry {
@@ -33,10 +35,16 @@ function resolvePromptCacheConfig(): PromptCacheConfig {
   const ttlOverride = Number(Deno.env.get('PROMPT_CACHE_TTL_MS'));
   const ttlMs = Number.isFinite(ttlOverride) && ttlOverride > 0 ? ttlOverride : DEFAULT_TTL_MS;
   const warmupRaw = Deno.env.get('PROMPT_CACHE_WARMUP_STYLES') ?? '';
-  const warmupStyles = warmupRaw
+  const envWarmupStyles = warmupRaw
     .split(',')
     .map((style) => style.trim())
     .filter((style) => style.length > 0);
+  const registryWarmupStyles = EDGE_STYLE_REGISTRY.filter(
+    (entry) => entry.numericId !== null && entry.prompt && entry.prompt.prompt
+  ).map((entry) => entry.name);
+
+  const warmupStyles =
+    envWarmupStyles.length > 0 ? envWarmupStyles : registryWarmupStyles;
 
   return {
     enabled,
