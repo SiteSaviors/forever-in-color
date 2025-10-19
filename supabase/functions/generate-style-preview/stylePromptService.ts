@@ -1,4 +1,9 @@
 import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+import {
+  EDGE_STYLE_BY_NAME,
+  EDGE_STYLE_BY_SLUG,
+  type EdgeStyleRegistryEntry,
+} from '../_shared/styleRegistry.generated.ts';
 
 export interface StylePromptMetadata {
   prompt: string | null;
@@ -51,27 +56,24 @@ export class StylePromptService {
   }
 
   resolveStyleId(styleName: string): number {
-    const styleNameToId: { [key: string]: number } = {
-      'Original Image': 1,
-      'Classic Oil Painting': 2,
-      'Calm WaterColor': 3,
-      'Watercolor Dreams': 4,
-      'Pastel Bliss': 5,
-      'Gemstone Poly': 6,
-      '3D Storybook': 7,
-      'Artisan Charcoal': 8,
-      'Pop Art Burst': 9,
-      'Neon Splash': 10,
-      'Electric Bloom': 11,
-      'Artistic Mashup': 12,
-      'Abstract Fusion': 13,
-      'Modern Abstract': 13,
-      'Intricate Ink': 14,
-      'Deco Luxe': 15
-    };
-    
-    const styleId = styleNameToId[styleName];
+    const entry = this.resolveRegistryEntry(styleName);
+    if (entry.numericId == null) {
+      throw new Error(`No numeric ID configured for style "${styleName}" (slug: ${entry.id})`);
+    }
+    return entry.numericId;
+  }
 
-    return styleId || 1;
+  private resolveRegistryEntry(styleName: string): EdgeStyleRegistryEntry {
+    const byName = EDGE_STYLE_BY_NAME.get(styleName);
+    if (byName) {
+      return byName;
+    }
+
+    const bySlug = EDGE_STYLE_BY_SLUG.get(styleName);
+    if (bySlug) {
+      return bySlug;
+    }
+
+    throw new Error(`Unknown style "${styleName}" - ensure registry and Supabase prompts are in sync.`);
   }
 }
