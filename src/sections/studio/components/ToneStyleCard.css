@@ -1,0 +1,28 @@
+.tone-style-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.tone-style-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow:
+    0 10px 30px -5px var(--tone-glow, rgba(139, 92, 246, 0.25)),
+    0 4px 12px -2px var(--tone-glow-soft, rgba(139, 92, 246, 0.12));
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.tone-style-card.hover-enabled:hover::after,
+.tone-style-card.hover-enabled:focus-visible::after {
+  opacity: 1;
+}
+
+.tone-style-card.locked::after,
+.tone-style-card.selected::after {
+  opacity: 0;
+}

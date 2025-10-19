@@ -1,0 +1,40 @@
+.tone-section-shell {
+  position: relative;
+  overflow: hidden;
+}
+
+.tone-section-shell::before,
+.tone-section-shell::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+  opacity: 0;
+}
+
+.tone-section-shell::before {
+  background: radial-gradient(140% 80% at 50% -20%, var(--tone-highlight, rgba(255,255,255,0.2)) 0%, transparent 60%);
+  will-change: opacity;
+}
+
+.tone-section-shell::after {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.08),
+    rgba(255, 255, 255, 0.02) 40%,
+    transparent 70%
+  );
+  filter: blur(32px);
+  will-change: opacity;
+}
+
+.tone-section-shell.expanded::before,
+.tone-section-shell.expanded::after {
+  opacity: 1;
+}
+
+.tone-section-shell.animating {
+  pointer-events: none;
+}

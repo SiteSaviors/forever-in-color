@@ -14,6 +14,7 @@ import {
   toneCardStagger,
 } from '../motion/toneAccordionMotion';
 import type { PrefetchGroupStatus } from '@/sections/studio/hooks/useStyleThumbnailPrefetch';
+import './ToneSection.css';
 
 type ToneSectionProps = {
   section: ToneSectionType;
@@ -74,36 +75,25 @@ export default function ToneSection({
   }, [isExpanded, prefetchStatus, styles.length]);
 
   const panelBackground = isExpanded ? toneMeta.panel.expanded : toneMeta.panel.collapsed;
+  const sectionClassName = clsx(
+    'tone-section-shell rounded-2xl border border-white/10 backdrop-blur-sm transition-all duration-300',
+    isExpanded && 'expanded',
+    isAnimating && 'animating'
+  );
 
   return (
     <motion.section
       initial={false}
       variants={toneSectionVariants}
       animate={isExpanded ? 'expanded' : 'collapsed'}
-      className={clsx(
-        'relative overflow-hidden rounded-2xl border border-white/10 backdrop-blur-sm transition-all duration-300',
-        // Shadow moved to ::after pseudo-element for GPU acceleration
-        'after:absolute after:inset-0 after:pointer-events-none after:rounded-2xl after:-z-10',
-        'after:shadow-[0_24px_48px_rgba(12,20,39,0.55)] after:transition-opacity after:duration-300',
-        isExpanded ? 'after:opacity-100' : 'after:opacity-0'
-      )}
+      className={sectionClassName}
       style={{
         background: panelBackground,
         willChange: isAnimating ? 'height, opacity' : undefined,
         pointerEvents: isAnimating ? 'none' : 'auto',
+        '--tone-highlight': toneMeta.highlight,
       }}
     >
-      <div
-        className={clsx(
-          'absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-500',
-          isExpanded && 'opacity-70'
-        )}
-          style={{
-            background: `radial-gradient(140% 80% at 50% -20%, ${toneMeta.highlight} 0%, transparent 60%)`,
-          }}
-        aria-hidden="true"
-      />
-
       <button
         onClick={onToggle}
         className={clsx(

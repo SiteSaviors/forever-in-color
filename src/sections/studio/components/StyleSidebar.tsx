@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { clsx } from 'clsx';
 import OriginalImageCard from './OriginalImageCard';
 import StyleAccordionFallback from './StyleAccordionFallback';
+import './StyleSidebar.css';
 
 const StyleAccordion = lazy(() => import('./StyleAccordion'));
 
@@ -34,16 +35,7 @@ const StyleSidebar = ({
         !hasCroppedImage && 'opacity-80 saturate-75'
       )}
     >
-      <div className="relative p-6 space-y-6">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 rounded-[1.75rem] opacity-30 blur-3xl"
-          style={{
-            background:
-              'radial-gradient(120% 120% at 20% 0%, rgba(139, 92, 246, 0.25), transparent 70%), radial-gradient(120% 120% at 80% 20%, rgba(59, 130, 246, 0.2), transparent 70%)',
-          }}
-        />
-
+      <div className="style-sidebar-shell relative p-6 space-y-6">
         {!hasCroppedImage && (
           <div className="rounded-xl border border-white/12 bg-white/5 p-4 text-sm text-white/70">
             Upload your photo above to unlock style previews.

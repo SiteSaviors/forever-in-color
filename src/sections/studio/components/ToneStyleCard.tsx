@@ -5,6 +5,7 @@ import { clsx } from 'clsx';
 import type { ToneSectionStyle } from '@/store/hooks/useToneSections';
 import { TONE_GRADIENTS } from '@/config/toneGradients';
 import { toneCardSpring } from '../motion/toneAccordionMotion';
+import './ToneStyleCard.css';
 
 type ToneStyleCardProps = {
   styleEntry: ToneSectionStyle;
@@ -34,6 +35,35 @@ export default function ToneStyleCard({
   // Get tone accent color for ink ripple effect
   const toneAccentColor = TONE_GRADIENTS[metadataTone]?.accent || '#8b5cf6';
   const toneKeyline = TONE_GRADIENTS[metadataTone]?.keyline || 'rgba(147, 197, 253, 0.45)';
+
+  const toRgba = (color: string, alpha: number): string => {
+    if (color.startsWith('#')) {
+      const hex = color.replace('#', '');
+      const bigint = parseInt(hex, 16);
+      const r = (bigint >> 16) & 255;
+      const g = (bigint >> 8) & 255;
+      const b = bigint & 255;
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+    if (color.startsWith('rgba')) {
+      const parts = color.match(/rgba\(([^)]+)\)/)?.[1].split(',').map((part) => part.trim());
+      if (parts && parts.length >= 3) {
+        const [r, g, b] = parts;
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+      }
+    }
+    if (color.startsWith('rgb')) {
+      const parts = color.match(/rgb\(([^)]+)\)/)?.[1].split(',').map((part) => part.trim());
+      if (parts && parts.length === 3) {
+        const [r, g, b] = parts;
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+      }
+    }
+    return color;
+  };
+
+  const glowColor = toRgba(toneAccentColor, 0.35);
+  const glowSoftColor = toRgba(toneAccentColor, 0.18);
 
   const handleSelect = () => {
     if (!isLocked) {
@@ -124,6 +154,30 @@ export default function ToneStyleCard({
         }
       : {};
 
+  const hoverEnabled = !isLocked && !isSelected;
+  const cardClassName = clsx(
+    'tone-style-card group relative w-full rounded-xl overflow-hidden transition-all duration-200',
+    isHero
+      ? 'flex flex-col gap-5 bg-white/10 border border-white/15 px-5 py-5 md:flex-row md:items-center'
+      : 'flex items-center gap-4 rounded-lg px-4 py-3.5 md:py-4',
+    'focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:ring-offset-2 focus:ring-offset-slate-900',
+    isSelected && !isLocked
+      ? 'bg-gradient-border-selected border-2 border-transparent shadow-lg shadow-purple-500/20'
+      : isLocked
+      ? 'bg-slate-800/40 border border-white/5 hover:border-purple-400/50 hover:shadow-md hover:shadow-purple-500/10 cursor-pointer'
+      : isHero
+      ? 'border border-white/20 hover:border-white/30 hover:bg-white/10'
+      : 'bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 hover:scale-[1.02]',
+    hoverEnabled && 'hover-enabled',
+    isLocked && 'locked',
+    isSelected && 'selected'
+  );
+
+  const cardStyle = {
+    '--tone-glow': glowColor,
+    '--tone-glow-soft': glowSoftColor,
+  } as CSSProperties;
+
   return (
     <motion.button
       onClick={handleSelect}
@@ -137,37 +191,8 @@ export default function ToneStyleCard({
           ? `${option.name} - Locked - Requires ${gate.requiredTier?.toUpperCase()} tier`
           : option.name
       }
-      className={clsx(
-        'group relative w-full rounded-xl overflow-hidden transition-all duration-200',
-        isHero
-          ? 'flex flex-col gap-5 bg-white/10 border border-white/15 px-5 py-5 md:flex-row md:items-center'
-          : 'flex items-center gap-4 rounded-lg px-4 py-3.5 md:py-4',
-        'focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:ring-offset-2 focus:ring-offset-slate-900',
-        isSelected && !isLocked
-          ? 'bg-gradient-border-selected border-2 border-transparent shadow-lg shadow-purple-500/20'
-          : isLocked
-          ? 'bg-slate-800/40 border border-white/5 hover:border-purple-400/50 hover:shadow-md hover:shadow-purple-500/10 cursor-pointer'
-          : isHero
-          ? 'border border-white/20 hover:border-white/30 hover:bg-white/10'
-          : 'bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 hover:scale-[1.02]'
-      )}
-      style={
-        !isLocked && !isSelected
-          ? ({
-              '--tone-glow': toneAccentColor,
-            } as CSSProperties)
-          : undefined
-      }
-      onMouseEnter={(e) => {
-        if (!isLocked && !isSelected) {
-          e.currentTarget.style.boxShadow = `0 10px 30px -5px ${toneAccentColor}40, 0 4px 10px -2px ${toneAccentColor}20`;
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!isLocked && !isSelected) {
-          e.currentTarget.style.boxShadow = '';
-        }
-      }}
+      className={cardClassName}
+      style={cardStyle}
       whileHover={hoverMotion}
       whileTap={tapMotion}
       transition={toneCardSpring}

@@ -1,0 +1,43 @@
+.tone-ambient-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.tone-ambient-container::before {
+  content: '';
+  position: absolute;
+  inset: -20%;
+  border-radius: inherit;
+  background:
+    radial-gradient(120% 80% at 0% 0%, var(--tone-ambient-from, rgba(59,130,246,0.12)), transparent 68%),
+    radial-gradient(120% 80% at 100% 0%, var(--tone-ambient-via, rgba(139,92,246,0.12)), transparent 70%),
+    radial-gradient(160% 120% at 50% 100%, var(--tone-ambient-to, rgba(56,189,248,0.12)), transparent 72%);
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+  will-change: opacity, transform;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.tone-ambient-container.visible::before {
+  opacity: 1;
+  transform: scale(1);
+  animation: toneAmbientPulse 8s ease-in-out infinite;
+}
+
+.tone-ambient-container.reduced-motion::before {
+  animation: none;
+}
+
+@keyframes toneAmbientPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
+}

@@ -12,6 +12,7 @@ import type { PrefetchGroupStatus } from '@/sections/studio/hooks/useStyleThumbn
 import type { StyleTone } from '@/config/styleCatalog';
 import type { GateResult } from '@/utils/entitlementGate';
 import { TONE_GRADIENTS } from '@/config/toneGradients';
+import './StyleAccordion.css';
 
 type StyleAccordionProps = {
   hasCroppedImage: boolean;
@@ -163,29 +164,18 @@ export default function StyleAccordion({ hasCroppedImage }: StyleAccordionProps)
     return style;
   }, [activeTone]);
 
-  return (
-    <div
-      className="relative space-y-4"
-      style={toneAmbientStyle}
-    >
-      <div
-        className={clsx(
-          'pointer-events-none absolute inset-0 -z-10 overflow-hidden rounded-[1.75rem]',
-          activeTone ? 'opacity-100' : 'opacity-0',
-          prefersReducedMotion ? '' : 'animate-tone-ambient-pulse'
-        )}
-        aria-hidden="true"
-      >
-        <div
-          className="absolute inset-0 blur-3xl opacity-60"
-          style={{
-            background: `radial-gradient(120% 80% at 0% 0%, var(--tone-ambient-from, rgba(59,130,246,0.12)), transparent 68%),
-              radial-gradient(120% 80% at 100% 0%, var(--tone-ambient-via, rgba(139,92,246,0.12)), transparent 70%),
-              radial-gradient(160% 120% at 50% 100%, var(--tone-ambient-to, rgba(56,189,248,0.12)), transparent 72%)`,
-          }}
-        />
-      </div>
+  const ambientClasses = useMemo(
+    () =>
+      clsx(
+        'tone-ambient-container relative space-y-4',
+        activeTone ? 'visible' : '',
+        prefersReducedMotion ? 'reduced-motion' : ''
+      ),
+    [activeTone, prefersReducedMotion]
+  );
 
+  return (
+    <div className={ambientClasses} style={toneAmbientStyle}>
       <AnimatePresence initial={false}>
         {toneSections.map((section) => {
           const group = prefetchGroupMap.get(section.tone);
