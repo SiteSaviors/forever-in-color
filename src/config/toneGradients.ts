@@ -76,6 +76,24 @@ export const TONE_GRADIENTS: Record<StyleTone, ToneGradientConfig> = {
         'linear-gradient(135deg, rgba(167, 255, 199, 0.9) 0%, rgba(52, 211, 153, 0.84) 44%, rgba(12, 48, 34, 0.9) 100%)',
     },
   },
+  abstract: {
+    accent: '#00B3B8', // Teal-mint
+    description: 'Geometric abstraction - teal to mint',
+    highlight: 'rgba(0, 179, 184, 0.28)',
+    keyline: 'rgba(64, 196, 200, 0.5)',
+    ambient: {
+      from: 'rgba(0, 179, 184, 0.18)',
+      via: 'rgba(0, 149, 154, 0.14)',
+      to: 'rgba(0, 122, 126, 0.12)',
+    },
+    iconStroke: 'rgba(167, 243, 252, 0.9)',
+    panel: {
+      collapsed:
+        'linear-gradient(135deg, rgba(0, 179, 184, 0.82) 0%, rgba(0, 122, 126, 0.78) 45%, rgba(12, 40, 42, 0.94) 100%)',
+      expanded:
+        'linear-gradient(135deg, rgba(64, 196, 200, 0.9) 0%, rgba(0, 149, 154, 0.84) 44%, rgba(12, 40, 42, 0.9) 100%)',
+    },
+  },
   stylized: {
     accent: '#d946ef', // Bold fuchsia
     description: 'Pop art - pink to purple',

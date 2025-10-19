@@ -24,13 +24,14 @@ const SmartCropPreview = ({
 
   const metadata = useMemo(() => ORIENTATION_PRESETS[orientation], [orientation]);
   const previewBounds = useMemo(() => {
+    // Mobile-first: Use more viewport space on small screens
     if (orientation === 'horizontal') {
-      return { maxWidth: 'min(85vw, 48rem)', maxHeight: '60vh' };
+      return { maxWidth: 'min(92vw, 48rem)', maxHeight: '50vh' };
     }
     if (orientation === 'vertical') {
-      return { maxWidth: 'min(75vw, 28rem)', maxHeight: '72vh' };
+      return { maxWidth: 'min(85vw, 28rem)', maxHeight: '58vh' };
     }
-    return { maxWidth: 'min(80vw, 32rem)', maxHeight: '65vh' };
+    return { maxWidth: 'min(88vw, 32rem)', maxHeight: '55vh' };
   }, [orientation]);
 
   useEffect(() => {
@@ -77,13 +78,13 @@ const SmartCropPreview = ({
   };
 
   return (
-    <div className="space-y-6">
-      <div className="text-center space-y-3">
-        <h2 className="text-3xl font-semibold text-white drop-shadow-lg">
+    <div className="space-y-4 sm:space-y-6 px-4 sm:px-0">
+      <div className="text-center space-y-2 sm:space-y-3">
+        <h2 className="text-2xl sm:text-3xl font-semibold text-white drop-shadow-lg">
           {isGenerating ? 'Optimizing Your Canvas...' : 'Smart Crop Applied'}
         </h2>
-        <div className="space-y-2">
-          <p className="text-white/80 text-base max-w-xl mx-auto font-medium">
+        <div className="space-y-1.5 sm:space-y-2">
+          <p className="text-white/80 text-sm sm:text-base max-w-xl mx-auto font-medium">
             {metadata.description}
           </p>
           <div className="flex items-center justify-center gap-2 text-xs text-purple-400">
@@ -95,9 +96,9 @@ const SmartCropPreview = ({
         </div>
       </div>
 
-      <div className="rounded-[2rem] border border-white/15 bg-white/5 p-6 shadow-founder backdrop-blur">
+      <div className="rounded-2xl sm:rounded-[2rem] border border-white/15 bg-white/5 p-3 sm:p-6 shadow-founder backdrop-blur">
         <div
-          className="relative mx-auto overflow-hidden rounded-[1.5rem] border border-white/10 bg-slate-900/40"
+          className="relative mx-auto overflow-hidden rounded-xl sm:rounded-[1.5rem] border border-white/10 bg-slate-900/40"
           style={{
             aspectRatio: metadata.ratio,
             width: '100%',
@@ -113,32 +114,36 @@ const SmartCropPreview = ({
             </div>
           )}
 
-          <div className="absolute top-4 left-4 rounded-full bg-purple-500/80 px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-white shadow-md backdrop-blur">
+          <div className="absolute top-2 left-2 sm:top-4 sm:left-4 rounded-full bg-purple-500/80 px-2 sm:px-4 py-1 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.3em] text-white shadow-md backdrop-blur">
             {metadata.label}
           </div>
           {onChangePhoto && (
             <button
               type="button"
               onClick={onChangePhoto}
-              className="absolute top-4 right-4 rounded-full border border-white/30 bg-black/30 px-4 py-1 text-xs font-semibold uppercase tracking-[0.15em] text-white/90 shadow-md backdrop-blur transition hover:bg-black/50"
+              className="absolute top-2 right-2 sm:top-4 sm:right-4 rounded-full border border-white/30 bg-black/30 px-2 sm:px-4 py-1 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.15em] text-white/90 shadow-md backdrop-blur transition hover:bg-black/50"
             >
-              Change Photo
+              <span className="hidden sm:inline">Change Photo</span>
+              <span className="inline sm:hidden">Change</span>
             </button>
           )}
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3">
+      <div
+        className="flex flex-col sm:flex-row gap-3"
+        style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
+      >
         <button
           onClick={handleAccept}
           disabled={isGenerating || !result}
-          className="flex-1 rounded-[1.5rem] bg-gradient-cta px-6 py-4 text-base font-semibold text-white shadow-glow-purple transition disabled:cursor-not-allowed disabled:opacity-70"
+          className="flex-1 rounded-xl sm:rounded-[1.5rem] bg-gradient-cta px-5 sm:px-6 py-3 sm:py-4 text-sm sm:text-base font-semibold text-white shadow-glow-purple transition disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isGenerating ? 'Analyzing…' : 'Perfect! Use This Crop'}
         </button>
         <button
           onClick={onAdjust}
-          className="flex-1 rounded-[1.5rem] border border-white/25 px-6 py-4 text-base font-semibold text-white/80 transition hover:bg-white/10"
+          className="flex-1 rounded-xl sm:rounded-[1.5rem] border border-white/25 px-5 sm:px-6 py-3 sm:py-4 text-sm sm:text-base font-semibold text-white/80 transition hover:bg-white/10"
         >
           Adjust Manually
         </button>

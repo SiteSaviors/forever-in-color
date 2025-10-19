@@ -72,7 +72,7 @@ export default function ToneSection({
           'relative w-full px-6 py-4 text-left transition-colors duration-200',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950',
           'focus-visible:ring-white/70',
-          isExpanded ? 'bg-white/10' : 'hover:bg-white/5'
+          !isExpanded && 'hover:bg-white/5'
         )}
         aria-expanded={isExpanded}
         aria-controls={`tone-section-${tone}`}
@@ -95,7 +95,7 @@ export default function ToneSection({
             <div className="flex items-center gap-3">
               <h3
                 className={clsx(
-                  'text-sm font-bold uppercase tracking-[0.02em] text-white md:text-base font-fraunces'
+                  'text-sm font-bold uppercase tracking-[0.04em] text-white md:text-base font-display'
                 )}
               >
                 {definition.label}

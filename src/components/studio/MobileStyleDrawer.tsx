@@ -23,6 +23,10 @@ export default function MobileStyleDrawer({
   const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
   const touchStartYRef = useRef<number | null>(null);
 
+  // Subscribe to store state for smart auto-close
+  const pendingStyleId = useFounderStore((state) => state.pendingStyleId);
+  const stylePreviewStatus = useFounderStore((state) => state.stylePreviewStatus);
+
   // Lock body scroll when drawer is open
   useEffect(() => {
     if (!isOpen) return;
@@ -41,6 +45,22 @@ export default function MobileStyleDrawer({
       window.scrollTo(0, scrollY);
     };
   }, [isOpen]);
+
+  // Smart auto-close: Close drawer when preview generation actually starts
+  // This ensures we don't close on locked styles (gate denied), only on successful generation
+  useEffect(() => {
+    if (!isOpen) return;
+
+    // Close when preview status becomes 'generating' (indicates successful style selection)
+    // This only happens after gate validation passes, not when gate is denied
+    if (stylePreviewStatus === 'generating' || pendingStyleId !== null) {
+      // Small delay to ensure smooth visual transition
+      const timer = setTimeout(() => {
+        onClose();
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [stylePreviewStatus, pendingStyleId, isOpen, onClose]);
 
   useEffect(() => {
     const handleResize = () => setViewportHeight(window.innerHeight);
@@ -211,8 +231,8 @@ export default function MobileStyleDrawer({
             {/* ✅ CORRECTED: Preserve mobile scroll structure with accordion inside */}
             <div className="relative flex-1 overflow-y-auto px-4 py-6 max-[360px]:px-3">
               {/* Scroll fade indicators */}
-              <div className="pointer-events-none absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-slate-900 to-transparent z-10" />
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-slate-900 to-transparent z-10" />
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-slate-950/95 to-transparent z-10" />
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-slate-950/95 to-transparent z-10" />
 
               {/* Content */}
               <div className="relative pb-8 space-y-4">

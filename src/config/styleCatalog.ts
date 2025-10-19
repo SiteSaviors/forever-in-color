@@ -2,6 +2,7 @@ export type StyleTone =
   | 'trending'
   | 'classic'
   | 'modern'
+  | 'abstract'
   | 'stylized'
   | 'electric'
   | 'signature';
@@ -263,6 +264,13 @@ export const STYLE_TONE_DEFINITIONS: Record<StyleTone, StyleToneDefinition> = {
     description: 'Fresh, design-forward looks for contemporary art lovers.',
     icon: '✨',
     sortOrder: 30,
+  },
+  abstract: {
+    id: 'abstract',
+    label: 'Abstract Tones',
+    description: 'Geometry, pattern, and non-literal color.',
+    icon: '🔷',
+    sortOrder: 45,
   },
   stylized: {
     id: 'stylized',

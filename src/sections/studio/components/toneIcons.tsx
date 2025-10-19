@@ -52,6 +52,14 @@ const ModernIcon = createIcon(
   </>
 );
 
+const AbstractIcon = createIcon(
+  <>
+    <circle cx="12" cy="10" r="5.5" />
+    <rect x="6.5" y="12.5" width="7" height="7" rx="0.5" />
+    <path d="M16 10l3.5 6h-7z" />
+  </>
+);
+
 const StylizedIcon = createIcon(
   <>
     <path d="M5 12c1.5-2.5 2-5 7-5s5.5 2.5 7 5" />
@@ -81,6 +89,7 @@ export const toneIconMap: Record<StyleTone, React.MemoExoticComponent<(props: To
     trending: TrendingIcon,
     classic: ClassicIcon,
     modern: ModernIcon,
+    abstract: AbstractIcon,
     stylized: StylizedIcon,
     electric: ElectricIcon,
     signature: SignatureIcon,

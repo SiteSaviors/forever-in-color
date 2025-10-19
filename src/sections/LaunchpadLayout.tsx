@@ -110,7 +110,7 @@ const CollapsedTeaser = ({ onOpen }: CollapsedTeaserProps) => (
     <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
       <div className="max-w-xl space-y-3">
         <p className="text-xs font-semibold uppercase tracking-[0.35em] text-white/60">Launchflow</p>
-        <h3 className="text-2xl font-semibold text-white sm:text-3xl">Upload your photo to begin</h3>
+        <h3 className="text-2xl font-bold font-poppins text-white sm:text-3xl">Upload your photo to begin</h3>
         <p className="text-sm text-white/70">
           Expand the Launchflow to upload, analyze, and crop without losing sight of your studio.
         </p>
