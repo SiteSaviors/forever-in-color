@@ -8,7 +8,7 @@ import { downloadCleanImage } from '@/utils/premiumDownload';
 import { trackDownloadSuccess } from '@/utils/telemetry';
 import { trackLaunchflowEditReopen, trackLaunchflowEmptyStateInteraction, trackLaunchflowOpened } from '@/utils/launchflowTelemetry';
 import StudioHeader, { CheckoutNotice } from '@/sections/studio/components/StudioHeader';
-import StyleSidebar from '@/sections/studio/components/StyleSidebar';
+import StyleSidebarFallback from '@/sections/studio/components/StyleSidebarFallback';
 import CanvasPreviewPanel from '@/sections/studio/components/CanvasPreviewPanel';
 
 const TokenWarningBanner = lazy(() => import('@/components/studio/TokenWarningBanner'));
@@ -18,6 +18,7 @@ const CanvasInRoomPreview = lazy(() => import('@/components/studio/CanvasInRoomP
 const DownloadUpgradeModal = lazy(() => import('@/components/modals/DownloadUpgradeModal'));
 const MobileStyleDrawer = lazy(() => import('@/components/studio/MobileStyleDrawer'));
 const CanvasUpsellToast = lazy(() => import('@/components/studio/CanvasUpsellToast'));
+const StyleSidebar = lazy(() => import('@/sections/studio/components/StyleSidebar'));
 
 const CanvasPreviewFallback = () => (
   <div className="w-full h-[360px] rounded-[2.5rem] bg-slate-800/60 border border-white/10 animate-pulse" />
@@ -363,15 +364,29 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
       {/* Main 3-Column Layout: Left Sidebar | Center Canvas | Right Sidebar */}
       {/* Mobile: Vertical stack | Desktop (≥1024px): 3-column flex row */}
       <div className="block lg:flex max-w-[1800px] mx-auto">
-        <StyleSidebar
-          entitlements={{
-            tier: entitlements.tier,
-            status: entitlements.status,
-            remainingTokens: displayRemainingTokens,
-            quota: entitlements.quota,
-          }}
-          hasCroppedImage={hasCroppedImage}
-        />
+        <Suspense
+          fallback={
+            <StyleSidebarFallback
+              entitlements={{
+                tier: entitlements.tier,
+                status: entitlements.status,
+                remainingTokens: displayRemainingTokens,
+                quota: entitlements.quota,
+              }}
+              hasCroppedImage={hasCroppedImage}
+            />
+          }
+        >
+          <StyleSidebar
+            entitlements={{
+              tier: entitlements.tier,
+              status: entitlements.status,
+              remainingTokens: displayRemainingTokens,
+              quota: entitlements.quota,
+            }}
+            hasCroppedImage={hasCroppedImage}
+          />
+        </Suspense>
         <CanvasPreviewPanel
           overlayStyleName={overlayStyleName}
           overlayStatus={overlayStatus}

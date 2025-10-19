@@ -31,6 +31,33 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: (id: string) => {
+          if (!id.includes('node_modules')) {
+            return undefined;
+          }
+
+          if (id.includes('react')) {
+            return 'react-vendors';
+          }
+
+          if (id.includes('framer-motion')) {
+            return 'motion-vendors';
+          }
+
+          if (id.includes('@radix-ui')) {
+            return 'radix-vendors';
+          }
+
+          if (id.includes('zustand')) {
+            return 'state-vendors';
+          }
+
+          return undefined;
+        },
+      },
+    },
   },
   css: {
     devSourcemap: true,

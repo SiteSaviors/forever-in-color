@@ -1,9 +1,11 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
-import { useEffect, useRef, useState, type TouchEvent } from 'react';
+import { Suspense, lazy, useEffect, useRef, useState, type TouchEvent } from 'react';
 import { useFounderStore } from '@/store/useFounderStore';
 import OriginalImageCard from '@/sections/studio/components/OriginalImageCard';
-import StyleAccordion from '@/sections/studio/components/StyleAccordion';
+import StyleAccordionFallback from '@/sections/studio/components/StyleAccordionFallback';
+
+const StyleAccordion = lazy(() => import('@/sections/studio/components/StyleAccordion'));
 
 type MobileStyleDrawerProps = {
   isOpen: boolean;
@@ -240,7 +242,9 @@ export default function MobileStyleDrawer({
                 <OriginalImageCard />
 
                 {/* StyleAccordion component - handles selection and closes drawer */}
-                <StyleAccordion hasCroppedImage={hasCroppedImage} />
+                <Suspense fallback={<StyleAccordionFallback />}>
+                  <StyleAccordion hasCroppedImage={hasCroppedImage} />
+                </Suspense>
               </div>
             </div>
           </motion.div>

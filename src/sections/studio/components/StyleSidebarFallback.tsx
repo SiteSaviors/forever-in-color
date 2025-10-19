@@ -1,12 +1,8 @@
-import { Suspense, lazy } from 'react';
 import { Link } from 'react-router-dom';
 import { clsx } from 'clsx';
-import OriginalImageCard from './OriginalImageCard';
 import StyleAccordionFallback from './StyleAccordionFallback';
 
-const StyleAccordion = lazy(() => import('./StyleAccordion'));
-
-type StyleSidebarProps = {
+type StyleSidebarFallbackProps = {
   entitlements: {
     tier: string;
     status: string;
@@ -16,15 +12,16 @@ type StyleSidebarProps = {
   hasCroppedImage: boolean;
 };
 
-const StyleSidebar = ({
+export default function StyleSidebarFallback({
   entitlements,
   hasCroppedImage,
-}: StyleSidebarProps) => {
-  const remainingLabel = entitlements.status === 'ready'
-    ? entitlements.remainingTokens == null
-      ? '∞'
-      : Math.max(0, entitlements.remainingTokens)
-    : '—';
+}: StyleSidebarFallbackProps) {
+  const remainingLabel =
+    entitlements.status === 'ready'
+      ? entitlements.remainingTokens == null
+        ? '∞'
+        : Math.max(0, entitlements.remainingTokens)
+      : '—';
   const quotaLabel = entitlements.quota == null ? '∞' : entitlements.quota;
 
   return (
@@ -50,14 +47,12 @@ const StyleSidebar = ({
           </div>
         )}
 
-        {/* Header */}
         <div className="relative space-y-1.5">
           <p className="text-[10px] uppercase tracking-[0.38em] text-white/50">Studio Curations</p>
           <h3 className="text-base font-display tracking-[0.16em] uppercase text-white md:text-lg">Wondertone Styles</h3>
           <p className="text-xs text-white/75 md:text-sm">Choose your artistic tone</p>
         </div>
 
-        {/* Token Counter */}
         <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/10 via-transparent to-white/5 p-5 shadow-inner">
           <div
             aria-hidden="true"
@@ -84,28 +79,21 @@ const StyleSidebar = ({
           </Link>
         </div>
 
-        {/* ✅ NEW: Original Image always visible (not a style, just your photo) */}
-        <OriginalImageCard />
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+          <div className="h-4 w-24 rounded-lg bg-white/10 animate-pulse" />
+          <div className="mt-3 h-20 rounded-xl bg-white/5 animate-pulse" />
+        </div>
 
-        {/* ✅ Accordion with tone-based styles */}
-        <Suspense fallback={<StyleAccordionFallback />}>
-          <StyleAccordion hasCroppedImage={hasCroppedImage} />
-        </Suspense>
+        <StyleAccordionFallback />
 
-        {/* Upgrade CTA */}
         <div className="p-4 rounded-xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 border-2 border-purple-400/30 shadow-lg">
           <p className="text-sm font-semibold text-white mb-2">Want unlimited generations?</p>
           <p className="text-xs text-white/70 mb-3">Upgrade to Creator for unlimited style switching</p>
-          <Link
-            to="/pricing"
-            className="block w-full px-4 py-2 rounded-lg bg-gradient-cta text-white text-sm font-bold shadow-glow-purple hover:shadow-glow-purple transition text-center"
-          >
+          <div className="block w-full px-4 py-2 rounded-lg bg-gradient-cta text-white text-sm font-bold shadow-glow-purple">
             Upgrade - $9.99/mo
-          </Link>
+          </div>
         </div>
       </div>
     </aside>
   );
-};
-
-export default StyleSidebar;
+}
