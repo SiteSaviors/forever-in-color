@@ -1,42 +1,43 @@
 import { parseStoragePath, parseStorageUrl } from '../_shared/storageUtils.ts';
+import {
+  previewRequestSchema,
+  qualityEnum,
+  type PreviewRequest,
+} from '../../../shared/validation/previewSchemas.ts';
 
-export interface GenerationRequest {
-  imageUrl: string;
-  style: string;
-  photoId?: string;
-  aspectRatio?: string;
-  watermark?: boolean;
-  quality?: 'low' | 'medium' | 'high' | 'auto';
-  cacheBypass?: boolean;
-  fingerprintHash?: string | null;
-}
+const legacyQualityMap: Record<string, PreviewRequest['quality']> = {
+  preview: 'medium',
+  final: 'high',
+};
 
-export function validateRequest(body: unknown): { isValid: boolean; error?: string; data?: GenerationRequest } {
-  const {
-    imageUrl,
-    style,
-    photoId,
-    aspectRatio = '1:1',
-    watermark = true,
-    quality = 'medium',
-    cacheBypass = false,
-    fingerprintHash = null
-  } = body;
+const coerceLegacyQuality = (value: unknown): PreviewRequest['quality'] => {
+  if (typeof value !== 'string') return 'medium';
+  if (legacyQualityMap[value]) {
+    return legacyQualityMap[value];
+  }
+  return qualityEnum.safeParse(value).success ? (value as PreviewRequest['quality']) : 'medium';
+};
 
-  if (!imageUrl || !style) {
+export function validateRequest(body: unknown): { isValid: boolean; error?: string; data?: PreviewRequest } {
+  if (typeof body !== 'object' || body === null) {
+    return { isValid: false, error: 'Invalid request payload' };
+  }
+
+  const input = { ...body } as Record<string, unknown>;
+
+  if (typeof input.quality !== 'undefined') {
+    input.quality = coerceLegacyQuality(input.quality);
+  }
+
+  const parsed = previewRequestSchema.safeParse(input);
+  if (!parsed.success) {
     return {
       isValid: false,
-      error: 'Missing required fields: imageUrl and style'
+      error: parsed.error.errors.map((issue) => issue.message).join('; '),
     };
   }
 
-  if (typeof imageUrl !== 'string') {
-    return {
-      isValid: false,
-      error: 'Invalid imageUrl value'
-    };
-  }
-
+  const { imageUrl } = parsed.data;
   const trimmedImageUrl = imageUrl.trim();
 
   if (
@@ -46,28 +47,12 @@ export function validateRequest(body: unknown): { isValid: boolean; error?: stri
   ) {
     return {
       isValid: false,
-      error: 'Unsupported imageUrl. Only data URIs or Wondertone storage paths are allowed.'
-    };
-  }
-
-  // Map legacy quality values for backward compatibility
-  const legacyQualityMap: Record<string, 'low' | 'medium' | 'high' | 'auto'> = {
-    'preview': 'medium',
-    'final': 'high'
-  };
-  const normalizedQuality = quality ? (legacyQualityMap[quality] || quality) : 'medium';
-
-  // Validate quality parameter
-  const validQualityValues = ['low', 'medium', 'high', 'auto'];
-  if (normalizedQuality && !validQualityValues.includes(normalizedQuality)) {
-    return {
-      isValid: false,
-      error: `Invalid quality value. Must be one of: ${validQualityValues.join(', ')}`
+      error: 'Unsupported imageUrl. Only data URIs or Wondertone storage paths are allowed.',
     };
   }
 
   return {
     isValid: true,
-    data: { imageUrl, style, photoId, aspectRatio, watermark, quality: normalizedQuality, cacheBypass, fingerprintHash }
+    data: parsed.data,
   };
 }

@@ -7,6 +7,7 @@ import { logPreviewStage } from '@/utils/previewAnalytics';
 import { playPreviewChime } from '@/utils/playPreviewChime';
 import { ENABLE_PREVIEW_QUERY_EXPERIMENT } from '@/config/featureFlags';
 import { executeStartPreview } from '@/features/preview';
+import { buildPreviewIdempotencyKey } from '@/utils/previewIdempotency';
 import type { FounderState, StyleOption } from '../useFounderStore';
 
 export type StylePreviewStatus =
@@ -96,13 +97,6 @@ const STAGE_MESSAGES = {
   ready: 'Preview ready',
   error: 'Generation failed',
 } as const;
-
-const generateIdempotencyKey = (styleId: string): string => {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return `${styleId}-${crypto.randomUUID()}`;
-  }
-  return `${styleId}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-};
 
 export const createPreviewSlice = (
   initialStyles: StyleOption[]
@@ -344,7 +338,14 @@ export const createPreviewSlice = (
         const accessToken = get().accessToken;
         const fingerprintHash = await get().ensureFingerprintHash();
 
-        const idempotencyKey = generateIdempotencyKey(style.id);
+        const idempotencyKey = await buildPreviewIdempotencyKey({
+          styleId: style.id,
+          orientation: targetOrientation,
+          imageData: sourceImage,
+          sessionUserId: sessionUser?.id ?? null,
+          anonToken,
+          fingerprintHash,
+        });
 
         const handleStage = (stage: 'generating' | 'polling' | 'watermarking') => {
           if (get().pendingStyleId !== style.id) {

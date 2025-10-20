@@ -30,8 +30,12 @@ This command generates:
 
 1. Reserve a numeric ID in Supabase and insert the prompt via migration.
 2. Add the style entry to `registry/styleRegistrySource.ts` (set feature flags, sort order, assets).
-3. Drop the thumbnail(s) into `public/art-style-thumbnails/`.
-4. Run the generator + validator and commit results.
+3. Drop the base JPEG thumbnail(s) into `public/art-style-thumbnails/`.
+4. Generate optimized WebP/AVIF variants so the rail can serve modern formats:
+   ```bash
+   npm run thumbnails:generate
+   ```
+5. Run the generator + validator and commit results.
 
 ### Supabase Prompt Workflow
 
@@ -44,6 +48,7 @@ This command generates:
 
 - Feature flags default to `isEnabled: true`, `rolloutPercentage: 100`. Adjust as needed.
 - Asset validation is enforced unless explicitly disabled (e.g., for placeholders). Supply assets whenever possible.
+- Thumbnails ship as JPEG + WebP + AVIF; keep all three variants in `public/art-style-thumbnails/` (use `npm run thumbnails:generate` to regenerate after updates).
 - Edge functions now fail fast if a style name/slug is unknown or lacks a numeric ID, preventing silent prompt fallbacks.
 
 Keep this document updated as the registry evolves.

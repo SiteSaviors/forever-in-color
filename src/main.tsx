@@ -1,25 +1,35 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import './styles/tailwind.css';
-import LandingPage from './pages/LandingPage';
-import StudioPage from './pages/StudioPage';
-import PricingPage from './pages/PricingPage';
-import UsagePage from './pages/UsagePage';
-import GalleryPage from './pages/GalleryPage';
-import CheckoutPage from './pages/CheckoutPage';
-import AuthProvider from './providers/AuthProvider';
-import ReactQueryBoundary from './providers/ReactQueryBoundary';
+import AppShellSkeleton from '@/components/skeletons/AppShellSkeleton';
+import StudioShellSkeleton from '@/components/skeletons/StudioShellSkeleton';
+import StudioProviders from '@/routes/StudioProviders';
+
+const MarketingRoutes = lazy(() => import('@/routes/MarketingRoutes'));
+const StudioRoutes = lazy(() => import('@/routes/StudioRoutes'));
+
+const MarketingContainer = () => (
+  <Suspense fallback={<AppShellSkeleton />}>
+    <MarketingRoutes />
+  </Suspense>
+);
+
+const StudioContainer = () => (
+  <StudioProviders>
+    <Suspense fallback={<StudioShellSkeleton />}>
+      <StudioRoutes />
+    </Suspense>
+  </StudioProviders>
+);
 
 const App = () => {
   return (
     <Routes>
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/create" element={<StudioPage />} />
-      <Route path="/pricing" element={<PricingPage />} />
-      <Route path="/studio/usage" element={<UsagePage />} />
-      <Route path="/studio/gallery" element={<GalleryPage />} />
-      <Route path="/checkout" element={<CheckoutPage />} />
+      <Route path="/create/*" element={<StudioContainer />} />
+      <Route path="/studio/usage/*" element={<StudioContainer />} />
+      <Route path="/checkout/*" element={<StudioContainer />} />
+      <Route path="/*" element={<MarketingContainer />} />
     </Routes>
   );
 };
@@ -27,11 +37,7 @@ const App = () => {
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <BrowserRouter>
-      <ReactQueryBoundary>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
-      </ReactQueryBoundary>
+      <App />
     </BrowserRouter>
   </React.StrictMode>
 );

@@ -1,37 +1,17 @@
+import {
+  normalizePreviewResponse,
+  parsePreviewRequest,
+  parsePreviewStatusResponse,
+  type PreviewRequest,
+  type PreviewResponse,
+  type PreviewStatusResponse,
+} from '../../shared/validation/previewSchemas';
+
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 
-export type PreviewGenerationResult =
-  | {
-      status: 'complete';
-      previewUrl: string;
-      requiresWatermark: boolean;
-      remainingTokens: number | null;
-      tier?: string;
-      priority?: string;
-      storageUrl?: string | null;
-      storagePath?: string | null;
-      softRemaining?: number | null;
-    }
-  | {
-      status: 'processing';
-      previewUrl: null;
-      requestId: string;
-      requiresWatermark: boolean;
-      remainingTokens: number | null;
-      tier?: string;
-      priority?: string;
-      storageUrl?: string | null;
-      storagePath?: string | null;
-      softRemaining?: number | null;
-    };
-
-export interface PreviewStatusResult {
-  request_id: string;
-  status: string;
-  preview_url?: string | null;
-  error?: string | null;
-}
+export type PreviewGenerationResult = PreviewResponse;
+export type PreviewStatusResult = PreviewStatusResponse;
 
 const defaultHeaders = (overrides?: Record<string, string>) => {
   const headers: Record<string, string> = {
@@ -50,11 +30,12 @@ export interface GeneratePreviewParams {
   photoId: string;
   aspectRatio: string;
   options?: {
-    quality?: 'low' | 'medium' | 'high' | 'auto';
+    quality?: PreviewRequest['quality'];
     idempotencyKey: string;
     anonToken?: string | null;
     accessToken?: string | null;
     fingerprintHash?: string | null;
+    cacheBypass?: boolean;
   };
 }
 
@@ -87,15 +68,16 @@ export const generateStylePreview = async (
   headers['X-Idempotency-Key'] = options.idempotencyKey;
 
   // Note: watermark parameter removed - server determines based on entitlements
-  const requestBody = {
+  const requestBody = parsePreviewRequest({
     imageUrl,
     style,
     photoId,
     aspectRatio,
-    quality: options.quality ?? 'medium',
-    isAuthenticated: Boolean(options.accessToken),
+    quality: options.quality,
+    cacheBypass: options.cacheBypass,
     fingerprintHash: options.fingerprintHash ?? null,
-  };
+    isAuthenticated: Boolean(options.accessToken),
+  });
 
   const response = await fetch(`${SUPABASE_URL}/functions/v1/generate-style-preview`, {
     method: 'POST',
@@ -120,40 +102,7 @@ export const generateStylePreview = async (
 
   const data = await response.json();
 
-  if (data.preview_url || data.previewUrl) {
-    return {
-      status: 'complete',
-      previewUrl: (data.preview_url ?? data.previewUrl) as string,
-      requiresWatermark: Boolean(
-        data.requires_watermark ?? data.requiresWatermark ?? false
-      ),
-      remainingTokens: typeof data.remainingTokens === 'number' ? data.remainingTokens : null,
-      tier: data.tier as string | undefined,
-      priority: data.priority as string | undefined,
-      softRemaining: typeof data.softRemaining === 'number' ? data.softRemaining : null,
-      storageUrl: (data.storageUrl ?? null) as string | null,
-      storagePath: (data.storagePath ?? null) as string | null
-    };
-  }
-
-  if (data.requestId) {
-    return {
-      status: 'processing',
-      previewUrl: null,
-      requestId: data.requestId as string,
-      requiresWatermark: Boolean(
-        data.requires_watermark ?? data.requiresWatermark ?? false
-      ),
-      remainingTokens: typeof data.remainingTokens === 'number' ? data.remainingTokens : null,
-      tier: data.tier as string | undefined,
-      priority: data.priority as string | undefined,
-      softRemaining: typeof data.softRemaining === 'number' ? data.softRemaining : null,
-      storageUrl: (data.storageUrl ?? null) as string | null,
-      storagePath: (data.storagePath ?? null) as string | null
-    };
-  }
-
-  throw new Error('Invalid response from preview function.');
+  return normalizePreviewResponse(data);
 };
 
 export const fetchPreviewStatus = async (requestId: string): Promise<PreviewStatusResult> => {
@@ -182,5 +131,6 @@ export const fetchPreviewStatus = async (requestId: string): Promise<PreviewStat
     throw new Error(text || `Failed to fetch preview status (${response.status})`);
   }
 
-  return response.json() as Promise<PreviewStatusResult>;
+  const data = await response.json();
+  return parsePreviewStatusResponse(data);
 };

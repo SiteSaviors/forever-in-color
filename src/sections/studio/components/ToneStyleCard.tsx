@@ -214,20 +214,28 @@ export default function ToneStyleCard({
         )}
         style={{ ...thumbnailStyle, aspectRatio: isHero ? 'auto' : '1' }}
       >
-        <img
-          src={option.thumbnail}
-          alt=""
-          width={isHero ? 112 : 56}
-          height={isHero ? 112 : 56}
-          loading="lazy"
-          decoding="async"
-          className={clsx(
-            'w-full h-full object-cover transition-all duration-200',
-            isLocked && 'opacity-60',
-            !isLocked && 'group-hover:scale-105'
+        <picture>
+          {option.thumbnailAvif && (
+            <source srcSet={option.thumbnailAvif} type="image/avif" />
           )}
-          style={{ aspectRatio: '1', contentVisibility: 'auto' }}
-        />
+          {option.thumbnailWebp && (
+            <source srcSet={option.thumbnailWebp} type="image/webp" />
+          )}
+          <img
+            src={option.thumbnail}
+            alt=""
+            width={isHero ? 112 : 56}
+            height={isHero ? 112 : 56}
+            loading="lazy"
+            decoding="async"
+            className={clsx(
+              'h-full w-full object-cover transition-all duration-200',
+              isLocked && 'opacity-60',
+              !isLocked && 'group-hover:scale-105'
+            )}
+            style={{ aspectRatio: '1', contentVisibility: 'auto' }}
+          />
+        </picture>
         {/* Glass overlay with gold border for locked styles */}
         {isLocked && (
           <div

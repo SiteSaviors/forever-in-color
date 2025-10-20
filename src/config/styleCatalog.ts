@@ -18,7 +18,11 @@ export type StyleCatalogEntry = {
   name: string;
   description: string;
   thumbnail: string;
+  thumbnailWebp?: string | null;
+  thumbnailAvif?: string | null;
   preview: string;
+  previewWebp?: string | null;
+  previewAvif?: string | null;
   priceModifier: number;
   tone: StyleTone;
   tier: StyleTier;
@@ -34,7 +38,11 @@ export type StyleOptionSnapshot = {
   name: string;
   description: string;
   thumbnail: string;
+  thumbnailWebp?: string | null;
+  thumbnailAvif?: string | null;
   preview: string;
+  previewWebp?: string | null;
+  previewAvif?: string | null;
   priceModifier: number;
 };
 
@@ -47,7 +55,11 @@ const toCatalogEntry = (style: StyleRegistryEntry): StyleCatalogEntry => {
     name: style.name,
     description: style.description,
     thumbnail: style.assets.thumbnail,
+    thumbnailWebp: style.assets.thumbnailWebp ?? null,
+    thumbnailAvif: style.assets.thumbnailAvif ?? null,
     preview: style.assets.preview,
+    previewWebp: style.assets.previewWebp ?? null,
+    previewAvif: style.assets.previewAvif ?? null,
     priceModifier: style.priceModifier,
     tone: style.tone ?? FALLBACK_TONE_FOR_ORIGINAL,
     tier: style.tier,
@@ -63,12 +75,27 @@ export const STYLE_CATALOG: StyleCatalogEntry[] = STYLE_REGISTRY.map(toCatalogEn
 
 export const loadInitialStyles = (): StyleOptionSnapshot[] =>
   STYLE_CATALOG.map(
-    ({ id, name, description, thumbnail, preview, priceModifier }): StyleOptionSnapshot => ({
+    ({
       id,
       name,
       description,
       thumbnail,
+      thumbnailWebp,
+      thumbnailAvif,
       preview,
+      previewWebp,
+      previewAvif,
+      priceModifier,
+    }): StyleOptionSnapshot => ({
+      id,
+      name,
+      description,
+      thumbnail,
+      thumbnailWebp: thumbnailWebp ?? null,
+      thumbnailAvif: thumbnailAvif ?? null,
+      preview,
+      previewWebp: previewWebp ?? null,
+      previewAvif: previewAvif ?? null,
       priceModifier,
     })
   );

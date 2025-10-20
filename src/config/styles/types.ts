@@ -21,7 +21,9 @@ export type StyleAssetConfig = {
   thumbnail: string;
   preview: string;
   thumbnailWebp?: string | null;
+  thumbnailAvif?: string | null;
   previewWebp?: string | null;
+  previewAvif?: string | null;
 };
 
 export type StylePromptMetadata = {

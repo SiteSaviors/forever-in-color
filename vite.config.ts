@@ -38,8 +38,12 @@ export default defineConfig(({ mode }) => ({
             return undefined;
           }
 
-          if (id.includes('react')) {
+          if (id.includes('react-dom') || id.includes('react/jsx-runtime')) {
             return 'react-vendors';
+          }
+
+          if (id.includes('react-router-dom')) {
+            return 'router-vendors';
           }
 
           if (id.includes('framer-motion')) {
@@ -52,6 +56,10 @@ export default defineConfig(({ mode }) => ({
 
           if (id.includes('zustand')) {
             return 'state-vendors';
+          }
+
+          if (id.includes('@tanstack/react-query')) {
+            return 'query-vendors';
           }
 
           return undefined;

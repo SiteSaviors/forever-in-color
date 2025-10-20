@@ -11,6 +11,19 @@ type GeneratedPrompt = {
   updatedAt: string;
 };
 
+const normalizeAssetPath = (assetPath: string): string => assetPath.replace(/^\/+/, '');
+
+const getAssetVariant = (assetPath: string, extension: string): string | null => {
+  const normalized = normalizeAssetPath(assetPath);
+  const parsed = path.parse(normalized);
+  const candidateRelative = path.join(parsed.dir, `${parsed.name}${extension}`).replace(/\\/g, '/');
+  const candidateAbsolute = path.resolve(projectRoot, 'public', candidateRelative);
+  if (fs.existsSync(candidateAbsolute)) {
+    return `/${candidateRelative}`;
+  }
+  return null;
+};
+
 type GeneratedEntry = {
   id: string;
   slug: string;
@@ -28,7 +41,9 @@ type GeneratedEntry = {
   sortOrder: number;
   assets: StyleRegistrySourceEntry['assets'] & {
     thumbnailWebp?: string | null;
+    thumbnailAvif?: string | null;
     previewWebp?: string | null;
+    previewAvif?: string | null;
   };
   featureFlags: {
     isEnabled: boolean;
@@ -48,7 +63,7 @@ const edgeOutputPath = path.resolve(
 );
 
 const ensureAssetExists = (styleId: string, assetPath: string, type: string) => {
-  const normalized = assetPath.replace(/^\/+/, '');
+  const normalized = normalizeAssetPath(assetPath);
   const absolutePath = path.resolve(projectRoot, 'public', normalized);
   if (!fs.existsSync(absolutePath)) {
     throw new Error(
@@ -70,6 +85,11 @@ const generatedEntries = STYLE_REGISTRY_SOURCE.map<GeneratedEntry>((source, inde
   const category = source.category ?? 'style';
 
   let prompt: GeneratedPrompt | undefined;
+  const thumbnailWebp = getAssetVariant(source.assets.thumbnail, '.webp');
+  const thumbnailAvif = getAssetVariant(source.assets.thumbnail, '.avif');
+  const previewWebp = getAssetVariant(source.assets.preview, '.webp');
+  const previewAvif = getAssetVariant(source.assets.preview, '.avif');
+
   if (typeof source.numericId === 'number') {
     const promptRow = SUPABASE_PROMPTS_BY_ID.get(source.numericId);
     if (!promptRow) {
@@ -109,8 +129,10 @@ const generatedEntries = STYLE_REGISTRY_SOURCE.map<GeneratedEntry>((source, inde
     assets: {
       thumbnail: source.assets.thumbnail,
       preview: source.assets.preview,
-      thumbnailWebp: null,
-      previewWebp: null,
+      thumbnailWebp,
+      thumbnailAvif,
+      previewWebp,
+      previewAvif,
     },
     featureFlags,
     prompt,
@@ -162,9 +184,27 @@ const serializeEntry = (entry: GeneratedEntry): string => {
   lines.push(`  sortOrder: ${entry.sortOrder},`);
   lines.push('  assets: {');
   lines.push(`    thumbnail: ${JSON.stringify(entry.assets.thumbnail)},`);
-  lines.push('    thumbnailWebp: null,');
+  if (entry.assets.thumbnailWebp) {
+    lines.push(`    thumbnailWebp: ${JSON.stringify(entry.assets.thumbnailWebp)},`);
+  } else {
+    lines.push('    thumbnailWebp: null,');
+  }
+  if (entry.assets.thumbnailAvif) {
+    lines.push(`    thumbnailAvif: ${JSON.stringify(entry.assets.thumbnailAvif)},`);
+  } else {
+    lines.push('    thumbnailAvif: null,');
+  }
   lines.push(`    preview: ${JSON.stringify(entry.assets.preview)},`);
-  lines.push('    previewWebp: null,');
+  if (entry.assets.previewWebp) {
+    lines.push(`    previewWebp: ${JSON.stringify(entry.assets.previewWebp)},`);
+  } else {
+    lines.push('    previewWebp: null,');
+  }
+  if (entry.assets.previewAvif) {
+    lines.push(`    previewAvif: ${JSON.stringify(entry.assets.previewAvif)},`);
+  } else {
+    lines.push('    previewAvif: null,');
+  }
   lines.push('  },');
   lines.push('  featureFlags: {');
   lines.push(`    isEnabled: ${entry.featureFlags.isEnabled},`);

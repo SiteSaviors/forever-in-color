@@ -9,6 +9,7 @@
     "build:registry": "tsx scripts/build-style-registry.ts",
     "build:analyze": "npm run build:registry && ANALYZE=1 vite build",
     "build:dev": "npm run build:registry && vite build --mode development",
+    "thumbnails:generate": "tsx scripts/generate-thumbnail-formats.ts",
     "validate:registry": "npm run build:registry && git diff --quiet -- src/config/styles/styleRegistry.generated.ts supabase/functions/_shared/styleRegistry.generated.ts || (echo \"Style registry output is outdated. Run 'npm run build:registry' and commit the generated files.\" && exit 1)",
     "lint": "eslint .",
     "lint:unused": "eslint . --ext .ts,.tsx --fix",
@@ -55,6 +56,7 @@
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
     "web-vitals": "^5.1.0",
+    "zod": "^3.23.8",
     "zustand": "^4.5.2"
   },
   "devDependencies": {
@@ -75,9 +77,10 @@
     "madge": "^8.0.0",
     "postcss": "^8.4.47",
     "rollup-plugin-visualizer": "^5.12.0",
+    "sharp": "^0.34.4",
     "tailwindcss": "^3.4.11",
-    "tsx": "^4.11.0",
     "ts-unused-exports": "^10.1.0",
+    "tsx": "^4.11.0",
     "typescript": "^5.6.3",
     "typescript-eslint": "^8.0.1",
     "unimported": "^1.31.1",

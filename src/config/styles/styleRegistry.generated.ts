@@ -20,9 +20,11 @@ export const STYLE_REGISTRY: StyleRegistryEntry[] = [
   sortOrder: 0,
   assets: {
     thumbnail: "/art-style-thumbnails/original-image.jpg",
-    thumbnailWebp: null,
+    thumbnailWebp: "/art-style-thumbnails/original-image.webp",
+    thumbnailAvif: "/art-style-thumbnails/original-image.avif",
     preview: "/art-style-thumbnails/original-image.jpg",
-    previewWebp: null,
+    previewWebp: "/art-style-thumbnails/original-image.webp",
+    previewAvif: "/art-style-thumbnails/original-image.avif",
   },
   featureFlags: {
     isEnabled: true,
@@ -51,9 +53,11 @@ export const STYLE_REGISTRY: StyleRegistryEntry[] = [
   sortOrder: 10,
   assets: {
     thumbnail: "/art-style-thumbnails/classic-oil-painting.jpg",
-    thumbnailWebp: null,
+    thumbnailWebp: "/art-style-thumbnails/classic-oil-painting.webp",
+    thumbnailAvif: "/art-style-thumbnails/classic-oil-painting.avif",
     preview: "/art-style-thumbnails/classic-oil-painting.jpg",
-    previewWebp: null,
+    previewWebp: "/art-style-thumbnails/classic-oil-painting.webp",
+    previewAvif: "/art-style-thumbnails/classic-oil-painting.avif",
   },
   featureFlags: {
     isEnabled: true,
@@ -82,9 +86,11 @@ export const STYLE_REGISTRY: StyleRegistryEntry[] = [
   sortOrder: 20,
   assets: {
     thumbnail: "/art-style-thumbnails/watercolor-dreams.jpg",
-    thumbnailWebp: null,
+    thumbnailWebp: "/art-style-thumbnails/watercolor-dreams.webp",
+    thumbnailAvif: "/art-style-thumbnails/watercolor-dreams.avif",
     preview: "/art-style-thumbnails/watercolor-dreams.jpg",
-    previewWebp: null,
+    previewWebp: "/art-style-thumbnails/watercolor-dreams.webp",
+    previewAvif: "/art-style-thumbnails/watercolor-dreams.avif",
   },
   featureFlags: {
     isEnabled: true,
@@ -113,9 +119,11 @@ export const STYLE_REGISTRY: StyleRegistryEntry[] = [
   sortOrder: 30,
   assets: {
     thumbnail: "/art-style-thumbnails/pastel-bliss.jpg",
-    thumbnailWebp: null,
+    thumbnailWebp: "/art-style-thumbnails/pastel-bliss.webp",
+    thumbnailAvif: "/art-style-thumbnails/pastel-bliss.avif",
     preview: "/art-style-thumbnails/pastel-bliss.jpg",
-    previewWebp: null,
+    previewWebp: "/art-style-thumbnails/pastel-bliss.webp",
+    previewAvif: "/art-style-thumbnails/pastel-bliss.avif",
   },
   featureFlags: {
     isEnabled: true,
@@ -144,9 +152,11 @@ export const STYLE_REGISTRY: StyleRegistryEntry[] = [
   sortOrder: 40,
   assets: {
     thumbnail: "/art-style-thumbnails/3d-storybook.jpg",
-    thumbnailWebp: null,
+    thumbnailWebp: "/art-style-thumbnails/3d-storybook.webp",
+    thumbnailAvif: "/art-style-thumbnails/3d-storybook.avif",
     preview: "/art-style-thumbnails/3d-storybook.jpg",
-    previewWebp: null,
+    previewWebp: "/art-style-thumbnails/3d-storybook.webp",
+    previewAvif: "/art-style-thumbnails/3d-storybook.avif",
   },
   featureFlags: {
     isEnabled: true,
@@ -175,9 +185,11 @@ export const STYLE_REGISTRY: StyleRegistryEntry[] = [
   sortOrder: 50,
   assets: {
     thumbnail: "/art-style-thumbnails/pop-art-burst.jpg",
-    thumbnailWebp: null,
+    thumbnailWebp: "/art-style-thumbnails/pop-art-burst.webp",
+    thumbnailAvif: "/art-style-thumbnails/pop-art-burst.avif",
     preview: "/art-style-thumbnails/pop-art-burst.jpg",
-    previewWebp: null,
+    previewWebp: "/art-style-thumbnails/pop-art-burst.webp",
+    previewAvif: "/art-style-thumbnails/pop-art-burst.avif",
   },
   featureFlags: {
     isEnabled: true,
@@ -206,9 +218,11 @@ export const STYLE_REGISTRY: StyleRegistryEntry[] = [
   sortOrder: 60,
   assets: {
     thumbnail: "/art-style-thumbnails/artisan-charcoal.jpg",
-    thumbnailWebp: null,
+    thumbnailWebp: "/art-style-thumbnails/artisan-charcoal.webp",
+    thumbnailAvif: "/art-style-thumbnails/artisan-charcoal.avif",
     preview: "/art-style-thumbnails/artisan-charcoal.jpg",
-    previewWebp: null,
+    previewWebp: "/art-style-thumbnails/artisan-charcoal.webp",
+    previewAvif: "/art-style-thumbnails/artisan-charcoal.avif",
   },
   featureFlags: {
     isEnabled: true,
@@ -237,9 +251,11 @@ export const STYLE_REGISTRY: StyleRegistryEntry[] = [
   sortOrder: 70,
   assets: {
     thumbnail: "/art-style-thumbnails/neon-splash.jpg",
-    thumbnailWebp: null,
+    thumbnailWebp: "/art-style-thumbnails/neon-splash.webp",
+    thumbnailAvif: "/art-style-thumbnails/neon-splash.avif",
     preview: "/art-style-thumbnails/neon-splash.jpg",
-    previewWebp: null,
+    previewWebp: "/art-style-thumbnails/neon-splash.webp",
+    previewAvif: "/art-style-thumbnails/neon-splash.avif",
   },
   featureFlags: {
     isEnabled: true,
@@ -268,9 +284,11 @@ export const STYLE_REGISTRY: StyleRegistryEntry[] = [
   sortOrder: 80,
   assets: {
     thumbnail: "/art-style-thumbnails/electric-bloom.jpg",
-    thumbnailWebp: null,
+    thumbnailWebp: "/art-style-thumbnails/electric-bloom.webp",
+    thumbnailAvif: "/art-style-thumbnails/electric-bloom.avif",
     preview: "/art-style-thumbnails/electric-bloom.jpg",
-    previewWebp: null,
+    previewWebp: "/art-style-thumbnails/electric-bloom.webp",
+    previewAvif: "/art-style-thumbnails/electric-bloom.avif",
   },
   featureFlags: {
     isEnabled: true,
@@ -299,9 +317,11 @@ export const STYLE_REGISTRY: StyleRegistryEntry[] = [
   sortOrder: 90,
   assets: {
     thumbnail: "/art-style-thumbnails/deco-luxe.jpg",
-    thumbnailWebp: null,
+    thumbnailWebp: "/art-style-thumbnails/deco-luxe.webp",
+    thumbnailAvif: "/art-style-thumbnails/deco-luxe.avif",
     preview: "/art-style-thumbnails/deco-luxe.jpg",
-    previewWebp: null,
+    previewWebp: "/art-style-thumbnails/deco-luxe.webp",
+    previewAvif: "/art-style-thumbnails/deco-luxe.avif",
   },
   featureFlags: {
     isEnabled: true,
@@ -330,9 +350,11 @@ export const STYLE_REGISTRY: StyleRegistryEntry[] = [
   sortOrder: 100,
   assets: {
     thumbnail: "/art-style-thumbnails/abstract-fusion.jpg",
-    thumbnailWebp: null,
+    thumbnailWebp: "/art-style-thumbnails/abstract-fusion.webp",
+    thumbnailAvif: "/art-style-thumbnails/abstract-fusion.avif",
     preview: "/art-style-thumbnails/abstract-fusion.jpg",
-    previewWebp: null,
+    previewWebp: "/art-style-thumbnails/abstract-fusion.webp",
+    previewAvif: "/art-style-thumbnails/abstract-fusion.avif",
   },
   featureFlags: {
     isEnabled: true,
@@ -361,9 +383,11 @@ export const STYLE_REGISTRY: StyleRegistryEntry[] = [
   sortOrder: 110,
   assets: {
     thumbnail: "/art-style-thumbnails/gemstone-poly.jpg",
-    thumbnailWebp: null,
+    thumbnailWebp: "/art-style-thumbnails/gemstone-poly.webp",
+    thumbnailAvif: "/art-style-thumbnails/gemstone-poly.avif",
     preview: "/art-style-thumbnails/gemstone-poly.jpg",
-    previewWebp: null,
+    previewWebp: "/art-style-thumbnails/gemstone-poly.webp",
+    previewAvif: "/art-style-thumbnails/gemstone-poly.avif",
   },
   featureFlags: {
     isEnabled: true,
@@ -394,8 +418,10 @@ export const STYLE_REGISTRY: StyleRegistryEntry[] = [
   assets: {
     thumbnail: "/art-style-thumbnails/signature-aurora.jpg",
     thumbnailWebp: null,
+    thumbnailAvif: null,
     preview: "/art-style-thumbnails/signature-aurora.jpg",
     previewWebp: null,
+    previewAvif: null,
   },
   featureFlags: {
     isEnabled: true,

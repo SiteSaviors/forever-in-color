@@ -28,7 +28,11 @@ export type StyleOption = {
   name: string;
   description: string;
   thumbnail: string;
+  thumbnailWebp?: string | null;
+  thumbnailAvif?: string | null;
   preview: string;
+  previewWebp?: string | null;
+  previewAvif?: string | null;
   priceModifier: number;
 };
 
