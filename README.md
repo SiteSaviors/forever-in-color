@@ -32,13 +32,22 @@ Wondertone is a premium e-commerce experience that transforms personal photos in
    ```
    - Vite serves the app on `http://localhost:8080/`.
 4. **Run quality checks before committing**
-   ```sh
-   npm run lint
-   npm run build
-   npm run build:analyze   # optional treemap, opens dist/stats.html
-   npm run deps:check
-   ```
-   These match the default checklist enforced in `agents.md` and the founder workflow.
+  ```sh
+  npm run lint
+  npm run build
+  npm run build:analyze   # optional treemap, opens dist/stats.html
+  npm run deps:check
+  ```
+  These match the default checklist enforced in `agents.md` and the founder workflow.
+
+5. **CI expectations**
+   - GitHub Actions runs lint, tests, production builds, bundle analysis, and bundle-size enforcement on every PR targeting `main` (`.github/workflows/ci.yml`).
+   - The workflow fails if key entry bundles exceed their budgets; replicate locally with:
+     ```sh
+     npm run build
+     node scripts/verify-bundle-sizes.cjs
+     ```
+   - Keep builds deterministic—use `npm ci` locally when validating before pushing.
 
 ## VS Code Workflow
 
