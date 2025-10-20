@@ -50,10 +50,14 @@ export const EDGE_STYLE_REGISTRY: EdgeStyleRegistryEntry[] = [
 {
   id: "gallery-acrylic",
   name: "Gallery Acrylic",
-  numericId: null,
+  numericId: 14,
   tone: "classic",
   tier: "free",
-  prompt: null,
+  prompt: {
+    numericId: 14,
+    prompt: "Recreate the exact image as a contemporary acrylic painting — bold color, crisp edges, and clean, layered flats. Preserve the subject’s full composition. Render forms with decisive brush and palette-knife strokes; build color in opaque layers (lights over darks) with minimal glazing. Keep transitions intentional: hard edges on graphic planes and tighter details; soft, feathered edges only where needed for depth. Use a modern, saturated palette with high local contrast; avoid oil-style glow or muddy blends. Add subtle canvas tooth and occasional knife ridges to suggest fast-drying acrylic texture. The result should feel fresh, vivid, and gallery-ready — a sharp, modern staple that stays true to the original photo.",
+    updatedAt: "2025-10-16 07:13:28.066242+00",
+  },
 },
 {
   id: "watercolor-dreams",
@@ -116,12 +120,16 @@ export const EDGE_STYLE_REGISTRY: EdgeStyleRegistryEntry[] = [
   },
 },
 {
-  id: "sumi-ink-whisper",
-  name: "Sumi Ink Whisper",
-  numericId: null,
+  id: "classic-crayon",
+  name: "Classic Crayon",
+  numericId: 12,
   tone: "classic",
   tier: "premium",
-  prompt: null,
+  prompt: {
+    numericId: 12,
+    prompt: "Recreate the exact image as a hand-drawn crayon illustration — warm, waxy, and richly textured. Preserve the full composition and subject structure. Render forms with layered crayon strokes. Use a balanced color palette that matches the original image while allowing gentle artistic exaggeration; build shadows with cross-hatching and stacked complementary colors rather than flat black. The final image should read as a crisp, expressive crayon portrait — colorful, tactile, and true to the original photo.",
+    updatedAt: "2025-10-16 07:13:28.066242+00",
+  },
 },
 {
   id: "neon-splash",

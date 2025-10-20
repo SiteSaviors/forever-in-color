@@ -125,6 +125,11 @@ export const STYLE_REGISTRY: StyleRegistryEntry[] = [
     rolloutPercentage: 100,
     disabledReason: null,
   },
+  prompt: {
+    numericId: 14,
+    prompt: "Recreate the exact image as a contemporary acrylic painting — bold color, crisp edges, and clean, layered flats. Preserve the subject’s full composition. Render forms with decisive brush and palette-knife strokes; build color in opaque layers (lights over darks) with minimal glazing. Keep transitions intentional: hard edges on graphic planes and tighter details; soft, feathered edges only where needed for depth. Use a modern, saturated palette with high local contrast; avoid oil-style glow or muddy blends. Add subtle canvas tooth and occasional knife ridges to suggest fast-drying acrylic texture. The result should feel fresh, vivid, and gallery-ready — a sharp, modern staple that stays true to the original photo.",
+    updatedAt: "2025-10-16 07:13:28.066242+00",
+  },
 },
 {
   id: "watercolor-dreams",
@@ -294,18 +299,18 @@ export const STYLE_REGISTRY: StyleRegistryEntry[] = [
   },
 },
 {
-  id: "sumi-ink-whisper",
-  slug: "sumi-ink-whisper",
-  name: "Sumi Ink Whisper",
+  id: "classic-crayon",
+  slug: "classic-crayon",
+  name: "Classic Crayon",
   tone: "classic",
   tier: "premium",
   category: "style",
   isPremium: true,
   defaultUnlocked: false,
   priceModifier: 0,
-  description: "Delicate sumi ink strokes with whisper-light negative space.",
-  marketingCopy: "Capture poetic silhouettes with feathered sumi ink strokes and quiet contrast.",
-  badges: ["ink"],
+  description: "Layered crayon strokes with nostalgic paper grain and hand-drawn warmth.",
+  marketingCopy: "Blend soft waxy hues and storybook charm for a handcrafted crayon keepsake.",
+  badges: ["classic"],
   requiredTier: "creator",
   sortOrder: 50,
   assets: {
@@ -320,6 +325,11 @@ export const STYLE_REGISTRY: StyleRegistryEntry[] = [
     isEnabled: true,
     rolloutPercentage: 100,
     disabledReason: null,
+  },
+  prompt: {
+    numericId: 12,
+    prompt: "Recreate the exact image as a hand-drawn crayon illustration — warm, waxy, and richly textured. Preserve the full composition and subject structure. Render forms with layered crayon strokes. Use a balanced color palette that matches the original image while allowing gentle artistic exaggeration; build shadows with cross-hatching and stacked complementary colors rather than flat black. The final image should read as a crisp, expressive crayon portrait — colorful, tactile, and true to the original photo.",
+    updatedAt: "2025-10-16 07:13:28.066242+00",
   },
 },
 {
