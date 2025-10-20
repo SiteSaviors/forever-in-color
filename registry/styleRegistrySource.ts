@@ -127,6 +127,7 @@ export const STYLE_REGISTRY_SOURCE: StyleRegistrySourceEntry[] = [
   {
     id: 'gallery-acrylic',
     name: 'Gallery Acrylic',
+    numericId: 14,
     tone: 'classic',
     tier: 'free',
     isPremium: false,

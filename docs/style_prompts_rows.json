@@ -99,7 +99,15 @@
     "idx": 12,
     "id": "bb6d2f28-4ca2-4aeb-a746-4ee3a87eb8b5",
     "style_id": 12,
-    "prompt": "Recreate the exact image as a premium crayon illustration — layered, vibrant, and lovingly hand-drawn. Preserve the original composition, proportions, and facial details while rendering every surface with rich, waxy strokes that show subtle paper grain. Blend colors with intentional overlap and visible stroke direction, using warm neutrals, soft primaries, and accent pops to create nostalgic storybook energy. Maintain crisp outlines on key features, add gentle shading with crosshatching, and let background areas fade into expressive scribbles that frame the subject without disrupting clarity.",
+    "prompt": "Recreate the exact image as a hand-drawn crayon illustration — warm, waxy, and richly textured. Preserve the full composition and subject structure. Render forms with layered crayon strokes. Use a balanced color palette that matches the original image while allowing gentle artistic exaggeration; build shadows with cross-hatching and stacked complementary colors rather than flat black. The final image should read as a crisp, expressive crayon portrait — colorful, tactile, and true to the original photo.",
+    "created_at": "2025-10-16 07:13:27.941975+00",
+    "updated_at": "2025-10-16 07:13:28.066242+00"
+  },
+  {
+    "idx": 13,
+    "id": "6b0afd89-70f3-4f6f-9c06-2746c9ad8f8a",
+    "style_id": 14,
+    "prompt": "Recreate the exact image as a contemporary acrylic painting — bold color, crisp edges, and clean, layered flats. Preserve the subject’s full composition. Render forms with decisive brush and palette-knife strokes; build color in opaque layers (lights over darks) with minimal glazing. Keep transitions intentional: hard edges on graphic planes and tighter details; soft, feathered edges only where needed for depth. Use a modern, saturated palette with high local contrast; avoid oil-style glow or muddy blends. Add subtle canvas tooth and occasional knife ridges to suggest fast-drying acrylic texture. The result should feel fresh, vivid, and gallery-ready — a sharp, modern staple that stays true to the original photo.",
     "created_at": "2025-10-16 07:13:27.941975+00",
     "updated_at": "2025-10-16 07:13:28.066242+00"
   }
