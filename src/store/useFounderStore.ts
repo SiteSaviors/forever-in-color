@@ -64,6 +64,7 @@ type FounderBaseState = {
   livingCanvasModalOpen: boolean;
   uploadedImage: string | null;
   croppedImage: string | null;
+  currentImageHash: string | null;
   originalImage: string | null;
   originalImageDimensions: { width: number; height: number } | null;
   smartCrops: Partial<Record<Orientation, SmartCropResult>>;
@@ -85,6 +86,7 @@ type FounderBaseState = {
   setLivingCanvasModalOpen: (open: boolean) => void;
   setUploadedImage: (dataUrl: string | null) => void;
   setCroppedImage: (dataUrl: string | null) => void;
+  setCurrentImageHash: (hash: string | null) => void;
   setOriginalImage: (dataUrl: string | null) => void;
   setOriginalImageDimensions: (dimensions: { width: number; height: number } | null) => void;
   setSmartCropForOrientation: (orientation: Orientation, result: SmartCropResult) => void;
@@ -259,6 +261,7 @@ export const useFounderStore = create<FounderState>((set, get, api) => ({
   livingCanvasModalOpen: false,
   uploadedImage: null,
   croppedImage: null,
+  currentImageHash: null,
   orientation: 'square',
   orientationTip: null,
   cropReadyAt: null,
@@ -356,6 +359,7 @@ export const useFounderStore = create<FounderState>((set, get, api) => ({
   setUploadedImage: (dataUrl) =>
     set({
       uploadedImage: dataUrl,
+      currentImageHash: null,
       stylePreviewCache: {},
       stylePreviewCacheOrder: [],
       pendingStyleId: null,
@@ -369,6 +373,7 @@ export const useFounderStore = create<FounderState>((set, get, api) => ({
   setCroppedImage: (dataUrl) =>
     set({
       croppedImage: dataUrl,
+      currentImageHash: null,
       launchpadSlimMode: !!dataUrl,
     }),
   setOriginalImage: (dataUrl) => set({ originalImage: dataUrl }),
@@ -468,5 +473,6 @@ export const useFounderStore = create<FounderState>((set, get, api) => ({
   shouldAutoGeneratePreviews: () => {
     return ENABLE_AUTO_PREVIEWS;
   },
+  setCurrentImageHash: (hash) => set({ currentImageHash: hash }),
   ...createFavoritesSlice(set, get, api),
 }));

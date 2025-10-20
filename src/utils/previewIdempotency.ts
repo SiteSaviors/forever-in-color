@@ -4,7 +4,7 @@ import { computeSha256Hex } from './hashUtils';
 type PreviewIdempotencyParams = {
   styleId: string;
   orientation: Orientation;
-  imageData: string;
+  imageHash: string;
   sessionUserId: string | null;
   anonToken: string | null;
   fingerprintHash: string | null;
@@ -25,17 +25,14 @@ const reduceHash = (hash: string): string => {
 export const buildPreviewIdempotencyKey = async ({
   styleId,
   orientation,
-  imageData,
+  imageHash,
   sessionUserId,
   anonToken,
   fingerprintHash,
 }: PreviewIdempotencyParams): Promise<string> => {
   const identitySource = sessionUserId ?? anonToken ?? fingerprintHash ?? 'public';
-
-  const [imageDigest, identityDigest] = await Promise.all([
-    computeSha256Hex(imageData),
-    computeSha256Hex(identitySource),
-  ]);
+  const identityDigest = await computeSha256Hex(identitySource);
+  const imageDigest = imageHash;
 
   const keySegments = [
     KEY_PREFIX,
@@ -47,4 +44,3 @@ export const buildPreviewIdempotencyKey = async ({
 
   return keySegments.join('|');
 };
-

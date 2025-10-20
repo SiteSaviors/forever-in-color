@@ -337,11 +337,21 @@ export const createPreviewSlice = (
         const anonToken = sessionUser ? null : get().anonToken;
         const accessToken = get().accessToken;
         const fingerprintHash = await get().ensureFingerprintHash();
+        const cachedImageHash = get().currentImageHash;
+
+        let idempotencyImageKey = cachedImageHash;
+        if (!idempotencyImageKey) {
+          setTimeout(() => {
+            console.warn('[PreviewIdempotency] Missing cached image hash; falling back to hashing image data directly');
+          });
+          idempotencyImageKey = await computeImageDigest(sourceImage);
+          get().setCurrentImageHash(idempotencyImageKey);
+        }
 
         const idempotencyKey = await buildPreviewIdempotencyKey({
           styleId: style.id,
           orientation: targetOrientation,
-          imageData: sourceImage,
+          imageHash: idempotencyImageKey,
           sessionUserId: sessionUser?.id ?? null,
           anonToken,
           fingerprintHash,

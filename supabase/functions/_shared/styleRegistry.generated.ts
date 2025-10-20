@@ -40,6 +40,22 @@ export const EDGE_STYLE_REGISTRY: EdgeStyleRegistryEntry[] = [
   },
 },
 {
+  id: "calm-watercolor",
+  name: "Calm Watercolor",
+  numericId: null,
+  tone: "classic",
+  tier: "free",
+  prompt: null,
+},
+{
+  id: "gallery-acrylic",
+  name: "Gallery Acrylic",
+  numericId: null,
+  tone: "classic",
+  tier: "free",
+  prompt: null,
+},
+{
   id: "watercolor-dreams",
   name: "Watercolor Dreams",
   numericId: 4,
@@ -56,7 +72,7 @@ export const EDGE_STYLE_REGISTRY: EdgeStyleRegistryEntry[] = [
   name: "Pastel Bliss",
   numericId: 5,
   tone: "classic",
-  tier: "free",
+  tier: "premium",
   prompt: {
     numericId: 5,
     prompt: "Recreate the exact image in a soft pastel illustration style — calming and emotionally warm, with clearly defined forms and balanced contrast. Preserve the full composition and subject structure, including accurate pose, features, proportions, and spatial layout. Use smooth shading and subtle blending between gentle pastel hues — but ensure the subject remains crisp and well-defined against the background. Avoid overly washed-out or faded tones; instead, apply light colors with intention and depth, creating a soft yet vibrant rendering. The final image should feel peaceful and nostalgic, while still vivid and visually engaging.",
@@ -92,12 +108,20 @@ export const EDGE_STYLE_REGISTRY: EdgeStyleRegistryEntry[] = [
   name: "Artisan Charcoal",
   numericId: 8,
   tone: "classic",
-  tier: "free",
+  tier: "premium",
   prompt: {
     numericId: 8,
     prompt: "Recreate the exact image as a detailed charcoal sketch — textured, hand-drawn, and expressive. Preserve the full structure and composition of the original subject, including accurate proportions, angles, and spatial arrangement. Use rich crosshatching, soft smudging, and tonal shading to build form and depth, mimicking traditional charcoal on textured paper. Keep the subject's details clear and intact while rendering them in a warm, monochromatic palette. The result should feel timeless and handcrafted, like a finely rendered charcoal illustration that blends realism with artistic character.",
     updatedAt: "2025-10-16 07:13:28.066242+00",
   },
+},
+{
+  id: "sumi-ink-whisper",
+  name: "Sumi Ink Whisper",
+  numericId: null,
+  tone: "classic",
+  tier: "premium",
+  prompt: null,
 },
 {
   id: "neon-splash",

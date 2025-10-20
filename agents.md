@@ -4,18 +4,17 @@
 - Begin each session with the Agents Summary handshake so reviewers see the guardrails before plans or code (this document, Section 3).
 
 1. Derived Goals (ranked)
-- Preserve the four-step configurator flow and gating logic owned by `useProductFlow`, rendered by `Product`, and orchestrated in `ProductStepsManager` (src/components/product/hooks/useProductFlow.ts:8, src/pages/Product.tsx:30, src/components/product/components/ProductStepsManager.tsx:75).
-- Maintain Step One experiential telemetry—StepOneExperience provider, smart progress, contextual nudges, and upload UX must stay aligned (src/components/product/components/PhotoAndStyleStep.tsx:65, src/components/product/progress/useStepOneExperience.ts:7, src/components/product/progress/SmartProgressIndicator.tsx:7).
-- Protect preview generation throughput and caching by keeping `usePreviewGeneration` as the single source feeding the style pipeline and Supabase edge API (src/components/product/hooks/usePreviewGeneration.ts:7, src/utils/stylePreviewApi.ts:18).
+- Preserve the Launchflow → Studio configurator sequence driven by `useFounderStore` and the preview slice (src/sections/LaunchpadLayout.tsx, src/sections/StudioConfigurator.tsx, src/store/useFounderStore.ts:320-452, src/store/founder/previewSlice.ts:300-520).
+- Maintain Step One telemetry and momentum cues emitted through `emitStepOneEvent`, Launchflow analytics, and studio feedback hooks (src/utils/telemetry.ts, src/utils/launchflowTelemetry.ts, src/store/founder/previewSlice.ts:318-420).
+- Protect preview throughput and caching by keeping `previewSlice.startStylePreview` / `startFounderPreviewGeneration` as the single Supabase preview pipeline (src/store/founder/previewSlice.ts:300-520, src/utils/founderPreviewGeneration.ts:1-85, src/utils/stylePreviewApi.ts:1-156).
 - Style landing pages remain copy-varied twins; keep pixel parity unless coordinating a wider dedupe pass (src/pages/ClassicOilPainting.tsx:12, src/pages/WatercolorDreams.tsx:12).
 
 2. Guardrails (derived, not prescriptive)
-- StepOneExperienceProvider must wrap Step 1 so sub-step tracking, AI analysis, and contextual help continue to power progress/momentum widgets (src/components/product/components/PhotoAndStyleStep.tsx:147, src/components/product/progress/StepOneExperienceContext.tsx:6).
-- Smart progress + help cues depend on StepOneExperience state; avoid bypassing `SmartProgressIndicator` or `ContextualHelp` hooks when modifying the upload flow (src/components/product/progress/SmartProgressIndicator.tsx:7, src/components/product/help/ContextualHelp.tsx:1).
-- Orientation changes clear previews through `useProductFlow`—do not short-circuit the reset that keeps preview caches valid (src/components/product/hooks/useProductFlow.ts:117, src/components/product/hooks/usePreviewGeneration.ts:41).
-- Style previews run through `StyleCard` → `useStyleCardHooks` → `useStylePreview`; keep retries, watermarking, and touch interactions in sync (src/components/product/StyleCard.tsx:15, src/components/product/hooks/useStyleCardHooks.ts:1, src/components/product/hooks/useStylePreview.ts:18).
-- Intelligent recommendations analyze uploads before rendering hero/popular grids; any UX changes must respect the recommendation engine’s contract (src/components/product/components/IntelligentStyleGrid.tsx:22, src/components/product/utils/styleRecommendationEngine.ts:21).
-- Social momentum auto-expansion reads hesitation from StepOneExperience context—maintain listener cleanup and debounce thresholds (src/components/product/components/UnifiedSocialMomentumWidget.tsx:42).
+- Launchpad upload/crop flow (`src/components/launchpad/PhotoUploader.tsx`, `src/components/launchpad/SmartCropPreview.tsx`, `src/sections/LaunchpadLayout.tsx`) must continue raising Step One telemetry and updating `useFounderStore` so progress widgets and nudges stay accurate.
+- Preview telemetry and stage messaging flow through `previewSlice.startStylePreview` and `emitStepOneEvent`; do not bypass those helpers when triggering previews (src/store/founder/previewSlice.ts:300-520, src/utils/telemetry.ts:1-120).
+- Orientation changes must go through `useFounderStore.setOrientation` to clear caches and repopulate previews safely (src/store/useFounderStore.ts:381-449).
+- Tone/style selection relies on `ToneStyleCard`, `useToneSections`, and `evaluateStyleGate`; keep gating, retries, and premium badges in sync (src/sections/studio/components/ToneStyleCard.tsx, src/sections/studio/components/StyleSidebar.tsx, src/store/hooks/useToneSections.ts).
+- Launchpad and Studio share Supabase state via `AuthProvider` and entitlement slices; preserve toast/modal coordination and listener cleanup (src/providers/AuthProvider.tsx, src/store/founder/entitlementSlice.ts, src/components/ui/TokenDecrementToast.tsx).
 - Prefer GPU-friendly transforms for new animations; existing utilities lean on `filter`, so watch for perf regressions (src/index.css:121, src/index.css:402).
 - Carousel autoplay sets timers—debounce extra interactions to avoid jank (src/hooks/useCarouselAutoplay.tsx:22).
 - Exit-intent logic attaches window/document listeners; preserve cleanup and debounce if you add triggers (src/components/ExitIntentPopup.tsx:8).
@@ -34,9 +33,9 @@
 
 6. Front-end Practices (derived)
 - Style landing pages share the same sticky CTA/scroll watcher; apply fixes across all variants to keep parity (src/pages/ClassicOilPainting.tsx:16, src/pages/WatercolorDreams.tsx:16).
-- Step One flow layers gesture handling, cropper UX, and style recommendations; keep these hooks coordinated when experimenting (src/components/product/components/PhotoAndStyleStep.tsx:84).
-- Order surfaces, token purchases, and momentum popups all rely on the shared Stripe hook—extend behavior in one place (src/hooks/useStripePayment.ts:23, src/components/product/components/BottomMomentumPopup.tsx:41, src/components/product/order/OrderActions.tsx:27).
-- Product header/testimonials animate social proof; large visual tweaks should stay inside existing components to prevent regressions (src/components/product/ProductHeader.tsx:1).
+- Step One flow layers upload gestures, smart crop previews, and tone recommendations; keep Launchpad components coordinated when experimenting (src/components/launchpad/PhotoUploader.tsx, src/components/launchpad/SmartCropPreview.tsx, src/sections/LaunchpadLayout.tsx).
+- Studio configurator + checkout experiences centralize state in `useFounderStore` and `src/components/checkout/*`; extend payment or upsell behavior within those shared modules (src/sections/StudioConfigurator.tsx, src/components/studio/StickyOrderRail.tsx, src/components/checkout/PaymentStep.tsx).
+- Product hero and momentum surfaces drive social proof; keep motion and ticker updates inside their dedicated components to avoid regressions (src/sections/ProductHeroSection.tsx, src/components/hero/MomentumTicker.tsx, src/sections/studio/components/StudioHeader.tsx).
 
 7. Edge Function Practices (derived)
 - The generate-style-preview edge handler validates requests, handles async webhooks, manages cache keys, and persists previews—keep this contract untouched (supabase/functions/generate-style-preview/index.ts:270).
@@ -50,7 +49,7 @@
 - Confirm zero references (via `rg` or equivalent) before deleting helpers like `CanvasWatermarkService` to avoid breaking edge deployments (supabase/functions/generate-style-preview/canvasWatermarkService.ts:1).
 
 9. Acceptance Criteria Templates
-- ✅ Four-step configurator gating intact, with StepOneExperience telemetry still firing (src/components/product/hooks/useProductFlow.ts:157, src/components/product/components/PhotoAndStyleStep.tsx:65).
+- ✅ Launchflow upload → Studio preview gating intact, with Step One telemetry still firing via `emitStepOneEvent` (src/sections/LaunchpadLayout.tsx, src/store/founder/previewSlice.ts:300-520).
 - ✅ `npm run lint && npm run build` succeed (package.json:6).
 - ✅ AI preview API request/response contract unchanged (supabase/functions/generate-style-preview/index.ts:293).
 - ✅ No regressions in token spend/refund flows (supabase/functions/remove-watermark/index.ts:57).

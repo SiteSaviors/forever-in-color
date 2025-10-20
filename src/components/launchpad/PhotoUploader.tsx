@@ -7,6 +7,7 @@ import SmartCropPreview from '@/components/launchpad/SmartCropPreview';
 import AIAnalysisOverlay from '@/components/launchpad/AIAnalysisOverlay';
 import { emitStepOneEvent } from '@/utils/telemetry';
 import { ORIENTATION_PRESETS, cacheSmartCropResult, clearSmartCropCacheForImage, SmartCropResult } from '@/utils/smartCrop';
+import { computeImageDigest } from '@/utils/imageHash';
 import type { Orientation } from '@/utils/imageUtils';
 
 const SAMPLE_IMAGE = 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=900&q=80';
@@ -33,6 +34,7 @@ const PhotoUploader = () => {
   const resetPreviews = useFounderStore((state) => state.resetPreviews);
   const shouldAutoGeneratePreviews = useFounderStore((state) => state.shouldAutoGeneratePreviews);
   const setSmartCropForOrientation = useFounderStore((state) => state.setSmartCropForOrientation);
+  const setCurrentImageHash = useFounderStore((state) => state.setCurrentImageHash);
   const clearSmartCrops = useFounderStore((state) => state.clearSmartCrops);
   const setPreviewState = useFounderStore((state) => state.setPreviewState);
   const croppedImage = useFounderStore((state) => state.croppedImage);
@@ -151,6 +153,8 @@ const PhotoUploader = () => {
     setCroppedImage(result.dataUrl);
     setUploadedImage(result.dataUrl);
 
+    const digestPromise = computeImageDigest(result.dataUrl);
+
     if (orientationChanged) {
       setOrientation(targetOrientation);
     }
@@ -172,6 +176,9 @@ const PhotoUploader = () => {
       },
       orientation: targetOrientation,
     });
+
+    const imageHash = await digestPromise;
+    setCurrentImageHash(imageHash);
 
     // Auto-preview generation (disabled during testing to save API costs)
     if (shouldAutoGeneratePreviews()) {
