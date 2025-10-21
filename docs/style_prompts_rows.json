@@ -110,5 +110,117 @@
     "prompt": "Recreate the exact image as a contemporary acrylic painting — bold color, crisp edges, and clean, layered flats. Preserve the subject’s full composition. Render forms with decisive brush and palette-knife strokes; build color in opaque layers (lights over darks) with minimal glazing. Keep transitions intentional: hard edges on graphic planes and tighter details; soft, feathered edges only where needed for depth. Use a modern, saturated palette with high local contrast; avoid oil-style glow or muddy blends. Add subtle canvas tooth and occasional knife ridges to suggest fast-drying acrylic texture. The result should feel fresh, vivid, and gallery-ready — a sharp, modern staple that stays true to the original photo.",
     "created_at": "2025-10-16 07:13:27.941975+00",
     "updated_at": "2025-10-16 07:13:28.066242+00"
+  },
+  {
+    "idx": 14,
+    "id": "bc8033c7-f3e6-47b2-8b42-c8ef9a343e28",
+    "style_id": 20,
+    "prompt": "Recreate the exact image as a soft watercolor — quiet, luminous, and gently diffused. Preserve the full composition and structure of the subject with accurate proportions and clear focal details. Paint primarily wet-on-wet with feathered edges, letting shapes dissolve softly into surrounding washes. Avoid heavy splatter, harsh outlines, or dramatic blooms. Let backgrounds recede with atmospheric wash and a whispered vignette so the subject breathes in open space. The result should feel still, balanced, and tender — a tranquil watercolor that honors the original image with poised simplicity.",
+    "created_at": "2025-10-16 07:13:27.941975+00",
+    "updated_at": "2025-10-16 07:13:28.066242+00"
+  },
+  {
+    "idx": 15,
+    "id": "7ac055c2-b7de-4575-93f7-7b3f8ae7ded2",
+    "style_id": 21,
+    "prompt": "Recreate the exact image as a 1990s TV cartoon. Preserve the full composition and structure of the subject. Translate forms into thick black keylines (3–6 px look), flat cel-shaded color blocks (1–2 shadow steps), and simple shape language (slightly exaggerated geometry, squash-and-stretch where natural). Use a vibrant Saturday-morning palette (teals, oranges, purples, limes) with minimal gradients; keep highlights as solid shapes, not soft glows. Background may use pattern panels (dots, zigzags, checker). The result should feel like a crisp, nostalgic 90s cartoon — playful, graphic, and instantly readable.",
+    "created_at": "2025-10-16 07:13:27.941975+00",
+    "updated_at": "2025-10-16 07:13:28.066242+00"
+  },
+  {
+    "idx": 16,
+    "id": "88ac9da0-da94-42ea-b8e8-8a04b98ffb95",
+    "style_id": 22,
+    "prompt": "Recreate the exact image in a vivid Pop Surrealism style — blending painterly realism with whimsical, dreamlike energy. Use richly saturated colors, hyperreal texture, and dramatic golden-hour lighting to enhance emotion. Incorporate fantastical, swirling skies and surreal background elements (like glowing clouds or floating orbs) that feel imaginative yet harmonious with the scene. The final artwork should evoke a fairytale-like quality — romantic, expressive, and elevated beyond reality — like a magical memory painted in vibrant, surreal detail.",
+    "created_at": "2025-10-16 07:13:27.941975+00",
+    "updated_at": "2025-10-16 07:13:28.066242+00"
+  },
+  {
+    "idx": 17,
+    "id": "6175401a-964c-472e-80bd-3e7192ceac17",
+    "style_id": 23,
+    "prompt": "Recreate the exact image as a layered papercraft collage — dimensional, clean-edged, and softly shadowed. Preserve the full composition, pose, and proportions while decomposing the image into cut-paper shapes with precise vector-like edges. Stack 6–12 layers separated by subtle drop shadows and ambient occlusion to create depth. Use matte, slightly textured cardstock colors with tasteful gradients only where necessary. Keep eyes, hands, and key contours sharply defined. The result should feel like a premium handcrafted diorama made of paper.",
+    "created_at": "2025-10-16 07:13:27.941975+00",
+    "updated_at": "2025-10-16 07:13:28.066242+00"
+  },
+  {
+    "idx": 18,
+    "id": "f1ef7859-ebda-4e3c-8af4-c261a7678f42",
+    "style_id": 24,
+    "prompt": "Recreate the exact image as a Minecraft-style voxel diorama. Preserve full composition and silhouette. Rebuild forms with hard cubic voxels (no bevels) at 2–8 px scale; use smaller voxels only for eyes/logos/hands. Apply matte, pixelated textures (no photo gradients), soft even lighting with ambient occlusion in creases, and a faint ground grid shadow. Keep silhouettes clean—no noisy fragmentation.",
+    "created_at": "2025-10-16 07:13:27.941975+00",
+    "updated_at": "2025-10-16 07:13:28.066242+00"
+  },
+  {
+    "idx": 19,
+    "id": "b5c0234d-9fd1-47d1-9588-960b9ddae908",
+    "style_id": 25,
+    "prompt": "Recreate the exact image as a stop-motion clay portrait — chunky, handmade, and charming. Preserve the subject’s full composition and proportions with a clean silhouette. Model forms as soft clay volumes with visible thumbprints, tool marks, and light seam lines; keep facial/details readable with sharper clay cuts. Use matte, saturated colors with subtle plasticine sheen; no photographic texture. Add tabletop studio lighting (soft key + tiny speculars) and a simple backdrop card. The result should feel like a frame from a claymation film — playful, tactile, and alive.",
+    "created_at": "2025-10-16 07:13:27.941975+00",
+    "updated_at": "2025-10-16 07:13:28.066242+00"
+  },
+  {
+    "idx": 20,
+    "id": "2029a7e6-08d3-4a4e-b8d7-36d3c30a5792",
+    "style_id": 3,
+    "prompt": "Recreate the exact image in a modern colorblock style — bold, clean, and hard-edged. Preserve the full composition and structure of the subject with accurate proportions. Simplify surfaces into large, opaque color planes with razor-sharp edges; reserve small, high-contrast blocks for facial details and key accents. Build shadows and highlights as discrete blocks rather than soft fades; maintain generous negative space for a poster-like feel. The result should feel fresh, graphic, and gallery-ready — a confident modern portrait built from pure color shapes.",
+    "created_at": "2025-10-16 07:13:27.941975+00",
+    "updated_at": "2025-10-16 07:13:28.066242+00"
+  },
+  {
+    "idx": 21,
+    "id": "2f65df87-0097-4afc-b6ed-b5720566e7e1",
+    "style_id": 19,
+    "prompt": "Recreate the exact image in an authentic pointillist style — built from countless small dots of pure color. Preserve the subject’s full composition, pose, proportions, and facial structure. Render form with closely packed dots that optically blend at viewing distance; avoid soft airbrush or continuous-tone gradients. Use luminous complements to model light and shadow. Keep edges readable by tightening dot density along contours and features. The result should feel radiant and shimmering, like a sunlit scene resolved through color vibration.",
+    "created_at": "2025-10-16 07:13:27.941975+00",
+    "updated_at": "2025-10-16 07:13:28.066242+00"
+  },
+  {
+    "idx": 22,
+    "id": "eb327a4c-1c6f-4ee6-b53d-d531b68b976b",
+    "style_id": 18,
+    "prompt": "Recreate the exact image in a Fauvist style — wild color, bold shapes, and liberated brushwork. Preserve the subject’s composition, pose, and anatomy while simplifying forms into decisive planes. Replace natural hues with expressive, high-key color. Keep linework confident, contours slightly exaggerated, and lighting stylized rather than realistic. The result should feel joyful, daring, and saturated with emotion.",
+    "created_at": "2025-10-16 07:13:27.941975+00",
+    "updated_at": "2025-10-16 07:13:28.066242+00"
+  },
+  {
+    "idx": 23,
+    "id": "2a7fcd7a-fc0b-452a-9584-681596a0a47f",
+    "style_id": 16,
+    "prompt": "Recreate the exact image in an International Typographic Style (Swiss Grid) — precise, minimal, and rigorously aligned. Preserve the full composition and structure of the subject with accurate proportions. Translate forms into clean, flat tonal planes and simple geometric shapes; use a strict underlying grid with consistent margins, modular spacing, and a visible baseline rhythm.",
+    "created_at": "2025-10-16 07:13:27.941975+00",
+    "updated_at": "2025-10-16 07:13:28.066242+00"
+  },
+  {
+    "idx": 24,
+    "id": "87a2f27c-5bfa-4e73-98ae-0266369ab447",
+    "style_id": 17,
+    "prompt": "Recreate the exact image in a risograph print style — graphic, tactile, and slightly misregistered. Preserve the subject’s full composition, pose, proportions, and facial details while translating forms into bold shapes. Use a 2–3 color ink set (e.g., fluorescent pink, teal, sunflower yellow) with visible halftone textures, overprint blends, and subtle off-register edges for energy. Keep shadows as dot fields and midtones as layered screens; avoid photographic gradients. Paper texture should read as uncoated stock with light grain. The final image should feel like a studio poster print — punchy, imperfect, and irresistibly modern.",
+    "created_at": "2025-10-16 07:13:27.941975+00",
+    "updated_at": "2025-10-16 07:13:28.066242+00"
+  },
+  {
+    "idx": 25,
+    "id": "b0795bad-24cc-4751-8730-30032c67ef6c",
+    "style_id": 26,
+    "prompt": "Recreate the exact image as a multi-layer street stencil — bold, high-contrast, and urban. Preserve the full composition and structure of the subject with accurate proportions and a clean silhouette. Reduce forms to 2–4 flat stencil layers (shadow, mid, light, highlight) with crisp cut edges and visible overspray halos. Place on a subtle wall texture (concrete, brick, plywood) with light paint bleed; keep facial/details sharp via tighter inner cuts. The result should feel like a hand-cut stencil hit cleanly on a city wall.",
+    "created_at": "2025-10-16 07:13:27.941975+00",
+    "updated_at": "2025-10-16 07:13:28.066242+00"
+  },
+  {
+    "idx": 26,
+    "id": "df1a1838-da5e-4c02-a712-576b897989da",
+    "style_id": 27,
+    "prompt": "Recreate the exact image as a UV-neon drip/splatter painting. Preserve the full structure of the subject with a clean silhouette. Fluorescent accents: hot pink, electric blue, acid green, violet, and citrus orange. Build bold color fields, then layer sprays, splatter bursts, and gravity drips. Add soft neon bloom and thin rim-light glow along fast contours; use overspray speckle sparingly.",
+    "created_at": "2025-10-16 07:13:27.941975+00",
+    "updated_at": "2025-10-16 07:13:28.066242+00"
+  },
+  {
+    "idx": 27,
+    "id": "886148af-e413-408d-a3c7-3a6158c114dd",
+    "style_id": 28,
+    "prompt": "Recreate the exact image as a glazed porcelain/ceramic figurine — glossy, delicate, and collectible. Preserve full structure and pose, then smooth forms to rounded, toy-like geometry. Coat surfaces with high-gloss glaze: tight specular highlights, pooling at creases, and tiny pinhole bubbles; add gold luster edge trims sparingly. Use a curated pastel palette with 1–2 jewel accents. Place on a soft tabletop shadow. The result should feel like a premium ceramic keepsake",
+    "created_at": "2025-10-16 07:13:27.941975+00",
+    "updated_at": "2025-10-16 07:13:28.066242+00"
   }
 ]

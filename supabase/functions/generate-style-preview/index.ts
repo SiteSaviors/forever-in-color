@@ -723,7 +723,7 @@ serve(async (req) => {
       }
     }
 
-    const recordPreviewFailure = async (code: string, message: string, statusCode: number): Promise<Response> => {
+    async function recordPreviewFailure(code: string, message: string, statusCode: number): Promise<Response> {
       if (previewLogId) {
         await supabase
           .from('preview_logs')
@@ -737,9 +737,9 @@ serve(async (req) => {
 
       const payload = createErrorResponse(code, message, requestId, code);
       return respond(JSON.stringify(payload), statusCode);
-    };
+    }
 
-    const recordPreviewSuccess = async (previewUrl: string, cacheStatus: CacheStatus, statusCode = 200): Promise<Response> => {
+    async function recordPreviewSuccess(previewUrl: string, cacheStatus: CacheStatus, statusCode = 200): Promise<Response> {
       const tokensDebit = entitlementContext && !entitlementContext.devBypass ? 1 : 0;
       const cleanStorageUrl = previewUrl;
       const storagePath = extractStoragePath(previewUrl);
@@ -851,7 +851,7 @@ serve(async (req) => {
       });
 
       return respond(JSON.stringify(payload), statusCode);
-    };
+    }
 
     // Build cache key from RAW imageUrl (before normalization)
     const cacheAllowedForRequest = cacheEnabledGlobally && !cacheBypass;
