@@ -109,11 +109,22 @@ export const fetchAuthenticatedEntitlements = async (): Promise<EntitlementSnaps
     .select('tier, tokens_quota, remaining_tokens, period_end, dev_override')
     .maybeSingle();
 
+  console.log('[entitlementsApi] v_entitlements query result:', {
+    hasData: !!data,
+    hasError: !!error,
+    rawData: data,
+    error: error
+  });
+
   if (error) {
+    console.error('[entitlementsApi] Query error:', error);
     throw error;
   }
 
-  if (!data) return null;
+  if (!data) {
+    console.warn('[entitlementsApi] No data returned from v_entitlements');
+    return null;
+  }
 
   const tier = mapTier(data.tier as string, Boolean(data.dev_override));
   const quota = typeof data.tokens_quota === 'number' ? data.tokens_quota : null;
@@ -121,7 +132,7 @@ export const fetchAuthenticatedEntitlements = async (): Promise<EntitlementSnaps
   const renewAt = data.period_end ?? null;
   const requiresWatermark = tier === 'anonymous' || tier === 'free';
 
-  return {
+  const result = {
     tier,
     quota,
     remainingTokens: remaining,
@@ -130,4 +141,8 @@ export const fetchAuthenticatedEntitlements = async (): Promise<EntitlementSnaps
     requiresWatermark,
     devOverride: Boolean(data.dev_override)
   };
+
+  console.log('[entitlementsApi] Mapped entitlement snapshot:', result);
+
+  return result;
 };

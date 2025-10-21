@@ -183,6 +183,14 @@ export const createEntitlementSlice: StateCreator<FounderState, [], [], Entitlem
     setShowQuotaModal: (show) => set({ showQuotaModal: show }),
   hydrateEntitlements: async () => {
     const state = get();
+
+    debugToken('hydrateEntitlements called', {
+      hasSessionUser: !!state.sessionUser,
+      sessionUserEmail: state.sessionUser?.email,
+      sessionUserId: state.sessionUser?.id,
+      entitlementsStatus: state.entitlements.status
+    });
+
     if (state.entitlements.status === 'loading') {
       return;
     }
@@ -197,11 +205,20 @@ export const createEntitlementSlice: StateCreator<FounderState, [], [], Entitlem
 
     try {
       if (state.sessionUser) {
+        debugToken('Authenticated user detected - fetching entitlements from v_entitlements');
         const supabaseClient = await getSupabaseClient();
         if (!supabaseClient) {
           throw new Error('Supabase client unavailable');
         }
         const snapshot = await fetchAuthenticatedEntitlements();
+        debugToken('fetchAuthenticatedEntitlements returned', {
+          hasSnapshot: !!snapshot,
+          tier: snapshot?.tier,
+          quota: snapshot?.quota,
+          remainingTokens: snapshot?.remainingTokens,
+          fullSnapshot: snapshot
+        });
+
         if (!snapshot) {
           debugToken('Authenticated entitlements unavailable, awaiting provisioning');
           set((current) => ({
@@ -212,7 +229,7 @@ export const createEntitlementSlice: StateCreator<FounderState, [], [], Entitlem
             },
           }));
         } else {
-          debugToken('Fetched authenticated entitlements', snapshot);
+          debugToken('Applying authenticated entitlements to store', snapshot);
           const tokensUsedRaw =
             typeof snapshot.quota === 'number' && typeof snapshot.remainingTokens === 'number'
               ? snapshot.quota - snapshot.remainingTokens
@@ -243,6 +260,7 @@ export const createEntitlementSlice: StateCreator<FounderState, [], [], Entitlem
       }));
         }
       } else {
+        debugToken('No authenticated user - minting anonymous token');
         const minted = await mintAnonymousToken({
           token: state.anonToken ?? undefined,
           dismissedPrompt: state.accountPromptDismissed,

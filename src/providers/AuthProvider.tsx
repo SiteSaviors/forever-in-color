@@ -46,9 +46,68 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
         return;
       }
 
+      // Process magic link callback tokens from URL hash
+      if (typeof window !== 'undefined' && window.location.hash) {
+        const hash = window.location.hash;
+        console.log('[AuthProvider] URL hash detected:', hash.substring(0, 100) + '...');
+
+        if (hash.includes('access_token')) {
+          console.log('[AuthProvider] Magic link callback detected - processing tokens');
+          try {
+            // Extract tokens from URL hash
+            const hashParams = new URLSearchParams(hash.substring(1));
+            const accessToken = hashParams.get('access_token');
+            const refreshToken = hashParams.get('refresh_token');
+
+            console.log('[AuthProvider] Token extraction:', {
+              hasAccessToken: !!accessToken,
+              hasRefreshToken: !!refreshToken,
+              accessTokenPreview: accessToken ? accessToken.substring(0, 20) + '...' : null,
+            });
+
+            if (accessToken && refreshToken) {
+              // Establish session from magic link tokens
+              console.log('[AuthProvider] Calling setSession with extracted tokens...');
+              const { data: sessionData, error } = await supabaseClient.auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken,
+              });
+
+              if (error) {
+                console.error('[AuthProvider] Failed to set session from magic link:', error);
+              } else {
+                console.log('[AuthProvider] Session established successfully:', {
+                  userId: sessionData.session?.user?.id,
+                  email: sessionData.session?.user?.email,
+                });
+              }
+
+              // Clean URL to remove tokens from browser history
+              window.history.replaceState(null, '', window.location.pathname + window.location.search);
+            } else {
+              console.warn('[AuthProvider] Missing tokens in URL hash - cannot establish session');
+            }
+          } catch (error) {
+            console.error('[AuthProvider] Error processing magic link callback:', error);
+          }
+        } else {
+          console.log('[AuthProvider] Hash present but no access_token found');
+        }
+      } else {
+        console.log('[AuthProvider] No URL hash detected - checking for existing session');
+      }
+
       const { data } = await supabaseClient.auth.getSession();
       if (!isMounted) return;
       const session = data.session;
+
+      console.log('[AuthProvider] getSession result:', {
+        hasSession: !!session,
+        userId: session?.user?.id,
+        email: session?.user?.email,
+        hasAccessToken: !!session?.access_token,
+      });
+
       setSession(
         session?.user
           ? {
