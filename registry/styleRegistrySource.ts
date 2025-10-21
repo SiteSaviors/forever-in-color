@@ -117,8 +117,8 @@ export const STYLE_REGISTRY_SOURCE: StyleRegistrySourceEntry[] = [
     badges: ['classic'],
     sortOrder: 20,
     assets: {
-      thumbnail: '/art-style-thumbnails/watercolor-dreams.jpg',
-      preview: '/art-style-thumbnails/watercolor-dreams.jpg',
+      thumbnail: '/art-style-thumbnails/calm-watercolor.jpg',
+      preview: '/art-style-thumbnails/calm-watercolor.jpg',
     },
     featureFlags: {
       isEnabled: true,
@@ -139,8 +139,8 @@ export const STYLE_REGISTRY_SOURCE: StyleRegistrySourceEntry[] = [
     badges: ['classic'],
     sortOrder: 25,
     assets: {
-      thumbnail: '/art-style-thumbnails/classic-oil-painting.jpg',
-      preview: '/art-style-thumbnails/classic-oil-painting.jpg',
+      thumbnail: '/art-style-thumbnails/gallery-acrylic.jpg',
+      preview: '/art-style-thumbnails/gallery-acrylic.jpg',
     },
     featureFlags: {
       isEnabled: true,
