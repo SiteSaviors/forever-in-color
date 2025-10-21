@@ -266,6 +266,11 @@ export const createEntitlementSlice: StateCreator<FounderState, [], [], Entitlem
           dismissedPrompt: state.accountPromptDismissed,
         });
 
+        if (get().sessionUser) {
+          debugToken('Aborting anonymous mint – session established mid-flight');
+          return;
+        }
+
         debugToken('Minted anonymous token', minted);
         persistAccountPromptDismissed(minted.dismissed_prompt);
         persistAnonToken(minted.anon_token);
@@ -326,6 +331,11 @@ export const createEntitlementSlice: StateCreator<FounderState, [], [], Entitlem
         token: anonToken,
         dismissedPrompt: state.accountPromptDismissed,
       });
+
+      if (get().sessionUser) {
+        debugToken('Skipping anonymous reconciliation – session established mid-flight');
+        return;
+      }
 
       debugToken('Reconciled anonymous entitlements', minted);
       persistAnonToken(minted.anon_token);
