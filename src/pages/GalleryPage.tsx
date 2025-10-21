@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, Heart, Trash2, ArrowLeft, Filter, Sparkles } from 'lucide-react';
+import { Download, Heart, Trash2, ArrowLeft, Filter, Sparkles, Expand } from 'lucide-react';
+import { clsx } from 'clsx';
 import { useFounderStore } from '@/store/useFounderStore';
 import { useStudioFeedback } from '@/hooks/useStudioFeedback';
 import {
@@ -16,9 +17,45 @@ import {
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
 
+type GalleryActionButtonProps = {
+  onClick: () => void;
+  icon: typeof Download;
+  label: string;
+  disabled?: boolean;
+  active?: boolean;
+  destructive?: boolean;
+  activeClass?: string;
+};
+
+const GalleryActionButton = ({
+  onClick,
+  icon: Icon,
+  label,
+  disabled,
+  active,
+  destructive,
+  activeClass,
+}: GalleryActionButtonProps) => (
+  <button
+    onClick={onClick}
+    disabled={disabled}
+    className={clsx(
+      'p-2 rounded-full transition-colors flex items-center justify-center text-white/80 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-indigo disabled:opacity-40 disabled:cursor-not-allowed',
+      destructive ? 'hover:bg-red-500/20 text-white/80 hover:text-red-200' : 'hover:bg-white/20',
+      active && (activeClass ?? 'bg-red-500/25 text-red-200'),
+      !active && !destructive && 'bg-white/10',
+      destructive && 'bg-white/10'
+    )}
+    title={label}
+    aria-label={label}
+  >
+    <Icon className="w-4 h-4" />
+  </button>
+);
+
 const GalleryPage = () => {
   const navigate = useNavigate();
-  const sessionAccessToken = useFounderStore((state) => state.sessionAccessToken);
+  const sessionAccessToken = useFounderStore((state) => state.getSessionAccessToken());
   const entitlements = useFounderStore((state) => state.entitlements);
   const anonToken = useFounderStore((state) => state.anonToken);
   const { showToast, showUpgradeModal, renderFeedback } = useStudioFeedback();
@@ -35,6 +72,7 @@ const GalleryPage = () => {
   });
 
   const [showFilters, setShowFilters] = useState(false);
+  const [lightboxItem, setLightboxItem] = useState<GalleryItem | null>(null);
 
   // Check if user has access to clean (watermark-free) downloads
   const requiresWatermark = entitlements.requiresWatermark;
@@ -142,12 +180,35 @@ const GalleryPage = () => {
     }
 
     // Trigger download
-    const link = document.createElement('a');
-    link.href = downloadUrl;
-    link.download = `wondertone-${item.styleName}-${item.orientation}.jpg`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    try {
+      const response = await fetch(downloadUrl, {
+        // Signed URLs should not require credentials, but ensure consistent caching behavior
+        credentials: 'omit',
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch download (${response.status})`);
+      }
+
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = objectUrl;
+      link.download = `wondertone-${item.styleName}-${item.orientation}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(objectUrl);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to download preview.';
+      showToast({
+        title: 'Download failed',
+        description: message,
+        variant: 'error',
+      });
+      return;
+    }
 
     // Update local state
     setItems((prev) =>
@@ -308,6 +369,14 @@ const GalleryPage = () => {
               >
                 {/* Preview Image */}
                 <div className="aspect-square relative overflow-hidden">
+                  <button
+                    onClick={() => setLightboxItem(item)}
+                    className="absolute top-3 right-3 z-10 p-2 rounded-full bg-slate-950/70 text-white/80 hover:text-white hover:bg-slate-900/90 transition-colors"
+                    title="Expand preview"
+                    aria-label="Expand preview"
+                  >
+                    <Expand className="w-4 h-4" />
+                  </button>
                   <img
                     src={item.displayUrl}
                     alt={item.styleName}
@@ -315,33 +384,27 @@ const GalleryPage = () => {
                   />
 
                   {/* Hover Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                    <div className="absolute bottom-0 left-0 right-0 p-4 flex items-center justify-between">
-                      <button
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
+                      <GalleryActionButton
                         onClick={() => handleDownload(item)}
-                        className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
-                        title="Download"
-                      >
-                        <Download className="w-4 h-4" />
-                      </button>
-                      <button
+                        icon={Download}
+                        label="Download"
+                        disabled={requiresWatermark}
+                      />
+                      <GalleryActionButton
                         onClick={() => handleToggleFavorite(item)}
-                        className={`p-2 rounded-lg transition-colors ${
-                          item.isFavorited
-                            ? 'bg-red-500/20 text-red-300'
-                            : 'bg-white/10 hover:bg-white/20 text-white'
-                        }`}
-                        title={item.isFavorited ? 'Remove from favorites' : 'Add to favorites'}
-                      >
-                        <Heart className={`w-4 h-4 ${item.isFavorited ? 'fill-current' : ''}`} />
-                      </button>
-                      <button
+                        icon={Heart}
+                        label={item.isFavorited ? 'Remove from favorites' : 'Add to favorites'}
+                        active={item.isFavorited}
+                        activeClass="bg-red-500/25 text-red-200"
+                      />
+                      <GalleryActionButton
                         onClick={() => handleDelete(item.id)}
-                        className="p-2 rounded-lg bg-white/10 hover:bg-red-500/20 text-white hover:text-red-300 transition-colors"
-                        title="Delete"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                        icon={Trash2}
+                        label="Delete"
+                        destructive
+                      />
                     </div>
                   </div>
 
@@ -355,19 +418,27 @@ const GalleryPage = () => {
 
                 {/* Metadata */}
                 <div className="p-4">
-                  <h3 className="font-medium text-white mb-2 truncate">{item.styleName}</h3>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Badge variant="brand">{orientationLabels[item.orientation]}</Badge>
-                    {item.downloadCount > 0 && (
-                      <Badge variant="emerald">{item.downloadCount} downloads</Badge>
-                    )}
+                  <div className="flex items-center justify-between gap-3 mb-2">
+                    <h3 className="font-medium text-white truncate">{item.styleName}</h3>
+                    <Badge variant="brand" className="px-2 py-1 text-[10px] uppercase tracking-wide bg-white/10 text-white/70">
+                      {orientationLabels[item.orientation]}
+                    </Badge>
                   </div>
-                  <button
-                    onClick={() => handleReorder(item)}
-                    className="mt-3 w-full px-4 py-2 rounded-lg bg-brand-indigo/10 hover:bg-brand-indigo/20 text-brand-indigo font-medium transition-colors text-sm"
-                  >
-                    Re-order Canvas
-                  </button>
+                  <div className="mt-3 grid grid-cols-1 gap-2">
+                    <button
+                      onClick={() => handleDownload(item)}
+                      className="w-full px-4 py-2 rounded-lg bg-gradient-to-r from-brand-indigo to-purple-600 hover:from-brand-indigo/90 hover:to-purple-600/90 text-white font-semibold transition-all shadow-sm hover:shadow-md text-sm flex items-center justify-center gap-2"
+                    >
+                      <Download className="w-4 h-4" />
+                      Download Image
+                    </button>
+                    <button
+                      onClick={() => handleReorder(item)}
+                      className="w-full px-4 py-2 rounded-lg bg-brand-indigo/10 hover:bg-brand-indigo/20 text-brand-indigo font-medium transition-colors text-sm"
+                    >
+                      Re-order Canvas
+                    </button>
+                  </div>
                 </div>
               </motion.div>
             ))}
@@ -375,6 +446,59 @@ const GalleryPage = () => {
         )}
       </div>
       {renderFeedback()}
+
+      <AnimatePresence>
+        {lightboxItem && (
+          <motion.div
+            key={lightboxItem.id}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur"
+          >
+            <div
+              className="absolute inset-0"
+              onClick={() => setLightboxItem(null)}
+              aria-hidden="true"
+            />
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="relative z-[101] w-[92vw] max-w-4xl bg-slate-950/95 border border-white/10 rounded-2xl shadow-2xl overflow-hidden"
+            >
+              <button
+                onClick={() => setLightboxItem(null)}
+                className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+                aria-label="Close preview"
+              >
+                <span className="text-lg leading-none">×</span>
+              </button>
+              <img
+                src={requiresWatermark ? lightboxItem.displayUrl : lightboxItem.imageUrl}
+                alt={lightboxItem.styleName}
+                className="w-full h-auto object-contain max-h-[70vh] bg-slate-900"
+              />
+              <div className="p-4 flex items-center justify-between gap-3 flex-wrap">
+                <div>
+                  <p className="text-white font-semibold">{lightboxItem.styleName}</p>
+                  <p className="text-white/60 text-sm">{orientationLabels[lightboxItem.orientation]}</p>
+                </div>
+                <Button
+                  onClick={() => {
+                    void handleDownload(lightboxItem);
+                  }}
+                  variant="primary"
+                  className="flex items-center gap-2"
+                >
+                  <Download className="w-4 h-4" />
+                  Download Image
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

@@ -53,7 +53,7 @@ type StudioConfiguratorProps = {
 
 const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioConfiguratorProps) => {
   const sessionUser = useFounderStore((state) => state.sessionUser);
-  const sessionAccessToken = useFounderStore((state) => state.sessionAccessToken);
+  const sessionAccessToken = useFounderStore((state) => state.getSessionAccessToken());
   const styles = useFounderStore((state) => state.styles);
   const previews = useFounderStore((state) => state.previews);
   const currentStyle = useFounderStore((state) => state.currentStyle());
@@ -110,7 +110,8 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
 
   // Get user tier from entitlements
   const userTier = useFounderStore((state) => state.entitlements?.tier ?? 'anonymous');
-  const isPremiumUser = ['creator', 'plus', 'pro'].includes(userTier);
+  const requiresWatermark = useFounderStore((state) => state.entitlements?.requiresWatermark ?? true);
+  const [watermarkUpgradeShown, setWatermarkUpgradeShown] = useState(false);
 
   const handleDownloadHD = async () => {
     if (!currentStyle || !preview?.data?.previewUrl) {
@@ -122,35 +123,56 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
       return;
     }
 
-    // Check if user has premium access
-    if (!isPremiumUser) {
-      // Show upgrade modal for free/anonymous users
-      setShowDownloadUpgradeModal(true);
-      return;
-    }
-
-    // Premium users: download clean version
     setDownloadingHD(true);
     try {
-      // Extract storage path from preview URL
-      // URL format: https://.../storage/v1/object/public/preview-cache-public/{storagePath}
-      const previewUrl = preview.data.previewUrl;
-      const match = previewUrl.match(/preview-cache-(public|premium)\/(.+)$/);
-
-      if (!match) {
-        throw new Error('Could not extract storage path from preview URL');
-      }
-
-      const storagePath = match[2];
       const filename = `wondertone-${currentStyle.name.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}.jpg`;
+      const triggerDownload = (blob: Blob) => {
+        const objectUrl = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = objectUrl;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(objectUrl);
+      };
 
-      await downloadCleanImage({
-        storagePath,
-        filename,
-        accessToken: sessionAccessToken,
-      });
+      if (requiresWatermark) {
+        const downloadSource = preview.data.previewUrl;
+        if (!downloadSource) {
+          throw new Error('Missing preview URL for download');
+        }
 
-      console.log('[StudioConfigurator] Clean image downloaded successfully');
+        const response = await fetch(downloadSource, { credentials: 'omit' });
+        if (!response.ok) {
+          throw new Error(`Failed to fetch watermarked preview (${response.status})`);
+        }
+
+        const blob = await response.blob();
+        triggerDownload(blob);
+
+        if (!watermarkUpgradeShown) {
+          setWatermarkUpgradeShown(true);
+          setShowDownloadUpgradeModal(true);
+        }
+      } else {
+        const storagePath =
+          preview.data.storagePath ??
+          (preview.data.storageUrl ? extractStoragePathFromUrl(preview.data.storageUrl) : null) ??
+          extractStoragePathFromUrl(preview.data.previewUrl);
+
+        if (!storagePath) {
+          throw new Error('Could not extract storage path from preview URL');
+        }
+
+        await downloadCleanImage({
+          storagePath,
+          filename,
+          accessToken: sessionAccessToken,
+        });
+
+        console.log('[StudioConfigurator] Clean image downloaded successfully');
+      }
 
       // Track successful download
       trackDownloadSuccess(userTier, currentStyle.id);
