@@ -19,8 +19,20 @@ create index if not exists idx_anonymous_usage_month
 alter table public.anonymous_usage enable row level security;
 
 -- Service role has full access; edge functions use service key
-create policy if not exists anonymous_usage_service_manage
-  on public.anonymous_usage
-  for all
-  using (auth.role() = 'service_role')
-  with check (auth.role() = 'service_role');
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'anonymous_usage'
+      AND policyname = 'anonymous_usage_service_manage'
+  ) THEN
+    CREATE POLICY anonymous_usage_service_manage
+      ON public.anonymous_usage
+      FOR ALL
+      USING (auth.role() = 'service_role')
+      WITH CHECK (auth.role() = 'service_role');
+  END IF;
+END;
+$$;
