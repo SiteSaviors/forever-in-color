@@ -44,6 +44,54 @@ Each phase should complete before advancing; regression tests and mandatory scri
 
 **Rollback**: revert env defaults; no functional changes yet.
 
+### Phase 1 Outputs
+
+- **Store slices**
+  - `src/store/founder/entitlementSlice.ts:1` — anonymous token mint, reconciliation, prompt counters, watermark rules.
+  - `src/store/founder/previewSlice.ts:300` — passes `anonToken` and fingerprint into preview pipeline + idempotency.
+  - `src/store/selectors.ts:1` — exposes `selectAnonToken` to Launchflow / Studio components.
+  - `src/store/useFounderStore.ts:1` — composes slices; orientation, telemetry, and upload flows depend on shared anonymous state.
+- **Utilities**
+  - `src/utils/entitlementsApi.ts:1` — `mintAnonymousToken`, `requiresWatermark` resolver.
+  - `src/utils/entitlementGate.ts:1` — gating logic for anonymous soft/hard limits and fingerprint fallbacks.
+  - `src/utils/previewIdempotency.ts:1`, `src/utils/founderPreviewGeneration.ts:1` — idempotency keys, Supabase payloads include `anonToken`.
+  - `src/store/utils/anonTokenStorage.ts:1`, `src/utils/deviceFingerprint.ts:1` — persistence and fingerprint hashing.
+- **Launchflow / Studio UI**
+  - `src/sections/LaunchpadLayout.tsx:1`, `src/sections/StudioConfigurator.tsx:1` — trigger quota prompts and gating based on `tier === 'anonymous'`.
+  - `src/components/studio/TokenWarningBanner.tsx:1`, `src/components/studio/ActionRow.tsx:1`, `src/components/studio/StickyOrderRail.tsx:1` — display anonymous copy, disable premium actions.
+  - `src/components/checkout/CheckoutSummary.tsx:1` — shows watermark messaging for anonymous / free tiers.
+- **Supabase functions**
+  - `supabase/functions/generate-style-preview/entitlements.ts:1` — dual branch resolver; anonymous usage analysis.
+  - `supabase/functions/generate-style-preview/index.ts:1` — expects `X-WT-Anon`, inserts `anon_token` into `preview_logs`.
+  - `supabase/functions/anon-mint/index.ts:1` — lifecycle for anonymous token issuance.
+  - `supabase/functions/get-gallery/index.ts:1`, `supabase/functions/save-to-gallery/index.ts:1` — accept anonymous headers, gate responses.
+- **Database surfaces**
+  - `supabase/migrations/20251013120000_entitlements.sql:1` — tables `anonymous_tokens`, `preview_logs` foreign keys.
+  - `supabase/migrations/20251016154500_create_anonymous_usage.sql:1` — fingerprint usage tracking.
+  - `supabase/functions/generate-style-preview/cache/cacheMetadataService.ts:1` — current cache metadata lacks tier dimension.
+- **Telemetry touchpoints**
+  - `src/utils/launchflowTelemetry.ts:1` — defaults tier context to `'anonymous'`, included in Launchflow analytics.
+  - `src/utils/telemetry.ts:1` — Step One events triggered before/after preview generation regardless of auth state.
+  - Supabase request logging (`supabase/functions/generate-style-preview/logging.ts:1`) — extended to report flag snapshot for audit.
+- **Feature flag scaffolding**
+  - Frontend constants: `src/config/featureFlags.ts:1` exports `REQUIRE_AUTH_FOR_PREVIEW`, `AUTH_GATE_ROLLOUT_PERCENT`.
+  - Edge function constant: `supabase/functions/generate-style-preview/index.ts:1` reads `REQUIRE_AUTH_FOR_PREVIEW` for forthcoming enforcement.
+- **Regression / rollback notes**
+  - `docs/anon-to-free-migration-plan.md:1` remains source of truth for risks R1–R12.
+  - Rollback resets `VITE_REQUIRE_AUTH_FOR_PREVIEW=false`, `VITE_AUTH_GATE_ROLLOUT=0`, Supabase `REQUIRE_AUTH_FOR_PREVIEW=false`.
+- **`rg "tier === 'anonymous'"` snapshot**
+  ```
+  src/store/founder/entitlementSlice.ts:const requiresWatermarkFromTier = (tier: EntitlementTier): boolean => tier === 'anonymous' || tier === 'free';
+  src/store/founder/entitlementSlice.ts:      state.entitlements.tier === 'anonymous' &&
+  src/store/founder/entitlementSlice.ts:    if (entitlements.tier === 'anonymous') {
+  src/utils/entitlementGate.ts:  if (entitlements.tier === 'anonymous' && fingerprintStatus === 'error') {
+  src/utils/entitlementGate.ts:    entitlements.tier === 'anonymous' &&
+  src/utils/entitlementGate.ts:  if (entitlements.tier === 'anonymous') {
+  src/utils/entitlementsApi.ts:  const requiresWatermark = tier === 'anonymous' || tier === 'free';
+  src/components/checkout/CheckoutSummary.tsx:            {entitlements.tier === 'anonymous' || entitlements.tier === 'free'
+  supabase/functions/generate-style-preview/entitlements.ts:  return tier === 'anonymous' || tier === 'free';
+  ```
+
 ---
 
 ## Phase 2 – Store Baseline Refactor (Flagged Off)
@@ -66,6 +114,15 @@ Each phase should complete before advancing; regression tests and mandatory scri
 
 **Rollback**: toggle flag to OFF; code still supports anonymous logic.
 
+### Phase 2 Outputs
+
+- `src/store/founder/entitlementSlice.ts:1` branches on `REQUIRE_AUTH_FOR_PREVIEW`, skipping anonymous token minting, fingerprint resolution, and quota prompts when auth gating is enabled while preserving legacy behavior when disabled.
+- `src/store/founder/sessionSlice.ts:1` keeps anon token hydration confined to the legacy path so authenticated builds don’t touch localStorage.
+- `src/store/founder/previewSlice.ts:1`, `src/utils/previewIdempotency.ts:1`, and `src/utils/stylePreviewApi.ts:1` derive preview identity strictly from Supabase sessions when the flag is on, falling back to anon/fingerprint identity otherwise.
+- `src/utils/entitlementGate.ts:1` now toggles fingerprint/quota logic based on the flag, ensuring paid tiers continue to gate premium styles without anonymous assumptions.
+- Added debug visibility to Supabase edge handler flag state (`supabase/functions/generate-style-preview/index.ts:52`) while retaining existing response contracts.
+- `npm run lint`
+
 ---
 
 ## Phase 3 – Auth Gate UX
@@ -87,6 +144,18 @@ Each phase should complete before advancing; regression tests and mandatory scri
 - Check Step One logs for `preview start/complete`.
 
 **Rollback**: disable flag; modal gating bypassed but UI remains accessible.
+
+---
+
+### Phase 3 Outputs
+
+- `src/components/modals/AuthGateModal.tsx:1` introduces the shadcn-styled auth gate with required copy, Google OAuth, and email handoff while preserving fade-in animation and trust copy.
+- `src/store/founder/previewSlice.ts:1` now short-circuits unauthenticated preview attempts via `shouldRequireAuthGate`, records the intent, and resumes automatically post-auth.
+- `src/utils/authGate.ts:1` centralizes rollout bucketing and flag evaluation, enabling percentage-based gating ahead of the global cutover.
+- `src/store/founder/sessionSlice.ts:1` replays any pending preview once a Supabase session completes, keeping Step One telemetry intact.
+- `src/sections/LaunchpadLayout.tsx:1` mounts the new modal alongside the legacy anonymous prompt so existing flows stay untouched for non-gated users.
+- `src/components/modals/AuthModal.tsx:1` remains the email magic-link surface; the gate routes to it when users choose the secondary CTA.
+- `npm run lint`
 
 ---
 

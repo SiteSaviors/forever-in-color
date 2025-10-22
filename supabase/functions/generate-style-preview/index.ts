@@ -43,6 +43,7 @@ const ttlDays = parsePositiveInt(Deno.env.get('PREVIEW_CACHE_TTL_DAYS'), 30);
 const ttlMs = ttlDays * ONE_DAY_MS;
 const memoryCapacity = parsePositiveInt(Deno.env.get('PREVIEW_CACHE_MAX_MEMORY_ITEMS'), 256);
 const cacheBucket = Deno.env.get('PREVIEW_CACHE_BUCKET') ?? 'preview-cache';
+const requireAuthForPreviewFlag = (Deno.env.get('REQUIRE_AUTH_FOR_PREVIEW') ?? 'false').toLowerCase() === 'true';
 const asyncEnabled = (Deno.env.get('PREVIEW_ASYNC_ENABLED') ?? 'false').toLowerCase() === 'true';
 const webhookBaseUrl = Deno.env.get('PREVIEW_WEBHOOK_BASE_URL');
 const webhookSecret = Deno.env.get('PREVIEW_WEBHOOK_SECRET');
@@ -337,6 +338,9 @@ serve(async (req) => {
   const startTime = Date.now();
   const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   const logger = createRequestLogger(requestId);
+  logger.debug('Feature flags snapshot', {
+    requireAuthForPreview: requireAuthForPreviewFlag
+  });
 
   try {
     const body = await req.json();

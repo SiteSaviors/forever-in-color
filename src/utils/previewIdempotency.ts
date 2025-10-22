@@ -1,3 +1,4 @@
+import { REQUIRE_AUTH_FOR_PREVIEW } from '@/config/featureFlags';
 import type { Orientation } from '@/utils/imageUtils';
 import { computeSha256Hex } from './hashUtils';
 
@@ -30,7 +31,10 @@ export const buildPreviewIdempotencyKey = async ({
   anonToken,
   fingerprintHash,
 }: PreviewIdempotencyParams): Promise<string> => {
-  const identitySource = sessionUserId ?? anonToken ?? fingerprintHash ?? 'public';
+  const requireAuth = REQUIRE_AUTH_FOR_PREVIEW;
+  const identitySource = requireAuth
+    ? sessionUserId ?? 'unauthenticated'
+    : sessionUserId ?? anonToken ?? fingerprintHash ?? 'public';
   const identityDigest = await computeSha256Hex(identitySource);
   const imageDigest = imageHash;
 

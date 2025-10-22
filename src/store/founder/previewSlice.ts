@@ -2,12 +2,14 @@ import type { StateCreator } from 'zustand';
 import { fetchPreviewForStyle, type PreviewResult } from '@/utils/previewClient';
 import { startFounderPreviewGeneration } from '@/utils/founderPreviewGeneration';
 import type { Orientation } from '@/utils/imageUtils';
+import { computeImageDigest } from '@/utils/imageHash';
 import { emitStepOneEvent } from '@/utils/telemetry';
 import { logPreviewStage } from '@/utils/previewAnalytics';
 import { playPreviewChime } from '@/utils/playPreviewChime';
-import { ENABLE_PREVIEW_QUERY_EXPERIMENT } from '@/config/featureFlags';
+import { ENABLE_PREVIEW_QUERY_EXPERIMENT, REQUIRE_AUTH_FOR_PREVIEW } from '@/config/featureFlags';
 import { executeStartPreview } from '@/features/preview';
 import { buildPreviewIdempotencyKey } from '@/utils/previewIdempotency';
+import { shouldRequireAuthGate } from '@/utils/authGate';
 import type { FounderState, StyleOption } from '../useFounderStore';
 
 export type StylePreviewStatus =
@@ -50,6 +52,9 @@ export type PreviewSlice = {
   stylePreviewCacheOrder: string[];
   stylePreviewStartAt: number | null;
   firstPreviewCompleted: boolean;
+  authGateOpen: boolean;
+  pendingAuthStyleId: string | null;
+  pendingAuthOptions: StartPreviewOptions | null;
   setPreviewStatus: (status: PreviewSlice['previewStatus']) => void;
   setPreviewState: (id: string, previewState: PreviewState) => void;
   setPendingStyle: (styleId: string | null) => void;
@@ -60,6 +65,10 @@ export type PreviewSlice = {
   startStylePreview: (style: StyleOption, options?: StartPreviewOptions) => Promise<void>;
   resetPreviews: () => void;
   generatePreviews: (ids?: string[], options?: { force?: boolean; orientationOverride?: Orientation }) => Promise<void>;
+  setAuthGateOpen: (open: boolean) => void;
+  registerAuthGateIntent: (styleId: string, options?: StartPreviewOptions) => void;
+  clearAuthGateIntent: () => void;
+  resumePendingAuthPreview: () => Promise<void>;
 };
 
 const STYLE_PREVIEW_CACHE_LIMIT = 50;
@@ -98,6 +107,8 @@ const STAGE_MESSAGES = {
   error: 'Generation failed',
 } as const;
 
+const AUTH_PREVIEW_REQUIRED = REQUIRE_AUTH_FOR_PREVIEW;
+
 export const createPreviewSlice = (
   initialStyles: StyleOption[]
 ): StateCreator<FounderState, [], [], PreviewSlice> => {
@@ -115,6 +126,9 @@ export const createPreviewSlice = (
     stylePreviewCacheOrder: [],
     stylePreviewStartAt: null,
     firstPreviewCompleted: false,
+    authGateOpen: false,
+    pendingAuthStyleId: null,
+    pendingAuthOptions: null,
     setPreviewStatus: (status) => set({ previewStatus: status }),
     setPreviewState: (id, previewState) =>
       set((state) => ({
@@ -324,7 +338,6 @@ export const createPreviewSlice = (
       });
 
       const aspectRatio = ORIENTATION_TO_ASPECT[targetOrientation] ?? '1:1';
-      emitStepOneEvent({ type: 'preview', styleId: style.id, status: 'start' });
       try {
         const existing = state.previews[style.id];
         state.setPreviewState(style.id, {
@@ -334,10 +347,33 @@ export const createPreviewSlice = (
           error: existing?.error,
         });
         const sessionUser = get().sessionUser;
-        const anonToken = sessionUser ? null : get().anonToken;
         const accessToken = get().accessToken;
-        const fingerprintHash = await get().ensureFingerprintHash();
+        const gateRequired = shouldRequireAuthGate(sessionUser?.id ?? null);
+
+        if (!sessionUser && gateRequired) {
+          if (existing) {
+            state.setPreviewState(style.id, existing);
+          } else {
+            state.setPreviewState(style.id, { status: 'idle' });
+          }
+          get().registerAuthGateIntent(style.id, options);
+          set({
+            pendingStyleId: null,
+            stylePreviewStatus: 'idle',
+            stylePreviewMessage: null,
+            stylePreviewError: null,
+            stylePreviewStartAt: null,
+            orientationPreviewPending: false,
+          });
+          return;
+        }
+
+        const shouldUseAnonymousPath = !AUTH_PREVIEW_REQUIRED && !sessionUser;
+        const anonToken = shouldUseAnonymousPath ? get().anonToken : null;
+        const fingerprintHash = shouldUseAnonymousPath ? await get().ensureFingerprintHash() : null;
         const cachedImageHash = get().currentImageHash;
+
+        emitStepOneEvent({ type: 'preview', styleId: style.id, status: 'start' });
 
         let idempotencyImageKey = cachedImageHash;
         if (!idempotencyImageKey) {
@@ -665,6 +701,38 @@ export const createPreviewSlice = (
         await generationRun;
       } finally {
         set({ previewGenerationPromise: null });
+      }
+    },
+    setAuthGateOpen: (open) => set({ authGateOpen: open }),
+    registerAuthGateIntent: (styleId, options) => {
+      set({
+        authGateOpen: true,
+        pendingAuthStyleId: styleId,
+        pendingAuthOptions: options ? { ...options } : null,
+      });
+    },
+    clearAuthGateIntent: () => {
+      set({ pendingAuthStyleId: null, pendingAuthOptions: null });
+    },
+    resumePendingAuthPreview: async () => {
+      const state = get();
+      const styleId = state.pendingAuthStyleId;
+      if (!styleId) {
+        return;
+      }
+
+      const style = state.styles.find((entry) => entry.id === styleId);
+      if (!style) {
+        set({ pendingAuthStyleId: null, pendingAuthOptions: null, authGateOpen: false });
+        return;
+      }
+
+      set({ authGateOpen: false });
+
+      try {
+        await state.startStylePreview(style, state.pendingAuthOptions ?? undefined);
+      } finally {
+        set({ pendingAuthStyleId: null, pendingAuthOptions: null });
       }
     },
   });

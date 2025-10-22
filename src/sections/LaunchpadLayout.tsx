@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { clsx } from 'clsx';
 import PhotoUploader from '@/components/launchpad/PhotoUploader';
 import AccountPromptModal from '@/components/modals/AccountPromptModal';
+import AuthGateModal from '@/components/modals/AuthGateModal';
 import { useFounderStore } from '@/store/useFounderStore';
 import { emitStepOneEvent } from '@/utils/telemetry';
 import { trackLaunchflowCompleted, trackLaunchflowEditReopen, trackLaunchflowOpened, type LaunchflowEditSource, type LaunchflowOpenSource } from '@/utils/launchflowTelemetry';
@@ -535,6 +536,7 @@ const LaunchflowAccordion = () => {
       />
 
       <AccountPromptModal open={showAccountModal} onClose={() => setShowAccountModal(false)} />
+      <AuthGateModal />
     </section>
   );
 };

@@ -10,6 +10,23 @@ const coerceBoolean = (value: unknown): boolean => {
   return value.toLowerCase() === 'true';
 };
 
+const coercePercentage = (value: unknown): number => {
+  if (typeof value !== 'string') return 0;
+  const parsed = Number.parseInt(value, 10);
+  if (!Number.isFinite(parsed)) return 0;
+  if (parsed < 0) return 0;
+  if (parsed > 100) return 100;
+  return parsed;
+};
+
 export const ENABLE_PREVIEW_QUERY_EXPERIMENT = coerceBoolean(
   import.meta.env.VITE_ENABLE_PREVIEW_QUERY ?? 'false'
+);
+
+export const REQUIRE_AUTH_FOR_PREVIEW = coerceBoolean(
+  import.meta.env.VITE_REQUIRE_AUTH_FOR_PREVIEW ?? 'false'
+);
+
+export const AUTH_GATE_ROLLOUT_PERCENT = coercePercentage(
+  import.meta.env.VITE_AUTH_GATE_ROLLOUT ?? '0'
 );

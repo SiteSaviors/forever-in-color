@@ -1,4 +1,5 @@
 import type { StateCreator } from 'zustand';
+import { REQUIRE_AUTH_FOR_PREVIEW } from '@/config/featureFlags';
 import { getSupabaseClient } from '../utils/supabaseClient';
 import { loadAnonTokenFromStorage } from '../utils/anonTokenStorage';
 import type { FounderState } from '../useFounderStore';
@@ -21,6 +22,8 @@ export type SessionSlice = {
   setSession: (user: SessionUser | null, accessToken: string | null) => void;
   signOut: () => Promise<void>;
 };
+
+const AUTH_PREVIEW_REQUIRED = REQUIRE_AUTH_FOR_PREVIEW;
 
 export const createSessionSlice: StateCreator<FounderState, [], [], SessionSlice> = (set, get) => ({
   sessionUser: null,
@@ -46,10 +49,13 @@ export const createSessionSlice: StateCreator<FounderState, [], [], SessionSlice
       accountPromptShown: user ? false : state.accountPromptShown,
       accountPromptTriggerAt: user ? null : state.accountPromptTriggerAt,
       accountPromptDismissed: user ? false : state.accountPromptDismissed,
-      anonToken: state.anonToken ?? loadAnonTokenFromStorage(),
+      anonToken: AUTH_PREVIEW_REQUIRED ? null : state.anonToken ?? loadAnonTokenFromStorage(),
     }));
 
     void get().hydrateEntitlements();
+    if (user) {
+      void get().resumePendingAuthPreview();
+    }
   },
   signOut: async () => {
     const supabaseClient = await getSupabaseClient();

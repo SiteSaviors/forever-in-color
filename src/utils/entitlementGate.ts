@@ -1,4 +1,5 @@
 import { STYLE_CATALOG, type StyleCatalogEntry } from '@/config/styleCatalog';
+import { REQUIRE_AUTH_FOR_PREVIEW } from '@/config/featureFlags';
 import type { EntitlementState } from '@/store/founder/entitlementSlice';
 import type { SessionUser } from '@/store/founder/sessionSlice';
 
@@ -29,6 +30,7 @@ const TIER_ORDER: Record<string, number> = {
 };
 
 const PREMIUM_DEFAULT_REQUIRED_TIER: 'creator' | 'plus' | 'pro' = 'creator';
+const AUTH_PREVIEW_REQUIRED = REQUIRE_AUTH_FOR_PREVIEW;
 
 export const findStyleMetadata = (styleId: string): StyleCatalogEntry | null => {
   return STYLE_CATALOG.find((entry) => entry.id === styleId) ?? null;
@@ -93,6 +95,8 @@ export const canGenerateStylePreview = ({
   fingerprintStatus,
   generationCount,
 }: GateParams): GateResult => {
+  const anonymousFlowEnabled = !AUTH_PREVIEW_REQUIRED;
+
   if (entitlements.status !== 'ready') {
     if (sessionUser) {
       return {
@@ -104,7 +108,7 @@ export const canGenerateStylePreview = ({
     return { allowed: true, reason: 'allowed' };
   }
 
-  if (entitlements.tier === 'anonymous' && fingerprintStatus === 'error') {
+  if (anonymousFlowEnabled && entitlements.tier === 'anonymous' && fingerprintStatus === 'error') {
     return {
       allowed: false,
       reason: 'fingerprint_required',
@@ -114,6 +118,7 @@ export const canGenerateStylePreview = ({
   }
 
   if (
+    anonymousFlowEnabled &&
     entitlements.tier === 'anonymous' &&
     typeof entitlements.hardRemaining === 'number' &&
     entitlements.hardRemaining <= 0
@@ -121,7 +126,7 @@ export const canGenerateStylePreview = ({
     return quotaExceededResult;
   }
 
-  if (entitlements.tier === 'anonymous') {
+  if (anonymousFlowEnabled && entitlements.tier === 'anonymous') {
     const remaining = computeAnonymousRemaining(entitlements, generationCount);
     if (typeof remaining === 'number' && remaining <= 0) {
       return quotaExceededResult;

@@ -2,6 +2,7 @@ import type { StateCreator } from 'zustand';
 import { mintAnonymousToken, fetchAuthenticatedEntitlements } from '@/utils/entitlementsApi';
 import { getOrCreateFingerprintHash, getStoredFingerprintHash } from '@/utils/deviceFingerprint';
 import { canGenerateStylePreview, computeAnonymousRemaining, type GateResult } from '@/utils/entitlementGate';
+import { REQUIRE_AUTH_FOR_PREVIEW } from '@/config/featureFlags';
 import { loadAnonTokenFromStorage, persistAnonToken } from '../utils/anonTokenStorage';
 import { getSupabaseClient } from '../utils/supabaseClient';
 import type { FounderState } from '../useFounderStore';
@@ -63,6 +64,46 @@ export type EntitlementSlice = {
   getGenerationLimit: () => number;
   getDisplayableRemainingTokens: () => number | null;
   ensureFingerprintHash: () => Promise<string | null>;
+};
+
+const AUTH_PREVIEW_REQUIRED = REQUIRE_AUTH_FOR_PREVIEW;
+
+const createInitialEntitlements = (): EntitlementState => {
+  if (AUTH_PREVIEW_REQUIRED) {
+    return {
+      status: 'idle',
+      tier: 'free',
+      quota: null,
+      remainingTokens: null,
+      requiresWatermark: true,
+      priority: 'normal',
+      renewAt: null,
+      hardLimit: null,
+      softRemaining: null,
+      hardRemaining: null,
+      softLimit: null,
+      dismissedPrompt: false,
+      lastSyncedAt: null,
+      error: null,
+    };
+  }
+
+  return {
+    status: 'idle',
+    tier: 'anonymous',
+    quota: 10,
+    remainingTokens: 10,
+    requiresWatermark: true,
+    priority: 'normal',
+    renewAt: null,
+    hardLimit: 10,
+    softRemaining: 5,
+    hardRemaining: 10,
+    softLimit: 5,
+    dismissedPrompt: false,
+    lastSyncedAt: null,
+    error: null,
+  };
 };
 
 const getInitialGenerationCount = (): number => {
@@ -151,27 +192,17 @@ const requiresWatermarkFromTier = (tier: EntitlementTier): boolean => tier === '
 
 export const createEntitlementSlice: StateCreator<FounderState, [], [], EntitlementSlice> = (set, get) => {
   const storedFingerprintHash = typeof window !== 'undefined' ? getStoredFingerprintHash() : null;
+  const initialEntitlements = createInitialEntitlements();
+  const initialAnonToken = AUTH_PREVIEW_REQUIRED ? null : loadAnonTokenFromStorage();
+  const initialFingerprintHash = AUTH_PREVIEW_REQUIRED ? null : storedFingerprintHash;
+  const initialFingerprintStatus: FingerprintStatus =
+    AUTH_PREVIEW_REQUIRED ? 'idle' : storedFingerprintHash ? 'ready' : 'idle';
 
   return {
-    entitlements: {
-      status: 'idle',
-      tier: 'anonymous',
-      quota: 10,
-      remainingTokens: 10,
-      requiresWatermark: true,
-      priority: 'normal',
-      renewAt: null,
-      hardLimit: 10,
-      softRemaining: 5,
-      hardRemaining: 10,
-      softLimit: 5,
-      dismissedPrompt: false,
-      lastSyncedAt: null,
-      error: null,
-    },
-    anonToken: loadAnonTokenFromStorage(),
-    fingerprintHash: storedFingerprintHash,
-    fingerprintStatus: storedFingerprintHash ? 'ready' : 'idle',
+    entitlements: initialEntitlements,
+    anonToken: initialAnonToken,
+    fingerprintHash: initialFingerprintHash,
+    fingerprintStatus: initialFingerprintStatus,
     fingerprintError: null,
     showTokenToast: false,
     showQuotaModal: false,
@@ -259,7 +290,7 @@ export const createEntitlementSlice: StateCreator<FounderState, [], [], Entitlem
         generationCount: tokensUsed,
       }));
         }
-      } else {
+      } else if (!AUTH_PREVIEW_REQUIRED) {
         debugToken('No authenticated user - minting anonymous token');
         const minted = await mintAnonymousToken({
           token: state.anonToken ?? undefined,
@@ -301,6 +332,32 @@ export const createEntitlementSlice: StateCreator<FounderState, [], [], Entitlem
           accountPromptShown: false,
           accountPromptTriggerAt: null,
         });
+      } else {
+        debugToken('Auth-required preview mode - skipping anonymous entitlement mint');
+        persistGenerationCount(0);
+        set({
+          anonToken: null,
+          generationCount: 0,
+          accountPromptShown: false,
+          accountPromptTriggerAt: null,
+          accountPromptDismissed: false,
+          entitlements: {
+            status: 'ready',
+            tier: 'free',
+            quota: null,
+            remainingTokens: null,
+            requiresWatermark: true,
+            priority: 'normal',
+            renewAt: null,
+            hardLimit: null,
+            softRemaining: null,
+            hardRemaining: null,
+            softLimit: null,
+            dismissedPrompt: false,
+            lastSyncedAt: Date.now(),
+            error: null,
+          },
+        });
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to load entitlements';
@@ -317,6 +374,9 @@ export const createEntitlementSlice: StateCreator<FounderState, [], [], Entitlem
   },
   reconcileEntitlements: async () => {
     const state = get();
+    if (AUTH_PREVIEW_REQUIRED) {
+      return;
+    }
     if (state.sessionUser) {
       return;
     }
@@ -421,6 +481,10 @@ export const createEntitlementSlice: StateCreator<FounderState, [], [], Entitlem
     });
   },
   setAnonToken: (token) => {
+    if (AUTH_PREVIEW_REQUIRED) {
+      set({ anonToken: null });
+      return;
+    }
     persistAnonToken(token);
     set({ anonToken: token });
   },
@@ -428,6 +492,11 @@ export const createEntitlementSlice: StateCreator<FounderState, [], [], Entitlem
     const state = get();
     const newCount = state.generationCount + 1;
     persistGenerationCount(newCount);
+
+    if (AUTH_PREVIEW_REQUIRED) {
+      set({ generationCount: newCount });
+      return;
+    }
 
     const remainingAfter = computeAnonymousRemaining(state.entitlements, newCount);
     const shouldPrompt =
@@ -449,6 +518,10 @@ export const createEntitlementSlice: StateCreator<FounderState, [], [], Entitlem
       accountPromptTriggerAt: shown ? Date.now() : null,
     }),
   dismissAccountPrompt: () => {
+    if (AUTH_PREVIEW_REQUIRED) {
+      set({ accountPromptDismissed: true, accountPromptShown: false, accountPromptTriggerAt: null });
+      return;
+    }
     persistAccountPromptDismissed(true);
     set({ accountPromptDismissed: true, accountPromptShown: false, accountPromptTriggerAt: null });
 
@@ -484,6 +557,9 @@ export const createEntitlementSlice: StateCreator<FounderState, [], [], Entitlem
   },
   shouldShowAccountPrompt: () => {
     const { entitlements, accountPromptShown, accountPromptDismissed, generationCount } = get();
+    if (AUTH_PREVIEW_REQUIRED) {
+      return false;
+    }
     if (entitlements.tier !== 'anonymous') {
       return false;
     }
@@ -533,6 +609,12 @@ export const createEntitlementSlice: StateCreator<FounderState, [], [], Entitlem
   },
   ensureFingerprintHash: async () => {
     const { fingerprintHash, fingerprintStatus } = get();
+    if (AUTH_PREVIEW_REQUIRED) {
+      if (fingerprintStatus !== 'idle') {
+        set({ fingerprintStatus: 'idle', fingerprintError: null, fingerprintHash: null });
+      }
+      return null;
+    }
     if (fingerprintHash) {
       if (fingerprintStatus !== 'ready') {
         set({ fingerprintStatus: 'ready', fingerprintError: null });
