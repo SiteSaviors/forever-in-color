@@ -210,7 +210,7 @@ export default function ToneStyleCard({
       <div
         className={clsx(
           'relative overflow-hidden flex-shrink-0 shadow-lg',
-          isHero ? 'h-28 w-full rounded-2xl md:h-28 md:w-28' : 'h-14 w-14 rounded-xl'
+          isHero ? 'h-28 w-full rounded-2xl md:h-28 md:w-28' : 'h-16 w-16 rounded-2xl md:h-[72px] md:w-[72px]'
         )}
         style={{ ...thumbnailStyle, aspectRatio: isHero ? 'auto' : '1' }}
       >
@@ -224,8 +224,8 @@ export default function ToneStyleCard({
           <img
             src={option.thumbnail}
             alt=""
-            width={isHero ? 112 : 56}
-            height={isHero ? 112 : 56}
+            width={isHero ? 112 : 64}
+            height={isHero ? 112 : 64}
             loading="lazy"
             decoding="async"
             className={clsx(
@@ -293,10 +293,10 @@ export default function ToneStyleCard({
           >
             <p
               className={clsx(
-                'font-display',
+                'font-display drop-shadow-[0_1px_6px_rgba(10,15,35,0.45)]',
                 isHero
                   ? 'text-lg uppercase tracking-[0.14em] md:text-xl'
-                  : 'text-base tracking-[0.08em] text-left',
+                  : 'text-lg tracking-[0.08em] text-left',
                 isLocked ? 'text-white/55' : 'text-white'
               )}
               style={
@@ -328,9 +328,12 @@ export default function ToneStyleCard({
           className={clsx(
             isHero
               ? 'text-sm text-left md:text-base md:leading-relaxed'
-              : 'mt-0.5 text-xs text-left leading-snug line-clamp-1',
+              : 'mt-0.5 text-sm text-left leading-snug line-clamp-2',
             isLocked ? 'text-white/35' : 'text-white/70'
           )}
+          style={{
+            textShadow: '0 1px 4px rgba(8, 13, 30, 0.45)',
+          }}
         >
           {isHero ? heroDescription : option.description}
         </p>

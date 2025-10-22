@@ -138,8 +138,8 @@ export const STYLE_TONE_DEFINITIONS: Record<StyleTone, StyleToneDefinition> = {
   },
   electric: {
     id: 'electric',
-    label: 'Electric Styles',
-    description: 'Vivid, high-voltage looks powered by Wondertone AI.',
+    label: 'Neon Glitch Styles',
+    description: 'High-voltage neon, synthwave, and glitch-inspired treatments.',
     icon: '⚡',
     sortOrder: 50,
   },

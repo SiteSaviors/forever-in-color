@@ -205,8 +205,8 @@ export const STYLE_REGISTRY_SOURCE: StyleRegistrySourceEntry[] = [
     badges: ['bold'],
     sortOrder: 40,
     assets: {
-      thumbnail: '/art-style-thumbnails/pop-art-burst.jpg',
-      preview: '/art-style-thumbnails/pop-art-burst.jpg',
+      thumbnail: '/art-style-thumbnails/pop-art.jpg',
+      preview: '/art-style-thumbnails/pop-art.jpg',
     },
     featureFlags: {
       isEnabled: true,
@@ -227,8 +227,8 @@ export const STYLE_REGISTRY_SOURCE: StyleRegistrySourceEntry[] = [
     badges: ['modern'],
     sortOrder: 50,
     assets: {
-      thumbnail: '/art-style-thumbnails/abstract-fusion.jpg',
-      preview: '/art-style-thumbnails/abstract-fusion.jpg',
+      thumbnail: '/art-style-thumbnails/modern-colorblock.jpg',
+      preview: '/art-style-thumbnails/modern-colorblock.jpg',
     },
     featureFlags: {
       isEnabled: true,
@@ -249,8 +249,8 @@ export const STYLE_REGISTRY_SOURCE: StyleRegistrySourceEntry[] = [
     badges: ['artful'],
     sortOrder: 60,
     assets: {
-      thumbnail: '/art-style-thumbnails/neon-splash.jpg',
-      preview: '/art-style-thumbnails/neon-splash.jpg',
+      thumbnail: '/art-style-thumbnails/dot-symphony.jpg',
+      preview: '/art-style-thumbnails/dot-symphony.jpg',
     },
     featureFlags: {
       isEnabled: true,
@@ -293,8 +293,8 @@ export const STYLE_REGISTRY_SOURCE: StyleRegistrySourceEntry[] = [
     badges: ['design'],
     sortOrder: 80,
     assets: {
-      thumbnail: '/art-style-thumbnails/gemstone-poly.jpg',
-      preview: '/art-style-thumbnails/gemstone-poly.jpg',
+      thumbnail: '/art-style-thumbnails/modern-colorblock.jpg',
+      preview: '/art-style-thumbnails/modern-colorblock.jpg',
     },
     featureFlags: {
       isEnabled: true,
@@ -315,8 +315,8 @@ export const STYLE_REGISTRY_SOURCE: StyleRegistrySourceEntry[] = [
     badges: ['urban'],
     sortOrder: 95,
     assets: {
-      thumbnail: '/art-style-thumbnails/artisan-charcoal.jpg',
-      preview: '/art-style-thumbnails/artisan-charcoal.jpg',
+      thumbnail: '/art-style-thumbnails/street-graffiti.jpg',
+      preview: '/art-style-thumbnails/street-graffiti.jpg',
     },
     featureFlags: {
       isEnabled: true,
@@ -337,8 +337,8 @@ export const STYLE_REGISTRY_SOURCE: StyleRegistrySourceEntry[] = [
     badges: ['print'],
     sortOrder: 90,
     assets: {
-      thumbnail: '/art-style-thumbnails/artisan-charcoal.jpg',
-      preview: '/art-style-thumbnails/artisan-charcoal.jpg',
+      thumbnail: '/art-style-thumbnails/riso-punch.jpg',
+      preview: '/art-style-thumbnails/riso-punch.jpg',
     },
     featureFlags: {
       isEnabled: true,
@@ -381,8 +381,8 @@ export const STYLE_REGISTRY_SOURCE: StyleRegistrySourceEntry[] = [
     badges: ['nostalgia'],
     sortOrder: 50,
     assets: {
-      thumbnail: '/art-style-thumbnails/pop-art-burst.jpg',
-      preview: '/art-style-thumbnails/pop-art-burst.jpg',
+      thumbnail: '/art-style-thumbnails/90s-cartoon.jpg',
+      preview: '/art-style-thumbnails/90s-cartoon.jpg',
     },
     featureFlags: {
       isEnabled: true,
@@ -404,8 +404,8 @@ export const STYLE_REGISTRY_SOURCE: StyleRegistrySourceEntry[] = [
     requiredTier: 'creator',
     sortOrder: 60,
     assets: {
-      thumbnail: '/art-style-thumbnails/neon-splash.jpg',
-      preview: '/art-style-thumbnails/neon-splash.jpg',
+      thumbnail: '/art-style-thumbnails/pop-surrealism.jpg',
+      preview: '/art-style-thumbnails/pop-surrealism.jpg',
     },
     featureFlags: {
       isEnabled: true,
@@ -427,8 +427,8 @@ export const STYLE_REGISTRY_SOURCE: StyleRegistrySourceEntry[] = [
     requiredTier: 'creator',
     sortOrder: 70,
     assets: {
-      thumbnail: '/art-style-thumbnails/abstract-fusion.jpg',
-      preview: '/art-style-thumbnails/abstract-fusion.jpg',
+      thumbnail: '/art-style-thumbnails/papercraft.jpg',
+      preview: '/art-style-thumbnails/papercraft.jpg',
     },
     featureFlags: {
       isEnabled: true,
@@ -450,8 +450,8 @@ export const STYLE_REGISTRY_SOURCE: StyleRegistrySourceEntry[] = [
     requiredTier: 'creator',
     sortOrder: 80,
     assets: {
-      thumbnail: '/art-style-thumbnails/gemstone-poly.jpg',
-      preview: '/art-style-thumbnails/gemstone-poly.jpg',
+      thumbnail: '/art-style-thumbnails/voxel-mineworld.jpg',
+      preview: '/art-style-thumbnails/voxel-mineworld.jpg',
     },
     featureFlags: {
       isEnabled: true,
@@ -473,8 +473,8 @@ export const STYLE_REGISTRY_SOURCE: StyleRegistrySourceEntry[] = [
     requiredTier: 'creator',
     sortOrder: 90,
     assets: {
-      thumbnail: '/art-style-thumbnails/3d-storybook.jpg',
-      preview: '/art-style-thumbnails/3d-storybook.jpg',
+      thumbnail: '/art-style-thumbnails/clay.jpg',
+      preview: '/art-style-thumbnails/clay.jpg',
     },
     featureFlags: {
       isEnabled: true,
@@ -518,8 +518,8 @@ export const STYLE_REGISTRY_SOURCE: StyleRegistrySourceEntry[] = [
     badges: ['classic'],
     sortOrder: 50,
     assets: {
-      thumbnail: '/art-style-thumbnails/artisan-charcoal.jpg',
-      preview: '/art-style-thumbnails/artisan-charcoal.jpg',
+      thumbnail: '/art-style-thumbnails/classic-crayon.jpg',
+      preview: '/art-style-thumbnails/classic-crayon.jpg',
     },
     requiredTier: 'creator',
     featureFlags: {
@@ -550,21 +550,21 @@ export const STYLE_REGISTRY_SOURCE: StyleRegistrySourceEntry[] = [
     },
   },
   {
-    id: 'electric-bloom',
-    name: 'Electric Bloom',
+    id: 'electric-drip',
+    name: 'Electric Drip',
     numericId: 11,
     tone: 'electric',
     tier: 'free',
     isPremium: false,
     defaultUnlocked: true,
     priceModifier: 0,
-    description: 'Luminous bloom effects with electric color palettes.',
-    marketingCopy: 'Flood the canvas with vivid blooms and luminous lighting.',
-    badges: ['glow'],
+    description: 'Fluorescent paint pours cascading into neon bloom and kinetic splatter.',
+    marketingCopy: 'Coat your portraits in liquid neon drips, gravity streaks, and UV rim light energy.',
+    badges: ['neon'],
     sortOrder: 80,
     assets: {
-      thumbnail: '/art-style-thumbnails/electric-bloom.jpg',
-      preview: '/art-style-thumbnails/electric-bloom.jpg',
+      thumbnail: '/art-style-thumbnails/electric-drip.jpg',
+      preview: '/art-style-thumbnails/electric-drip.jpg',
     },
     featureFlags: {
       isEnabled: true,
@@ -572,21 +572,22 @@ export const STYLE_REGISTRY_SOURCE: StyleRegistrySourceEntry[] = [
     },
   },
   {
-    id: 'electric-drip',
-    name: 'Electric Drip',
+    id: 'glow-crayon',
+    name: 'Glow Crayon',
     numericId: 27,
     tone: 'electric',
-    tier: 'free',
-    isPremium: false,
-    defaultUnlocked: true,
+    tier: 'premium',
+    isPremium: true,
+    defaultUnlocked: false,
     priceModifier: 0,
-    description: 'UV neon drips and splatters with glowing rim lights and kinetic sprays.',
-    marketingCopy: 'Splash portraits in fluorescent drips, gravity streaks, and neon bloom for electric gallery energy.',
-    badges: ['neon'],
-    sortOrder: 85,
+    description: 'Hand-drawn neon wax strokes with blacklight glow and vibrant edge lighting.',
+    marketingCopy: 'Upgrade to neon wax crayon portraits with luminous outlines, iridescent shading, and studio pop.',
+    badges: ['glow'],
+    requiredTier: 'creator',
+    sortOrder: 90,
     assets: {
-      thumbnail: '/art-style-thumbnails/neon-splash.jpg',
-      preview: '/art-style-thumbnails/neon-splash.jpg',
+      thumbnail: '/art-style-thumbnails/glow-crayon.jpg',
+      preview: '/art-style-thumbnails/glow-crayon.jpg',
     },
     featureFlags: {
       isEnabled: true,
@@ -616,21 +617,66 @@ export const STYLE_REGISTRY_SOURCE: StyleRegistrySourceEntry[] = [
     },
   },
   {
-    id: 'gemstone-poly',
-    name: 'Gemstone Poly',
-    numericId: 6,
+    id: 'voxel-arcade',
+    name: 'Voxel Arcade',
     tone: 'electric',
-    tier: 'free',
-    isPremium: false,
-    defaultUnlocked: true,
+    tier: 'premium',
+    isPremium: true,
+    defaultUnlocked: false,
     priceModifier: 0,
-    description: 'Low-poly crystalline facets with gemstone brilliance.',
-    marketingCopy: 'Cut portraits into shimmering gemstone-inspired facets.',
-    badges: ['facet'],
+    description: 'Voxel portraits lit like arcade cabinets with neon bloom and pixel glow.',
+    marketingCopy: 'Unlock voxel arcade dioramas brimming with neon stripes, CRT bloom, and retro-futuristic energy.',
+    badges: ['voxel'],
+    requiredTier: 'creator',
+    sortOrder: 100,
+    assets: {
+      thumbnail: '/art-style-thumbnails/voxel-arcade.jpg',
+      preview: '/art-style-thumbnails/voxel-arcade.jpg',
+    },
+    featureFlags: {
+      isEnabled: true,
+      rolloutPercentage: 100,
+    },
+  },
+  {
+    id: 'retro-synthwave',
+    name: 'Retro Synthwave',
+    tone: 'electric',
+    tier: 'premium',
+    isPremium: true,
+    defaultUnlocked: false,
+    priceModifier: 0,
+    description: 'Synthwave gradients, scanline glow, and retro-futuristic light trails.',
+    marketingCopy: 'Unlock premium synthwave portraits with sunset gradients, chromed highlights, and retro glitch energy.',
+    badges: ['neon'],
+    requiredTier: 'creator',
     sortOrder: 110,
     assets: {
-      thumbnail: '/art-style-thumbnails/gemstone-poly.jpg',
-      preview: '/art-style-thumbnails/gemstone-poly.jpg',
+      thumbnail: '/art-style-thumbnails/retro-synthwave.jpg',
+      preview: '/art-style-thumbnails/retro-synthwave.jpg',
+    },
+    featureFlags: {
+      isEnabled: true,
+      rolloutPercentage: 100,
+    },
+  },
+  {
+    id: 'holowire-prism',
+    name: 'Holowire Prism',
+    numericId: 6,
+    tone: 'electric',
+    tier: 'premium',
+    isPremium: true,
+    defaultUnlocked: false,
+    priceModifier: 0,
+    description: 'Holographic wireframes refracted through neon prisms and chromatic bloom.',
+    marketingCopy: 'Unlock premium holowire portraits layered with radiant prisms, glitch refractions, and luminous haze.',
+    badges: ['holo'],
+    requiredTier: 'creator',
+    sortOrder: 120,
+    assets: {
+      thumbnail: '/art-style-thumbnails/holowire-prism.jpg',
+      preview: '/art-style-thumbnails/holowire-prism.jpg',
     },
     featureFlags: {
       isEnabled: true,

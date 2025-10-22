@@ -26,9 +26,7 @@ export default function ActionRow({
   canvasLocked = false,
   canvasButtonRef,
 }: ActionRowProps) {
-  const entitlements = useFounderStore((state) => state.entitlements);
-  const remainingTokens = entitlements?.remainingTokens;
-  const userTier = entitlements?.tier ?? 'free';
+  const userTier = useFounderStore((state) => state.entitlements?.tier ?? 'free');
   const [isSticky, setIsSticky] = useState(false);
   const actionRowRef = useRef<HTMLDivElement>(null);
 
@@ -61,13 +59,21 @@ export default function ActionRow({
   return (
     <>
       <div ref={actionRowRef} className="space-y-4">
-        {/* Download Image Button - Secondary (Ghost) */}
+        {/* Download Image Button - Secondary (Gradient for premium) */}
         <button
           onClick={handleDownloadClick}
           disabled={downloadingHD || downloadDisabled}
-          className="w-full flex items-start gap-3 p-4 rounded-xl text-left transition-all bg-transparent border-2 border-white/20 hover:bg-white/5 hover:border-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
+          className={`w-full flex items-start gap-3 p-4 rounded-xl text-left transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+            isPremiumUser
+              ? 'bg-gradient-cta text-white border-2 border-purple-400 shadow-glow-purple hover:shadow-glow-purple'
+              : 'bg-transparent border-2 border-white/20 hover:bg-white/5 hover:border-white/30 text-white'
+          }`}
         >
-          <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-white/10">
+          <div
+            className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+              isPremiumUser ? 'bg-white/20 shadow-glow-soft' : 'bg-white/10'
+            }`}
+          >
             {isPremiumUser ? (
               <Download className="w-5 h-5 text-white" />
             ) : (
@@ -75,14 +81,7 @@ export default function ActionRow({
             )}
           </div>
           <div className="flex-1">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-bold text-white">Download Image</p>
-              {isPremiumUser && typeof remainingTokens === 'number' && remainingTokens > 0 && (
-                <span className="text-xs text-purple-300 font-semibold">
-                  {remainingTokens} {remainingTokens === 1 ? 'token' : 'tokens'} left
-                </span>
-              )}
-            </div>
+            <p className="text-sm font-bold text-white">Download Image</p>
             <p className="text-xs text-white/60">
               {isPremiumUser
                 ? 'Instant 4K JPEG • Perfect for sharing'

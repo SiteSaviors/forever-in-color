@@ -123,7 +123,7 @@ export default function ToneSection({
             <div className="flex items-center gap-3">
               <h3
                 className={clsx(
-                  'text-sm font-bold uppercase tracking-[0.04em] text-white md:text-base font-display'
+                  'text-sm font-bold uppercase tracking-[0.04em] text-white md:text-base font-display drop-shadow-[0_1px_6px_rgba(8,12,28,0.45)]'
                 )}
               >
                 {definition.label}
@@ -137,7 +137,7 @@ export default function ToneSection({
                 <Lock className="h-4 w-4 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]" aria-hidden="true" />
               )}
             </div>
-            <p className="mt-1 text-xs text-white/75 md:text-sm md:leading-relaxed">
+            <p className="mt-1 text-xs text-white/75 md:text-sm md:leading-relaxed drop-shadow-[0_1px_4px_rgba(8,12,28,0.4)]">
               {definition.description}
             </p>
           </div>
