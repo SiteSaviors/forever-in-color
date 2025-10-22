@@ -137,9 +137,9 @@ vercel --prod
 
 ### Step 4: Verify Deployment
 
-#### Test 1: Anonymous User (Should See Watermarks)
+#### Test 1: Free Tier Account (Should See Watermarks)
 
-1. Open app in **incognito/private window**
+1. Start a new session (incognito or cleared cookies) and sign in with a **Free** tier account
 2. Upload a photo
 3. Select "Classic Oil Painting" style
 4. Wait for generation
@@ -389,7 +389,7 @@ Vary: X-WT-Context
 
 ### Functional
 
-- ✅ Free/anonymous users see Canva-style grid watermarks everywhere
+- ✅ Free-tier users see Canva-style grid watermarks everywhere
 - ✅ Paid users (Creator/Plus/Pro) see clean images everywhere
 - ✅ Canvas mock uses lighter 23% opacity watermark
 - ✅ Download uses 40% opacity watermark
@@ -452,7 +452,7 @@ trackEvent('watermark_served', {
 });
 
 trackEvent('upgrade_clicked_from_watermarked_preview', {
-  tier: 'anonymous',
+  tier: 'free',
 });
 ```
 

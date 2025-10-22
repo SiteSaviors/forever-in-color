@@ -1,5 +1,7 @@
 # Save-to-Gallery Session Token Plan
 
+> **Status — November 2025:** Implemented. Gallery and download flows now require authenticated Supabase sessions, and all anonymous headers described below are legacy references maintained for context.
+
 ## Objective
 Eliminate the “Invalid authentication token” failure by guaranteeing every authenticated gallery interaction (save, list, delete, favorite, premium download) uses the real Supabase session token, while anonymous users remain gated. Preserve existing UI/UX, keep token debit logic limited to preview generation, and lay groundwork for durable future enhancements.
 
@@ -7,7 +9,7 @@ Eliminate the “Invalid authentication token” failure by guaranteeing every a
 
 ## Guiding Principles
 1. **Single Source of Token Truth** – Expose the session JWT exactly once inside the store and consume that reference everywhere. No duplicated state, no stale aliases.
-2. **Strict Anonymous vs Authenticated Paths** – Anonymous workflows should keep their current anon-token headers and gracefully fall back/lock UI. Authenticated paths must never rely on the anon key.
+2. **Legacy Anonymous vs Authenticated Paths** – Prior iterations retained anon-token headers with graceful fallbacks. After the auth-only rollout, gallery endpoints accept Supabase JWTs exclusively while the UI gates anonymous visitors.
 3. **Non-Intrusive Refactor** – Update only what is required; avoid cascading component changes or UI churn. Vendor APIs, telemetry events, and UX copy remain untouched.
 4. **Future-Proofing** – Document the new contract, add guard rails (runtime warnings/tests) so regressions surface immediately, and keep the pattern discoverable for new modules.
 
@@ -27,7 +29,7 @@ Eliminate the “Invalid authentication token” failure by guaranteeing every a
 
 ### 3. Consumer Alignment
 - Update all callers (`StudioConfigurator`, `GalleryPage`, helper APIs such as `galleryApi.ts` and `premiumDownload.ts`) to import the new getter/selector.
-- Confirm anonymous branches continue to omit the Authorization header and only pass anon tokens.
+- Ensure unauthenticated visitors are gated in the UI and never invoke gallery endpoints without a Supabase session.
 - Preserve existing conditional logic (e.g. `if (!sessionUser) { prompt login }`) so the UI stays unchanged.
 
 ### 4. Edge Contract Validation

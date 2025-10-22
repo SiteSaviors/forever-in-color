@@ -16,7 +16,6 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 interface GalleryItem {
   id: string;
   userId: string | null;
-  anonToken: string | null;
   previewLogId: string | null;
   styleId: string;
   styleName: string;
@@ -33,7 +32,7 @@ interface GalleryItem {
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-wt-anon',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'GET, DELETE, PATCH, OPTIONS',
 };
 
@@ -89,7 +88,6 @@ serve(async (req: Request) => {
     // Get auth token from headers
     const authHeader = req.headers.get('Authorization');
     const token = authHeader?.replace('Bearer ', '');
-    const anonToken = req.headers.get('X-WT-Anon');
 
     // Create Supabase client
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
@@ -99,30 +97,22 @@ serve(async (req: Request) => {
       },
     });
 
-    // Determine user identity
-    let userId: string | null = null;
-    let effectiveAnonToken: string | null = null;
-
-    if (token && token !== SUPABASE_SERVICE_ROLE_KEY) {
-      // Authenticated user
-      const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-      if (authError || !user) {
-        return new Response(
-          JSON.stringify({ error: 'Invalid authentication token' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      userId = user.id;
-    } else {
-      // Anonymous user
-      effectiveAnonToken = anonToken || null;
-      if (!effectiveAnonToken) {
-        return new Response(
-          JSON.stringify({ error: 'Anonymous token required for unauthenticated requests' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
+    if (!token || token === SUPABASE_SERVICE_ROLE_KEY) {
+      return new Response(
+        JSON.stringify({ error: 'Authentication required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid authentication token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const userId = user.id;
 
     let requiresWatermark = true;
     if (userId) {
@@ -147,7 +137,7 @@ serve(async (req: Request) => {
           .from('user_gallery')
           .select('*')
           .eq('is_deleted', false)
-          .eq(userId ? 'user_id' : 'anon_token', userId || effectiveAnonToken)
+          .eq('user_id', userId)
           .eq('id', itemIdParam)
           .maybeSingle();
 
@@ -231,7 +221,7 @@ serve(async (req: Request) => {
         .from('user_gallery')
         .select('*', { count: 'exact' })
         .eq('is_deleted', false)
-        .eq(userId ? 'user_id' : 'anon_token', userId || effectiveAnonToken);
+        .eq('user_id', userId);
 
       if (styleFilter) {
         query = query.eq('style_id', styleFilter);
@@ -272,7 +262,6 @@ serve(async (req: Request) => {
       const galleryItems: GalleryItem[] = (items || []).map((item: Record<string, unknown>) => ({
         id: item.id,
         userId: item.user_id,
-        anonToken: item.anon_token,
         previewLogId: item.preview_log_id,
         styleId: item.style_id,
         styleName: item.style_name,
@@ -305,7 +294,6 @@ serve(async (req: Request) => {
             return {
               id: item.id,
               userId: item.userId,
-              anonToken: item.anonToken,
               previewLogId: item.previewLogId,
               styleId: item.styleId,
               styleName: item.styleName,
@@ -355,7 +343,7 @@ serve(async (req: Request) => {
         .from('user_gallery')
         .update({ is_deleted: true })
         .eq('id', itemId)
-        .eq(userId ? 'user_id' : 'anon_token', userId || effectiveAnonToken);
+        .eq('user_id', userId);
 
       if (deleteError) {
         console.error('[get-gallery] Delete error:', deleteError);
@@ -394,7 +382,7 @@ serve(async (req: Request) => {
           .from('user_gallery')
           .select('download_count')
           .eq('id', itemId)
-          .eq(userId ? 'user_id' : 'anon_token', userId || effectiveAnonToken)
+          .eq('user_id', userId)
           .single();
 
         if (current) {
@@ -415,7 +403,7 @@ serve(async (req: Request) => {
         .from('user_gallery')
         .update(updates)
         .eq('id', itemId)
-        .eq(userId ? 'user_id' : 'anon_token', userId || effectiveAnonToken)
+        .eq('user_id', userId)
         .select()
         .single();
 

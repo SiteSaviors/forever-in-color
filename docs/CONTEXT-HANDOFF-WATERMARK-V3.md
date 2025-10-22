@@ -69,7 +69,7 @@ const recordPreviewSuccess = async (previewUrl: string, cacheStatus: CacheStatus
   let finalPreviewUrl = previewUrl;
 
   if (effectiveWatermark && previewUrl) {
-    // Free/anonymous users: apply watermark in-memory
+    // Free-tier users: apply watermark in-memory
     const imageResponse = await fetch(previewUrl); // Fetch clean image from storage
     const imageBuffer = await imageResponse.arrayBuffer();
     const watermarkedBuffer = await WatermarkService.createWatermarkedImage(imageBuffer, 'preview', requestId);
@@ -146,7 +146,7 @@ if (devBypass) {
 ```typescript
 const requiresWatermarkForTier = (tier: TierLabel, devBypass: boolean): boolean => {
   if (devBypass) return false;  // ✅ Dev bypass users NEVER get watermarks
-  return tier === 'anonymous' || tier === 'free';
+  return tier === 'free';
 };
 ```
 

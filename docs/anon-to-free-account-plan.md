@@ -1,5 +1,7 @@
 # Anonymous Flow Sunset & Free Tier Consolidation Plan
 
+> **Status — November 2025:** Migration complete. Supabase edge functions now require authenticated Wondertone accounts, and anonymous token minting has been fully decommissioned. The details below are preserved for historical context and describe the legacy architecture that preceded the auth-only backend.
+
 ## Why We’re Changing Course
 - Anonymous sessions add complexity: separate anon tokens, watermarked cache entries, gating logic, and edge-function fallbacks.
 - Upgrading mid-session (anon → Creator) causes mismatched preview state and broken controls.
@@ -10,12 +12,12 @@ Goal: Require users to create a free account before generating styles while pres
 ---
 
 ## Architecture Overview
-### Current State
+### Legacy State (Pre-Migration)
 - **Store slices** mint anon tokens (`mintAnonymousToken`), hydrate anon entitlements, and cache watermarked previews using anon keys.
 - **Edge functions** treat anon and authenticated flows differently (`generate-style-preview`, `save-to-gallery`, `get-gallery`).
 - **Studio UI** lets anonymous users generate watermarked previews, then relies on state flags to control downloads and saves.
 
-### Target State
+### Target State (Live)
 - Anonymous users can upload/crop and preview their original image but must create an account to generate styles.
 - All entitlements come from real Supabase users (`free`, `creator`, `plus`, `pro`). No anon token minting.
 - Edge functions expect a JWT for generation/gallery operations; watermarking is decided server-side based on tier.
@@ -63,4 +65,3 @@ Goal: Require users to create a free account before generating styles while pres
 2. Simplified store slices with authenticated-only entitlements.
 3. Edge functions that rely solely on JWT auth.
 4. QA sign-off + runbook documenting the new flow and removal of anonymous support.
-

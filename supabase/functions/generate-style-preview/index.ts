@@ -28,7 +28,6 @@ import {
   parseStorageUrl,
   type StorageObjectRef
 } from '../_shared/storageUtils.ts';
-import { generateIpHash, generateSubnetHash } from '../_shared/ipUtils.ts';
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -375,8 +374,7 @@ serve(async (req) => {
       aspectRatio,
       quality,
       watermark = true,
-      cacheBypass = false,
-      fingerprintHash = null
+      cacheBypass = false
     } = validation.data!;
 
     const normalizedAspectRatio = aspectRatio.toLowerCase();
@@ -420,24 +418,14 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const forwardedFor = req.headers.get('x-forwarded-for') ?? req.headers.get('X-Forwarded-For');
-    const ipAddress = forwardedFor?.split(',')[0]?.trim()
-      ?? req.headers.get('cf-connecting-ip')
-      ?? req.headers.get('CF-Connecting-IP')
-      ?? '';
-
-    const ipHash = await generateIpHash(ipAddress);
-    const subnetHash = await generateSubnetHash(ipAddress);
-
     const authorizationHeader = req.headers.get('authorization') ?? req.headers.get('Authorization');
-    const anonHeader = req.headers.get('x-wt-anon') ?? req.headers.get('X-WT-Anon');
     const idempotencyKey = req.headers.get('x-idempotency-key') ?? req.headers.get('X-Idempotency-Key');
 
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? null;
     const bearerToken = extractBearerToken(authorizationHeader);
     const bearerIsAnonKey = supabaseAnonKey && bearerToken ? bearerToken === supabaseAnonKey : false;
 
-    if (requireAuthForPreviewFlag && (!bearerToken || bearerIsAnonKey)) {
+    if (!bearerToken || bearerIsAnonKey) {
       return respond(
         JSON.stringify(createErrorResponse('unauthorized', 'Valid Supabase session required', requestId, 'UNAUTHORIZED')),
         401
@@ -454,71 +442,54 @@ serve(async (req) => {
 
     let entitlementContext: EntitlementContext | null = null;
 
-    if (entitlementsFlag) {
-      const allowAnonymous = !requireAuthForPreviewFlag;
-      const effectiveAnonHeader = allowAnonymous ? anonHeader : null;
-      const effectiveFingerprint = allowAnonymous ? fingerprintHash : null;
+    try {
+      const { context } = await resolveEntitlements({
+        supabase,
+        accessToken: authorizationHeader,
+        devBypassEmails
+      });
+      entitlementContext = context;
 
-      try {
-        const { context } = await resolveEntitlements({
-          supabase,
-          accessToken: authorizationHeader,
-          anonToken: effectiveAnonHeader,
-          devBypassEmails,
-          fingerprintHash: effectiveFingerprint,
-          ipAddress
+      if (
+        entitlementsFlag &&
+        !context.devBypass &&
+        context.remainingBefore !== null &&
+        context.remainingBefore <= 0
+      ) {
+        logger.info('Entitlement exceeded', {
+          requestId,
+          tier: context.tierLabel
         });
-        entitlementContext = context;
-
-        if (!context.devBypass && context.remainingBefore !== null && context.remainingBefore <= 0) {
-          logger.info('Entitlement exceeded', {
-            requestId,
-            tier: context.tierLabel
-          });
-          const errorPayload = createErrorResponse(
-            'ENTITLEMENT_EXCEEDED',
-            'Preview quota exceeded',
-            requestId,
-            'ENTITLEMENT_EXCEEDED'
-          );
-          return respond(
-            JSON.stringify({
-              ...errorPayload,
-              remainingTokens: 0,
-              tier: context.tierLabel
-            }),
-            429
-          );
-        }
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        logger.warn('Failed to resolve entitlements', { requestId, message });
-
-        if (message === 'UNAUTHORIZED') {
-          return respond(
-            JSON.stringify(createErrorResponse('unauthorized', 'Valid Supabase session required', requestId, 'UNAUTHORIZED')),
-            401
-          );
-        }
-
-        if (message === 'ANON_TOKEN_MISSING') {
-          if (requireAuthForPreviewFlag) {
-            return respond(
-              JSON.stringify(createErrorResponse('unauthorized', 'Valid Supabase session required', requestId, 'UNAUTHORIZED')),
-              401
-            );
-          }
-          return respond(
-            JSON.stringify(createErrorResponse('anonymous_session_required', 'Anonymous token is required. Call /api/anon/mint first.', requestId, 'ANON_TOKEN_MISSING')),
-            401
-          );
-        }
-
+        const errorPayload = createErrorResponse(
+          'ENTITLEMENT_EXCEEDED',
+          'Preview quota exceeded',
+          requestId,
+          'ENTITLEMENT_EXCEEDED'
+        );
         return respond(
-          JSON.stringify(createErrorResponse('entitlement_error', 'Unable to evaluate entitlements', requestId, 'ENTITLEMENT_ERROR')),
-          500
+          JSON.stringify({
+            ...errorPayload,
+            remainingTokens: 0,
+            tier: context.tierLabel
+          }),
+          429
         );
       }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      logger.warn('Failed to resolve entitlements', { requestId, message });
+
+      if (message === 'UNAUTHORIZED') {
+        return respond(
+          JSON.stringify(createErrorResponse('unauthorized', 'Valid Supabase session required', requestId, 'UNAUTHORIZED')),
+          401
+        );
+      }
+
+      return respond(
+        JSON.stringify(createErrorResponse('entitlement_error', 'Unable to evaluate entitlements', requestId, 'ENTITLEMENT_ERROR')),
+        500
+      );
     }
 
     const stylePromptService = new StylePromptService(supabase);
@@ -530,7 +501,7 @@ serve(async (req) => {
     let previewLogId: string | null = null;
     const existingLogResult = await supabase
       .from('preview_logs')
-      .select('id, preview_url, outcome, requires_watermark, priority, tier, tokens_spent, error_code, user_id, anon_token')
+      .select('id, preview_url, outcome, requires_watermark, priority, tier, tokens_spent, error_code, user_id')
       .eq('idempotency_key', idempotencyKey)
       .maybeSingle();
 
@@ -540,34 +511,14 @@ serve(async (req) => {
       previewLogId = existingLog.id;
 
       if (
-        entitlementContext &&
-        entitlementContext.actor === 'authenticated' &&
+        entitlementContext?.userId &&
         existingLog.user_id &&
-        entitlementContext.userId &&
         existingLog.user_id !== entitlementContext.userId
       ) {
         logger.warn('Idempotency key belongs to another user', {
           requestId,
           userId: entitlementContext.userId,
           existingUserId: existingLog.user_id
-        });
-        return respond(
-          JSON.stringify(createErrorResponse('idempotency_conflict', 'Idempotency key conflict', requestId, 'IDEMPOTENCY_CONFLICT')),
-          409
-        );
-      }
-
-      if (
-        entitlementContext &&
-        entitlementContext.actor === 'anonymous' &&
-        existingLog.anon_token &&
-        entitlementContext.anonToken &&
-        existingLog.anon_token !== entitlementContext.anonToken
-      ) {
-        logger.warn('Idempotency key belongs to another anonymous token', {
-          requestId,
-          anonToken: entitlementContext.anonToken,
-          existingAnon: existingLog.anon_token
         });
         return respond(
           JSON.stringify(createErrorResponse('idempotency_conflict', 'Idempotency key conflict', requestId, 'IDEMPOTENCY_CONFLICT')),
@@ -732,7 +683,6 @@ serve(async (req) => {
       const insertPayload = {
         idempotency_key: idempotencyKey,
         user_id: entitlementContext?.userId ?? null,
-        anon_token: entitlementContext?.anonToken ?? null,
         tier: entitlementContext?.tierForDb ?? null,
         style_id: String(styleMetadata.styleId),
         orientation: normalizedAspectRatio,
@@ -783,7 +733,6 @@ serve(async (req) => {
       const tokensDebit = entitlementContext && !entitlementContext.devBypass ? 1 : 0;
       const cleanStorageUrl = previewUrl;
       const storagePath = extractStoragePath(previewUrl);
-      let updatedSoftRemaining: number | null = entitlementContext?.softRemaining ?? null;
 
       // OPUS PLAN: Apply watermark on-the-fly before returning to client
       let finalPreviewUrl = previewUrl;
@@ -825,56 +774,11 @@ serve(async (req) => {
           .eq('id', previewLogId);
       }
 
-      if (
-        entitlementContext &&
-        entitlementContext.actor === 'anonymous' &&
-        entitlementContext.anonToken &&
-        !entitlementContext.devBypass
-      ) {
-        const nextSoftRemaining = entitlementContext.softRemaining != null
-          ? Math.max(entitlementContext.softRemaining - tokensDebit, 0)
-          : null;
-
-        if (nextSoftRemaining != null) {
-          await supabase
-            .from('anonymous_tokens')
-            .update({ free_tokens_remaining: nextSoftRemaining })
-            .eq('token', entitlementContext.anonToken);
-          updatedSoftRemaining = nextSoftRemaining;
-        }
-
-        if (entitlementContext.fingerprintHash) {
-          const now = new Date();
-          const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-          const monthBucket = monthStart.toISOString().slice(0, 10);
-          const currentCount = entitlementContext.fingerprintGenerationCount ?? 0;
-          const nextCount = currentCount + tokensDebit;
-
-          await supabase
-            .from('anonymous_usage')
-            .upsert({
-              fingerprint_hash: entitlementContext.fingerprintHash,
-              month_bucket: monthBucket,
-              generation_count: nextCount,
-              ip_hash: ipHash ?? null,
-              subnet_hash: subnetHash ?? null,
-              anon_token: entitlementContext.anonToken ?? null,
-              soft_remaining: updatedSoftRemaining ?? entitlementContext.softRemaining ?? null,
-              first_seen: entitlementContext.fingerprintFirstSeen ?? new Date().toISOString(),
-              last_seen: new Date().toISOString()
-            }, {
-              onConflict: 'fingerprint_hash,month_bucket'
-            });
-        }
-      }
-
       const remainingTokens = entitlementContext
         ? (entitlementContext.devBypass
             ? null
             : computeRemainingAfterDebet(entitlementContext, tokensDebit))
         : null;
-
-      const effectiveSoftRemaining = updatedSoftRemaining ?? entitlementContext?.softRemaining ?? null;
 
       const payload = createSuccessResponse({
         previewUrl: finalPreviewUrl, // Return watermarked data URL for free users, clean URL for paid
@@ -887,7 +791,7 @@ serve(async (req) => {
         priority: entitlementContext?.priority ?? 'normal',
         storageUrl: cleanStorageUrl,
         storagePath,
-        softRemaining: effectiveSoftRemaining
+        softRemaining: null
       });
 
       return respond(JSON.stringify(payload), statusCode);

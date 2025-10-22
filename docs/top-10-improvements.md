@@ -1506,7 +1506,7 @@ export type PreviewResult = {
 // ===========================
 
 export const EntitlementsResponseSchema = z.object({
-  tier: z.enum(['anonymous', 'free', 'creator', 'plus', 'pro', 'dev']),
+  tier: z.enum(['free', 'creator', 'plus', 'pro', 'dev']),
   quota: z.number(),
   remaining_tokens: z.number(),
   requires_watermark: z.boolean(),

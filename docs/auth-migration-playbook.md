@@ -62,7 +62,7 @@ Each phase should complete before advancing; regression tests and mandatory scri
   - `src/components/checkout/CheckoutSummary.tsx:1` — shows watermark messaging for anonymous / free tiers.
 - **Supabase functions**
   - `supabase/functions/generate-style-preview/entitlements.ts:1` — dual branch resolver; anonymous usage analysis.
-  - `supabase/functions/generate-style-preview/index.ts:1` — expects `X-WT-Anon`, inserts `anon_token` into `preview_logs`.
+  - `supabase/functions/generate-style-preview/index.ts:1` — (legacy) expected `X-WT-Anon` and inserted `anon_token` into `preview_logs`; Phase 6 cleanup removed this path in favor of JWT-only previews.
   - `supabase/functions/anon-mint/index.ts:1` — lifecycle for anonymous token issuance.
   - `supabase/functions/get-gallery/index.ts:1`, `supabase/functions/save-to-gallery/index.ts:1` — accept anonymous headers, gate responses.
 - **Database surfaces**
