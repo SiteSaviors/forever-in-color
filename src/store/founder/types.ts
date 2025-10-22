@@ -23,29 +23,18 @@ export type FounderSessionActionsSnapshot = Pick<FounderStoreState, 'setSession'
 export type FounderEntitlementStateSnapshot = Pick<
   FounderStoreState,
   | 'entitlements'
-  | 'anonToken'
   | 'showTokenToast'
   | 'showQuotaModal'
   | 'generationCount'
-  | 'accountPromptShown'
-  | 'accountPromptDismissed'
-  | 'accountPromptTriggerAt'
-  | 'fingerprintStatus'
-  | 'fingerprintError'
 >;
 
 export type FounderEntitlementActionsSnapshot = Pick<
   FounderStoreState,
   | 'hydrateEntitlements'
-  | 'reconcileEntitlements'
   | 'updateEntitlementsFromResponse'
   | 'setShowTokenToast'
   | 'setShowQuotaModal'
-  | 'setAnonToken'
   | 'incrementGenerationCount'
-  | 'setAccountPromptShown'
-  | 'dismissAccountPrompt'
-  | 'shouldShowAccountPrompt'
   | 'canGenerateMore'
   | 'getGenerationLimit'
   | 'getDisplayableRemainingTokens'
@@ -72,7 +61,6 @@ export type FounderMediaStateSnapshot = Pick<
   | 'cropReadyAt'
   | 'isDragging'
   | 'uploadIntentAt'
-  | 'fingerprintHash'
 >;
 
 export type FounderMediaActionsSnapshot = Pick<
@@ -93,7 +81,6 @@ export type FounderMediaActionsSnapshot = Pick<
   | 'markCropReady'
   | 'setDragging'
   | 'requestUpload'
-  | 'ensureFingerprintHash'
 >;
 
 /**

@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { clsx } from 'clsx';
 import PhotoUploader from '@/components/launchpad/PhotoUploader';
-import AccountPromptModal from '@/components/modals/AccountPromptModal';
 import AuthGateModal from '@/components/modals/AuthGateModal';
 import { useFounderStore } from '@/store/useFounderStore';
 import { emitStepOneEvent } from '@/utils/telemetry';
@@ -263,14 +262,11 @@ const LaunchflowAccordion = () => {
   const croppedImage = useFounderStore((state) => state.croppedImage);
   const cropReadyAt = useFounderStore((state) => state.cropReadyAt);
   const orientation = useFounderStore((state) => state.orientation);
-  const accountPromptShown = useFounderStore((state) => state.accountPromptShown);
-  const accountPromptTriggerAt = useFounderStore((state) => state.accountPromptTriggerAt);
   const entitlementsStatus = useFounderStore((state) => state.entitlements.status);
   const hydrateEntitlements = useFounderStore((state) => state.hydrateEntitlements);
   const firstPreviewCompleted = useFounderStore((state) => state.firstPreviewCompleted);
   const generationCount = useFounderStore((state) => state.generationCount);
 
-  const [showAccountModal, setShowAccountModal] = useState(false);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [resumeDismissed, setResumeDismissed] = useState(false);
   const prefersReducedMotion = usePrefersReducedMotion();
@@ -302,19 +298,6 @@ const LaunchflowAccordion = () => {
   useEffect(() => {
     emitStepOneEvent({ type: 'substep', value: 'upload' });
   }, []);
-
-  useEffect(() => {
-    if (!accountPromptTriggerAt) return;
-    const delay = Math.max(0, accountPromptTriggerAt + 2000 - Date.now());
-    const timer = window.setTimeout(() => setShowAccountModal(true), delay);
-    return () => window.clearTimeout(timer);
-  }, [accountPromptTriggerAt]);
-
-  useEffect(() => {
-    if (!accountPromptShown) {
-      setShowAccountModal(false);
-    }
-  }, [accountPromptShown]);
 
   useEffect(() => {
     if (entitlementsStatus === 'idle') {
@@ -535,7 +518,6 @@ const LaunchflowAccordion = () => {
         disabled={launchpadExpanded}
       />
 
-      <AccountPromptModal open={showAccountModal} onClose={() => setShowAccountModal(false)} />
       <AuthGateModal />
     </section>
   );

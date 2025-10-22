@@ -28,7 +28,7 @@ export default function ActionRow({
 }: ActionRowProps) {
   const entitlements = useFounderStore((state) => state.entitlements);
   const remainingTokens = entitlements?.remainingTokens;
-  const userTier = entitlements?.tier ?? 'anonymous';
+  const userTier = entitlements?.tier ?? 'free';
   const [isSticky, setIsSticky] = useState(false);
   const actionRowRef = useRef<HTMLDivElement>(null);
 

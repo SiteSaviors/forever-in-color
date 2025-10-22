@@ -1,12 +1,10 @@
 import { STYLE_CATALOG, type StyleCatalogEntry } from '@/config/styleCatalog';
-import { REQUIRE_AUTH_FOR_PREVIEW } from '@/config/featureFlags';
 import type { EntitlementState } from '@/store/founder/entitlementSlice';
 import type { SessionUser } from '@/store/founder/sessionSlice';
 
 export type GateReason =
   | 'allowed'
   | 'entitlements_loading'
-  | 'fingerprint_required'
   | 'quota_exceeded'
   | 'style_locked'
   | 'unknown_style';
@@ -21,48 +19,17 @@ export type GateResult = {
 };
 
 const TIER_ORDER: Record<string, number> = {
-  anonymous: 0,
-  free: 1,
-  creator: 2,
-  plus: 3,
-  pro: 4,
-  dev: 5,
+  free: 0,
+  creator: 1,
+  plus: 2,
+  pro: 3,
+  dev: 4,
 };
 
 const PREMIUM_DEFAULT_REQUIRED_TIER: 'creator' | 'plus' | 'pro' = 'creator';
-const AUTH_PREVIEW_REQUIRED = REQUIRE_AUTH_FOR_PREVIEW;
 
 export const findStyleMetadata = (styleId: string): StyleCatalogEntry | null => {
   return STYLE_CATALOG.find((entry) => entry.id === styleId) ?? null;
-};
-
-export const computeAnonymousRemaining = (
-  entitlements: EntitlementState,
-  generationCount: number
-): number | null => {
-  const hardRemaining =
-    typeof entitlements.hardRemaining === 'number' ? entitlements.hardRemaining : null;
-  const softRemaining =
-    typeof entitlements.softRemaining === 'number' ? entitlements.softRemaining : null;
-  const softLimit =
-    typeof entitlements.softLimit === 'number' ? entitlements.softLimit : null;
-
-  if (hardRemaining != null && hardRemaining <= 0) {
-    return 0;
-  }
-
-  const softBudget =
-    softLimit != null ? Math.max(softLimit - Math.min(generationCount, softLimit), 0) : null;
-
-  if (softBudget == null) {
-    return softRemaining;
-  }
-
-  if (softRemaining == null) {
-    return softBudget;
-  }
-
-  return Math.min(softRemaining, softBudget);
 };
 
 const isTierSatisfied = (current: EntitlementState['tier'], required: 'creator' | 'plus' | 'pro') => {
@@ -71,14 +38,10 @@ const isTierSatisfied = (current: EntitlementState['tier'], required: 'creator' 
   return currentScore >= requiredScore;
 };
 
-type FingerprintStatus = 'idle' | 'resolving' | 'ready' | 'error';
-
 type GateParams = {
   styleId: string | null | undefined;
   entitlements: EntitlementState;
   sessionUser: SessionUser | null;
-  fingerprintStatus: FingerprintStatus;
-  generationCount: number;
 };
 
 const quotaExceededResult: GateResult = {
@@ -92,11 +55,7 @@ export const canGenerateStylePreview = ({
   styleId,
   entitlements,
   sessionUser,
-  fingerprintStatus,
-  generationCount,
 }: GateParams): GateResult => {
-  const anonymousFlowEnabled = !AUTH_PREVIEW_REQUIRED;
-
   if (entitlements.status !== 'ready') {
     if (sessionUser) {
       return {
@@ -108,30 +67,7 @@ export const canGenerateStylePreview = ({
     return { allowed: true, reason: 'allowed' };
   }
 
-  if (anonymousFlowEnabled && entitlements.tier === 'anonymous' && fingerprintStatus === 'error') {
-    return {
-      allowed: false,
-      reason: 'fingerprint_required',
-      message: 'Please enable device features to continue generating previews.',
-      ctaText: 'Retry',
-    };
-  }
-
   if (
-    anonymousFlowEnabled &&
-    entitlements.tier === 'anonymous' &&
-    typeof entitlements.hardRemaining === 'number' &&
-    entitlements.hardRemaining <= 0
-  ) {
-    return quotaExceededResult;
-  }
-
-  if (anonymousFlowEnabled && entitlements.tier === 'anonymous') {
-    const remaining = computeAnonymousRemaining(entitlements, generationCount);
-    if (typeof remaining === 'number' && remaining <= 0) {
-      return quotaExceededResult;
-    }
-  } else if (
     entitlements.remainingTokens != null &&
     entitlements.remainingTokens <= 0
   ) {

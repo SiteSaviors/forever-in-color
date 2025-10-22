@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Download, Heart, Trash2, ArrowLeft, Filter, Sparkles, Expand } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useFounderStore } from '@/store/useFounderStore';
+import { useAuthModal } from '@/store/useAuthModal';
 import { useStudioFeedback } from '@/hooks/useStudioFeedback';
 import {
   fetchGalleryItems,
@@ -57,8 +58,8 @@ const GalleryPage = () => {
   const navigate = useNavigate();
   const sessionAccessToken = useFounderStore((state) => state.getSessionAccessToken());
   const entitlements = useFounderStore((state) => state.entitlements);
-  const anonToken = useFounderStore((state) => state.anonToken);
   const { showToast, showUpgradeModal, renderFeedback } = useStudioFeedback();
+  const openAuthModal = useAuthModal((state) => state.openModal);
 
   const [items, setItems] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -73,6 +74,7 @@ const GalleryPage = () => {
 
   const [showFilters, setShowFilters] = useState(false);
   const [lightboxItem, setLightboxItem] = useState<GalleryItem | null>(null);
+  const [authPrompted, setAuthPrompted] = useState(false);
 
   // Check if user has access to clean (watermark-free) downloads
   const requiresWatermark = entitlements.requiresWatermark;
@@ -83,7 +85,18 @@ const GalleryPage = () => {
     setError(null);
 
     const accessToken = sessionAccessToken || null;
-    const result = await fetchGalleryItems(filters, anonToken, accessToken);
+    if (!accessToken) {
+      if (!authPrompted) {
+        setAuthPrompted(true);
+        openAuthModal('signup');
+      }
+      setItems([]);
+      setTotal(0);
+      setLoading(false);
+      return;
+    }
+
+    const result = await fetchGalleryItems(filters, accessToken);
 
     if ('error' in result) {
       setError(result.error);
@@ -94,7 +107,7 @@ const GalleryPage = () => {
     setItems(result.items);
     setTotal(result.total);
     setLoading(false);
-  }, [anonToken, filters, sessionAccessToken]);
+  }, [authPrompted, filters, openAuthModal, sessionAccessToken]);
 
   useEffect(() => {
     void loadGallery();
@@ -106,7 +119,7 @@ const GalleryPage = () => {
     }
 
     const accessToken = sessionAccessToken || null;
-    const result = await deleteGalleryItem(itemId, anonToken, accessToken);
+    const result = await deleteGalleryItem(itemId, accessToken);
 
     if (result.success) {
       setItems((prev) => prev.filter((item) => item.id !== itemId));
@@ -134,7 +147,7 @@ const GalleryPage = () => {
       prev.map((i) => (i.id === item.id ? { ...i, isFavorited: newFavoriteState } : i))
     );
 
-    const result = await toggleGalleryFavorite(item.id, newFavoriteState, anonToken, accessToken);
+    const result = await toggleGalleryFavorite(item.id, newFavoriteState, accessToken);
 
     if (!result.success) {
       // Revert on error
@@ -164,11 +177,11 @@ const GalleryPage = () => {
 
     // Track download
     const accessToken = sessionAccessToken || null;
-    await incrementGalleryDownload(item.id, anonToken, accessToken);
+    await incrementGalleryDownload(item.id, accessToken);
 
     let downloadUrl: string;
     try {
-      downloadUrl = await getGalleryDownloadUrl(item, requiresWatermark, anonToken, accessToken);
+      downloadUrl = await getGalleryDownloadUrl(item, requiresWatermark, accessToken);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unable to prepare download.';
       showToast({

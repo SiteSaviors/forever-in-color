@@ -1,5 +1,4 @@
 import { AUTH_GATE_ROLLOUT_PERCENT, REQUIRE_AUTH_FOR_PREVIEW } from '@/config/featureFlags';
-import { getStoredFingerprintHash } from './deviceFingerprint';
 
 const BUCKET_STORAGE_KEY = 'wt_auth_gate_bucket_v1';
 
@@ -8,16 +7,6 @@ const clampBucket = (value: number): number => {
   if (value < 0) return 0;
   if (value > 99) return 99;
   return Math.trunc(value);
-};
-
-const hashToBucket = (seed: string): number => {
-  let hash = 0;
-  for (let index = 0; index < seed.length; index += 1) {
-    const char = seed.charCodeAt(index);
-    hash = (hash << 5) - hash + char;
-    hash |= 0;
-  }
-  return Math.abs(hash) % 100;
 };
 
 const readStoredBucket = (): number | null => {
@@ -48,20 +37,20 @@ const persistBucket = (bucket: number) => {
 
 const generateBucket = (): number => {
   if (typeof window === 'undefined') {
-    return 100; // assume no gating during SSR
-  }
-
-  const fingerprint = getStoredFingerprintHash();
-  if (fingerprint) {
-    return hashToBucket(fingerprint);
+    return 100; // SSR fallback – no gating
   }
 
   try {
-    const randomSeed = `${window.location.hostname}-${Math.random().toString(36).slice(2)}`;
-    return hashToBucket(randomSeed);
+    if (window.crypto?.getRandomValues) {
+      const array = new Uint32Array(1);
+      window.crypto.getRandomValues(array);
+      return array[0] % 100;
+    }
   } catch {
-    return Math.floor(Math.random() * 100);
+    // ignore crypto failures and fall back to Math.random
   }
+
+  return Math.floor(Math.random() * 100);
 };
 
 export const getAuthGateRolloutBucket = (): number => {

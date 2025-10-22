@@ -29,7 +29,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
   const setShowTokenToast = useFounderStore((state) => state.setShowTokenToast);
   const showQuotaModal = useFounderStore((state) => state.showQuotaModal);
   const setShowQuotaModal = useFounderStore((state) => state.setShowQuotaModal);
-  const reconcileEntitlements = useFounderStore((state) => state.reconcileEntitlements);
+  const hydrateEntitlements = useFounderStore((state) => state.hydrateEntitlements);
   const entitlements = useFounderStore((state) => state.entitlements);
   const displayRemainingTokens = useFounderStore((state) => state.getDisplayableRemainingTokens());
 
@@ -143,13 +143,13 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
 
   useEffect(() => {
     const handleFocus = () => {
-      void reconcileEntitlements();
+      void hydrateEntitlements();
     };
 
     if (typeof window !== 'undefined') {
       window.addEventListener('focus', handleFocus, { passive: true });
-      // Reconcile once on mount in case the page was backgrounded before hydration
-      void reconcileEntitlements();
+      // Refresh once on mount in case the page was backgrounded before hydration
+      void hydrateEntitlements();
     }
 
     return () => {
@@ -157,7 +157,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
         window.removeEventListener('focus', handleFocus);
       }
     };
-  }, [reconcileEntitlements]);
+  }, [hydrateEntitlements]);
 
   return (
     <>

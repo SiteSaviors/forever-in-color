@@ -34,12 +34,14 @@ const AuthGateModal = () => {
   const open = useFounderStore((state) => state.authGateOpen);
   const setAuthGateOpen = useFounderStore((state) => state.setAuthGateOpen);
   const openAuthModal = useAuthModal((state) => state.openModal);
+  const clearAuthGateIntent = useFounderStore((state) => state.clearAuthGateIntent);
 
   const [isGoogleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleClose = () => {
     setAuthGateOpen(false);
+    clearAuthGateIntent();
   };
 
   useEffect(() => {

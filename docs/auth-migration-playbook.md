@@ -240,6 +240,15 @@ Each phase should complete before advancing; regression tests and mandatory scri
 **Rollback**:
 - Restore archived files/tables from git backups; requires redeploying previous build (documented in release notes).
 
+### Phase 6 Outputs
+
+- Store slices now assume authenticated sessions only (`src/store/founder/entitlementSlice.ts`, `sessionSlice.ts`, `previewSlice.ts`), and all anonymous helpers (`anonTokenStorage`, `deviceFingerprint`, account prompt actions) were removed alongside dependent selectors/types.
+- Launchpad/Studio rely exclusively on the auth gate: `AccountPromptModal` was deleted, Studio saves invoke the auth modal when unauthenticated, and UI badges (token banner, sticky rail, checkout summary) default to the authenticated tier set.
+- Gallery APIs and UI moved to JWT-only interactions (`src/utils/galleryApi.ts`, `src/pages/GalleryPage.tsx`), removing `X-WT-Anon` headers and prompting sign-in before fetching data.
+- Preview utilities (`founderPreviewGeneration`, `previewGeneration`, `previewIdempotency`, `stylePreviewApi`, `previewQueries`) now generate idempotency keys and requests from Supabase sessions alone.
+- Updated regression tests (`tests/studio/tones.spec.ts`) reflect the reduced entitlement tier union.
+- Validation suite executed: `npm run lint`, `npm run build`, `npm run build:analyze`, `npm run deps:check`, `npm run dead-code:check` (unused Radix/Tailwind helpers remain intentionally for other flows).
+
 ---
 
 ## Phase 7 – Monitoring & Analytics Hardening

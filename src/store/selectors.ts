@@ -4,7 +4,6 @@ export type FounderStoreState = ReturnType<typeof useFounderStore.getState>;
 
 export const selectEntitlements = (state: FounderStoreState) => state.entitlements;
 export const selectEntitlementTier = (state: FounderStoreState) => state.entitlements.tier;
-export const selectAnonToken = (state: FounderStoreState) => state.anonToken;
 export const selectIsAuthenticated = (state: FounderStoreState) => state.isAuthenticated;
 export const selectLaunchpadExpanded = (state: FounderStoreState) => state.launchpadExpanded;
 export const selectShowTokenToast = (state: FounderStoreState) => state.showTokenToast;
@@ -16,7 +15,6 @@ export const selectAccessToken = (state: FounderStoreState) => state.accessToken
 export const selectHydrateEntitlements = (state: FounderStoreState) => state.hydrateEntitlements;
 export const selectEntitlementStatus = (state: FounderStoreState) => state.entitlements.status;
 export const selectEntitlementQuota = (state: FounderStoreState) => state.entitlements.quota;
-export const selectReconcileEntitlements = (state: FounderStoreState) => state.reconcileEntitlements;
 export const selectEvaluateStyleGate =
   (styleId: string | null) => (state: FounderStoreState) => state.evaluateStyleGate(styleId);
 export const selectCanUseStyle =

@@ -1,7 +1,3 @@
-
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
-
 let cachedSupabaseClient: Awaited<ReturnType<typeof importSupabaseClient>> | undefined;
 
 async function importSupabaseClient() {
@@ -17,16 +13,7 @@ const getSupabaseClient = async () => {
   return cachedSupabaseClient;
 };
 
-type MintResponse = {
-  anon_token: string;
-  free_tokens_remaining: number;
-  hard_remaining: number;
-  soft_limit: number;
-  hard_limit: number;
-  dismissed_prompt: boolean;
-};
-
-export type EntitlementTier = 'anonymous' | 'free' | 'creator' | 'plus' | 'pro' | 'dev';
+export type EntitlementTier = 'free' | 'creator' | 'plus' | 'pro' | 'dev';
 export type EntitlementPriority = 'normal' | 'priority' | 'pro';
 
 export type EntitlementSnapshot = {
@@ -37,39 +24,6 @@ export type EntitlementSnapshot = {
   priority: EntitlementPriority;
   requiresWatermark: boolean;
   devOverride: boolean;
-};
-
-const functionUrl = (name: string) => {
-  if (!SUPABASE_URL) {
-    throw new Error('Supabase URL missing');
-  }
-  return `${SUPABASE_URL}/functions/v1/${name}`;
-};
-
-export const mintAnonymousToken = async (options: { token?: string; dismissedPrompt?: boolean } = {}) => {
-  const url = functionUrl('anon-mint');
-  const payload: Record<string, unknown> = {};
-  if (options.token) payload.token = options.token;
-  if (typeof options.dismissedPrompt === 'boolean') {
-    payload.dismissed_prompt = options.dismissedPrompt;
-  }
-
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(SUPABASE_ANON_KEY ? { apikey: SUPABASE_ANON_KEY } : {})
-    },
-    body: JSON.stringify(payload),
-    credentials: 'include'
-  });
-
-  if (!response.ok) {
-    throw new Error(`Anon mint failed (${response.status})`);
-  }
-
-  const data = (await response.json()) as MintResponse;
-  return data;
 };
 
 const mapTier = (raw: string | null | undefined, devOverride: boolean): EntitlementTier => {
@@ -130,7 +84,7 @@ export const fetchAuthenticatedEntitlements = async (): Promise<EntitlementSnaps
   const quota = typeof data.tokens_quota === 'number' ? data.tokens_quota : null;
   const remaining = typeof data.remaining_tokens === 'number' ? data.remaining_tokens : null;
   const renewAt = data.period_end ?? null;
-  const requiresWatermark = tier === 'anonymous' || tier === 'free';
+  const requiresWatermark = tier === 'free';
 
   const result = {
     tier,

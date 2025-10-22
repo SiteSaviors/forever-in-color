@@ -120,7 +120,6 @@ type FounderState = {
   // Identity
   userId: string | null;
   subscriptionRenewAt: string | null;
-  anonymousSessionId: string | null;
 
   // Actions
   hydrateEntitlements: () => Promise<void>;
@@ -145,37 +144,22 @@ type FounderState = {
 ### Client Enforcement (Zustand helpers)
 ```typescript
 canGenerateMore: () => {
-  const { generationCount, isAuthenticated, subscriptionTier, accountPromptDismissed } = get();
+  const { generationCount, subscriptionTier } = get();
 
   if (subscriptionTier === 'pro') return generationCount < 500;
   if (subscriptionTier === 'plus') return generationCount < 250;
   if (subscriptionTier === 'creator') return generationCount < 50;
 
-  if (isAuthenticated) return generationCount < 10;
-
-  if (generationCount < 5) return true;
-  if (!accountPromptDismissed && generationCount < 10) return true;
-  return false;
+  return generationCount < 10;
 };
 
 getGenerationLimit: () => {
-  const { isAuthenticated, subscriptionTier } = get();
+  const { subscriptionTier } = get();
 
   if (subscriptionTier === 'pro') return 500;
   if (subscriptionTier === 'plus') return 250;
   if (subscriptionTier === 'creator') return 50;
-  return isAuthenticated ? 10 : 5;
-};
-
-shouldShowAccountPrompt: () => {
-  const { generationCount, isAuthenticated, accountPromptShown, accountPromptDismissed } = get();
-
-  return (
-    generationCount === 5 &&
-    !isAuthenticated &&
-    !accountPromptShown &&
-    !accountPromptDismissed
-  );
+  return 10;
 };
 ```
 
@@ -191,8 +175,7 @@ shouldShowAccountPrompt: () => {
 
 | Tier | Price | Generations / Month | Watermarks | Living Canvas | Priority |
 |------|-------|----------------------|------------|---------------|----------|
-| **Anonymous** | $0 | 5 soft gate / 10 hard gate | Yes | Included | N/A 
-| **Free (Authenticated)** | $0 | 10 | Yes | Included | Email only |
+| **Free** | $0 | 10 | Yes | Included | Email only |
 | **Creator** | $9.99/mo | 50 | No | Included | Email + chat |
 | **Plus** | $29.99/mo | 250 | No | Included | Priority queue |
 | **Pro** | $59.99/mo | 500 | No | Included | Priority queue + phone |
@@ -215,21 +198,11 @@ const STRIPE_PRODUCTS = {
 
 ## Edge & API Integration
 
-### Supabase Tables (planned)
+### Supabase Tables
 ```sql
-CREATE TABLE anonymous_tokens (
-  token TEXT PRIMARY KEY,
-  free_tokens_remaining INT DEFAULT 5,
-  dismissed_prompt BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMP DEFAULT NOW(),
-  last_seen_ip TEXT,
-  last_user_agent TEXT
-);
-
 CREATE TABLE preview_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID,
-  anonymous_token TEXT,
   style_id TEXT NOT NULL,
   orientation TEXT,
   watermark BOOLEAN DEFAULT TRUE,
@@ -247,7 +220,7 @@ CREATE TABLE subscriptions (
 ```
 
 ### Edge Function Responsibilities
-- Authenticate Supabase session (or anonymous token) from request headers.
+- Authenticate Supabase session from request headers.
 - Look up entitlements; reject when quota exhausted.
 - Invoke preview pipeline (Replicate/Supabase Edge) and apply watermark decision.
 - Deduct tokens + insert into `preview_logs` within a single transaction.
@@ -264,11 +237,11 @@ CREATE TABLE subscriptions (
 
 ### Logging & Analytics
 - Mirror preview events from edge function to PostHog (or chosen analytics) with properties: `tier`, `watermarked`, `orientation`.
-- Emit Sentry warnings for suspected abuse (e.g., >3 anonymous hard-gate attempts per IP per day).
-- Track upgrade funnel: anonymous → signup → subscription.
+- Emit Sentry warnings for repeated unauthorized preview attempts or quota overruns.
+- Track upgrade funnel: free → subscription tier conversion.
 
 ### Rollout Phases
-1. **Auth Foundation**: ship Supabase Auth + anonymous token tracking, enforce client-side gating.
+1. **Auth Foundation**: ship Supabase Auth, enforce sign-in before preview generation.
 2. **Edge Enforcement**: move entitlement checks into edge function, add Supabase tables, connect Stripe webhooks.
 3. **Subscription UX**: wire upgrade modals, token banners, and download behavior to real entitlements.
 4. **Full Launch**: enable feature flag for 10% traffic, monitor metrics, ramp to 100% when stable.

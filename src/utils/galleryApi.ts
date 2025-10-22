@@ -1,7 +1,6 @@
 export interface GalleryItem {
   id: string;
   userId: string | null;
-  anonToken: string | null;
   previewLogId: string | null;
   styleId: string;
   styleName: string;
@@ -31,7 +30,6 @@ export interface SaveToGalleryParams {
   styleName: string;
   orientation: 'horizontal' | 'vertical' | 'square';
   storagePath: string;
-  anonToken?: string | null;
   accessToken?: string | null;
 }
 
@@ -62,7 +60,7 @@ export async function saveToGallery(params: SaveToGalleryParams): Promise<{
   error?: string;
 }> {
   try {
-    const { anonToken, accessToken, storagePath, ...rest } = params;
+    const { accessToken, storagePath, ...rest } = params;
 
     if (!storagePath) {
       return {
@@ -88,9 +86,6 @@ export async function saveToGallery(params: SaveToGalleryParams): Promise<{
     }
 
     // Add anon token if present
-    if (anonToken) {
-      headers['X-WT-Anon'] = anonToken;
-    }
 
     const response = await fetch(`${SUPABASE_URL}/functions/v1/save-to-gallery`, {
       method: 'POST',
@@ -126,7 +121,6 @@ export async function saveToGallery(params: SaveToGalleryParams): Promise<{
  */
 export async function fetchGalleryItems(
   filters: GalleryFilters = {},
-  anonToken?: string | null,
   accessToken?: string | null
 ): Promise<GalleryListResponse | { error: string }> {
   try {
@@ -150,9 +144,6 @@ export async function fetchGalleryItems(
     }
 
     // Add anon token if present
-    if (anonToken) {
-      headers['X-WT-Anon'] = anonToken;
-    }
 
     const response = await fetch(
       `${SUPABASE_URL}/functions/v1/get-gallery?${params.toString()}`,
@@ -180,7 +171,6 @@ export async function fetchGalleryItems(
  */
 export async function deleteGalleryItem(
   itemId: string,
-  anonToken?: string | null,
   accessToken?: string | null
 ): Promise<{ success: boolean; error?: string }> {
   try {
@@ -192,10 +182,6 @@ export async function deleteGalleryItem(
     const token = accessToken || import.meta.env.VITE_SUPABASE_ANON_KEY;
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    if (anonToken) {
-      headers['X-WT-Anon'] = anonToken;
     }
 
     const response = await fetch(
@@ -227,7 +213,6 @@ export async function deleteGalleryItem(
 export async function toggleGalleryFavorite(
   itemId: string,
   isFavorited: boolean,
-  anonToken?: string | null,
   accessToken?: string | null
 ): Promise<{ success: boolean; error?: string }> {
   try {
@@ -239,10 +224,6 @@ export async function toggleGalleryFavorite(
     const token = accessToken || import.meta.env.VITE_SUPABASE_ANON_KEY;
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    if (anonToken) {
-      headers['X-WT-Anon'] = anonToken;
     }
 
     const response = await fetch(
@@ -274,7 +255,6 @@ export async function toggleGalleryFavorite(
  */
 export async function incrementGalleryDownload(
   itemId: string,
-  anonToken?: string | null,
   accessToken?: string | null
 ): Promise<{ success: boolean; error?: string }> {
   try {
@@ -286,10 +266,6 @@ export async function incrementGalleryDownload(
     const token = accessToken || import.meta.env.VITE_SUPABASE_ANON_KEY;
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    if (anonToken) {
-      headers['X-WT-Anon'] = anonToken;
     }
 
     const response = await fetch(
@@ -323,7 +299,6 @@ export async function incrementGalleryDownload(
 export async function getGalleryDownloadUrl(
   item: GalleryItem,
   requiresWatermark: boolean,
-  anonToken?: string | null,
   accessToken?: string | null
 ): Promise<string> {
   if (!requiresWatermark) {
@@ -343,10 +318,6 @@ export async function getGalleryDownloadUrl(
   const token = accessToken || import.meta.env.VITE_SUPABASE_ANON_KEY;
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
-  }
-
-  if (anonToken) {
-    headers['X-WT-Anon'] = anonToken;
   }
 
   const storagePath = item.storagePath || extractStoragePathFromUrl(item.imageUrl);

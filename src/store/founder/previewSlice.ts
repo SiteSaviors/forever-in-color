@@ -6,7 +6,7 @@ import { computeImageDigest } from '@/utils/imageHash';
 import { emitStepOneEvent } from '@/utils/telemetry';
 import { logPreviewStage } from '@/utils/previewAnalytics';
 import { playPreviewChime } from '@/utils/playPreviewChime';
-import { ENABLE_PREVIEW_QUERY_EXPERIMENT, REQUIRE_AUTH_FOR_PREVIEW } from '@/config/featureFlags';
+import { ENABLE_PREVIEW_QUERY_EXPERIMENT } from '@/config/featureFlags';
 import { executeStartPreview } from '@/features/preview';
 import { buildPreviewIdempotencyKey } from '@/utils/previewIdempotency';
 import { shouldRequireAuthGate } from '@/utils/authGate';
@@ -107,7 +107,6 @@ const STAGE_MESSAGES = {
   error: 'Generation failed',
 } as const;
 
-const AUTH_PREVIEW_REQUIRED = REQUIRE_AUTH_FOR_PREVIEW;
 
 export const createPreviewSlice = (
   initialStyles: StyleOption[]
@@ -368,9 +367,6 @@ export const createPreviewSlice = (
           return;
         }
 
-        const shouldUseAnonymousPath = !AUTH_PREVIEW_REQUIRED && !sessionUser;
-        const anonToken = shouldUseAnonymousPath ? get().anonToken : null;
-        const fingerprintHash = shouldUseAnonymousPath ? await get().ensureFingerprintHash() : null;
         const cachedImageHash = get().currentImageHash;
 
         emitStepOneEvent({ type: 'preview', styleId: style.id, status: 'start' });
@@ -389,8 +385,6 @@ export const createPreviewSlice = (
           orientation: targetOrientation,
           imageHash: idempotencyImageKey,
           sessionUserId: sessionUser?.id ?? null,
-          anonToken,
-          fingerprintHash,
         });
 
         const handleStage = (stage: 'generating' | 'polling' | 'watermarking') => {
@@ -417,10 +411,8 @@ export const createPreviewSlice = (
           styleId: style.id,
           styleName: style.name,
           aspectRatio,
-          anonToken,
           accessToken,
           idempotencyKey,
-          fingerprintHash,
           onStage: handleStage,
         } as const;
 

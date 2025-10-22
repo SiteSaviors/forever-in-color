@@ -8,10 +8,8 @@ export interface FounderPreviewParams {
   aspectRatio: string;
   onStage?: (stage: FounderPreviewStage) => void;
   signal?: AbortSignal;
-  anonToken?: string | null;
   accessToken?: string | null;
   idempotencyKey?: string;
-  fingerprintHash?: string | null;
 }
 
 export interface FounderPreviewResult {
@@ -51,10 +49,8 @@ export const startFounderPreviewGeneration = async ({
   aspectRatio,
   onStage,
   signal,
-  anonToken,
   accessToken,
   idempotencyKey,
-  fingerprintHash,
 }: FounderPreviewParams): Promise<FounderPreviewResult> => {
   if (!imageUrl) {
     throw new Error('No base image available for style generation');
@@ -72,7 +68,7 @@ export const startFounderPreviewGeneration = async ({
       previewUrl: imageUrl,
       requiresWatermark: true,
       remainingTokens: null,
-      tier: 'anonymous',
+      tier: 'free',
       priority: 'normal',
       storageUrl: imageUrl,
       storagePath: null,
@@ -88,10 +84,8 @@ export const startFounderPreviewGeneration = async ({
     aspectRatio,
     {
       onStage: (stage) => onStage?.(stage),
-      anonToken,
       accessToken,
       idempotencyKey,
-      fingerprintHash
     }
   );
 

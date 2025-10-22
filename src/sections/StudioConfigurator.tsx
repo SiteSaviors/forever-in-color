@@ -1,6 +1,7 @@
 import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import { clsx } from 'clsx';
 import { useFounderStore, StylePreviewStatus } from '@/store/useFounderStore';
+import { useAuthModal } from '@/store/useAuthModal';
 import { useStudioFeedback } from '@/hooks/useStudioFeedback';
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
 import { saveToGallery } from '@/utils/galleryApi';
@@ -71,8 +72,6 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
   const stylePreviewError = useFounderStore((state) => state.stylePreviewError);
   const startStylePreview = useFounderStore((state) => state.startStylePreview);
   const orientationPreviewPending = useFounderStore((state) => state.orientationPreviewPending);
-  const anonToken = useFounderStore((state) => state.anonToken);
-  const setAccountPromptShown = useFounderStore((state) => state.setAccountPromptShown);
   const livingCanvasModalOpen = useFounderStore((state) => state.livingCanvasModalOpen);
   const launchpadExpanded = useFounderStore((state) => state.launchpadExpanded);
   const setLaunchpadExpanded = useFounderStore((state) => state.setLaunchpadExpanded);
@@ -92,6 +91,7 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
   const [showCanvasUpsellToast, setShowCanvasUpsellToast] = useState(false);
   const [welcomeDismissed, setWelcomeDismissed] = useState(false);
   const { showToast, renderFeedback } = useStudioFeedback();
+  const openAuthModal = useAuthModal((state) => state.openModal);
 
   const generalGate = evaluateStyleGate(null);
   const currentStyleGate = currentStyle ? evaluateStyleGate(currentStyle.id) : generalGate;
@@ -109,7 +109,7 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
   const showReturningBanner = returningUser && !welcomeDismissed;
 
   // Get user tier from entitlements
-  const userTier = useFounderStore((state) => state.entitlements?.tier ?? 'anonymous');
+  const userTier = useFounderStore((state) => state.entitlements?.tier ?? 'free');
   const requiresWatermark = useFounderStore((state) => state.entitlements?.requiresWatermark ?? true);
   const isPremiumUser = !requiresWatermark;
   const [watermarkUpgradeShown, setWatermarkUpgradeShown] = useState(false);
@@ -204,7 +204,7 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
     }
 
     if (!sessionUser) {
-      setAccountPromptShown(true);
+      openAuthModal('signup');
       return;
     }
 
@@ -233,7 +233,6 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
       styleName: currentStyle.name,
       orientation,
       storagePath,
-      anonToken: sessionUser ? undefined : anonToken,
       accessToken: sessionAccessToken || null,
     });
 

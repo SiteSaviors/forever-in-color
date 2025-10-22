@@ -7,10 +7,8 @@ export type StartPreviewRequest = {
   styleId: string;
   styleName: string;
   aspectRatio: string;
-  anonToken: string | null;
   accessToken: string | null;
   idempotencyKey: string;
-  fingerprintHash: string | null;
   onStage?: StartPreviewStageCallback;
   signal?: AbortSignal;
 };

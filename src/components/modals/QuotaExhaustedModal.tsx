@@ -59,13 +59,6 @@ const QuotaExhaustedModal = ({
 
   const tierMessage = useMemo(() => {
     switch (currentTier) {
-      case 'anonymous':
-        return {
-          title: "You've Created 10 Previews!",
-          subtitle: 'Sign up for a free account to get 10 more tokens this month',
-          showUpgrade: false,
-          upgradeToAnonymous: true,
-        };
       case 'free':
         return {
           title: "You've Used All 10 Tokens This Month",
@@ -94,6 +87,12 @@ const QuotaExhaustedModal = ({
           showUpgrade: false,
           showContact: true,
         };
+      case 'dev':
+        return {
+          title: 'Developer tier active',
+          subtitle: 'Unlimited tokens enabled for diagnostics.',
+          showUpgrade: false,
+        };
       default:
         return {
           title: 'Token Limit Reached',
@@ -121,12 +120,6 @@ const QuotaExhaustedModal = ({
     } else {
       navigate('/pricing');
     }
-    onClose();
-  };
-
-  const handleSignUp = () => {
-    // This would trigger the auth modal
-    navigate('/pricing');
     onClose();
   };
 
@@ -171,7 +164,7 @@ const QuotaExhaustedModal = ({
               </div>
 
               {/* Token reset info (for time-gated tiers) */}
-              {daysUntilRenew !== null && currentTier !== 'anonymous' && (
+              {daysUntilRenew !== null && currentTier !== 'dev' && (
                 <div className="mt-6 flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
                   <Clock className="h-4 w-4 text-white/50" />
                   <span className="text-sm text-white/70">
@@ -222,22 +215,7 @@ const QuotaExhaustedModal = ({
 
               {/* CTAs */}
               <div className="mt-8 flex flex-col gap-3">
-                {tierMessage.upgradeToAnonymous ? (
-                  <>
-                    <Button
-                      onClick={handleSignUp}
-                      className="w-full rounded-xl bg-gradient-to-r from-purple-500 to-indigo-500 py-4 text-base font-semibold text-white shadow-[0_20px_60px_rgba(139,92,246,0.5)] transition-all hover:scale-[1.02] hover:shadow-[0_25px_70px_rgba(139,92,246,0.6)]"
-                    >
-                      Create Free Account
-                    </Button>
-                    <button
-                      onClick={onClose}
-                      className="text-sm text-white/60 transition hover:text-white"
-                    >
-                      Maybe Later
-                    </button>
-                  </>
-                ) : tierMessage.showUpgrade ? (
+                {tierMessage.showUpgrade ? (
                   <>
                     <Button
                       onClick={handleUpgrade}
@@ -263,12 +241,12 @@ const QuotaExhaustedModal = ({
                     Contact Sales
                   </Button>
                 ) : (
-                  <button
+                  <Button
                     onClick={onClose}
-                    className="w-full rounded-xl border border-white/20 bg-white/5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+                    className="w-full rounded-xl bg-gradient-to-r from-purple-500 to-indigo-500 py-4 text-base font-semibold text-white"
                   >
-                    Close
-                  </button>
+                    Back to Studio
+                  </Button>
                 )}
               </div>
             </div>

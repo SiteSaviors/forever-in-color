@@ -6,7 +6,6 @@ import {
   type PreviewResponse,
   type PreviewStatusResponse,
 } from '../../shared/validation/previewSchemas';
-import { REQUIRE_AUTH_FOR_PREVIEW } from '@/config/featureFlags';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
@@ -33,9 +32,7 @@ export interface GeneratePreviewParams {
   options?: {
     quality?: PreviewRequest['quality'];
     idempotencyKey: string;
-    anonToken?: string | null;
     accessToken?: string | null;
-    fingerprintHash?: string | null;
     cacheBypass?: boolean;
   };
 }
@@ -44,7 +41,6 @@ export const generateStylePreview = async (
   params: GeneratePreviewParams
 ): Promise<PreviewGenerationResult> => {
   const { imageUrl, style, photoId, aspectRatio, options = {} } = params;
-  const requireAuth = REQUIRE_AUTH_FOR_PREVIEW;
 
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
     throw new Error('Supabase credentials are not configured');
@@ -57,10 +53,6 @@ export const generateStylePreview = async (
   const headers: Record<string, string> = {
     ...defaultHeaders()
   };
-
-  if (!requireAuth && options.anonToken) {
-    headers['X-WT-Anon'] = options.anonToken;
-  }
 
   const authToken = options.accessToken ?? SUPABASE_ANON_KEY ?? null;
   if (authToken) {
@@ -77,7 +69,6 @@ export const generateStylePreview = async (
     aspectRatio,
     quality: options.quality,
     cacheBypass: options.cacheBypass,
-    fingerprintHash: requireAuth ? null : options.fingerprintHash ?? null,
     isAuthenticated: Boolean(options.accessToken),
   });
 

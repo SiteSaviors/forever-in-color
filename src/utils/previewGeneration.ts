@@ -5,9 +5,7 @@ export interface GeneratePreviewOptions {
   quality?: 'low' | 'medium' | 'high' | 'auto';
   onStage?: (stage: 'generating' | 'polling' | 'watermarking') => void;
   idempotencyKey?: string;
-  anonToken?: string | null;
   accessToken?: string | null;
-  fingerprintHash?: string | null;
 }
 
 export interface GeneratePreviewResult {
@@ -43,9 +41,7 @@ export const generateAndWatermarkPreview = async (
     options: {
       quality: options.quality,
       idempotencyKey: options.idempotencyKey ?? requestId,
-      anonToken: options.anonToken ?? null,
       accessToken: options.accessToken ?? null,
-      fingerprintHash: options.fingerprintHash ?? null
     }
   });
 

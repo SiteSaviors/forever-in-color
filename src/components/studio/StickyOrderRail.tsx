@@ -235,7 +235,7 @@ const StickyOrderRail = ({ mobileRoomPreview, onDownloadClick, downloadingHD, is
     }
 
     // Track order started
-    const userTier = useFounderStore.getState().entitlements?.tier ?? 'anonymous';
+    const userTier = useFounderStore.getState().entitlements?.tier ?? 'free';
     trackOrderStarted(userTier, total, enabledEnhancements.length > 0);
 
     setCheckoutError(null);

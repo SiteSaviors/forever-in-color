@@ -107,7 +107,7 @@ const CheckoutSummary = () => {
           </div>
             <div className="flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-purple-400" />
-            {entitlements.tier === 'anonymous' || entitlements.tier === 'free'
+            {entitlements.tier === 'free'
               ? 'Watermarked preview until purchase completes'
               : 'Includes clean, watermark-free download'}
           </div>
