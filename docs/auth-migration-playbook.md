@@ -180,6 +180,17 @@ Each phase should complete before advancing; regression tests and mandatory scri
 
 ---
 
+### Phase 4 Outputs
+
+- `supabase/functions/generate-style-preview/index.ts:366` now enforces real Supabase sessions when `REQUIRE_AUTH_FOR_PREVIEW` is enabled, disables anonymous fallback, and threads tier/user metadata into cache operations.
+- Cache metadata + keying were upgraded (`supabase/functions/generate-style-preview/cache/cacheKey.ts:3`, `cache/cacheMetadataService.ts:1`) to include tier segmentation and ownership, backed by migration `supabase/migrations/20251101120000_add_preview_cache_auth_metadata.sql:1`.
+- Webhook persistence mirrors the new metadata so asynchronous completions stay in sync with synchronous requests (`supabase/functions/generate-style-preview/index.ts:198`).
+- Preview slice/session wiring continues to replay pending requests post-auth with no UI churn; anonymous branches remain dormant for rollback.
+- Builds run post-change: `npm run lint`, `npm run build`, `npm run build:analyze` (build succeeded; CLI hit the sandbox timeout after completion).
+- Deployment checklist: set Supabase env `REQUIRE_AUTH_FOR_PREVIEW=true`, align frontend flag, flush `preview_cache_entries` (cache key v4), and monitor for 401 spikes.
+
+---
+
 ## Phase 5 – Gradual Production Rollout
 
 **Objective**: Enable auth gating for cohorts while monitoring SLOs.

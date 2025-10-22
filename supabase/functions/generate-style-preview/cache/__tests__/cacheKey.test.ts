@@ -21,10 +21,11 @@ Deno.test('buildCacheKey composes expected structure and round-trips', () => {
     styleVersion: '12345',
     aspectRatio: '3:2',
     quality: 'HIGH',
+    tier: 'creator',
     watermark: false
   });
 
-  assertEquals(cacheKey, 'preview:v1:5:12345:3:2:high:no-watermark:digest');
+  assertEquals(cacheKey, 'preview:v4:5:12345:3:2:high:creator:digest');
 
   const parsed = parseCacheKey(cacheKey);
   if (!parsed) {
@@ -35,6 +36,6 @@ Deno.test('buildCacheKey composes expected structure and round-trips', () => {
   assertEquals(parsed.styleVersion, '12345');
   assertEquals(parsed.aspectRatio, '3:2');
   assertEquals(parsed.quality, 'high');
-  assertEquals(parsed.watermark, false);
+  assertEquals(parsed.tier, 'creator');
   assertEquals(parsed.imageDigest, 'digest');
 });

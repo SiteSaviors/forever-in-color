@@ -93,6 +93,17 @@ const initializeWarmup = (() => {
   };
 })();
 
+const extractBearerToken = (headerValue?: string | null): string | null => {
+  if (!headerValue) return null;
+  const trimmed = headerValue.trim();
+  if (!trimmed) return null;
+  const [scheme, token] = trimmed.split(' ');
+  if (token && /^Bearer$/i.test(scheme)) {
+    return token;
+  }
+  return trimmed;
+};
+
 async function normalizeImageInput(
   image: string,
   supabase: ReturnType<typeof createClient>
@@ -198,13 +209,15 @@ async function handleWebhookRequest(req: Request, url: URL, origin: string | nul
         const cacheAllowed = (statusRow.cache_allowed as boolean | null) ?? true;
 
         if (cacheAllowed && imageDigest && styleId && styleVersion && aspectRatio && quality) {
+          const cacheTierForAsync = (statusRow.tier as string | null) ?? 'free';
           const cacheKey = buildCacheKey({
             imageDigest,
             styleId,
             styleVersion,
             aspectRatio,
             quality,
-            watermark: false // Always false - watermarks applied on-demand
+            watermark: false, // Always false - watermarks applied on-demand
+            tier: cacheTierForAsync
           });
 
           const storagePath = computeStoragePath(styleId, aspectRatio, quality, imageDigest);
@@ -224,7 +237,9 @@ async function handleWebhookRequest(req: Request, url: URL, origin: string | nul
             storagePath: uploadResult.storagePath,
             previewUrl: uploadResult.publicUrl,
             ttlExpiresAt: new Date(Date.now() + ttlMs).toISOString(),
-            sourceRequestId: statusRow.request_id as string
+            sourceRequestId: statusRow.request_id as string,
+            createdByUserId: (statusRow.user_id as string | null) ?? null,
+            tier: cacheTierForAsync
           });
 
           memoryCache.set(cacheKey, uploadResult.publicUrl, ttlMs);
@@ -418,6 +433,17 @@ serve(async (req) => {
     const anonHeader = req.headers.get('x-wt-anon') ?? req.headers.get('X-WT-Anon');
     const idempotencyKey = req.headers.get('x-idempotency-key') ?? req.headers.get('X-Idempotency-Key');
 
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? null;
+    const bearerToken = extractBearerToken(authorizationHeader);
+    const bearerIsAnonKey = supabaseAnonKey && bearerToken ? bearerToken === supabaseAnonKey : false;
+
+    if (requireAuthForPreviewFlag && (!bearerToken || bearerIsAnonKey)) {
+      return respond(
+        JSON.stringify(createErrorResponse('unauthorized', 'Valid Supabase session required', requestId, 'UNAUTHORIZED')),
+        401
+      );
+    }
+
     if (!idempotencyKey) {
       logger.warn('Missing idempotency key header');
       return respond(
@@ -429,13 +455,17 @@ serve(async (req) => {
     let entitlementContext: EntitlementContext | null = null;
 
     if (entitlementsFlag) {
+      const allowAnonymous = !requireAuthForPreviewFlag;
+      const effectiveAnonHeader = allowAnonymous ? anonHeader : null;
+      const effectiveFingerprint = allowAnonymous ? fingerprintHash : null;
+
       try {
         const { context } = await resolveEntitlements({
           supabase,
           accessToken: authorizationHeader,
-          anonToken: anonHeader,
+          anonToken: effectiveAnonHeader,
           devBypassEmails,
-          fingerprintHash,
+          fingerprintHash: effectiveFingerprint,
           ipAddress
         });
         entitlementContext = context;
@@ -472,6 +502,12 @@ serve(async (req) => {
         }
 
         if (message === 'ANON_TOKEN_MISSING') {
+          if (requireAuthForPreviewFlag) {
+            return respond(
+              JSON.stringify(createErrorResponse('unauthorized', 'Valid Supabase session required', requestId, 'UNAUTHORIZED')),
+              401
+            );
+          }
           return respond(
             JSON.stringify(createErrorResponse('anonymous_session_required', 'Anonymous token is required. Call /api/anon/mint first.', requestId, 'ANON_TOKEN_MISSING')),
             401
@@ -864,6 +900,9 @@ serve(async (req) => {
     let cacheKey: string | null = null;
 
     let metadataEntry: CacheMetadataRecord | null = null;
+    const cacheTier = entitlementContext?.tierForDb ?? (entitlementContext?.tierLabel ?? null);
+    const cacheTierKey = (cacheTier ?? 'free').toString();
+    const cacheOwnerUserId = entitlementContext?.userId ?? null;
 
     if (cacheAllowedForRequest) {
       cacheKey = buildCacheKey({
@@ -872,7 +911,8 @@ serve(async (req) => {
         styleVersion: styleMetadata.styleVersion,
         aspectRatio: normalizedAspectRatio,
         quality: normalizedQuality,
-        watermark: effectiveWatermark
+        watermark: effectiveWatermark,
+        tier: cacheTierKey
       });
 
       // Check memory cache FIRST
@@ -974,7 +1014,9 @@ serve(async (req) => {
             storagePath: uploadResult.storagePath,
             previewUrl: uploadResult.publicUrl,
             ttlExpiresAt,
-            sourceRequestId: requestId
+            sourceRequestId: requestId,
+            createdByUserId: cacheOwnerUserId,
+            tier: cacheTierKey
           });
 
           memoryCache.set(cacheKey, uploadResult.publicUrl, ttlMs);

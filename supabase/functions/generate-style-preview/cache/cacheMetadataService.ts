@@ -15,6 +15,8 @@ export interface CacheMetadataRecord {
   last_accessed_at: string | null;
   hit_count: number;
   source_request_id: string | null;
+  created_by_user_id: string | null;
+  tier: string | null;
 }
 
 export interface CreateCacheEntryInput {
@@ -29,6 +31,8 @@ export interface CreateCacheEntryInput {
   previewUrl: string;
   ttlExpiresAt: string;
   sourceRequestId: string;
+  createdByUserId?: string | null;
+  tier?: string | null;
 }
 
 export class CacheMetadataService {
@@ -64,6 +68,8 @@ export class CacheMetadataService {
       preview_url: entry.previewUrl,
       ttl_expires_at: entry.ttlExpiresAt,
       source_request_id: entry.sourceRequestId,
+      created_by_user_id: entry.createdByUserId ?? null,
+      tier: entry.tier ?? null,
       last_accessed_at: new Date().toISOString(),
       hit_count: 1
     };

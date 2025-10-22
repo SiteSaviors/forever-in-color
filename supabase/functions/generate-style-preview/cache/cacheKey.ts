@@ -1,6 +1,6 @@
 const textEncoder = new TextEncoder();
 
-export const CACHE_KEY_VERSION = 'v3'; // Incremented: removed watermark from cache key
+export const CACHE_KEY_VERSION = 'v4'; // Incremented: include entitlement tier dimension
 
 export interface CacheKeyParts {
   imageDigest: string;
@@ -9,6 +9,7 @@ export interface CacheKeyParts {
   aspectRatio: string;
   quality: string;
   watermark?: boolean; // Optional for backwards compat, ignored in v3
+  tier?: string | null;
 }
 
 const base64Url = (buffer: ArrayBuffer): string => {
@@ -33,12 +34,14 @@ export const buildCacheKey = (parts: CacheKeyParts): string => {
     styleId,
     styleVersion,
     aspectRatio,
-    quality
+    quality,
+    tier
     // watermark param removed - single clean cache entry per image
   } = parts;
 
   const normalizedAspectRatio = aspectRatio.toLowerCase();
   const normalizedQuality = quality.toLowerCase();
+  const normalizedTier = (tier ?? 'shared').toString().toLowerCase();
 
   return [
     'preview',
@@ -47,6 +50,7 @@ export const buildCacheKey = (parts: CacheKeyParts): string => {
     styleVersion,
     normalizedAspectRatio,
     normalizedQuality,
+    normalizedTier,
     imageDigest
   ].join(':');
 };
@@ -89,9 +93,9 @@ export const parseCacheKey = (cacheKey: string): CacheKeyParts | null => {
   const parts = cacheKey.split(':');
 
   // Support both v3 (7 parts, no watermark) and v2 (8 parts, with watermark) for migration
-  if (parts.length === 7) {
-    // v3 format: preview:v3:styleId:styleVersion:aspectRatio:quality:imageDigest
-    const [prefix, version, styleId, styleVersion, aspectRatio, quality, imageDigest] = parts;
+  if (parts.length === 8 && parts[1] === CACHE_KEY_VERSION) {
+    // v4 format: preview:v4:styleId:styleVersion:aspectRatio:quality:tier:imageDigest
+    const [prefix, version, styleId, styleVersion, aspectRatio, quality, tier, imageDigest] = parts;
 
     if (prefix !== 'preview' || version !== CACHE_KEY_VERSION) {
       return null;
@@ -107,9 +111,30 @@ export const parseCacheKey = (cacheKey: string): CacheKeyParts | null => {
       styleId: parsedStyleId,
       styleVersion,
       aspectRatio,
+      quality,
+      tier
+    };
+  } else if (parts.length === 7) {
+    // v3 format: preview:v3:styleId:styleVersion:aspectRatio:quality:imageDigest
+    const [prefix, version, styleId, styleVersion, aspectRatio, quality, imageDigest] = parts;
+
+    if (prefix !== 'preview' || version !== 'v3') {
+      return null;
+    }
+
+    const parsedStyleId = Number.parseInt(styleId, 10);
+    if (Number.isNaN(parsedStyleId)) {
+      return null;
+    }
+
+    return {
+      imageDigest,
+      styleId: parsedStyleId,
+      styleVersion,
+      aspectRatio,
       quality
     };
-  } else if (parts.length === 8) {
+  } else if (parts.length === 8 && parts[1] === 'v2') {
     // v2 format (legacy): preview:v2:styleId:styleVersion:aspectRatio:quality:watermarkFlag:imageDigest
     const [prefix, version, styleId, styleVersion, aspectRatio, quality, _watermarkFlag, imageDigest] = parts;
 
