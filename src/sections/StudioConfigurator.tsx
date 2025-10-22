@@ -111,6 +111,7 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
   // Get user tier from entitlements
   const userTier = useFounderStore((state) => state.entitlements?.tier ?? 'anonymous');
   const requiresWatermark = useFounderStore((state) => state.entitlements?.requiresWatermark ?? true);
+  const isPremiumUser = !requiresWatermark;
   const [watermarkUpgradeShown, setWatermarkUpgradeShown] = useState(false);
 
   const handleDownloadHD = async () => {

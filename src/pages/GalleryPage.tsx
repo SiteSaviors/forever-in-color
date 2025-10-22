@@ -427,7 +427,7 @@ const GalleryPage = () => {
                   <div className="mt-3 grid grid-cols-1 gap-2">
                     <button
                       onClick={() => handleDownload(item)}
-                      className="w-full px-4 py-2 rounded-lg bg-gradient-to-r from-brand-indigo to-purple-600 hover:from-brand-indigo/90 hover:to-purple-600/90 text-white font-semibold transition-all shadow-sm hover:shadow-md text-sm flex items-center justify-center gap-2"
+                      className="w-full rounded-full px-6 py-3 text-sm font-semibold bg-gradient-cta text-white shadow-glow-purple hover:shadow-glow-purple transition-all flex items-center justify-center gap-2"
                     >
                       <Download className="w-4 h-4" />
                       Download Image
