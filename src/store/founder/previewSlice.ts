@@ -3,7 +3,7 @@ import { fetchPreviewForStyle, type PreviewResult } from '@/utils/previewClient'
 import { startFounderPreviewGeneration } from '@/utils/founderPreviewGeneration';
 import type { Orientation } from '@/utils/imageUtils';
 import { computeImageDigest } from '@/utils/imageHash';
-import { emitStepOneEvent } from '@/utils/telemetry';
+import { emitAuthGateEvent, emitStepOneEvent } from '@/utils/telemetry';
 import { logPreviewStage } from '@/utils/previewAnalytics';
 import { playPreviewChime } from '@/utils/playPreviewChime';
 import { ENABLE_PREVIEW_QUERY_EXPERIMENT } from '@/config/featureFlags';
@@ -701,6 +701,11 @@ export const createPreviewSlice = (
         authGateOpen: true,
         pendingAuthStyleId: styleId,
         pendingAuthOptions: options ? { ...options } : null,
+      });
+      emitAuthGateEvent({
+        type: 'auth_modal_shown',
+        surface: 'preview',
+        styleId,
       });
     },
     clearAuthGateIntent: () => {

@@ -14,7 +14,6 @@ export const previewRequestSchema = z
     watermark: z.boolean().default(true),
     quality: qualityEnum.default('medium'),
     cacheBypass: z.boolean().default(false),
-    fingerprintHash: z.string().nullable().optional(),
     isAuthenticated: z.boolean().optional(),
   })
   .passthrough();

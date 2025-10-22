@@ -14,6 +14,15 @@ export function emitStepOneEvent(event: StepOneEvent) {
   console.log('[FounderTelemetry]', event);
 }
 
+export type AuthGateEvent =
+  | { type: 'auth_modal_shown'; surface: 'preview'; styleId?: string | null }
+  | { type: 'auth_modal_completed'; method: 'google' | 'email' }
+  | { type: 'auth_modal_abandoned'; reason: 'dismiss' | 'close' };
+
+export function emitAuthGateEvent(event: AuthGateEvent) {
+  console.log('[AuthGateTelemetry]', event);
+}
+
 // Phase 2: Progressive Disclosure Analytics Events
 export type ProgressiveDisclosureEvent =
   | { type: 'cta_download_click'; userTier: string; isPremium: boolean; timestamp: number }

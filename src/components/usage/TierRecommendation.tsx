@@ -17,14 +17,6 @@ type RecommendationData = {
 };
 
 const TIER_RECOMMENDATIONS: Record<EntitlementTier, RecommendationData | null> = {
-  anonymous: {
-    recommendedTier: 'Free',
-    currentQuota: 5,
-    recommendedQuota: 10,
-    price: '$0/month',
-    reason: 'Sign up for a free account to double your monthly tokens',
-    savings: 'Get 5 more tokens per month',
-  },
   free: {
     recommendedTier: 'Creator',
     currentQuota: 10,

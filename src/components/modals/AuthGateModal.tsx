@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X, Loader2, ShieldCheck } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { useFounderStore } from '@/store/useFounderStore';
 import { useAuthModal } from '@/store/useAuthModal';
+import { emitAuthGateEvent } from '@/utils/telemetry';
 
 const AUTH_GATE_COPY = {
   headline: 'Your photo is ready for AI styling!',
@@ -39,9 +40,26 @@ const AuthGateModal = () => {
   const [isGoogleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleClose = () => {
+  const closingProgrammaticallyRef = useRef(false);
+
+  const finalizeClose = () => {
+    closingProgrammaticallyRef.current = true;
     setAuthGateOpen(false);
     clearAuthGateIntent();
+  };
+
+  const handleDismiss = (reason: 'dismiss' | 'close') => {
+    emitAuthGateEvent({ type: 'auth_modal_abandoned', reason });
+    finalizeClose();
+  };
+
+  const handleDialogOpenChange = (next: boolean) => {
+    if (next) return;
+    if (closingProgrammaticallyRef.current) {
+      closingProgrammaticallyRef.current = false;
+      return;
+    }
+    handleDismiss('dismiss');
   };
 
   useEffect(() => {
@@ -60,8 +78,6 @@ const AuthGateModal = () => {
         throw new Error('Authentication is not configured.');
       }
 
-      setAuthGateOpen(false);
-
       const redirectTo = `${window.location.origin}/create`;
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -74,30 +90,32 @@ const AuthGateModal = () => {
         throw oauthError;
       }
 
+      emitAuthGateEvent({ type: 'auth_modal_completed', method: 'google' });
+      finalizeClose();
       // Supabase will redirect. Ensure pending preview is retained if the tab stays open.
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Google sign-in failed. Please try again.';
       setError(message);
-      setAuthGateOpen(true);
     } finally {
       setGoogleLoading(false);
     }
   };
 
   const handleEmailSignIn = () => {
-    setAuthGateOpen(false);
+    emitAuthGateEvent({ type: 'auth_modal_completed', method: 'email' });
+    finalizeClose();
     openAuthModal('signup');
   };
 
   return (
-    <Dialog.Root open={open} onOpenChange={(next) => !next && handleClose()}>
+    <Dialog.Root open={open} onOpenChange={handleDialogOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-[60] bg-slate-950/80 backdrop-blur-sm" />
         <Dialog.Content className="fixed inset-0 z-[61] flex items-center justify-center px-4 py-6">
           <div className="relative w-full max-w-lg animate-fadeIn rounded-3xl border border-white/10 bg-gradient-to-br from-slate-950 via-slate-900/95 to-slate-950 p-8 shadow-[0_35px_120px_rgba(76,29,149,0.45)]">
             <button
               type="button"
-              onClick={handleClose}
+              onClick={() => handleDismiss('close')}
               className="absolute right-6 top-6 text-white/60 transition hover:text-white"
               aria-label="Close"
             >

@@ -426,6 +426,10 @@ serve(async (req) => {
     const bearerIsAnonKey = supabaseAnonKey && bearerToken ? bearerToken === supabaseAnonKey : false;
 
     if (!bearerToken || bearerIsAnonKey) {
+      logger.warn('preview_auth_failed', {
+        reason: 'missing_bearer',
+        requestId
+      });
       return respond(
         JSON.stringify(createErrorResponse('unauthorized', 'Valid Supabase session required', requestId, 'UNAUTHORIZED')),
         401
@@ -480,6 +484,10 @@ serve(async (req) => {
       logger.warn('Failed to resolve entitlements', { requestId, message });
 
       if (message === 'UNAUTHORIZED') {
+        logger.warn('preview_auth_failed', {
+          reason: 'invalid_session',
+          requestId
+        });
         return respond(
           JSON.stringify(createErrorResponse('unauthorized', 'Valid Supabase session required', requestId, 'UNAUTHORIZED')),
           401
