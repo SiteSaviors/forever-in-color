@@ -29,7 +29,10 @@ const SmartCropPreview = ({
       return { maxWidth: 'min(92vw, 48rem)', maxHeight: '50vh' };
     }
     if (orientation === 'vertical') {
-      return { maxWidth: 'min(85vw, 28rem)', maxHeight: '58vh' };
+      return {
+        maxWidth: 'min(70vw, 22rem)',
+        maxHeight: 'min(72vh, 620px)'
+      };
     }
     return { maxWidth: 'min(88vw, 32rem)', maxHeight: '55vh' };
   }, [orientation]);

@@ -23,13 +23,12 @@ const StickyOrderRail = ({ mobileRoomPreview, onDownloadClick, downloadingHD, is
   const inFlightCropsRef = useRef<Map<Orientation, Promise<SmartCropResult>>>(new Map());
   const [cropperOpen, setCropperOpen] = useState(false);
   const [pendingOrientation, setPendingOrientation] = useState<Orientation | null>(null);
-  const [canvasConfigExpanded, setCanvasConfigExpanded] = useState(false);
+  const [canvasConfigExpanded, setCanvasConfigExpanded] = useState(true);
   const canvasToggleRef = useRef<HTMLButtonElement>(null);
   const enhancements = useFounderStore((state) => state.enhancements);
   const toggleEnhancement = useFounderStore((state) => state.toggleEnhancement);
   const setLivingCanvasModalOpen = useFounderStore((state) => state.setLivingCanvasModalOpen);
   const total = useFounderStore((state) => state.computedTotal());
-  const basePrice = useFounderStore((state) => state.basePrice);
   const currentStyle = useFounderStore((state) => state.currentStyle());
   const orientation = useFounderStore((state) => state.orientation);
   const setOrientation = useFounderStore((state) => state.setOrientation);
@@ -317,7 +316,7 @@ const StickyOrderRail = ({ mobileRoomPreview, onDownloadClick, downloadingHD, is
         onLivingCanvasInfoClick={() => setLivingCanvasModalOpen(true)}
         currentStyleName={currentStyle?.name}
         selectedSizeLabel={selectedSizeOption?.label}
-        basePrice={selectedSizeOption?.price ?? basePrice}
+        selectedSizePrice={selectedSizeOption?.price ?? null}
         enabledEnhancements={enabledEnhancements}
         total={total}
         checkoutDisabled={checkoutDisabled}

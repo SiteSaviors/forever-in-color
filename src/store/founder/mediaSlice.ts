@@ -1,7 +1,7 @@
 import type { StateCreator } from 'zustand';
 import type { Orientation } from '@/utils/imageUtils';
 import type { SmartCropResult } from '@/utils/smartCrop';
-import { CANVAS_SIZE_OPTIONS, getDefaultSizeForOrientation } from '@/utils/canvasSizes';
+import { CANVAS_SIZE_OPTIONS } from '@/utils/canvasSizes';
 import type { FounderState } from '../useFounderStore';
 
 export type MediaSlice = {
@@ -77,8 +77,10 @@ export const createMediaSlice: StateCreator<FounderState, [], [], MediaSlice> = 
     if (current.orientation === orientation) return;
 
     const availableOptions = CANVAS_SIZE_OPTIONS[orientation];
-    const hasCurrentSize = availableOptions.some((option) => option.id === current.selectedCanvasSize);
-    const nextCanvasSize = hasCurrentSize ? current.selectedCanvasSize : getDefaultSizeForOrientation(orientation);
+    const hasCurrentSize = current.selectedCanvasSize
+      ? availableOptions.some((option) => option.id === current.selectedCanvasSize)
+      : false;
+    const nextCanvasSize = hasCurrentSize ? current.selectedCanvasSize : null;
 
     const previousOrientation = current.orientation;
     set({ orientation, selectedCanvasSize: nextCanvasSize });

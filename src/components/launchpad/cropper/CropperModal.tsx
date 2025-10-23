@@ -218,9 +218,14 @@ const CropperModal = ({
             <div
               className="relative bg-black/40 rounded-2xl overflow-hidden border border-white/5"
               style={{
-                height: activeOrientation === 'vertical'
-                  ? 'min(55vh, 600px)' // Portrait: shorter on mobile, max 600px
-                  : 'min(50vh, 500px)'  // Landscape/Square: even shorter, max 500px
+                height:
+                  activeOrientation === 'vertical'
+                    ? 'min(66vh, 620px)'
+                    : 'min(52vh, 520px)',
+                maxWidth:
+                  activeOrientation === 'vertical'
+                    ? 'min(70vw, 24rem)'
+                    : undefined
               }}
             >
               {originalImage ? (

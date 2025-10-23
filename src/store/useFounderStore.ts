@@ -81,7 +81,7 @@ type FounderBaseState = {
   launchpadExpanded: boolean;
   launchpadSlimMode: boolean;
   uploadIntentAt: number | null;
-  selectedCanvasSize: CanvasSize;
+  selectedCanvasSize: CanvasSize | null;
   selectedFrame: FrameColor;
   setLivingCanvasModalOpen: (open: boolean) => void;
   setUploadedImage: (dataUrl: string | null) => void;
@@ -102,7 +102,7 @@ type FounderBaseState = {
   setHoveredStyle: (id: string | null) => void;
   setPreselectedStyle: (id: string | null) => void;
   requestUpload: (options?: { preselectedStyleId?: string }) => void;
-  setCanvasSize: (size: CanvasSize) => void;
+  setCanvasSize: (size: CanvasSize | null) => void;
   setFrame: (frame: FrameColor) => void;
   selectStyle: (id: string) => void;
   toggleEnhancement: (id: string) => void;
@@ -282,7 +282,7 @@ export const useFounderStore = create<FounderState>((set, get, api) => ({
   setOrientationPreviewPending: (pending) => set({ orientationPreviewPending: pending }),
   setLaunchpadExpanded: (expanded) => set({ launchpadExpanded: expanded }),
   setLaunchpadSlimMode: (slim) => set({ launchpadSlimMode: slim }),
-  selectedCanvasSize: DEFAULT_SQUARE_SIZE,
+  selectedCanvasSize: null,
   setCanvasSize: (size) => set({ selectedCanvasSize: size }),
   selectedFrame: 'none',
   setFrame: (frame) => set({ selectedFrame: frame }),
@@ -383,8 +383,11 @@ export const useFounderStore = create<FounderState>((set, get, api) => ({
     if (current.orientation === orientation) return;
 
     const availableOptions = CANVAS_SIZE_OPTIONS[orientation];
-    const hasCurrentSize = availableOptions.some((option) => option.id === current.selectedCanvasSize);
-    const nextCanvasSize = hasCurrentSize ? current.selectedCanvasSize : getDefaultSizeForOrientation(orientation);
+    const hasCurrentSize = current.selectedCanvasSize
+      ? availableOptions.some((option) => option.id === current.selectedCanvasSize)
+      : false;
+
+    const nextCanvasSize = hasCurrentSize ? current.selectedCanvasSize : null;
 
     const previousOrientation = current.orientation;
     set({ orientation, selectedCanvasSize: nextCanvasSize });
@@ -457,13 +460,13 @@ export const useFounderStore = create<FounderState>((set, get, api) => ({
     })),
   setDragging: (isDragging) => set({ isDragging }),
   computedTotal: () => {
-    const { basePrice, enhancements, styles, selectedStyleId, selectedCanvasSize } = get();
+    const { enhancements, styles, selectedStyleId, selectedCanvasSize } = get();
     const styleMod = styles.find((style) => style.id === selectedStyleId)?.priceModifier ?? 0;
-    const sizePrice = getCanvasSizeOption(selectedCanvasSize)?.price ?? basePrice;
+    const sizePrice = getCanvasSizeOption(selectedCanvasSize)?.price;
     const enhancementsTotal = enhancements
       .filter((item) => item.enabled)
       .reduce((sum, item) => sum + item.price, 0);
-    return sizePrice + styleMod + enhancementsTotal;
+    return (sizePrice ?? 0) + styleMod + enhancementsTotal;
   },
   currentStyle: () => {
     const { styles, selectedStyleId } = get();

@@ -17,7 +17,7 @@ type CanvasConfigProps = {
   // Size selector props
   orientation: Orientation;
   sizeOptions: Array<{ id: string; label: string; nickname?: string; price: number }>;
-  selectedSize: string;
+  selectedSize: string | null;
   onSizeChange: (sizeId: string) => void;
   // Enhancements props
   floatingFrame: Enhancement | undefined;
@@ -30,7 +30,7 @@ type CanvasConfigProps = {
   // Order summary props
   currentStyleName: string | undefined;
   selectedSizeLabel: string | undefined;
-  basePrice: number;
+  selectedSizePrice: number | null;
   enabledEnhancements: Array<{ id: string; name: string; price: number }>;
   total: number;
   checkoutDisabled: boolean;
@@ -56,7 +56,7 @@ export default function CanvasConfig({
   onLivingCanvasInfoClick,
   currentStyleName,
   selectedSizeLabel,
-  basePrice,
+  selectedSizePrice,
   enabledEnhancements,
   total,
   checkoutDisabled,
@@ -350,9 +350,11 @@ export default function CanvasConfig({
             <div className="space-y-2">
               <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 text-sm">
                 <span className="text-white/70">
-                  {currentStyleName ?? 'Canvas'} • {selectedSizeLabel ?? '—'}
+                  {currentStyleName ?? 'Canvas'} • {selectedSizeLabel ?? 'Select size'}
                 </span>
-                <span className="font-bold text-white">${basePrice}</span>
+                <span className="font-bold text-white">
+                  {selectedSizePrice != null ? `$${selectedSizePrice.toFixed(2)}` : '—'}
+                </span>
               </div>
 
               {enabledEnhancements.map((item) => (
@@ -379,8 +381,16 @@ export default function CanvasConfig({
 
             <div className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-2 border-purple-400/40">
               <span className="text-base font-bold text-white">Total</span>
-              <span className="text-2xl font-bold text-white">${total.toFixed(2)}</span>
+              <span className="text-2xl font-bold text-white">
+                {total > 0 ? `$${total.toFixed(2)}` : '—'}
+              </span>
             </div>
+
+            {total <= 0 && (
+              <p className="text-xs text-white/70 text-center">
+                Select a canvas size to see pricing and enable checkout.
+              </p>
+            )}
 
             {/* Social Proof */}
             <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-400/30">

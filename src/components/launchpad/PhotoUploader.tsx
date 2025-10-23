@@ -232,65 +232,78 @@ const PhotoUploader = () => {
     }
   }, [originalImage]);
 
+  const fileInput = (
+    <input
+      ref={inputRef}
+      type="file"
+      accept="image/*"
+      className="hidden"
+      onChange={handleFileChange}
+    />
+  );
+
   if (stage === 'analyzing' && originalImage) {
     return (
-      <Card glass className="space-y-6 relative overflow-hidden">
-        <AIAnalysisOverlay
-          imageUrl={originalImage}
-          onComplete={() => setStage('preview')}
-        />
-      </Card>
+      <>
+        {fileInput}
+        <Card glass className="space-y-6 relative overflow-hidden">
+          <AIAnalysisOverlay
+            imageUrl={originalImage}
+            onComplete={() => setStage('preview')}
+          />
+        </Card>
+      </>
     );
   }
 
   if (stage === 'preview' && originalImage) {
     return (
-      <Card glass className="space-y-6 relative overflow-hidden">
-        <SmartCropPreview
-          originalImage={originalImage}
-          orientation={pendingOrientation}
-          onAccept={handleAcceptSmartCrop}
-          onAdjust={handleCustomizeCrop}
-          onReady={handleSmartCropReady}
-          onChangePhoto={handleSelectFile}
-        />
-      </Card>
+      <>
+        {fileInput}
+        <Card glass className="space-y-6 relative overflow-hidden">
+          <SmartCropPreview
+            originalImage={originalImage}
+            orientation={pendingOrientation}
+            onAccept={handleAcceptSmartCrop}
+            onAdjust={handleCustomizeCrop}
+            onReady={handleSmartCropReady}
+            onChangePhoto={handleSelectFile}
+          />
+        </Card>
+      </>
     );
   }
 
   if (stage === 'cropper' && originalImage) {
     return (
-      <Suspense fallback={null}>
-        <CropperModal
-          open={isCropperOpen}
-          originalImage={originalImage}
-          originalDimensions={originalImageDimensions}
-          initialOrientation={orientation}
-          smartCropCache={smartCrops}
-          onClose={() => {
-            setCropperOpen(false);
-            if (croppedImage) {
-              setStage('complete');
-            } else {
-              setStage('idle');
-            }
-          }}
-          onComplete={handleCropComplete}
-          onSmartCropReady={handleSmartCropReady}
-        />
-      </Suspense>
+      <>
+        {fileInput}
+        <Suspense fallback={null}>
+          <CropperModal
+            open={isCropperOpen}
+            originalImage={originalImage}
+            originalDimensions={originalImageDimensions}
+            initialOrientation={orientation}
+            smartCropCache={smartCrops}
+            onClose={() => {
+              setCropperOpen(false);
+              if (croppedImage) {
+                setStage('complete');
+              } else {
+                setStage('idle');
+              }
+            }}
+            onComplete={handleCropComplete}
+            onSmartCropReady={handleSmartCropReady}
+          />
+        </Suspense>
+      </>
     );
   }
 
   return (
     <Card glass className="space-y-6 relative overflow-hidden">
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={handleFileChange}
-      />
+      {fileInput}
       <div
         className={clsx(
           'relative rounded-[1.75rem] border-2 border-dashed transition-all duration-300 overflow-hidden',
