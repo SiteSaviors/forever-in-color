@@ -21,20 +21,64 @@ export type ToneSection = {
 };
 
 export const useToneSections = (): ToneSection[] => {
-  const { styles, selectedStyleId, evaluateStyleGate, favoriteStyles } = useFounderStore((state) => ({
+  const {
+    styles,
+    selectedStyleId,
+    evaluateStyleGate,
+    favoriteStyles,
+    entitlementsTier,
+    entitlementsStatus,
+    entitlementsRemainingTokens,
+    entitlementsRequiresWatermark,
+    entitlementsLastSyncedAt,
+  } = useFounderStore((state) => ({
     styles: state.styles,
     selectedStyleId: state.selectedStyleId,
     evaluateStyleGate: state.evaluateStyleGate,
     favoriteStyles: state.favoriteStyles,
+    entitlementsTier: state.entitlements.tier,
+    entitlementsStatus: state.entitlements.status,
+    entitlementsRemainingTokens: state.entitlements.remainingTokens,
+    entitlementsRequiresWatermark: state.entitlements.requiresWatermark,
+    entitlementsLastSyncedAt: state.entitlements.lastSyncedAt,
   }));
 
   const favoriteSet = useMemo(() => {
     return new Set(favoriteStyles.map((id) => id.trim().toLowerCase()).filter(Boolean));
   }, [favoriteStyles]);
 
-  const defaultGate = useMemo(() => evaluateStyleGate(null), [evaluateStyleGate]);
+  const entitlementsContext = useMemo(
+    () => ({
+      tier: entitlementsTier,
+      status: entitlementsStatus,
+      remainingTokens: entitlementsRemainingTokens,
+      requiresWatermark: entitlementsRequiresWatermark,
+      lastSyncedAt: entitlementsLastSyncedAt,
+    }),
+    [
+      entitlementsTier,
+      entitlementsStatus,
+      entitlementsRemainingTokens,
+      entitlementsRequiresWatermark,
+      entitlementsLastSyncedAt,
+    ]
+  );
+
+  const defaultGate = useMemo(
+    () => {
+      // Access status to tie memoization to entitlement changes
+      void entitlementsContext.status;
+      return evaluateStyleGate(null);
+    },
+    [
+      evaluateStyleGate,
+      entitlementsContext,
+    ]
+  );
 
   const gateCache = useMemo(() => {
+    // Access lastSyncedAt to tie memoization to entitlement updates
+    void entitlementsContext.lastSyncedAt;
     const cache = new Map<string, GateResult>();
     styles.forEach((style) => {
       if (style.id === 'original-image') {
@@ -43,7 +87,7 @@ export const useToneSections = (): ToneSection[] => {
       cache.set(style.id, evaluateStyleGate(style.id));
     });
     return cache;
-  }, [styles, evaluateStyleGate]);
+  }, [styles, evaluateStyleGate, entitlementsContext]);
 
   return useMemo(() => {
     const toneBuckets = new Map<StyleTone, ToneSectionStyle[]>();
