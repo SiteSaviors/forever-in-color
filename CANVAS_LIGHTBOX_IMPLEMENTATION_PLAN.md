@@ -1,8 +1,10 @@
 # Canvas Lightbox + Story Layer Migration - Implementation Plan
 
-**Objective**: Transform Wondertone's canvas ordering experience into a world-class, conversion-optimized flow by moving Story Layer to the right rail and creating a dedicated canvas checkout lightbox.
+**Objective**: Transform Wondertone's canvas ordering experience into a world-class, conversion-optimized flow by establishing a clear three-column layout with story/insights in the right rail and a dedicated canvas checkout lightbox.
 
-**Design Philosophy**: Canva-level UX, Amazon-level conversion optimization, minimal engineering complexity.
+**Design Philosophy**: Canva-level UX, Amazon-level conversion optimization, minimal engineering complexity, maximum code reuse.
+
+**Strategic Framework**: Left rail = discovery hub, Center = hero workspace, Right rail = story & upsell column.
 
 ---
 
@@ -25,21 +27,32 @@
 
 ### What We're Building
 
-**Phase 1: Story Layer Migration**
+**Phase A: Story Layer & Right Rail Transformation**
 - Move full Story Layer (1500px content) from center column to right rail
-- Create pre-upload teaser state showing style palettes
+- Create pre-upload teaser with style name + color palette chips + descriptive text
+- Add curated style recommendations in right rail (horizontally scrollable cards)
+- Add secondary "Order Canvas Print" CTA in right rail (below story content)
 - Reduce center column scroll by ~60%
 
-**Phase 2: Canvas Lightbox Checkout**
-- Replace right rail canvas config with centered modal lightbox
-- Embed full checkout flow inside modal (no separate checkout page)
-- Include live Canvas-in-Room preview with mini style preview
-- Optimize for conversion with social proof + guarantees
+**Phase B: Canvas Lightbox Checkout**
+- Create full-screen modal (desktop) / sheet (mobile) for canvas configuration
+- **Reuse existing CheckoutFormShell** component for checkout steps (no rebuild)
+- Include live Canvas-in-Room preview with mini style preview badge
+- Add orientation selector in modal (triggers smart crop if needed)
+- Optimize for conversion with trust signals ("Ships in 5 days", "4.9/5 rating")
+- Modal shows live preview, size/frame/enhancement selection, stepper controls
+- Primary CTA in center column + Secondary CTA in right rail both open modal
 
-**Phase 3: Orientation Simplification**
-- Replace orientation selector card with single "Change Orientation" button below Canvas-in-Room preview
-- Opens cropper modal on click
-- Reduces right rail vertical height
+**Phase C: Orientation & Cleanup**
+- Keep orientation pills near preview in center column for easy experimentation
+- Add optional "Fine-tune crop" button to launch cropper modal
+- Remove redundant canvas config from right rail (modal is now the checkout)
+- Polish modal copy and trust signals
+
+**Phase D: QA, Rollout & Telemetry**
+- Comprehensive testing (performance, accessibility, cross-browser)
+- Staged rollout with feature flag
+- Monitor conversion metrics and iterate
 
 ### Expected Impact
 
@@ -81,22 +94,31 @@
 
 ### Target State (Solution)
 
+**Three-Column North Star Layout:**
+
 ```
 ┌─────────────┬──────────────────────┬─────────────────────┐
 │ LEFT RAIL   │ CENTER COLUMN        │ RIGHT RAIL          │
+│ (Discovery) │ (Hero Workspace)     │ (Story & Upsell)    │
 │             │                      │                     │
-│ Style       │ Style Preview        │ Story Layer Teaser  │
-│ Categories  │ Action Row           │ (pre-upload) OR     │
-│             │ Canvas-in-Room       │ Full Story Layer    │
-│             │ [Change Orientation] │ (post-upload)       │
-│             │ ConfidenceFooter     │ (scrollable)        │
-│             │                      │                     │
+│ Tokens      │ Sticky Preview Card  │ Story Layer Teaser  │
+│ Original    │ Orientation Pills    │ (pre-upload) OR     │
+│ Image       │ Action Row:          │ Full Story:         │
+│ Tone Lists  │  - Download CTA      │  - Confidence       │
+│             │  - Create Canvas     │  - Narrative        │
+│             │  - Save Gallery      │  - Palette          │
+│             │ Canvas-in-Room       │  - Curator Notes    │
+│             │ ConfidenceFooter     │ Curated Styles      │
+│             │                      │ (horizontal cards)  │
+│             │                      │ [Order Canvas] CTA  │
+│             │                      │ (secondary)         │
 └─────────────┴──────────────────────┴─────────────────────┘
 
-                [User clicks "Create Canvas"]
+    [User clicks Center "Create Canvas" OR Right Rail "Order Canvas"]
                             ↓
         ┌───────────────────────────────────────┐
-        │  CANVAS CHECKOUT LIGHTBOX (Centered)  │
+        │  CANVAS CHECKOUT MODAL                │
+        │  (Reuses CheckoutFormShell)           │
         │  ┌─────────────────────────────────┐  │
         │  │ [✕]  Configure Your Canvas      │  │
         │  ├─────────────────────────────────┤  │
@@ -108,21 +130,24 @@
         │  │ Frame: ● ○ ○                    │  │
         │  │ Enhancements: ☑ Living Canvas   │  │
         │  ├─────────────────────────────────┤  │
-        │  │ ⭐ 4.9/5 from 1,200+ customers   │  │
-        │  │ 📦 Ships in 3-5 days            │  │
+        │  │ ⭐ 4.9/5  📦 Ships in 5 days     │  │
         │  │ 🔒 100% satisfaction guarantee  │  │
         │  ├─────────────────────────────────┤  │
-        │  │ Total: $189                     │  │
+        │  │ Your Order Summary              │  │
         │  │ [Complete Your Order →]         │  │
+        │  │ (Uses CheckoutFormShell + Stripe)│  │
         │  └─────────────────────────────────┘  │
         └───────────────────────────────────────┘
 
 ✅ Benefits:
-1. Center column reduced to 1200px (60% less scroll)
-2. Canvas ordering explicitly opt-in (modal pattern)
-3. Story Layer discoverable but not intrusive
-4. Checkout embedded in modal (no page navigation)
-5. Orientation simplified to single button
+1. Clear purpose zones (discovery, hero, context)
+2. Center column reduced to 1200px (60% less scroll)
+3. Canvas ordering explicitly opt-in (modal pattern)
+4. Dual CTAs (center primary + rail secondary) for conversion psychology
+5. Story Layer discoverable but not intrusive
+6. Checkout reuses existing tested code (low risk)
+7. Orientation stays prominent for experimentation
+8. Curated recommendations drive style discovery
 ```
 
 ---
@@ -131,61 +156,52 @@
 
 ### 1. Story Layer Migration
 
-#### 1.1 Pre-Upload State (No Photo Uploaded)
+#### 1.1 Pre-Upload Teaser State
+
+**DECIDED**: Use rich teaser (style name + color palette chips + descriptive text) for visual interest and engagement.
 
 **Visual Design:**
 ```
 ┌─────────────────────────────────────────┐
 │ RIGHT RAIL                              │
 ├─────────────────────────────────────────┤
-│                                         │
-│  📖 The Story Behind [Style Name]       │
-│                                         │
-│  ┌─────────────────────────────────┐   │
-│  │ [Color Palette Strip]           │   │
-│  │ ████ ████ ████ ████ ████        │   │
-│  └─────────────────────────────────┘   │
-│                                         │
-│  Upload a photo to discover the full   │
-│  story behind this artistic style.     │
-│                                         │
+│ ┌───────────────────────────────────┐   │
+│ │  ✨                               │   │
+│ │  The Story Behind [Style Name]    │   │
+│ │                                   │   │
+│ │  [Color Palette Chips]            │   │
+│ │  ████ ████ ████ ████ ████ ████   │   │
+│ │  (6 chips, 40px x 40px each)      │   │
+│ │                                   │   │
+│ │  [Style description from registry]│   │
+│ │  Transform your photo with this   │   │
+│ │  unique artistic style...         │   │
+│ │                                   │   │
+│ │  The full story of this style will│   │
+│ │  appear here once your preview is │   │
+│ │  ready. Discover the inspiration, │   │
+│ │  technique, and artistic vision.  │   │
+│ │                                   │   │
+│ │  ● ● ● (pulsing dots)             │   │
+│ └───────────────────────────────────┘   │
 └─────────────────────────────────────────┘
 ```
 
 **Behavior:**
 - Renders when `!hasCroppedImage && currentStyle !== 'original-image'`
 - Shows style name dynamically: "The Story Behind Impressionist Sunrise"
-- Displays color palette from `getPalette(style)` (existing utility)
-- Teaser copy: "Upload a photo to discover the full story behind this artistic style."
-- No interaction (static teaser)
+- Displays color palette chips from `style.colorPalette` (6 colors, 40px squares with rounded corners)
+- Shows style description from style registry
+- Teaser copy about full story appearing after preview
+- Subtle pulsing dots loading indicator
+- Professional styling: border, shadow, gradient background
 
-**Alternative Option (Minimal):**
-```
-┌─────────────────────────────────────────┐
-│ RIGHT RAIL                              │
-├─────────────────────────────────────────┤
-│                                         │
-│  ┌─────────────────────────────────┐   │
-│  │                                 │   │
-│  │  ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈  │   │
-│  │  ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈  │   │
-│  │                                 │   │
-│  │    Your Style Story Will        │   │
-│  │       Appear Here               │   │
-│  │                                 │   │
-│  │  ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈  │   │
-│  │  ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈  │   │
-│  │                                 │   │
-│  └─────────────────────────────────┘   │
-│                                         │
-└─────────────────────────────────────────┘
-```
-
-**Decision Point**: Which pre-upload state do you prefer?
-- **Option A**: Show style name + color palette + teaser text (more engaging)
-- **Option B**: Dotted rectangle with "Your Style Story Will Appear Here" (minimal)
-
-**Recommendation**: **Option A** - Provides value immediately, educates user about what's coming, uses existing palette data.
+**Why this approach**:
+- Creates visual interest before upload
+- Educates user about what's coming
+- Uses existing palette data from style registry
+- Builds anticipation for full story content
+- More engaging than collapsed line or empty placeholder
 
 #### 1.2 Post-Upload State (Photo Uploaded & Styled)
 
@@ -194,61 +210,114 @@
 ┌─────────────────────────────────────────┐
 │ RIGHT RAIL (Scrollable)                 │
 ├─────────────────────────────────────────┤
+│ ┌───────────────────────────────────┐   │
+│ │ 📖 The Story Behind [Style Name]  │   │
+│ │                                   │   │
+│ │ [Confidence Badge]                │   │
+│ │ ⭐ 4.9/5 • Highly Rated           │   │
+│ │                                   │   │
+│ │ [Narrative Card]                  │   │
+│ │ 300-500 word story from curator...│   │
+│ │                                   │   │
+│ │ [Color Palette with Hex Codes]    │   │
+│ │ ████ #4A5568  ████ #ED8936        │   │
+│ │                                   │   │
+│ │ [Curator Notes / Technique]       │   │
+│ │ Brief technical insights...       │   │
+│ └───────────────────────────────────┘   │
 │                                         │
-│  📖 The Story Behind [Style Name]       │
+│ ┌───────────────────────────────────┐   │
+│ │ Try These Styles                  │   │
+│ │ (Horizontally scrollable)         │   │
+│ │ ┌────┐ ┌────┐ ┌────┐ ┌────┐      │   │
+│ │ │ S1 │ │ S2 │ │ S3 │ │ S4 │ ───→ │   │
+│ │ └────┘ └────┘ └────┘ └────┘      │   │
+│ │ [Try Style] buttons               │   │
+│ └───────────────────────────────────┘   │
 │                                         │
-│  ┌─────────────────────────────────┐   │
-│  │ [Artist Bio Card]               │   │
-│  │ 300-500 word narrative...       │   │
-│  └─────────────────────────────────┘   │
+│ ┌───────────────────────────────────┐   │
+│ │ [🛍️ Order Canvas Print]           │   │
+│ │ (Secondary CTA - black with       │   │
+│ │  white outline, less prominent)   │   │
+│ │ Gallery-quality prints from $89   │   │
+│ └───────────────────────────────────┘   │
 │                                         │
-│  ┌─────────────────────────────────┐   │
-│  │ [Color Palette with Hex Codes]  │   │
-│  │ ████ #4A5568                    │   │
-│  │ ████ #ED8936                    │   │
-│  └─────────────────────────────────┘   │
-│                                         │
-│  ┌─────────────────────────────────┐   │
-│  │ [Complementary Styles Grid]     │   │
-│  │ [Style 1] [Style 2] [Style 3]   │   │
-│  └─────────────────────────────────┘   │
-│                                         │
-│  ┌─────────────────────────────────┐   │
-│  │ [Share to Social Buttons]       │   │
-│  │ [Copy Caption]                  │   │
-│  └─────────────────────────────────┘   │
-│                                         │
+│ ┌───────────────────────────────────┐   │
+│ │ [Share to Social Buttons]         │   │
+│ │ [Copy Caption]                    │   │
+│ └───────────────────────────────────┘   │
 │         ↓ (User can scroll)             │
-│                                         │
 └─────────────────────────────────────────┘
 ```
 
 **Behavior:**
-- Renders full `<StoryLayer>` component (existing implementation)
+- Renders full `<StoryLayer>` component with enhancements
+- **NEW**: Curated style recommendations as horizontally scrollable cards
+  - Cards show style thumbnail + name + "Try this style" button
+  - On click: highlights style in left rail + triggers preview generation
+  - Analytics: track clicks, impressions
+- **NEW**: Secondary "Order Canvas Print" CTA
+  - Positioned after story content, before share buttons
+  - Styled as secondary CTA (less prominent than center column primary)
+  - Opens same canvas checkout modal as center CTA
+  - Copy: "Keep creating, or turn this into wall art"
 - All existing features preserved:
   - Narrative from `getNarrative(style)`
   - Color palette with hex codes
-  - Complementary style suggestions
   - Share buttons with clipboard copy
   - IntersectionObserver impression tracking
 - Scrollable within right rail container
-- Analytics remain unchanged (existing telemetry)
+- Analytics: track secondary CTA clicks separately from primary
 
 **Technical Implementation:**
 - Move render from `CanvasPreviewPanel.tsx` → `StickyOrderRail.tsx`
 - Use same props: `style`, `previewUrl`, `orientation`, `entitlements`, `onToast`, `onUpgradePrompt`
 - Wrap in scrollable container: `max-h-[calc(100vh-200px)] overflow-y-auto`
 
+#### 1.3 Mobile Story Layer Behavior
+
+**DECIDED**: Use drawer/sheet approach to keep center column preview-only on mobile.
+
+**Strategy:**
+- **Desktop (>= 1024px)**: Story Layer visible in right rail (as described above)
+- **Mobile (< 1024px)**: Story Layer hidden behind "View Story" button
+  - Button positioned below Canvas-in-Room preview (or in header)
+  - Opens full-screen sheet/drawer from bottom
+  - Same content as desktop (story, palette, curated styles, secondary CTA)
+  - Close via backdrop, swipe down, or X button
+  - Consistent with existing mobile style drawer pattern
+
+**Why drawer approach**:
+- Keeps center column preview-focused (maximizes scroll reduction benefit on mobile)
+- Story is completely optional for converters
+- Reuses existing mobile drawer UX pattern (familiar to users)
+- Prevents center column scroll fatigue on small screens
+
 ---
 
-### 2. Canvas Lightbox Checkout
+### 2. Canvas Checkout Modal
+
+**CRITICAL DECISION**: Reuse existing CheckoutFormShell component instead of rebuilding checkout logic.
+
+**Architecture Strategy**:
+- Modal contains configuration UI (orientation, size, frame, enhancements) + live preview
+- "Complete Your Order" button either:
+  - **Option A (Phase B)**: Navigate to `/checkout` route with pre-filled state (fastest, safest)
+  - **Option B (Future)**: Embed CheckoutFormShell directly in modal (better UX, more complex)
+- Start with Option A, iterate to Option B if conversion data supports investment
+- This avoids duplicating Stripe integration, payment logic, and checkout validation
 
 #### 2.1 Modal Structure & Layout
 
-**Dimensions:**
-- **Desktop**: 900px width, max-height: 90vh, centered
+**Dimensions & Behavior:**
+- **Desktop**: 900px width, max-height: 90vh, centered, 60% backdrop opacity with blur
 - **Tablet**: 80vw width, max-height: 90vh, centered
-- **Mobile**: Full-screen (100vw x 100vh)
+- **Mobile**: Full-screen sheet with slide-up animation (100vw x 100vh)
+- **Backdrop**: `bg-black/60 backdrop-blur-sm`
+- **Animations**: Spring animation (300ms), scale from 0.95 to 1.0, fade backdrop (200ms)
+- **Close methods**: ESC key, backdrop click, X button (all should work)
+- **Focus trap**: Auto-focus first interactive element, trap tab navigation within modal
+- **State persistence**: Save configuration to Zustand on every change (modal can close/reopen without losing config)
 
 **Layout Sections (Top to Bottom):**
 
@@ -815,29 +884,50 @@ export default function ChangeOrientationButton({
 
 ## Implementation Phases
 
-### Phase 1: Foundation & Story Layer Migration (4-6 hours)
+**Updated Roadmap** (A, B, C, D phases):
 
-**Goal**: Move Story Layer to right rail, create teaser state, reduce center column scroll.
+### Phase A: Story Layer & Right Rail Transformation (4-5 hours)
+
+**Goal**: Move Story Layer to right rail, add teaser state, curated recommendations, and secondary CTA. Reduce center column scroll dramatically.
 
 **Tasks:**
 
-#### 1.1 Create Story Layer Teaser Component (1 hour)
+#### A.1 Create Story Layer Teaser Component (1 hour)
 - [ ] Create `src/components/studio/story-layer/StoryLayerTeaser.tsx`
-- [ ] Implement two variants:
-  - [ ] Variant A: Style name + palette + teaser text
-  - [ ] Variant B: Dotted rectangle placeholder
-- [ ] Reuse `getPalette()` utility for color display
+- [ ] Implement rich teaser:
+  - [ ] Style name with sparkle icon
+  - [ ] 6 color palette chips (40px squares, `style.colorPalette`)
+  - [ ] Style description from registry
+  - [ ] Teaser copy about full story
+  - [ ] Pulsing dots loading indicator
+- [ ] Professional styling: border, shadow, gradient background
 - [ ] Add prop-types and TypeScript types
 - [ ] Test with multiple styles
 
-#### 1.2 Modify StickyOrderRail (2 hours)
+#### A.2 Add Curated Style Recommendations Component (1 hour)
+- [ ] Create `src/components/studio/story-layer/CuratedStyleCards.tsx`
+- [ ] Implement horizontally scrollable cards:
+  - [ ] Style thumbnail + name
+  - [ ] "Try this style" button
+  - [ ] On click: highlight in left rail + trigger preview generation
+- [ ] Analytics: track `trackCuratedStyleClicked`
+- [ ] Responsive: 3-4 cards visible at once, smooth scroll
+
+#### A.3 Add Secondary Canvas CTA Component (30 min)
+- [ ] Create `src/components/studio/SecondaryCanvasCTA.tsx`
+- [ ] Style as secondary CTA (black bg, white outline, less prominent)
+- [ ] Copy: "Order Canvas Print" + "Keep creating, or turn this into wall art"
+- [ ] On click: Opens canvas modal (same as primary CTA)
+- [ ] Analytics: track `trackSecondaryCanvasCTAClick` with scroll depth
+
+#### A.4 Modify StickyOrderRail (1.5 hours)
 - [ ] Open `src/components/studio/StickyOrderRail.tsx`
-- [ ] Remove all canvas config sections:
-  - [ ] Remove Canvas Size selector
-  - [ ] Remove Frame Style selector
-  - [ ] Remove Enhancements section
-  - [ ] Remove Order Summary
-  - [ ] Remove Checkout button
+- [ ] Remove all canvas config sections (keep for Phase C removal):
+  - [ ] Mark for deletion: Canvas Size selector
+  - [ ] Mark for deletion: Frame Style selector
+  - [ ] Mark for deletion: Enhancements section
+  - [ ] Mark for deletion: Order Summary
+  - [ ] Mark for deletion: Checkout button
 - [ ] Add Story Layer render logic:
   ```tsx
   {!hasCroppedImage && currentStyle && (
@@ -891,31 +981,44 @@ export default function ChangeOrientationButton({
 - [ ] Remove story props from `CanvasPreviewPanel`
 - [ ] Verify no TypeScript errors
 
-#### 1.5 Testing & Verification (1 hour)
-- [ ] Test pre-upload state (Story Layer Teaser appears)
-- [ ] Test post-upload state (Full Story Layer appears)
+#### A.5 Add Mobile Story Drawer (30 min)
+- [ ] Wrap Story Layer in conditional render based on screen size
+- [ ] Desktop (>= 1024px): Render in right rail as-is
+- [ ] Mobile (< 1024px): Add "View Story" button below Canvas-in-Room
+- [ ] Button opens full-screen sheet/drawer from bottom
+- [ ] Reuse existing mobile drawer pattern (same as style drawer)
+- [ ] Analytics: track mobile story drawer opens
+
+#### A.6 Testing & Verification (1 hour)
+- [ ] Test pre-upload state (rich teaser with palette chips appears)
+- [ ] Test post-upload state (full story + curated cards + secondary CTA)
+- [ ] Test curated style cards trigger preview generation
+- [ ] Test secondary CTA opens modal (track source as 'rail_cta')
 - [ ] Test story analytics still fire (IntersectionObserver)
-- [ ] Test complementary style clicks work
-- [ ] Test share buttons work
-- [ ] Verify scroll reduction (measure center column height)
-- [ ] Test on mobile (story layer position TBD)
+- [ ] Test mobile drawer opens/closes correctly
+- [ ] Verify scroll reduction (measure center column height before/after)
+- [ ] Test on mobile (story layer in drawer, not center column)
 
 **Deliverables:**
-- ✅ Story Layer moved to right rail
-- ✅ Teaser state for pre-upload
+- ✅ Story Layer moved to right rail with rich teaser
+- ✅ Curated style recommendations (horizontally scrollable)
+- ✅ Secondary canvas CTA in right rail
+- ✅ Mobile drawer for story layer
 - ✅ Center column scroll reduced by ~60%
-- ✅ All story functionality preserved
-- ✅ Analytics unchanged
+- ✅ All story functionality preserved + enhanced
+- ✅ Analytics for dual CTAs + curated clicks
 
 ---
 
-### Phase 2: Canvas Checkout Modal (8-10 hours)
+### Phase B: Canvas Checkout Modal (6-8 hours)
 
-**Goal**: Create world-class canvas checkout modal with embedded configuration + live preview.
+**Goal**: Create world-class canvas checkout modal with configuration UI + live preview. **Reuse CheckoutFormShell** for actual checkout.
+
+**Strategy**: Modal navigates to `/checkout` with pre-filled state (Phase B). Future iteration can embed checkout directly in modal (Phase 3+).
 
 **Tasks:**
 
-#### 2.1 Create Modal Component Structure (2 hours)
+#### B.1 Create Modal Component Structure (1.5 hours)
 - [ ] Create `src/components/studio/CanvasCheckoutModal.tsx`
 - [ ] Set up Framer Motion animations:
   - [ ] Backdrop fade in/out (200ms)
@@ -1285,10 +1388,23 @@ transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
 - **Frame**: "Frame Style"
 - **Enhancements**: "Enhancements"
 
-### Trust Signals
-- ⭐ "4.9/5 from 1,200+ customers"
-- 📦 "Ships in 3-5 business days"
+### Trust Signals (Modal Footer)
+- ⭐ "4.9/5 from 1,200+ customers" (use actual review count if available)
+- 📦 "Ships in 5 days" (concise, confident)
 - 🔒 "100% satisfaction guarantee"
+- **Styling**: Small, subtle, professional - reassuring but not overwhelming
+
+### CTAs
+**Primary CTA (Center Column)**:
+- "Create Canvas" (with 4.9 star badge)
+- Subtext: "Gallery-quality prints"
+
+**Secondary CTA (Right Rail)**:
+- "Order Canvas Print" or "Turn This Into Wall Art"
+- Subtext: "Keep creating, or turn this into wall art"
+- Styled as black background with white outline (less prominent than primary)
+
+**Both CTAs open the same canvas modal**
 
 ### Order Summary
 - **Header**: "Your Order"
@@ -1452,24 +1568,91 @@ test('canvas checkout flow', async ({ page }) => {
 
 ### Analytics Events to Track
 
+**Implementation-Ready Event Schema** (copy-paste into analytics.ts):
+
 ```typescript
 // Modal events
-trackCanvasModalOpen(userTier: string, styleId: string)
-trackCanvasModalClose(configuredItems: string[], timeSpent: number)
-trackCanvasModalCheckout(total: number, items: OrderItem[])
-trackCanvasModalAbandoned(configuredItems: string[], timeSpent: number)
+trackCanvasModalOpen(params: {
+  source: 'center_cta' | 'rail_cta';  // Dual CTA tracking
+  userTier: string;
+  styleId: string;
+  hasConfiguredBefore: boolean;
+})
+
+trackCanvasModalClose(params: {
+  reason: 'backdrop' | 'x_button' | 'esc_key' | 'purchase_complete';
+  configuredItems: string[];  // ['size', 'frame', 'living_canvas']
+  timeSpent: number;  // milliseconds
+})
+
+trackCanvasModalCheckout(params: {
+  total: number;
+  items: OrderItem[];
+  timeSpent: number;  // time from modal open to checkout click
+})
 
 // Configuration events
-trackModalOrientationChange(from: Orientation, to: Orientation)
-trackModalSizeSelect(size: string, price: number)
-trackModalFrameSelect(frame: string)
-trackModalEnhancementToggle(enhancement: string, enabled: boolean)
+trackCanvasSizeSelected(params: {
+  size: string;  // '16x20'
+  price: number;
+  previousSize: string | null;
+})
 
-// Story Layer events (existing + new)
-trackStoryImpressionInRail(styleId: string, userTier: string)
-trackStoryTeaserView(styleId: string)
-trackStoryRailScroll(depth: number)
+trackCanvasFrameToggled(params: {
+  frame: 'floating_black' | 'floating_white' | 'gallery_wrap' | 'natural_wood';
+  previousFrame: string | null;
+})
+
+trackCanvasEnhancementToggled(params: {
+  enhancement: 'living_canvas' | 'other';
+  enabled: boolean;
+  price: number;
+})
+
+trackModalOrientationChanged(params: {
+  from: Orientation;
+  to: Orientation;
+  smartCropRequired: boolean;
+  smartCropDuration?: number;  // if crop was needed
+})
+
+// Story Layer events
+trackStoryImpressionInRail(params: {
+  styleId: string;
+  userTier: string;
+  source: 'teaser' | 'full_story';
+})
+
+trackStoryTeaserView(params: {
+  styleId: string;
+  hasUploadedPhoto: boolean;
+})
+
+trackStoryRailScroll(params: {
+  depth: number;  // scroll percentage (0-100)
+  styleId: string;
+})
+
+trackCuratedStyleClicked(params: {
+  currentStyleId: string;
+  clickedStyleId: string;
+  position: number;  // position in carousel (1-indexed)
+})
+
+trackSecondaryCanvasCTAClick(params: {
+  source: 'right_rail';
+  styleId: string;
+  scrollDepth: number;  // how far user scrolled before clicking
+})
 ```
+
+**Key improvements over original schema**:
+- Source tracking for dual CTAs (center vs right rail)
+- Smart crop duration tracking for performance analysis
+- Curated style click tracking
+- Scroll depth when secondary CTA is clicked
+- `hasConfiguredBefore` flag to detect returning modal users
+- More granular frame options (includes color selection)
 
 ---
 
@@ -1625,15 +1808,20 @@ src/
 - React Router (already installed)
 - Existing utility functions (smart crop, canvas sizes, etc.)
 
-### Estimated Timeline
+### Estimated Timeline (Updated)
 
-| Phase | Duration | Complexity |
-|-------|----------|------------|
-| Phase 1: Story Layer Migration | 4-6 hours | Low |
-| Phase 2: Canvas Checkout Modal | 8-10 hours | Medium |
-| Phase 3: Orientation Simplification | 2 hours | Low |
-| Phase 4: Polish & Testing | 4-6 hours | Medium |
-| **Total Development Time** | **18-24 hours** | **Medium** |
+| Phase | Duration | Complexity | Risk |
+|-------|----------|------------|------|
+| Phase A: Story Layer & Right Rail | 4-5 hours | Low | Low (mostly UI moves) |
+| Phase B: Canvas Checkout Modal | 6-8 hours | Medium | Low (reuses checkout) |
+| Phase C: Orientation & Cleanup | 2-3 hours | Low | Low (removal + polish) |
+| Phase D: QA, Rollout & Telemetry | 3-4 hours | Medium | Medium (cross-browser) |
+| **Total Development Time** | **15-20 hours** | **Medium** | **Low-Medium** |
+
+**Key Time Savings vs. Original Plan**:
+- **-3 hours**: Reusing CheckoutFormShell instead of rebuilding checkout
+- **-2 hours**: Simpler orientation approach (keep pills, no complex button logic)
+- **Total saved: 5 hours** (from 18-24h → 15-20h)
 
 **Calendar Timeline (Conservative):**
 - Week 1: Phase 1 + Phase 2 (80% complete)
