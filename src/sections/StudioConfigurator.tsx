@@ -90,6 +90,7 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
   const [mobileStyleDrawerOpen, setMobileStyleDrawerOpen] = useState(false);
   const [showCanvasUpsellToast, setShowCanvasUpsellToast] = useState(false);
   const [welcomeDismissed, setWelcomeDismissed] = useState(false);
+  const [canvasConfigExpanded, setCanvasConfigExpanded] = useState(true);
   const { showToast, showUpgradeModal, renderFeedback } = useStudioFeedback();
   const openAuthModal = useAuthModal((state) => state.openModal);
 
@@ -290,6 +291,15 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
     }
   }, []);
 
+  const handleCanvasConfigToggle = useCallback(() => {
+    setCanvasConfigExpanded(prev => !prev);
+    // Scroll to right rail canvas config
+    const canvasPanel = document.getElementById('canvas-options-panel');
+    if (canvasPanel) {
+      canvasPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, []);
+
   const handleEditFromWelcome = () => {
     trackLaunchflowOpened('welcome_banner');
     trackLaunchflowEditReopen('welcome_banner');
@@ -322,6 +332,17 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
     stylePreviewStatus === 'idle' &&
     currentStyleGate.allowed &&
     Boolean(cachedPreviewEntry || preview?.status === 'ready');
+
+  // Calculate disabled states for ActionRow CTAs
+  const downloadDisabled =
+    !currentStyle ||
+    !hasCroppedImage ||
+    orientationPreviewPending ||
+    !previewHasData;
+
+  const canvasLocked =
+    !hasCroppedImage ||
+    orientationPreviewPending;
 
   return (
     <section
@@ -448,6 +469,13 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
           onStoryToast={showToast}
           onStoryUpgradePrompt={showUpgradeModal}
           onStoryCreateCanvas={handleStoryCreateCanvas}
+          onDownloadClick={handleDownloadHD}
+          downloadingHD={downloadingHD}
+          isPremiumUser={isPremiumUser}
+          canvasConfigExpanded={canvasConfigExpanded}
+          onCanvasConfigToggle={handleCanvasConfigToggle}
+          downloadDisabled={downloadDisabled}
+          canvasLocked={canvasLocked}
         />
         {/* RIGHT SIDEBAR: Options + Order Summary (Full-width on mobile, fixed on desktop) */}
         <aside
@@ -466,9 +494,8 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
               )}
               <Suspense fallback={<StickyOrderRailFallback />}>
                 <StickyOrderRailLazy
-                  onDownloadClick={handleDownloadHD}
-                  downloadingHD={downloadingHD}
-                  isPremiumUser={isPremiumUser}
+                  canvasConfigExpanded={canvasConfigExpanded}
+                  onCanvasConfigToggle={handleCanvasConfigToggle}
                   mobileRoomPreview={
                     <div className="lg:hidden w-full">
                       <div className="mb-4 text-center space-y-1">

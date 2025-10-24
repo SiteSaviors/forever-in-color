@@ -10,6 +10,7 @@ import type { StudioToastPayload, UpgradePromptPayload } from '@/hooks/useStudio
 import StudioEmptyState from './StudioEmptyState';
 import ConfidenceFooter from '@/components/studio/story-layer/ConfidenceFooter';
 import { trackStoryCtaClick } from '@/utils/storyLayerAnalytics';
+import ActionRow from '@/components/studio/ActionRow';
 
 const CanvasInRoomPreview = lazy(() => import('@/components/studio/CanvasInRoomPreview'));
 const StyleForgeOverlay = lazy(() => import('@/components/studio/StyleForgeOverlay'));
@@ -47,6 +48,14 @@ export type CanvasPreviewPanelProps = {
   onStoryToast?: (payload: StudioToastPayload) => void;
   onStoryUpgradePrompt?: (payload: UpgradePromptPayload) => void;
   onStoryCreateCanvas?: () => void;
+  // ActionRow props
+  onDownloadClick: () => void;
+  downloadingHD: boolean;
+  isPremiumUser: boolean;
+  canvasConfigExpanded: boolean;
+  onCanvasConfigToggle: () => void;
+  downloadDisabled?: boolean;
+  canvasLocked?: boolean;
 };
 
 const CanvasPreviewPanel = ({
@@ -77,6 +86,13 @@ const CanvasPreviewPanel = ({
   onStoryToast,
   onStoryUpgradePrompt,
   onStoryCreateCanvas,
+  onDownloadClick,
+  downloadingHD,
+  isPremiumUser,
+  canvasConfigExpanded,
+  onCanvasConfigToggle,
+  downloadDisabled = false,
+  canvasLocked = false,
 }: CanvasPreviewPanelProps) => {
   const orientationMeta = ORIENTATION_PRESETS[orientation];
   const shouldRenderStoryLayer =
@@ -249,51 +265,24 @@ const CanvasPreviewPanel = ({
         </div>
 
         {previewStateStatus === 'ready' && currentStyle && (
-          <div className="mt-6 flex flex-col items-center gap-4">
-            <button
-              onClick={onSaveToGallery}
-              disabled={savingToGallery}
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all ${
-                savedToGallery
-                  ? 'bg-emerald-500/20 text-emerald-300 border-2 border-emerald-400/50'
-                  : 'bg-white/10 hover:bg-white/15 text-white border-2 border-white/20 hover:border-white/30'
-              } disabled:opacity-50 disabled:cursor-not-allowed`}
-            >
-              {savedToGallery ? (
-                <>
-                  <BookmarkCheck className="w-5 h-5" />
-                  <span>Saved to Gallery</span>
-                </>
-              ) : (
-                <>
-                  <Bookmark className="w-5 h-5" />
-                  <span>{savingToGallery ? 'Saving...' : 'Save to Gallery'}</span>
-                </>
-              )}
-            </button>
-
-            <div className="flex items-center gap-4">
-              {canRefreshPreview && (
-                <button
-                  type="button"
-                  onClick={onRefreshPreview}
-                  className="text-sm text-white/60 hover:text-white transition-colors underline"
-                >
-                  Refresh Preview
-                </button>
-              )}
-              <Link
-                to="/studio/gallery"
-                className="text-sm text-white/60 hover:text-white transition-colors underline"
-              >
-                View Gallery
-              </Link>
-            </div>
+          <div className="mt-6 w-full max-w-2xl">
+            <ActionRow
+              onDownloadClick={onDownloadClick}
+              onCanvasClick={onCanvasConfigToggle}
+              downloadingHD={downloadingHD}
+              isPremiumUser={isPremiumUser}
+              canvasConfigExpanded={canvasConfigExpanded}
+              downloadDisabled={downloadDisabled}
+              canvasLocked={canvasLocked}
+              onSaveToGallery={onSaveToGallery}
+              savingToGallery={savingToGallery}
+              savedToGallery={savedToGallery}
+            />
           </div>
         )}
       </div>
 
-      <div className="hidden lg:block w-full max-w-2xl mt-12">
+      <div className="hidden lg:block w-full max-w-2xl mt-8">
         <div className="mb-6 text-center space-y-2">
           <h3 className="text-2xl font-bold text-white">See It In Your Space</h3>
           <p className="text-sm text-white/60 max-w-md mx-auto">

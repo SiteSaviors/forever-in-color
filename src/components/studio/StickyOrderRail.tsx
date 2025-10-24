@@ -6,7 +6,6 @@ import { cacheSmartCropResult, generateSmartCrop, ORIENTATION_PRESETS, SmartCrop
 import type { Orientation } from '@/utils/imageUtils';
 import { CANVAS_SIZE_OPTIONS, getCanvasSizeOption, getDefaultSizeForOrientation } from '@/utils/canvasSizes';
 import { useCheckoutStore } from '@/store/useCheckoutStore';
-import ActionRow from '@/components/studio/ActionRow';
 import CanvasConfig from '@/components/studio/CanvasConfig';
 import { trackOrderStarted } from '@/utils/telemetry';
 
@@ -14,17 +13,14 @@ const CropperModal = lazy(() => import('@/components/launchpad/cropper/CropperMo
 
 type StickyOrderRailProps = {
   mobileRoomPreview?: React.ReactNode;
-  onDownloadClick: () => void;
-  downloadingHD: boolean;
-  isPremiumUser: boolean;
+  canvasConfigExpanded: boolean;
+  onCanvasConfigToggle: () => void;
 };
 
-const StickyOrderRail = ({ mobileRoomPreview, onDownloadClick, downloadingHD, isPremiumUser }: StickyOrderRailProps) => {
+const StickyOrderRail = ({ mobileRoomPreview, canvasConfigExpanded, onCanvasConfigToggle }: StickyOrderRailProps) => {
   const inFlightCropsRef = useRef<Map<Orientation, Promise<SmartCropResult>>>(new Map());
   const [cropperOpen, setCropperOpen] = useState(false);
   const [pendingOrientation, setPendingOrientation] = useState<Orientation | null>(null);
-  const [canvasConfigExpanded, setCanvasConfigExpanded] = useState(true);
-  const canvasToggleRef = useRef<HTMLButtonElement>(null);
   const enhancements = useFounderStore((state) => state.enhancements);
   const toggleEnhancement = useFounderStore((state) => state.toggleEnhancement);
   const setLivingCanvasModalOpen = useFounderStore((state) => state.setLivingCanvasModalOpen);
@@ -216,13 +212,6 @@ const StickyOrderRail = ({ mobileRoomPreview, onDownloadClick, downloadingHD, is
     orientationChanging ||
     false;
 
-  const downloadDisabled =
-    !currentStyle ||
-    !hasFinalizedPhoto ||
-    orientationPreviewPending ||
-    orientationChanging;
-
-  const canvasButtonDisabled = orientationChanging || cropperOpen;
   const canvasLocked = !hasFinalizedPhoto || orientationPreviewPending;
 
   const handleCheckout = async () => {
@@ -240,16 +229,6 @@ const StickyOrderRail = ({ mobileRoomPreview, onDownloadClick, downloadingHD, is
     setCheckoutError(null);
     resetCheckout();
     navigate('/checkout');
-  };
-
-  const handleCanvasToggle = () => {
-    setCanvasConfigExpanded((prev) => {
-      const next = !prev;
-      if (prev && canvasToggleRef.current) {
-        window.requestAnimationFrame(() => canvasToggleRef.current?.focus({ preventScroll: true }));
-      }
-      return next;
-    });
   };
 
   return (
@@ -278,19 +257,6 @@ const StickyOrderRail = ({ mobileRoomPreview, onDownloadClick, downloadingHD, is
           ))}
         </div>
       </Card>
-
-      {/* Action Row - Download Image & Create Canvas CTAs */}
-      <ActionRow
-        onDownloadClick={onDownloadClick}
-        onCanvasClick={handleCanvasToggle}
-        downloadingHD={downloadingHD}
-        isPremiumUser={isPremiumUser}
-        canvasConfigExpanded={canvasConfigExpanded}
-        downloadDisabled={downloadDisabled}
-        canvasButtonDisabled={canvasButtonDisabled}
-        canvasLocked={canvasLocked}
-        canvasButtonRef={canvasToggleRef}
-      />
 
       {/* Canvas Config - Collapsible */}
       <CanvasConfig
