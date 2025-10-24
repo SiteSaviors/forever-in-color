@@ -65,8 +65,8 @@ const AnimatedTransformBadge = () => {
 
       {/* Text */}
       <div className="flex items-center gap-1.5 relative z-10">
-        <span className="text-sm font-semibold text-emerald-300">Transforms in</span>
-        <span className="text-base font-bold text-white tabular-nums">
+        <span className="font-poppins text-sm font-semibold text-emerald-300">Transforms in</span>
+        <span className="font-poppins text-base font-bold text-white tabular-nums">
           {Math.round(count)} seconds
         </span>
       </div>

@@ -326,10 +326,10 @@ const PhotoUploader = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                 </div>
-                <h3 className="text-2xl font-bold text-white">
+                <h3 className="font-poppins text-3xl font-bold text-white">
                   {isDragging ? 'Drop to Transform' : 'Start Your Masterpiece'}
                 </h3>
-                <p className="text-base text-white/80 max-w-md mx-auto">
+                <p className="font-poppins text-base text-white/80 max-w-auto mx-auto">
                   Upload your favorite photo and watch it transform into stunning art in seconds
                 </p>
               </div>

@@ -10,6 +10,8 @@ import TrustStrip from '@/components/hero/TrustStrip';
 import MomentumTicker from '@/components/hero/MomentumTicker';
 import AnimatedTransformBadge from '@/components/hero/AnimatedTransformBadge';
 
+const DEFAULT_ORIGINAL_IMAGE = '/art-style-hero-generations/family-original.jpg';
+
 // Style pills data
 const STYLE_PILLS = [
   {
@@ -17,6 +19,7 @@ const STYLE_PILLS = [
     name: 'Watercolor',
     tagline: 'Soft washes & light',
     thumbnail: '/art-style-hero-generations/watercolor-origin.jpg',
+    originalImage: '/art-style-hero-generations/watercolor-origin.jpg',
     previewImage: '/art-style-hero-generations/watercolor-generated.jpg',
   },
   {
@@ -24,6 +27,7 @@ const STYLE_PILLS = [
     name: 'Classic Oil',
     tagline: 'Traditional brushstrokes',
     thumbnail: '/art-style-hero-generations/family-classic-oil.jpg',
+    originalImage: DEFAULT_ORIGINAL_IMAGE,
     previewImage: '/art-style-hero-generations/family-classic-oil.jpg',
   },
   {
@@ -31,6 +35,7 @@ const STYLE_PILLS = [
     name: 'Neon Splash',
     tagline: 'Electric drip energy',
     thumbnail: '/art-style-hero-generations/family-neon-splash.jpg',
+    originalImage: DEFAULT_ORIGINAL_IMAGE,
     previewImage: '/art-style-hero-generations/family-neon-splash.jpg',
   },
   {
@@ -38,6 +43,7 @@ const STYLE_PILLS = [
     name: 'Pop Art Burst',
     tagline: 'Bold comic vibes',
     thumbnail: '/art-style-hero-generations/family-pop-art.jpg',
+    originalImage: DEFAULT_ORIGINAL_IMAGE,
     previewImage: '/art-style-hero-generations/family-pop-art.jpg',
   },
   {
@@ -45,6 +51,7 @@ const STYLE_PILLS = [
     name: '3D Storybook',
     tagline: 'Playful depth & charm',
     thumbnail: '/art-style-hero-generations/family-storybook.jpg',
+    originalImage: DEFAULT_ORIGINAL_IMAGE,
     previewImage: '/art-style-hero-generations/family-storybook.jpg',
   },
   {
@@ -52,6 +59,7 @@ const STYLE_PILLS = [
     name: 'Artisan Charcoal',
     tagline: 'Raw sketch texture',
     thumbnail: '/art-style-hero-generations/family-charcoal.jpg',
+    originalImage: DEFAULT_ORIGINAL_IMAGE,
     previewImage: '/art-style-hero-generations/family-charcoal.jpg',
   },
 ];
@@ -62,6 +70,9 @@ const ProductHeroSection = () => {
   const [currentStyleImage, setCurrentStyleImage] = useState(STYLE_PILLS[0].previewImage);
   const [currentStyleName, setCurrentStyleName] = useState(STYLE_PILLS[0].name);
   const [currentStyleTagline, setCurrentStyleTagline] = useState(STYLE_PILLS[0].tagline);
+  const [currentOriginalImage, setCurrentOriginalImage] = useState(
+    STYLE_PILLS[0].originalImage ?? DEFAULT_ORIGINAL_IMAGE
+  );
 
   const handleHeroUploadClick = () => {
     if (!launchpadExpanded) {
@@ -75,12 +86,13 @@ const ProductHeroSection = () => {
     }
   };
 
-  const handleStyleChange = (styleId: string, previewImage: string) => {
+  const handleStyleChange = (styleId: string, previewImage: string, originalImage?: string) => {
     const selectedStyle = STYLE_PILLS.find(pill => pill.id === styleId);
     if (selectedStyle) {
       setCurrentStyleImage(previewImage);
       setCurrentStyleName(selectedStyle.name);
       setCurrentStyleTagline(selectedStyle.tagline);
+      setCurrentOriginalImage(originalImage ?? selectedStyle.originalImage ?? DEFAULT_ORIGINAL_IMAGE);
     }
   };
 
@@ -132,7 +144,7 @@ const ProductHeroSection = () => {
               >
                 <GeneratingCanvasAnimation
                   defaultStyleImage={currentStyleImage}
-                  originalImage="/art-style-hero-generations/family-original.jpg"
+                  originalImage={currentOriginalImage}
                   styleName={currentStyleName}
                   styleTagline={currentStyleTagline}
                   generationDuration={2500}

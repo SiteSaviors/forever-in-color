@@ -8,11 +8,12 @@ type StylePill = {
   tagline: string;
   thumbnail: string;
   previewImage: string;
+  originalImage?: string;
 };
 
 type StylePillsProps = {
   pills: StylePill[];
-  onStyleChange?: (styleId: string, previewImage: string) => void;
+  onStyleChange?: (styleId: string, previewImage: string, originalImage?: string) => void;
   className?: string;
 };
 
@@ -23,7 +24,7 @@ const StylePills = ({ pills, onStyleChange, className = '' }: StylePillsProps) =
   const handlePillClick = (pill: StylePill) => {
     setActiveStyleId(pill.id);
     setPreselectedStyle(pill.id);
-    onStyleChange?.(pill.id, pill.previewImage);
+    onStyleChange?.(pill.id, pill.previewImage, pill.originalImage);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent, pill: StylePill) => {
