@@ -27,6 +27,10 @@ export const REQUIRE_AUTH_FOR_PREVIEW = coerceBoolean(
   import.meta.env.VITE_REQUIRE_AUTH_FOR_PREVIEW ?? 'false'
 );
 
+export const ENABLE_STORY_LAYER = coerceBoolean(
+  import.meta.env.VITE_STORY_LAYER_ENABLED ?? 'true'
+);
+
 export const AUTH_GATE_ROLLOUT_PERCENT = coercePercentage(
   import.meta.env.VITE_AUTH_GATE_ROLLOUT ?? '0'
 );

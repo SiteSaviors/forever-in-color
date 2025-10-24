@@ -16,8 +16,8 @@ const STYLE_PILLS = [
     id: 'watercolor-dreams',
     name: 'Watercolor',
     tagline: 'Soft washes & light',
-    thumbnail: '/art-style-hero-generations/family-watercolor.jpg',
-    previewImage: '/art-style-hero-generations/family-watercolor.jpg',
+    thumbnail: '/art-style-hero-generations/watercolor-origin.jpg',
+    previewImage: '/art-style-hero-generations/watercolor-generated.jpg',
   },
   {
     id: 'classic-oil-painting',
@@ -97,19 +97,19 @@ const ProductHeroSection = () => {
         <div className="mx-auto max-w-6xl space-y-6">
 
           {/* Animated Transform Badge + Headline */}
-          <div className="text-center text-white max-w-4xl mx-auto px-4">
+          <div className="text-center text-white max-w-5xl mx-auto px-4">
             <div className="flex justify-center mb-6 md:mb-8">
               <AnimatedTransformBadge />
             </div>
             <div className="space-y-4">
-              <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold leading-[1.15] drop-shadow-2xl">
+              <h1 className="font-poppins text-4xl sm:text-5xl md:text-7xl font-bold leading-[1.15] tracking-[-0.04em] drop-shadow-2xl">
                 Transform Your Memories Into{' '}
                 <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
                   Museum-Quality Art
                 </span>
               </h1>
-              <p className="text-base sm:text-lg md:text-xl text-white/70 leading-relaxed">
-                AI-powered canvas art. Multiple styles. In 60 seconds.
+              <p className="font-poppins text-base sm:text-lg md:text-xl text-white">
+                Wondertone AI transforms your photo into 40+ unique art styles in seconds. 
               </p>
             </div>
           </div>

@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react';
 import { clsx } from 'clsx';
 import { useFounderStore, StylePreviewStatus } from '@/store/useFounderStore';
 import { useAuthModal } from '@/store/useAuthModal';
@@ -90,7 +90,7 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
   const [mobileStyleDrawerOpen, setMobileStyleDrawerOpen] = useState(false);
   const [showCanvasUpsellToast, setShowCanvasUpsellToast] = useState(false);
   const [welcomeDismissed, setWelcomeDismissed] = useState(false);
-  const { showToast, renderFeedback } = useStudioFeedback();
+  const { showToast, showUpgradeModal, renderFeedback } = useStudioFeedback();
   const openAuthModal = useAuthModal((state) => state.openModal);
 
   const generalGate = evaluateStyleGate(null);
@@ -283,6 +283,13 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
     }
   };
 
+  const handleStoryCreateCanvas = useCallback(() => {
+    const canvasPanel = document.getElementById('canvas-options-panel');
+    if (canvasPanel) {
+      canvasPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, []);
+
   const handleEditFromWelcome = () => {
     trackLaunchflowOpened('welcome_banner');
     trackLaunchflowEditReopen('welcome_banner');
@@ -437,6 +444,10 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
           launchpadExpanded={launchpadExpanded}
           onOpenLaunchflow={handleOpenLaunchflowFromEmptyState}
           onBrowseStyles={handleBrowseStylesFromEmptyState}
+          entitlements={entitlements}
+          onStoryToast={showToast}
+          onStoryUpgradePrompt={showUpgradeModal}
+          onStoryCreateCanvas={handleStoryCreateCanvas}
         />
         {/* RIGHT SIDEBAR: Options + Order Summary (Full-width on mobile, fixed on desktop) */}
         <aside
