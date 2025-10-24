@@ -1,4 +1,4 @@
-import { useState, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Lock, Star, Sparkles, TrendingUp } from 'lucide-react';
 import { clsx } from 'clsx';
@@ -31,6 +31,10 @@ export default function ToneStyleCard({
   const reduceMotionFromContext = useReducedMotion();
   const prefersReducedMotion = prefersReducedMotionProp ?? reduceMotionFromContext;
   const [parallax, setParallax] = useState({ x: 0, y: 0 });
+  const cardRef = useRef<HTMLButtonElement | null>(null);
+  const rectRef = useRef<DOMRect | null>(null);
+  const rafRef = useRef<number | null>(null);
+  const pendingParallaxRef = useRef<{ x: number; y: number } | null>(null);
 
   // Get tone accent color for ink ripple effect
   const toneAccentColor = TONE_GRADIENTS[metadataTone]?.accent || '#8b5cf6';
@@ -73,13 +77,39 @@ export default function ToneStyleCard({
     onSelect();
   };
 
+  useEffect(() => {
+    return () => {
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+    };
+  }, []);
+
+  const scheduleParallaxUpdate = (next: { x: number; y: number }) => {
+    pendingParallaxRef.current = next;
+    if (rafRef.current != null) {
+      return;
+    }
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = null;
+      if (pendingParallaxRef.current) {
+        setParallax(pendingParallaxRef.current);
+      }
+    });
+  };
+
   const handlePointerMove: React.PointerEventHandler<HTMLButtonElement> = (event) => {
     if (prefersReducedMotion || isLocked) return;
-    const rect = event.currentTarget.getBoundingClientRect();
+    if (!cardRef.current) return;
+    if (!rectRef.current) {
+      rectRef.current = cardRef.current.getBoundingClientRect();
+    }
+    const rect = rectRef.current;
     const x = (event.clientX - rect.left) / rect.width - 0.5;
     const y = (event.clientY - rect.top) / rect.height - 0.5;
     const intensity = isHero ? 12 : 8;
-    setParallax({
+    scheduleParallaxUpdate({
       x: x * intensity,
       y: y * (isHero ? 8 : 5),
     });
@@ -87,6 +117,12 @@ export default function ToneStyleCard({
 
   const resetParallax = () => {
     if (!prefersReducedMotion) {
+      pendingParallaxRef.current = { x: 0, y: 0 };
+      rectRef.current = null;
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
       setParallax({ x: 0, y: 0 });
     }
   };
@@ -180,6 +216,7 @@ export default function ToneStyleCard({
 
   return (
     <motion.button
+      ref={cardRef}
       onClick={handleSelect}
       onPointerMove={handlePointerMove}
       onPointerLeave={resetParallax}

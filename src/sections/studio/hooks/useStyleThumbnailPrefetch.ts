@@ -68,14 +68,35 @@ export const useStyleThumbnailPrefetch = ({
   }, [groups]);
 
   const observersRef = useRef<Map<string, IntersectionObserver>>(new Map());
+  const registerCallbacksRef = useRef<Map<string, (node: HTMLElement | null) => void>>(new Map());
+  const groupRefsRef = useRef<Map<string, PrefetchGroup>>(new Map());
 
   useEffect(() => {
     const observers = observersRef.current;
+    const registerCallbacks = registerCallbacksRef.current;
+    const groupRefs = groupRefsRef.current;
     return () => {
       observers.forEach((observer) => observer.disconnect());
       observers.clear();
+      registerCallbacks.clear();
+      groupRefs.clear();
     };
   }, []);
+
+  useEffect(() => {
+    const activeIds = new Set(groups.map((group) => group.id));
+    registerCallbacksRef.current.forEach((_callback, id) => {
+      if (!activeIds.has(id)) {
+        registerCallbacksRef.current.delete(id);
+        groupRefsRef.current.delete(id);
+        const observer = observersRef.current.get(id);
+        if (observer) {
+          observer.disconnect();
+          observersRef.current.delete(id);
+        }
+      }
+    });
+  }, [groups]);
 
   const updateStatus = useCallback((groupId: string, status: PrefetchGroupStatus, error?: string) => {
     setPrefetchState((current) => {
@@ -109,36 +130,46 @@ export const useStyleThumbnailPrefetch = ({
 
   const registerGroup = useCallback(
     (group: PrefetchGroup) => {
-      return (node: HTMLElement | null) => {
-        const existingObserver = observersRef.current.get(group.id);
-        if (existingObserver) {
-          existingObserver.disconnect();
-          observersRef.current.delete(group.id);
-        }
+      groupRefsRef.current.set(group.id, group);
 
-        if (!node) {
-          return;
-        }
+      if (!registerCallbacksRef.current.has(group.id)) {
+        const callback = (node: HTMLElement | null) => {
+          const existingObserver = observersRef.current.get(group.id);
+          if (existingObserver) {
+            existingObserver.disconnect();
+            observersRef.current.delete(group.id);
+          }
 
-        const observer = new IntersectionObserver(
-          (entries) => {
-            entries.forEach((entry) => {
-              if (entry.isIntersecting) {
-                void prefetchGroup(group);
+          if (!node) {
+            return;
+          }
+
+          const observer = new IntersectionObserver(
+            (entries) => {
+              entries.forEach((entry) => {
+                if (!entry.isIntersecting) return;
+                const latestGroup = groupRefsRef.current.get(group.id);
+                if (latestGroup) {
+                  void prefetchGroup(latestGroup);
+                }
                 observer.disconnect();
                 observersRef.current.delete(group.id);
-              }
-            });
-          },
-          {
-            threshold,
-            rootMargin,
-          }
-        );
+              });
+            },
+            {
+              threshold,
+              rootMargin,
+            }
+          );
 
-        observer.observe(node);
-        observersRef.current.set(group.id, observer);
-      };
+          observer.observe(node);
+          observersRef.current.set(group.id, observer);
+        };
+
+        registerCallbacksRef.current.set(group.id, callback);
+      }
+
+      return registerCallbacksRef.current.get(group.id)!;
     },
     [prefetchGroup, threshold, rootMargin]
   );

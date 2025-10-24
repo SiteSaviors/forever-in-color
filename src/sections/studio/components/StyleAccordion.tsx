@@ -19,7 +19,7 @@ type StyleAccordionProps = {
 };
 
 export default function StyleAccordion({ hasCroppedImage }: StyleAccordionProps) {
-  const toneSections = useToneSections();
+  const { sections: toneSections, ensureToneEvaluated } = useToneSections();
   const { showUpgradeModal } = useStudioFeedback();
   const prefersReducedMotion = useReducedMotion();
 
@@ -50,11 +50,24 @@ export default function StyleAccordion({ hasCroppedImage }: StyleAccordionProps)
 
   useEffect(() => {
     if (!activeTone) return;
+    ensureToneEvaluated(activeTone);
     const group = prefetchGroupMap.get(activeTone);
     if (group) {
       void prefetchGroup(group);
     }
-  }, [activeTone, prefetchGroupMap, prefetchGroup]);
+  }, [activeTone, ensureToneEvaluated, prefetchGroupMap, prefetchGroup]);
+
+  const selectedTone = useMemo(
+    () =>
+      toneSections.find((section) => section.styles.some((style) => style.isSelected))
+        ?.tone ?? null,
+    [toneSections]
+  );
+
+  useEffect(() => {
+    if (!selectedTone) return;
+    ensureToneEvaluated(selectedTone);
+  }, [selectedTone, ensureToneEvaluated]);
 
   // Emit view telemetry when a new tone expands
   useEffect(() => {
@@ -139,6 +152,7 @@ export default function StyleAccordion({ hasCroppedImage }: StyleAccordionProps)
     const wasExpanded = activeTone === tone;
 
     // True accordion: clicking same section closes it, clicking different opens it
+    ensureToneEvaluated(tone);
     setActiveTone((prev) => (prev === tone ? null : tone));
 
     // REMOVED: Invalid analytics event type 'tone_section_expanded' doesn't exist
@@ -180,7 +194,6 @@ export default function StyleAccordion({ hasCroppedImage }: StyleAccordionProps)
         {toneSections.map((section) => {
           const group = prefetchGroupMap.get(section.tone);
           const prefetchStatus: PrefetchGroupStatus = prefetchState[section.tone]?.status ?? 'idle';
-
           return (
             <motion.div
               key={section.tone}

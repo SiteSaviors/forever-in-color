@@ -236,19 +236,42 @@ const expandToAspectRatio = (
   const centerX = x + width / 2;
   const centerY = y + height / 2;
 
+  const minCoverage = {
+    horizontal: 0.85,
+    vertical: 0.85,
+    square: 0.9,
+  } as const;
+
   let newWidth: number;
   let newHeight: number;
 
   if (orientation === 'vertical') {
-    newHeight = Math.min(imageHeight * 0.9, height * 1.5);
-    newWidth = newHeight / 1.5;
+    const minHeight = imageHeight * minCoverage.vertical;
+    const detectionHeight = Math.max(height, imageHeight * 0.25);
+    newHeight = Math.min(imageHeight, Math.max(detectionHeight * 2.5, minHeight));
+    newWidth = newHeight * targetRatio;
+    if (newWidth > imageWidth) {
+      newWidth = imageWidth;
+      newHeight = newWidth / targetRatio;
+    }
   } else if (orientation === 'horizontal') {
-    newWidth = Math.min(imageWidth * 0.9, width * 1.5);
-    newHeight = newWidth / 1.5;
+    const minWidth = imageWidth * minCoverage.horizontal;
+    const detectionWidth = Math.max(width, imageWidth * 0.25);
+    newWidth = Math.min(imageWidth, Math.max(detectionWidth * 2.5, minWidth));
+    newHeight = newWidth / targetRatio;
+    if (newHeight > imageHeight) {
+      newHeight = imageHeight;
+      newWidth = newHeight * targetRatio;
+    }
   } else {
-    const size = Math.min(imageWidth * 0.9, imageHeight * 0.9, Math.max(width, height) * 1.2);
-    newWidth = size;
-    newHeight = size;
+    const minSize = Math.min(imageWidth, imageHeight) * minCoverage.square;
+    const detectionSize = Math.max(Math.max(width, height), Math.min(imageWidth, imageHeight) * 0.25);
+    const targetSize = Math.min(
+      Math.min(imageWidth, imageHeight),
+      Math.max(detectionSize * 2, minSize)
+    );
+    newWidth = targetSize;
+    newHeight = targetSize;
   }
 
   let newX = centerX - newWidth / 2;

@@ -1,7 +1,7 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import Cropper, { Area } from 'react-easy-crop';
 import 'react-easy-crop/react-easy-crop.css';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Button from '@/components/ui/Button';
 import { cropImageToDataUrl } from '@/utils/imageUtils';
 import type { Orientation } from '@/utils/imageUtils';
@@ -12,6 +12,8 @@ import {
   generateSmartCrop,
   getCachedSmartCropResult,
 } from '@/utils/smartCrop';
+
+const ORIENTATION_SEQUENCE: Orientation[] = ['vertical', 'square', 'horizontal'];
 
 interface CropperModalProps {
   open: boolean;
@@ -43,6 +45,8 @@ const CropperModal = ({
   const [activeOrientation, setActiveOrientation] = useState<Orientation>(initialOrientation);
   const [initialArea, setInitialArea] = useState<CropRegionOrNull>(null);
   const [loadingOrientation, setLoadingOrientation] = useState(false);
+  const prefetchedResultsRef = useRef<Map<Orientation, SmartCropResult>>(new Map());
+  const lastImageRef = useRef<string | null>(null);
 
   const orientationPreset = useMemo(
     () => ORIENTATION_PRESETS[activeOrientation],
@@ -69,57 +73,99 @@ const CropperModal = ({
     }
   }, [initialArea, open]);
 
+  useEffect(() => {
+    if (!originalImage) {
+      prefetchedResultsRef.current.clear();
+      lastImageRef.current = null;
+      return;
+    }
+
+    if (lastImageRef.current !== originalImage) {
+      prefetchedResultsRef.current = new Map();
+      lastImageRef.current = originalImage;
+    }
+  }, [originalImage]);
+
+  useEffect(() => {
+    if (!open) {
+      setLoadingOrientation(false);
+    }
+  }, [open]);
+
   const ensureSmartCrop = useCallback(
     async (orientation: Orientation) => {
       if (!originalImage) return null;
 
-      const cached = smartCropCache[orientation] ?? getCachedSmartCropResult(originalImage, orientation);
+      const prefetched = prefetchedResultsRef.current.get(orientation);
+      if (prefetched && prefetched.region.width > 0 && prefetched.region.height > 0) {
+        return prefetched;
+      }
+
+      const cached =
+        smartCropCache[orientation] ?? getCachedSmartCropResult(originalImage, orientation);
       if (cached && cached.region.width > 0 && cached.region.height > 0) {
+        prefetchedResultsRef.current.set(orientation, cached);
         return cached;
       }
 
       const result = await generateSmartCrop(originalImage, orientation);
       cacheSmartCropResult(originalImage, orientation, result);
       onSmartCropReady?.(result);
+      prefetchedResultsRef.current.set(orientation, result);
       return result;
     },
     [originalImage, smartCropCache, onSmartCropReady]
   );
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || !originalImage) return;
     let isMounted = true;
 
-    const hydrate = async () => {
-      if (!originalImage) {
-        setInitialArea(null);
-        setLoadingOrientation(false);
-        return;
-      }
+    const hydrateActiveOrientation = async () => {
+      const cachedResult =
+        prefetchedResultsRef.current.get(activeOrientation) ??
+        smartCropCache[activeOrientation];
 
-      const existing = smartCropCache[activeOrientation];
-      if (existing && existing.region.width > 0 && existing.region.height > 0) {
+      if (cachedResult && cachedResult.region.width > 0 && cachedResult.region.height > 0) {
+        prefetchedResultsRef.current.set(activeOrientation, cachedResult);
         if (isMounted) {
-          setInitialArea(existing.region);
+          setInitialArea(cachedResult.region);
           setLoadingOrientation(false);
         }
         return;
       }
 
-      setLoadingOrientation(true);
+      if (isMounted) {
+        setLoadingOrientation(true);
+      }
+
       const result = await ensureSmartCrop(activeOrientation);
+
       if (isMounted) {
         setInitialArea(result?.region ?? null);
         setLoadingOrientation(false);
       }
     };
 
-    void hydrate();
+    void hydrateActiveOrientation();
+
+    ORIENTATION_SEQUENCE.forEach((orientation) => {
+      if (orientation === activeOrientation) {
+        return;
+      }
+      const cached =
+        prefetchedResultsRef.current.get(orientation) ?? smartCropCache[orientation];
+      if (cached && cached.region.width > 0 && cached.region.height > 0) {
+        prefetchedResultsRef.current.set(orientation, cached);
+        return;
+      }
+      void ensureSmartCrop(orientation);
+    });
 
     return () => {
       isMounted = false;
     };
-  }, [open, activeOrientation, smartCropCache, ensureSmartCrop, originalImage]);
+  }, [open, originalImage, activeOrientation, ensureSmartCrop, smartCropCache]);
 
   const onCropComplete = useCallback((_croppedArea: Area, croppedPixels: Area) => {
     setCroppedAreaPixels(croppedPixels);
@@ -127,14 +173,16 @@ const CropperModal = ({
 
   const handleOrientationSelect = (orientation: Orientation) => {
     if (orientation === activeOrientation) return;
-    setLoadingOrientation(true);
     setActiveOrientation(orientation);
-    const existing = smartCropCache[orientation];
-    if (existing && existing.region.width > 0 && existing.region.height > 0) {
-      setInitialArea(existing.region);
+    const cached =
+      prefetchedResultsRef.current.get(orientation) ?? smartCropCache[orientation];
+    if (cached && cached.region.width > 0 && cached.region.height > 0) {
+      prefetchedResultsRef.current.set(orientation, cached);
+      setInitialArea(cached.region);
       setLoadingOrientation(false);
     } else {
       setInitialArea(null);
+      setLoadingOrientation(true);
     }
   };
 
@@ -172,6 +220,7 @@ const CropperModal = ({
       };
 
       cacheSmartCropResult(originalImage, activeOrientation, result);
+      prefetchedResultsRef.current.set(activeOrientation, result);
       onSmartCropReady?.(result);
       await onComplete(result);
     } finally {
@@ -179,7 +228,7 @@ const CropperModal = ({
     }
   };
 
-  const orientationOptions: Orientation[] = ['vertical', 'square', 'horizontal'];
+  const orientationOptions = ORIENTATION_SEQUENCE;
 
   return (
     <Dialog.Root open={open} onOpenChange={(value) => !value && onClose()}>
@@ -230,7 +279,6 @@ const CropperModal = ({
             >
               {originalImage ? (
                 <Cropper
-                  key={activeOrientation}
                   image={originalImage}
                   crop={crop}
                   zoom={zoom}

@@ -458,33 +458,35 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
           aria-disabled={!hasCroppedImage}
         >
           <div className="lg:sticky lg:top-[57px] px-4 py-6 lg:p-6">
-            {!hasCroppedImage && (
-              <div className="mb-4 rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-white/70">
-                Upload a photo to customize canvas options and checkout.
-              </div>
-            )}
-            <Suspense fallback={<StickyOrderRailFallback />}>
-              <StickyOrderRailLazy
-                onDownloadClick={handleDownloadHD}
-                downloadingHD={downloadingHD}
-                isPremiumUser={isPremiumUser}
-                mobileRoomPreview={
-                  <div className="lg:hidden w-full">
-                    <div className="mb-4 text-center space-y-1">
-                      <h3 className="text-xl font-bold text-white">
-                        See It In Your Space
-                      </h3>
-                      <p className="text-xs text-white/60 max-w-md mx-auto px-4">
-                        Visualize how your canvas will look in a real living room
-                      </p>
+            <div className="space-y-6 lg:max-h-[calc(100vh-88px)] lg:overflow-y-auto lg:pr-3 lg:-mr-3">
+              {!hasCroppedImage && (
+                <div className="mb-4 rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-white/70">
+                  Upload a photo to customize canvas options and checkout.
+                </div>
+              )}
+              <Suspense fallback={<StickyOrderRailFallback />}>
+                <StickyOrderRailLazy
+                  onDownloadClick={handleDownloadHD}
+                  downloadingHD={downloadingHD}
+                  isPremiumUser={isPremiumUser}
+                  mobileRoomPreview={
+                    <div className="lg:hidden w-full">
+                      <div className="mb-4 text-center space-y-1">
+                        <h3 className="text-xl font-bold text-white">
+                          See It In Your Space
+                        </h3>
+                        <p className="text-xs text-white/60 max-w-md mx-auto px-4">
+                          Visualize how your canvas will look in a real living room
+                        </p>
+                      </div>
+                      <Suspense fallback={<CanvasPreviewFallback />}>
+                        <CanvasInRoomPreview enableHoverEffect={true} showDimensions={false} />
+                      </Suspense>
                     </div>
-                    <Suspense fallback={<CanvasPreviewFallback />}>
-                      <CanvasInRoomPreview enableHoverEffect={true} showDimensions={false} />
-                    </Suspense>
-                  </div>
-                }
-              />
-            </Suspense>
+                  }
+                />
+              </Suspense>
+            </div>
           </div>
         </aside>
       </div>

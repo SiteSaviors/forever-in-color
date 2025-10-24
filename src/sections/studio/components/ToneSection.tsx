@@ -89,7 +89,7 @@ export default function ToneSection({
       className={sectionClassName}
       style={{
         background: panelBackground,
-        willChange: isAnimating ? 'height, opacity' : undefined,
+        willChange: isExpanded ? 'height, opacity' : undefined,
         pointerEvents: isAnimating ? 'none' : 'auto',
         '--tone-highlight': toneMeta.highlight,
       }}
@@ -173,7 +173,7 @@ export default function ToneSection({
             style={{
               '--panel-height': typeof panelHeight === 'number' ? `${panelHeight}px` : 'auto',
               contain: 'layout style',
-              willChange: isAnimating ? 'height, opacity' : 'auto',
+              willChange: isExpanded ? 'height, opacity' : undefined,
             } as React.CSSProperties}
           >
             <motion.div
