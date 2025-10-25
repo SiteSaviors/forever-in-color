@@ -39,3 +39,4 @@
 
 **Status Notes**
 - 2024‑XX‑XX: Command suite executed (`npm run lint`, `npm run build`, `npm run build:analyze`, `npm run deps:check`), all passing with the known depcheck warnings. Profiling recommendation: re-run the saved React Profiler sessions (accordion hover/expand, cropper orientation flip, sidebar scroll) to capture frame budgets post-optimization; compare render durations and commit counts against the Phase 0 baselines. Document the deltas alongside any observed UX notes before code review.
+

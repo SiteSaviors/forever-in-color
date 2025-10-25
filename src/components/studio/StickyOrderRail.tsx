@@ -1,4 +1,4 @@
-import { lazy, Suspense, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Card from '@/components/ui/Card';
 import { useFounderStore } from '@/store/useFounderStore';
@@ -9,15 +9,27 @@ import { useCheckoutStore } from '@/store/useCheckoutStore';
 import CanvasConfig from '@/components/studio/CanvasConfig';
 import { trackOrderStarted } from '@/utils/telemetry';
 
+declare global {
+  interface Window {
+    __openOrientationCropper?: (orientation?: Orientation) => void;
+  }
+}
+
 const CropperModal = lazy(() => import('@/components/launchpad/cropper/CropperModal'));
 
 type StickyOrderRailProps = {
   mobileRoomPreview?: React.ReactNode;
   canvasConfigExpanded: boolean;
   onCanvasConfigToggle: () => void;
+  onOrientationToast?: (orientationLabel: string) => void;
 };
 
-const StickyOrderRail = ({ mobileRoomPreview, canvasConfigExpanded, onCanvasConfigToggle }: StickyOrderRailProps) => {
+const StickyOrderRail = ({
+  mobileRoomPreview,
+  canvasConfigExpanded,
+  onCanvasConfigToggle: _onCanvasConfigToggle,
+  onOrientationToast,
+}: StickyOrderRailProps) => {
   const inFlightCropsRef = useRef<Map<Orientation, Promise<SmartCropResult>>>(new Map());
   const [cropperOpen, setCropperOpen] = useState(false);
   const [pendingOrientation, setPendingOrientation] = useState<Orientation | null>(null);
@@ -65,7 +77,7 @@ const StickyOrderRail = ({ mobileRoomPreview, canvasConfigExpanded, onCanvasConf
     }
   };
 
-  const ensureSmartCropForOrientation = async (orient: Orientation): Promise<SmartCropResult | null> => {
+  const ensureSmartCropForOrientation = useCallback(async (orient: Orientation): Promise<SmartCropResult | null> => {
     if (!originalImage) return null;
 
     let nextResult = smartCrops[orient];
@@ -105,9 +117,9 @@ const StickyOrderRail = ({ mobileRoomPreview, canvasConfigExpanded, onCanvasConf
     }
 
     return nextResult;
-  };
+  }, [originalImage, originalImageDimensions, setSmartCropForOrientation, smartCrops]);
 
-  const handleOrientationSelect = async (orient: Orientation) => {
+  const handleOrientationSelect = useCallback(async (orient: Orientation) => {
     if (orientation === orient || orientationChanging || cropperOpen) return;
 
     if (!originalImage) {
@@ -135,7 +147,20 @@ const StickyOrderRail = ({ mobileRoomPreview, canvasConfigExpanded, onCanvasConf
     }
 
     setCropperOpen(true);
-  };
+  }, [
+    ensureSmartCropForOrientation,
+    cropperOpen,
+    setCropperOpen,
+    setOrientationChanging,
+    orientation,
+    orientationChanging,
+    originalImage,
+    selectedSize,
+    setCanvasSize,
+    setPendingOrientation,
+    setOrientation,
+    setOrientationTip,
+  ]);
 
   const handleCropperDismiss = () => {
     setCropperOpen(false);
@@ -146,6 +171,7 @@ const StickyOrderRail = ({ mobileRoomPreview, canvasConfigExpanded, onCanvasConf
 
   const handleCropperComplete = async (result: SmartCropResult) => {
     const targetOrientation = result.orientation;
+    const orientationHasChanged = targetOrientation !== orientation;
 
     setSmartCropForOrientation(targetOrientation, result);
     if (originalImage) {
@@ -198,7 +224,45 @@ const StickyOrderRail = ({ mobileRoomPreview, canvasConfigExpanded, onCanvasConf
     }
 
     setOrientationChanging(false);
+    if (orientationHasChanged) {
+      onOrientationToast?.(ORIENTATION_PRESETS[targetOrientation].label);
+    }
   };
+
+  const openOrientationCropper = useCallback(
+    async (orient?: Orientation) => {
+      const target = orient ?? orientation;
+      if (!target) return;
+
+      if (!croppedImage || !originalImage) {
+        await handleOrientationSelect(target);
+        return;
+      }
+
+      setPendingOrientation(target);
+      await ensureSmartCropForOrientation(target);
+      setCropperOpen(true);
+    },
+    [
+      croppedImage,
+      ensureSmartCropForOrientation,
+      handleOrientationSelect,
+      orientation,
+      originalImage,
+    ]
+  );
+
+  useEffect(() => {
+    const handler = (orient?: Orientation) => {
+      void openOrientationCropper(orient);
+    };
+    window.__openOrientationCropper = handler;
+    return () => {
+      if (window.__openOrientationCropper === handler) {
+        delete window.__openOrientationCropper;
+      }
+    };
+  }, [openOrientationCropper]);
 
   const activeOrientationValue = pendingOrientation ?? orientation;
   const sizeOptionsForOrientation = CANVAS_SIZE_OPTIONS[activeOrientationValue];

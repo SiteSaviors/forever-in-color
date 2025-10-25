@@ -1,4 +1,5 @@
 import { Suspense, lazy, useCallback, useEffect, useState } from 'react';
+import { CheckCircle2 } from 'lucide-react';
 import type { StylePreviewStatus, StyleOption } from '@/store/useFounderStore';
 import type { Orientation } from '@/utils/imageUtils';
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
@@ -14,6 +15,40 @@ const StoryLayer = lazy(() => import('@/components/studio/story-layer/StoryLayer
 
 const CanvasPreviewFallback = () => (
   <div className="w-full h-[360px] rounded-[2.5rem] bg-slate-800/60 border border-white/10 animate-pulse" />
+);
+
+const SellingPointsPanel = ({ onCreateCanvas }: { onCreateCanvas: () => void }) => (
+  <div className="rounded-[32px] border border-white/12 bg-slate-950/65 px-8 py-10 shadow-[0_24px_80px_rgba(8,14,32,0.5)] backdrop-blur">
+    <div className="flex flex-col gap-6 text-left md:flex-row md:items-center md:justify-between">
+      <div className="space-y-4 md:max-w-md">
+        <p className="text-xs uppercase tracking-[0.38em] text-white/45">Museum-Quality Art</p>
+        <h3 className="font-display text-2xl font-semibold tracking-tight text-white">
+          Crafted to last a lifetime
+        </h3>
+        <ul className="space-y-4 text-sm text-white/75">
+          <li className="flex items-start gap-3">
+            <CheckCircle2 className="mt-0.5 h-5 w-5 text-emerald-300" />
+            <span>Hand-stretched on gallery-grade frames with archival inks.</span>
+          </li>
+          <li className="flex items-start gap-3">
+            <CheckCircle2 className="mt-0.5 h-5 w-5 text-emerald-300" />
+            <span>Ships in 5 days with protective packaging and tracking.</span>
+          </li>
+          <li className="flex items-start gap-3">
+            <CheckCircle2 className="mt-0.5 h-5 w-5 text-emerald-300" />
+            <span>100% satisfaction guarantee—every canvas reprinted if needed.</span>
+          </li>
+        </ul>
+      </div>
+      <button
+        type="button"
+        onClick={onCreateCanvas}
+        className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-purple-500 via-purple-500 to-blue-500 px-8 py-3 text-sm font-semibold text-white shadow-glow-purple transition hover:shadow-glow-purple/70"
+      >
+        Create Canvas
+      </button>
+    </div>
+  </div>
 );
 
 export type CanvasPreviewPanelProps = {
@@ -257,6 +292,12 @@ const CanvasPreviewPanel = ({
           <CanvasInRoomPreview enableHoverEffect showDimensions={false} />
         </Suspense>
       </div>
+
+      {previewStateStatus === 'ready' && currentStyle && (
+        <div className="w-full max-w-2xl mt-8">
+          <SellingPointsPanel onCreateCanvas={onCreateCanvas} />
+        </div>
+      )}
 
       {shouldRenderStoryLayer && displayPreviewUrl && currentStyle && entitlements && (
         <div className="w-full max-w-2xl mt-12">

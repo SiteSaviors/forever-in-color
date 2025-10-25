@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, type CSSProperties } from 'react';
+import { useState, useEffect, useMemo, useRef, type CSSProperties } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { clsx } from 'clsx';
@@ -23,8 +23,28 @@ export default function StyleAccordion({ hasCroppedImage }: StyleAccordionProps)
   const { showUpgradeModal } = useStudioFeedback();
   const prefersReducedMotion = useReducedMotion();
 
-  // Single active tone (true accordion behavior - only one open)
+  const mediaQueryRef = useRef<MediaQueryList | null>(null);
+  const [isDesktop, setIsDesktop] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    const mq = window.matchMedia('(min-width: 1024px)');
+    mediaQueryRef.current = mq;
+    return mq.matches;
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mq = mediaQueryRef.current ?? window.matchMedia('(min-width: 1024px)');
+    mediaQueryRef.current = mq;
+    const handler = (event: MediaQueryListEvent) => setIsDesktop(event.matches);
+    mq.addEventListener('change', handler);
+    setIsDesktop(mq.matches);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
+  // Single active tone (mobile accordion behavior)
   const [activeTone, setActiveTone] = useState<StyleTone | null>('trending');
+  // Track collapsed tones for desktop (absence means expanded)
+  const [collapsedTones, setCollapsedTones] = useState<Set<StyleTone>>(new Set());
 
   // Track prefetched sections to prevent duplicate requests
   // Trending tooltip state for first-time users
@@ -49,13 +69,13 @@ export default function StyleAccordion({ hasCroppedImage }: StyleAccordionProps)
   );
 
   useEffect(() => {
-    if (!activeTone) return;
+    if (isDesktop || !activeTone) return;
     ensureToneEvaluated(activeTone);
     const group = prefetchGroupMap.get(activeTone);
     if (group) {
       void prefetchGroup(group);
     }
-  }, [activeTone, ensureToneEvaluated, prefetchGroupMap, prefetchGroup]);
+  }, [activeTone, ensureToneEvaluated, isDesktop, prefetchGroupMap, prefetchGroup]);
 
   const selectedTone = useMemo(
     () =>
@@ -71,12 +91,13 @@ export default function StyleAccordion({ hasCroppedImage }: StyleAccordionProps)
 
   // Emit view telemetry when a new tone expands
   useEffect(() => {
-    if (!activeTone) return;
+    if (isDesktop || !activeTone) return;
     emitStepOneEvent({ type: 'tone_section_view', tone: activeTone });
-  }, [activeTone]);
+  }, [activeTone, isDesktop]);
 
   // Auto-expand Trending with tooltip for first-time users
   useEffect(() => {
+    if (isDesktop) return;
     const hasSeenTip = localStorage.getItem('hasSeenTrendingTip');
 
     if (!hasSeenTip && hasCroppedImage) {
@@ -94,7 +115,7 @@ export default function StyleAccordion({ hasCroppedImage }: StyleAccordionProps)
         clearTimeout(dismissTimer);
       };
     }
-  }, [hasCroppedImage]);
+  }, [hasCroppedImage, isDesktop]);
 
   const handleDismissTip = () => {
     setShowTrendingTip(false);
@@ -149,14 +170,32 @@ export default function StyleAccordion({ hasCroppedImage }: StyleAccordionProps)
   });
 
   const toggleTone = (tone: StyleTone) => {
+    if (isDesktop) {
+      const isCollapsed = collapsedTones.has(tone);
+      if (isCollapsed) {
+        const next = new Set(collapsedTones);
+        next.delete(tone);
+        setCollapsedTones(next);
+        ensureToneEvaluated(tone);
+        const group = prefetchGroupMap.get(tone);
+        if (group) {
+          void prefetchGroup(group);
+        }
+        emitStepOneEvent({ type: 'tone_section_view', tone });
+      } else {
+        setCollapsedTones((prev) => {
+          const next = new Set(prev);
+          next.add(tone);
+          return next;
+        });
+      }
+      return;
+    }
+
     const wasExpanded = activeTone === tone;
 
-    // True accordion: clicking same section closes it, clicking different opens it
     ensureToneEvaluated(tone);
     setActiveTone((prev) => (prev === tone ? null : tone));
-
-    // REMOVED: Invalid analytics event type 'tone_section_expanded' doesn't exist
-    // Can add to telemetry.ts union if needed for tracking
 
     if (!wasExpanded) {
       const group = prefetchGroupMap.get(tone);
@@ -166,8 +205,31 @@ export default function StyleAccordion({ hasCroppedImage }: StyleAccordionProps)
     }
   };
 
+  useEffect(() => {
+    if (!isDesktop) return;
+    setCollapsedTones((prev) => {
+      const valid = new Set<StyleTone>(toneSections.map((section) => section.tone));
+      const next = new Set<StyleTone>();
+      prev.forEach((tone) => {
+        if (valid.has(tone)) {
+          next.add(tone);
+        }
+      });
+      return next;
+    });
+  }, [isDesktop, toneSections]);
+
+  useEffect(() => {
+    if (isDesktop) {
+      setActiveTone(null);
+    } else {
+      setCollapsedTones(new Set());
+      setActiveTone((prev) => prev ?? 'trending');
+    }
+  }, [isDesktop]);
+
   const toneAmbientStyle = useMemo(() => {
-    if (!activeTone) return undefined;
+    if (isDesktop || !activeTone) return undefined;
     const ambient = TONE_GRADIENTS[activeTone]?.ambient;
     if (!ambient) return undefined;
     const style: CSSProperties = {
@@ -176,16 +238,16 @@ export default function StyleAccordion({ hasCroppedImage }: StyleAccordionProps)
       '--tone-ambient-to': ambient.to,
     };
     return style;
-  }, [activeTone]);
+  }, [activeTone, isDesktop]);
 
   const ambientClasses = useMemo(
     () =>
       clsx(
         'tone-ambient-container relative space-y-4',
-        activeTone ? 'visible' : '',
+        isDesktop || activeTone ? 'visible' : '',
         prefersReducedMotion ? 'reduced-motion' : ''
       ),
-    [activeTone, prefersReducedMotion]
+    [activeTone, isDesktop, prefersReducedMotion]
   );
 
   return (
@@ -194,6 +256,9 @@ export default function StyleAccordion({ hasCroppedImage }: StyleAccordionProps)
         {toneSections.map((section) => {
           const group = prefetchGroupMap.get(section.tone);
           const prefetchStatus: PrefetchGroupStatus = prefetchState[section.tone]?.status ?? 'idle';
+          const isExpanded = isDesktop
+            ? !collapsedTones.has(section.tone)
+            : activeTone === section.tone;
           return (
             <motion.div
               key={section.tone}
@@ -245,7 +310,7 @@ export default function StyleAccordion({ hasCroppedImage }: StyleAccordionProps)
               onStyleSelect={(styleId, meta) => {
                 handleStyleSelect(styleId, meta);
               }}
-              isExpanded={activeTone === section.tone}
+              isExpanded={isExpanded}
               onToggle={() => toggleTone(section.tone)}
               prefetchStatus={prefetchStatus}
             />

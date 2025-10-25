@@ -120,6 +120,9 @@ body {
     linear-gradient(to bottom right, rgb(15 23 42 / 0.4), rgb(15 23 42 / 0.6)) padding-box,
     linear-gradient(135deg, #d4af37, #f4e5c3, #d4af37, #f4e5c3) border-box;
   background-size: 100% 100%, 200% 200%;
+}
+
+.animate-border-gold {
   animation: border-flow 3s ease infinite;
 }
 
@@ -148,6 +151,7 @@ body {
   }
 
   .bg-gradient-border-gold,
+  .animate-border-gold,
   .bg-gradient-border-selected {
     animation: none;
   }

@@ -280,19 +280,25 @@ export default function ToneStyleCard({
               'absolute inset-0 z-10 rounded-lg flex items-center justify-center',
               'bg-gradient-to-br from-slate-900/45 to-slate-900/70 backdrop-blur-md',
               'border border-transparent bg-gradient-border-gold',
+              !prefersReducedMotion && 'motion-safe:group-hover:animate-border-gold',
               'transition-all duration-300'
             )}
           >
             {/* Shimmer effect on hover */}
             <div
               className={clsx(
-                'absolute inset-0 bg-gradient-to-r from-transparent via-white/16 to-transparent translate-x-[-120%]',
-                prefersReducedMotion ? '' : 'group-hover:translate-x-[120%] animate-premium-shimmer'
+                'absolute inset-0 bg-gradient-to-r from-transparent via-white/16 to-transparent translate-x-[-120%] transition-transform duration-700 ease-out',
+                prefersReducedMotion ? '' : 'group-hover:translate-x-[120%]'
               )}
             />
 
             {/* Lock icon with pulsing glow */}
-            <Lock className="w-5 h-5 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)] animate-pulse-slow relative z-10" />
+            <Lock
+              className={clsx(
+                'w-5 h-5 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)] relative z-10',
+                prefersReducedMotion ? '' : 'motion-safe:animate-pulse-slow'
+              )}
+            />
           </div>
         )}
         {/* Selected Checkmark */}
