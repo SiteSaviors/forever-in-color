@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { clsx } from 'clsx';
 import { useFounderStore, StylePreviewStatus } from '@/store/useFounderStore';
 import { useAuthModal } from '@/store/useAuthModal';
@@ -8,9 +8,12 @@ import { saveToGallery } from '@/utils/galleryApi';
 import { downloadCleanImage } from '@/utils/premiumDownload';
 import { trackDownloadSuccess } from '@/utils/telemetry';
 import { trackLaunchflowEditReopen, trackLaunchflowEmptyStateInteraction, trackLaunchflowOpened } from '@/utils/launchflowTelemetry';
+import { trackStudioV2CanvasCtaClick, trackStudioV2OrientationCta } from '@/utils/studioV2Analytics';
 import StudioHeader, { CheckoutNotice } from '@/sections/studio/components/StudioHeader';
 import StyleSidebarFallback from '@/sections/studio/components/StyleSidebarFallback';
 import CanvasPreviewPanel from '@/sections/studio/components/CanvasPreviewPanel';
+import { ENABLE_STUDIO_V2_CANVAS_MODAL, ENABLE_STUDIO_V2_INSIGHTS_RAIL } from '@/config/featureFlags';
+import type { Orientation } from '@/utils/imageUtils';
 
 const TokenWarningBanner = lazy(() => import('@/components/studio/TokenWarningBanner'));
 const StickyOrderRailLazy = lazy(() => import('@/components/studio/StickyOrderRail'));
@@ -20,6 +23,8 @@ const DownloadUpgradeModal = lazy(() => import('@/components/modals/DownloadUpgr
 const MobileStyleDrawer = lazy(() => import('@/components/studio/MobileStyleDrawer'));
 const CanvasUpsellToast = lazy(() => import('@/components/studio/CanvasUpsellToast'));
 const StyleSidebar = lazy(() => import('@/sections/studio/components/StyleSidebar'));
+const InsightsRailLazy = lazy(() => import('@/components/studio/InsightsRail'));
+const CanvasCheckoutModalLazy = lazy(() => import('@/components/studio/CanvasCheckoutModal'));
 
 const CanvasPreviewFallback = () => (
   <div className="w-full h-[360px] rounded-[2.5rem] bg-slate-800/60 border border-white/10 animate-pulse" />
@@ -37,6 +42,17 @@ const StickyOrderRailFallback = () => (
       <div className="h-12 rounded-2xl bg-gradient-to-r from-purple-500/30 to-blue-500/30 animate-pulse" />
     </div>
   </div>
+);
+
+const InsightsRailFallback = () => (
+  <aside className="w-full lg:w-[420px] px-4 py-6 lg:p-6">
+    <div className="space-y-4">
+      <div className="h-6 w-48 rounded-full bg-white/10 animate-pulse" />
+      <div className="h-4 w-64 rounded-full bg-white/5 animate-pulse" />
+      <div className="h-48 rounded-3xl border border-white/10 bg-white/5 animate-pulse" />
+      <div className="h-48 rounded-3xl border border-white/10 bg-white/5 animate-pulse" />
+    </div>
+  </aside>
 );
 
 const STORAGE_PATH_REGEX = /(preview-cache(?:-public|-premium)?\/.+)$/;
@@ -63,24 +79,17 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
   const hydrateEntitlements = useFounderStore((state) => state.hydrateEntitlements);
   const firstPreviewCompleted = useFounderStore((state) => state.firstPreviewCompleted);
   const generationCount = useFounderStore((state) => state.generationCount);
-  const evaluateStyleGate = useFounderStore((state) => state.evaluateStyleGate);
   const croppedImage = useFounderStore((state) => state.croppedImage);
   const orientation = useFounderStore((state) => state.orientation);
   const pendingStyleId = useFounderStore((state) => state.pendingStyleId);
   const stylePreviewStatus = useFounderStore((state) => state.stylePreviewStatus);
   const stylePreviewMessage = useFounderStore((state) => state.stylePreviewMessage);
   const stylePreviewError = useFounderStore((state) => state.stylePreviewError);
-  const startStylePreview = useFounderStore((state) => state.startStylePreview);
   const orientationPreviewPending = useFounderStore((state) => state.orientationPreviewPending);
   const livingCanvasModalOpen = useFounderStore((state) => state.livingCanvasModalOpen);
   const launchpadExpanded = useFounderStore((state) => state.launchpadExpanded);
   const setLaunchpadExpanded = useFounderStore((state) => state.setLaunchpadExpanded);
   const displayRemainingTokens = useFounderStore((state) => state.getDisplayableRemainingTokens());
-  const cachedPreviewEntry = useFounderStore((state) => {
-    const styleId = state.selectedStyleId;
-    if (!styleId) return null;
-    return state.stylePreviewCache[styleId]?.[state.orientation] ?? null;
-  });
   const previewOrientationLabel = preview?.orientation ? ORIENTATION_PRESETS[preview.orientation].label : null;
   const orientationMismatch = Boolean(preview?.orientation && preview.orientation !== orientation);
   const [savingToGallery, setSavingToGallery] = useState(false);
@@ -93,9 +102,11 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
   const [canvasConfigExpanded, setCanvasConfigExpanded] = useState(true);
   const { showToast, showUpgradeModal, renderFeedback } = useStudioFeedback();
   const openAuthModal = useAuthModal((state) => state.openModal);
+  const openCanvasModal = useFounderStore((state) => state.openCanvasModal);
 
-  const generalGate = evaluateStyleGate(null);
-  const currentStyleGate = currentStyle ? evaluateStyleGate(currentStyle.id) : generalGate;
+  const centerCtaThrottleRef = useRef<number>(0);
+  const orientationCtaThrottleRef = useRef<number>(0);
+
 
   const overlayStyleName =
     (pendingStyleId ? styles.find((style) => style.id === pendingStyleId)?.name : currentStyle?.name) ??
@@ -111,6 +122,19 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
 
   // Get user tier from entitlements
   const userTier = useFounderStore((state) => state.entitlements?.tier ?? 'free');
+  const previewReady = preview?.status === 'ready';
+
+  const handleOrientationToast = useCallback(
+    (orientationLabel: string) => {
+      showToast({
+        title: `${orientationLabel} crop ready`,
+        description: 'Preview updated to match your new orientation.',
+        variant: 'success',
+        duration: 2800,
+      });
+    },
+    [showToast]
+  );
   const requiresWatermark = useFounderStore((state) => state.entitlements?.requiresWatermark ?? true);
   const isPremiumUser = !requiresWatermark;
   const [watermarkUpgradeShown, setWatermarkUpgradeShown] = useState(false);
@@ -284,12 +308,57 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
     }
   };
 
-  const handleStoryCreateCanvas = useCallback(() => {
+  const scrollToCanvasOptions = useCallback(() => {
     const canvasPanel = document.getElementById('canvas-options-panel');
     if (canvasPanel) {
       canvasPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, []);
+
+  const handleOpenCanvas = useCallback(
+    (source: 'center' | 'rail') => {
+      if (!hasCroppedImage) {
+        scrollToCanvasOptions();
+        return;
+      }
+
+      if (ENABLE_STUDIO_V2_CANVAS_MODAL) {
+        openCanvasModal(source);
+        return;
+      }
+
+      scrollToCanvasOptions();
+    },
+    [hasCroppedImage, openCanvasModal, scrollToCanvasOptions]
+  );
+
+  const handleCreateCanvasFromCenter = useCallback(() => {
+    const now = Date.now();
+    const style = currentStyle;
+    const canTrack =
+      !!style &&
+      hasCroppedImage &&
+      !orientationPreviewPending &&
+      (previewReady || previewHasData);
+    if (canTrack && now - centerCtaThrottleRef.current > 250) {
+      trackStudioV2CanvasCtaClick({
+        styleId: style.id,
+        orientation,
+        source: 'center',
+      });
+      centerCtaThrottleRef.current = now;
+    }
+    handleOpenCanvas('center');
+  }, [
+    currentStyle,
+    handleOpenCanvas,
+    hasCroppedImage,
+    orientation,
+    orientationPreviewPending,
+    previewHasData,
+    previewReady,
+  ]);
+
 
   const handleCanvasConfigToggle = useCallback(() => {
     setCanvasConfigExpanded(prev => !prev);
@@ -299,6 +368,27 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
       canvasPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
   }, []);
+
+  const handleChangeOrientationFromCenter = useCallback(() => {
+    const now = Date.now();
+    if (currentStyle && now - orientationCtaThrottleRef.current > 250) {
+      trackStudioV2OrientationCta({
+        styleId: currentStyle.id,
+        orientation,
+      });
+      orientationCtaThrottleRef.current = now;
+    }
+    const cropper = (window as typeof window & {
+      __openOrientationCropper?: (orientation?: Orientation) => void;
+    }).__openOrientationCropper;
+
+    if (typeof cropper === 'function') {
+      cropper(orientation);
+    } else {
+      // Fallback: expand canvas config so users can access orientation controls.
+      handleCanvasConfigToggle();
+    }
+  }, [currentStyle, handleCanvasConfigToggle, orientation]);
 
   const handleEditFromWelcome = () => {
     trackLaunchflowOpened('welcome_banner');
@@ -325,15 +415,7 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
 
   type OverlayStatus = Exclude<StylePreviewStatus, 'idle'>;
   const overlayStatus: OverlayStatus = stylePreviewStatus === 'idle' ? 'animating' : stylePreviewStatus;
-  const canRefreshPreview =
-    Boolean(currentStyle) &&
-    currentStyle?.id !== 'original-image' &&
-    !pendingStyleId &&
-    stylePreviewStatus === 'idle' &&
-    currentStyleGate.allowed &&
-    Boolean(cachedPreviewEntry || preview?.status === 'ready');
-
-  // Calculate disabled states for ActionRow CTAs
+  // Calculate disabled states for ActionGrid CTAs
   const downloadDisabled =
     !currentStyle ||
     !hasCroppedImage ||
@@ -456,66 +538,76 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
           onSaveToGallery={handleSaveToGallery}
           savingToGallery={savingToGallery}
           savedToGallery={savedToGallery}
-          canRefreshPreview={canRefreshPreview}
-          onRefreshPreview={() => {
-            if (currentStyle) {
-              void startStylePreview(currentStyle, { force: true });
-            }
-          }}
           launchpadExpanded={launchpadExpanded}
           onOpenLaunchflow={handleOpenLaunchflowFromEmptyState}
           onBrowseStyles={handleBrowseStylesFromEmptyState}
           entitlements={entitlements}
           onStoryToast={showToast}
           onStoryUpgradePrompt={showUpgradeModal}
-          onStoryCreateCanvas={handleStoryCreateCanvas}
           onDownloadClick={handleDownloadHD}
           downloadingHD={downloadingHD}
           isPremiumUser={isPremiumUser}
-          canvasConfigExpanded={canvasConfigExpanded}
-          onCanvasConfigToggle={handleCanvasConfigToggle}
+          onCreateCanvas={handleCreateCanvasFromCenter}
+          onChangeOrientation={handleChangeOrientationFromCenter}
           downloadDisabled={downloadDisabled}
           canvasLocked={canvasLocked}
         />
-        {/* RIGHT SIDEBAR: Options + Order Summary (Full-width on mobile, fixed on desktop) */}
-        <aside
-          className={clsx(
-            'w-full lg:w-[420px] transition-opacity duration-200',
-            !hasCroppedImage && 'pointer-events-none opacity-50'
-          )}
-          aria-disabled={!hasCroppedImage}
-        >
-          <div className="lg:sticky lg:top-[57px] px-4 py-6 lg:p-6">
-            <div className="space-y-6 lg:max-h-[calc(100vh-88px)] lg:overflow-y-auto lg:pr-3 lg:-mr-3">
-              {!hasCroppedImage && (
-                <div className="mb-4 rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-white/70">
-                  Upload a photo to customize canvas options and checkout.
-                </div>
-              )}
-              <Suspense fallback={<StickyOrderRailFallback />}>
-                <StickyOrderRailLazy
-                  canvasConfigExpanded={canvasConfigExpanded}
-                  onCanvasConfigToggle={handleCanvasConfigToggle}
-                  mobileRoomPreview={
-                    <div className="lg:hidden w-full">
-                      <div className="mb-4 text-center space-y-1">
-                        <h3 className="text-xl font-bold text-white">
-                          See It In Your Space
-                        </h3>
-                        <p className="text-xs text-white/60 max-w-md mx-auto px-4">
-                          Visualize how your canvas will look in a real living room
-                        </p>
+        {/* RIGHT SIDEBAR: Options + Order Summary (legacy) or Studio v2 rail */}
+        {ENABLE_STUDIO_V2_INSIGHTS_RAIL ? (
+          <Suspense fallback={<InsightsRailFallback />}>
+            <InsightsRailLazy
+              hasCroppedImage={hasCroppedImage}
+              currentStyle={currentStyle ?? null}
+              entitlements={entitlements}
+              previewReady={preview?.status === 'ready' && Boolean(preview?.data?.previewUrl)}
+              previewUrl={preview?.data?.previewUrl ?? null}
+              orientation={orientation}
+              onRequestCanvas={handleOpenCanvas}
+              onToast={showToast}
+              onGatePrompt={showUpgradeModal}
+            />
+          </Suspense>
+        ) : (
+          <aside
+            className={clsx(
+              'w-full lg:w-[420px] transition-opacity duration-200',
+              !hasCroppedImage && 'pointer-events-none opacity-50'
+            )}
+            aria-disabled={!hasCroppedImage}
+          >
+            <div className="lg:sticky lg:top-[57px] px-4 py-6 lg:p-6">
+              <div className="space-y-6 lg:max-h-[calc(100vh-88px)] lg:overflow-y-auto lg:pr-3 lg:-mr-3">
+                {!hasCroppedImage && (
+                  <div className="mb-4 rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-white/70">
+                    Upload a photo to customize canvas options and checkout.
+                  </div>
+                )}
+                <Suspense fallback={<StickyOrderRailFallback />}>
+                  <StickyOrderRailLazy
+                    canvasConfigExpanded={canvasConfigExpanded}
+                    onCanvasConfigToggle={handleCanvasConfigToggle}
+                    onOrientationToast={handleOrientationToast}
+                    mobileRoomPreview={
+                      <div className="lg:hidden w-full">
+                        <div className="mb-4 text-center space-y-1">
+                          <h3 className="text-xl font-bold text-white">
+                            See It In Your Space
+                          </h3>
+                          <p className="text-xs text-white/60 max-w-md mx-auto px-4">
+                            Visualize how your canvas will look in a real living room
+                          </p>
+                        </div>
+                        <Suspense fallback={<CanvasPreviewFallback />}>
+                          <CanvasInRoomPreview enableHoverEffect={true} showDimensions={false} />
+                        </Suspense>
                       </div>
-                      <Suspense fallback={<CanvasPreviewFallback />}>
-                        <CanvasInRoomPreview enableHoverEffect={true} showDimensions={false} />
-                      </Suspense>
-                    </div>
-                  }
-                />
-              </Suspense>
+                    }
+                  />
+                </Suspense>
+              </div>
             </div>
-          </div>
-        </aside>
+          </aside>
+        )}
       </div>
 
       {/* Living Canvas Modal */}
@@ -549,11 +641,16 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
           onDismiss={() => setShowCanvasUpsellToast(false)}
           onCanvasClick={() => {
             setShowCanvasUpsellToast(false);
-            // Scroll to right rail (canvas config will be expanded by default in Phase 2 future enhancement)
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            handleOpenCanvas('rail');
           }}
         />
       </Suspense>
+
+      {ENABLE_STUDIO_V2_CANVAS_MODAL && (
+        <Suspense fallback={null}>
+          <CanvasCheckoutModalLazy />
+        </Suspense>
+      )}
 
       {renderFeedback()}
     </section>

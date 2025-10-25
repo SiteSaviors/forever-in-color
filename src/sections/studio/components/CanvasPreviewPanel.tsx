@@ -1,6 +1,4 @@
-import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Bookmark, BookmarkCheck } from 'lucide-react';
+import { Suspense, lazy, useCallback, useEffect, useState } from 'react';
 import type { StylePreviewStatus, StyleOption } from '@/store/useFounderStore';
 import type { Orientation } from '@/utils/imageUtils';
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
@@ -8,9 +6,7 @@ import { ENABLE_STORY_LAYER } from '@/config/featureFlags';
 import type { EntitlementState } from '@/store/founder/entitlementSlice';
 import type { StudioToastPayload, UpgradePromptPayload } from '@/hooks/useStudioFeedback';
 import StudioEmptyState from './StudioEmptyState';
-import ConfidenceFooter from '@/components/studio/story-layer/ConfidenceFooter';
-import { trackStoryCtaClick } from '@/utils/storyLayerAnalytics';
-import ActionRow from '@/components/studio/ActionRow';
+import ActionGrid from '@/components/studio/ActionGrid';
 
 const CanvasInRoomPreview = lazy(() => import('@/components/studio/CanvasInRoomPreview'));
 const StyleForgeOverlay = lazy(() => import('@/components/studio/StyleForgeOverlay'));
@@ -39,21 +35,18 @@ export type CanvasPreviewPanelProps = {
   onSaveToGallery: () => void;
   savingToGallery: boolean;
   savedToGallery: boolean;
-  canRefreshPreview: boolean;
-  onRefreshPreview: () => void;
   launchpadExpanded: boolean;
   onOpenLaunchflow: () => void;
   onBrowseStyles: () => void;
   entitlements?: EntitlementState;
   onStoryToast?: (payload: StudioToastPayload) => void;
   onStoryUpgradePrompt?: (payload: UpgradePromptPayload) => void;
-  onStoryCreateCanvas?: () => void;
-  // ActionRow props
+  // Action grid props
   onDownloadClick: () => void;
   downloadingHD: boolean;
   isPremiumUser: boolean;
-  canvasConfigExpanded: boolean;
-  onCanvasConfigToggle: () => void;
+  onCreateCanvas: () => void;
+  onChangeOrientation: () => void;
   downloadDisabled?: boolean;
   canvasLocked?: boolean;
 };
@@ -77,20 +70,17 @@ const CanvasPreviewPanel = ({
   onSaveToGallery,
   savingToGallery,
   savedToGallery,
-  canRefreshPreview,
-  onRefreshPreview,
   launchpadExpanded,
   onOpenLaunchflow,
   onBrowseStyles,
   entitlements,
   onStoryToast,
   onStoryUpgradePrompt,
-  onStoryCreateCanvas,
   onDownloadClick,
   downloadingHD,
   isPremiumUser,
-  canvasConfigExpanded,
-  onCanvasConfigToggle,
+  onCreateCanvas,
+  onChangeOrientation,
   downloadDisabled = false,
   canvasLocked = false,
 }: CanvasPreviewPanelProps) => {
@@ -144,34 +134,6 @@ const CanvasPreviewPanel = ({
     const timer = window.setTimeout(() => setShowStoryHint(false), 8000);
     return () => window.clearTimeout(timer);
   }, [showStoryHint]);
-
-  const analyticsContext = useMemo(() => {
-    if (!currentStyle || !entitlements) return null;
-    return {
-      styleId: currentStyle.id,
-      tone: currentStyle.tone ?? null,
-      userTier: entitlements.tier,
-      orientation,
-    } as const;
-  }, [currentStyle, entitlements, orientation]);
-
-  const handleConfidenceUnlock = useCallback(() => {
-    onStoryUpgradePrompt?.({
-      title: 'Unlock the Full Studio',
-      description: 'Upgrade for premium styles, watermark-free downloads, and creator-only Wondertone benefits.',
-      ctaLabel: 'View Plans',
-    });
-    if (analyticsContext) {
-      trackStoryCtaClick({ ...analyticsContext, cta: 'unlock_studio' });
-    }
-  }, [analyticsContext, onStoryUpgradePrompt]);
-
-  const handleConfidenceCreate = useCallback(() => {
-    onStoryCreateCanvas?.();
-    if (analyticsContext) {
-      trackStoryCtaClick({ ...analyticsContext, cta: 'create_canvas' });
-    }
-  }, [analyticsContext, onStoryCreateCanvas]);
 
   return (
     <main className="w-full lg:flex-1 px-4 py-6 lg:p-8 flex flex-col items-center justify-start">
@@ -266,17 +228,19 @@ const CanvasPreviewPanel = ({
 
         {previewStateStatus === 'ready' && currentStyle && (
           <div className="mt-6 w-full max-w-2xl">
-            <ActionRow
-              onDownloadClick={onDownloadClick}
-              onCanvasClick={onCanvasConfigToggle}
-              downloadingHD={downloadingHD}
-              isPremiumUser={isPremiumUser}
-              canvasConfigExpanded={canvasConfigExpanded}
-              downloadDisabled={downloadDisabled}
-              canvasLocked={canvasLocked}
+            <ActionGrid
+              onDownload={onDownloadClick}
+              onCreateCanvas={onCreateCanvas}
+              onChangeOrientation={onChangeOrientation}
               onSaveToGallery={onSaveToGallery}
+              downloading={downloadingHD}
+              downloadDisabled={downloadDisabled}
+              createCanvasDisabled={canvasLocked}
+              orientationDisabled={!hasCroppedImage || orientationPreviewPending}
               savingToGallery={savingToGallery}
               savedToGallery={savedToGallery}
+              isPremiumUser={isPremiumUser}
+              orientationLabel={orientationMeta.label}
             />
           </div>
         )}
@@ -293,12 +257,6 @@ const CanvasPreviewPanel = ({
           <CanvasInRoomPreview enableHoverEffect showDimensions={false} />
         </Suspense>
       </div>
-
-      {shouldRenderStoryLayer && entitlements && (
-        <div className="w-full max-w-2xl mt-10">
-          <ConfidenceFooter onUnlock={handleConfidenceUnlock} onCreateCanvas={handleConfidenceCreate} />
-        </div>
-      )}
 
       {shouldRenderStoryLayer && displayPreviewUrl && currentStyle && entitlements && (
         <div className="w-full max-w-2xl mt-12">
