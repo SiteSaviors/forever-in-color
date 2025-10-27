@@ -4,6 +4,7 @@ import type {
   StyleTone,
   StyleTier,
   StyleToneDefinition,
+  StyleStoryContent,
 } from './styles/types';
 
 export type { StyleRegistryEntry, StyleTone, StyleTier } from './styles/types';
@@ -31,6 +32,7 @@ export type StyleCatalogEntry = {
   defaultUnlocked: boolean;
   marketingCopy?: string | null;
   requiredTier?: 'creator' | 'plus' | 'pro';
+  story?: StyleStoryContent;
 };
 
 export type StyleOptionSnapshot = {
@@ -68,6 +70,7 @@ const toCatalogEntry = (style: StyleRegistryEntry): StyleCatalogEntry => {
     defaultUnlocked: style.defaultUnlocked,
     marketingCopy: style.marketingCopy ?? null,
     requiredTier: style.requiredTier,
+    story: style.story ?? null,
   };
 };
 

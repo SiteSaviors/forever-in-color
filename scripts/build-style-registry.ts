@@ -51,6 +51,7 @@ type GeneratedEntry = {
     disabledReason?: string | null;
   };
   prompt?: GeneratedPrompt;
+  story: StyleRegistrySourceEntry['story'] | null;
 };
 
 const __filename = fileURLToPath(import.meta.url);
@@ -136,6 +137,7 @@ const generatedEntries = STYLE_REGISTRY_SOURCE.map<GeneratedEntry>((source, inde
     },
     featureFlags,
     prompt,
+    story: source.story ?? null,
   };
 });
 
@@ -217,6 +219,12 @@ const serializeEntry = (entry: GeneratedEntry): string => {
   lines.push('  },');
   if (entry.prompt) {
     lines.push(`  prompt: ${serializePrompt(entry.prompt)},`);
+  }
+  if (entry.story) {
+    const story = JSON.stringify(entry.story, null, 2).replace(/\n/g, '\n  ');
+    lines.push(`  story: ${story},`);
+  } else {
+    lines.push('  story: null,');
   }
   lines.push('}');
   return lines.join('\n');

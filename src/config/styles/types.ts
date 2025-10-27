@@ -17,6 +17,38 @@ export type StyleFeatureFlags = {
   disabledReason?: string | null;
 };
 
+export type StoryBulletIcon = 'sparkle' | 'home' | 'brush';
+
+export type StyleStoryBullet = {
+  label: string;
+  value: string;
+  icon?: StoryBulletIcon;
+};
+
+export type StyleStoryNarrative = {
+  headline?: string;
+  paragraph: string;
+  bullets: StyleStoryBullet[];
+};
+
+export type StyleStoryPaletteSwatch = {
+  id: string;
+  hex: string;
+  label: string;
+  descriptor: string;
+};
+
+export type StyleStoryComplementary = {
+  premium?: string | null;
+  fallback: string;
+};
+
+export type StyleStoryContent = {
+  narrative?: StyleStoryNarrative;
+  palette?: StyleStoryPaletteSwatch[];
+  complementary?: StyleStoryComplementary;
+} | null;
+
 export type StyleAssetConfig = {
   thumbnail: string;
   preview: string;
@@ -50,6 +82,7 @@ export type StyleRegistryEntry = {
   assets: StyleAssetConfig;
   featureFlags: StyleFeatureFlags;
   prompt?: StylePromptMetadata;
+  story?: StyleStoryContent;
 };
 
 export type StyleToneDefinition = {

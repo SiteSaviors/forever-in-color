@@ -1,3 +1,35 @@
+type StoryBulletIcon = 'sparkle' | 'home' | 'brush';
+
+type StyleStoryBullet = {
+  label: string;
+  value: string;
+  icon?: StoryBulletIcon;
+};
+
+type StyleStoryNarrative = {
+  headline?: string;
+  paragraph: string;
+  bullets: StyleStoryBullet[];
+};
+
+type StyleStoryPaletteSwatch = {
+  id: string;
+  hex: string;
+  label: string;
+  descriptor: string;
+};
+
+type StyleStoryComplementary = {
+  premium?: string | null;
+  fallback: string;
+};
+
+type StyleStoryContent = {
+  narrative?: StyleStoryNarrative;
+  palette?: StyleStoryPaletteSwatch[];
+  complementary?: StyleStoryComplementary;
+} | null;
+
 type StyleTone =
   | 'trending'
   | 'classic'
@@ -55,6 +87,12 @@ export type StyleRegistrySourceEntry = {
    * Category flag for future filtering. Defaults to "style".
    */
   category?: 'style' | 'original';
+  /**
+   * Optional Story Layer content displayed in the Studio insights rail.
+   * Provide per-style copy here for bespoke experiences. Any missing field
+   * will automatically fall back to tone defaults in the UI helpers.
+   */
+  story?: StyleStoryContent;
 };
 
 export const STYLE_REGISTRY_SOURCE: StyleRegistrySourceEntry[] = [
@@ -80,6 +118,27 @@ export const STYLE_REGISTRY_SOURCE: StyleRegistrySourceEntry[] = [
       isEnabled: true,
       rolloutPercentage: 100,
     },
+    story: {
+      narrative: {
+        headline: 'The Story Behind Classic Oil',
+        paragraph:
+          'Classic Oil frames your portrait like a museum piece—rich pigments, heirloom brushwork, and softly lit warmth for timeless display.',
+        bullets: [
+          { label: 'Emotion', value: 'Heirloom nostalgia', icon: 'sparkle' },
+          { label: 'Perfect for', value: 'Dining rooms · heritage walls', icon: 'home' },
+          { label: 'Signature detail', value: 'Layered old-world brushstrokes', icon: 'brush' },
+        ],
+      },
+      palette: [
+        { id: 'oil-amber', hex: '#b37a3b', label: 'Heritage Amber', descriptor: 'Warms gallery lighting' },
+        { id: 'oil-navy', hex: '#1e2a44', label: 'Midnight Navy', descriptor: 'Anchors vintage contrast' },
+        { id: 'oil-cream', hex: '#f0ead6', label: 'Canvas Cream', descriptor: 'Softens skin tones' },
+      ],
+      complementary: {
+        premium: 'pastel-bliss',
+        fallback: 'calm-watercolor',
+      },
+    },
   },
   {
     id: 'classic-oil-painting',
@@ -101,6 +160,27 @@ export const STYLE_REGISTRY_SOURCE: StyleRegistrySourceEntry[] = [
     featureFlags: {
       isEnabled: true,
       rolloutPercentage: 100,
+    },
+    story: {
+      narrative: {
+        headline: 'The Story Behind Classic Oil',
+        paragraph:
+          'Classic Oil frames your portrait like a museum piece—rich pigments, heirloom brushwork, and softly lit warmth for timeless display.',
+        bullets: [
+          { label: 'Emotion', value: 'Heirloom nostalgia', icon: 'sparkle' },
+          { label: 'Perfect for', value: 'Dining rooms · heritage walls', icon: 'home' },
+          { label: 'Signature detail', value: 'Layered old-world brushstrokes', icon: 'brush' },
+        ],
+      },
+      palette: [
+        { id: 'oil-amber', hex: '#b37a3b', label: 'Heritage Amber', descriptor: 'Warms gallery lighting' },
+        { id: 'oil-navy', hex: '#1e2a44', label: 'Midnight Navy', descriptor: 'Anchors vintage contrast' },
+        { id: 'oil-cream', hex: '#f0ead6', label: 'Canvas Cream', descriptor: 'Softens skin tones' },
+      ],
+      complementary: {
+        premium: 'pastel-bliss',
+        fallback: 'calm-watercolor',
+      },
     },
   },
   {
@@ -124,6 +204,27 @@ export const STYLE_REGISTRY_SOURCE: StyleRegistrySourceEntry[] = [
       isEnabled: true,
       rolloutPercentage: 100,
     },
+    story: {
+      narrative: {
+        headline: 'The Story Behind Watercolor Dreams',
+        paragraph:
+          'Watercolor Dreams bathes your memory in feathered washes and airy light leaks—gentle enough for bedrooms, expressive enough for your feed.',
+        bullets: [
+          { label: 'Emotion', value: 'Serene daydream', icon: 'sparkle' },
+          { label: 'Perfect for', value: 'Nurseries · reflective corners', icon: 'home' },
+          { label: 'Signature detail', value: 'Hand-splashed watercolor bloom', icon: 'brush' },
+        ],
+      },
+      palette: [
+        { id: 'wc-coral', hex: '#f7a7a6', label: 'Blush Coral', descriptor: 'Lifts rosy highlights' },
+        { id: 'wc-lavender', hex: '#c7b6e9', label: 'Mist Lavender', descriptor: 'Keeps the wash airy' },
+        { id: 'wc-mist', hex: '#e8eef3', label: 'Cloud Mist', descriptor: 'Adds dreamy negative space' },
+      ],
+      complementary: {
+        premium: 'pastel-bliss',
+        fallback: 'calm-watercolor',
+      },
+    },
   },
   {
     id: 'gallery-acrylic',
@@ -146,6 +247,27 @@ export const STYLE_REGISTRY_SOURCE: StyleRegistrySourceEntry[] = [
       isEnabled: true,
       rolloutPercentage: 100,
     },
+    story: {
+      narrative: {
+        headline: 'The Story Behind Pastel Bliss',
+        paragraph:
+          'Pastel Bliss drapes your portrait in soft pastels, tactile grain, and morning-light warmth—ideal for cozy retreats and calming spaces.',
+        bullets: [
+          { label: 'Emotion', value: 'Weightless calm', icon: 'sparkle' },
+          { label: 'Perfect for', value: 'Bedrooms · wellness corners', icon: 'home' },
+          { label: 'Signature detail', value: 'Velvet pastel gradients and soft grain', icon: 'brush' },
+        ],
+      },
+      palette: [
+        { id: 'pastel-rose', hex: '#f8cbd6', label: 'Petal Rose', descriptor: 'Softens portraits' },
+        { id: 'pastel-mint', hex: '#c8eddc', label: 'Mint Haze', descriptor: 'Calms the palette' },
+        { id: 'pastel-cream', hex: '#fdf2e9', label: 'Sunrise Cream', descriptor: 'Adds daylight warmth' },
+      ],
+      complementary: {
+        premium: 'signature-aurora',
+        fallback: 'calm-watercolor',
+      },
+    },
   },
   {
     id: 'watercolor-dreams',
@@ -167,6 +289,27 @@ export const STYLE_REGISTRY_SOURCE: StyleRegistrySourceEntry[] = [
     featureFlags: {
       isEnabled: true,
       rolloutPercentage: 100,
+    },
+    story: {
+      narrative: {
+        headline: 'The Story Behind Watercolor Dreams',
+        paragraph:
+          'Watercolor Dreams bathes your memory in feathered washes and airy light leaks—gentle enough for bedrooms, expressive enough for your feed.',
+        bullets: [
+          { label: 'Emotion', value: 'Serene daydream', icon: 'sparkle' },
+          { label: 'Perfect for', value: 'Nurseries · reflective corners', icon: 'home' },
+          { label: 'Signature detail', value: 'Hand-splashed watercolor bloom', icon: 'brush' },
+        ],
+      },
+      palette: [
+        { id: 'wc-coral', hex: '#f7a7a6', label: 'Blush Coral', descriptor: 'Lifts rosy highlights' },
+        { id: 'wc-lavender', hex: '#c7b6e9', label: 'Mist Lavender', descriptor: 'Keeps the wash airy' },
+        { id: 'wc-mist', hex: '#e8eef3', label: 'Cloud Mist', descriptor: 'Adds dreamy negative space' },
+      ],
+      complementary: {
+        premium: 'pastel-bliss',
+        fallback: 'calm-watercolor',
+      },
     },
   },
   {
@@ -191,6 +334,27 @@ export const STYLE_REGISTRY_SOURCE: StyleRegistrySourceEntry[] = [
       isEnabled: true,
       rolloutPercentage: 100,
     },
+    story: {
+      narrative: {
+        headline: 'The Story Behind Pastel Bliss',
+        paragraph:
+          'Pastel Bliss drapes your portrait in soft pastels, tactile grain, and morning-light warmth—ideal for cozy retreats and calming spaces.',
+        bullets: [
+          { label: 'Emotion', value: 'Weightless calm', icon: 'sparkle' },
+          { label: 'Perfect for', value: 'Bedrooms · wellness corners', icon: 'home' },
+          { label: 'Signature detail', value: 'Velvet pastel gradients and soft grain', icon: 'brush' },
+        ],
+      },
+      palette: [
+        { id: 'pastel-rose', hex: '#f8cbd6', label: 'Petal Rose', descriptor: 'Softens portraits' },
+        { id: 'pastel-mint', hex: '#c8eddc', label: 'Mint Haze', descriptor: 'Calms the palette' },
+        { id: 'pastel-cream', hex: '#fdf2e9', label: 'Sunrise Cream', descriptor: 'Adds daylight warmth' },
+      ],
+      complementary: {
+        premium: 'signature-aurora',
+        fallback: 'calm-watercolor',
+      },
+    },
   },
   {
     id: 'pop-art-bust',
@@ -211,6 +375,27 @@ export const STYLE_REGISTRY_SOURCE: StyleRegistrySourceEntry[] = [
     featureFlags: {
       isEnabled: true,
       rolloutPercentage: 100,
+    },
+    story: {
+      narrative: {
+        headline: 'The Story Behind Neon Splash',
+        paragraph:
+          'Neon Splash explodes with electric motion—UV drips, kinetic streaks, and stage-worthy glow that turns any capture into nightlife art.',
+        bullets: [
+          { label: 'Emotion', value: 'Electric adrenaline', icon: 'sparkle' },
+          { label: 'Perfect for', value: 'Game rooms · celebration walls', icon: 'home' },
+          { label: 'Signature detail', value: 'Neon paint trails with UV bloom', icon: 'brush' },
+        ],
+      },
+      palette: [
+        { id: 'neon-magenta', hex: '#ff2eb7', label: 'UV Magenta', descriptor: 'Injects night-life energy' },
+        { id: 'neon-cyan', hex: '#19d4ff', label: 'Electric Cyan', descriptor: 'Slices through the dark' },
+        { id: 'neon-amber', hex: '#ffb428', label: 'Pulse Amber', descriptor: 'Adds kinetic accents' },
+      ],
+      complementary: {
+        premium: 'electric-drip',
+        fallback: 'pop-art-bust',
+      },
     },
   },
   {
@@ -548,6 +733,27 @@ export const STYLE_REGISTRY_SOURCE: StyleRegistrySourceEntry[] = [
       isEnabled: true,
       rolloutPercentage: 100,
     },
+    story: {
+      narrative: {
+        headline: 'The Story Behind Neon Splash',
+        paragraph:
+          'Neon Splash explodes with electric motion—UV drips, kinetic streaks, and stage-worthy glow that turns any capture into nightlife art.',
+        bullets: [
+          { label: 'Emotion', value: 'Electric adrenaline', icon: 'sparkle' },
+          { label: 'Perfect for', value: 'Game rooms · celebration walls', icon: 'home' },
+          { label: 'Signature detail', value: 'Neon paint trails with UV bloom', icon: 'brush' },
+        ],
+      },
+      palette: [
+        { id: 'neon-magenta', hex: '#ff2eb7', label: 'UV Magenta', descriptor: 'Injects night-life energy' },
+        { id: 'neon-cyan', hex: '#19d4ff', label: 'Electric Cyan', descriptor: 'Slices through the dark' },
+        { id: 'neon-amber', hex: '#ffb428', label: 'Pulse Amber', descriptor: 'Adds kinetic accents' },
+      ],
+      complementary: {
+        premium: 'electric-drip',
+        fallback: 'pop-art-bust',
+      },
+    },
   },
   {
     id: 'electric-drip',
@@ -705,6 +911,27 @@ export const STYLE_REGISTRY_SOURCE: StyleRegistrySourceEntry[] = [
       isEnabled: true,
       rolloutPercentage: 100,
     },
+    story: {
+      narrative: {
+        headline: 'The Story Behind Neon Splash',
+        paragraph:
+          'Neon Splash explodes with electric motion—UV drips, kinetic streaks, and stage-worthy glow that turns any capture into nightlife art.',
+        bullets: [
+          { label: 'Emotion', value: 'Electric adrenaline', icon: 'sparkle' },
+          { label: 'Perfect for', value: 'Game rooms · celebration walls', icon: 'home' },
+          { label: 'Signature detail', value: 'Neon paint trails with UV bloom', icon: 'brush' },
+        ],
+      },
+      palette: [
+        { id: 'neon-magenta', hex: '#ff2eb7', label: 'UV Magenta', descriptor: 'Injects night-life energy' },
+        { id: 'neon-cyan', hex: '#19d4ff', label: 'Electric Cyan', descriptor: 'Slices through the dark' },
+        { id: 'neon-amber', hex: '#ffb428', label: 'Pulse Amber', descriptor: 'Adds kinetic accents' },
+      ],
+      complementary: {
+        premium: 'electric-drip',
+        fallback: 'pop-art-bust',
+      },
+    },
   },
   {
     id: 'signature-aurora',
@@ -730,6 +957,27 @@ export const STYLE_REGISTRY_SOURCE: StyleRegistrySourceEntry[] = [
     featureFlags: {
       isEnabled: true,
       rolloutPercentage: 100,
+    },
+    story: {
+      narrative: {
+        headline: 'The Story Behind Aurora Signature',
+        paragraph:
+          'Aurora Signature delivers Wondertone’s flagship glow—aurora gradients, bespoke highlights, and collector polish that elevates any wall.',
+        bullets: [
+          { label: 'Emotion', value: 'Refined wonder', icon: 'sparkle' },
+          { label: 'Perfect for', value: 'Gallery walls · gifting heirlooms', icon: 'home' },
+          { label: 'Signature detail', value: 'Aurora light ribbons and luxe sheen', icon: 'brush' },
+        ],
+      },
+      palette: [
+        { id: 'aurora-violet', hex: '#8c7df2', label: 'Aurora Violet', descriptor: 'Sets the luxe glow' },
+        { id: 'aurora-teal', hex: '#6ee7d0', label: 'Glacial Teal', descriptor: 'Balances the spectrum' },
+        { id: 'aurora-gold', hex: '#f9d99d', label: 'Champagne Gold', descriptor: 'Polishes the finish' },
+      ],
+      complementary: {
+        premium: null,
+        fallback: 'pastel-bliss',
+      },
     },
   },
   {

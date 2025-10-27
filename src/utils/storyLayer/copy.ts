@@ -1,5 +1,5 @@
 import type { StyleOption, EntitlementTier } from '@/store/useFounderStore';
-import type { StyleTone } from '@/config/styleCatalog';
+import { STYLE_REGISTRY_BY_ID, type StyleTone } from '@/config/styleCatalog';
 
 type Narrative = {
   headline: string;
@@ -25,10 +25,7 @@ type ShareCaptionConfig = {
   tier: EntitlementTier;
 };
 
-type NarrativeMap = Record<string, Narrative>;
-type PaletteMap = Record<string, PaletteSwatch[]>;
 type TonePaletteMap = Record<Exclude<StyleTone, null>, PaletteSwatch[]>;
-type ComplementaryMap = Record<string, ComplementaryStyles>;
 type ToneComplementaryMap = Record<Exclude<StyleTone, null>, ComplementaryStyles>;
 
 type ToneNarrativeFactory = (styleName: string) => Narrative;
@@ -95,86 +92,17 @@ const toneNarratives: Record<Exclude<StyleTone, null>, ToneNarrativeFactory> = {
   }),
 };
 
-const bespokeNarratives: NarrativeMap = {
-  'classic-oil-painting': {
-    headline: 'The Story Behind Classic Oil',
-    paragraph:
-      'Classic Oil frames your portrait like a museum piece—rich pigments, heirloom brushwork, and softly lit warmth for timeless display.',
-    bullets: [
-      { label: 'Emotion', value: 'Heirloom nostalgia', icon: 'sparkle' },
-      { label: 'Perfect for', value: 'Dining rooms · heritage walls', icon: 'home' },
-      { label: 'Signature detail', value: 'Layered old-world brushstrokes', icon: 'brush' },
-    ],
-  },
-  'watercolor-dreams': {
-    headline: 'The Story Behind Watercolor Dreams',
-    paragraph:
-      'Watercolor Dreams bathes your memory in feathered washes and airy light leaks—gentle enough for bedrooms, expressive enough for your feed.',
-    bullets: [
-      { label: 'Emotion', value: 'Serene daydream', icon: 'sparkle' },
-      { label: 'Perfect for', value: 'Nurseries · reflective corners', icon: 'home' },
-      { label: 'Signature detail', value: 'Hand-splashed watercolor bloom', icon: 'brush' },
-    ],
-  },
-  'neon-splash': {
-    headline: 'The Story Behind Neon Splash',
-    paragraph:
-      'Neon Splash explodes with electric motion—UV drips, kinetic streaks, and stage-worthy glow that turns any capture into nightlife art.',
-    bullets: [
-      { label: 'Emotion', value: 'Electric adrenaline', icon: 'sparkle' },
-      { label: 'Perfect for', value: 'Game rooms · celebration walls', icon: 'home' },
-      { label: 'Signature detail', value: 'Neon paint trails with UV bloom', icon: 'brush' },
-    ],
-  },
-  'pastel-bliss': {
-    headline: 'The Story Behind Pastel Bliss',
-    paragraph:
-      'Pastel Bliss drapes your portrait in soft pastels, tactile grain, and morning-light warmth—ideal for cozy retreats and calming spaces.',
-    bullets: [
-      { label: 'Emotion', value: 'Weightless calm', icon: 'sparkle' },
-      { label: 'Perfect for', value: 'Bedrooms · wellness corners', icon: 'home' },
-      { label: 'Signature detail', value: 'Velvet pastel gradients and soft grain', icon: 'brush' },
-    ],
-  },
-  'signature-aurora': {
-    headline: 'The Story Behind Aurora Signature',
-    paragraph:
-      'Aurora Signature delivers Wondertone’s flagship glow—aurora gradients, bespoke highlights, and collector polish that elevates any wall.',
-    bullets: [
-      { label: 'Emotion', value: 'Refined wonder', icon: 'sparkle' },
-      { label: 'Perfect for', value: 'Gallery walls · gifting heirlooms', icon: 'home' },
-      { label: 'Signature detail', value: 'Aurora light ribbons and luxe sheen', icon: 'brush' },
-    ],
-  },
+const BULLET_ICON_DEFAULTS: Record<string, Narrative['bullets'][number]['icon']> = {
+  emotion: 'sparkle',
+  'perfect for': 'home',
+  'signature detail': 'brush',
 };
 
-const bespokePalettes: PaletteMap = {
-  'classic-oil-painting': [
-    { id: 'oil-amber', hex: '#b37a3b', label: 'Heritage Amber', descriptor: 'Warms gallery lighting' },
-    { id: 'oil-navy', hex: '#1e2a44', label: 'Midnight Navy', descriptor: 'Anchors vintage contrast' },
-    { id: 'oil-cream', hex: '#f0ead6', label: 'Canvas Cream', descriptor: 'Softens skin tones' },
-  ],
-  'watercolor-dreams': [
-    { id: 'wc-coral', hex: '#f7a7a6', label: 'Blush Coral', descriptor: 'Lifts rosy highlights' },
-    { id: 'wc-lavender', hex: '#c7b6e9', label: 'Mist Lavender', descriptor: 'Keeps the wash airy' },
-    { id: 'wc-mist', hex: '#e8eef3', label: 'Cloud Mist', descriptor: 'Adds dreamy negative space' },
-  ],
-  'neon-splash': [
-    { id: 'neon-magenta', hex: '#ff2eb7', label: 'UV Magenta', descriptor: 'Injects night-life energy' },
-    { id: 'neon-cyan', hex: '#19d4ff', label: 'Electric Cyan', descriptor: 'Slices through the dark' },
-    { id: 'neon-amber', hex: '#ffb428', label: 'Pulse Amber', descriptor: 'Adds kinetic accents' },
-  ],
-  'pastel-bliss': [
-    { id: 'pastel-rose', hex: '#f8cbd6', label: 'Petal Rose', descriptor: 'Softens portraits' },
-    { id: 'pastel-mint', hex: '#c8eddc', label: 'Mint Haze', descriptor: 'Calms the palette' },
-    { id: 'pastel-cream', hex: '#fdf2e9', label: 'Sunrise Cream', descriptor: 'Adds daylight warmth' },
-  ],
-  'signature-aurora': [
-    { id: 'aurora-violet', hex: '#8c7df2', label: 'Aurora Violet', descriptor: 'Sets the luxe glow' },
-    { id: 'aurora-teal', hex: '#6ee7d0', label: 'Glacial Teal', descriptor: 'Balances the spectrum' },
-    { id: 'aurora-gold', hex: '#f9d99d', label: 'Champagne Gold', descriptor: 'Polishes the finish' },
-  ],
+const resolveBulletIcon = (label: string): Narrative['bullets'][number]['icon'] => {
+  const normalized = label.trim().toLowerCase();
+  return BULLET_ICON_DEFAULTS[normalized] ?? 'sparkle';
 };
+
 
 const tonePalettes: TonePaletteMap = {
   classic: [
@@ -209,14 +137,6 @@ const tonePalettes: TonePaletteMap = {
   ],
 };
 
-const bespokeComplementary: ComplementaryMap = {
-  'classic-oil-painting': { premium: 'pastel-bliss', fallback: 'calm-watercolor' },
-  'watercolor-dreams': { premium: 'pastel-bliss', fallback: 'calm-watercolor' },
-  'neon-splash': { premium: 'electric-drip', fallback: 'pop-art-bust' },
-  'pastel-bliss': { premium: 'signature-aurora', fallback: 'calm-watercolor' },
-  'signature-aurora': { premium: null, fallback: 'pastel-bliss' },
-};
-
 const toneComplementary: ToneComplementaryMap = {
   classic: { premium: 'pastel-bliss', fallback: 'calm-watercolor' },
   trending: { premium: 'pastel-bliss', fallback: 'watercolor-dreams' },
@@ -236,15 +156,31 @@ const toneShareHooks: Record<Exclude<StyleTone, null>, string> = {
 };
 
 export function getNarrative(style: StyleOption): Narrative {
-  const bespoke = bespokeNarratives[style.id];
-  if (bespoke) return bespoke;
+  const registryEntry = STYLE_REGISTRY_BY_ID.get(style.id);
+  const narrativeFromRegistry = registryEntry?.story?.narrative ?? null;
+  if (narrativeFromRegistry) {
+    const headline = narrativeFromRegistry.headline ?? `The story behind ${style.name}`;
+    const bullets = narrativeFromRegistry.bullets.map((bullet) => ({
+      label: bullet.label,
+      value: bullet.value,
+      icon: bullet.icon ?? resolveBulletIcon(bullet.label),
+    }));
+    return {
+      headline,
+      paragraph: narrativeFromRegistry.paragraph,
+      bullets,
+    };
+  }
   const factory = style.tone ? toneNarratives[style.tone] : undefined;
   return factory ? factory(style.name) : toneNarratives.classic(style.name);
 }
 
 export function getPalette(style: StyleOption): PaletteSwatch[] {
-  const bespoke = bespokePalettes[style.id];
-  if (bespoke) return bespoke;
+  const registryEntry = STYLE_REGISTRY_BY_ID.get(style.id);
+  const paletteFromRegistry = registryEntry?.story?.palette;
+  if (paletteFromRegistry && paletteFromRegistry.length > 0) {
+    return paletteFromRegistry.map((swatch) => ({ ...swatch }));
+  }
   if (style.tone) {
     const tonePalette = tonePalettes[style.tone];
     if (tonePalette) return tonePalette;
@@ -253,8 +189,17 @@ export function getPalette(style: StyleOption): PaletteSwatch[] {
 }
 
 export function getComplementaryStyles(style: StyleOption): ComplementaryStyles {
-  const bespoke = bespokeComplementary[style.id];
-  if (bespoke) return bespoke;
+  const registryEntry = STYLE_REGISTRY_BY_ID.get(style.id);
+  const complementaryFromRegistry = registryEntry?.story?.complementary;
+  if (complementaryFromRegistry) {
+    return {
+      premium:
+        complementaryFromRegistry.premium === undefined
+          ? null
+          : complementaryFromRegistry.premium,
+      fallback: complementaryFromRegistry.fallback,
+    };
+  }
   if (style.tone) {
     const toneFallback = toneComplementary[style.tone];
     if (toneFallback) return toneFallback;
@@ -273,9 +218,8 @@ export function getShareCaption({ tone, styleName, tier }: ShareCaptionConfig): 
  * - Top 5 styles have bespoke narratives and palette descriptors.
  * - All other styles fall back to tone-based templates to avoid blocking launch.
  *
- * To add new bespoke copy:
- * 1. Add narrative in `bespokeNarratives` keyed by `style.id`.
- * 2. (Optional) Add palette swatches in `bespokePalettes` for richer descriptions.
- * 3. (Optional) Override complementary styles in `bespokeComplementary`.
+ * To add new bespoke copy, update the `story` field inside
+ * `registry/styleRegistrySource.ts`. The build script will propagate
+ * those values into the generated registry consumed at runtime.
  */
 export type { Narrative, PaletteSwatch, ComplementaryStyles };
