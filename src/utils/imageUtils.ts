@@ -125,8 +125,9 @@ async function convertHeicUsingEdge(file: File, options: EdgeConversionInput): P
     'x-client-info': EDGE_CLIENT_HEADER,
   };
 
-  if (options.accessToken) {
-    (headers as Record<string, string>)['Authorization'] = `Bearer ${options.accessToken}`;
+  const authToken = options.accessToken ?? SUPABASE_ANON_KEY ?? null;
+  if (authToken) {
+    (headers as Record<string, string>)['Authorization'] = `Bearer ${authToken}`;
   }
 
   const response = await fetch(endpoint, {

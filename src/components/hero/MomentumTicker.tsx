@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
 import { Sparkles } from 'lucide-react';
+import clsx from 'clsx';
+import usePrefersReducedMotion from '@/hooks/usePrefersReducedMotion';
 
 type TickerMessage = {
   id: string;
@@ -26,33 +27,62 @@ type MomentumTickerProps = {
 const MomentumTicker = ({ interval = 4000, className = '' }: MomentumTickerProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const currentMessage = TICKER_MESSAGES[currentIndex];
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const exitTimeoutRef = useRef<number | null>(null);
+  const intervalRef = useRef<number | null>(null);
+  const [phase, setPhase] = useState<'enter' | 'exit'>('enter');
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % TICKER_MESSAGES.length);
-    }, interval);
+    const advance = () => setCurrentIndex((prev) => (prev + 1) % TICKER_MESSAGES.length);
 
-    return () => clearInterval(timer);
-  }, [interval]);
+    const startAnimatedCycle = () => {
+      setPhase('exit');
+      exitTimeoutRef.current = window.setTimeout(() => {
+        advance();
+        setPhase('enter');
+      }, 180);
+    };
+
+    if (prefersReducedMotion) {
+      intervalRef.current = window.setInterval(advance, interval);
+      return () => {
+        if (intervalRef.current) window.clearInterval(intervalRef.current);
+      };
+    }
+
+    intervalRef.current = window.setInterval(startAnimatedCycle, interval);
+
+    return () => {
+      if (intervalRef.current) window.clearInterval(intervalRef.current);
+      if (exitTimeoutRef.current) window.clearTimeout(exitTimeoutRef.current);
+    };
+  }, [interval, prefersReducedMotion]);
+
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      setPhase('enter');
+      if (exitTimeoutRef.current) {
+        window.clearTimeout(exitTimeoutRef.current);
+        exitTimeoutRef.current = null;
+      }
+    }
+  }, [prefersReducedMotion]);
 
   return (
     <div className={`flex items-center justify-center gap-3 ${className}`}>
       <Sparkles className="w-4 h-4 text-emerald-400 flex-shrink-0" />
 
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={currentMessage.id}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.3 }}
-          className="text-sm text-white/70"
-        >
-          <span className="font-semibold text-white">{currentMessage.name}</span> in{' '}
-          <span className="text-white/90">{currentMessage.location}</span> just generated{' '}
-          <span className="text-purple-400 font-medium">{currentMessage.style}</span>
-        </motion.div>
-      </AnimatePresence>
+      <div
+        className={clsx(
+          'relative min-h-[1.5rem] text-sm text-white/70',
+          !prefersReducedMotion && 'transition-all duration-300 ease-out will-change-transform will-change-opacity',
+          !prefersReducedMotion && phase === 'exit' ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'
+        )}
+      >
+        <span className="font-semibold text-white">{currentMessage.name}</span> in{' '}
+        <span className="text-white/90">{currentMessage.location}</span> just generated{' '}
+        <span className="text-purple-400 font-medium">{currentMessage.style}</span>
+      </div>
     </div>
   );
 };

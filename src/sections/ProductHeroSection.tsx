@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import Section from '@/components/layout/Section';
 import { useFounderStore } from '@/store/useFounderStore';
 import { trackLaunchflowOpened } from '@/utils/launchflowTelemetry';
@@ -9,6 +8,7 @@ import CTADeck from '@/components/hero/CTADeck';
 import TrustStrip from '@/components/hero/TrustStrip';
 import MomentumTicker from '@/components/hero/MomentumTicker';
 import AnimatedTransformBadge from '@/components/hero/AnimatedTransformBadge';
+import { LazyMotion, domAnimation, AnimatePresence, m } from 'framer-motion';
 
 const DEFAULT_ORIGINAL_IMAGE = '/art-style-hero-generations/family-original.jpg';
 
@@ -133,31 +133,33 @@ const ProductHeroSection = () => {
           />
 
           {/* Hero Canvas Panel with Generation Animation */}
-          <div className="max-w-4xl mx-auto">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentStyleImage}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.4 }}
-              >
-                <GeneratingCanvasAnimation
-                  defaultStyleImage={currentStyleImage}
-                  originalImage={currentOriginalImage}
-                  styleName={currentStyleName}
-                  styleTagline={currentStyleTagline}
-                  generationDuration={2500}
-                />
-              </motion.div>
-            </AnimatePresence>
-          </div>
+          <LazyMotion features={domAnimation}>
+            <div className="max-w-4xl mx-auto">
+              <AnimatePresence mode="wait">
+                <m.div
+                  key={currentStyleImage}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.4 }}
+                >
+                  <GeneratingCanvasAnimation
+                    defaultStyleImage={currentStyleImage}
+                    originalImage={currentOriginalImage}
+                    styleName={currentStyleName}
+                    styleTagline={currentStyleTagline}
+                    generationDuration={2500}
+                  />
+                </m.div>
+              </AnimatePresence>
+            </div>
 
-          {/* Style Pills */}
-          <StylePills
-            pills={STYLE_PILLS}
-            onStyleChange={handleStyleChange}
-          />
+            {/* Style Pills */}
+            <StylePills
+              pills={STYLE_PILLS}
+              onStyleChange={handleStyleChange}
+            />
+          </LazyMotion>
 
           {/* Trust Strip - After visual proof */}
           <TrustStrip

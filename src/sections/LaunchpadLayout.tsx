@@ -6,6 +6,7 @@ import { useFounderStore } from '@/store/useFounderStore';
 import { emitStepOneEvent } from '@/utils/telemetry';
 import { trackLaunchflowCompleted, trackLaunchflowEditReopen, trackLaunchflowOpened, type LaunchflowEditSource, type LaunchflowOpenSource } from '@/utils/launchflowTelemetry';
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
+import usePrefersReducedMotion from '@/hooks/usePrefersReducedMotion';
 
 const successMessage = 'Photo ready! Explore styles below.';
 
@@ -30,28 +31,6 @@ const scrollToStudio = (smooth: boolean) => {
       block: 'start',
     });
   }
-};
-
-const usePrefersReducedMotion = () => {
-  const [prefersReduced, setPrefersReduced] = useState(false);
-
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) {
-      return;
-    }
-
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const handleChange = () => setPrefersReduced(mediaQuery.matches);
-
-    handleChange();
-    mediaQuery.addEventListener('change', handleChange);
-
-    return () => {
-      mediaQuery.removeEventListener('change', handleChange);
-    };
-  }, []);
-
-  return prefersReduced;
 };
 
 type SlimBarProps = {

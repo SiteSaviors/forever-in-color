@@ -1,9 +1,21 @@
 import 'https://deno.land/x/xhr@0.1.0/mod.ts';
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { Image } from 'https://deno.land/x/imagescript@1.2.15/mod.ts';
-import wasmHeif from 'https://esm.sh/@saschazar/wasm-heif@2.0.0?bundle';
+import libheifInit from 'https://cdn.jsdelivr.net/npm/libheif-js@1.19.8/libheif-wasm/libheif-bundle.mjs';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 import { handleCorsPreflightRequest, createCorsResponse } from '../generate-style-preview/corsUtils.ts';
+
+// Lazy initialization singleton for libheif WASM module
+// This avoids initializing the heavy WASM module on cold starts (which would exceed 2s CPU limit)
+let libheifInstance: ReturnType<typeof libheifInit> | null = null;
+
+async function getLibheif() {
+  if (!libheifInstance) {
+    console.log('[convert-heic] Initializing libheif WASM module');
+    libheifInstance = await libheifInit();
+  }
+  return libheifInstance;
+}
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -13,7 +25,7 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
   throw new Error('[convert-heic] Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
 }
 
-const CACHE_BUCKET = Deno.env.get('HEIC_CACHE_BUCKET') ?? 'preview-cache';
+const CACHE_BUCKET = Deno.env.get('HEIC_CACHE_BUCKET') ?? 'user-uploads';
 const SIGNED_URL_TTL_SECONDS = clampPositiveInt(Deno.env.get('HEIC_SIGNED_URL_TTL_SECONDS'), 24 * 60 * 60);
 const CACHE_TTL_DAYS = clampPositiveInt(Deno.env.get('HEIC_CACHE_TTL_DAYS'), 30);
 const MAX_FILE_BYTES = clampPositiveInt(Deno.env.get('HEIC_MAX_FILE_BYTES'), 12 * 1024 * 1024); // 12 MB default
@@ -34,6 +46,32 @@ serve(async (req) => {
   }
 
   try {
+    // Validate authorization header (allow both user tokens and anon key)
+    const authHeader = req.headers.get('authorization') ?? req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new HttpError('missing_authorization', 'Missing authorization header', 401);
+    }
+
+    // Extract bearer token
+    const bearerToken = authHeader.startsWith('Bearer ') ? authHeader.substring(7) : null;
+    if (!bearerToken) {
+      throw new HttpError('invalid_authorization', 'Authorization must be a Bearer token', 401);
+    }
+
+    // Validate token is either a valid user session or the anon key
+    const isAnonKey = SUPABASE_ANON_KEY && bearerToken === SUPABASE_ANON_KEY;
+    if (!isAnonKey) {
+      // Verify it's a valid user session token by checking with Supabase
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser(bearerToken);
+        if (error || !user) {
+          throw new HttpError('invalid_token', 'Invalid or expired authorization token', 401);
+        }
+      } catch (_error) {
+        throw new HttpError('auth_verification_failed', 'Failed to verify authorization token', 401);
+      }
+    }
+
     const { file, filename } = await extractFile(req);
     if (file.size === 0) {
       throw new HttpError('empty_payload', 'Uploaded file is empty', 400);
@@ -283,47 +321,51 @@ function buildStoragePath(hash: string, filename: string): string {
 }
 
 async function convertHeicToJpeg(buffer: ArrayBuffer): Promise<{ jpegBytes: Uint8Array; width: number; height: number }> {
-  const moduleInstance = wasmHeif({
-    locateFile: (path: string) => {
-      if (path.startsWith('/@saschazar')) {
-        return `https://esm.sh${path}`;
-      }
-      try {
-        return new URL(
-          path.replace(/^\//, ''),
-          'https://esm.sh/@saschazar/wasm-heif@2.0.0/es2022/'
-        ).toString();
-      } catch (error) {
-        console.warn('[convert-heic] Failed to resolve wasm path', path, error);
-        return `https://esm.sh/@saschazar/wasm-heif@2.0.0/${path.replace(/^\//, '')}`;
-      }
-    },
-  });
-
-  if (typeof moduleInstance.ready?.then === 'function') {
-    await moduleInstance.ready;
-  }
-
   try {
-    const source = new Uint8Array(buffer);
-    const decoded = moduleInstance.decode(source, source.byteLength, false) as BufferSource | { error: string };
+    // Lazy initialize libheif WASM module only when needed
+    const libheif = await getLibheif();
 
-    if (isDecodeError(decoded)) {
-      throw new Error(`heif_decode_failed: ${decoded.error}`);
+    // Initialize libheif decoder
+    const decoder = new libheif.HeifDecoder();
+    const data = new Uint8Array(buffer);
+
+    // Decode HEIC file - returns array of all images in the file
+    const images = decoder.decode(data);
+
+    if (!images || images.length === 0) {
+      throw new Error('heif_decode_failed: No images found in HEIC file');
     }
 
-    const dimensions = moduleInstance.dimensions();
-    const { width, height, channels } = dimensions;
+    // Get the first image
+    const image = images[0];
+    const width = image.get_width();
+    const height = image.get_height();
 
     if (!width || !height) {
       throw new Error('heif_invalid_dimensions');
     }
 
-    const decodedBuffer = decoded instanceof Uint8Array ? decoded : new Uint8Array(decoded);
-    const rgba = convertToRgba(decodedBuffer, width, height, channels ?? 3);
-    const image = new Image(width, height);
-    image.bitmap.set(rgba);
-    const jpegBytes = await image.encodeJPEG(92);
+    // Get RGBA image data
+    const rgbaData = await new Promise<Uint8ClampedArray>((resolve, reject) => {
+      const displayData = {
+        data: new Uint8ClampedArray(width * height * 4),
+        width,
+        height
+      };
+
+      image.display(displayData, (result: typeof displayData | null) => {
+        if (!result) {
+          reject(new Error('heif_display_failed: Failed to get image data'));
+          return;
+        }
+        resolve(result.data);
+      });
+    });
+
+    // Convert RGBA to JPEG using ImageScript
+    const imgScript = new Image(width, height);
+    imgScript.bitmap.set(rgbaData);
+    const jpegBytes = await imgScript.encodeJPEG(92);
 
     return { jpegBytes, width, height };
   } catch (error) {
@@ -332,33 +374,6 @@ async function convertHeicToJpeg(buffer: ArrayBuffer): Promise<{ jpegBytes: Uint
   }
 }
 
-function isDecodeError(value: BufferSource | { error: string }): value is { error: string } {
-  return typeof (value as { error?: string }).error === 'string';
-}
-
-function convertToRgba(decoded: Uint8Array, width: number, height: number, channels: number): Uint8ClampedArray {
-  if (channels !== 3 && channels !== 4) {
-    throw new Error(`heif_unsupported_channels: ${channels}`);
-  }
-
-  const pixelCount = width * height;
-  const rgba = new Uint8ClampedArray(pixelCount * 4);
-  let srcIndex = 0;
-  let destIndex = 0;
-
-  for (let i = 0; i < pixelCount; i++) {
-    rgba[destIndex++] = decoded[srcIndex++]; // R
-    rgba[destIndex++] = decoded[srcIndex++]; // G
-    rgba[destIndex++] = decoded[srcIndex++]; // B
-    if (channels === 4) {
-      rgba[destIndex++] = decoded[srcIndex++]; // A
-    } else {
-      rgba[destIndex++] = 255; // default alpha
-    }
-  }
-
-  return rgba;
-}
 
 function normalizeError(error: unknown): HttpErrorShape {
   if (error instanceof HttpError) {

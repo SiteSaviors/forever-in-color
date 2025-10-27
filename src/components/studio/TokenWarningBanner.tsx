@@ -1,9 +1,12 @@
 import { X, AlertTriangle, TrendingUp } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useFounderStore, type EntitlementTier } from '@/store/useFounderStore';
 import Button from '@/components/ui/Button';
+import usePrefersReducedMotion from '@/hooks/usePrefersReducedMotion';
+import { useTransitionPresence } from '@/hooks/useTransitionPresence';
+import { clsx } from 'clsx';
+import './TokenWarningBanner.css';
 
 const TIER_RECOMMENDATIONS: Record<EntitlementTier, { nextTier: string; quota: number; price: string } | null> = {
   free: { nextTier: 'Creator', quota: 50, price: '$9.99/mo' },
@@ -18,6 +21,7 @@ const TokenWarningBanner = () => {
   const [dismissed, setDismissed] = useState(false);
   const entitlements = useFounderStore((state) => state.entitlements);
   const displayRemainingTokens = useFounderStore((state) => state.getDisplayableRemainingTokens());
+  const prefersReducedMotion = usePrefersReducedMotion();
 
   const shouldShow = () => {
     if (dismissed || entitlements.status !== 'ready') return false;
@@ -32,56 +36,61 @@ const TokenWarningBanner = () => {
   const recommendation = TIER_RECOMMENDATIONS[entitlements.tier];
   const tokensRemaining = displayRemainingTokens ?? entitlements.remainingTokens ?? 0;
 
-  if (!shouldShow() || !recommendation) return null;
+  const isVisible = shouldShow() && !!recommendation;
+  const { mounted, state } = useTransitionPresence(isVisible, {
+    enterDuration: 220,
+    exitDuration: 200,
+    reduceMotion: prefersReducedMotion,
+  });
+
+  if (!mounted || !recommendation) return null;
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -20 }}
-        transition={{ type: 'spring', stiffness: 200, damping: 25 }}
-        className="sticky top-[57px] z-20 border-b border-amber-500/30 bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 backdrop-blur-sm"
-      >
-        <div className="mx-auto flex max-w-[1800px] items-center justify-between gap-4 px-6 py-3">
-          {/* Left: Icon + Message */}
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-amber-400/30 to-orange-400/30 border border-amber-400/40">
-              <AlertTriangle className="h-4 w-4 text-amber-300" />
-            </div>
-            <div className="flex flex-col gap-0.5">
-              <p className="text-sm font-semibold text-white">
-                You have{' '}
-                <span className="text-amber-300">{tokensRemaining} token{tokensRemaining === 1 ? '' : 's'}</span>{' '}
-                left this period
-              </p>
-              <p className="text-xs text-white/70">
-                Upgrade to <span className="font-semibold text-amber-200">{recommendation.nextTier}</span> for{' '}
-                {recommendation.quota} tokens/month
-              </p>
-            </div>
+    <div
+      className={clsx(
+        'token-warning-banner',
+        prefersReducedMotion && 'token-warning-banner--reduced'
+      )}
+      data-state={state}
+    >
+      <div className="token-warning-banner__inner">
+        <div className="token-warning-banner__message">
+          <div className="token-warning-banner__icon">
+            <AlertTriangle className="h-4 w-4 text-amber-300" />
           </div>
-
-          {/* Right: CTA + Dismiss */}
-          <div className="flex items-center gap-3">
-            <Button
-              onClick={() => navigate('/pricing')}
-              className="flex items-center gap-2 rounded-xl border border-amber-400/40 bg-gradient-to-r from-amber-500/90 to-orange-500/90 px-4 py-2 text-sm font-semibold text-white shadow-[0_10px_40px_rgba(251,191,36,0.3)] transition-all hover:scale-105 hover:shadow-[0_12px_50px_rgba(251,191,36,0.5)]"
-            >
-              <TrendingUp className="h-4 w-4" />
-              View Plans
-            </Button>
-            <button
-              onClick={() => setDismissed(true)}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-white/60 transition hover:bg-white/10 hover:text-white"
-              aria-label="Dismiss warning"
-            >
-              <X className="h-4 w-4" />
-            </button>
+          <div className="token-warning-banner__text">
+            <p className="token-warning-banner__headline">
+              You have{' '}
+              <span className="token-warning-banner__tokens">
+                {tokensRemaining} token{tokensRemaining === 1 ? '' : 's'}
+              </span>{' '}
+              left this period
+            </p>
+            <p className="token-warning-banner__subtext">
+              Upgrade to <span className="font-semibold text-amber-200">{recommendation.nextTier}</span> for{' '}
+              {recommendation.quota} tokens/month
+            </p>
           </div>
         </div>
-      </motion.div>
-    </AnimatePresence>
+
+        <div className="token-warning-banner__actions">
+          <Button
+            onClick={() => navigate('/pricing')}
+            className="flex items-center gap-2 rounded-xl border border-amber-400/40 bg-gradient-to-r from-amber-500/90 to-orange-500/90 px-4 py-2 text-sm font-semibold text-white shadow-[0_10px_40px_rgba(251,191,36,0.3)] transition-all hover:scale-105 hover:shadow-[0_12px_50px_rgba(251,191,36,0.5)]"
+          >
+            <TrendingUp className="h-4 w-4" />
+            View Plans
+          </Button>
+          <button
+            onClick={() => setDismissed(true)}
+            className="token-warning-banner__dismiss"
+            aria-label="Dismiss warning"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    </div>
   );
 };
 

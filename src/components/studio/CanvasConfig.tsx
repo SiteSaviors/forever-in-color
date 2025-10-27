@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect, useRef } from 'react';
+import { AnimatePresence, m } from 'framer-motion';
 import Card from '@/components/ui/Card';
 import type { Orientation } from '@/utils/imageUtils';
+import usePrefersReducedMotion from '@/hooks/usePrefersReducedMotion';
 
 type Enhancement = {
   id: string;
@@ -67,24 +68,7 @@ export default function CanvasConfig({
   const hasEnhancements = enabledEnhancements.length > 0;
   const sizeCardRef = useRef<HTMLDivElement>(null);
   const firstInteractiveRef = useRef<HTMLButtonElement>(null);
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-
-  // Listen for reduced-motion preference
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const handleChange = (event: MediaQueryListEvent) => setPrefersReducedMotion(event.matches);
-
-    setPrefersReducedMotion(mediaQuery.matches);
-
-    if (mediaQuery.addEventListener) {
-      mediaQuery.addEventListener('change', handleChange);
-      return () => mediaQuery.removeEventListener('change', handleChange);
-    }
-
-    mediaQuery.addListener(handleChange);
-    return () => mediaQuery.removeListener(handleChange);
-  }, []);
+  const prefersReducedMotion = usePrefersReducedMotion();
 
   // Auto-scroll to first card on expand
   useEffect(() => {
@@ -125,7 +109,7 @@ export default function CanvasConfig({
   return (
     <AnimatePresence>
       {isExpanded && (
-        <motion.div
+        <m.div
           id="canvas-options-panel"
           role="region"
           initial={{ height: 0, opacity: 0 }}
@@ -135,7 +119,7 @@ export default function CanvasConfig({
           className="space-y-4 overflow-hidden"
         >
           {/* Canvas Size Selector - with stagger animation */}
-          <motion.div
+          <m.div
             ref={sizeCardRef}
             initial={{ y: -10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -176,10 +160,10 @@ export default function CanvasConfig({
                 ))}
               </div>
             </Card>
-          </motion.div>
+          </m.div>
 
           {/* Enhancements - with stagger animation */}
-          <motion.div
+          <m.div
             initial={{ y: -10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.1 }}
@@ -330,13 +314,13 @@ export default function CanvasConfig({
               </button>
             )}
           </Card>
-          </motion.div>
+          </m.div>
 
           {/* Mobile Room Preview - Only on mobile, between Enhancements and Order */}
           {mobileRoomPreview && <div className="lg:hidden">{mobileRoomPreview}</div>}
 
           {/* Order Summary - with stagger animation */}
-          <motion.div
+          <m.div
             initial={{ y: -10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.15 }}
@@ -460,8 +444,8 @@ export default function CanvasConfig({
               </div>
             )}
           </Card>
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       )}
     </AnimatePresence>
   );

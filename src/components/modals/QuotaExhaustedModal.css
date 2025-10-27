@@ -1,0 +1,63 @@
+.quota-modal__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(2, 6, 23, 0.88);
+  backdrop-filter: blur(18px);
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+
+.quota-modal__overlay[data-state='open'] {
+  opacity: 1;
+}
+
+.quota-modal__overlay--reduced {
+  transition: none;
+  opacity: 1;
+}
+
+.quota-modal__content-wrapper {
+  position: fixed;
+  z-index: 51;
+  left: 50%;
+  top: 50%;
+  width: 100%;
+  max-width: 32rem;
+  padding-inline: 1.5rem;
+  transform: translate(-50%, -50%) scale(0.95);
+  opacity: 0;
+  transition:
+    opacity 220ms ease,
+    transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.quota-modal__content-wrapper[data-state='open'] {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.quota-modal__content-wrapper[data-state='closed'] {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.95);
+}
+
+.quota-modal__content-wrapper--reduced {
+  transition: none;
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.quota-modal {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(135deg, #0f172a, #111827 45%, #101024 100%);
+  box-shadow: 0 40px 120px rgba(139, 92, 246, 0.55);
+}
+
+.quota-modal button:focus-visible {
+  outline: 2px solid rgba(196, 181, 253, 0.7);
+  outline-offset: 2px;
+}

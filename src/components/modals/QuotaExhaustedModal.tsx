@@ -2,9 +2,11 @@ import { useMemo } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X, Zap, TrendingUp, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import Button from '@/components/ui/Button';
 import { type EntitlementTier } from '@/store/useFounderStore';
+import usePrefersReducedMotion from '@/hooks/usePrefersReducedMotion';
+import { clsx } from 'clsx';
+import './QuotaExhaustedModal.css';
 
 type QuotaExhaustedModalProps = {
   open: boolean;
@@ -56,6 +58,7 @@ const QuotaExhaustedModal = ({
   renewAt,
 }: QuotaExhaustedModalProps) => {
   const navigate = useNavigate();
+  const prefersReducedMotion = usePrefersReducedMotion();
 
   const tierMessage = useMemo(() => {
     switch (currentTier) {
@@ -126,15 +129,19 @@ const QuotaExhaustedModal = ({
   return (
     <Dialog.Root open={open} onOpenChange={(value) => !value && onClose()}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-xl" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-full max-w-2xl -translate-x-1/2 -translate-y-1/2 px-6">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 shadow-[0_40px_120px_rgba(139,92,246,0.6)]"
-          >
+        <Dialog.Overlay
+          className={clsx(
+            'quota-modal__overlay',
+            prefersReducedMotion && 'quota-modal__overlay--reduced'
+          )}
+        />
+        <Dialog.Content
+          className={clsx(
+            'quota-modal__content-wrapper',
+            prefersReducedMotion && 'quota-modal__content-wrapper--reduced'
+          )}
+        >
+          <div className="quota-modal">
             {/* Background glow effects */}
             <div className="pointer-events-none absolute -left-32 -top-32 h-64 w-64 rounded-full bg-purple-500/20 blur-3xl" />
             <div className="pointer-events-none absolute -bottom-32 -right-32 h-64 w-64 rounded-full bg-indigo-500/20 blur-3xl" />
@@ -250,7 +257,7 @@ const QuotaExhaustedModal = ({
                 )}
               </div>
             </div>
-          </motion.div>
+          </div>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

@@ -1,0 +1,91 @@
+.canvas-upsell-toast {
+  position: fixed;
+  inset-inline-start: 50%;
+  bottom: 1.5rem;
+  translate: -50% 0;
+  z-index: 50;
+  max-width: 22rem;
+  width: calc(100% - 2rem);
+  opacity: 0;
+  transform: translate3d(0, 40px, 0);
+  transition:
+    opacity 220ms ease-out,
+    transform 220ms ease-out;
+}
+
+.canvas-upsell-toast[data-state='entering'],
+.canvas-upsell-toast[data-state='entered'] {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+.canvas-upsell-toast[data-state='exiting'] {
+  opacity: 0;
+  transform: translate3d(0, 40px, 0);
+}
+
+.canvas-upsell-toast--reduced {
+  transition: none;
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+.canvas-upsell-toast__card {
+  position: relative;
+  padding: 1.25rem;
+  border-radius: 0.9rem;
+  border: 2px solid rgba(168, 85, 247, 0.65);
+  background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+  color: #fff;
+  box-shadow: 0 20px 55px rgba(126, 34, 206, 0.35);
+  overflow: hidden;
+}
+
+.canvas-upsell-toast__dismiss {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.65);
+  transition: color 160ms ease, background-color 160ms ease;
+}
+
+.canvas-upsell-toast__dismiss:hover {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+.canvas-upsell-toast__headline {
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin: 0 1.5rem 0.35rem 0;
+}
+
+.canvas-upsell-toast__description {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.88);
+  margin: 0 0 1rem;
+}
+
+.canvas-upsell-toast__cta {
+  width: 100%;
+  border-radius: 0.65rem;
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 0.65rem 1rem;
+  background-color: #fff;
+  color: #5b21b6;
+  box-shadow: 0 14px 35px rgba(59, 130, 246, 0.25);
+  transition: transform 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+}
+
+.canvas-upsell-toast__cta:hover {
+  background-color: rgba(255, 255, 255, 0.92);
+  transform: translateY(-1px);
+  box-shadow: 0 16px 40px rgba(59, 130, 246, 0.32);
+}

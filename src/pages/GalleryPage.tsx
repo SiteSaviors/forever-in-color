@@ -1,6 +1,13 @@
-import { useState, useEffect, useCallback } from 'react';
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useLayoutEffect,
+  useRef,
+  type CSSProperties,
+  type TransitionEvent,
+} from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Download, Heart, Trash2, ArrowLeft, Filter, Sparkles, Expand } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useFounderStore } from '@/store/useFounderStore';
@@ -17,6 +24,8 @@ import {
 } from '@/utils/galleryApi';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
+import usePrefersReducedMotion from '@/hooks/usePrefersReducedMotion';
+import './GalleryPage.css';
 
 type GalleryActionButtonProps = {
   onClick: () => void;
@@ -73,8 +82,19 @@ const GalleryPage = () => {
   });
 
   const [showFilters, setShowFilters] = useState(false);
-  const [lightboxItem, setLightboxItem] = useState<GalleryItem | null>(null);
+  const [filtersMounted, setFiltersMounted] = useState(false);
+  const [filtersPanelState, setFiltersPanelState] = useState<'closed' | 'opening' | 'open' | 'closing'>('closed');
+  const filtersWrapperRef = useRef<HTMLDivElement>(null);
+  const filtersContentRef = useRef<HTMLDivElement>(null);
+  const [filtersHeight, setFiltersHeight] = useState(0);
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const [lightboxState, setLightboxState] = useState<{ item: GalleryItem | null; mode: 'open' | 'closing' }>({
+    item: null,
+    mode: 'open',
+  });
+  const lightboxTimerRef = useRef<number | null>(null);
   const [authPrompted, setAuthPrompted] = useState(false);
+  const LIGHTBOX_ANIMATION_MS = 220;
 
   // Check if user has access to clean (watermark-free) downloads
   const requiresWatermark = entitlements.requiresWatermark;
@@ -112,6 +132,115 @@ const GalleryPage = () => {
   useEffect(() => {
     void loadGallery();
   }, [loadGallery]);
+
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      setFiltersMounted(showFilters);
+      setFiltersPanelState(showFilters ? 'open' : 'closed');
+      return;
+    }
+
+    if (showFilters) {
+      setFiltersMounted(true);
+    } else {
+      setFiltersPanelState((current) => (current === 'closed' ? current : 'closing'));
+    }
+  }, [prefersReducedMotion, showFilters]);
+
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      return;
+    }
+    if (!filtersMounted || !showFilters) {
+      return;
+    }
+
+    const animationFrame = window.requestAnimationFrame(() => {
+      setFiltersPanelState((current) => {
+        if (current === 'open' || current === 'opening') {
+          return current;
+        }
+        return 'opening';
+      });
+    });
+
+    return () => window.cancelAnimationFrame(animationFrame);
+  }, [filtersMounted, prefersReducedMotion, showFilters]);
+
+  useLayoutEffect(() => {
+    if (typeof window === 'undefined' || typeof ResizeObserver === 'undefined') return;
+    if (!filtersMounted) return;
+    const contentNode = filtersContentRef.current;
+    if (!contentNode) return;
+
+    const measure = () => {
+      setFiltersHeight(contentNode.offsetHeight);
+    };
+
+    measure();
+
+    const observer = new ResizeObserver(() => {
+      measure();
+    });
+
+    observer.observe(contentNode);
+    return () => observer.disconnect();
+  }, [filtersMounted]);
+
+  const handleFiltersTransitionEnd = (event: TransitionEvent<HTMLDivElement>) => {
+    if (event.propertyName !== 'max-height') {
+      return;
+    }
+    if (filtersPanelState === 'opening') {
+      setFiltersPanelState('open');
+    } else if (filtersPanelState === 'closing') {
+      setFiltersPanelState('closed');
+      setFiltersMounted(false);
+    }
+  };
+
+  const openLightbox = useCallback((item: GalleryItem) => {
+    if (lightboxTimerRef.current) {
+      window.clearTimeout(lightboxTimerRef.current);
+      lightboxTimerRef.current = null;
+    }
+    setLightboxState({ item, mode: 'open' });
+  }, []);
+
+  const closeLightbox = useCallback(() => {
+    setLightboxState((current) => {
+      if (!current.item || current.mode === 'closing') {
+        return current;
+      }
+      return { ...current, mode: 'closing' };
+    });
+  }, []);
+
+  useEffect(() => {
+    if (lightboxState.mode !== 'closing' || !lightboxState.item) {
+      return;
+    }
+
+    lightboxTimerRef.current = window.setTimeout(() => {
+      setLightboxState({ item: null, mode: 'open' });
+      lightboxTimerRef.current = null;
+    }, prefersReducedMotion ? 0 : LIGHTBOX_ANIMATION_MS);
+
+    return () => {
+      if (lightboxTimerRef.current) {
+        window.clearTimeout(lightboxTimerRef.current);
+        lightboxTimerRef.current = null;
+      }
+    };
+  }, [LIGHTBOX_ANIMATION_MS, lightboxState.item, lightboxState.mode, prefersReducedMotion]);
+
+  useEffect(() => {
+    return () => {
+      if (lightboxTimerRef.current) {
+        window.clearTimeout(lightboxTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleDelete = async (itemId: string) => {
     if (!confirm('Are you sure you want to delete this from your gallery?')) {
@@ -244,6 +373,8 @@ const GalleryPage = () => {
     vertical: 'Portrait',
     square: 'Square',
   };
+  const activeLightbox = lightboxState.item;
+  const lightboxDataState = lightboxState.mode === 'closing' ? 'closing' : 'open';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950">
@@ -276,66 +407,70 @@ const GalleryPage = () => {
       </div>
 
       {/* Filters Bar */}
-      <AnimatePresence>
-        {showFilters && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="border-b border-white/10 bg-slate-900/50 backdrop-blur-sm overflow-hidden"
-          >
-            <div className="max-w-[1800px] mx-auto px-6 py-4">
-              <div className="flex flex-wrap items-center gap-4">
-                {/* Sort */}
-                <div className="flex items-center gap-2">
-                  <label className="text-sm text-white/60">Sort:</label>
-                  <select
-                    value={filters.sort || 'newest'}
-                    onChange={(e) => setFilters({ ...filters, sort: e.target.value as 'newest' | 'oldest' | 'downloads', offset: 0 })}
-                    className="px-3 py-1.5 rounded-lg bg-white/10 text-white border border-white/20 focus:outline-none focus:ring-2 focus:ring-brand-indigo"
-                  >
-                    <option value="newest">Newest First</option>
-                    <option value="oldest">Oldest First</option>
-                    <option value="downloads">Most Downloaded</option>
-                  </select>
-                </div>
-
-                {/* Orientation */}
-                <div className="flex items-center gap-2">
-                  <label className="text-sm text-white/60">Orientation:</label>
-                  <select
-                    value={filters.orientation || 'all'}
-                    onChange={(e) =>
-                      setFilters({
-                        ...filters,
-                        orientation: e.target.value === 'all' ? undefined : (e.target.value as 'horizontal' | 'vertical' | 'square'),
-                        offset: 0,
-                      })
-                    }
-                    className="px-3 py-1.5 rounded-lg bg-white/10 text-white border border-white/20 focus:outline-none focus:ring-2 focus:ring-brand-indigo"
-                  >
-                    <option value="all">All</option>
-                    <option value="horizontal">Landscape</option>
-                    <option value="vertical">Portrait</option>
-                    <option value="square">Square</option>
-                  </select>
-                </div>
-
-                {/* Favorites Only */}
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={filters.favorites || false}
-                    onChange={(e) => setFilters({ ...filters, favorites: e.target.checked, offset: 0 })}
-                    className="w-4 h-4 rounded border-white/20 bg-white/10 text-brand-indigo focus:ring-brand-indigo"
-                  />
-                  <span className="text-sm text-white/80">Favorites Only</span>
-                </label>
+      {(filtersMounted || filtersPanelState === 'closing' || (prefersReducedMotion && showFilters)) && (
+        <div
+          ref={filtersWrapperRef}
+          className="border-b border-white/10 bg-slate-900/50 backdrop-blur-sm gallery-filters-panel"
+          data-state={filtersPanelState}
+          data-reduced-motion={prefersReducedMotion ? 'true' : 'false'}
+          style={
+            prefersReducedMotion
+              ? undefined
+              : ({ '--filters-height': `${filtersHeight}px` } as CSSProperties)
+          }
+          onTransitionEnd={prefersReducedMotion ? undefined : handleFiltersTransitionEnd}
+        >
+          <div ref={filtersContentRef} className="max-w-[1800px] mx-auto px-6 py-4">
+            <div className="flex flex-wrap items-center gap-4">
+              {/* Sort */}
+              <div className="flex items-center gap-2">
+                <label className="text-sm text-white/60">Sort:</label>
+                <select
+                  value={filters.sort || 'newest'}
+                  onChange={(e) => setFilters({ ...filters, sort: e.target.value as 'newest' | 'oldest' | 'downloads', offset: 0 })}
+                  className="px-3 py-1.5 rounded-lg bg-white/10 text-white border border-white/20 focus:outline-none focus:ring-2 focus:ring-brand-indigo"
+                >
+                  <option value="newest">Newest First</option>
+                  <option value="oldest">Oldest First</option>
+                  <option value="downloads">Most Downloaded</option>
+                </select>
               </div>
+
+              {/* Orientation */}
+              <div className="flex items-center gap-2">
+                <label className="text-sm text-white/60">Orientation:</label>
+                <select
+                  value={filters.orientation || 'all'}
+                  onChange={(e) =>
+                    setFilters({
+                      ...filters,
+                      orientation: e.target.value === 'all' ? undefined : (e.target.value as 'horizontal' | 'vertical' | 'square'),
+                      offset: 0,
+                    })
+                  }
+                  className="px-3 py-1.5 rounded-lg bg-white/10 text-white border border-white/20 focus:outline-none focus:ring-2 focus:ring-brand-indigo"
+                >
+                  <option value="all">All</option>
+                  <option value="horizontal">Landscape</option>
+                  <option value="vertical">Portrait</option>
+                  <option value="square">Square</option>
+                </select>
+              </div>
+
+              {/* Favorites Only */}
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={filters.favorites || false}
+                  onChange={(e) => setFilters({ ...filters, favorites: e.target.checked, offset: 0 })}
+                  className="w-4 h-4 rounded border-white/20 bg-white/10 text-brand-indigo focus:ring-brand-indigo"
+                />
+                <span className="text-sm text-white/80">Favorites Only</span>
+              </label>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+        </div>
+      )}
 
       {/* Content */}
       <div className="max-w-[1800px] mx-auto px-6 py-8">
@@ -372,18 +507,24 @@ const GalleryPage = () => {
 
         {!loading && !error && items.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {items.map((item) => (
-              <motion.div
+            {items.map((item, index) => (
+              <div
                 key={item.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                className="group relative bg-white/5 backdrop-blur-sm rounded-xl overflow-hidden border border-white/10 hover:border-brand-indigo/50 transition-all"
+                className={clsx(
+                  'group relative bg-white/5 backdrop-blur-sm rounded-xl overflow-hidden border border-white/10 hover:border-brand-indigo/50 transition-all',
+                  !prefersReducedMotion && 'gallery-card-animate'
+                )}
+                data-reduced-motion={prefersReducedMotion ? 'true' : 'false'}
+                style={
+                  prefersReducedMotion
+                    ? undefined
+                    : ({ animationDelay: `${Math.min(index, 6) * 40}ms` } as CSSProperties)
+                }
               >
                 {/* Preview Image */}
                 <div className="aspect-square relative overflow-hidden">
                   <button
-                    onClick={() => setLightboxItem(item)}
+                    onClick={() => openLightbox(item)}
                     className="absolute top-3 right-3 z-10 p-2 rounded-full bg-slate-950/70 text-white/80 hover:text-white hover:bg-slate-900/90 transition-colors"
                     title="Expand preview"
                     aria-label="Expand preview"
@@ -453,65 +594,60 @@ const GalleryPage = () => {
                     </button>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         )}
       </div>
       {renderFeedback()}
 
-      <AnimatePresence>
-        {lightboxItem && (
-          <motion.div
-            key={lightboxItem.id}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur"
+      {activeLightbox && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur gallery-lightbox-overlay"
+          data-state={lightboxDataState}
+          data-reduced-motion={prefersReducedMotion ? 'true' : 'false'}
+        >
+          <div
+            className="absolute inset-0"
+            onClick={closeLightbox}
+            aria-hidden="true"
+          />
+          <div
+            className="relative z-[101] w-[92vw] max-w-4xl bg-slate-950/95 border border-white/10 rounded-2xl shadow-2xl overflow-hidden gallery-lightbox-content"
+            data-state={lightboxDataState}
+            data-reduced-motion={prefersReducedMotion ? 'true' : 'false'}
           >
-            <div
-              className="absolute inset-0"
-              onClick={() => setLightboxItem(null)}
-              aria-hidden="true"
-            />
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="relative z-[101] w-[92vw] max-w-4xl bg-slate-950/95 border border-white/10 rounded-2xl shadow-2xl overflow-hidden"
+            <button
+              onClick={closeLightbox}
+              className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+              aria-label="Close preview"
             >
-              <button
-                onClick={() => setLightboxItem(null)}
-                className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
-                aria-label="Close preview"
-              >
-                <span className="text-lg leading-none">×</span>
-              </button>
-              <img
-                src={requiresWatermark ? lightboxItem.displayUrl : lightboxItem.imageUrl}
-                alt={lightboxItem.styleName}
-                className="w-full h-auto object-contain max-h-[70vh] bg-slate-900"
-              />
-              <div className="p-4 flex items-center justify-between gap-3 flex-wrap">
-                <div>
-                  <p className="text-white font-semibold">{lightboxItem.styleName}</p>
-                  <p className="text-white/60 text-sm">{orientationLabels[lightboxItem.orientation]}</p>
-                </div>
-                <Button
-                  onClick={() => {
-                    void handleDownload(lightboxItem);
-                  }}
-                  variant="primary"
-                  className="flex items-center gap-2"
-                >
-                  <Download className="w-4 h-4" />
-                  Download Image
-                </Button>
+              <span className="text-lg leading-none">×</span>
+            </button>
+            <img
+              src={requiresWatermark ? activeLightbox.displayUrl : activeLightbox.imageUrl}
+              alt={activeLightbox.styleName}
+              className="w-full h-auto object-contain max-h-[70vh] bg-slate-900"
+            />
+            <div className="p-4 flex items-center justify-between gap-3 flex-wrap">
+              <div>
+                <p className="text-white font-semibold">{activeLightbox.styleName}</p>
+                <p className="text-white/60 text-sm">{orientationLabels[activeLightbox.orientation]}</p>
               </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              <Button
+                onClick={() => {
+                  void handleDownload(activeLightbox);
+                }}
+                variant="primary"
+                className="flex items-center gap-2"
+              >
+                <Download className="w-4 h-4" />
+                Download Image
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

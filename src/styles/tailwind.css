@@ -136,6 +136,68 @@ body {
   animation: border-rotate 8s ease-in-out infinite;
 }
 
+@layer utilities {
+  .animate-badge-fade-in {
+    animation: badge-fade-in 0.5s ease forwards;
+  }
+
+  .animate-badge-pulse {
+    animation: badge-pulse 2s ease-in-out infinite;
+  }
+
+  .animate-badge-tilt {
+    animation: badge-tilt 0.6s ease-in-out 0.5s 1 forwards;
+  }
+
+  .animate-progress-shimmer {
+    animation: progress-shimmer 1.4s linear infinite;
+  }
+}
+
+@keyframes badge-fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes badge-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+@keyframes badge-tilt {
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-10deg);
+  }
+  50% {
+    transform: rotate(10deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes progress-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(200%);
+  }
+}
+
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
   .animate-float,
@@ -146,7 +208,11 @@ body {
   .animate-badge-shimmer,
   .animate-ink-ripple,
   .animate-skeleton-shimmer,
-  .animate-pulse-slow {
+  .animate-pulse-slow,
+  .animate-badge-fade-in,
+  .animate-badge-pulse,
+  .animate-badge-tilt,
+  .animate-progress-shimmer {
     animation: none;
   }
 

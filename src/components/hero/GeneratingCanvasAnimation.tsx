@@ -1,6 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Loader2, ArrowLeftRight } from 'lucide-react';
+import { clsx } from 'clsx';
+import usePrefersReducedMotion from '@/hooks/usePrefersReducedMotion';
+import './GeneratingCanvasAnimation.css';
 
 type GeneratingCanvasAnimationProps = {
   defaultStyleImage: string;
@@ -30,144 +32,110 @@ const GeneratingCanvasAnimation = ({
   const [showingOriginal, setShowingOriginal] = useState(false);
   const [showHint, setShowHint] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const prefersReducedMotion = usePrefersReducedMotion();
 
   useEffect(() => {
-    // Check for reduced motion preference
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
     if (prefersReducedMotion) {
-      // Skip animation, go straight to complete
       setPhase('complete');
       setHasPlayed(true);
       return;
     }
 
-    // Start with loading phase
     setPhase('loading');
 
-    // Brief loading, then start generation
-    const loadingTimer = setTimeout(() => {
+    const loadingTimer = window.setTimeout(() => {
       setPhase('generating');
 
-      // Play video if available
       if (videoRef.current && videoSrc) {
         videoRef.current.play().catch(() => {
-          // Video playback failed, skip to complete
           setPhase('complete');
         });
       }
     }, 300);
 
-    // Auto-complete after duration
-    const completeTimer = setTimeout(() => {
+    const completeTimer = window.setTimeout(() => {
       setPhase('complete');
       setHasPlayed(true);
       onGenerationComplete?.();
     }, generationDuration + 300);
 
     return () => {
-      clearTimeout(loadingTimer);
-      clearTimeout(completeTimer);
+      window.clearTimeout(loadingTimer);
+      window.clearTimeout(completeTimer);
     };
-  }, [videoSrc, generationDuration, onGenerationComplete]);
+  }, [videoSrc, generationDuration, onGenerationComplete, prefersReducedMotion]);
 
-  // Auto-fade hint text after 4 seconds when complete
   useEffect(() => {
     if (phase === 'complete' && originalImage) {
-      const hintTimer = setTimeout(() => {
-        setShowHint(false);
-      }, 4000);
-      return () => clearTimeout(hintTimer);
+      const hintTimer = window.setTimeout(() => setShowHint(false), 4000);
+      return () => window.clearTimeout(hintTimer);
     }
   }, [phase, originalImage]);
 
-  // Mobile touch handlers - instant "light switch" behavior
-  const handleTouchStart = (e: React.TouchEvent) => {
-    e.preventDefault();
+  const progressStyle = useMemo(() => {
+    return {
+      width: phase === 'complete' ? '100%' : phase === 'generating' ? '100%' : '20%',
+      transitionDuration: `${generationDuration / 1000}s`,
+    };
+  }, [phase, generationDuration]);
+
+  const handleTouchStart = (event: React.TouchEvent) => {
+    event.preventDefault();
     setShowingOriginal(true);
-    // Haptic feedback for mobile
     if (navigator.vibrate) {
       navigator.vibrate(10);
     }
   };
 
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    e.preventDefault();
+  const handleTouchEnd = (event: React.TouchEvent) => {
+    event.preventDefault();
     setShowingOriginal(false);
   };
 
-  // Desktop hover handlers
-  const handleMouseEnter = () => {
-    setShowingOriginal(true);
-  };
-
-  const handleMouseLeave = () => {
-    setShowingOriginal(false);
-  };
+  const overlayVisible = phase !== 'complete';
+  const reducedAttr = prefersReducedMotion ? 'true' : 'false';
+  const hintKey = showHint ? 'hint' : 'ready';
 
   return (
-    <div
-      className={`relative w-full rounded-3xl overflow-hidden bg-slate-900 shadow-2xl ${className}`}
-    >
-      {/* Canvas Image (always present) */}
-      <div
-        className="relative w-full"
-        style={{ aspectRatio: '16 / 9' }}
-      >
-        {/* Generated Image */}
+    <div className={`relative w-full rounded-3xl overflow-hidden bg-slate-900 shadow-2xl ${className}`}>
+      <div className="relative w-full" style={{ aspectRatio: '16 / 9' }}>
         <img
           src={defaultStyleImage}
           alt="AI Generated Canvas"
-          className={`w-full h-full object-cover transition-opacity duration-300 ${
+          className={clsx(
+            'w-full h-full object-cover transition-opacity duration-300',
             showingOriginal ? 'opacity-0' : 'opacity-100'
-          }`}
+          )}
           draggable="false"
-          style={{
-            pointerEvents: 'none',
-            userSelect: 'none',
-            WebkitUserSelect: 'none',
-            WebkitTouchCallout: 'none'
-          }}
+          style={{ pointerEvents: 'none', userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none' }}
         />
 
-        {/* Original Image Overlay (revealed on hover/press) */}
         {originalImage && (
           <img
             src={originalImage}
             alt="Original Photo"
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${
+            className={clsx(
+              'absolute inset-0 w-full h-full object-cover transition-opacity duration-300',
               showingOriginal ? 'opacity-100' : 'opacity-0'
-            }`}
+            )}
             draggable="false"
-            style={{
-              pointerEvents: 'none',
-              userSelect: 'none',
-              WebkitUserSelect: 'none',
-              WebkitTouchCallout: 'none'
-            }}
+            style={{ pointerEvents: 'none', userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none' }}
           />
         )}
 
-        {/* Transparent Interaction Overlay - captures all touch/mouse events */}
         {phase === 'complete' && originalImage && (
           <div
             className="absolute inset-0 w-full h-full cursor-pointer"
-            style={{
-              touchAction: 'none',
-              WebkitTouchCallout: 'none',
-              WebkitUserSelect: 'none',
-              userSelect: 'none'
-            }}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
+            style={{ touchAction: 'none', WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none' }}
+            onMouseEnter={() => setShowingOriginal(true)}
+            onMouseLeave={() => setShowingOriginal(false)}
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
             onTouchCancel={handleTouchEnd}
-            onContextMenu={(e) => e.preventDefault()}
+            onContextMenu={(event) => event.preventDefault()}
           />
         )}
 
-        {/* Video Overlay (if provided and generating) */}
         {videoSrc && phase === 'generating' && (
           <video
             ref={videoRef}
@@ -185,130 +153,76 @@ const GeneratingCanvasAnimation = ({
           </video>
         )}
 
-        {/* Generation Overlay */}
-        <AnimatePresence>
-          {phase !== 'complete' && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center"
-            >
-              <div className="flex flex-col items-center gap-4">
-                {/* Spinning badge */}
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: 'linear',
-                  }}
-                  className="relative"
-                >
-                  <div className="w-16 h-16 rounded-full border-4 border-purple-500/30 border-t-purple-400 flex items-center justify-center">
-                    <Loader2 className="w-8 h-8 text-purple-400" />
-                  </div>
-                </motion.div>
-
-                {/* Shimmer progress text */}
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="text-center"
-                >
-                  <p className="text-lg font-semibold text-white mb-1">
-                    {phase === 'loading' ? 'Initializing AI...' : 'Generating your canvas...'}
-                  </p>
-                  <p className="text-sm text-white/60">Just a moment</p>
-                </motion.div>
-
-                {/* Progress shimmer bar */}
-                <motion.div
-                  initial={{ width: '20%' }}
-                  animate={{ width: '100%' }}
-                  transition={{
-                    duration: generationDuration / 1000,
-                    ease: 'easeInOut',
-                  }}
-                  className="w-48 h-1 bg-purple-500/30 rounded-full overflow-hidden"
-                >
-                  <motion.div
-                    animate={{
-                      x: ['0%', '100%'],
-                    }}
-                    transition={{
-                      duration: 1,
-                      repeat: Infinity,
-                      ease: 'linear',
-                    }}
-                    className="h-full w-1/3 bg-gradient-to-r from-transparent via-purple-400 to-transparent"
-                  />
-                </motion.div>
-              </div>
-            </motion.div>
+        <div
+          className={clsx(
+            'absolute inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center hero-canvas-overlay'
           )}
-        </AnimatePresence>
-
-        {/* Success Badge (appears when complete) */}
-        <AnimatePresence>
-          {phase === 'complete' && !hasPlayed && (
-            <motion.div
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-              className="absolute top-4 right-4 bg-emerald-500 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg flex items-center gap-2"
+          data-visible={overlayVisible}
+          data-reduced-motion={reducedAttr}
+        >
+          <div className="flex flex-col items-center gap-4">
+            <div
+              className="w-16 h-16 rounded-full border-4 border-purple-500/30 border-t-purple-400 flex items-center justify-center animate-spin"
+              style={{ animationDuration: '2s' }}
             >
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <span>Generated!</span>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              <Loader2 className="w-8 h-8 text-purple-400" />
+            </div>
 
-        {/* Comparison Icon (appears after generation, persists) */}
-        <AnimatePresence>
-          {phase === 'complete' && hasPlayed && originalImage && (
-            <motion.div
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{
-                scale: 1,
-                opacity: 1,
-              }}
-              transition={{
-                delay: 0.5,
-                type: 'spring',
-                stiffness: 200,
-                damping: 15
-              }}
-              className="absolute top-4 right-4 bg-white/10 backdrop-blur-sm text-white/70 p-2 rounded-full shadow-lg"
-              aria-label="Hover to compare with original"
+            <div
+              key={phase}
+              className="text-center hero-canvas-status"
+              data-visible={overlayVisible}
+              data-reduced-motion={reducedAttr}
             >
-              <motion.div
-                animate={{
-                  scale: [1, 1.1, 1],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-              >
-                <ArrowLeftRight className="w-5 h-5" />
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              <p className="text-lg font-semibold text-white mb-1">
+                {phase === 'loading' ? 'Initializing AI...' : 'Generating your canvas...'}
+              </p>
+              <p className="text-sm text-white/60">Just a moment</p>
+            </div>
+
+            <div className="relative w-48 h-1 bg-purple-500/30 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-purple-400/60 transition-[width] ease-in-out"
+                style={prefersReducedMotion ? { width: '100%' } : progressStyle}
+              />
+              {!prefersReducedMotion && (
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                  <div className="h-full w-1/3 bg-gradient-to-r from-transparent via-purple-200/70 to-transparent animate-progress-shimmer" />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {phase === 'complete' && !hasPlayed && (
+          <div
+            className="absolute top-4 right-4 bg-emerald-500 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg flex items-center gap-2 hero-canvas-pop"
+            data-reduced-motion={reducedAttr}
+          >
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 10-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                clipRule="evenodd"
+              />
+            </svg>
+            <span>Generated!</span>
+          </div>
+        )}
+
+        {phase === 'complete' && hasPlayed && originalImage && (
+          <div
+            className="absolute top-4 right-4 bg-white/10 backdrop-blur-sm text-white/70 p-2 rounded-full shadow-lg hero-canvas-compare-hint"
+            data-reduced-motion={reducedAttr}
+            aria-label="Hover to compare with original"
+          >
+            <div className="animate-pulse-slow">
+              <ArrowLeftRight className="w-5 h-5" />
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Bottom info strip */}
       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-950/90 to-transparent p-4">
         <div className="flex items-center justify-between">
           <div>
@@ -316,37 +230,26 @@ const GeneratingCanvasAnimation = ({
             <p className="text-xs text-white/60">{styleTagline}</p>
           </div>
           {phase === 'complete' && (
-            <AnimatePresence mode="wait">
+            <>
               {originalImage ? (
-                <motion.div
-                  key={showHint ? 'hint' : 'faded'}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="text-xs font-medium"
+                <div
+                  key={hintKey}
+                  className="text-xs font-medium hero-canvas-hint-message"
+                  data-reduced-motion={reducedAttr}
                 >
                   {showHint ? (
                     <>
-                      <span className="hidden md:inline text-purple-300">
-                        🖱️ Hover to compare
-                      </span>
-                      <span className="md:hidden text-purple-300">
-                        👆 Hold to compare
-                      </span>
+                      <span className="hidden md:inline text-purple-300">🖱️ Hover to compare</span>
+                      <span className="md:hidden text-purple-300">👆 Hold to compare</span>
                     </>
                   ) : (
-                    <span className="text-emerald-400">
-                      Ready in 2.3s ⚡
-                    </span>
+                    <span className="text-emerald-400">Ready in 2.3s ⚡</span>
                   )}
-                </motion.div>
-              ) : (
-                <div className="text-xs text-emerald-400 font-medium">
-                  Ready in 2.3s ⚡
                 </div>
+              ) : (
+                <div className="text-xs text-emerald-400 font-medium">Ready in 2.3s ⚡</div>
               )}
-            </AnimatePresence>
+            </>
           )}
         </div>
       </div>

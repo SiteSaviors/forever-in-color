@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import ProductHeroSection from '@/sections/ProductHeroSection';
 import { useFounderStore } from '@/store/useFounderStore';
 import FounderNavigation from '@/components/navigation/FounderNavigation';
+import { LazyMotion, domAnimation } from 'framer-motion';
 
 const LaunchflowAccordionLazy = lazy(() => import('@/sections/LaunchpadLayout'));
 const StudioConfiguratorLazy = lazy(() => import('@/sections/StudioConfigurator'));
@@ -69,19 +70,21 @@ const StudioPage = () => {
   }, [location.pathname, location.search, hydrateEntitlements, navigate]);
 
   return (
-    <div className="bg-slate-950 min-h-screen text-white">
-      <FounderNavigation />
-      <ProductHeroSection />
-      <Suspense fallback={<LaunchflowSkeleton />}>
-        <LaunchflowAccordionLazy />
-      </Suspense>
-      <Suspense fallback={<StudioConfiguratorSkeleton />}>
-        <StudioConfiguratorLazy
-          checkoutNotice={checkoutNotice}
-          onDismissCheckoutNotice={() => setCheckoutNotice(null)}
-        />
-      </Suspense>
-    </div>
+    <LazyMotion features={domAnimation}>
+      <div className="bg-slate-950 min-h-screen text-white">
+        <FounderNavigation />
+        <ProductHeroSection />
+        <Suspense fallback={<LaunchflowSkeleton />}>
+          <LaunchflowAccordionLazy />
+        </Suspense>
+        <Suspense fallback={<StudioConfiguratorSkeleton />}>
+          <StudioConfiguratorLazy
+            checkoutNotice={checkoutNotice}
+            onDismissCheckoutNotice={() => setCheckoutNotice(null)}
+          />
+        </Suspense>
+      </div>
+    </LazyMotion>
   );
 };
 

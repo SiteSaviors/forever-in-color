@@ -1,5 +1,6 @@
 import { lazy, type ReactElement } from 'react';
 import { useRoutes } from 'react-router-dom';
+import { LazyMotion, domAnimation } from 'framer-motion';
 
 const LandingPage = lazy(() => import('@/pages/LandingPage'));
 const PricingPage = lazy(() => import('@/pages/PricingPage'));
@@ -13,7 +14,9 @@ const MarketingRoutes = (): ReactElement => {
     { path: '*', element: <LandingPage /> },
   ]);
 
-  return element ?? <LandingPage />;
+  const content = element ?? <LandingPage />;
+
+  return <LazyMotion features={domAnimation}>{content}</LazyMotion>;
 };
 
 export default MarketingRoutes;

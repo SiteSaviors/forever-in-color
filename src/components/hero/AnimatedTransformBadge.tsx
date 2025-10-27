@@ -1,67 +1,58 @@
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
 import { Zap } from 'lucide-react';
+import clsx from 'clsx';
+import usePrefersReducedMotion from '@/hooks/usePrefersReducedMotion';
 
 const AnimatedTransformBadge = () => {
   const [count, setCount] = useState(0);
   const targetSeconds = 60;
+  const prefersReducedMotion = usePrefersReducedMotion();
 
   useEffect(() => {
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReducedMotion) {
       setCount(targetSeconds);
       return;
     }
 
+    setCount(0);
     const duration = 2000; // 2 seconds to count up
     const increment = targetSeconds / (duration / 16); // ~60fps
 
-    const timer = setInterval(() => {
+    const timer = window.setInterval(() => {
       setCount((prev) => {
         const next = prev + increment;
         if (next >= targetSeconds) {
-          clearInterval(timer);
+          window.clearInterval(timer);
           return targetSeconds;
         }
         return next;
       });
     }, 16);
 
-    return () => clearInterval(timer);
-  }, []);
+    return () => window.clearInterval(timer);
+  }, [prefersReducedMotion, targetSeconds]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="relative inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-500/20 to-blue-500/20 border border-emerald-400/30 px-5 py-2.5 shadow-lg backdrop-blur-sm"
+    <div
+      className={clsx(
+        'relative inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-500/20 to-blue-500/20 border border-emerald-400/30 px-5 py-2.5 shadow-lg backdrop-blur-sm',
+        !prefersReducedMotion && 'animate-badge-fade-in'
+      )}
     >
       {/* Pulsing background effect */}
-      <motion.div
-        className="absolute inset-0 rounded-full bg-emerald-400/20"
-        animate={{
-          scale: [1, 1.1, 1],
-        }}
-        transition={{
-          duration: 2,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
+      <div
+        className={clsx(
+          'absolute inset-0 rounded-full bg-emerald-400/20',
+          !prefersReducedMotion && 'animate-badge-pulse'
+        )}
       />
 
       {/* Icon */}
-      <motion.div
-        animate={{
-          rotate: [0, -10, 10, -10, 0],
-        }}
-        transition={{
-          duration: 0.5,
-          delay: 0.5,
-        }}
+      <div
+        className={clsx('relative z-10', !prefersReducedMotion && 'animate-badge-tilt')}
       >
         <Zap className="h-5 w-5 fill-emerald-400 text-emerald-400 relative z-10" />
-      </motion.div>
+      </div>
 
       {/* Text */}
       <div className="flex items-center gap-1.5 relative z-10">
@@ -70,7 +61,7 @@ const AnimatedTransformBadge = () => {
           {Math.round(count)} seconds
         </span>
       </div>
-    </motion.div>
+    </div>
   );
 };
 

@@ -1,9 +1,10 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { X } from 'lucide-react';
 import { Suspense, lazy, useEffect, useRef, useState, type TouchEvent } from 'react';
 import { useFounderStore } from '@/store/useFounderStore';
 import OriginalImageCard from '@/sections/studio/components/OriginalImageCard';
 import StyleAccordionFallback from '@/sections/studio/components/StyleAccordionFallback';
+import usePrefersReducedMotion from '@/hooks/usePrefersReducedMotion';
 
 const StyleAccordion = lazy(() => import('@/sections/studio/components/StyleAccordion'));
 
@@ -103,9 +104,7 @@ export default function MobileStyleDrawer({
     return () => window.removeEventListener('orientationchange', handleOrientationChange);
   }, [isOpen, onClose]);
 
-  const prefersReducedMotion =
-    typeof window !== 'undefined' &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const prefersReducedMotion = usePrefersReducedMotion();
 
   const transition = prefersReducedMotion
     ? { duration: 0.15, ease: 'easeOut' }
@@ -135,7 +134,7 @@ export default function MobileStyleDrawer({
     <AnimatePresence>
       {isOpen && (
         <>
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -145,7 +144,7 @@ export default function MobileStyleDrawer({
             aria-hidden="true"
           />
 
-          <motion.div
+          <m.div
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
@@ -247,7 +246,7 @@ export default function MobileStyleDrawer({
                 </Suspense>
               </div>
             </div>
-          </motion.div>
+          </m.div>
         </>
       )}
     </AnimatePresence>
