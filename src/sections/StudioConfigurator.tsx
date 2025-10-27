@@ -13,7 +13,8 @@ import StudioHeader, { CheckoutNotice } from '@/sections/studio/components/Studi
 import StyleSidebarFallback from '@/sections/studio/components/StyleSidebarFallback';
 import CanvasPreviewPanel from '@/sections/studio/components/CanvasPreviewPanel';
 import { ENABLE_STUDIO_V2_CANVAS_MODAL, ENABLE_STUDIO_V2_INSIGHTS_RAIL } from '@/config/featureFlags';
-import type { Orientation } from '@/utils/imageUtils';
+import { OrientationBridgeProvider } from '@/components/studio/orientation/OrientationBridgeProvider';
+import { useOrientationBridge } from '@/components/studio/orientation/useOrientationBridge';
 
 const TokenWarningBanner = lazy(() => import('@/components/studio/TokenWarningBanner'));
 const StickyOrderRailLazy = lazy(() => import('@/components/studio/StickyOrderRail'));
@@ -68,7 +69,19 @@ type StudioConfiguratorProps = {
   onDismissCheckoutNotice?: () => void;
 };
 
-const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioConfiguratorProps) => {
+type StudioConfiguratorInnerProps = StudioConfiguratorProps & {
+  showToast: ReturnType<typeof useStudioFeedback>['showToast'];
+  showUpgradeModal: ReturnType<typeof useStudioFeedback>['showUpgradeModal'];
+  renderFeedback: ReturnType<typeof useStudioFeedback>['renderFeedback'];
+};
+
+const StudioConfiguratorInner = ({
+  checkoutNotice,
+  onDismissCheckoutNotice,
+  showToast,
+  showUpgradeModal,
+  renderFeedback,
+}: StudioConfiguratorInnerProps) => {
   const sessionUser = useFounderStore((state) => state.sessionUser);
   const sessionAccessToken = useFounderStore((state) => state.getSessionAccessToken());
   const styles = useFounderStore((state) => state.styles);
@@ -86,6 +99,7 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
   const stylePreviewMessage = useFounderStore((state) => state.stylePreviewMessage);
   const stylePreviewError = useFounderStore((state) => state.stylePreviewError);
   const orientationPreviewPending = useFounderStore((state) => state.orientationPreviewPending);
+  const { requestOrientationChange, orientationChanging } = useOrientationBridge();
   const livingCanvasModalOpen = useFounderStore((state) => state.livingCanvasModalOpen);
   const launchpadExpanded = useFounderStore((state) => state.launchpadExpanded);
   const setLaunchpadExpanded = useFounderStore((state) => state.setLaunchpadExpanded);
@@ -100,7 +114,6 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
   const [showCanvasUpsellToast, setShowCanvasUpsellToast] = useState(false);
   const [welcomeDismissed, setWelcomeDismissed] = useState(false);
   const [canvasConfigExpanded, setCanvasConfigExpanded] = useState(true);
-  const { showToast, showUpgradeModal, renderFeedback } = useStudioFeedback();
   const openAuthModal = useAuthModal((state) => state.openModal);
   const openCanvasModal = useFounderStore((state) => state.openCanvasModal);
 
@@ -124,17 +137,6 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
   const userTier = useFounderStore((state) => state.entitlements?.tier ?? 'free');
   const previewReady = preview?.status === 'ready';
 
-  const handleOrientationToast = useCallback(
-    (orientationLabel: string) => {
-      showToast({
-        title: `${orientationLabel} crop ready`,
-        description: 'Preview updated to match your new orientation.',
-        variant: 'success',
-        duration: 2800,
-      });
-    },
-    [showToast]
-  );
   const requiresWatermark = useFounderStore((state) => state.entitlements?.requiresWatermark ?? true);
   const isPremiumUser = !requiresWatermark;
   const [watermarkUpgradeShown, setWatermarkUpgradeShown] = useState(false);
@@ -377,18 +379,14 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
         orientation,
       });
       orientationCtaThrottleRef.current = now;
-    }
-    const cropper = (window as typeof window & {
-      __openOrientationCropper?: (orientation?: Orientation) => void;
-    }).__openOrientationCropper;
-
-    if (typeof cropper === 'function') {
-      cropper(orientation);
     } else {
-      // Fallback: expand canvas config so users can access orientation controls.
-      handleCanvasConfigToggle();
+      orientationCtaThrottleRef.current = now;
     }
-  }, [currentStyle, handleCanvasConfigToggle, orientation]);
+
+    void requestOrientationChange(orientation).catch(() => {
+      handleCanvasConfigToggle();
+    });
+  }, [currentStyle, handleCanvasConfigToggle, orientation, requestOrientationChange]);
 
   const handleEditFromWelcome = () => {
     trackLaunchflowOpened('welcome_banner');
@@ -531,6 +529,7 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
           previewStateStatus={preview?.status}
           orientation={orientation}
           orientationPreviewPending={orientationPreviewPending}
+          orientationChanging={orientationChanging}
           orientationMismatch={orientationMismatch}
           previewOrientationLabel={previewOrientationLabel}
           croppedImage={croppedImage}
@@ -583,8 +582,6 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
                 <Suspense fallback={<StickyOrderRailFallback />}>
                   <StickyOrderRailLazy
                     canvasConfigExpanded={canvasConfigExpanded}
-                    onCanvasConfigToggle={handleCanvasConfigToggle}
-                    onOrientationToast={handleOrientationToast}
                     mobileRoomPreview={
                       <div className="lg:hidden w-full">
                         <div className="mb-4 text-center space-y-1">
@@ -650,8 +647,36 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
         </Suspense>
       )}
 
-      {renderFeedback()}
-    </section>
+    {renderFeedback()}
+  </section>
+  );
+};
+
+const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioConfiguratorProps) => {
+  const { showToast, showUpgradeModal, renderFeedback } = useStudioFeedback();
+
+  const handleOrientationToast = useCallback(
+    (orientationLabel: string) => {
+      showToast({
+        title: `${orientationLabel} crop ready`,
+        description: 'Preview updated to match your new orientation.',
+        variant: 'success',
+        duration: 2800,
+      });
+    },
+    [showToast]
+  );
+
+  return (
+    <OrientationBridgeProvider onOrientationToast={handleOrientationToast}>
+      <StudioConfiguratorInner
+        checkoutNotice={checkoutNotice}
+        onDismissCheckoutNotice={onDismissCheckoutNotice}
+        showToast={showToast}
+        showUpgradeModal={showUpgradeModal}
+        renderFeedback={renderFeedback}
+      />
+    </OrientationBridgeProvider>
   );
 };
 

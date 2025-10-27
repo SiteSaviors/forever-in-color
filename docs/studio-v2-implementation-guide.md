@@ -108,7 +108,7 @@ If metadata is missing for any section, fall back to simple explanatory copy; ne
     - When first enabled, animates with a gentle pulse/glow for 2 seconds.  
     - On click → open canvas modal via `openCanvasModal('center')`.  
   - Bottom-left: **Change Orientation** (black background, white outline).  
-    - Calls the existing cropper logic via window callback (`__openOrientationCropper` as currently used).  
+    - Call `useOrientationBridge().requestOrientationChange(currentOrientation)`; the provider maintains the legacy `window.__openOrientationCropper` shim for any uncoupled consumers.  
   - Bottom-right: **Save to Gallery** (black/white outline, reuses existing state).  
 
 - **Canvas-in-room Preview**: remains stacked below ActionGrid with “See it in your space” header. No toggles needed.  
@@ -150,7 +150,7 @@ No Story components should remain in `CanvasPreviewPanel.tsx`.
 
 2. **Orientation Section**  
    - Pills for Portrait / Square / Landscape.  
-   - Clicking a pill triggers the existing cropper modal (same as ActionGrid).  
+   - Clicking a pill should call `useOrientationBridge().requestOrientationChange(targetOrientation)`; the provider handles modal semantics and smart-crop reuse.  
    - Display current orientation label (e.g., “Current: Portrait”).  
    - Do not auto-refresh preview on selection; rely on cropper completion logic.
 
@@ -199,9 +199,18 @@ No Story components should remain in `CanvasPreviewPanel.tsx`.
 ## 6. Orientation & Cropper Rules
 
 - Do not modify existing cropper modal logic.  
-- `Change Orientation` on ActionGrid and orientation pills inside the canvas modal both call the same handler (`window.__openOrientationCropper`).  
+- All new orientation triggers must invoke `useOrientationBridge().requestOrientationChange`; the provider owns modal state, smart-crop dedupe, and preview regeneration.  
+- The provider also re-exports a guarded `window.__openOrientationCropper` for any outstanding legacy callers—do not rely on it in new code.  
 - When cropper completes, existing orientation update flow remains intact (no auto-preview regeneration unless current logic already does so).  
 - Keep orientation preview mismatch/watermark handling unchanged.
+
+### 6.1 Orientation Bridge Provider
+
+- Wrap `StudioConfiguratorInner` (and any future Studio shell) with `OrientationBridgeProvider`; it renders the cropper modal and keeps the Supabase preview pipeline in sync.  
+- Access orientation controls through `useOrientationBridge()` which exposes `requestOrientationChange`, `orientationChanging`, `orientationPreviewPending`, `cropperOpen`, and `activeOrientation`.  
+- The provider registers `window.__openOrientationCropper` so the canvas modal and other legacy surfaces continue to function, but the hook is the canonical API going forward.  
+- When adding new CTAs that influence orientation, always read `orientationChanging` to disable UI states and avoid double analytics.  
+- Toasts or additional feedback can be supplied via the provider’s `onOrientationToast` prop; it fires only when the final orientation actually changes.  
 
 ---
 

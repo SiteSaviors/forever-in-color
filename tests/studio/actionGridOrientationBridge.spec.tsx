@@ -34,6 +34,21 @@ const waitForButton = async (container: HTMLElement, label: string) => {
   throw new Error(`Button containing "${label}" not found in time`);
 };
 
+const waitUntil = async (assertFn: () => void, timeout = 1000) => {
+  let lastError: unknown;
+  const deadline = Date.now() + timeout;
+  while (Date.now() < deadline) {
+    try {
+      assertFn();
+      return;
+    } catch (error) {
+      lastError = error;
+      await new Promise((resolve) => setTimeout(resolve, 16));
+    }
+  }
+  throw lastError ?? new Error('waitUntil timeout');
+};
+
 describe('Studio orientation + canvas CTA integration', () => {
   let container: HTMLDivElement;
   let root: Root;
@@ -86,11 +101,13 @@ describe('Studio orientation + canvas CTA integration', () => {
     const styleId = snapshot.selectedStyleId ?? snapshot.styles[0]?.id ?? 'test-style';
     useFounderStore.setState({
       croppedImage: 'data:image/png;base64,test',
+      originalImage: 'data:image/png;base64,original',
       orientationPreviewPending: false,
       previews: {
         ...snapshot.previews,
         [styleId]: createTestPreviewEntry(prevOrientation),
       },
+      selectedStyleId: styleId,
       entitlements:
         prevEntitlements ?? {
           status: 'ready',
@@ -162,8 +179,10 @@ describe('Studio orientation + canvas CTA integration', () => {
       orientationButton.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
 
-    expect(orientationAnalyticsSpy).toHaveBeenCalledTimes(1);
-    expect(cropperSpy).toHaveBeenCalledTimes(1);
+    await waitUntil(() => {
+      expect(orientationAnalyticsSpy).toHaveBeenCalledTimes(1);
+      expect(cropperSpy).toHaveBeenCalledTimes(1);
+    });
     expect(cropperSpy.mock.calls[0][0]).toBe(useFounderStore.getState().orientation);
   });
 
@@ -185,6 +204,8 @@ describe('Studio orientation + canvas CTA integration', () => {
       createCanvasButton.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
 
-    expect(canvasAnalyticsSpy).toHaveBeenCalledTimes(1);
+    await waitUntil(() => {
+      expect(canvasAnalyticsSpy).toHaveBeenCalledTimes(1);
+    });
   });
 });

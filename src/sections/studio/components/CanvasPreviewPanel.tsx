@@ -61,6 +61,7 @@ export type CanvasPreviewPanelProps = {
   previewStateStatus?: 'idle' | 'loading' | 'ready' | 'error';
   orientation: keyof typeof ORIENTATION_PRESETS;
   orientationPreviewPending: boolean;
+  orientationChanging: boolean;
   orientationMismatch: boolean;
   previewOrientationLabel: string | null;
   croppedImage: string | null;
@@ -95,6 +96,7 @@ const CanvasPreviewPanel = ({
   previewStateStatus,
   orientation,
   orientationPreviewPending,
+  orientationChanging,
   orientationMismatch,
   previewOrientationLabel,
   croppedImage,
@@ -218,7 +220,7 @@ const CanvasPreviewPanel = ({
               downloading={downloadingHD}
               downloadDisabled={downloadDisabled}
               createCanvasDisabled={canvasLocked}
-              orientationDisabled={!hasCroppedImage || orientationPreviewPending}
+            orientationDisabled={!hasCroppedImage || orientationPreviewPending || orientationChanging}
               savingToGallery={savingToGallery}
               savedToGallery={savedToGallery}
               isPremiumUser={isPremiumUser}
