@@ -5,16 +5,16 @@ import type { StyleOption } from '@/store/useFounderStore';
 import { useFounderStore } from '@/store/useFounderStore';
 import type { EntitlementState } from '@/store/founder/entitlementSlice';
 import StoryTeaser from './StoryTeaser';
-import StoryHeader from './StoryHeader';
+// StoryHeader removed per request to reduce duplication in right rail
 import DiscoverGrid from './DiscoverGrid';
 import PaletteModule from './PaletteModule';
 import CuratedStylesModule from './CuratedStylesModule';
 import SecondaryCanvasCta from './SecondaryCanvasCta';
 import ShareBadges from './ShareBadges';
-import PreviewShowcase from './PreviewShowcase';
 import { getNarrative, getPalette } from '@/utils/storyLayer/copy';
 import type { Orientation } from '@/utils/imageUtils';
 import type { StudioToastPayload } from '@/hooks/useStudioFeedback';
+import StylePreviewModule from './StylePreviewModule';
 
 type InsightsRailProps = {
   hasCroppedImage: boolean;
@@ -171,16 +171,13 @@ const InsightsRail = ({
     >
       <DesktopRailShell>
         <StoryTeaser highlightedStyle={highlightedStyle} stage={stage} />
-        <PreviewShowcase
-          previewUrl={previewReady ? previewUrl ?? null : null}
+        <StylePreviewModule
+          highlightedStyle={highlightedStyle}
+          stage={stage}
           orientation={orientation}
-          styleName={highlightedStyle?.name ?? null}
-          narrative={storyData?.narrative ?? null}
-          ready={previewReady && Boolean(previewUrl)}
         />
         {storyData && highlightedStyle ? (
           <>
-            <StoryHeader styleName={highlightedStyle.name} narrative={storyData.narrative} />
             <DiscoverGrid narrative={storyData.narrative} />
             <PaletteModule styleId={highlightedStyle.id} swatches={storyData.palette} />
             <CuratedStylesModule
@@ -212,16 +209,13 @@ const InsightsRail = ({
 
       <MobileAccordionShell>
         <StoryTeaser highlightedStyle={highlightedStyle} stage={stage} />
-        <PreviewShowcase
-          previewUrl={previewReady ? previewUrl ?? null : null}
+        <StylePreviewModule
+          highlightedStyle={highlightedStyle}
+          stage={stage}
           orientation={orientation}
-          styleName={highlightedStyle?.name ?? null}
-          narrative={storyData?.narrative ?? null}
-          ready={previewReady && Boolean(previewUrl)}
         />
         {storyData && highlightedStyle ? (
           <>
-            <StoryHeader styleName={highlightedStyle.name} narrative={storyData.narrative} />
             <DiscoverGrid narrative={storyData.narrative} />
             <PaletteModule styleId={highlightedStyle.id} swatches={storyData.palette} />
             <CuratedStylesModule

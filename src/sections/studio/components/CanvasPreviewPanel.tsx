@@ -1,17 +1,15 @@
-import { Suspense, lazy, useCallback, useEffect, useState } from 'react';
+import { Suspense, lazy } from 'react';
 import { CheckCircle2 } from 'lucide-react';
 import type { StylePreviewStatus, StyleOption } from '@/store/useFounderStore';
-import type { Orientation } from '@/utils/imageUtils';
+// Orientation type no longer needed in this module
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
-import { ENABLE_STORY_LAYER } from '@/config/featureFlags';
 import type { EntitlementState } from '@/store/founder/entitlementSlice';
-import type { StudioToastPayload, UpgradePromptPayload } from '@/hooks/useStudioFeedback';
 import StudioEmptyState from './StudioEmptyState';
 import ActionGrid from '@/components/studio/ActionGrid';
 
 const CanvasInRoomPreview = lazy(() => import('@/components/studio/CanvasInRoomPreview'));
 const StyleForgeOverlay = lazy(() => import('@/components/studio/StyleForgeOverlay'));
-const StoryLayer = lazy(() => import('@/components/studio/story-layer/StoryLayer'));
+// Center-rail narrative modules removed; keep only preview + selling points
 
 const CanvasPreviewFallback = () => (
   <div className="w-full h-[360px] rounded-[2.5rem] bg-slate-800/60 border border-white/10 animate-pulse" />
@@ -73,9 +71,8 @@ export type CanvasPreviewPanelProps = {
   launchpadExpanded: boolean;
   onOpenLaunchflow: () => void;
   onBrowseStyles: () => void;
+  // entitlements retained in signature historically, but not used in center rail now
   entitlements?: EntitlementState;
-  onStoryToast?: (payload: StudioToastPayload) => void;
-  onStoryUpgradePrompt?: (payload: UpgradePromptPayload) => void;
   // Action grid props
   onDownloadClick: () => void;
   downloadingHD: boolean;
@@ -108,9 +105,8 @@ const CanvasPreviewPanel = ({
   launchpadExpanded,
   onOpenLaunchflow,
   onBrowseStyles,
-  entitlements,
-  onStoryToast,
-  onStoryUpgradePrompt,
+  // entitlements not used
+  _entitlements,
   onDownloadClick,
   downloadingHD,
   isPremiumUser,
@@ -120,55 +116,6 @@ const CanvasPreviewPanel = ({
   canvasLocked = false,
 }: CanvasPreviewPanelProps) => {
   const orientationMeta = ORIENTATION_PRESETS[orientation];
-  const shouldRenderStoryLayer =
-    ENABLE_STORY_LAYER &&
-    previewStateStatus === 'ready' &&
-    currentStyle &&
-    currentStyle.id !== 'original-image' &&
-    Boolean(displayPreviewUrl) &&
-    Boolean(entitlements);
-  const storyLayerOrientation = orientation as Orientation;
-
-  const [showStoryHint, setShowStoryHint] = useState(false);
-  const [storyLayerNode, setStoryLayerNode] = useState<HTMLDivElement | null>(null);
-
-  const setStoryLayerRef = useCallback((node: HTMLDivElement | null) => {
-    setStoryLayerNode(node);
-  }, []);
-
-  useEffect(() => {
-    if (!shouldRenderStoryLayer) {
-      setShowStoryHint(false);
-      return;
-    }
-
-    const timer = window.setTimeout(() => setShowStoryHint(true), 600);
-    return () => window.clearTimeout(timer);
-  }, [shouldRenderStoryLayer]);
-
-  useEffect(() => {
-    if (!shouldRenderStoryLayer || !storyLayerNode) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setShowStoryHint(false);
-          }
-        });
-      },
-      { threshold: 0.35 }
-    );
-
-    observer.observe(storyLayerNode);
-    return () => observer.disconnect();
-  }, [shouldRenderStoryLayer, storyLayerNode]);
-
-  useEffect(() => {
-    if (!showStoryHint) return;
-    const timer = window.setTimeout(() => setShowStoryHint(false), 8000);
-    return () => window.clearTimeout(timer);
-  }, [showStoryHint]);
 
   return (
     <main className="w-full lg:flex-1 px-4 py-6 lg:p-8 flex flex-col items-center justify-start">
@@ -299,35 +246,7 @@ const CanvasPreviewPanel = ({
         </div>
       )}
 
-      {shouldRenderStoryLayer && displayPreviewUrl && currentStyle && entitlements && (
-        <div className="w-full max-w-2xl mt-12">
-          {showStoryHint && (
-            <div
-              className="mb-6 flex justify-center motion-safe:animate-bounce-subtle"
-              aria-hidden="true"
-            >
-              <div className="flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-white/80 shadow-glow-soft">
-                Discover the story
-                <svg className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M10 14a1 1 0 01-.7-.29l-4-4a1 1 0 011.4-1.42L10 11.59l3.3-3.3a1 1 0 111.4 1.42l-4 4A1 1 0 0110 14z" />
-                </svg>
-              </div>
-            </div>
-          )}
-          <Suspense fallback={null}>
-            <StoryLayer
-              ref={setStoryLayerRef}
-              style={currentStyle}
-              previewUrl={displayPreviewUrl}
-              croppedImage={croppedImage}
-              orientation={storyLayerOrientation}
-              entitlements={entitlements}
-              onToast={onStoryToast}
-              onUpgradePrompt={onStoryUpgradePrompt}
-            />
-          </Suspense>
-        </div>
-      )}
+      {/* Center-rail story/narrative modules intentionally omitted */}
     </main>
   );
 };

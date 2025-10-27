@@ -1,4 +1,4 @@
-import { create } from 'zustand';
+import { createWithEqualityFn } from 'zustand/traditional';
 import type { Orientation } from '@/utils/imageUtils';
 import type { SmartCropResult } from '@/utils/smartCrop';
 import { CANVAS_SIZE_OPTIONS, CanvasSizeKey, getCanvasSizeOption, getDefaultSizeForOrientation } from '@/utils/canvasSizes';
@@ -289,10 +289,10 @@ const mockCarouselData: StyleCarouselCard[] = [
   },
 ];
 
-export const useFounderStore = create<FounderState>((set, get, api) => ({
+export const useFounderStore = createWithEqualityFn<FounderState>((set, get, api) => ({
   styles: initialStyles,
   enhancements: mockEnhancements,
-  selectedStyleId: initialStyles[0]?.id ?? null,
+  selectedStyleId: null,
   basePrice: DEFAULT_SQUARE_PRICE,
   livingCanvasModalOpen: false,
   uploadedImage: null,

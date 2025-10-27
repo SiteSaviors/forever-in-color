@@ -541,9 +541,7 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
           launchpadExpanded={launchpadExpanded}
           onOpenLaunchflow={handleOpenLaunchflowFromEmptyState}
           onBrowseStyles={handleBrowseStylesFromEmptyState}
-          entitlements={entitlements}
-          onStoryToast={showToast}
-          onStoryUpgradePrompt={showUpgradeModal}
+          
           onDownloadClick={handleDownloadHD}
           downloadingHD={downloadingHD}
           isPremiumUser={isPremiumUser}

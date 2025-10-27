@@ -45,7 +45,7 @@ const StyleSidebar = ({
         {/* Header */}
         <div className="relative space-y-1.5">
           <p className="text-[10px] uppercase tracking-[0.38em] text-white/50">Studio Curations</p>
-          <h3 className="text-base font-display tracking-[0.16em] uppercase text-white md:text-lg">Wondertone Styles</h3>
+          <h3 className="font-display text-3xl tracking-[-0.01em] text-white lg:text-[34px] font-semibold">Wondertone Styles</h3>
           <p className="text-xs text-white/75 md:text-sm">Choose your artistic tone</p>
         </div>
 

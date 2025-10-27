@@ -123,7 +123,7 @@ export default function ToneSection({
             <div className="flex items-center gap-3">
               <h3
                 className={clsx(
-                  'text-sm font-bold uppercase tracking-[0.04em] text-white md:text-base font-display drop-shadow-[0_1px_6px_rgba(8,12,28,0.45)]'
+                  'font-display text-[0.98rem] md:text-[1.2rem] lg:text-[1.45rem] leading-snug font-bold capitalized tracking-[0.04em] text-white drop-shadow-[0_1px_6px_rgba(8,12,28,0.45)]'
                 )}
               >
                 {definition.label}

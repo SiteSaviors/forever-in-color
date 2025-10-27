@@ -193,7 +193,6 @@ const CanvasInRoomPreview = ({
   );
 
   const isGenerating = orientationChanging || previewStatus === 'generating';
-  const showSkeleton = !displayImage;
   const showGeneratingOverlay = Boolean(displayImage && isGenerating);
 
   const handleImageLoad = () => {
@@ -228,16 +227,7 @@ const CanvasInRoomPreview = ({
           }}
         >
           <div className="relative h-full w-full">
-            {showSkeleton && (
-              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
-                <div className="text-center space-y-4">
-                  <div className="mx-auto h-14 w-14 rounded-full border-4 border-purple-400/30 border-t-purple-400 animate-spin" />
-                  <p className="text-sm font-medium text-slate-600">Loading preview...</p>
-                </div>
-              </div>
-            )}
-
-            {displayImage && (
+            {displayImage ? (
               <div
                 className="relative h-full w-full overflow-hidden bg-white"
                 style={{
@@ -283,7 +273,7 @@ const CanvasInRoomPreview = ({
                   </div>
                 )}
               </div>
-            )}
+            ) : null}
           </div>
 
           {showDimensions && (

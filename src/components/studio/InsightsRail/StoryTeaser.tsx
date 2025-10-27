@@ -45,7 +45,11 @@ const StoryTeaser = ({ highlightedStyle, stage }: StoryTeaserProps) => {
         >
           {headline}
         </h2>
-        <p className="text-sm text-white/65 lg:text-base">{STUDIO_V2_COPY.insightsSubtext}</p>
+        <p className="text-sm text-white/65 lg:text-base">
+          {hasStyle && highlightedStyle
+            ? `Discover the magic that makes ${highlightedStyle.name} unique.`
+            : STUDIO_V2_COPY.insightsSubtext}
+        </p>
       </header>
     </section>
   );
