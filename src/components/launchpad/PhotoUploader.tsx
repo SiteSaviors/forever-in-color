@@ -2,7 +2,7 @@ import { ChangeEvent, DragEvent, useCallback, useEffect, useMemo, useRef, useSta
 import { clsx } from 'clsx';
 import Card from '@/components/ui/Card';
 import { useFounderStore } from '@/store/useFounderStore';
-import { readFileAsDataURL, getImageDimensions, determineOrientationFromDimensions } from '@/utils/imageUtils';
+import { readFileAsDataURL, getImageDimensions, determineOrientationFromDimensions, type FileDataUrlResult } from '@/utils/imageUtils';
 import SmartCropPreview from '@/components/launchpad/SmartCropPreview';
 import AIAnalysisOverlay from '@/components/launchpad/AIAnalysisOverlay';
 import { emitStepOneEvent } from '@/utils/telemetry';
@@ -35,6 +35,7 @@ const PhotoUploader = () => {
   const shouldAutoGeneratePreviews = useFounderStore((state) => state.shouldAutoGeneratePreviews);
   const setSmartCropForOrientation = useFounderStore((state) => state.setSmartCropForOrientation);
   const setCurrentImageHash = useFounderStore((state) => state.setCurrentImageHash);
+  const getSessionAccessToken = useFounderStore((state) => state.getSessionAccessToken);
   const clearSmartCrops = useFounderStore((state) => state.clearSmartCrops);
   const setPreviewState = useFounderStore((state) => state.setPreviewState);
   const croppedImage = useFounderStore((state) => state.croppedImage);
@@ -84,11 +85,19 @@ const PhotoUploader = () => {
     const file = event.dataTransfer.files?.[0];
     if (!file) return;
     emitStepOneEvent({ type: 'upload_started' });
-    const dataUrl = await readFileAsDataURL(file);
-    await processDataUrl(dataUrl);
+    setStage('analyzing');
+    const accessToken = getSessionAccessToken();
+    const result = await readFileAsDataURL(file, {
+      accessToken,
+      onConversionStart: () => emitStepOneEvent({ type: 'conversion', status: 'start' }),
+      onConversionSuccess: (meta) => emitStepOneEvent({ type: 'conversion', status: 'success', cacheHit: meta.cacheHit }),
+      onConversionError: () => emitStepOneEvent({ type: 'conversion', status: 'error' }),
+    });
+    await processDataUrl(result);
   };
 
-  const processDataUrl = async (dataUrl: string) => {
+  const processDataUrl = async (payload: FileDataUrlResult) => {
+    const { dataUrl, width: providedWidth, height: providedHeight } = payload;
     setStage('analyzing');
     if (previousOriginalRef.current) {
       clearSmartCropCacheForImage(previousOriginalRef.current);
@@ -101,9 +110,11 @@ const PhotoUploader = () => {
     clearSmartCrops();
     resetPreviews();
 
-    const { width, height } = await getImageDimensions(dataUrl);
-    setOriginalImageDimensions({ width, height });
-    const detectedOrientation = determineOrientationFromDimensions(width, height);
+    const dimensions = providedWidth && providedHeight
+      ? { width: providedWidth, height: providedHeight }
+      : await getImageDimensions(dataUrl);
+    setOriginalImageDimensions(dimensions);
+    const detectedOrientation = determineOrientationFromDimensions(dimensions.width, dimensions.height);
     setOrientation(detectedOrientation);
     setPendingOrientation(detectedOrientation);
     setOrientationTip(ORIENTATION_PRESETS[detectedOrientation].description);
@@ -117,13 +128,21 @@ const PhotoUploader = () => {
     if (!file) return;
     emitStepOneEvent({ type: 'upload_started' });
     setDragging(false);
-    const dataUrl = await readFileAsDataURL(file);
-    await processDataUrl(dataUrl);
+    setStage('analyzing');
+    const accessToken = getSessionAccessToken();
+    const result = await readFileAsDataURL(file, {
+      accessToken,
+      onConversionStart: () => emitStepOneEvent({ type: 'conversion', status: 'start' }),
+      onConversionSuccess: (meta) => emitStepOneEvent({ type: 'conversion', status: 'success', cacheHit: meta.cacheHit }),
+      onConversionError: () => emitStepOneEvent({ type: 'conversion', status: 'error' }),
+    });
+    await processDataUrl(result);
   };
 
   const handleSamplePhoto = async () => {
     emitStepOneEvent({ type: 'upload_started' });
     setDragging(false);
+    setStage('analyzing');
     const response = await fetch(SAMPLE_IMAGE);
     const blob = await response.blob();
     const reader = new FileReader();
@@ -132,7 +151,13 @@ const PhotoUploader = () => {
       reader.onerror = () => reject(reader.error);
       reader.readAsDataURL(blob);
     });
-    await processDataUrl(dataUrl);
+    const { width, height } = await getImageDimensions(dataUrl);
+    await processDataUrl({
+      dataUrl,
+      width,
+      height,
+      source: 'local',
+    });
   };
 
   useEffect(() => {

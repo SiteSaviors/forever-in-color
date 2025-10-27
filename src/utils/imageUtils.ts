@@ -1,8 +1,14 @@
+import { supabaseClient } from '@/utils/supabaseClient';
+import { ENABLE_HEIC_EDGE_CONVERSION } from '@/config/featureFlags';
+
 export type Orientation = 'horizontal' | 'vertical' | 'square';
 
 const HEIC_EXTENSIONS = ['.heic', '.heif'];
 
-const blobToDataURL = (blob: Blob): Promise<string> =>
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+
+export const blobToDataURL = (blob: Blob): Promise<string> =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result as string);
@@ -10,7 +16,7 @@ const blobToDataURL = (blob: Blob): Promise<string> =>
     reader.readAsDataURL(blob);
   });
 
-const looksLikeHeic = (file: File): boolean => {
+export const looksLikeHeic = (file: File): boolean => {
   const type = (file.type || '').toLowerCase();
   if (type === 'image/heic' || type === 'image/heif') {
     return true;
@@ -19,7 +25,44 @@ const looksLikeHeic = (file: File): boolean => {
   return HEIC_EXTENSIONS.some((ext) => name.endsWith(ext));
 };
 
-export async function readFileAsDataURL(file: File): Promise<string> {
+export type FileDataUrlResult = {
+  dataUrl: string;
+  width?: number;
+  height?: number;
+  cacheHit?: boolean;
+  source: 'edge' | 'fallback' | 'local';
+};
+
+export type ReadFileAsDataUrlOptions = {
+  accessToken?: string | null;
+  signal?: AbortSignal;
+  onConversionStart?: () => void;
+  onConversionSuccess?: (meta: { width: number; height: number; cacheHit: boolean }) => void;
+  onConversionError?: (error: unknown) => void;
+};
+
+export async function readFileAsDataURL(file: File, options: ReadFileAsDataUrlOptions = {}): Promise<FileDataUrlResult> {
+  if (looksLikeHeic(file) && ENABLE_HEIC_EDGE_CONVERSION && SUPABASE_URL && SUPABASE_ANON_KEY && supabaseClient) {
+    try {
+      options.onConversionStart?.();
+      const result = await convertHeicUsingEdge(file, {
+        accessToken: options.accessToken ?? (await supabaseClient.auth.getSession()).data.session?.access_token ?? null,
+        signal: options.signal,
+      });
+      options.onConversionSuccess?.({ width: result.width, height: result.height, cacheHit: result.cacheHit });
+      return {
+        dataUrl: result.dataUrl,
+        width: result.width,
+        height: result.height,
+        cacheHit: result.cacheHit,
+        source: 'edge',
+      };
+    } catch (error) {
+      options.onConversionError?.(error);
+      console.warn('[imageUtils] Edge HEIC conversion failed; falling back to local converter', error);
+    }
+  }
+
   if (looksLikeHeic(file)) {
     try {
       const heic2anyModule = await import('heic2any');
@@ -30,13 +73,107 @@ export async function readFileAsDataURL(file: File): Promise<string> {
         quality: 0.92,
       });
       const outputBlob = Array.isArray(converted) ? converted[0] : converted;
-      return blobToDataURL(outputBlob);
+      const dataUrl = await blobToDataURL(outputBlob);
+      return { dataUrl, source: 'fallback' };
     } catch (error) {
-      console.warn('[imageUtils] HEIC conversion failed; using original data URL', error);
+      console.warn('[imageUtils] Local HEIC conversion failed; using original data URL', error);
     }
   }
 
-  return blobToDataURL(file);
+  return {
+    dataUrl: await blobToDataURL(file),
+    source: 'local',
+  };
+}
+
+type EdgeConversionInput = {
+  accessToken: string | null;
+  signal?: AbortSignal;
+};
+
+type EdgeConversionResponse = {
+  dataUrl: string;
+  width: number;
+  height: number;
+  cacheHit: boolean;
+};
+
+type ConvertHeicPayload = {
+  ok: boolean;
+  signedUrl: string;
+  signedUrlExpiresAt: number;
+  width: number;
+  height: number;
+  cacheHit: boolean;
+  bucket: string;
+  storagePath: string;
+};
+
+const EDGE_CLIENT_HEADER = 'wondertone-heic-edge';
+
+async function convertHeicUsingEdge(file: File, options: EdgeConversionInput): Promise<EdgeConversionResponse> {
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    throw new Error('Supabase environment variables are not configured');
+  }
+
+  const endpoint = `${SUPABASE_URL}/functions/v1/convert-heic`;
+  const formData = new FormData();
+  formData.append('file', file, file.name || 'upload.heic');
+
+  const headers: HeadersInit = {
+    'apikey': SUPABASE_ANON_KEY,
+    'x-client-info': EDGE_CLIENT_HEADER,
+  };
+
+  if (options.accessToken) {
+    (headers as Record<string, string>)['Authorization'] = `Bearer ${options.accessToken}`;
+  }
+
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers,
+    body: formData,
+    signal: options.signal,
+  });
+
+  const text = await response.text();
+
+  if (!response.ok) {
+    let message = `HEIC conversion failed (${response.status})`;
+    try {
+      const errorPayload = JSON.parse(text);
+      message = errorPayload?.message ?? errorPayload?.error ?? message;
+    } catch {
+      message = text || message;
+    }
+    throw new Error(message);
+  }
+
+  let payload: ConvertHeicPayload;
+  try {
+    payload = JSON.parse(text) as ConvertHeicPayload;
+  } catch (error) {
+    throw new Error(`Invalid conversion response: ${(error as Error)?.message ?? 'unknown error'}`);
+  }
+
+  if (!payload.ok || !payload.signedUrl) {
+    throw new Error('HEIC conversion response missing signed URL');
+  }
+
+  const jpegResponse = await fetch(payload.signedUrl, { signal: options.signal });
+  if (!jpegResponse.ok) {
+    throw new Error(`Failed to download converted JPEG (${jpegResponse.status})`);
+  }
+
+  const blob = await jpegResponse.blob();
+  const dataUrl = await blobToDataURL(blob);
+
+  return {
+    dataUrl,
+    width: payload.width,
+    height: payload.height,
+    cacheHit: payload.cacheHit,
+  };
 }
 
 export async function detectOrientationFromDataUrl(dataUrl: string): Promise<Orientation> {
