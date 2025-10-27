@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, type MotionStyle } from 'framer-motion';
 import { ChevronDown, Lock } from 'lucide-react';
 import { clsx } from 'clsx';
 import type { ToneSection as ToneSectionType } from '@/store/hooks/useToneSections';
@@ -80,6 +80,12 @@ export default function ToneSection({
     isExpanded && 'expanded',
     isAnimating && 'animating'
   );
+  const sectionStyle: MotionStyle & Record<'--tone-highlight', string> = {
+    background: panelBackground,
+    willChange: isExpanded ? 'height, opacity' : undefined,
+    pointerEvents: isAnimating ? 'none' : 'auto',
+    '--tone-highlight': toneMeta.highlight,
+  };
 
   return (
     <motion.section
@@ -87,12 +93,7 @@ export default function ToneSection({
       variants={toneSectionVariants}
       animate={isExpanded ? 'expanded' : 'collapsed'}
       className={sectionClassName}
-      style={{
-        background: panelBackground,
-        willChange: isExpanded ? 'height, opacity' : undefined,
-        pointerEvents: isAnimating ? 'none' : 'auto',
-        '--tone-highlight': toneMeta.highlight,
-      }}
+      style={sectionStyle}
     >
       <button
         onClick={onToggle}

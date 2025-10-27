@@ -27,23 +27,29 @@ const DiscoverGrid = ({ narrative }: DiscoverGridProps) => {
   if (!cards.length) return null;
 
   return (
-    <section className="grid gap-4 md:grid-cols-2">
-      {cards.map((card, index) => (
-        <article
-          key={card.key}
-          className="relative overflow-hidden rounded-[28px] border border-white/10 bg-gradient-to-br from-white/[0.04] via-white/[0.02] to-transparent p-6 text-white shadow-[0_26px_80px_rgba(8,14,25,0.45)] transition-transform motion-safe:hover:-translate-y-1"
-          style={{ transitionDelay: `${index * 40}ms` }}
-        >
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_0_0,rgba(255,255,255,0.12),transparent_60%)] opacity-70"
-          />
-          <div className="relative space-y-3">
-            <p className="text-xs uppercase tracking-[0.35em] text-white/55">{card.title}</p>
-            <p className="text-sm leading-relaxed text-white/80">{card.body}</p>
-          </div>
-        </article>
-      ))}
+    <section className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3">
+        {cards.map((card, index) => {
+          return (
+            <article
+              key={card.key}
+              className="relative overflow-hidden rounded-[22px] border border-white/10 bg-gradient-to-br from-white/[0.04] via-white/[0.02] to-transparent px-5 py-4 text-white shadow-[0_26px_80px_rgba(8,14,25,0.45)] transition-transform motion-safe:hover:-translate-y-1"
+              style={{
+                transitionDelay: `${index * 40}ms`,
+              }}
+            >
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_0_0,rgba(255,255,255,0.12),transparent_60%)] opacity-70"
+              />
+              <div className="relative flex flex-col gap-2">
+                <p className="text-xs uppercase tracking-[0.35em] text-white/55">{card.title}</p>
+                <p className="text-sm leading-relaxed text-white/80">{card.body}</p>
+              </div>
+            </article>
+          );
+        })}
+      </div>
     </section>
   );
 };
