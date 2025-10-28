@@ -32,7 +32,6 @@
 
 import type { StyleRegistryEntry, StyleTone } from './types';
 import {
-  STYLE_CORE_METADATA,
   STYLE_CORE_BY_ID,
   AVAILABLE_TONES,
 } from './registryCore.generated';

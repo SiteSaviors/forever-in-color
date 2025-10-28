@@ -7,7 +7,7 @@ import {
   createEntitlementSlice,
   type EntitlementSlice,
 } from './entitlementSlice';
-import { prefetchSupabaseClient } from '../utils/supabaseClient';
+import { prefetchSupabaseClient } from '@/utils/supabaseClient.loader';
 import type { FounderState } from '../useFounderStore';
 
 /**

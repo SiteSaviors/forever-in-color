@@ -1,5 +1,5 @@
 import type { StateCreator } from 'zustand';
-import { getSupabaseClient } from '../utils/supabaseClient';
+import { getSupabaseClient } from '@/utils/supabaseClient.loader';
 import type { FounderState } from '../useFounderStore';
 
 export type SessionUser = {

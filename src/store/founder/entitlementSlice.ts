@@ -1,7 +1,7 @@
 import type { StateCreator } from 'zustand';
 import { fetchAuthenticatedEntitlements } from '@/utils/entitlementsApi';
 import { canGenerateStylePreview, type GateResult } from '@/utils/entitlementGate';
-import { getSupabaseClient } from '../utils/supabaseClient';
+import { getSupabaseClient } from '@/utils/supabaseClient.loader';
 import type { FounderState } from '../useFounderStore';
 
 export type EntitlementTier = 'free' | 'creator' | 'plus' | 'pro' | 'dev';
