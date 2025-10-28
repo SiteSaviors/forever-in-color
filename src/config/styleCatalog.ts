@@ -7,6 +7,14 @@ import type {
   StyleStoryContent,
 } from './styles/types';
 
+// NEW: Import lazy-loading facade for async operations
+import {
+  loadStyleById as loadRegistryStyleById,
+  loadToneStyles as loadRegistryToneStyles,
+  STYLE_CORE_METADATA,
+  type ToneKey,
+} from './styles/registryLazy';
+
 export type { StyleRegistryEntry, StyleTone, StyleTier } from './styles/types';
 export {
   STYLE_REGISTRY,
@@ -76,8 +84,22 @@ const toCatalogEntry = (style: StyleRegistryEntry): StyleCatalogEntry => {
 
 export const STYLE_CATALOG: StyleCatalogEntry[] = STYLE_REGISTRY.map(toCatalogEntry);
 
-export const loadInitialStyles = (): StyleOptionSnapshot[] =>
-  STYLE_CATALOG.map(
+/**
+ * @deprecated Use loadInitialStylesLazy() for lazy loading.
+ * This function loads the full 60 KB registry eagerly.
+ * Kept for backward compatibility during migration.
+ *
+ * Will be removed in v2.0.
+ */
+export const loadInitialStyles = (): StyleOptionSnapshot[] => {
+  if (import.meta.env.DEV) {
+    console.warn(
+      '[styleCatalog] loadInitialStyles() is deprecated. ' +
+      'Use loadInitialStylesLazy() for better performance. ' +
+      'This warning will become an error in v2.0.'
+    );
+  }
+  return STYLE_CATALOG.map(
     ({
       id,
       name,
@@ -102,6 +124,7 @@ export const loadInitialStyles = (): StyleOptionSnapshot[] =>
       priceModifier,
     })
   );
+};
 
 export const STYLE_TONE_DEFINITIONS: Record<StyleTone, StyleToneDefinition> = {
   trending: {
@@ -159,3 +182,114 @@ export const STYLE_TONE_DEFINITIONS: Record<StyleTone, StyleToneDefinition> = {
 export const STYLE_TONES_IN_ORDER: StyleTone[] = Object.values(STYLE_TONE_DEFINITIONS)
   .sort((a, b) => a.sortOrder - b.sortOrder)
   .map((definition) => definition.id);
+
+// ============================================================================
+// NEW: Lazy-Loading API (Phase 3)
+// ============================================================================
+
+/**
+ * Load initial styles with minimal data for store initialization.
+ * Uses core metadata only (~1 KB) instead of full registry (~60 KB).
+ *
+ * This is the NEW recommended approach for store initialization.
+ * Full style details are loaded on-demand via loadStyleCatalogEntry().
+ *
+ * @returns Array of style options with IDs and names only
+ *
+ * @example
+ * ```typescript
+ * // In store initialization
+ * const initialStyles = loadInitialStylesLazy();
+ * // Styles have IDs/names, full details loaded on-demand
+ * ```
+ */
+export const loadInitialStylesLazy = (): StyleOptionSnapshot[] => {
+  return STYLE_CORE_METADATA.map(meta => ({
+    id: meta.id,
+    name: meta.name,
+    description: '', // Loaded on-demand via loadStyleCatalogEntry
+    thumbnail: '', // Loaded on-demand
+    thumbnailWebp: null,
+    thumbnailAvif: null,
+    preview: '', // Loaded on-demand
+    previewWebp: null,
+    previewAvif: null,
+    priceModifier: 0, // Loaded on-demand
+  }));
+};
+
+/**
+ * Load a single style catalog entry on-demand.
+ * Automatically detects tone and loads from appropriate tone file.
+ *
+ * This is the NEW recommended approach for loading full style details.
+ * Use this when you need complete style data (thumbnails, descriptions, etc.).
+ *
+ * @param styleId - The style ID
+ * @returns Promise resolving to catalog entry or undefined
+ *
+ * @example
+ * ```typescript
+ * // When style is selected or needs to be displayed
+ * const style = await loadStyleCatalogEntry('classic-oil-painting');
+ * if (style) {
+ *   console.log(style.name, style.description, style.thumbnail);
+ * }
+ * ```
+ */
+export async function loadStyleCatalogEntry(
+  styleId: string
+): Promise<StyleCatalogEntry | undefined> {
+  const registryEntry = await loadRegistryStyleById(styleId);
+  if (!registryEntry) {
+    return undefined;
+  }
+  return toCatalogEntry(registryEntry);
+}
+
+/**
+ * Load all catalog entries for a specific tone.
+ * Used when a tone accordion expands and you need all styles in that tone.
+ *
+ * @param tone - The tone to load
+ * @returns Promise resolving to array of catalog entries
+ *
+ * @example
+ * ```typescript
+ * // When Classic tone accordion expands
+ * const classicStyles = await loadToneCatalog('classic');
+ * // All 6 classic styles now have full details
+ * ```
+ */
+export async function loadToneCatalog(
+  tone: ToneKey
+): Promise<StyleCatalogEntry[]> {
+  const registryEntries = await loadRegistryToneStyles(tone);
+  return registryEntries.map(toCatalogEntry);
+}
+
+/**
+ * Convert a StyleOptionSnapshot (minimal data) to a full StyleCatalogEntry.
+ * Helper function for store migrations.
+ *
+ * @param snapshot - Minimal style snapshot
+ * @param fullEntry - Full catalog entry from lazy load
+ * @returns Merged style option with full details
+ */
+export function mergeStyleSnapshot(
+  snapshot: StyleOptionSnapshot,
+  fullEntry: StyleCatalogEntry
+): StyleOptionSnapshot {
+  return {
+    id: snapshot.id,
+    name: fullEntry.name,
+    description: fullEntry.description,
+    thumbnail: fullEntry.thumbnail,
+    thumbnailWebp: fullEntry.thumbnailWebp,
+    thumbnailAvif: fullEntry.thumbnailAvif,
+    preview: fullEntry.preview,
+    previewWebp: fullEntry.previewWebp,
+    previewAvif: fullEntry.previewAvif,
+    priceModifier: fullEntry.priceModifier,
+  };
+}
