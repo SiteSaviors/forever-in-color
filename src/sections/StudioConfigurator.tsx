@@ -16,6 +16,7 @@ import { ENABLE_STUDIO_V2_CANVAS_MODAL, ENABLE_STUDIO_V2_INSIGHTS_RAIL } from '@
 import { OrientationBridgeProvider } from '@/components/studio/orientation/OrientationBridgeProvider';
 import { useOrientationBridge } from '@/components/studio/orientation/useOrientationBridge';
 import { useStudioConfiguratorActions, useStudioConfiguratorState } from '@/store/hooks/useStudioConfiguratorStore';
+import { usePreviewEntry } from '@/store/hooks/usePreviewStore';
 
 const TokenWarningBanner = lazy(() => import('@/components/studio/TokenWarningBanner'));
 const StickyOrderRailLazy = lazy(() => import('@/components/studio/StickyOrderRail'));
@@ -87,7 +88,6 @@ const StudioConfiguratorInner = ({
     sessionUser,
     sessionAccessToken,
     styles,
-    previews,
     currentStyle,
     entitlements,
     firstPreviewCompleted,
@@ -106,7 +106,7 @@ const StudioConfiguratorInner = ({
     requiresWatermark,
   } = useStudioConfiguratorState();
   const { setLaunchpadExpanded, openCanvasModal, hydrateEntitlements } = useStudioConfiguratorActions();
-  const preview = currentStyle ? previews[currentStyle.id] : undefined;
+  const preview = usePreviewEntry(currentStyle?.id ?? null);
   const { requestOrientationChange, orientationChanging } = useOrientationBridge();
   const previewOrientationLabel = preview?.orientation ? ORIENTATION_PRESETS[preview.orientation].label : null;
   const orientationMismatch = Boolean(preview?.orientation && preview.orientation !== orientation);

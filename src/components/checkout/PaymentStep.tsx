@@ -4,6 +4,10 @@ import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-
 import clsx from 'clsx';
 import { useCheckoutStore } from '@/store/useCheckoutStore';
 import { useFounderStore } from '@/store/useFounderStore';
+import { useStyleCatalogState } from '@/store/hooks/useStyleCatalogStore';
+import { useCanvasConfigActions, useCanvasConfigState } from '@/store/hooks/useCanvasConfigStore';
+import { useUploadState } from '@/store/hooks/useUploadStore';
+import { usePreviewEntry } from '@/store/hooks/usePreviewStore';
 import { createOrderPaymentIntent } from '@/utils/checkoutApi';
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
 
@@ -28,27 +32,27 @@ const InnerPaymentForm = ({ onSuccess, onBack }: InnerPaymentProps) => {
     clearPaymentIntent,
   } = useCheckoutStore();
   const accessToken = useFounderStore((state) => state.accessToken);
-  const currentStyle = useFounderStore((state) => state.currentStyle());
-  const selectedCanvasSize = useFounderStore((state) => state.selectedCanvasSize);
-  const orientation = useFounderStore((state) => state.orientation);
-  const enhancements = useFounderStore((state) => state.enhancements.filter((item) => item.enabled));
-  const previews = useFounderStore((state) => state.previews);
-  const croppedImage = useFounderStore((state) => state.croppedImage);
-  const total = useFounderStore((state) => state.computedTotal());
+  const { currentStyle } = useStyleCatalogState();
+  const { selectedCanvasSize, enhancements } = useCanvasConfigState();
+  const { computedTotal } = useCanvasConfigActions();
+  const enabledEnhancements = useMemo(
+    () => enhancements.filter((item) => item.enabled),
+    [enhancements]
+  );
+  const { orientation, croppedImage } = useUploadState();
+  const previewEntry = usePreviewEntry(currentStyle?.id ?? null);
+  const total = computedTotal();
 
   const [loadingIntent, setLoadingIntent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const previewUrl = useMemo(() => {
-    if (currentStyle?.id) {
-      const record = previews[currentStyle.id];
-      if (record?.status === 'ready' && record.data?.previewUrl) {
-        return record.data.previewUrl;
-      }
+    if (previewEntry?.status === 'ready' && previewEntry.data?.previewUrl) {
+      return previewEntry.data.previewUrl;
     }
     return croppedImage;
-  }, [currentStyle?.id, previews, croppedImage]);
+  }, [previewEntry, croppedImage]);
 
   useEffect(() => {
     if (paymentAmount !== null && Math.round(total * 100) !== paymentAmount) {
@@ -85,7 +89,7 @@ const InnerPaymentForm = ({ onSuccess, onBack }: InnerPaymentProps) => {
             styleName: currentStyle?.name ?? null,
             canvasSizeId: selectedCanvasSize,
             orientation,
-            enhancementIds: enhancements.map((item) => item.id),
+            enhancementIds: enabledEnhancements.map((item) => item.id),
             previewUrl,
             contact,
             shipping,
@@ -117,7 +121,7 @@ const InnerPaymentForm = ({ onSuccess, onBack }: InnerPaymentProps) => {
     loadingIntent,
     selectedCanvasSize,
     orientation,
-    enhancements,
+    enabledEnhancements,
     contact,
     shipping,
     previewUrl,

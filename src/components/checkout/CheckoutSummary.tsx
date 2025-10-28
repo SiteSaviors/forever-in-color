@@ -1,27 +1,27 @@
 import { useMemo } from 'react';
 import Card from '@/components/ui/Card';
-import { useFounderStore } from '@/store/useFounderStore';
 import { getCanvasSizeOption } from '@/utils/canvasSizes';
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
+import { useStyleCatalogState } from '@/store/hooks/useStyleCatalogStore';
+import { useCanvasConfigState } from '@/store/hooks/useCanvasConfigStore';
+import { useUploadState } from '@/store/hooks/useUploadStore';
+import { usePreviewEntry } from '@/store/hooks/usePreviewStore';
+import { useEntitlementsState } from '@/store/hooks/useEntitlementsStore';
 
 const CheckoutSummary = () => {
-  const currentStyle = useFounderStore((state) => state.currentStyle());
-  const selectedCanvasSize = useFounderStore((state) => state.selectedCanvasSize);
-  const orientation = useFounderStore((state) => state.orientation);
-  const enhancements = useFounderStore((state) => state.enhancements.filter((item) => item.enabled));
-  const previews = useFounderStore((state) => state.previews);
-  const croppedImage = useFounderStore((state) => state.croppedImage);
-  const entitlements = useFounderStore((state) => state.entitlements);
+  const { currentStyle } = useStyleCatalogState();
+  const { selectedCanvasSize, enhancements } = useCanvasConfigState();
+  const enabledEnhancements = enhancements.filter((item) => item.enabled);
+  const { orientation, croppedImage } = useUploadState();
+  const { entitlements } = useEntitlementsState();
+  const previewEntry = usePreviewEntry(currentStyle?.id ?? null);
 
   const previewUrl = useMemo(() => {
-    if (currentStyle?.id) {
-      const record = previews[currentStyle.id];
-      if (record?.status === 'ready' && record.data?.previewUrl) {
-        return record.data.previewUrl;
-      }
+    if (previewEntry?.status === 'ready' && previewEntry.data?.previewUrl) {
+      return previewEntry.data.previewUrl;
     }
     return croppedImage;
-  }, [currentStyle?.id, croppedImage, previews]);
+  }, [previewEntry, croppedImage]);
 
   const sizeOption = getCanvasSizeOption(selectedCanvasSize);
   const orientationLabel = ORIENTATION_PRESETS[orientation]?.label ?? 'Square';
@@ -69,13 +69,13 @@ const CheckoutSummary = () => {
               <p className="text-xs font-semibold uppercase tracking-[0.35em] text-white/50">
                 Enhancements
               </p>
-              {enhancements.length === 0 ? (
+            {enabledEnhancements.length === 0 ? (
                 <p className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/50">
                   No extras selected
                 </p>
               ) : (
                 <div className="space-y-2">
-                  {enhancements.map((item) => (
+                  {enabledEnhancements.map((item) => (
                     <div
                       key={item.id}
                       className="flex items-center justify-between rounded-xl border border-purple-400/20 bg-purple-500/10 px-3 py-2 text-sm text-white"

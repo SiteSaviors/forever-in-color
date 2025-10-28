@@ -7,7 +7,6 @@ export const useStudioConfiguratorState = () =>
       sessionUser: state.sessionUser,
       sessionAccessToken: state.getSessionAccessToken(),
       styles: state.styles,
-      previews: state.previews,
       currentStyle: state.currentStyle(),
       entitlements: state.entitlements,
       firstPreviewCompleted: state.firstPreviewCompleted,

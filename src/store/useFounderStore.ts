@@ -427,8 +427,6 @@ export const useFounderStore = createWithEqualityFn<FounderState>((set, get, api
     set({
       uploadedImage: dataUrl,
       currentImageHash: null,
-      stylePreviewCache: {},
-      stylePreviewCacheOrder: [],
       pendingStyleId: null,
       stylePreviewStatus: 'idle',
       stylePreviewMessage: null,
@@ -456,7 +454,6 @@ export const useFounderStore = createWithEqualityFn<FounderState>((set, get, api
 
     const nextCanvasSize = hasCurrentSize ? current.selectedCanvasSize : null;
 
-    const previousOrientation = current.orientation;
     set({ orientation, selectedCanvasSize: nextCanvasSize });
 
     const updated = get();
@@ -487,36 +484,7 @@ export const useFounderStore = createWithEqualityFn<FounderState>((set, get, api
       return;
     }
 
-    const cached = updated.stylePreviewCache[styleId]?.[orientation];
-    if (cached) {
-      updated.setPreviewState(styleId, {
-        status: 'ready',
-        data: {
-          previewUrl: cached.url,
-          watermarkApplied: false,
-          startedAt: cached.generatedAt,
-          completedAt: cached.generatedAt,
-        },
-        orientation,
-      });
-      set({
-        stylePreviewStatus: 'idle',
-        stylePreviewMessage: null,
-        stylePreviewError: null,
-        orientationPreviewPending: false,
-      });
-    } else {
-      const existing = updated.previews[styleId];
-      if (existing?.data) {
-        updated.setPreviewState(styleId, {
-          status: existing.status,
-          data: existing.data,
-          orientation: existing.orientation ?? previousOrientation,
-          error: existing.error,
-        });
-      }
-      set({ orientationPreviewPending: true });
-    }
+    set({ orientationPreviewPending: true });
   },
   setOrientationTip: (tip) => set({ orientationTip: tip }),
   markCropReady: () =>

@@ -3,7 +3,7 @@ import { clsx } from 'clsx';
 import type { StyleOption } from '@/store/useFounderStore';
 import type { Orientation } from '@/utils/imageUtils';
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
-import { usePreviewState } from '@/store/hooks/usePreviewStore';
+import { usePreviewEntry, usePreviewCacheEntry } from '@/store/hooks/usePreviewStore';
 
 type StylePreviewModuleProps = {
   highlightedStyle: StyleOption | null;
@@ -12,16 +12,16 @@ type StylePreviewModuleProps = {
 };
 
 const StylePreviewModule = ({ highlightedStyle, stage, orientation }: StylePreviewModuleProps) => {
-  const { previews, stylePreviewCache } = usePreviewState();
   const styleId = highlightedStyle?.id ?? null;
-  const previewEntry = styleId ? previews[styleId] ?? undefined : undefined;
+  const previewEntry = usePreviewEntry(styleId);
+  const cachedEntry = usePreviewCacheEntry(styleId, orientation);
 
   const previewPayload = useMemo(() => {
     if (!highlightedStyle || stage !== 'post-upload') {
       return null;
     }
 
-    const cachedUrl = styleId ? stylePreviewCache[styleId]?.[orientation]?.url ?? null : null;
+    const cachedUrl = cachedEntry?.url ?? null;
     const url = previewEntry?.data?.previewUrl ?? cachedUrl;
 
     if (!url) {
@@ -32,7 +32,7 @@ const StylePreviewModule = ({ highlightedStyle, stage, orientation }: StylePrevi
       url,
       generatedOrientation: previewEntry?.orientation ?? (cachedUrl ? orientation : null),
     };
-  }, [highlightedStyle, orientation, previewEntry, stage, styleId, stylePreviewCache]);
+  }, [cachedEntry, highlightedStyle, orientation, previewEntry, stage]);
 
   const baseOrientation = previewPayload?.generatedOrientation ?? orientation;
   const baseOrientationMeta = ORIENTATION_PRESETS[baseOrientation];

@@ -1,12 +1,16 @@
 import { shallow } from 'zustand/shallow';
 import { useFounderStore } from '@/store/useFounderStore';
 import type { Orientation } from '@/utils/imageUtils';
+import type { PreviewState } from '@/store/founder/previewSlice';
+import {
+  usePreviewCacheEntry as useCacheEntry,
+  useHasCachedPreviewEntry,
+  getCachedPreviewEntry,
+} from '@/store/previewCacheStore';
 
 export const usePreviewState = () =>
   useFounderStore(
     (state) => ({
-      previews: state.previews,
-      stylePreviewCache: state.stylePreviewCache,
       pendingStyleId: state.pendingStyleId,
       stylePreviewStatus: state.stylePreviewStatus,
       stylePreviewMessage: state.stylePreviewMessage,
@@ -33,7 +37,29 @@ export const usePreviewActions = () =>
       clearAuthGateIntent: state.clearAuthGateIntent,
       resumePendingAuthPreview: state.resumePendingAuthPreview,
       hasCachedPreview: (styleId: string, orientation: Orientation) =>
-        Boolean(useFounderStore.getState().stylePreviewCache[styleId]?.[orientation]),
+        Boolean(getCachedPreviewEntry(styleId, orientation)),
     }),
     shallow
   );
+
+export const usePreviewEntry = (styleId: string | null): PreviewState | undefined =>
+  useFounderStore((state) => (styleId ? state.previews[styleId] : undefined));
+
+export const usePreviewUrl = (styleId: string | null, orientationOverride?: Orientation): string | null => {
+  const { previewUrl, orientation } = useFounderStore(
+    (state) => ({
+      previewUrl: styleId ? state.previews[styleId]?.data?.previewUrl ?? null : null,
+      orientation: orientationOverride ?? state.orientation,
+    }),
+    shallow
+  );
+
+  const cacheEntry = useCacheEntry(styleId, orientation);
+  return previewUrl ?? cacheEntry?.url ?? null;
+};
+
+export const usePreviewCacheEntry = (styleId: string | null, orientation: Orientation | null) =>
+  useCacheEntry(styleId, orientation);
+
+export const useHasCachedPreview = (styleId: string | null, orientation: Orientation | null): boolean =>
+  useHasCachedPreviewEntry(styleId, orientation);

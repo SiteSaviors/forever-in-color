@@ -4,7 +4,7 @@ import type { CanvasSize } from '@/store/useFounderStore';
 import { getRoomAsset } from './roomAssets';
 import { useUploadState } from '@/store/hooks/useUploadStore';
 import { useCanvasConfigState } from '@/store/hooks/useCanvasConfigStore';
-import { usePreviewState } from '@/store/hooks/usePreviewStore';
+import { usePreviewState, usePreviewEntry, usePreviewCacheEntry } from '@/store/hooks/usePreviewStore';
 import { useStyleCatalogState } from '@/store/hooks/useStyleCatalogStore';
 
 export interface CanvasInRoomPreviewProps {
@@ -50,21 +50,24 @@ const CanvasInRoomPreview = ({
 }: CanvasInRoomPreviewProps) => {
   const { orientation, orientationChanging, croppedImage, uploadedImage } = useUploadState();
   const { selectedFrame, selectedCanvasSize: selectedSize } = useCanvasConfigState();
-  const { previewStatus, previews, stylePreviewCache } = usePreviewState();
+  const { previewStatus } = usePreviewState();
   const { currentStyle } = useStyleCatalogState();
+  const previewEntry = usePreviewEntry(currentStyle?.id ?? null);
+  const cachedEntry = usePreviewCacheEntry(currentStyle?.id ?? null, orientation);
 
   const { previewUrl, fallbackStyleImage } = useMemo(() => {
     if (!currentStyle) {
       return { previewUrl: null, fallbackStyleImage: null };
     }
 
-    const cached = stylePreviewCache[currentStyle.id]?.[orientation]?.url ?? null;
+    const directUrl = previewEntry?.data?.previewUrl ?? null;
+    const cachedUrl = cachedEntry?.url ?? null;
 
     return {
-      previewUrl: previews[currentStyle.id]?.data?.previewUrl ?? cached ?? null,
+      previewUrl: directUrl ?? cachedUrl ?? null,
       fallbackStyleImage: currentStyle.preview ?? null,
     };
-  }, [currentStyle, orientation, previews, stylePreviewCache]);
+  }, [cachedEntry, currentStyle, previewEntry]);
 
   const roomAsset = useMemo(
     () => getRoomAsset(orientation, selectedFrame),

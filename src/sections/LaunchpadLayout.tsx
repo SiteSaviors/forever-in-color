@@ -2,11 +2,11 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { clsx } from 'clsx';
 import PhotoUploader from '@/components/launchpad/PhotoUploader';
 import AuthGateModal from '@/components/modals/AuthGateModal';
-import { useFounderStore } from '@/store/useFounderStore';
 import { emitStepOneEvent } from '@/utils/telemetry';
 import { trackLaunchflowCompleted, trackLaunchflowEditReopen, trackLaunchflowOpened, type LaunchflowEditSource, type LaunchflowOpenSource } from '@/utils/launchflowTelemetry';
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
 import usePrefersReducedMotion from '@/hooks/usePrefersReducedMotion';
+import { useLaunchpadActions, useLaunchpadState } from '@/store/hooks/useLaunchpadStore';
 
 const successMessage = 'Photo ready! Explore styles below.';
 
@@ -233,18 +233,18 @@ const ResumeBanner = ({ onResume, onDismiss }: ResumeBannerProps) => (
 );
 
 const LaunchflowAccordion = () => {
-  const launchpadExpanded = useFounderStore((state) => state.launchpadExpanded);
-  const setLaunchpadExpanded = useFounderStore((state) => state.setLaunchpadExpanded);
-  const launchpadSlimMode = useFounderStore((state) => state.launchpadSlimMode);
-  const setLaunchpadSlimMode = useFounderStore((state) => state.setLaunchpadSlimMode);
-  const uploadedImage = useFounderStore((state) => state.uploadedImage);
-  const croppedImage = useFounderStore((state) => state.croppedImage);
-  const cropReadyAt = useFounderStore((state) => state.cropReadyAt);
-  const orientation = useFounderStore((state) => state.orientation);
-  const entitlementsStatus = useFounderStore((state) => state.entitlements.status);
-  const hydrateEntitlements = useFounderStore((state) => state.hydrateEntitlements);
-  const firstPreviewCompleted = useFounderStore((state) => state.firstPreviewCompleted);
-  const generationCount = useFounderStore((state) => state.generationCount);
+  const {
+    launchpadExpanded,
+    launchpadSlimMode,
+    uploadedImage,
+    croppedImage,
+    cropReadyAt,
+    orientation,
+    entitlementsStatus,
+    firstPreviewCompleted,
+    generationCount,
+  } = useLaunchpadState();
+  const { setLaunchpadExpanded, setLaunchpadSlimMode, hydrateEntitlements } = useLaunchpadActions();
 
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [resumeDismissed, setResumeDismissed] = useState(false);

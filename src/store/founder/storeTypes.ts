@@ -82,8 +82,6 @@ export type PreviewSlice = {
   stylePreviewStatus: StylePreviewStatus;
   stylePreviewMessage: string | null;
   stylePreviewError: string | null;
-  stylePreviewCache: Record<string, Partial<Record<Orientation, StylePreviewCacheEntry>>>;
-  stylePreviewCacheOrder: string[];
   stylePreviewStartAt: number | null;
   firstPreviewCompleted: boolean;
   authGateOpen: boolean;

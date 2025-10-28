@@ -10,31 +10,10 @@ import { ENABLE_PREVIEW_QUERY_EXPERIMENT } from '@/config/featureFlags';
 import { executeStartPreview } from '@/features/preview';
 import { buildPreviewIdempotencyKey } from '@/utils/previewIdempotency';
 import { shouldRequireAuthGate } from '@/utils/authGate';
-import type { FounderState, PreviewSlice, StyleOption, StylePreviewCacheEntry } from './storeTypes';
+import { cachePreviewEntry, getCachedPreviewEntry, clearPreviewCache } from '@/store/previewCacheStore';
+import type { FounderState, PreviewSlice, StyleOption } from './storeTypes';
 
 export type { PreviewSlice, PreviewState, StartPreviewOptions, StylePreviewCacheEntry, StylePreviewStatus } from './storeTypes';
-
-const STYLE_PREVIEW_CACHE_LIMIT = 50;
-
-const cacheMetrics = {
-  hits: 0,
-  misses: 0,
-  evictions: 0,
-};
-
-const shouldLogMetrics = () =>
-  typeof window !== 'undefined' && (import.meta.env?.DEV || (window as typeof window & { DEBUG_PREVIEW_CACHE?: boolean }).DEBUG_PREVIEW_CACHE);
-
-const logCacheMetrics = () => {
-  if (!shouldLogMetrics()) {
-    return;
-  }
-  const total = cacheMetrics.hits + cacheMetrics.misses;
-  const hitRate = total > 0 ? Number(((cacheMetrics.hits / total) * 100).toFixed(1)) : 0;
-  console.info(
-    `[PreviewCache] hits=${cacheMetrics.hits} misses=${cacheMetrics.misses} evictions=${cacheMetrics.evictions} hitRate=${hitRate}%`
-  );
-};
 
 const ORIENTATION_TO_ASPECT: Record<Orientation, string> = {
   square: '1:1',
@@ -64,8 +43,6 @@ export const createPreviewSlice = (
     stylePreviewStatus: 'idle',
     stylePreviewMessage: null,
     stylePreviewError: null,
-    stylePreviewCache: {},
-    stylePreviewCacheOrder: [],
     stylePreviewStartAt: null,
     firstPreviewCompleted: false,
     authGateOpen: false,
@@ -89,68 +66,13 @@ export const createPreviewSlice = (
         stylePreviewMessage: message,
         stylePreviewError: status === 'error' ? (error ?? state.stylePreviewError ?? 'Preview failed') : null,
       })),
-    cacheStylePreview: (styleId, entry) =>
-      set((state) => {
-        const existingForStyle = state.stylePreviewCache[styleId] ?? {};
-        const key = `${styleId}:${entry.orientation}`;
-
-        const filteredOrder = state.stylePreviewCacheOrder.filter((existingKey) => existingKey !== key);
-        filteredOrder.push(key);
-
-        const cacheCopy: Record<string, Partial<Record<Orientation, StylePreviewCacheEntry>>> = {
-          ...state.stylePreviewCache,
-          [styleId]: {
-            ...existingForStyle,
-            [entry.orientation]: entry,
-          },
-        };
-
-        while (filteredOrder.length > STYLE_PREVIEW_CACHE_LIMIT) {
-          const oldestKey = filteredOrder.shift();
-          if (!oldestKey) break;
-          const [oldStyleId, oldOrientation] = oldestKey.split(':') as [string, Orientation];
-          const map = cacheCopy[oldStyleId];
-          if (map && map[oldOrientation]) {
-            const { [oldOrientation]: _removed, ...rest } = map;
-            if (Object.keys(rest).length === 0) {
-              delete cacheCopy[oldStyleId];
-            } else {
-              cacheCopy[oldStyleId] = rest as Partial<Record<Orientation, StylePreviewCacheEntry>>;
-            }
-          }
-          cacheMetrics.evictions += 1;
-          logCacheMetrics();
-        }
-
-        return {
-          stylePreviewCache: cacheCopy,
-          stylePreviewCacheOrder: filteredOrder,
-        };
-      }),
-    getCachedStylePreview: (styleId, orientation) => {
-      const state = get();
-      const entry = state.stylePreviewCache[styleId]?.[orientation];
-      if (entry) {
-        cacheMetrics.hits += 1;
-      } else {
-        cacheMetrics.misses += 1;
-      }
-      const totalLookups = cacheMetrics.hits + cacheMetrics.misses;
-      if (totalLookups % 10 === 0) {
-        logCacheMetrics();
-      }
-      return entry;
+    cacheStylePreview: (styleId, entry) => {
+      cachePreviewEntry(styleId, entry);
     },
-    clearStylePreviewCache: () =>
-      set(() => {
-        cacheMetrics.hits = 0;
-        cacheMetrics.misses = 0;
-        cacheMetrics.evictions = 0;
-        return {
-          stylePreviewCache: {},
-          stylePreviewCacheOrder: [],
-        };
-      }),
+    getCachedStylePreview: (styleId, orientation) => getCachedPreviewEntry(styleId, orientation),
+    clearStylePreviewCache: () => {
+      clearPreviewCache();
+    },
     startStylePreview: async (style, options = {}) => {
       const state = get();
       const { force = false, orientationOverride } = options;
@@ -484,20 +406,21 @@ export const createPreviewSlice = (
       }
     },
     resetPreviews: () =>
-      set((state) => ({
-        previews: Object.fromEntries(
-          state.styles.map((style) => [style.id, { status: 'idle' as const }])
-        ),
-        previewStatus: 'idle',
-        stylePreviewCache: {},
-        stylePreviewCacheOrder: [],
-        pendingStyleId: null,
-        stylePreviewStatus: 'idle',
-        stylePreviewMessage: null,
-        stylePreviewError: null,
-        stylePreviewStartAt: null,
-        orientationPreviewPending: false,
-      })),
+      set((state) => {
+        clearPreviewCache();
+        return {
+          previews: Object.fromEntries(
+            state.styles.map((style) => [style.id, { status: 'idle' as const }])
+          ),
+          previewStatus: 'idle',
+          pendingStyleId: null,
+          stylePreviewStatus: 'idle',
+          stylePreviewMessage: null,
+          stylePreviewError: null,
+          stylePreviewStartAt: null,
+          orientationPreviewPending: false,
+        };
+      }),
     generatePreviews: async (ids, options = {}) => {
       const store = get();
       const state = get();
