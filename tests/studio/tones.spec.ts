@@ -1,8 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { STYLE_CATALOG } from '@/config/styleCatalog';
 import { canGenerateStylePreview } from '@/utils/entitlementGate';
-import type { EntitlementState } from '@/store/founder/entitlementSlice';
-import type { SessionUser } from '@/store/founder/sessionSlice';
+import type { EntitlementState, SessionUser } from '@/store/useFounderStore';
 
 const createEntitlements = (
   tier: EntitlementState['tier'],

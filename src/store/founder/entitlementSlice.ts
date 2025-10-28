@@ -1,45 +1,10 @@
 import type { StateCreator } from 'zustand';
 import { fetchAuthenticatedEntitlements } from '@/utils/entitlementsApi';
-import { canGenerateStylePreview, type GateResult } from '@/utils/entitlementGate';
+import { canGenerateStylePreview } from '@/utils/entitlementGate';
 import { getSupabaseClient } from '@/utils/supabaseClient.loader';
-import type { FounderState } from '../useFounderStore';
+import type { EntitlementPriority, EntitlementSlice, EntitlementState, EntitlementTier, FounderState } from './storeTypes';
 
-export type EntitlementTier = 'free' | 'creator' | 'plus' | 'pro' | 'dev';
-export type EntitlementPriority = 'normal' | 'priority' | 'pro';
-
-export type EntitlementState = {
-  status: 'idle' | 'loading' | 'ready' | 'error';
-  tier: EntitlementTier;
-  quota: number | null;
-  remainingTokens: number | null;
-  requiresWatermark: boolean;
-  priority: EntitlementPriority;
-  renewAt: string | null;
-  lastSyncedAt: number | null;
-  error: string | null;
-};
-
-export type EntitlementSlice = {
-  entitlements: EntitlementState;
-  showTokenToast: boolean;
-  showQuotaModal: boolean;
-  generationCount: number;
-  setShowTokenToast: (show: boolean) => void;
-  setShowQuotaModal: (show: boolean) => void;
-  hydrateEntitlements: () => Promise<void>;
-  updateEntitlementsFromResponse: (payload: {
-    remainingTokens?: number | null;
-    requiresWatermark?: boolean;
-    tier?: string;
-    priority?: string;
-  }) => void;
-  incrementGenerationCount: () => void;
-  canGenerateMore: () => boolean;
-  evaluateStyleGate: (styleId: string | null) => GateResult;
-  canUseStyle: (styleId: string | null) => boolean;
-  getGenerationLimit: () => number;
-  getDisplayableRemainingTokens: () => number | null;
-};
+export type { EntitlementPriority, EntitlementSlice, EntitlementState, EntitlementTier } from './storeTypes';
 
 const createInitialEntitlements = (): EntitlementState => ({
   status: 'idle',

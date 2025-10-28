@@ -1,20 +1,35 @@
 import { createWithEqualityFn } from 'zustand/traditional';
-import type { Orientation } from '@/utils/imageUtils';
-import type { SmartCropResult } from '@/utils/smartCrop';
-import { CANVAS_SIZE_OPTIONS, CanvasSizeKey, getCanvasSizeOption, getDefaultSizeForOrientation } from '@/utils/canvasSizes';
+import { CANVAS_SIZE_OPTIONS, getCanvasSizeOption, getDefaultSizeForOrientation } from '@/utils/canvasSizes';
 import {
   trackStudioV2CanvasModalClose,
   trackStudioV2CanvasModalOpen,
   type CanvasSelectionSnapshot,
 } from '@/utils/studioV2Analytics';
 import { loadInitialStylesLazy, loadStyleCatalogEntry, mergeStyleSnapshot } from '@/config/styleCatalog';
-import { createPreviewSlice, type PreviewSlice } from './founder/previewSlice';
-import { createAuthSlice, type AuthSlice } from './founder/authSlice';
-import { createFavoritesSlice, type FavoritesSlice } from './founder/favoritesSlice';
+import { createPreviewSlice } from './founder/previewSlice';
+import { createAuthSlice } from './founder/authSlice';
+import { createFavoritesSlice } from './founder/favoritesSlice';
+import type { CanvasSize, Enhancement, FounderBaseState, FounderState, StyleCarouselCard, StyleOption } from './founder/storeTypes';
 
-export type { StylePreviewStatus } from './founder/previewSlice';
-export type { EntitlementTier, EntitlementPriority } from './founder/entitlementSlice';
-export type { SessionUser } from './founder/sessionSlice';
+export type {
+  AuthSlice,
+  CanvasModalCloseReason,
+  CanvasModalSource,
+  CanvasSelection,
+  CanvasSize,
+  Enhancement,
+  EntitlementPriority,
+  EntitlementState,
+  EntitlementTier,
+  FavoritesSlice,
+  FounderBaseState,
+  FounderState,
+  FrameColor,
+  SessionUser,
+  StyleCarouselCard,
+  StyleOption,
+  StylePreviewStatus,
+} from './founder/storeTypes';
 
 /**
  * TESTING MODE FLAG
@@ -26,48 +41,6 @@ export type { SessionUser } from './founder/sessionSlice';
 const ENABLE_AUTO_PREVIEWS = false;
 const DEFAULT_SQUARE_SIZE = getDefaultSizeForOrientation('square');
 const DEFAULT_SQUARE_PRICE = getCanvasSizeOption(DEFAULT_SQUARE_SIZE)?.price ?? 0;
-
-export type StyleOption = {
-  id: string;
-  name: string;
-  description: string;
-  thumbnail: string;
-  thumbnailWebp?: string | null;
-  thumbnailAvif?: string | null;
-  preview: string;
-  previewWebp?: string | null;
-  previewAvif?: string | null;
-  priceModifier: number;
-};
-
-export type Enhancement = {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  enabled: boolean;
-};
-
-export type StyleCarouselCard = {
-  id: string;
-  name: string;
-  resultImage: string;
-  originalImage: string;
-  description: string;
-  ctaLabel: string;
-};
-
-export type CanvasSize = CanvasSizeKey;
-export type FrameColor = 'black' | 'white' | 'none';
-
-export type CanvasModalSource = 'center' | 'rail';
-export type CanvasModalCloseReason = 'dismiss' | 'cancel' | 'esc_key' | 'backdrop' | 'purchase_complete';
-
-type CanvasSelection = {
-  size: CanvasSize | null;
-  frame: FrameColor;
-  enhancements: string[];
-};
 
 const createCanvasSelectionSnapshot = (state: FounderBaseState): CanvasSelectionSnapshot => {
   const enabledEnhancements = state.enhancements
@@ -81,87 +54,6 @@ const createCanvasSelectionSnapshot = (state: FounderBaseState): CanvasSelection
     orientation: state.orientation,
   };
 };
-
-type FounderBaseState = {
-  styles: StyleOption[];
-  enhancements: Enhancement[];
-  selectedStyleId: string | null;
-  basePrice: number;
-  livingCanvasModalOpen: boolean;
-  uploadedImage: string | null;
-  croppedImage: string | null;
-  currentImageHash: string | null;
-  originalImage: string | null;
-  originalImageDimensions: { width: number; height: number } | null;
-  smartCrops: Partial<Record<Orientation, SmartCropResult>>;
-  orientation: Orientation;
-  orientationTip: string | null;
-  orientationChanging: boolean;
-  orientationPreviewPending: boolean;
-  cropReadyAt: number | null;
-  isDragging: boolean;
-  celebrationAt: number | null;
-  styleCarouselData: StyleCarouselCard[];
-  hoveredStyleId: string | null;
-  preselectedStyleId: string | null;
-  launchpadExpanded: boolean;
-  launchpadSlimMode: boolean;
-  uploadIntentAt: number | null;
-  selectedCanvasSize: CanvasSize | null;
-  selectedFrame: FrameColor;
-  canvasModalOpen: boolean;
-  canvasModalSource: CanvasModalSource | null;
-  canvasModalOpenedAt: number | null;
-  lastCanvasModalSource: CanvasModalSource | null;
-  canvasSelections: Record<string, CanvasSelection>;
-  // NEW: Track which styles have full details loaded (lazy loading)
-  loadedStyleIds: Set<string>;
-  // NEW: Track pending loads to prevent duplicate requests
-  pendingStyleLoads: Map<string, Promise<void>>;
-  setLivingCanvasModalOpen: (open: boolean) => void;
-  setUploadedImage: (dataUrl: string | null) => void;
-  setCroppedImage: (dataUrl: string | null) => void;
-  setCurrentImageHash: (hash: string | null) => void;
-  setOriginalImage: (dataUrl: string | null) => void;
-  setOriginalImageDimensions: (dimensions: { width: number; height: number } | null) => void;
-  setSmartCropForOrientation: (orientation: Orientation, result: SmartCropResult) => void;
-  clearSmartCrops: () => void;
-  setOrientation: (orientation: Orientation) => void;
-  setOrientationTip: (tip: string | null) => void;
-  setOrientationChanging: (loading: boolean) => void;
-  setOrientationPreviewPending: (pending: boolean) => void;
-  markCropReady: () => void;
-  setDragging: (dragging: boolean) => void;
-  setLaunchpadExpanded: (expanded: boolean) => void;
-  setLaunchpadSlimMode: (slim: boolean) => void;
-  setHoveredStyle: (id: string | null) => void;
-  setPreselectedStyle: (id: string | null) => void;
-  requestUpload: (options?: { preselectedStyleId?: string }) => void;
-  setCanvasSize: (size: CanvasSize | null) => void;
-  setFrame: (frame: FrameColor) => void;
-  persistCanvasSelection: () => void;
-  loadCanvasSelectionForStyle: (styleId: string | null) => void;
-  openCanvasModal: (source: CanvasModalSource) => void;
-  closeCanvasModal: (reason: CanvasModalCloseReason) => void;
-  selectStyle: (id: string) => void;
-  toggleEnhancement: (id: string) => void;
-  setEnhancementEnabled: (id: string, enabled: boolean) => void;
-  computedTotal: () => number;
-  currentStyle: () => StyleOption | undefined;
-  livingCanvasEnabled: () => boolean;
-  shouldAutoGeneratePreviews: () => boolean;
-  // NEW: Ensure a style has full details loaded (lazy loading action)
-  ensureStyleLoaded: (styleId: string) => Promise<StyleOption | null>;
-  // NEW: Batch load multiple styles (for tone accordion expansion)
-  ensureStylesLoaded: (styleIds: string[]) => Promise<void>;
-  favoriteStyles: string[];
-  toggleFavoriteStyle: (styleId: string) => void;
-  isStyleFavorite: (styleId: string) => boolean;
-  setFavoriteStyles: (styleIds: string[]) => void;
-  clearFavoriteStyles: () => void;
-};
-
-export type FounderState = FounderBaseState & PreviewSlice & AuthSlice & FavoritesSlice;
 
 // NEW: Use lazy loading - only load IDs and names initially
 // Full details (thumbnails, descriptions) loaded on-demand via ensureStyleLoaded()

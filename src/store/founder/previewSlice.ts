@@ -1,5 +1,5 @@
 import type { StateCreator } from 'zustand';
-import { fetchPreviewForStyle, type PreviewResult } from '@/utils/previewClient';
+import { fetchPreviewForStyle } from '@/utils/previewClient';
 import { startFounderPreviewGeneration } from '@/utils/founderPreviewGeneration';
 import type { Orientation } from '@/utils/imageUtils';
 import { computeImageDigest } from '@/utils/imageHash';
@@ -10,66 +10,9 @@ import { ENABLE_PREVIEW_QUERY_EXPERIMENT } from '@/config/featureFlags';
 import { executeStartPreview } from '@/features/preview';
 import { buildPreviewIdempotencyKey } from '@/utils/previewIdempotency';
 import { shouldRequireAuthGate } from '@/utils/authGate';
-import type { FounderState, StyleOption } from '../useFounderStore';
+import type { FounderState, PreviewSlice, StyleOption, StylePreviewCacheEntry } from './storeTypes';
 
-export type StylePreviewStatus =
-  | 'idle'
-  | 'animating'
-  | 'generating'
-  | 'polling'
-  | 'ready'
-  | 'error';
-
-export type PreviewState = {
-  status: 'idle' | 'loading' | 'ready' | 'error';
-  data?: PreviewResult;
-  orientation?: Orientation;
-  error?: string;
-};
-
-export type StylePreviewCacheEntry = {
-  url: string;
-  orientation: Orientation;
-  generatedAt: number;
-  storageUrl?: string | null;
-  storagePath?: string | null;
-};
-
-export type StartPreviewOptions = {
-  force?: boolean;
-  orientationOverride?: Orientation;
-};
-
-export type PreviewSlice = {
-  previewStatus: 'idle' | 'generating' | 'ready';
-  previewGenerationPromise: Promise<void> | null;
-  previews: Record<string, PreviewState>;
-  pendingStyleId: string | null;
-  stylePreviewStatus: StylePreviewStatus;
-  stylePreviewMessage: string | null;
-  stylePreviewError: string | null;
-  stylePreviewCache: Record<string, Partial<Record<Orientation, StylePreviewCacheEntry>>>;
-  stylePreviewCacheOrder: string[];
-  stylePreviewStartAt: number | null;
-  firstPreviewCompleted: boolean;
-  authGateOpen: boolean;
-  pendingAuthStyleId: string | null;
-  pendingAuthOptions: StartPreviewOptions | null;
-  setPreviewStatus: (status: PreviewSlice['previewStatus']) => void;
-  setPreviewState: (id: string, previewState: PreviewState) => void;
-  setPendingStyle: (styleId: string | null) => void;
-  setStylePreviewState: (status: StylePreviewStatus, message?: string | null, error?: string | null) => void;
-  cacheStylePreview: (styleId: string, entry: StylePreviewCacheEntry) => void;
-  getCachedStylePreview: (styleId: string, orientation: Orientation) => StylePreviewCacheEntry | undefined;
-  clearStylePreviewCache: () => void;
-  startStylePreview: (style: StyleOption, options?: StartPreviewOptions) => Promise<void>;
-  resetPreviews: () => void;
-  generatePreviews: (ids?: string[], options?: { force?: boolean; orientationOverride?: Orientation }) => Promise<void>;
-  setAuthGateOpen: (open: boolean) => void;
-  registerAuthGateIntent: (styleId: string, options?: StartPreviewOptions) => void;
-  clearAuthGateIntent: () => void;
-  resumePendingAuthPreview: () => Promise<void>;
-};
+export type { PreviewSlice, PreviewState, StartPreviewOptions, StylePreviewCacheEntry, StylePreviewStatus } from './storeTypes';
 
 const STYLE_PREVIEW_CACHE_LIMIT = 50;
 

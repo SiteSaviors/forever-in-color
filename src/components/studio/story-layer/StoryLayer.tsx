@@ -1,10 +1,9 @@
 import { forwardRef, useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import type { MutableRefObject } from 'react';
 import { shallow } from 'zustand/shallow';
-import type { StyleOption } from '@/store/useFounderStore';
+import type { EntitlementState, StyleOption } from '@/store/useFounderStore';
 import { useFounderStore } from '@/store/useFounderStore';
 import type { Orientation } from '@/utils/imageUtils';
-import type { EntitlementState } from '@/store/founder/entitlementSlice';
 import type { StudioToastPayload, UpgradePromptPayload } from '@/hooks/useStudioFeedback';
 import { useHandleStyleSelect } from '@/sections/studio/hooks/useHandleStyleSelect';
 import {

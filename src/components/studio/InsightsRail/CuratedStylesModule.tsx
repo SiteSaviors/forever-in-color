@@ -1,8 +1,7 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { clsx } from 'clsx';
-import type { StyleOption } from '@/store/useFounderStore';
+import type { EntitlementState, StyleOption } from '@/store/useFounderStore';
 import { useHandleStyleSelect } from '@/sections/studio/hooks/useHandleStyleSelect';
-import type { EntitlementState } from '@/store/founder/entitlementSlice';
 import { trackStudioV2CuratedStyleClick } from '@/utils/studioV2Analytics';
 import { getComplementaryStyles } from '@/utils/storyLayer/copy';
 import { useFounderStore } from '@/store/useFounderStore';

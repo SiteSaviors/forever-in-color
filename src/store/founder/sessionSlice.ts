@@ -1,25 +1,8 @@
 import type { StateCreator } from 'zustand';
 import { getSupabaseClient } from '@/utils/supabaseClient.loader';
-import type { FounderState } from '../useFounderStore';
+import type { FounderState, SessionSlice } from './storeTypes';
 
-export type SessionUser = {
-  id: string;
-  email: string | null;
-};
-
-export type SessionSlice = {
-  sessionUser: SessionUser | null;
-  accessToken: string | null;
-  sessionHydrated: boolean;
-  isAuthenticated: boolean;
-  /**
-   * Derivative accessor for the current Supabase session JWT.
-   * Prefer this getter when wiring authenticated API calls so we keep a single source of truth.
-   */
-  getSessionAccessToken: () => string | null;
-  setSession: (user: SessionUser | null, accessToken: string | null) => void;
-  signOut: () => Promise<void>;
-};
+export type { SessionSlice, SessionUser } from './storeTypes';
 
 export const createSessionSlice: StateCreator<FounderState, [], [], SessionSlice> = (set, get) => ({
   sessionUser: null,

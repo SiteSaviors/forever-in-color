@@ -1,9 +1,8 @@
 import { memo, useMemo, useState, useEffect, type ReactNode } from 'react';
 import { clsx } from 'clsx';
 import { shallow } from 'zustand/shallow';
-import type { StyleOption } from '@/store/useFounderStore';
+import type { EntitlementState, StyleOption } from '@/store/useFounderStore';
 import { useFounderStore } from '@/store/useFounderStore';
-import type { EntitlementState } from '@/store/founder/entitlementSlice';
 import StoryTeaser from './StoryTeaser';
 // StoryHeader removed per request to reduce duplication in right rail
 import DiscoverGrid from './DiscoverGrid';

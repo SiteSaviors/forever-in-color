@@ -1,5 +1,5 @@
 import type { StyleTone } from '@/config/styleCatalog';
-import type { EntitlementTier } from '@/store/founder/entitlementSlice';
+import type { EntitlementTier } from '@/store/useFounderStore';
 import { emitStepOneEvent } from '@/utils/telemetry';
 
 const log = (payload: unknown) => {

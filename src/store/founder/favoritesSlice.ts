@@ -1,13 +1,7 @@
 import type { StateCreator } from 'zustand';
-import type { FounderState } from '../useFounderStore';
+import type { FavoritesSlice, FounderState } from './storeTypes';
 
-export type FavoritesSlice = {
-  favoriteStyles: string[];
-  toggleFavoriteStyle: (styleId: string) => void;
-  isStyleFavorite: (styleId: string) => boolean;
-  setFavoriteStyles: (styleIds: string[]) => void;
-  clearFavoriteStyles: () => void;
-};
+export type { FavoritesSlice } from './storeTypes';
 
 const normalizeList = (ids: string[]): string[] => {
   const seen = new Set<string>();
