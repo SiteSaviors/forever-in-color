@@ -4,7 +4,10 @@ import path from 'node:path';
 import { componentTagger } from 'lovable-tagger';
 import { visualizer } from 'rollup-plugin-visualizer';
 
-export default defineConfig(({ mode }) => ({
+export default defineConfig(({ mode }) => {
+  const enableVerboseSourcemaps = process.env.VERBOSE_SOURCEMAPS === 'true';
+
+  return {
   server: {
     host: '::',
     port: 4175,
@@ -30,7 +33,7 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
-    sourcemap: true,
+    sourcemap: enableVerboseSourcemaps,
     rollupOptions: {
       output: {
         manualChunks: (id: string) => {
@@ -68,11 +71,12 @@ export default defineConfig(({ mode }) => ({
     },
   },
   css: {
-    devSourcemap: true,
+    devSourcemap: enableVerboseSourcemaps,
   },
   test: {
     globals: true,
     environment: 'node',
     include: ['tests/**/*.spec.ts', 'tests/**/*.spec.tsx'],
   },
-}));
+};
+});

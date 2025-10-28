@@ -81,3 +81,7 @@ export function trackOrderStarted(userTier: string, orderTotal: number, hasEnhan
   };
   console.log('[ProgressiveDisclosure]', event);
 }
+
+export function trackRuntimeMetric(name: string, payload?: Record<string, unknown>) {
+  console.log('[RuntimeMetric]', { name, payload, timestamp: Date.now() });
+}

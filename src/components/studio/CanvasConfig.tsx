@@ -74,16 +74,25 @@ export default function CanvasConfig({
   useEffect(() => {
     if (!isExpanded || !sizeCardRef.current) return;
 
+    const scrollIntoView = sizeCardRef.current.scrollIntoView;
+
+    if (typeof scrollIntoView !== 'function') {
+      return;
+    }
+
     if (prefersReducedMotion) {
-      sizeCardRef.current.scrollIntoView({ behavior: 'auto', block: 'nearest' });
+      scrollIntoView.call(sizeCardRef.current, { behavior: 'auto', block: 'nearest' });
       return;
     }
 
     const timer = window.setTimeout(() => {
-      sizeCardRef.current?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'nearest',
-      });
+      const element = sizeCardRef.current;
+      if (element && typeof element.scrollIntoView === 'function') {
+        element.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+        });
+      }
     }, 250);
 
     return () => window.clearTimeout(timer);

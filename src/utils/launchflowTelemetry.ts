@@ -40,6 +40,9 @@ const getDeviceType = (): 'mobile' | 'tablet' | 'desktop' | 'unknown' => {
 
 const getLaunchflowContext = () => {
   const state = useFounderStore.getState();
+  if (typeof state.prefetchAuthClient === 'function') {
+    state.prefetchAuthClient();
+  }
   const tier = state.entitlements?.tier ?? 'free';
   const isAuthenticated = state.isAuthenticated || Boolean(state.sessionUser);
   const returning =

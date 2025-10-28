@@ -16,11 +16,20 @@ const captureEvents = () => {
 describe('canvas modal store plumbing', () => {
   let unregister: (() => void) | undefined;
   let originalEnhancements = useFounderStore.getState().enhancements.map((item) => ({ ...item }));
+  let previousSelectedStyleId: string | null;
 
   beforeEach(() => {
     originalEnhancements = useFounderStore
       .getState()
       .enhancements.map((item) => ({ ...item }));
+    const state = useFounderStore.getState();
+    previousSelectedStyleId = state.selectedStyleId;
+    const defaultStyleId = state.selectedStyleId ?? state.styles[0]?.id ?? null;
+
+    if (!defaultStyleId) {
+      throw new Error('Founder store styles not initialized for canvas modal test');
+    }
+
     useFounderStore.setState({
       croppedImage: 'data:image/png;base64,test',
       canvasModalOpen: false,
@@ -28,6 +37,7 @@ describe('canvas modal store plumbing', () => {
       canvasModalOpenedAt: null,
       selectedCanvasSize: null,
       selectedFrame: 'none',
+      selectedStyleId: defaultStyleId,
       enhancements: originalEnhancements.map((item) => ({ ...item, enabled: false })),
     });
   });
@@ -42,6 +52,7 @@ describe('canvas modal store plumbing', () => {
       enhancements: originalEnhancements,
       selectedCanvasSize: null,
       selectedFrame: 'none',
+      selectedStyleId: previousSelectedStyleId ?? null,
     });
   });
 

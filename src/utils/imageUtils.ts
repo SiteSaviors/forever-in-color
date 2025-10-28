@@ -1,4 +1,4 @@
-import { supabaseClient } from '@/utils/supabaseClient';
+import { getSupabaseClient } from '@/utils/supabaseClient.loader';
 import { ENABLE_HEIC_EDGE_CONVERSION } from '@/config/featureFlags';
 
 export type Orientation = 'horizontal' | 'vertical' | 'square';
@@ -42,11 +42,19 @@ export type ReadFileAsDataUrlOptions = {
 };
 
 export async function readFileAsDataURL(file: File, options: ReadFileAsDataUrlOptions = {}): Promise<FileDataUrlResult> {
-  if (looksLikeHeic(file) && ENABLE_HEIC_EDGE_CONVERSION && SUPABASE_URL && SUPABASE_ANON_KEY && supabaseClient) {
+  const isHeic = looksLikeHeic(file);
+  const shouldUseEdge =
+    isHeic && ENABLE_HEIC_EDGE_CONVERSION && SUPABASE_URL && SUPABASE_ANON_KEY;
+  const supabaseClient = shouldUseEdge ? await getSupabaseClient() : null;
+
+  if (shouldUseEdge && supabaseClient) {
     try {
       options.onConversionStart?.();
       const result = await convertHeicUsingEdge(file, {
-        accessToken: options.accessToken ?? (await supabaseClient.auth.getSession()).data.session?.access_token ?? null,
+        accessToken:
+          options.accessToken ??
+          (await supabaseClient.auth.getSession()).data.session?.access_token ??
+          null,
         signal: options.signal,
       });
       options.onConversionSuccess?.({ width: result.width, height: result.height, cacheHit: result.cacheHit });
@@ -63,7 +71,7 @@ export async function readFileAsDataURL(file: File, options: ReadFileAsDataUrlOp
     }
   }
 
-  if (looksLikeHeic(file)) {
+  if (isHeic) {
     try {
       const heic2anyModule = await import('heic2any');
       const convert = heic2anyModule.default ?? heic2anyModule;

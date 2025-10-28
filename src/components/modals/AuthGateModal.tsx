@@ -5,6 +5,7 @@ import Button from '@/components/ui/Button';
 import { useFounderStore } from '@/store/useFounderStore';
 import { useAuthModal } from '@/store/useAuthModal';
 import { emitAuthGateEvent } from '@/utils/telemetry';
+import { getSupabaseClient } from '@/utils/supabaseClient.loader';
 
 const AUTH_GATE_COPY = {
   headline: 'Your photo is ready for AI styling!',
@@ -15,21 +16,6 @@ const AUTH_GATE_COPY = {
   trust_signal: 'No credit card required • Cancel anytime',
   progress_indicator: 'Photo uploaded ✓ • Cropped ✓ • Sign in to generate →',
 } as const;
-
-let cachedSupabaseClient: Awaited<ReturnType<typeof importSupabaseClient>> | undefined;
-
-async function importSupabaseClient() {
-  const module = await import('@/utils/supabaseClient');
-  return module.supabaseClient;
-}
-
-const getSupabaseClient = async () => {
-  if (typeof cachedSupabaseClient !== 'undefined') {
-    return cachedSupabaseClient;
-  }
-  cachedSupabaseClient = await importSupabaseClient();
-  return cachedSupabaseClient;
-};
 
 const AuthGateModal = () => {
   const open = useFounderStore((state) => state.authGateOpen);

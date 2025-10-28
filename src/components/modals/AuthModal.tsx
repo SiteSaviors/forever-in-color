@@ -3,21 +3,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { useAuthModal } from '@/store/useAuthModal';
-
-let cachedSupabaseClient: Awaited<ReturnType<typeof importSupabaseClient>> | undefined;
-
-async function importSupabaseClient() {
-  const module = await import('@/utils/supabaseClient');
-  return module.supabaseClient;
-}
-
-const getSupabaseClient = async () => {
-  if (typeof cachedSupabaseClient !== 'undefined') {
-    return cachedSupabaseClient;
-  }
-  cachedSupabaseClient = await importSupabaseClient();
-  return cachedSupabaseClient;
-};
+import { getSupabaseClient } from '@/utils/supabaseClient.loader';
 
 const AuthModal = () => {
   const { open, mode, closeModal, setMode } = useAuthModal();

@@ -24,7 +24,7 @@
 #c
 - **[7 — High] Finding:** `framer-motion` ships a 122 kB vendor chunk across marketing and Studio.
   - **Solution:** Adopt `LazyMotion` + feature imports in tone accordions and Launchflow panels; maintain GPU-friendly transforms.
-- **[7 — High] Finding:** Supabase client bundle (114 kB) loads immediately on Studio entry.
+- **[7 — High] Finding:** Supabase client bundle (114 kB) loads immediately on Studio entry (AuthProvider bootstrap, AuthModal/AuthGate, HEIC fallback).
   - **Solution:** Defer Supabase client hydration until authentication is required, preserving entitlement hydration and `useFounderStore` guarantees.
 - **[5 — Moderate] Finding:** Duplicate Google Fonts requests (`index.html`, `src/styles/tailwind.css`) add redundant requests and CSS.
   - **Solution:** Consolidate font loading (single Google Fonts entry or self-host), retaining landing pixel parity.

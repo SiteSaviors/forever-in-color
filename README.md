@@ -27,6 +27,7 @@ Wondertone is a premium e-commerce experience that transforms personal photos in
 2. **Configure environment**
    - Copy project secrets (ask the founders) into a `.env` file. At minimum the frontend expects `VITE_SUPABASE_URL` for preview polling; other keys are provided through Supabase edge functions.
    - Feature flags ship disabled by default: set `VITE_REQUIRE_AUTH_FOR_PREVIEW=false` and `VITE_AUTH_GATE_ROLLOUT=0` locally; Supabase edge functions respect `REQUIRE_AUTH_FOR_PREVIEW=false`.
+   - Add `VERBOSE_SOURCEMAPS=true` locally if you need production sourcemaps during `npm run build`/`npm run build:analyze`. Leave it unset (or `false`) in staging/production builds to keep artifacts private.
 3. **Run the dev server**
    ```sh
    npm run dev
@@ -57,3 +58,5 @@ Wondertone uses a VS Code-first process—create a branch, review diffs in-edito
 ## Supabase & Edge Functions
 
 Edge logic (preview generation, payments, watermark removal) lives under `supabase/functions/`. The frontend calls these functions rather than hitting AI providers directly, so keep those endpoints available during development. For more architectural detail, check `.github/copilot-instructions.md` and `agents.md`.
+
+- Preview edge CORS is now strict: ensure `WT_PREVIEW_ALLOWED_ORIGINS` is set in Supabase to include every deployed host (defaults cover `wondertone.ai` plus localhost). Add extra domains as a comma-separated list when rolling out new environments.

@@ -18,9 +18,9 @@ const PaletteStrip = ({ swatches, onSwatchHover }: PaletteStripProps) => {
         </div>
       </div>
       <div className="mt-6 flex gap-4 overflow-x-auto pb-2">
-        {swatches.map((swatch) => (
+        {swatches.map((swatch, index) => (
           <div
-            key={swatch.id}
+            key={`${swatch.id}-${index}`}
             className="group relative min-w-[160px] rounded-2xl border border-white/10 bg-white/5 px-4 py-4 transition-transform motion-safe:hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/40"
             tabIndex={0}
             onMouseEnter={() => onSwatchHover?.(swatch)}

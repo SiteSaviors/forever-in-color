@@ -1,17 +1,4 @@
-let cachedSupabaseClient: Awaited<ReturnType<typeof importSupabaseClient>> | undefined;
-
-async function importSupabaseClient() {
-  const module = await import('@/utils/supabaseClient');
-  return module.supabaseClient;
-}
-
-const getSupabaseClient = async () => {
-  if (typeof cachedSupabaseClient !== 'undefined') {
-    return cachedSupabaseClient;
-  }
-  cachedSupabaseClient = await importSupabaseClient();
-  return cachedSupabaseClient;
-};
+import { getSupabaseClient } from '@/utils/supabaseClient.loader';
 
 export type EntitlementTier = 'free' | 'creator' | 'plus' | 'pro' | 'dev';
 export type EntitlementPriority = 'normal' | 'priority' | 'pro';
@@ -63,12 +50,14 @@ export const fetchAuthenticatedEntitlements = async (): Promise<EntitlementSnaps
     .select('tier, tokens_quota, remaining_tokens, period_end, dev_override')
     .maybeSingle();
 
-  console.log('[entitlementsApi] v_entitlements query result:', {
+  devLog('entitlementsApi', 'v_entitlements query result', {
     hasData: !!data,
     hasError: !!error,
-    rawData: data,
-    error: error
+    errorMessage: error?.message ?? null,
   });
+  if (data) {
+    devLog('entitlementsApi', 'Entitlement row payload', data);
+  }
 
   if (error) {
     console.error('[entitlementsApi] Query error:', error);
@@ -76,7 +65,7 @@ export const fetchAuthenticatedEntitlements = async (): Promise<EntitlementSnaps
   }
 
   if (!data) {
-    console.warn('[entitlementsApi] No data returned from v_entitlements');
+    devWarn('entitlementsApi', 'No data returned from v_entitlements');
     return null;
   }
 
@@ -96,7 +85,8 @@ export const fetchAuthenticatedEntitlements = async (): Promise<EntitlementSnaps
     devOverride: Boolean(data.dev_override)
   };
 
-  console.log('[entitlementsApi] Mapped entitlement snapshot:', result);
+  devLog('entitlementsApi', 'Mapped entitlement snapshot', result);
 
   return result;
 };
+import { devLog, devWarn } from '@/utils/devLogger';

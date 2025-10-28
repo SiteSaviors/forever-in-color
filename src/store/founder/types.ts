@@ -41,6 +41,18 @@ export type FounderEntitlementActionsSnapshot = Pick<
 >;
 
 /**
+ * Combined auth helpers exposed by the consolidated slice.
+ */
+export type FounderAuthActionsSnapshot = Pick<
+  FounderStoreState,
+  | 'prefetchAuthClient'
+  | 'setSession'
+  | 'signOut'
+  | 'hydrateEntitlements'
+  | 'updateEntitlementsFromResponse'
+>;
+
+/**
  * Media pipeline state: uploads, crops, orientation, and launchpad layout flags.
  */
 export type FounderMediaStateSnapshot = Pick<

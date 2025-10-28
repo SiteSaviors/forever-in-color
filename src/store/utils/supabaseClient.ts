@@ -1,17 +1,14 @@
-type SupabaseClientInstance = Awaited<ReturnType<typeof importSupabaseClient>>;
+import type { SupabaseClient } from '@supabase/supabase-js';
+import {
+  getSupabaseClient as loadSupabaseClient,
+  prefetchSupabaseClient,
+  withSupabaseClient,
+} from '@/utils/supabaseClient.loader';
 
-let cachedSupabaseClient: SupabaseClientInstance | undefined;
-
-const importSupabaseClient = async () => {
-  const module = await import('@/utils/supabaseClient');
-  return module.supabaseClient;
-};
+export type SupabaseClientInstance = SupabaseClient | null;
 
 export const getSupabaseClient = async (): Promise<SupabaseClientInstance> => {
-  if (typeof cachedSupabaseClient !== 'undefined') {
-    return cachedSupabaseClient;
-  }
-
-  cachedSupabaseClient = await importSupabaseClient();
-  return cachedSupabaseClient;
+  return loadSupabaseClient();
 };
+
+export { prefetchSupabaseClient, withSupabaseClient };

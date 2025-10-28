@@ -9,8 +9,7 @@ import {
 } from '@/utils/studioV2Analytics';
 import { loadInitialStyles } from '@/config/styleCatalog';
 import { createPreviewSlice, type PreviewSlice } from './founder/previewSlice';
-import { createEntitlementSlice, type EntitlementSlice } from './founder/entitlementSlice';
-import { createSessionSlice, type SessionSlice } from './founder/sessionSlice';
+import { createAuthSlice, type AuthSlice } from './founder/authSlice';
 import { createFavoritesSlice, type FavoritesSlice } from './founder/favoritesSlice';
 
 export type { StylePreviewStatus } from './founder/previewSlice';
@@ -154,7 +153,7 @@ type FounderBaseState = {
   clearFavoriteStyles: () => void;
 };
 
-export type FounderState = FounderBaseState & PreviewSlice & EntitlementSlice & SessionSlice & FavoritesSlice;
+export type FounderState = FounderBaseState & PreviewSlice & AuthSlice & FavoritesSlice;
 
 const initialStyles: StyleOption[] = loadInitialStyles();
 
@@ -460,8 +459,7 @@ export const useFounderStore = createWithEqualityFn<FounderState>((set, get, api
     }
   },
   ...createPreviewSlice(initialStyles)(set, get, api),
-  ...createEntitlementSlice(set, get, api),
-  ...createSessionSlice(set, get, api),
+  ...createAuthSlice(set, get, api),
   setSmartCropForOrientation: (orientation, result) =>
     set((state) => ({
       smartCrops: {
