@@ -139,8 +139,40 @@ export async function loadToneStyles(
   const loadPromise = (async () => {
     try {
       // Dynamic import based on tone name
-      // Vite will code-split each tone file into its own chunk
-      const module = await import(`./tones/${tone}Tone.generated.js`) as ToneModule;
+      // Vite requires explicit import paths, so we use a switch statement
+      let module: ToneModule;
+
+      switch (tone) {
+        case 'classic':
+          module = await import('./tones/classicTone.generated.js');
+          break;
+        case 'modern':
+          module = await import('./tones/modernTone.generated.js');
+          break;
+        case 'stylized':
+          module = await import('./tones/stylizedTone.generated.js');
+          break;
+        case 'electric':
+          module = await import('./tones/electricTone.generated.js');
+          break;
+        case 'signature':
+          module = await import('./tones/signatureTone.generated.js');
+          break;
+        case 'abstract':
+          module = await import('./tones/abstractTone.generated.js');
+          break;
+        case 'trending':
+          module = await import('./tones/trendingTone.generated.js');
+          break;
+        case 'original':
+          module = await import('./tones/originalTone.generated.js');
+          break;
+        default:
+          console.error(`[registryLazy] Unknown tone: "${tone}"`);
+          toneCache.delete(tone);
+          return [];
+      }
+
       const styles = module.TONE_STYLES;
 
       if (!Array.isArray(styles)) {

@@ -95,9 +95,32 @@ const StoryLayer = forwardRef<HTMLDivElement, StoryLayerProps>(function StoryLay
     },
   });
 
-  const narrative = useMemo(() => getNarrative(style), [style]);
-  const palette = useMemo(() => getPalette(style), [style]);
-  const complementaryConfig = useMemo(() => getComplementaryStyles(style), [style]);
+  // Lazy-load story data from registry
+  const [narrative, setNarrative] = useState<Awaited<ReturnType<typeof getNarrative>> | null>(null);
+  const [palette, setPalette] = useState<Awaited<ReturnType<typeof getPalette>> | null>(null);
+  const [complementaryConfig, setComplementaryConfig] = useState<Awaited<ReturnType<typeof getComplementaryStyles>> | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    Promise.all([
+      getNarrative(style),
+      getPalette(style),
+      getComplementaryStyles(style),
+    ]).then(([narrativeData, paletteData, complementaryData]) => {
+      if (!cancelled) {
+        setNarrative(narrativeData);
+        setPalette(paletteData);
+        setComplementaryConfig(complementaryData);
+      }
+    }).catch((error) => {
+      console.error('[StoryLayer] Failed to load story data:', error);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [style]);
   const toneShareCaption = useMemo(
     () =>
       getShareCaption({
@@ -157,6 +180,8 @@ const StoryLayer = forwardRef<HTMLDivElement, StoryLayerProps>(function StoryLay
   }, [analyticsContext, impressionTracked]);
 
   const complementarySuggestions = useMemo(() => {
+    if (!complementaryConfig) return [];
+
     const ids = [complementaryConfig.premium, complementaryConfig.fallback].filter(
       (id): id is string => Boolean(id && id !== style.id)
     );
@@ -190,7 +215,7 @@ const StoryLayer = forwardRef<HTMLDivElement, StoryLayerProps>(function StoryLay
         requiredTier: gate.requiredTier ?? null,
       } satisfies Suggestion;
     });
-  }, [complementaryConfig.fallback, complementaryConfig.premium, evaluateStyleGate, style.id, styles]);
+  }, [complementaryConfig, evaluateStyleGate, style.id, styles]);
 
   const isPremiumTier = entitlements.tier !== 'free';
 
@@ -303,6 +328,17 @@ const StoryLayer = forwardRef<HTMLDivElement, StoryLayerProps>(function StoryLay
     },
     [analyticsContext, onToast]
   );
+
+  // Show loading placeholder if story data not yet loaded
+  if (!narrative || !palette) {
+    return (
+      <section ref={mergeRefs} className="space-y-8 sm:space-y-10 text-white animate-pulse">
+        <div className="h-8 bg-white/10 rounded w-3/4"></div>
+        <div className="h-32 bg-white/10 rounded"></div>
+        <div className="h-16 bg-white/10 rounded"></div>
+      </section>
+    );
+  }
 
   return (
     <section ref={mergeRefs} className="space-y-8 sm:space-y-10 text-white">

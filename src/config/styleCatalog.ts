@@ -1,4 +1,3 @@
-import { STYLE_REGISTRY } from './styles/styleRegistry.generated';
 import type {
   StyleRegistryEntry,
   StyleTone,
@@ -7,7 +6,7 @@ import type {
   StyleStoryContent,
 } from './styles/types';
 
-// NEW: Import lazy-loading facade for async operations
+// Lazy-loading facade for async operations
 import {
   loadStyleById as loadRegistryStyleById,
   loadToneStyles as loadRegistryToneStyles,
@@ -16,11 +15,14 @@ import {
 } from './styles/registryLazy';
 
 export type { StyleRegistryEntry, StyleTone, StyleTier } from './styles/types';
-export {
-  STYLE_REGISTRY,
-  STYLE_REGISTRY_BY_ID,
-  STYLE_REGISTRY_BY_NUMERIC_ID,
-} from './styles/styleRegistry.generated';
+
+/**
+ * @deprecated STYLE_REGISTRY, STYLE_REGISTRY_BY_ID, and STYLE_REGISTRY_BY_NUMERIC_ID
+ * have been removed to reduce bundle size. Use lazy loading functions instead:
+ * - loadStyleById() for single style lookup
+ * - loadToneStyles() for loading all styles in a tone
+ * - STYLE_CORE_METADATA for basic metadata (id, name, tone, tier)
+ */
 
 export type StyleCatalogEntry = {
   id: string;
@@ -82,7 +84,13 @@ const toCatalogEntry = (style: StyleRegistryEntry): StyleCatalogEntry => {
   };
 };
 
-export const STYLE_CATALOG: StyleCatalogEntry[] = STYLE_REGISTRY.map(toCatalogEntry);
+/**
+ * @deprecated STYLE_CATALOG has been removed to reduce bundle size.
+ * Use lazy loading functions instead:
+ * - loadStyleCatalogEntry() for single style
+ * - loadToneCatalog() for all styles in a tone
+ * - STYLE_CORE_METADATA for basic metadata
+ */
 
 /**
  * @deprecated Use loadInitialStylesLazy() for lazy loading.
@@ -91,40 +99,7 @@ export const STYLE_CATALOG: StyleCatalogEntry[] = STYLE_REGISTRY.map(toCatalogEn
  *
  * Will be removed in v2.0.
  */
-export const loadInitialStyles = (): StyleOptionSnapshot[] => {
-  if (import.meta.env.DEV) {
-    console.warn(
-      '[styleCatalog] loadInitialStyles() is deprecated. ' +
-      'Use loadInitialStylesLazy() for better performance. ' +
-      'This warning will become an error in v2.0.'
-    );
-  }
-  return STYLE_CATALOG.map(
-    ({
-      id,
-      name,
-      description,
-      thumbnail,
-      thumbnailWebp,
-      thumbnailAvif,
-      preview,
-      previewWebp,
-      previewAvif,
-      priceModifier,
-    }): StyleOptionSnapshot => ({
-      id,
-      name,
-      description,
-      thumbnail,
-      thumbnailWebp: thumbnailWebp ?? null,
-      thumbnailAvif: thumbnailAvif ?? null,
-      preview,
-      previewWebp: previewWebp ?? null,
-      previewAvif: previewAvif ?? null,
-      priceModifier,
-    })
-  );
-};
+// Function removed - use loadInitialStylesLazy() instead
 
 export const STYLE_TONE_DEFINITIONS: Record<StyleTone, StyleToneDefinition> = {
   trending: {
@@ -207,11 +182,11 @@ export const loadInitialStylesLazy = (): StyleOptionSnapshot[] => {
   return STYLE_CORE_METADATA.map(meta => ({
     id: meta.id,
     name: meta.name,
-    description: '', // Loaded on-demand via loadStyleCatalogEntry
-    thumbnail: '', // Loaded on-demand
-    thumbnailWebp: null,
-    thumbnailAvif: null,
-    preview: '', // Loaded on-demand
+    description: meta.description, // Loaded from core metadata for initial render
+    thumbnail: meta.thumbnail, // Loaded from core metadata for initial render
+    thumbnailWebp: meta.thumbnailWebp,
+    thumbnailAvif: meta.thumbnailAvif,
+    preview: '', // Loaded on-demand via loadStyleCatalogEntry
     previewWebp: null,
     previewAvif: null,
     priceModifier: 0, // Loaded on-demand

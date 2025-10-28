@@ -346,6 +346,10 @@ const writeCoreMetadata = () => {
     id: s.id,
     slug: s.slug,
     name: s.name,
+    description: s.description,
+    thumbnail: s.assets.thumbnail,
+    thumbnailWebp: s.assets.thumbnailWebp ?? null,
+    thumbnailAvif: s.assets.thumbnailAvif ?? null,
     tone: s.tone,
     tier: s.tier,
     category: s.category,
@@ -360,6 +364,10 @@ export type StyleCoreMetadata = {
   id: string;
   slug: string;
   name: string;
+  description: string;
+  thumbnail: string;
+  thumbnailWebp: string | null;
+  thumbnailAvif: string | null;
   tone: StyleTone | null;
   tier: 'free' | 'premium';
   category: 'style' | 'original';

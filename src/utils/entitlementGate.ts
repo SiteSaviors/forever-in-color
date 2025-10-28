@@ -1,4 +1,5 @@
-import { STYLE_CATALOG, type StyleCatalogEntry } from '@/config/styleCatalog';
+import { type StyleCatalogEntry } from '@/config/styleCatalog';
+import { STYLE_CORE_BY_ID } from '@/config/styles/registryCore.generated';
 import type { EntitlementState } from '@/store/founder/entitlementSlice';
 import type { SessionUser } from '@/store/founder/sessionSlice';
 
@@ -28,8 +29,35 @@ const TIER_ORDER: Record<string, number> = {
 
 const PREMIUM_DEFAULT_REQUIRED_TIER: 'creator' | 'plus' | 'pro' = 'creator';
 
+/**
+ * Find style metadata for entitlement checking.
+ * Uses core metadata (eagerly loaded) instead of full catalog.
+ * This avoids loading the 60 KB monolithic registry.
+ */
 export const findStyleMetadata = (styleId: string): StyleCatalogEntry | null => {
-  return STYLE_CATALOG.find((entry) => entry.id === styleId) ?? null;
+  const coreMeta = STYLE_CORE_BY_ID.get(styleId);
+  if (!coreMeta) return null;
+
+  // Convert core metadata to StyleCatalogEntry format
+  // Only fields needed for entitlement checking are tier, tone, and requiredTier
+  // Other fields (thumbnail, preview, etc.) are not needed here
+  return {
+    id: coreMeta.id,
+    name: coreMeta.name,
+    description: coreMeta.description,
+    thumbnail: coreMeta.thumbnail,
+    thumbnailWebp: coreMeta.thumbnailWebp,
+    thumbnailAvif: coreMeta.thumbnailAvif,
+    preview: '', // Not needed for entitlement check
+    previewWebp: null,
+    previewAvif: null,
+    priceModifier: 0, // Not needed for entitlement check
+    tier: coreMeta.tier,
+    isPremium: coreMeta.tier === 'premium',
+    tone: coreMeta.tone,
+    requiredTier: undefined, // Will be derived from registry if needed
+    badges: [],
+  } as StyleCatalogEntry;
 };
 
 const isTierSatisfied = (current: EntitlementState['tier'], required: 'creator' | 'plus' | 'pro') => {

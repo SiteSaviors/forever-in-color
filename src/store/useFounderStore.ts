@@ -7,7 +7,7 @@ import {
   trackStudioV2CanvasModalOpen,
   type CanvasSelectionSnapshot,
 } from '@/utils/studioV2Analytics';
-import { loadInitialStyles } from '@/config/styleCatalog';
+import { loadInitialStylesLazy, loadStyleCatalogEntry, mergeStyleSnapshot } from '@/config/styleCatalog';
 import { createPreviewSlice, type PreviewSlice } from './founder/previewSlice';
 import { createAuthSlice, type AuthSlice } from './founder/authSlice';
 import { createFavoritesSlice, type FavoritesSlice } from './founder/favoritesSlice';
@@ -114,6 +114,10 @@ type FounderBaseState = {
   canvasModalOpenedAt: number | null;
   lastCanvasModalSource: CanvasModalSource | null;
   canvasSelections: Record<string, CanvasSelection>;
+  // NEW: Track which styles have full details loaded (lazy loading)
+  loadedStyleIds: Set<string>;
+  // NEW: Track pending loads to prevent duplicate requests
+  pendingStyleLoads: Map<string, Promise<void>>;
   setLivingCanvasModalOpen: (open: boolean) => void;
   setUploadedImage: (dataUrl: string | null) => void;
   setCroppedImage: (dataUrl: string | null) => void;
@@ -146,6 +150,10 @@ type FounderBaseState = {
   currentStyle: () => StyleOption | undefined;
   livingCanvasEnabled: () => boolean;
   shouldAutoGeneratePreviews: () => boolean;
+  // NEW: Ensure a style has full details loaded (lazy loading action)
+  ensureStyleLoaded: (styleId: string) => Promise<StyleOption | null>;
+  // NEW: Batch load multiple styles (for tone accordion expansion)
+  ensureStylesLoaded: (styleIds: string[]) => Promise<void>;
   favoriteStyles: string[];
   toggleFavoriteStyle: (styleId: string) => void;
   isStyleFavorite: (styleId: string) => boolean;
@@ -155,7 +163,9 @@ type FounderBaseState = {
 
 export type FounderState = FounderBaseState & PreviewSlice & AuthSlice & FavoritesSlice;
 
-const initialStyles: StyleOption[] = loadInitialStyles();
+// NEW: Use lazy loading - only load IDs and names initially
+// Full details (thumbnails, descriptions) loaded on-demand via ensureStyleLoaded()
+const initialStyles: StyleOption[] = loadInitialStylesLazy();
 
 const mockEnhancements: Enhancement[] = [
   {
@@ -311,6 +321,8 @@ export const useFounderStore = createWithEqualityFn<FounderState>((set, get, api
   originalImage: null,
   originalImageDimensions: null,
   smartCrops: {},
+  loadedStyleIds: new Set<string>(),
+  pendingStyleLoads: new Map<string, Promise<void>>(),
   orientationChanging: false,
   orientationPreviewPending: false,
   setOrientationChanging: (loading) => set({ orientationChanging: loading }),
@@ -629,5 +641,65 @@ export const useFounderStore = createWithEqualityFn<FounderState>((set, get, api
     return ENABLE_AUTO_PREVIEWS;
   },
   setCurrentImageHash: (hash) => set({ currentImageHash: hash }),
+  ensureStyleLoaded: async (styleId: string) => {
+    const state = get();
+
+    // Fast path: style already loaded
+    if (state.loadedStyleIds.has(styleId)) {
+      return state.styles.find((s) => s.id === styleId) ?? null;
+    }
+
+    // Deduplicate concurrent requests for same style
+    if (state.pendingStyleLoads.has(styleId)) {
+      await state.pendingStyleLoads.get(styleId);
+      return get().styles.find((s) => s.id === styleId) ?? null;
+    }
+
+    // Load style details
+    const loadPromise = (async () => {
+      try {
+        const catalogEntry = await loadStyleCatalogEntry(styleId);
+        if (!catalogEntry) {
+          console.warn(`[ensureStyleLoaded] Style not found: ${styleId}`);
+          return;
+        }
+
+        // Merge full details into existing snapshot
+        set((state) => {
+          const updatedStyles = state.styles.map((s) =>
+            s.id === styleId ? mergeStyleSnapshot(s, catalogEntry) : s
+          );
+          const updatedLoadedIds = new Set(state.loadedStyleIds);
+          updatedLoadedIds.add(styleId);
+
+          return {
+            styles: updatedStyles,
+            loadedStyleIds: updatedLoadedIds,
+          };
+        });
+      } catch (error) {
+        console.error(`[ensureStyleLoaded] Failed to load style ${styleId}:`, error);
+      } finally {
+        // Clean up pending load tracker
+        set((state) => {
+          const updatedPendingLoads = new Map(state.pendingStyleLoads);
+          updatedPendingLoads.delete(styleId);
+          return { pendingStyleLoads: updatedPendingLoads };
+        });
+      }
+    })();
+
+    // Track pending load to prevent duplicates
+    set((state) => ({
+      pendingStyleLoads: new Map(state.pendingStyleLoads).set(styleId, loadPromise),
+    }));
+
+    await loadPromise;
+    return get().styles.find((s) => s.id === styleId) ?? null;
+  },
+  ensureStylesLoaded: async (styleIds: string[]) => {
+    // Batch load multiple styles in parallel
+    await Promise.all(styleIds.map((id) => get().ensureStyleLoaded(id)));
+  },
   ...createFavoritesSlice(set, get, api),
 }));

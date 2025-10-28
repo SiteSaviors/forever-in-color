@@ -36,12 +36,6 @@ const StyleSidebar = ({
       )}
     >
       <div className="style-sidebar-shell relative p-6 space-y-6">
-        {!hasCroppedImage && (
-          <div className="rounded-xl border border-white/12 bg-white/5 p-4 text-sm text-white/70">
-            Upload your photo above to unlock style previews.
-          </div>
-        )}
-
         {/* Header */}
         <div className="relative space-y-1.5">
           <p className="text-[10px] uppercase tracking-[0.38em] text-white/50">Studio Curations</p>

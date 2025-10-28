@@ -1,4 +1,4 @@
-import { memo, useMemo, type ReactNode } from 'react';
+import { memo, useMemo, useState, useEffect, type ReactNode } from 'react';
 import { clsx } from 'clsx';
 import { shallow } from 'zustand/shallow';
 import type { StyleOption } from '@/store/useFounderStore';
@@ -155,11 +155,31 @@ const InsightsRail = ({
   const stage: 'pre-upload' | 'post-upload' =
     hasCroppedImage && previewReady ? 'post-upload' : 'pre-upload';
 
-  const storyData = useMemo(() => {
-    if (!highlightedStyle || stage !== 'post-upload') return null;
-    const narrative = getNarrative(highlightedStyle);
-    const palette = getPalette(highlightedStyle);
-    return { narrative, palette };
+  // Lazy-load story data from registry
+  const [storyData, setStoryData] = useState<{ narrative: Awaited<ReturnType<typeof getNarrative>>; palette: Awaited<ReturnType<typeof getPalette>> } | null>(null);
+
+  useEffect(() => {
+    if (!highlightedStyle || stage !== 'post-upload') {
+      setStoryData(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    Promise.all([
+      getNarrative(highlightedStyle),
+      getPalette(highlightedStyle),
+    ]).then(([narrative, palette]) => {
+      if (!cancelled) {
+        setStoryData({ narrative, palette });
+      }
+    }).catch((error) => {
+      console.error('[InsightsRail] Failed to load story data:', error);
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [highlightedStyle, stage]);
 
   return (

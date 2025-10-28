@@ -22,7 +22,24 @@ const CuratedStylesModule = ({ currentStyle, onGatePrompt }: CuratedStylesModule
   const styles = useFounderStore((state) => state.styles);
   const evaluateStyleGate = useFounderStore((state) => state.evaluateStyleGate);
 
-  const curated = useMemo(() => getComplementaryStyles(currentStyle), [currentStyle]);
+  // Lazy-load complementary styles from registry
+  const [curated, setCurated] = useState<Awaited<ReturnType<typeof getComplementaryStyles>> | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    getComplementaryStyles(currentStyle).then((complementaryData) => {
+      if (!cancelled) {
+        setCurated(complementaryData);
+      }
+    }).catch((error) => {
+      console.error('[CuratedStylesModule] Failed to load complementary styles:', error);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentStyle]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => setRevealed(true), 40);
@@ -30,6 +47,7 @@ const CuratedStylesModule = ({ currentStyle, onGatePrompt }: CuratedStylesModule
   }, [currentStyle?.id]);
 
   const curatedStyles = useMemo(() => {
+    if (!curated) return [];
     const ids = [curated.premium, curated.fallback].filter(
       (id): id is string => Boolean(id && id !== currentStyle.id)
     );
@@ -37,7 +55,7 @@ const CuratedStylesModule = ({ currentStyle, onGatePrompt }: CuratedStylesModule
       .map((id) => styles.find((style) => style?.id === id))
       .filter((style): style is StyleOption => Boolean(style))
       .slice(0, 2);
-  }, [curated.fallback, curated.premium, currentStyle.id, styles]);
+  }, [curated, currentStyle.id, styles]);
 
   const handleStyleSelect = useHandleStyleSelect({
     onGateDenied: ({ gate, styleId }) => {

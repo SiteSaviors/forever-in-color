@@ -14,6 +14,7 @@ import {
   toneCardStagger,
 } from '../motion/toneAccordionMotion';
 import type { PrefetchGroupStatus } from '@/sections/studio/hooks/useStyleThumbnailPrefetch';
+import { useFounderStore } from '@/store/useFounderStore';
 import './ToneSection.css';
 
 type ToneSectionProps = {
@@ -41,12 +42,21 @@ export default function ToneSection({
   const [isAnimating, setIsAnimating] = useState(false);
   const [panelHeight, setPanelHeight] = useState<number | 'auto'>('auto');
   const panelRef = useRef<HTMLDivElement>(null);
+  const ensureStylesLoaded = useFounderStore((state) => state.ensureStylesLoaded);
 
   useEffect(() => {
     if (isExpanded && !iconAnimated) {
       setIconAnimated(true);
     }
   }, [iconAnimated, isExpanded]);
+
+  // Lazy load style details when accordion expands
+  useEffect(() => {
+    if (isExpanded && styles.length > 0) {
+      const styleIds = styles.map((s) => s.option.id);
+      void ensureStylesLoaded(styleIds);
+    }
+  }, [isExpanded, styles, ensureStylesLoaded]);
 
   // FLIP height measurement for smooth GPU-accelerated animation
   useEffect(() => {

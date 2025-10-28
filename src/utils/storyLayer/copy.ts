@@ -1,5 +1,6 @@
 import type { StyleOption, EntitlementTier } from '@/store/useFounderStore';
-import { STYLE_REGISTRY_BY_ID, type StyleTone } from '@/config/styleCatalog';
+import { type StyleTone } from '@/config/styleCatalog';
+import { loadStyleById } from '@/config/styles/registryLazy';
 
 type Narrative = {
   headline: string;
@@ -155,8 +156,8 @@ const toneShareHooks: Record<Exclude<StyleTone, null>, string> = {
   signature: 'Wondertone’s signature finish wraps this memory in aurora glow.',
 };
 
-export function getNarrative(style: StyleOption): Narrative {
-  const registryEntry = STYLE_REGISTRY_BY_ID.get(style.id);
+export async function getNarrative(style: StyleOption): Promise<Narrative> {
+  const registryEntry = await loadStyleById(style.id);
   const narrativeFromRegistry = registryEntry?.story?.narrative ?? null;
   if (narrativeFromRegistry) {
     const headline = narrativeFromRegistry.headline ?? `The story behind ${style.name}`;
@@ -175,8 +176,8 @@ export function getNarrative(style: StyleOption): Narrative {
   return factory ? factory(style.name) : toneNarratives.classic(style.name);
 }
 
-export function getPalette(style: StyleOption): PaletteSwatch[] {
-  const registryEntry = STYLE_REGISTRY_BY_ID.get(style.id);
+export async function getPalette(style: StyleOption): Promise<PaletteSwatch[]> {
+  const registryEntry = await loadStyleById(style.id);
   const paletteFromRegistry = registryEntry?.story?.palette;
   if (paletteFromRegistry && paletteFromRegistry.length > 0) {
     return paletteFromRegistry.map((swatch) => ({ ...swatch }));
@@ -188,8 +189,8 @@ export function getPalette(style: StyleOption): PaletteSwatch[] {
   return tonePalettes.classic;
 }
 
-export function getComplementaryStyles(style: StyleOption): ComplementaryStyles {
-  const registryEntry = STYLE_REGISTRY_BY_ID.get(style.id);
+export async function getComplementaryStyles(style: StyleOption): Promise<ComplementaryStyles> {
+  const registryEntry = await loadStyleById(style.id);
   const complementaryFromRegistry = registryEntry?.story?.complementary;
   if (complementaryFromRegistry) {
     return {
