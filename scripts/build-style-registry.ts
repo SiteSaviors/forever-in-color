@@ -298,3 +298,97 @@ fs.mkdirSync(path.dirname(edgeOutputPath), { recursive: true });
 fs.writeFileSync(edgeOutputPath, edgeContent);
 
 console.log(`✅ Generated ${path.relative(projectRoot, edgeOutputPath)}`);
+
+// ============================================================================
+// NEW: Tone-Based Registry Generation (Phase 1)
+// ============================================================================
+
+const writeToneRegistries = () => {
+  const tonesDir = path.resolve(projectRoot, 'src/config/styles/tones');
+  fs.mkdirSync(tonesDir, { recursive: true });
+
+  // Group styles by tone
+  const stylesByTone = new Map<string, GeneratedEntry[]>();
+  generatedEntries.forEach(entry => {
+    const toneKey = entry.tone ?? 'original';
+    if (!stylesByTone.has(toneKey)) {
+      stylesByTone.set(toneKey, []);
+    }
+    stylesByTone.get(toneKey)!.push(entry);
+  });
+
+  // Write each tone file
+  stylesByTone.forEach((styles, tone) => {
+    const filename = `${tone}Tone.generated.ts`;
+    const filepath = path.join(tonesDir, filename);
+
+    const serializedToneEntries = styles.map(serializeEntry).join(',\n');
+
+    const content = `// AUTO-GENERATED FILE. DO NOT EDIT DIRECTLY.
+// Run \`npm run build:registry\` to regenerate.
+
+import type { StyleRegistryEntry } from '../types';
+
+export const TONE_STYLES: StyleRegistryEntry[] = [
+${serializedToneEntries}
+];
+
+export const TONE_STYLES_BY_ID = new Map(TONE_STYLES.map((s) => [s.id, s]));
+`;
+
+    fs.writeFileSync(filepath, content, 'utf8');
+    console.log(`✓ Generated ${filename} (${styles.length} ${styles.length === 1 ? 'style' : 'styles'})`);
+  });
+};
+
+const writeCoreMetadata = () => {
+  const coreMetadata = generatedEntries.map(s => ({
+    id: s.id,
+    slug: s.slug,
+    name: s.name,
+    tone: s.tone,
+    tier: s.tier,
+    category: s.category,
+  }));
+
+  const coreContent = `// AUTO-GENERATED FILE. DO NOT EDIT DIRECTLY.
+// Run \`npm run build:registry\` to regenerate.
+
+import type { StyleTone } from './types';
+
+export type StyleCoreMetadata = {
+  id: string;
+  slug: string;
+  name: string;
+  tone: StyleTone | null;
+  tier: 'free' | 'premium';
+  category: 'style' | 'original';
+};
+
+export const STYLE_CORE_METADATA: StyleCoreMetadata[] = ${JSON.stringify(coreMetadata, null, 2)};
+
+// Map for O(1) lookups
+export const STYLE_CORE_BY_ID = new Map(STYLE_CORE_METADATA.map((s) => [s.id, s]));
+
+// Tone list for dynamic imports
+export const AVAILABLE_TONES = [
+  'classic',
+  'modern',
+  'stylized',
+  'electric',
+  'signature',
+  'abstract',
+  'trending',
+  'original',
+] as const;
+`;
+
+  const outputPath = path.resolve(projectRoot, 'src/config/styles/registryCore.generated.ts');
+  fs.writeFileSync(outputPath, coreContent, 'utf8');
+  console.log('✓ Generated registryCore.generated.ts');
+};
+
+console.log('\n🔨 Generating tone-based registries...');
+writeToneRegistries();
+writeCoreMetadata();
+console.log('✅ Tone-based registry generation complete');
