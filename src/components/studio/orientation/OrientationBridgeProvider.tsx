@@ -13,7 +13,10 @@ import {
 import { CANVAS_SIZE_OPTIONS, getDefaultSizeForOrientation } from '@/utils/canvasSizes';
 import { cacheSmartCropResult, generateSmartCrop, ORIENTATION_PRESETS, type SmartCropResult } from '@/utils/smartCrop';
 import type { Orientation } from '@/utils/imageUtils';
-import { useFounderStore } from '@/store/useFounderStore';
+import { useUploadActions, useUploadState } from '@/store/hooks/useUploadStore';
+import { usePreviewActions, usePreviewState } from '@/store/hooks/usePreviewStore';
+import { useCanvasConfigActions, useCanvasConfigState } from '@/store/hooks/useCanvasConfigStore';
+import { useStyleCatalogState } from '@/store/hooks/useStyleCatalogStore';
 
 const CropperModal = lazy(() => import('@/components/launchpad/cropper/CropperModal'));
 
@@ -39,25 +42,32 @@ const OrientationBridgeProvider = ({ children, onOrientationToast }: Orientation
   const [pendingOrientation, setPendingOrientation] = useState<Orientation | null>(null);
   const previousGlobalHandlerRef = useRef<((orientation?: Orientation) => void) | undefined>();
 
-  const orientation = useFounderStore((state) => state.orientation);
-  const setOrientation = useFounderStore((state) => state.setOrientation);
-  const orientationChanging = useFounderStore((state) => state.orientationChanging);
-  const setOrientationChanging = useFounderStore((state) => state.setOrientationChanging);
-  const orientationPreviewPending = useFounderStore((state) => state.orientationPreviewPending);
-  const setOrientationPreviewPending = useFounderStore((state) => state.setOrientationPreviewPending);
-  const setOrientationTip = useFounderStore((state) => state.setOrientationTip);
-  const selectedSize = useFounderStore((state) => state.selectedCanvasSize);
-  const setCanvasSize = useFounderStore((state) => state.setCanvasSize);
-  const currentStyle = useFounderStore((state) => state.currentStyle());
-  const startStylePreview = useFounderStore((state) => state.startStylePreview);
-  const setPreviewState = useFounderStore((state) => state.setPreviewState);
-  const originalImage = useFounderStore((state) => state.originalImage);
-  const croppedImage = useFounderStore((state) => state.croppedImage);
-  const originalImageDimensions = useFounderStore((state) => state.originalImageDimensions);
-  const smartCrops = useFounderStore((state) => state.smartCrops);
-  const setSmartCropForOrientation = useFounderStore((state) => state.setSmartCropForOrientation);
-  const setCroppedImage = useFounderStore((state) => state.setCroppedImage);
-  const markCropReady = useFounderStore((state) => state.markCropReady);
+  const {
+    originalImage,
+    originalImageDimensions,
+    smartCrops,
+    croppedImage,
+    orientation,
+    orientationChanging,
+  } = useUploadState();
+  const {
+    setOrientation,
+    setOrientationTip,
+    setOrientationChanging,
+    setSmartCropForOrientation,
+    setCroppedImage,
+    markCropReady,
+  } = useUploadActions();
+  const { orientationPreviewPending } = usePreviewState();
+  const {
+    startStylePreview,
+    setPreviewState,
+    setOrientationPreviewPending,
+    hasCachedPreview,
+  } = usePreviewActions();
+  const { selectedCanvasSize: selectedSize } = useCanvasConfigState();
+  const { setCanvasSize } = useCanvasConfigActions();
+  const { currentStyle } = useStyleCatalogState();
 
   const ensureSmartCropForOrientation = useCallback(
     async (orient: Orientation): Promise<SmartCropResult | null> => {
@@ -143,14 +153,12 @@ const OrientationBridgeProvider = ({ children, onOrientationToast }: Orientation
         setCanvasSize(getDefaultSizeForOrientation(targetOrientation));
       }
 
-      const snapshot = useFounderStore.getState();
-      const hasCachedPreview = currentStyle
-        ? Boolean(snapshot.stylePreviewCache[currentStyle.id]?.[targetOrientation])
-        : false;
+      const shouldRegeneratePreview =
+        Boolean(currentStyle) &&
+        currentStyle.id !== 'original-image' &&
+        !hasCachedPreview(currentStyle.id, targetOrientation);
 
-      const shouldRegeneratePreview = Boolean(currentStyle) && currentStyle?.id !== 'original-image';
-
-      if (shouldRegeneratePreview && currentStyle && !hasCachedPreview) {
+      if (shouldRegeneratePreview && currentStyle) {
         try {
           setOrientationPreviewPending(true);
           await startStylePreview(currentStyle, { force: true, orientationOverride: targetOrientation });
@@ -184,6 +192,7 @@ const OrientationBridgeProvider = ({ children, onOrientationToast }: Orientation
       setPreviewState,
       setSmartCropForOrientation,
       startStylePreview,
+      hasCachedPreview,
     ]
   );
 

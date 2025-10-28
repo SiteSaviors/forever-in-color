@@ -1,6 +1,6 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { clsx } from 'clsx';
-import { useFounderStore, StylePreviewStatus } from '@/store/useFounderStore';
+import type { StylePreviewStatus } from '@/store/useFounderStore';
 import { useAuthModal } from '@/store/useAuthModal';
 import { useStudioFeedback } from '@/hooks/useStudioFeedback';
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
@@ -15,6 +15,7 @@ import CanvasPreviewPanel from '@/sections/studio/components/CanvasPreviewPanel'
 import { ENABLE_STUDIO_V2_CANVAS_MODAL, ENABLE_STUDIO_V2_INSIGHTS_RAIL } from '@/config/featureFlags';
 import { OrientationBridgeProvider } from '@/components/studio/orientation/OrientationBridgeProvider';
 import { useOrientationBridge } from '@/components/studio/orientation/useOrientationBridge';
+import { useStudioConfiguratorActions, useStudioConfiguratorState } from '@/store/hooks/useStudioConfiguratorStore';
 
 const TokenWarningBanner = lazy(() => import('@/components/studio/TokenWarningBanner'));
 const StickyOrderRailLazy = lazy(() => import('@/components/studio/StickyOrderRail'));
@@ -82,28 +83,31 @@ const StudioConfiguratorInner = ({
   showUpgradeModal,
   renderFeedback,
 }: StudioConfiguratorInnerProps) => {
-  const sessionUser = useFounderStore((state) => state.sessionUser);
-  const sessionAccessToken = useFounderStore((state) => state.getSessionAccessToken());
-  const styles = useFounderStore((state) => state.styles);
-  const previews = useFounderStore((state) => state.previews);
-  const currentStyle = useFounderStore((state) => state.currentStyle());
+  const {
+    sessionUser,
+    sessionAccessToken,
+    styles,
+    previews,
+    currentStyle,
+    entitlements,
+    firstPreviewCompleted,
+    generationCount,
+    croppedImage,
+    orientation,
+    pendingStyleId,
+    stylePreviewStatus,
+    stylePreviewMessage,
+    stylePreviewError,
+    orientationPreviewPending,
+    livingCanvasModalOpen,
+    launchpadExpanded,
+    displayRemainingTokens,
+    userTier,
+    requiresWatermark,
+  } = useStudioConfiguratorState();
+  const { setLaunchpadExpanded, openCanvasModal, hydrateEntitlements } = useStudioConfiguratorActions();
   const preview = currentStyle ? previews[currentStyle.id] : undefined;
-  const entitlements = useFounderStore((state) => state.entitlements);
-  const hydrateEntitlements = useFounderStore((state) => state.hydrateEntitlements);
-  const firstPreviewCompleted = useFounderStore((state) => state.firstPreviewCompleted);
-  const generationCount = useFounderStore((state) => state.generationCount);
-  const croppedImage = useFounderStore((state) => state.croppedImage);
-  const orientation = useFounderStore((state) => state.orientation);
-  const pendingStyleId = useFounderStore((state) => state.pendingStyleId);
-  const stylePreviewStatus = useFounderStore((state) => state.stylePreviewStatus);
-  const stylePreviewMessage = useFounderStore((state) => state.stylePreviewMessage);
-  const stylePreviewError = useFounderStore((state) => state.stylePreviewError);
-  const orientationPreviewPending = useFounderStore((state) => state.orientationPreviewPending);
   const { requestOrientationChange, orientationChanging } = useOrientationBridge();
-  const livingCanvasModalOpen = useFounderStore((state) => state.livingCanvasModalOpen);
-  const launchpadExpanded = useFounderStore((state) => state.launchpadExpanded);
-  const setLaunchpadExpanded = useFounderStore((state) => state.setLaunchpadExpanded);
-  const displayRemainingTokens = useFounderStore((state) => state.getDisplayableRemainingTokens());
   const previewOrientationLabel = preview?.orientation ? ORIENTATION_PRESETS[preview.orientation].label : null;
   const orientationMismatch = Boolean(preview?.orientation && preview.orientation !== orientation);
   const [savingToGallery, setSavingToGallery] = useState(false);
@@ -115,7 +119,6 @@ const StudioConfiguratorInner = ({
   const [welcomeDismissed, setWelcomeDismissed] = useState(false);
   const [canvasConfigExpanded, setCanvasConfigExpanded] = useState(true);
   const openAuthModal = useAuthModal((state) => state.openModal);
-  const openCanvasModal = useFounderStore((state) => state.openCanvasModal);
 
   const centerCtaThrottleRef = useRef<number>(0);
   const orientationCtaThrottleRef = useRef<number>(0);
@@ -134,10 +137,8 @@ const StudioConfiguratorInner = ({
   const showReturningBanner = returningUser && !welcomeDismissed;
 
   // Get user tier from entitlements
-  const userTier = useFounderStore((state) => state.entitlements?.tier ?? 'free');
   const previewReady = preview?.status === 'ready';
 
-  const requiresWatermark = useFounderStore((state) => state.entitlements?.requiresWatermark ?? true);
   const isPremiumUser = !requiresWatermark;
   const [watermarkUpgradeShown, setWatermarkUpgradeShown] = useState(false);
 

@@ -1,8 +1,6 @@
 import { forwardRef, useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import type { MutableRefObject } from 'react';
-import { shallow } from 'zustand/shallow';
 import type { EntitlementState, StyleOption } from '@/store/useFounderStore';
-import { useFounderStore } from '@/store/useFounderStore';
 import type { Orientation } from '@/utils/imageUtils';
 import type { StudioToastPayload, UpgradePromptPayload } from '@/hooks/useStudioFeedback';
 import { useHandleStyleSelect } from '@/sections/studio/hooks/useHandleStyleSelect';
@@ -23,6 +21,7 @@ import {
   trackComplementaryClick,
   trackShareClick,
 } from '@/utils/storyLayerAnalytics';
+import { useStyleCatalogActions, useStyleCatalogState } from '@/store/hooks/useStyleCatalogStore';
 
 type StoryLayerProps = {
   style: StyleOption;
@@ -33,15 +32,6 @@ type StoryLayerProps = {
   onToast?: (payload: StudioToastPayload) => void;
   onUpgradePrompt?: (payload: UpgradePromptPayload) => void;
 };
-
-const useStyleStore = () =>
-  useFounderStore(
-    (state) => ({
-      styles: state.styles,
-      evaluateStyleGate: state.evaluateStyleGate,
-    }),
-    shallow
-  );
 
 const SOCIAL_DESCRIPTIONS: Record<SocialChannel, string> = {
   facebook: 'Facebook',
@@ -82,7 +72,8 @@ const StoryLayer = forwardRef<HTMLDivElement, StoryLayerProps>(function StoryLay
     [ref]
   );
 
-  const { styles, evaluateStyleGate } = useStyleStore();
+  const { styles } = useStyleCatalogState();
+  const { evaluateStyleGate } = useStyleCatalogActions();
   const handleStyleSelect = useHandleStyleSelect({
     onGateDenied: ({ gate }) => {
       if (!onUpgradePrompt) return;

@@ -1,14 +1,16 @@
 import { Suspense, lazy, useCallback, useMemo, useRef } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { clsx } from 'clsx';
-import { shallow } from 'zustand/shallow';
 import { useNavigate } from 'react-router-dom';
 import { CANVAS_SIZE_OPTIONS, getCanvasSizeOption } from '@/utils/canvasSizes';
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
-import { useFounderStore, type CanvasModalCloseReason, type FrameColor } from '@/store/useFounderStore';
+import { type CanvasModalCloseReason, type FrameColor } from '@/store/useFounderStore';
 import { useCheckoutStore } from '@/store/useCheckoutStore';
 import { ENABLE_STUDIO_V2_CANVAS_MODAL } from '@/config/featureFlags';
 import { trackStudioV2CanvasModalOrientation } from '@/utils/studioV2Analytics';
+import { useCanvasConfigActions, useCanvasConfigState } from '@/store/hooks/useCanvasConfigStore';
+import { useStyleCatalogState } from '@/store/hooks/useStyleCatalogStore';
+import { useUploadState } from '@/store/hooks/useUploadStore';
 
 const CanvasInRoomPreview = lazy(() => import('@/components/studio/CanvasInRoomPreview'));
 
@@ -22,38 +24,12 @@ const orientationOrder: Array<'vertical' | 'square' | 'horizontal'> = ['vertical
 const CanvasCheckoutModal = () => {
   const navigate = useNavigate();
   const closingReasonRef = useRef<CanvasModalCloseReason | null>(null);
-  const {
-    canvasModalOpen,
-    closeCanvasModal,
-    currentStyle,
-    orientation,
-    selectedCanvasSize,
-    selectedFrame,
-    enhancements,
-    setCanvasSize,
-    setFrame,
-    toggleEnhancement,
-    setLivingCanvasModalOpen,
-    computedTotal,
-    orientationPreviewPending,
-  } = useFounderStore(
-    (state) => ({
-      canvasModalOpen: state.canvasModalOpen,
-      closeCanvasModal: state.closeCanvasModal,
-      currentStyle: state.currentStyle(),
-      orientation: state.orientation,
-      selectedCanvasSize: state.selectedCanvasSize,
-      selectedFrame: state.selectedFrame,
-      enhancements: state.enhancements,
-      setCanvasSize: state.setCanvasSize,
-      setFrame: state.setFrame,
-      toggleEnhancement: state.toggleEnhancement,
-      setLivingCanvasModalOpen: state.setLivingCanvasModalOpen,
-      computedTotal: state.computedTotal,
-      orientationPreviewPending: state.orientationPreviewPending,
-    }),
-    shallow
-  );
+  const { canvasModalOpen, selectedCanvasSize, selectedFrame, enhancements, orientationPreviewPending } =
+    useCanvasConfigState();
+  const { closeCanvasModal, setCanvasSize, setFrame, toggleEnhancement, setLivingCanvasModalOpen, computedTotal } =
+    useCanvasConfigActions();
+  const { orientation } = useUploadState();
+  const { currentStyle } = useStyleCatalogState();
 
   const resetCheckout = useCheckoutStore((state) => state.resetCheckout);
 

@@ -1,7 +1,7 @@
 import { AnimatePresence, m } from 'framer-motion';
 import { X } from 'lucide-react';
 import { Suspense, lazy, useEffect, useRef, useState, type TouchEvent } from 'react';
-import { useFounderStore } from '@/store/useFounderStore';
+import { usePreviewState } from '@/store/hooks/usePreviewStore';
 import OriginalImageCard from '@/sections/studio/components/OriginalImageCard';
 import StyleAccordionFallback from '@/sections/studio/components/StyleAccordionFallback';
 import usePrefersReducedMotion from '@/hooks/usePrefersReducedMotion';
@@ -27,8 +27,7 @@ export default function MobileStyleDrawer({
   const touchStartYRef = useRef<number | null>(null);
 
   // Subscribe to store state for smart auto-close
-  const pendingStyleId = useFounderStore((state) => state.pendingStyleId);
-  const stylePreviewStatus = useFounderStore((state) => state.stylePreviewStatus);
+  const { pendingStyleId, stylePreviewStatus } = usePreviewState();
 
   // Lock body scroll when drawer is open
   useEffect(() => {

@@ -1,13 +1,16 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Card from '@/components/ui/Card';
-import { useFounderStore } from '@/store/useFounderStore';
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
 import { CANVAS_SIZE_OPTIONS, getCanvasSizeOption } from '@/utils/canvasSizes';
 import { useCheckoutStore } from '@/store/useCheckoutStore';
 import CanvasConfig from '@/components/studio/CanvasConfig';
 import { trackOrderStarted } from '@/utils/telemetry';
 import { useOrientationBridge } from '@/components/studio/orientation/useOrientationBridge';
+import { useCanvasConfigActions, useCanvasConfigState } from '@/store/hooks/useCanvasConfigStore';
+import { useStyleCatalogState } from '@/store/hooks/useStyleCatalogStore';
+import { useUploadState } from '@/store/hooks/useUploadStore';
+import { useEntitlementsState } from '@/store/hooks/useEntitlementsStore';
 
 type StickyOrderRailProps = {
   mobileRoomPreview?: React.ReactNode;
@@ -18,17 +21,13 @@ const StickyOrderRail = ({
   mobileRoomPreview,
   canvasConfigExpanded,
 }: StickyOrderRailProps) => {
-  const enhancements = useFounderStore((state) => state.enhancements);
-  const toggleEnhancement = useFounderStore((state) => state.toggleEnhancement);
-  const setLivingCanvasModalOpen = useFounderStore((state) => state.setLivingCanvasModalOpen);
-  const total = useFounderStore((state) => state.computedTotal());
-  const currentStyle = useFounderStore((state) => state.currentStyle());
-  const croppedImage = useFounderStore((state) => state.croppedImage);
-  const selectedSize = useFounderStore((state) => state.selectedCanvasSize);
-  const setCanvasSize = useFounderStore((state) => state.setCanvasSize);
-  const selectedFrame = useFounderStore((state) => state.selectedFrame);
-  const setFrame = useFounderStore((state) => state.setFrame);
-  const orientationPreviewPending = useFounderStore((state) => state.orientationPreviewPending);
+  const { enhancements, selectedCanvasSize: selectedSize, selectedFrame, orientationPreviewPending } =
+    useCanvasConfigState();
+  const { toggleEnhancement, setLivingCanvasModalOpen, setCanvasSize, setFrame, computedTotal } =
+    useCanvasConfigActions();
+  const { currentStyle } = useStyleCatalogState();
+  const { croppedImage } = useUploadState();
+  const { userTier } = useEntitlementsState();
   const resetCheckout = useCheckoutStore((state) => state.resetCheckout);
   const navigate = useNavigate();
   const { requestOrientationChange, cropperOpen, pendingOrientation, orientationChanging, activeOrientation } =
@@ -38,6 +37,7 @@ const StickyOrderRail = ({
   const livingCanvas = enhancements.find((e) => e.id === 'living-canvas');
 
   const enabledEnhancements = enhancements.filter((item) => item.enabled);
+  const total = computedTotal();
 
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
@@ -73,7 +73,6 @@ const StickyOrderRail = ({
     }
 
     // Track order started
-    const userTier = useFounderStore.getState().entitlements?.tier ?? 'free';
     trackOrderStarted(userTier, total, enabledEnhancements.length > 0);
 
     setCheckoutError(null);

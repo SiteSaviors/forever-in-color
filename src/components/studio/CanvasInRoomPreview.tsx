@@ -1,8 +1,11 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import type { Orientation } from '@/utils/imageUtils';
-import { useFounderStore } from '@/store/useFounderStore';
 import type { CanvasSize } from '@/store/useFounderStore';
 import { getRoomAsset } from './roomAssets';
+import { useUploadState } from '@/store/hooks/useUploadStore';
+import { useCanvasConfigState } from '@/store/hooks/useCanvasConfigStore';
+import { usePreviewState } from '@/store/hooks/usePreviewStore';
+import { useStyleCatalogState } from '@/store/hooks/useStyleCatalogStore';
 
 export interface CanvasInRoomPreviewProps {
   showDimensions?: boolean;
@@ -45,32 +48,23 @@ const CanvasInRoomPreview = ({
   showDimensions = false,
   className = '',
 }: CanvasInRoomPreviewProps) => {
-  const orientation = useFounderStore((state) => state.orientation);
-  const selectedFrame = useFounderStore((state) => state.selectedFrame);
-  const selectedSize = useFounderStore((state) => state.selectedCanvasSize);
-  const orientationChanging = useFounderStore((state) => state.orientationChanging);
-  const previewStatus = useFounderStore((state) => state.previewStatus);
+  const { orientation, orientationChanging, croppedImage, uploadedImage } = useUploadState();
+  const { selectedFrame, selectedCanvasSize: selectedSize } = useCanvasConfigState();
+  const { previewStatus, previews, stylePreviewCache } = usePreviewState();
+  const { currentStyle } = useStyleCatalogState();
 
-  const { previewUrl, fallbackStyleImage } = useFounderStore((state) => {
-    const currentStyle = state.styles.find((style) => style.id === state.selectedStyleId);
+  const { previewUrl, fallbackStyleImage } = useMemo(() => {
     if (!currentStyle) {
       return { previewUrl: null, fallbackStyleImage: null };
     }
 
-    const cached =
-      state.stylePreviewCache[currentStyle.id]?.[state.orientation]?.url ?? null;
+    const cached = stylePreviewCache[currentStyle.id]?.[orientation]?.url ?? null;
 
     return {
-      previewUrl:
-        state.previews[currentStyle.id]?.data?.previewUrl ??
-        cached ??
-        null,
+      previewUrl: previews[currentStyle.id]?.data?.previewUrl ?? cached ?? null,
       fallbackStyleImage: currentStyle.preview ?? null,
     };
-  });
-
-  const croppedImage = useFounderStore((state) => state.croppedImage);
-  const uploadedImage = useFounderStore((state) => state.uploadedImage);
+  }, [currentStyle, orientation, previews, stylePreviewCache]);
 
   const roomAsset = useMemo(
     () => getRoomAsset(orientation, selectedFrame),

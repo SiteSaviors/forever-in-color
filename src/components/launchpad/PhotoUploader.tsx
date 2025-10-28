@@ -1,7 +1,6 @@
 import { ChangeEvent, DragEvent, useCallback, useEffect, useMemo, useRef, useState, lazy, Suspense } from 'react';
 import { clsx } from 'clsx';
 import Card from '@/components/ui/Card';
-import { useFounderStore } from '@/store/useFounderStore';
 import { readFileAsDataURL, getImageDimensions, determineOrientationFromDimensions, type FileDataUrlResult } from '@/utils/imageUtils';
 import SmartCropPreview from '@/components/launchpad/SmartCropPreview';
 import AIAnalysisOverlay from '@/components/launchpad/AIAnalysisOverlay';
@@ -9,6 +8,8 @@ import { emitStepOneEvent } from '@/utils/telemetry';
 import { ORIENTATION_PRESETS, cacheSmartCropResult, clearSmartCropCacheForImage, SmartCropResult } from '@/utils/smartCrop';
 import { computeImageDigest } from '@/utils/imageHash';
 import type { Orientation } from '@/utils/imageUtils';
+import { useUploadActions, useUploadState } from '@/store/hooks/useUploadStore';
+import { usePreviewActions } from '@/store/hooks/usePreviewStore';
 
 const SAMPLE_IMAGE = 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=900&q=80';
 
@@ -19,31 +20,33 @@ const CropperModal = lazy(loadCropperModal);
 
 const PhotoUploader = () => {
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const setUploadedImage = useFounderStore((state) => state.setUploadedImage);
-  const setCroppedImage = useFounderStore((state) => state.setCroppedImage);
-  const setOriginalImage = useFounderStore((state) => state.setOriginalImage);
-  const setOriginalImageDimensions = useFounderStore((state) => state.setOriginalImageDimensions);
-  const originalImage = useFounderStore((state) => state.originalImage);
-  const originalImageDimensions = useFounderStore((state) => state.originalImageDimensions);
-  const smartCrops = useFounderStore((state) => state.smartCrops);
-  const setOrientation = useFounderStore((state) => state.setOrientation);
-  const setOrientationTip = useFounderStore((state) => state.setOrientationTip);
-  const markCropReady = useFounderStore((state) => state.markCropReady);
-  const setDragging = useFounderStore((state) => state.setDragging);
-  const generatePreviews = useFounderStore((state) => state.generatePreviews);
-  const resetPreviews = useFounderStore((state) => state.resetPreviews);
-  const shouldAutoGeneratePreviews = useFounderStore((state) => state.shouldAutoGeneratePreviews);
-  const setSmartCropForOrientation = useFounderStore((state) => state.setSmartCropForOrientation);
-  const setCurrentImageHash = useFounderStore((state) => state.setCurrentImageHash);
-  const getSessionAccessToken = useFounderStore((state) => state.getSessionAccessToken);
-  const clearSmartCrops = useFounderStore((state) => state.clearSmartCrops);
-  const setPreviewState = useFounderStore((state) => state.setPreviewState);
-  const croppedImage = useFounderStore((state) => state.croppedImage);
-  const orientation = useFounderStore((state) => state.orientation);
-  const orientationTip = useFounderStore((state) => state.orientationTip);
-  const cropReadyAt = useFounderStore((state) => state.cropReadyAt);
-  const isDragging = useFounderStore((state) => state.isDragging);
-  const uploadIntentAt = useFounderStore((state) => state.uploadIntentAt);
+  const {
+    originalImage,
+    originalImageDimensions,
+    smartCrops,
+    croppedImage,
+    orientation,
+    orientationTip,
+    cropReadyAt,
+    isDragging,
+    uploadIntentAt,
+  } = useUploadState();
+  const {
+    setUploadedImage,
+    setCroppedImage,
+    setOriginalImage,
+    setOriginalImageDimensions,
+    setOrientation,
+    setOrientationTip,
+    markCropReady,
+    setDragging,
+    setSmartCropForOrientation,
+    clearSmartCrops,
+    setPreviewState,
+    setCurrentImageHash,
+    getSessionAccessToken,
+  } = useUploadActions();
+  const { generatePreviews, resetPreviews, shouldAutoGeneratePreviews } = usePreviewActions();
   const [isCropperOpen, setCropperOpen] = useState(false);
   const [stage, setStage] = useState<UploadStage>('idle');
   const [pendingOrientation, setPendingOrientation] = useState<Orientation>('square');

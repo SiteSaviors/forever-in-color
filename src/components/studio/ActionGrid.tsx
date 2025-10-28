@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Download, Bookmark, BookmarkCheck, Crop, ShoppingBag } from 'lucide-react';
 import { trackDownloadCTAClick } from '@/utils/telemetry';
-import { useFounderStore } from '@/store/useFounderStore';
+import { useEntitlementsState } from '@/store/hooks/useEntitlementsStore';
 
 type ActionGridProps = {
   onDownload: () => void;
@@ -40,7 +40,7 @@ export function ActionGrid({
 }: ActionGridProps) {
   const [pulseActive, setPulseActive] = useState(false);
   const [hasPulsed, setHasPulsed] = useState(false);
-  const userTier = useFounderStore((state) => state.entitlements?.tier ?? 'free');
+  const { userTier } = useEntitlementsState();
 
   useEffect(() => {
     if (!createCanvasDisabled && !hasPulsed) {

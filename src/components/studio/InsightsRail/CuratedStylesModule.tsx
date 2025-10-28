@@ -4,7 +4,7 @@ import type { EntitlementState, StyleOption } from '@/store/useFounderStore';
 import { useHandleStyleSelect } from '@/sections/studio/hooks/useHandleStyleSelect';
 import { trackStudioV2CuratedStyleClick } from '@/utils/studioV2Analytics';
 import { getComplementaryStyles } from '@/utils/storyLayer/copy';
-import { useFounderStore } from '@/store/useFounderStore';
+import { useStyleCatalogActions, useStyleCatalogState } from '@/store/hooks/useStyleCatalogStore';
 
 type CuratedStylesModuleProps = {
   currentStyle: StyleOption;
@@ -18,8 +18,8 @@ type CuratedStylesModuleProps = {
 
 const CuratedStylesModule = ({ currentStyle, onGatePrompt }: CuratedStylesModuleProps) => {
   const [revealed, setRevealed] = useState(false);
-  const styles = useFounderStore((state) => state.styles);
-  const evaluateStyleGate = useFounderStore((state) => state.evaluateStyleGate);
+  const { styles } = useStyleCatalogState();
+  const { evaluateStyleGate, setShowQuotaModal } = useStyleCatalogActions();
 
   // Lazy-load complementary styles from registry
   const [curated, setCurated] = useState<Awaited<ReturnType<typeof getComplementaryStyles>> | null>(null);
@@ -67,7 +67,7 @@ const CuratedStylesModule = ({ currentStyle, onGatePrompt }: CuratedStylesModule
         reason: gate.reason ?? gate.requiredTier ?? null,
       });
       if (gate.reason === 'quota_exceeded') {
-        useFounderStore.getState().setShowQuotaModal(true);
+        setShowQuotaModal(true);
       } else if (gate.message && onGatePrompt) {
         onGatePrompt({
           title: 'Unlock Premium Style',
@@ -91,7 +91,7 @@ const CuratedStylesModule = ({ currentStyle, onGatePrompt }: CuratedStylesModule
       });
       if (!allowed) {
         if (gate.reason === 'quota_exceeded') {
-          useFounderStore.getState().setShowQuotaModal(true);
+          setShowQuotaModal(true);
         } else if (gate.message && onGatePrompt) {
           onGatePrompt({
             title: 'Unlock Premium Style',
@@ -103,7 +103,7 @@ const CuratedStylesModule = ({ currentStyle, onGatePrompt }: CuratedStylesModule
       }
       handleStyleSelect(style.id);
     },
-    [currentStyle.id, evaluateStyleGate, handleStyleSelect, onGatePrompt]
+    [currentStyle.id, evaluateStyleGate, handleStyleSelect, onGatePrompt, setShowQuotaModal]
   );
 
   if (!curatedStyles.length) return null;

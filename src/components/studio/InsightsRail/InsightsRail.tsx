@@ -1,8 +1,6 @@
 import { memo, useMemo, useState, useEffect, type ReactNode } from 'react';
 import { clsx } from 'clsx';
-import { shallow } from 'zustand/shallow';
 import type { EntitlementState, StyleOption } from '@/store/useFounderStore';
-import { useFounderStore } from '@/store/useFounderStore';
 import StoryTeaser from './StoryTeaser';
 // StoryHeader removed per request to reduce duplication in right rail
 import DiscoverGrid from './DiscoverGrid';
@@ -14,6 +12,7 @@ import { getNarrative, getPalette } from '@/utils/storyLayer/copy';
 import type { Orientation } from '@/utils/imageUtils';
 import type { StudioToastPayload } from '@/hooks/useStudioFeedback';
 import StylePreviewModule from './StylePreviewModule';
+import { useStyleCatalogState } from '@/store/hooks/useStyleCatalogStore';
 
 type InsightsRailProps = {
   hasCroppedImage: boolean;
@@ -120,14 +119,7 @@ const PreUploadCuratorTips = ({ upcomingStyleName }: { upcomingStyleName: string
 );
 
 const useHighlightedStyle = (fallback: StyleOption | null) => {
-  const { hoveredStyleId, selectedStyleId, styles } = useFounderStore(
-    (state) => ({
-      hoveredStyleId: state.hoveredStyleId,
-      selectedStyleId: state.selectedStyleId,
-      styles: state.styles,
-    }),
-    shallow
-  );
+  const { hoveredStyleId, selectedStyleId, styles } = useStyleCatalogState();
 
   const candidateId = hoveredStyleId ?? selectedStyleId ?? fallback?.id ?? null;
 

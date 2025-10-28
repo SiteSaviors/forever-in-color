@@ -1,12 +1,13 @@
 import { X, AlertTriangle, TrendingUp } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useFounderStore, type EntitlementTier } from '@/store/useFounderStore';
+import { type EntitlementTier } from '@/store/useFounderStore';
 import Button from '@/components/ui/Button';
 import usePrefersReducedMotion from '@/hooks/usePrefersReducedMotion';
 import { useTransitionPresence } from '@/hooks/useTransitionPresence';
 import { clsx } from 'clsx';
 import './TokenWarningBanner.css';
+import { useEntitlementsState } from '@/store/hooks/useEntitlementsStore';
 
 const TIER_RECOMMENDATIONS: Record<EntitlementTier, { nextTier: string; quota: number; price: string } | null> = {
   free: { nextTier: 'Creator', quota: 50, price: '$9.99/mo' },
@@ -19,8 +20,7 @@ const TIER_RECOMMENDATIONS: Record<EntitlementTier, { nextTier: string; quota: n
 const TokenWarningBanner = () => {
   const navigate = useNavigate();
   const [dismissed, setDismissed] = useState(false);
-  const entitlements = useFounderStore((state) => state.entitlements);
-  const displayRemainingTokens = useFounderStore((state) => state.getDisplayableRemainingTokens());
+  const { entitlements, displayRemainingTokens } = useEntitlementsState();
   const prefersReducedMotion = usePrefersReducedMotion();
 
   const shouldShow = () => {

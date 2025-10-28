@@ -1,17 +1,17 @@
 import { Sparkles, Video } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
-import { useFounderStore } from '@/store/useFounderStore';
+import { useCanvasConfigActions, useCanvasConfigState } from '@/store/hooks/useCanvasConfigStore';
 
 const LivingCanvasModal = () => {
-  const open = useFounderStore((state) => state.livingCanvasModalOpen && !state.livingCanvasEnabled());
-  const setOpen = useFounderStore((state) => state.setLivingCanvasModalOpen);
-  const setEnhancementEnabled = useFounderStore((state) => state.setEnhancementEnabled);
+  const { livingCanvasModalOpen, livingCanvasEnabled } = useCanvasConfigState();
+  const { setLivingCanvasModalOpen, setEnhancementEnabled } = useCanvasConfigActions();
+  const open = livingCanvasModalOpen && !livingCanvasEnabled;
 
   return (
     <Modal
       open={open}
-      onOpenChange={setOpen}
+      onOpenChange={setLivingCanvasModalOpen}
       size="xl"
       showCloseButton={false}
       overlayClassName="bg-slate-950/70 backdrop-blur-sm"
@@ -47,12 +47,12 @@ const LivingCanvasModal = () => {
           className="flex-1"
           onClick={() => {
             setEnhancementEnabled('living-canvas', true);
-            setOpen(false);
+            setLivingCanvasModalOpen(false);
           }}
         >
           Add Living Canvas ($59.99)
         </Button>
-        <Button variant="ghost" className="flex-1" onClick={() => setOpen(false)}>
+        <Button variant="ghost" className="flex-1" onClick={() => setLivingCanvasModalOpen(false)}>
           Maybe Later
         </Button>
       </div>

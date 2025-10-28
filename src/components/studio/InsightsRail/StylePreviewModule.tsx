@@ -1,9 +1,9 @@
-import { memo, useCallback, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { clsx } from 'clsx';
 import type { StyleOption } from '@/store/useFounderStore';
-import { useFounderStore } from '@/store/useFounderStore';
 import type { Orientation } from '@/utils/imageUtils';
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
+import { usePreviewState } from '@/store/hooks/usePreviewStore';
 
 type StylePreviewModuleProps = {
   highlightedStyle: StyleOption | null;
@@ -12,31 +12,27 @@ type StylePreviewModuleProps = {
 };
 
 const StylePreviewModule = ({ highlightedStyle, stage, orientation }: StylePreviewModuleProps) => {
+  const { previews, stylePreviewCache } = usePreviewState();
   const styleId = highlightedStyle?.id ?? null;
-
-  const previewEntry = useFounderStore(
-    useCallback(
-      (state) => (styleId ? state.previews[styleId] ?? undefined : undefined),
-      [styleId]
-    )
-  );
+  const previewEntry = styleId ? previews[styleId] ?? undefined : undefined;
 
   const previewPayload = useMemo(() => {
     if (!highlightedStyle || stage !== 'post-upload') {
       return null;
     }
-    if (!previewEntry || previewEntry.status !== 'ready') {
-      return null;
-    }
-    const url = previewEntry.data?.previewUrl;
+
+    const cachedUrl = styleId ? stylePreviewCache[styleId]?.[orientation]?.url ?? null : null;
+    const url = previewEntry?.data?.previewUrl ?? cachedUrl;
+
     if (!url) {
       return null;
     }
+
     return {
       url,
-      generatedOrientation: previewEntry.orientation ?? null,
+      generatedOrientation: previewEntry?.orientation ?? (cachedUrl ? orientation : null),
     };
-  }, [highlightedStyle, previewEntry, stage]);
+  }, [highlightedStyle, orientation, previewEntry, stage, styleId, stylePreviewCache]);
 
   const baseOrientation = previewPayload?.generatedOrientation ?? orientation;
   const baseOrientationMeta = ORIENTATION_PRESETS[baseOrientation];

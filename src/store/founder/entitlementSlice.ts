@@ -3,6 +3,7 @@ import { fetchAuthenticatedEntitlements } from '@/utils/entitlementsApi';
 import { canGenerateStylePreview } from '@/utils/entitlementGate';
 import { getSupabaseClient } from '@/utils/supabaseClient.loader';
 import type { EntitlementPriority, EntitlementSlice, EntitlementState, EntitlementTier, FounderState } from './storeTypes';
+import { createMemoizedSelector } from '../utils/memo';
 
 export type { EntitlementPriority, EntitlementSlice, EntitlementState, EntitlementTier } from './storeTypes';
 
@@ -67,6 +68,10 @@ const priorityFromTier = (tier: EntitlementTier): EntitlementPriority => {
 };
 
 const requiresWatermarkFromTier = (tier: EntitlementTier): boolean => tier === 'free';
+
+const selectDisplayableRemainingTokens = createMemoizedSelector(
+  (entitlements: EntitlementState) => entitlements.remainingTokens
+);
 
 export const createEntitlementSlice: StateCreator<FounderState, [], [], EntitlementSlice> = (set, get) => ({
   entitlements: createInitialEntitlements(),
@@ -220,5 +225,5 @@ export const createEntitlementSlice: StateCreator<FounderState, [], [], Entitlem
     }
     return entitlements.quota;
   },
-  getDisplayableRemainingTokens: () => get().entitlements.remainingTokens,
+  getDisplayableRemainingTokens: () => selectDisplayableRemainingTokens(get().entitlements),
 });

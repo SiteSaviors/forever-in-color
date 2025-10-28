@@ -10,6 +10,7 @@ import { createPreviewSlice } from './founder/previewSlice';
 import { createAuthSlice } from './founder/authSlice';
 import { createFavoritesSlice } from './founder/favoritesSlice';
 import type { CanvasSize, Enhancement, FounderBaseState, FounderState, StyleCarouselCard, StyleOption } from './founder/storeTypes';
+import { createMemoizedSelector } from './utils/memo';
 
 export type {
   AuthSlice,
@@ -58,6 +59,16 @@ const createCanvasSelectionSnapshot = (state: FounderBaseState): CanvasSelection
 // NEW: Use lazy loading - only load IDs and names initially
 // Full details (thumbnails, descriptions) loaded on-demand via ensureStyleLoaded()
 const initialStyles: StyleOption[] = loadInitialStylesLazy();
+
+const selectCurrentStyle = createMemoizedSelector(
+  (styles: StyleOption[], selectedStyleId: string | null | undefined) => {
+    if (!selectedStyleId) {
+      return undefined;
+    }
+    return styles.find((style) => style.id === selectedStyleId);
+  }
+);
+
 
 const mockEnhancements: Enhancement[] = [
   {
@@ -525,8 +536,8 @@ export const useFounderStore = createWithEqualityFn<FounderState>((set, get, api
     return (sizePrice ?? 0) + styleMod + enhancementsTotal;
   },
   currentStyle: () => {
-    const { styles, selectedStyleId } = get();
-    return styles.find((style) => style.id === selectedStyleId);
+    const state = get();
+    return selectCurrentStyle(state.styles, state.selectedStyleId);
   },
   livingCanvasEnabled: () => get().enhancements.find((item) => item.id === 'living-canvas')?.enabled ?? false,
   shouldAutoGeneratePreviews: () => {
