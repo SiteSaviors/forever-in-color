@@ -1,0 +1,15 @@
+{
+  "ignores": [
+    "class-variance-authority",
+    "autoprefixer",
+    "postcss",
+    "https:",
+    "lint-staged"
+  ],
+  "specials": [
+    "lint-staged",
+    "bin",
+    "husky",
+    "typescript"
+  ]
+}
