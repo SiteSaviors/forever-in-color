@@ -1,38 +1,61 @@
-import { shallow } from 'zustand/shallow';
-import { useFounderStore } from '@/store/useFounderStore';
+import {
+  useStudioActions,
+  useStudioEntitlementState,
+  useStudioPreviewState,
+  useStudioUiState,
+  useStudioUserState,
+} from '@/store/hooks/studio';
 
 export const useStudioConfiguratorState = () =>
-  useFounderStore(
-    (state) => ({
-      sessionUser: state.sessionUser,
-      sessionAccessToken: state.getSessionAccessToken(),
-      styles: state.styles,
-      currentStyle: state.currentStyle(),
-      entitlements: state.entitlements,
-      firstPreviewCompleted: state.firstPreviewCompleted,
-      generationCount: state.generationCount,
-      croppedImage: state.croppedImage,
-      orientation: state.orientation,
-      pendingStyleId: state.pendingStyleId,
-      stylePreviewStatus: state.stylePreviewStatus,
-      stylePreviewMessage: state.stylePreviewMessage,
-      stylePreviewError: state.stylePreviewError,
-      orientationPreviewPending: state.orientationPreviewPending,
-      livingCanvasModalOpen: state.livingCanvasModalOpen,
-      launchpadExpanded: state.launchpadExpanded,
-      displayRemainingTokens: state.getDisplayableRemainingTokens(),
-      userTier: state.entitlements?.tier ?? 'free',
-      requiresWatermark: state.entitlements?.requiresWatermark ?? true,
-    }),
-    shallow
-  );
+  (function useCompatState() {
+    const user = useStudioUserState();
+    const preview = useStudioPreviewState();
+    const entitlements = useStudioEntitlementState();
+    const ui = useStudioUiState();
+
+    return {
+      sessionUser: user.sessionUser,
+      sessionAccessToken: user.sessionAccessToken,
+      styles: preview.styles,
+      currentStyle: preview.currentStyle,
+      entitlements: entitlements.entitlements,
+      firstPreviewCompleted: entitlements.firstPreviewCompleted,
+      generationCount: entitlements.generationCount,
+      croppedImage: preview.croppedImage,
+      orientation: preview.orientation,
+      pendingStyleId: preview.pendingStyleId,
+      stylePreviewStatus: preview.stylePreviewStatus,
+      stylePreviewMessage: preview.stylePreviewMessage,
+      stylePreviewError: preview.stylePreviewError,
+      orientationPreviewPending: preview.orientationPreviewPending,
+      livingCanvasModalOpen: ui.livingCanvasModalOpen,
+      launchpadExpanded: ui.launchpadExpanded,
+      displayRemainingTokens: entitlements.displayRemainingTokens,
+      userTier: entitlements.userTier,
+      requiresWatermark: entitlements.requiresWatermark,
+      // Additional derived helpers (opt-in for new modules)
+      hasCroppedImage: preview.hasCroppedImage,
+      previewReady: preview.previewReady,
+      previewHasData: preview.previewHasData,
+      orientationMismatch: preview.orientationMismatch,
+      isAuthenticated: user.isAuthenticated,
+    };
+  })();
 
 export const useStudioConfiguratorActions = () =>
-  useFounderStore(
-    (state) => ({
-      setLaunchpadExpanded: state.setLaunchpadExpanded,
-      openCanvasModal: state.openCanvasModal,
-      hydrateEntitlements: state.hydrateEntitlements,
-    }),
-    shallow
-  );
+  (function useCompatActions() {
+    const actions = useStudioActions();
+    return {
+      setLaunchpadExpanded: actions.setLaunchpadExpanded,
+      openCanvasModal: actions.openCanvasModal,
+      hydrateEntitlements: actions.hydrateEntitlements,
+    };
+  })();
+
+export {
+  useStudioActions,
+  useStudioEntitlementState,
+  useStudioPreviewState,
+  useStudioUiState,
+  useStudioUserState,
+};
