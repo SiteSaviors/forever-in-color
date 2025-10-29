@@ -139,11 +139,6 @@ export default function ToneSection({
               >
                 {definition.label}
               </h3>
-              {tone === 'trending' && (
-                <span className="rounded-full bg-rose-500/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-rose-300 animate-pulse-slow">
-                  Hot
-                </span>
-              )}
               {locked && tone === 'signature' && (
                 <Lock className="h-4 w-4 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]" aria-hidden="true" />
               )}
@@ -152,18 +147,25 @@ export default function ToneSection({
               {definition.description}
             </p>
           </div>
-          <motion.span
-            animate={isExpanded ? { rotate: 180 } : { rotate: 0 }}
-            transition={prefersReducedMotion ? reducedMotionSettings : { type: 'spring', stiffness: 360, damping: 28 }}
-            className="text-white/60"
-            style={{
-              transform: 'translateZ(0)',
-              willChange: 'transform',
-            }}
-            aria-hidden="true"
-          >
-            <ChevronDown className="h-5 w-5" />
-          </motion.span>
+          <div className="flex flex-col items-center gap-1 self-start pt-1">
+            <motion.span
+              animate={isExpanded ? { rotate: 180 } : { rotate: 0 }}
+              transition={prefersReducedMotion ? reducedMotionSettings : { type: 'spring', stiffness: 360, damping: 28 }}
+              className="text-white/60"
+              style={{
+                transform: 'translateZ(0)',
+                willChange: 'transform',
+              }}
+              aria-hidden="true"
+            >
+              <ChevronDown className="h-5 w-5" />
+            </motion.span>
+            {tone === 'trending' && (
+              <span className="rounded-full bg-rose-500/20 px-2 py-0.5 text-[9px] font-medium uppercase tracking-[0.28em] text-rose-200 shadow-[0_6px_18px_rgba(244,114,182,0.35)]">
+                Hot
+              </span>
+            )}
+          </div>
         </div>
       </button>
 

@@ -69,6 +69,7 @@ export type StylePreviewCacheEntry = {
   storagePath?: string | null;
   sourceStoragePath?: string | null;
   sourceDisplayUrl?: string | null;
+  previewLogId?: string | null;
   cropConfig?: PreviewResult['cropConfig'];
 };
 
@@ -180,6 +181,8 @@ export type GalleryQuickviewItem = {
   previewLogId: string | null;
   sourceStoragePath: string | null;
   sourceDisplayUrl: string | null;
+  sourceSignedUrl: string | null;
+  sourceSignedUrlExpiresAt: number | null;
   cropConfig: Record<string, unknown> | null;
   savedAt: string;
   position: number;
@@ -216,6 +219,12 @@ export type FounderBaseState = {
   currentImageHash: string | null;
   originalImage: string | null;
   originalImageDimensions: { width: number; height: number } | null;
+  originalImageStoragePath: string | null;
+  originalImagePublicUrl: string | null;
+  originalImageSignedUrl: string | null;
+  originalImageSignedUrlExpiresAt: number | null;
+  originalImageHash: string | null;
+  originalImageBytes: number | null;
   smartCrops: Partial<Record<Orientation, SmartCropResult>>;
   orientation: Orientation;
   orientationTip: string | null;
@@ -245,6 +254,14 @@ export type FounderBaseState = {
   setCurrentImageHash: (hash: string | null) => void;
   setOriginalImage: (dataUrl: string | null) => void;
   setOriginalImageDimensions: (dimensions: { width: number; height: number } | null) => void;
+  setOriginalImageSource: (payload: {
+    storagePath: string | null;
+    publicUrl: string | null;
+    signedUrl: string | null;
+    signedUrlExpiresAt: number | null;
+    hash: string | null;
+    bytes: number | null;
+  } | null) => void;
   setSmartCropForOrientation: (orientation: Orientation, result: SmartCropResult) => void;
   clearSmartCrops: () => void;
   setOrientation: (orientation: Orientation) => void;

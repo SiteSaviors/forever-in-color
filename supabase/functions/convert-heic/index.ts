@@ -4,6 +4,7 @@ import { Image } from 'https://deno.land/x/imagescript@1.2.15/mod.ts';
 import libheifInit from 'https://cdn.jsdelivr.net/npm/libheif-js@1.19.8/libheif-wasm/libheif-bundle.mjs';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 import { handleCorsPreflightRequest, createCorsResponse } from '../generate-style-preview/corsUtils.ts';
+import { computeSha256Hex } from '../_shared/hash.ts';
 
 // Lazy initialization singleton for libheif WASM module
 // This avoids initializing the heavy WASM module on cold starts (which would exceed 2s CPU limit)
@@ -200,12 +201,6 @@ async function extractFile(req: Request): Promise<{ file: File; filename: string
   }
 
   throw new HttpError('unsupported_media_type', 'Only multipart/form-data or application/octet-stream supported', 415);
-}
-
-async function computeSha256Hex(buffer: ArrayBuffer): Promise<string> {
-  const digest = await crypto.subtle.digest('SHA-256', buffer);
-  const bytes = new Uint8Array(digest);
-  return Array.from(bytes).map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
 type CacheRecord = {

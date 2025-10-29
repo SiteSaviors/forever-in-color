@@ -11,6 +11,8 @@ import { executeStartPreview } from '@/features/preview';
 import { buildPreviewIdempotencyKey } from '@/utils/previewIdempotency';
 import { shouldRequireAuthGate } from '@/utils/authGate';
 import { cachePreviewEntry, getCachedPreviewEntry, clearPreviewCache } from '@/store/previewCacheStore';
+import { buildPublicStorageUrl } from '@/utils/storagePaths';
+import { extractStoragePathFromUrl } from '@/utils/storagePaths';
 import type { FounderState, PreviewSlice, StyleOption } from './storeTypes';
 
 export type { PreviewSlice, PreviewState, StartPreviewOptions, StylePreviewCacheEntry, StylePreviewStatus } from './storeTypes';
@@ -173,6 +175,10 @@ export const createPreviewSlice = (
             completedAt: cached.generatedAt ?? timestamp,
             storageUrl: cached.storageUrl ?? cached.url,
             storagePath: cached.storagePath ?? null,
+            sourceStoragePath: cached.sourceStoragePath ?? null,
+            sourceDisplayUrl: cached.sourceDisplayUrl ?? cached.storageUrl ?? null,
+            previewLogId: cached.previewLogId ?? null,
+            cropConfig: cached.cropConfig ?? null,
           },
           orientation: targetOrientation,
         });
@@ -232,11 +238,11 @@ export const createPreviewSlice = (
           return;
         }
 
-        const cachedImageHash = get().currentImageHash;
+      const cachedImageHash = get().currentImageHash;
 
-        emitStepOneEvent({ type: 'preview', styleId: style.id, status: 'start' });
+      emitStepOneEvent({ type: 'preview', styleId: style.id, status: 'start' });
 
-        let idempotencyImageKey = cachedImageHash;
+      let idempotencyImageKey = cachedImageHash;
         if (!idempotencyImageKey) {
           setTimeout(() => {
             console.warn('[PreviewIdempotency] Missing cached image hash; falling back to hashing image data directly');
@@ -267,19 +273,50 @@ export const createPreviewSlice = (
             styleId: style.id,
             stage,
             elapsedMs: Date.now() - startAt,
-            timestamp: Date.now(),
-          });
-        };
+          timestamp: Date.now(),
+        });
+      };
 
-        const requestPayload = {
-          imageUrl: sourceImage,
-          styleId: style.id,
-          styleName: style.name,
-          aspectRatio,
-          accessToken,
-          idempotencyKey,
-          onStage: handleStage,
-        } as const;
+      const cropResult = state.smartCrops[targetOrientation] ?? null;
+      const cropConfigForRequest = cropResult
+        ? {
+            x: cropResult.region.x,
+            y: cropResult.region.y,
+            width: cropResult.region.width,
+            height: cropResult.region.height,
+            orientation: cropResult.orientation,
+            imageWidth: cropResult.imageDimensions.width,
+            imageHeight: cropResult.imageDimensions.height,
+            generatedAt: cropResult.generatedAt,
+            generatedBy: cropResult.generatedBy,
+          }
+        : null;
+
+      const sourceStoragePath = state.originalImageStoragePath ?? null;
+      const signedExpiry = state.originalImageSignedUrlExpiresAt ?? null;
+      const now = Date.now();
+      const signedUrlValid = Boolean(
+        state.originalImageSignedUrl && signedExpiry && signedExpiry > now + 5000
+      );
+      const sourceDisplayUrl = signedUrlValid
+        ? state.originalImageSignedUrl
+        : state.originalImagePublicUrl ?? null;
+
+      const storagePathFromSourceImage = extractStoragePathFromUrl(sourceImage);
+      const imageUrlForRequest = sourceImage;
+
+      const requestPayload = {
+        imageUrl: imageUrlForRequest,
+        styleId: style.id,
+        styleName: style.name,
+        aspectRatio,
+        accessToken,
+        idempotencyKey,
+        onStage: handleStage,
+        sourceStoragePath,
+        sourceDisplayUrl,
+        cropConfig: cropConfigForRequest,
+      } as const;
 
         let result: Awaited<ReturnType<typeof startFounderPreviewGeneration>>;
 
@@ -313,6 +350,10 @@ export const createPreviewSlice = (
           generatedAt: timestamp,
           storageUrl: result.storageUrl ?? null,
           storagePath: result.storagePath ?? null,
+          sourceStoragePath: result.sourceStoragePath ?? null,
+          sourceDisplayUrl: result.sourceDisplayUrl ?? null,
+          previewLogId: result.previewLogId ?? null,
+          cropConfig: result.cropConfig ?? null,
         });
         state.setPreviewState(style.id, {
           status: 'ready',
@@ -323,6 +364,10 @@ export const createPreviewSlice = (
             completedAt: timestamp,
             storageUrl: result.storageUrl ?? null,
             storagePath: result.storagePath ?? null,
+            sourceStoragePath: result.sourceStoragePath ?? null,
+            sourceDisplayUrl: result.sourceDisplayUrl ?? result.storageUrl ?? null,
+            previewLogId: result.previewLogId ?? null,
+            cropConfig: result.cropConfig ?? null,
           },
           orientation: targetOrientation,
         });

@@ -4,14 +4,9 @@ import { useStudioExperienceContext } from '@/sections/studio/experience/context
 import { useStudioPreviewState } from '@/store/hooks/studio/useStudioPreviewState';
 import { useStudioUserState } from '@/store/hooks/studio/useStudioUserState';
 import { useAuthModal } from '@/store/useAuthModal';
+import { useFounderStore } from '@/store/useFounderStore';
+import { extractStoragePathFromUrl } from '@/utils/storagePaths';
 
-const STORAGE_PATH_REGEX = /(preview-cache(?:-public|-premium)?\/.+)$/;
-
-const extractStoragePathFromUrl = (url?: string | null): string | null => {
-  if (!url) return null;
-  const match = url.match(STORAGE_PATH_REGEX);
-  return match ? match[1] : null;
-};
 
 export const useGalleryHandlers = () => {
   const { showToast } = useStudioExperienceContext();
@@ -64,7 +59,20 @@ export const useGalleryHandlers = () => {
       return;
     }
 
+    const previewLogId = preview.data.previewLogId;
+    if (!previewLogId) {
+      console.error('[useGalleryHandlers] Missing previewLogId for gallery save', preview.data);
+      showToast({
+        title: 'Save failed',
+        description: 'Unable to save preview metadata. Please regenerate and try again.',
+        variant: 'error',
+      });
+      setSavingToGallery(false);
+      return;
+    }
+
     const result = await saveToGallery({
+      previewLogId,
       styleId: currentStyle.id,
       styleName: currentStyle.name,
       orientation,
@@ -91,6 +99,8 @@ export const useGalleryHandlers = () => {
           : `${currentStyle.name} is now in your gallery.`,
         variant: result.alreadyExists ? 'info' : 'success',
       });
+      useFounderStore.getState().invalidateGallery();
+      window.dispatchEvent(new CustomEvent('gallery-quickview-refresh'));
     } else {
       showToast({
         title: 'Save failed',
@@ -114,4 +124,3 @@ export const useGalleryHandlers = () => {
     handleSaveToGallery,
   };
 };
-

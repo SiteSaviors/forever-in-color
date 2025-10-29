@@ -10,6 +10,7 @@ import { computeImageDigest } from '@/utils/imageHash';
 import type { Orientation } from '@/utils/imageUtils';
 import { useUploadActions, useUploadState } from '@/store/hooks/useUploadStore';
 import { usePreviewActions } from '@/store/hooks/usePreviewStore';
+import { persistOriginalUpload } from '@/utils/sourceUploadApi';
 
 const SAMPLE_IMAGE = 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=900&q=80';
 
@@ -36,6 +37,7 @@ const PhotoUploader = () => {
     setCroppedImage,
     setOriginalImage,
     setOriginalImageDimensions,
+    setOriginalImageSource,
     setOrientation,
     setOrientationTip,
     markCropReady,
@@ -108,6 +110,7 @@ const PhotoUploader = () => {
     clearSmartCropCacheForImage(dataUrl);
     setOriginalImage(dataUrl);
     setOriginalImageDimensions(null);
+    setOriginalImageSource(null);
     setUploadedImage(null);
     setCroppedImage(null);
     clearSmartCrops();
@@ -180,6 +183,32 @@ const PhotoUploader = () => {
     }
     setCroppedImage(result.dataUrl);
     setUploadedImage(result.dataUrl);
+
+    if (originalImage) {
+      try {
+        const persistResult = await persistOriginalUpload({
+          dataUrl: originalImage,
+          width: originalImageDimensions?.width ?? result.imageDimensions.width,
+          height: originalImageDimensions?.height ?? result.imageDimensions.height,
+          accessToken: getSessionAccessToken(),
+        });
+
+        if (persistResult.ok) {
+          setOriginalImageSource({
+            storagePath: persistResult.storagePath,
+            publicUrl: persistResult.publicUrl,
+            signedUrl: persistResult.signedUrl,
+            signedUrlExpiresAt: persistResult.signedUrlExpiresAt,
+            hash: persistResult.hash,
+            bytes: persistResult.bytes,
+          });
+        } else {
+          console.warn('[PhotoUploader] Persist original upload failed', persistResult);
+        }
+      } catch (error) {
+        console.error('[PhotoUploader] Unexpected error persisting original upload', error);
+      }
+    }
 
     const digestPromise = computeImageDigest(result.dataUrl);
 

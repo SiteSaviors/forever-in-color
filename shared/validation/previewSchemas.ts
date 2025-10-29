@@ -15,6 +15,19 @@ export const previewRequestSchema = z
     quality: qualityEnum.default('medium'),
     cacheBypass: z.boolean().default(false),
     isAuthenticated: z.boolean().optional(),
+    sourceStoragePath: z.string().nullable().optional(),
+    sourceDisplayUrl: z.string().nullable().optional(),
+    cropConfig: z
+      .object({
+        x: z.number().optional(),
+        y: z.number().optional(),
+        width: z.number().optional(),
+        height: z.number().optional(),
+        orientation: z.string().optional(),
+      })
+      .catchall(z.unknown())
+      .nullable()
+      .optional(),
   })
   .passthrough();
 
@@ -32,6 +45,13 @@ const previewBaseSchema = z
     storage_path: z.string().nullable().optional(),
     softRemaining: z.number().nullable().optional(),
     soft_remaining: z.number().nullable().optional(),
+    sourceStoragePath: z.string().nullable().optional(),
+    source_storage_path: z.string().nullable().optional(),
+    sourceDisplayUrl: z.string().nullable().optional(),
+    source_display_url: z.string().nullable().optional(),
+    previewLogId: z.string().nullable().optional(),
+    preview_log_id: z.string().nullable().optional(),
+    cropConfig: z.unknown().optional(),
   })
   .passthrough();
 
@@ -53,6 +73,15 @@ export const previewProcessingSchema = z
   })
   .merge(previewBaseSchema);
 
+export type PreviewCropConfig = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  orientation?: string;
+  [key: string]: unknown;
+};
+
 export type PreviewResponse = {
   status: 'complete';
   previewUrl: string;
@@ -63,6 +92,10 @@ export type PreviewResponse = {
   storageUrl?: string | null;
   storagePath?: string | null;
   softRemaining?: number | null;
+  sourceStoragePath?: string | null;
+  sourceDisplayUrl?: string | null;
+  previewLogId?: string | null;
+  cropConfig?: PreviewCropConfig | null;
 } | {
   status: 'processing';
   previewUrl: null;
@@ -74,6 +107,10 @@ export type PreviewResponse = {
   storageUrl?: string | null;
   storagePath?: string | null;
   softRemaining?: number | null;
+  sourceStoragePath?: string | null;
+  sourceDisplayUrl?: string | null;
+  previewLogId?: string | null;
+  cropConfig?: PreviewCropConfig | null;
 };
 
 export const previewStatusSchema = z
@@ -131,6 +168,10 @@ export const normalizePreviewResponse = (data: unknown): PreviewResponse => {
       softRemaining: extractNullableNumber(
         normalized.softRemaining ?? normalized.soft_remaining ?? null
       ),
+      sourceStoragePath: normalized.sourceStoragePath ?? normalized.source_storage_path ?? null,
+      sourceDisplayUrl: normalized.sourceDisplayUrl ?? normalized.source_display_url ?? null,
+      previewLogId: normalized.previewLogId ?? normalized.preview_log_id ?? null,
+      cropConfig: (normalized.cropConfig ?? null) as PreviewCropConfig | null,
     } satisfies PreviewResponse;
   };
 
@@ -158,6 +199,10 @@ export const normalizePreviewResponse = (data: unknown): PreviewResponse => {
       softRemaining: extractNullableNumber(
         normalized.softRemaining ?? normalized.soft_remaining ?? null
       ),
+      sourceStoragePath: normalized.sourceStoragePath ?? normalized.source_storage_path ?? null,
+      sourceDisplayUrl: normalized.sourceDisplayUrl ?? normalized.source_display_url ?? null,
+      previewLogId: normalized.previewLogId ?? normalized.preview_log_id ?? null,
+      cropConfig: (normalized.cropConfig ?? null) as PreviewCropConfig | null,
     } satisfies PreviewResponse;
   };
 

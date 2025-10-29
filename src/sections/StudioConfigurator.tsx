@@ -14,7 +14,7 @@ type StudioConfiguratorProps = {
 const StudioSkeleton = () => (
   <section className="bg-slate-900" data-studio-section id="studio">
     <div className="mx-auto flex max-w-[1800px] flex-col gap-6 px-4 py-10 lg:flex-row">
-      <div className="hidden w-full max-w-[320px] space-y-4 lg:block">
+      <div className="hidden w-full max-w-[280px] space-y-4 lg:block">
         <div className="h-6 w-40 animate-pulse rounded-full bg-white/10" />
         <div className="h-6 w-52 animate-pulse rounded-full bg-white/10" />
         <div className="h-[420px] animate-pulse rounded-3xl border border-white/10 bg-white/5" />
@@ -23,7 +23,7 @@ const StudioSkeleton = () => (
         <div className="h-12 w-64 animate-pulse rounded-full bg-white/10" />
         <div className="h-[420px] animate-pulse rounded-[2.5rem] border border-white/10 bg-white/5" />
       </div>
-      <div className="hidden w-full max-w-[360px] space-y-4 lg:block">
+      <div className="hidden w-full max-w-[310px] space-y-4 lg:block">
         <div className="h-6 w-48 animate-pulse rounded-full bg-white/10" />
         <div className="h-6 w-40 animate-pulse rounded-full bg-white/5" />
         <div className="h-[420px] animate-pulse rounded-3xl border border-white/10 bg-white/5" />

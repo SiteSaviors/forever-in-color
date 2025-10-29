@@ -1,4 +1,4 @@
-import { parseStoragePath, parseStorageUrl } from '../_shared/storageUtils.ts';
+import { parseStoragePath } from '../_shared/storageUtils.ts';
 import {
   previewRequestSchema,
   qualityEnum,
@@ -40,11 +40,9 @@ export function validateRequest(body: unknown): { isValid: boolean; error?: stri
   const { imageUrl } = parsed.data;
   const trimmedImageUrl = imageUrl.trim();
 
-  if (
-    !trimmedImageUrl.startsWith('data:image/') &&
-    !parseStorageUrl(trimmedImageUrl) &&
-    !parseStoragePath(trimmedImageUrl)
-  ) {
+  const storageRef = parseStoragePath(trimmedImageUrl);
+
+  if (!trimmedImageUrl.startsWith('data:image/') && !storageRef) {
     return {
       isValid: false,
       error: 'Unsupported imageUrl. Only data URIs or Wondertone storage paths are allowed.',

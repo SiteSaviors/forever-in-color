@@ -1,4 +1,5 @@
 import type { StyleOption } from '@/store/founder/storeTypes';
+import type { PreviewCropConfig } from '../../shared/validation/previewSchemas';
 
 export type PreviewResult = {
   previewUrl: string;
@@ -8,6 +9,10 @@ export type PreviewResult = {
   storageUrl?: string | null;
   storagePath?: string | null;
   softRemaining?: number | null;
+  sourceStoragePath?: string | null;
+  sourceDisplayUrl?: string | null;
+  previewLogId?: string | null;
+  cropConfig?: PreviewCropConfig | null;
 };
 
 const simulateDelay = (min = 400, max = 900) =>
@@ -61,7 +66,11 @@ export async function fetchPreviewForStyle(style: StyleOption, baseImage?: strin
     startedAt,
     completedAt: Date.now(),
     storageUrl: previewUrl,
-    storagePath: null
+    storagePath: null,
+    sourceStoragePath: null,
+    sourceDisplayUrl: previewUrl,
+    previewLogId: null,
+    cropConfig: null
   };
 }
 

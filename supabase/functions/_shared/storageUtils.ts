@@ -10,7 +10,7 @@ if (!SUPABASE_URL) {
   throw new Error('[storageUtils] SUPABASE_URL is not configured');
 }
 
-const DEFAULT_ALLOWED_BUCKETS = ['preview-cache', 'preview-cache-public', 'preview-cache-premium'];
+const DEFAULT_ALLOWED_BUCKETS = ['preview-cache', 'preview-cache-public', 'preview-cache-premium', 'user-uploads'];
 const allowedBuckets = new Set(
   (Deno.env.get('WT_ALLOWED_STORAGE_BUCKETS') ?? DEFAULT_ALLOWED_BUCKETS.join(','))
     .split(',')
@@ -18,16 +18,32 @@ const allowedBuckets = new Set(
     .filter((value) => value.length > 0)
 );
 
+allowedBuckets.add('user-uploads');
+
 const PUBLIC_PREFIX = '/storage/v1/object/public/';
 
 const normalizePath = (value: string): string => value.replace(/^\/+/, '');
 
 export const isAllowedBucket = (bucket: string): boolean => allowedBuckets.has(bucket);
 
+const isUrl = (value: string): boolean => /^https?:\/\//i.test(value);
+
 export const parseStoragePath = (input?: string | null): StorageObjectRef | null => {
   if (!input) return null;
   const trimmed = input.trim();
   if (!trimmed) return null;
+
+  // Full URL handling
+  if (isUrl(trimmed)) {
+    return parseStorageUrl(trimmed);
+  }
+
+  // Embedded public prefix
+  if (trimmed.includes(PUBLIC_PREFIX)) {
+    const start = trimmed.indexOf(PUBLIC_PREFIX);
+    const pathAfterPrefix = trimmed.slice(start + PUBLIC_PREFIX.length);
+    return parseStoragePath(pathAfterPrefix);
+  }
 
   const normalized = normalizePath(trimmed);
   const slashIndex = normalized.indexOf('/');

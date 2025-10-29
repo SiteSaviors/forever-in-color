@@ -10,6 +10,9 @@ export interface FounderPreviewParams {
   signal?: AbortSignal;
   accessToken?: string | null;
   idempotencyKey?: string;
+  sourceStoragePath?: string | null;
+  sourceDisplayUrl?: string | null;
+  cropConfig?: PreviewCropConfig | null;
 }
 
 export interface FounderPreviewResult {
@@ -21,6 +24,10 @@ export interface FounderPreviewResult {
   storageUrl?: string | null;
   storagePath?: string | null;
   softRemaining?: number | null;
+  sourceStoragePath?: string | null;
+  sourceDisplayUrl?: string | null;
+  previewLogId?: string | null;
+  cropConfig?: PreviewCropConfig | null;
 }
 
 const PREVIEW_MODE = import.meta.env.VITE_FOUNDER_PREVIEW_MODE ?? 'live';
@@ -51,6 +58,9 @@ export const startFounderPreviewGeneration = async ({
   signal,
   accessToken,
   idempotencyKey,
+  sourceStoragePath,
+  sourceDisplayUrl,
+  cropConfig,
 }: FounderPreviewParams): Promise<FounderPreviewResult> => {
   if (!imageUrl) {
     throw new Error('No base image available for style generation');
@@ -72,7 +82,11 @@ export const startFounderPreviewGeneration = async ({
       priority: 'normal',
       storageUrl: imageUrl,
       storagePath: null,
-      softRemaining: null
+      softRemaining: null,
+      sourceStoragePath: null,
+      sourceDisplayUrl: imageUrl,
+      previewLogId: null,
+      cropConfig: null
     };
   }
 
@@ -86,9 +100,13 @@ export const startFounderPreviewGeneration = async ({
       onStage: (stage) => onStage?.(stage),
       accessToken,
       idempotencyKey,
+      sourceStoragePath,
+      sourceDisplayUrl,
+      cropConfig,
     }
   );
 
   return result;
 };
 import { generateAndWatermarkPreview } from './previewGeneration';
+import type { PreviewCropConfig } from '../../shared/validation/previewSchemas';

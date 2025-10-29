@@ -34,6 +34,9 @@ export interface GeneratePreviewParams {
     idempotencyKey: string;
     accessToken?: string | null;
     cacheBypass?: boolean;
+    sourceStoragePath?: string | null;
+    sourceDisplayUrl?: string | null;
+    cropConfig?: PreviewRequest['cropConfig'];
   };
 }
 
@@ -70,6 +73,9 @@ export const generateStylePreview = async (
     quality: options.quality,
     cacheBypass: options.cacheBypass,
     isAuthenticated: Boolean(options.accessToken),
+    sourceStoragePath: options.sourceStoragePath ?? null,
+    sourceDisplayUrl: options.sourceDisplayUrl ?? null,
+    cropConfig: options.cropConfig ?? null,
   });
 
   const response = await fetch(`${SUPABASE_URL}/functions/v1/generate-style-preview`, {

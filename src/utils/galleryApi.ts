@@ -8,6 +8,13 @@ export interface GalleryItem {
   imageUrl: string;
   displayUrl: string;
   storagePath: string;
+  thumbnailUrl: string | null;
+  thumbnailStoragePath?: string | null;
+  sourceStoragePath?: string | null;
+  sourceDisplayUrl?: string | null;
+  sourceSignedUrl?: string | null;
+  sourceSignedUrlExpiresAt?: number | null;
+  cropConfig?: Record<string, unknown> | null;
   isFavorited: boolean;
   isDeleted: boolean;
   downloadCount: number;
@@ -57,6 +64,7 @@ export async function saveToGallery(params: SaveToGalleryParams): Promise<{
   success: boolean;
   galleryItemId?: string;
   alreadyExists?: boolean;
+  thumbnailUrl?: string | null;
   error?: string;
 }> {
   try {
@@ -106,6 +114,7 @@ export async function saveToGallery(params: SaveToGalleryParams): Promise<{
       success: true,
       galleryItemId: data.galleryItemId,
       alreadyExists: data.alreadyExists || false,
+      thumbnailUrl: data.galleryItem?.thumbnailUrl ?? data.thumbnailUrl ?? null,
     };
   } catch (error) {
     console.error('[galleryApi] saveToGallery error:', error);

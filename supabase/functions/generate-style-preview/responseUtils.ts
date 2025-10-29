@@ -12,6 +12,10 @@ export interface SuccessResponseMeta {
   storageUrl?: string | null;
   storagePath?: string | null;
   softRemaining?: number | null;
+  sourceStoragePath?: string | null;
+  sourceDisplayUrl?: string | null;
+  previewLogId?: string | null;
+  cropConfig?: Record<string, unknown> | null;
 }
 
 export function createSuccessResponse({
@@ -25,7 +29,11 @@ export function createSuccessResponse({
   priority,
   storageUrl,
   storagePath,
-  softRemaining
+  softRemaining,
+  sourceStoragePath,
+  sourceDisplayUrl,
+  previewLogId,
+  cropConfig
 }: SuccessResponseMeta) {
   return {
     preview_url: previewUrl,
@@ -40,6 +48,11 @@ export function createSuccessResponse({
     storageUrl,
     storagePath,
     softRemaining,
+    sourceStoragePath,
+    sourceDisplayUrl,
+    previewLogId,
+    preview_log_id: previewLogId ?? null,
+    cropConfig,
     timestamp: new Date().toISOString()
   };
 }

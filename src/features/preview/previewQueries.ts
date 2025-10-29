@@ -11,6 +11,9 @@ export type StartPreviewRequest = {
   idempotencyKey: string;
   onStage?: StartPreviewStageCallback;
   signal?: AbortSignal;
+  sourceStoragePath?: string | null;
+  sourceDisplayUrl?: string | null;
+  cropConfig?: Parameters<typeof startFounderPreviewGeneration>[0]['cropConfig'];
 };
 
 export type StartPreviewResponse = FounderPreviewResult;

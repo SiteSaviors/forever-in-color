@@ -133,7 +133,7 @@ const GalleryQuickview = () => {
   };
 
   const sectionClass = clsx(
-    'relative mt-8 w-full max-w-2xl mx-auto',
+    'relative mt-8 w-full max-w-[720px] mx-auto',
     (!hasItems && !loading) && 'pointer-events-none'
   );
 
@@ -172,14 +172,25 @@ const GalleryQuickview = () => {
 
       {hasItems && (
         <div className="relative">
+          <div
+            className={clsx(
+              'pointer-events-none absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-slate-900 to-transparent transition-opacity duration-200',
+              showStartFade ? 'opacity-100' : 'opacity-0'
+            )}
+          />
+          <div
+            className={clsx(
+              'pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-slate-900 to-transparent transition-opacity duration-200',
+              showEndFade ? 'opacity-100' : 'opacity-0'
+            )}
+          />
           <LayoutGroup>
             <div
               ref={listRef}
               className={clsx(
-                'flex gap-4 overflow-x-auto scroll-smooth pb-1',
+                'flex gap-4 overflow-x-auto scroll-smooth pb-1 pl-2 pr-2',
                 'snap-x snap-mandatory scrollbar-hide',
-                'before:pointer-events-none before:absolute before:left-0 before:top-0 before:bottom-0 before:w-12',
-                'after:pointer-events-none after:absolute after:right-0 after:top-0 after:bottom-0 after:w-12'
+                'min-w-0' // Prevent flex item from expanding parent
               )}
               onScroll={handleScroll}
               role="list"
@@ -203,9 +214,9 @@ const GalleryQuickview = () => {
                       exit={{ opacity: 0, y: 32 }}
                       transition={{ type: 'spring', stiffness: 260, damping: 22 }}
                       className={clsx(
-                        'group relative flex w-[120px] shrink-0 flex-col gap-2 rounded-3xl border border-transparent bg-white/[0.02] p-2 text-left transition',
+                        'group relative flex w-[112px] shrink-0 flex-col gap-2 rounded-3xl border border-transparent bg-white/[0.02] p-2 text-left transition',
                         'hover:border-white/20 hover:bg-white/[0.06]',
-                        'md:w-[110px] sm:w-[96px]',
+                        'md:w-[104px] sm:w-[92px]',
                         isActive && 'border-purple-400/70 bg-purple-500/10 shadow-glow-purple/30',
                         isPending && 'pointer-events-none opacity-70'
                       )}

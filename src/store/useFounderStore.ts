@@ -224,6 +224,12 @@ export const useFounderStore = createWithEqualityFn<FounderState>((set, get, api
   uploadIntentAt: null,
   originalImage: null,
   originalImageDimensions: null,
+  originalImageStoragePath: null,
+  originalImagePublicUrl: null,
+  originalImageSignedUrl: null,
+  originalImageSignedUrlExpiresAt: null,
+  originalImageHash: null,
+  originalImageBytes: null,
   smartCrops: {},
   loadedStyleIds: new Set<string>(),
   pendingStyleLoads: new Map<string, Promise<void>>(),
@@ -436,6 +442,16 @@ export const useFounderStore = createWithEqualityFn<FounderState>((set, get, api
       stylePreviewStartAt: null,
       orientationPreviewPending: false,
       launchpadExpanded: true,
+      ...(dataUrl === null
+        ? {
+            originalImageStoragePath: null,
+            originalImagePublicUrl: null,
+            originalImageSignedUrl: null,
+            originalImageSignedUrlExpiresAt: null,
+            originalImageHash: null,
+            originalImageBytes: null,
+          }
+        : {}),
     }),
   setCroppedImage: (dataUrl) =>
     set({
@@ -443,8 +459,30 @@ export const useFounderStore = createWithEqualityFn<FounderState>((set, get, api
       currentImageHash: null,
       launchpadSlimMode: !!dataUrl,
     }),
-  setOriginalImage: (dataUrl) => set({ originalImage: dataUrl }),
+  setOriginalImage: (dataUrl) =>
+    set({
+      originalImage: dataUrl,
+      ...(dataUrl === null
+        ? {
+            originalImageStoragePath: null,
+            originalImagePublicUrl: null,
+            originalImageSignedUrl: null,
+            originalImageSignedUrlExpiresAt: null,
+            originalImageHash: null,
+            originalImageBytes: null,
+          }
+        : {}),
+    }),
   setOriginalImageDimensions: (dimensions) => set({ originalImageDimensions: dimensions }),
+  setOriginalImageSource: (payload) =>
+    set({
+      originalImageStoragePath: payload?.storagePath ?? null,
+      originalImagePublicUrl: payload?.publicUrl ?? null,
+      originalImageSignedUrl: payload?.signedUrl ?? null,
+      originalImageSignedUrlExpiresAt: payload?.signedUrlExpiresAt ?? null,
+      originalImageHash: payload?.hash ?? null,
+      originalImageBytes: payload?.bytes ?? null,
+    }),
   setOrientation: (orientation) => {
     const current = get();
     if (current.orientation === orientation) return;

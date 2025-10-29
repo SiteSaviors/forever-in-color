@@ -28,7 +28,7 @@ const StickyOrderRailFallback = () => (
 );
 
 const InsightsRailFallback = () => (
-  <aside className="w-full px-4 py-6 lg:w-[420px] lg:p-6">
+  <aside className="w-full px-4 py-6 lg:w-[360px] lg:flex-shrink-0 lg:p-6">
     <div className="space-y-4">
       <div className="h-6 w-48 animate-pulse rounded-full bg-white/10" />
       <div className="h-4 w-64 animate-pulse rounded-full bg-white/5" />
@@ -47,13 +47,13 @@ type RightRailProps = {
 
 const RightRail = ({
   onRequestCanvas,
-  onChangeOrientation,
-  onCanvasConfigToggle,
+  onChangeOrientation: _onChangeOrientation,
+  onCanvasConfigToggle: _onCanvasConfigToggle,
   canvasConfigExpanded,
 }: RightRailProps) => {
   const { showToast, showUpgradeModal } = useStudioExperienceContext();
-  const { currentStyle, hasCroppedImage, orientation, preview, previewReady } = useStudioPreviewState();
-  const { entitlements, isPremiumUser } = useStudioEntitlementState();
+  const { currentStyle, hasCroppedImage, orientation, preview } = useStudioPreviewState();
+  const { entitlements } = useStudioEntitlementState();
 
   const previewUrl = preview?.data?.previewUrl ?? null;
   const previewReadyWithUrl = preview?.status === 'ready' && Boolean(previewUrl);
@@ -79,7 +79,7 @@ const RightRail = ({
   return (
     <aside
       className={clsx(
-        'w-full transition-opacity duration-200 lg:w-[420px]',
+        'w-full transition-opacity duration-200 lg:w-[360px] lg:flex-shrink-0',
         !hasCroppedImage && 'pointer-events-none opacity-50'
       )}
       aria-disabled={!hasCroppedImage}
@@ -103,22 +103,9 @@ const RightRail = ({
                     </p>
                   </div>
                   <Suspense fallback={<CanvasPreviewFallback />}>
-                    <CanvasInRoomPreview enableHoverEffect showDimensions={false} />
+                    <CanvasInRoomPreview showDimensions={false} />
                   </Suspense>
                 </div>
-              }
-              onCanvasConfigToggle={onCanvasConfigToggle}
-              hasCroppedImage={hasCroppedImage}
-              previewReady={previewReady}
-              orientation={orientation}
-              isPremiumUser={isPremiumUser}
-              onCreateCanvas={() => onRequestCanvas('rail')}
-              onChangeOrientation={onChangeOrientation}
-              onUpgrade={() =>
-                showUpgradeModal({
-                  title: 'Unlock clean previews & downloads',
-                  description: 'Upgrade to remove watermarks and receive premium perks.',
-                })
               }
             />
           </Suspense>

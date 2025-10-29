@@ -26,6 +26,7 @@ import {
   downloadStorageObject,
   parseStoragePath,
   parseStorageUrl,
+  buildPublicUrl,
   type StorageObjectRef
 } from '../_shared/storageUtils.ts';
 
@@ -66,6 +67,16 @@ const parseDevBypassEmails = (): Set<string> => {
 };
 
 const devBypassEmails = parseDevBypassEmails();
+
+const cloneJson = <T>(value: T): T => {
+  try {
+    return typeof structuredClone === 'function'
+      ? structuredClone(value)
+      : JSON.parse(JSON.stringify(value));
+  } catch (_error) {
+    return value;
+  }
+};
 
 const initializeWarmup = (() => {
   let initialized = false;
@@ -111,20 +122,25 @@ async function normalizeImageInput(
     return image;
   }
 
+  const storageRef: StorageObjectRef | null =
+    parseStorageUrl(image) ?? parseStoragePath(image);
+
+  if (!storageRef) {
+    throw new Error('Only Wondertone storage paths are allowed for remote images');
+  }
+
   try {
-    const storageRef: StorageObjectRef | null =
-      parseStorageUrl(image) ?? parseStoragePath(image);
-
-    if (!storageRef) {
-      throw new Error('Only Wondertone storage paths are allowed for remote images');
-    }
-
     const { buffer, contentType } = await downloadStorageObject(supabase, storageRef);
     const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
-    return `data:${contentType};base64,${base64}`;
+    const mime = contentType && contentType.length > 0 ? contentType : 'image/jpeg';
+    return `data:${mime};base64,${base64}`;
   } catch (error) {
-    console.error('Failed to normalize image input:', error);
-    return image;
+    console.error('Failed to normalize image input', {
+      bucket: storageRef.bucket,
+      path: storageRef.path,
+      message: error instanceof Error ? error.message : String(error),
+    });
+    throw error instanceof Error ? error : new Error(String(error));
   }
 }
 
@@ -374,11 +390,54 @@ serve(async (req) => {
       aspectRatio,
       quality,
       watermark = true,
-      cacheBypass = false
+      cacheBypass = false,
+      sourceStoragePath: requestSourceStoragePath = null,
+      sourceDisplayUrl: requestSourceDisplayUrl = null,
+      cropConfig: requestCropConfig = null
     } = validation.data!;
 
     const normalizedAspectRatio = aspectRatio.toLowerCase();
     const normalizedQuality = quality.toLowerCase();
+
+    const sanitizeStorageRef = (value: string | null): StorageObjectRef | null => {
+      if (!value || typeof value !== 'string' || value.trim().length === 0) {
+        return null;
+      }
+      return parseStoragePath(value) ?? parseStorageUrl(value);
+    };
+
+    const requestedSourceRef = sanitizeStorageRef(requestSourceStoragePath);
+    if (requestSourceStoragePath && !requestedSourceRef) {
+      logger.warn('Invalid sourceStoragePath provided; ignoring value', {
+        requestId,
+        provided: requestSourceStoragePath
+      });
+    }
+    let sourceStoragePath: string | null = requestSourceStoragePath && requestedSourceRef
+      ? `${requestedSourceRef.bucket}/${requestedSourceRef.path}`
+      : null;
+
+    let sourceDisplayUrl: string | null =
+      typeof requestSourceDisplayUrl === 'string' && requestSourceDisplayUrl.trim().length > 0
+        ? requestSourceDisplayUrl
+        : null;
+
+    if (requestedSourceRef && !sourceDisplayUrl) {
+      sourceDisplayUrl = buildPublicUrl(requestedSourceRef);
+    }
+
+    const imageSourceRef = sanitizeStorageRef(imageUrl);
+    if (!sourceStoragePath && imageSourceRef) {
+      sourceStoragePath = `${imageSourceRef.bucket}/${imageSourceRef.path}`;
+      if (!sourceDisplayUrl) {
+        sourceDisplayUrl = buildPublicUrl(imageSourceRef);
+      }
+    }
+
+    let cropConfig =
+      requestCropConfig && typeof requestCropConfig === 'object'
+        ? cloneJson(requestCropConfig as Record<string, unknown>)
+        : null;
 
     // Telemetry: Track input type for monitoring
     const inputScheme = imageUrl.startsWith('data:') ? 'data-uri' :
@@ -507,15 +566,40 @@ serve(async (req) => {
     const storageClient = new PreviewStorageClient(supabase, cacheBucket);
 
     let previewLogId: string | null = null;
+
+    const recordPreviewFailure = async (code: string, message: string, statusCode: number): Promise<Response> => {
+      if (previewLogId) {
+        await supabase
+          .from('preview_logs')
+          .update({
+            outcome: 'error',
+            error_code: code,
+            tokens_spent: 0,
+          })
+          .eq('id', previewLogId);
+      }
+
+      const payload = createErrorResponse(code, message, requestId, code);
+      return respond(JSON.stringify(payload), statusCode);
+    };
     const existingLogResult = await supabase
       .from('preview_logs')
-      .select('id, preview_url, outcome, requires_watermark, priority, tier, tokens_spent, error_code, user_id')
+      .select('id, preview_url, outcome, requires_watermark, priority, tier, tokens_spent, error_code, user_id, source_storage_path, source_display_url, crop_config')
       .eq('idempotency_key', idempotencyKey)
       .maybeSingle();
 
     const existingLog = existingLogResult.data ?? null;
 
     if (existingLog) {
+      if (!sourceStoragePath && existingLog.source_storage_path) {
+        sourceStoragePath = existingLog.source_storage_path as string;
+      }
+      if (!sourceDisplayUrl && existingLog.source_display_url) {
+        sourceDisplayUrl = existingLog.source_display_url as string;
+      }
+      if (!cropConfig && existingLog.crop_config) {
+        cropConfig = cloneJson(existingLog.crop_config as Record<string, unknown>);
+      }
       previewLogId = existingLog.id;
 
       if (
@@ -564,7 +648,13 @@ serve(async (req) => {
               tier: tierLabel,
               requiresWatermark,
               remainingTokens,
-              priority
+              priority,
+              storageUrl: previewUrlForResponse,
+              storagePath: existingLog.preview_url ? extractStoragePath(existingLog.preview_url) : null,
+              sourceStoragePath,
+              sourceDisplayUrl,
+              previewLogId,
+              cropConfig
             })
           ),
           200
@@ -698,7 +788,10 @@ serve(async (req) => {
         requires_watermark: effectiveWatermark,
         priority: entitlementContext?.priority ?? 'normal',
         outcome: 'pending',
-        tokens_spent: 0
+        tokens_spent: 0,
+        source_storage_path: sourceStoragePath,
+        source_display_url: sourceDisplayUrl,
+        crop_config: cropConfig
       };
 
       const insertResult = await supabase
@@ -719,23 +812,7 @@ serve(async (req) => {
       } else {
         previewLogId = insertResult.data?.id ?? null;
       }
-    }
-
-    async function recordPreviewFailure(code: string, message: string, statusCode: number): Promise<Response> {
-      if (previewLogId) {
-        await supabase
-          .from('preview_logs')
-          .update({
-            outcome: 'error',
-            error_code: code,
-            tokens_spent: 0
-          })
-          .eq('id', previewLogId);
       }
-
-      const payload = createErrorResponse(code, message, requestId, code);
-      return respond(JSON.stringify(payload), statusCode);
-    }
 
     async function recordPreviewSuccess(previewUrl: string, cacheStatus: CacheStatus, statusCode = 200): Promise<Response> {
       const tokensDebit = entitlementContext && !entitlementContext.devBypass ? 1 : 0;
@@ -777,7 +854,10 @@ serve(async (req) => {
             watermark: effectiveWatermark,
             requires_watermark: effectiveWatermark,
             priority: entitlementContext?.priority ?? 'normal',
-            tier: entitlementContext?.tierForDb ?? null
+            tier: entitlementContext?.tierForDb ?? null,
+            source_storage_path: sourceStoragePath,
+            source_display_url: sourceDisplayUrl,
+            crop_config: cropConfig
           })
           .eq('id', previewLogId);
       }
@@ -799,7 +879,11 @@ serve(async (req) => {
         priority: entitlementContext?.priority ?? 'normal',
         storageUrl: cleanStorageUrl,
         storagePath,
-        softRemaining: null
+        softRemaining: null,
+        sourceStoragePath,
+        sourceDisplayUrl,
+        previewLogId,
+        cropConfig
       });
 
       return respond(JSON.stringify(payload), statusCode);

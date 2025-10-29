@@ -215,6 +215,35 @@ export async function getImageDimensions(dataUrl: string): Promise<{ width: numb
   return { width: image.width, height: image.height };
 }
 
+const mimeFromDataUrl = (value: string): string | null => {
+  const match = /^data:([^;]+);/i.exec(value);
+  return match ? match[1].toLowerCase() : null;
+};
+
+export async function ensureJpegDataUrl(
+  dataUrl: string,
+  widthHint: number | null = null,
+  heightHint: number | null = null
+): Promise<{ dataUrl: string; width: number; height: number }> {
+  const mime = mimeFromDataUrl(dataUrl);
+  const image = await loadImage(dataUrl);
+  const width = widthHint && widthHint > 0 ? widthHint : image.width;
+  const height = heightHint && heightHint > 0 ? heightHint : image.height;
+
+  if (mime === 'image/jpeg' || mime === 'image/jpg') {
+    return { dataUrl, width, height };
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Canvas context not available');
+  ctx.drawImage(image, 0, 0, width, height);
+  const jpegDataUrl = canvas.toDataURL('image/jpeg', 0.92);
+  return { dataUrl: jpegDataUrl, width, height };
+}
+
 export async function cropImageToDataUrl(
   imageSrc: string,
   crop: { x: number; y: number; width: number; height: number },

@@ -121,7 +121,7 @@ const CanvasPreviewPanel = ({
 
   return (
     <main className="w-full lg:flex-1 lg:min-w-0 px-4 py-6 lg:p-8 flex flex-col items-center justify-start">
-      <div className="w-full max-w-2xl mx-auto">
+      <div className="w-full max-w-[720px] mx-auto">
         <div
           className="relative rounded-3xl overflow-hidden border-2 border-white/20 bg-gradient-preview-bg shadow-2xl transition-all mx-auto"
           style={{
@@ -211,7 +211,7 @@ const CanvasPreviewPanel = ({
         </div>
 
         {previewStateStatus === 'ready' && currentStyle && (
-          <div className="mt-6 w-full max-w-2xl">
+          <div className="mt-6 w-full max-w-[720px]">
             <ActionGrid
               onDownload={onDownloadClick}
               onCreateCanvas={onCreateCanvas}
@@ -232,7 +232,7 @@ const CanvasPreviewPanel = ({
         <GalleryQuickview />
       </div>
 
-      <div className="hidden lg:block w-full max-w-2xl mt-8">
+      <div className="hidden lg:block w-full max-w-[720px] mt-8">
         <div className="mb-6 text-center space-y-2">
           <h3 className="text-2xl font-bold text-white">See It In Your Space</h3>
           <p className="text-sm text-white/60 max-w-md mx-auto">
@@ -245,7 +245,7 @@ const CanvasPreviewPanel = ({
       </div>
 
       {previewStateStatus === 'ready' && currentStyle && (
-        <div className="w-full max-w-2xl mt-8">
+        <div className="w-full max-w-[720px] mt-8">
           <SellingPointsPanel onCreateCanvas={onCreateCanvas} />
         </div>
       )}

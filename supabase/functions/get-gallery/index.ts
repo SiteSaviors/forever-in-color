@@ -4,6 +4,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 import { WatermarkService } from '../generate-style-preview/watermarkService.ts';
 import {
   buildPublicUrl,
+  buildSignedUrl,
   downloadStorageObject,
   parseStoragePath,
   parseStorageUrl,
@@ -12,6 +13,7 @@ import {
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const SOURCE_SIGNED_URL_TTL_SECONDS = clampPositiveInt(Deno.env.get('GALLERY_SOURCE_SIGNED_TTL_SECONDS'), 15 * 60);
 
 interface GalleryItem {
   id: string;
@@ -22,6 +24,12 @@ interface GalleryItem {
   orientation: string;
   watermarkedUrl: string;
   cleanUrl: string | null;
+  thumbnailStoragePath: string | null;
+  sourceStoragePath: string | null;
+  sourceDisplayUrl: string | null;
+  sourceSignedUrl: string | null;
+  sourceSignedUrlExpiresAt: number | null;
+  cropConfig: Record<string, unknown> | null;
   isFavorited: boolean;
   isDeleted: boolean;
   downloadCount: number;
@@ -35,6 +43,14 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'GET, DELETE, PATCH, OPTIONS',
 };
+
+function clampPositiveInt(value: string | number | null | undefined, fallback: number): number {
+  const parsed = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return fallback;
+  }
+  return Math.floor(parsed);
+}
 
 const bufferToDataUrl = (buffer: ArrayBuffer, contentType: string): string => {
   const bytes = new Uint8Array(buffer);
@@ -74,6 +90,37 @@ const buildDisplayUrl = async (
 const resolveStorageRef = (value: string | null | undefined): StorageObjectRef | null => {
   if (!value) return null;
   return parseStoragePath(value) ?? parseStorageUrl(value);
+};
+
+export const createSignedSource = async (
+  supabase: ReturnType<typeof createClient>,
+  storagePath: string | null | undefined
+): Promise<{ signedUrl: string | null; expiresAt: number | null }> => {
+  if (!storagePath) {
+    return { signedUrl: null, expiresAt: null };
+  }
+  const ref = parseStoragePath(storagePath);
+  if (!ref) {
+    console.warn('[get-gallery] Unable to parse source storage path for signed URL', { storagePath });
+    return { signedUrl: null, expiresAt: null };
+  }
+  try {
+    const signed = await buildSignedUrl(supabase, ref, SOURCE_SIGNED_URL_TTL_SECONDS);
+    if (!signed) {
+      console.warn('[get-gallery] Signed URL generation returned null', { storagePath });
+      return { signedUrl: null, expiresAt: null };
+    }
+    return {
+      signedUrl: signed,
+      expiresAt: Date.now() + SOURCE_SIGNED_URL_TTL_SECONDS * 1000,
+    };
+  } catch (error) {
+    console.error('[get-gallery] Failed to create signed URL for source', {
+      storagePath,
+      error: error instanceof Error ? error.message : error,
+    });
+    return { signedUrl: null, expiresAt: null };
+  }
 };
 
 serve(async (req: Request) => {
@@ -135,7 +182,7 @@ serve(async (req: Request) => {
       if (itemIdParam) {
         const { data: itemRow, error: itemError } = await supabase
           .from('user_gallery')
-          .select('*')
+          .select('*, preview_logs!left(source_storage_path, source_display_url, crop_config)')
           .eq('is_deleted', false)
           .eq('user_id', userId)
           .eq('id', itemIdParam)
@@ -182,6 +229,16 @@ serve(async (req: Request) => {
         }
 
         const displayUrl = await buildDisplayUrl(supabase, storageRef, 'preview', requiresWatermark);
+        const thumbnailRef = itemRow.thumbnail_storage_path
+          ? parseStoragePath(itemRow.thumbnail_storage_path)
+          : null;
+        const thumbnailUrl = thumbnailRef ? buildPublicUrl(thumbnailRef) : null;
+        const previewLog = itemRow.preview_logs as
+          | { source_storage_path: string | null; source_display_url: string | null; crop_config: Record<string, unknown> | null }
+          | null
+          | undefined;
+
+        const sourceMeta = await createSignedSource(supabase, previewLog?.source_storage_path ?? null);
 
         const singlePayload = {
           item: {
@@ -192,6 +249,13 @@ serve(async (req: Request) => {
             imageUrl: buildPublicUrl(storageRef),
             displayUrl,
             storagePath: `${storageRef.bucket}/${storageRef.path}`,
+            thumbnailUrl,
+            thumbnailStoragePath: itemRow.thumbnail_storage_path ?? null,
+            sourceStoragePath: previewLog?.source_storage_path ?? null,
+            sourceDisplayUrl: previewLog?.source_display_url ?? null,
+            sourceSignedUrl: sourceMeta.signedUrl,
+            sourceSignedUrlExpiresAt: sourceMeta.expiresAt,
+            cropConfig: previewLog?.crop_config ?? null,
             isFavorited: itemRow.is_favorited,
             isDeleted: itemRow.is_deleted,
             downloadCount: itemRow.download_count,
@@ -219,7 +283,7 @@ serve(async (req: Request) => {
       // Build query
       let query = supabase
         .from('user_gallery')
-        .select('*', { count: 'exact' })
+        .select('*, preview_logs!left(source_storage_path, source_display_url, crop_config)', { count: 'exact' })
         .eq('is_deleted', false)
         .eq('user_id', userId);
 
@@ -259,22 +323,35 @@ serve(async (req: Request) => {
       }
 
       // Transform to camelCase
-      const galleryItems: GalleryItem[] = (items || []).map((item: Record<string, unknown>) => ({
-        id: item.id,
-        userId: item.user_id,
-        previewLogId: item.preview_log_id,
-        styleId: item.style_id,
-        styleName: item.style_name,
-        orientation: item.orientation,
-        watermarkedUrl: item.watermarked_url,
-        cleanUrl: item.clean_url,
-        isFavorited: item.is_favorited,
-        isDeleted: item.is_deleted,
-        downloadCount: item.download_count,
-        lastDownloadedAt: item.last_downloaded_at,
-        createdAt: item.created_at,
-        updatedAt: item.updated_at,
-      }));
+      const galleryItems: GalleryItem[] = (items || []).map((item: Record<string, unknown>) => {
+        const previewLog = item.preview_logs as
+          | { source_storage_path: string | null; source_display_url: string | null; crop_config: Record<string, unknown> | null }
+          | null
+          | undefined;
+
+        return {
+          id: item.id as string,
+          userId: (item.user_id ?? null) as string | null,
+          previewLogId: (item.preview_log_id ?? null) as string | null,
+          styleId: item.style_id as string,
+          styleName: item.style_name as string,
+          orientation: item.orientation as string,
+          watermarkedUrl: item.watermarked_url as string,
+          cleanUrl: (item.clean_url ?? null) as string | null,
+          thumbnailStoragePath: (item.thumbnail_storage_path ?? null) as string | null,
+          sourceStoragePath: previewLog?.source_storage_path ?? null,
+          sourceDisplayUrl: previewLog?.source_display_url ?? null,
+          sourceSignedUrl: null,
+          sourceSignedUrlExpiresAt: null,
+          cropConfig: previewLog?.crop_config ?? null,
+          isFavorited: Boolean(item.is_favorited),
+          isDeleted: Boolean(item.is_deleted),
+          downloadCount: Number(item.download_count ?? 0),
+          lastDownloadedAt: (item.last_downloaded_at ?? null) as string | null,
+          createdAt: item.created_at as string,
+          updatedAt: item.updated_at as string,
+        };
+      });
 
       const resolvedItems = (
         await Promise.all(
@@ -290,6 +367,11 @@ serve(async (req: Request) => {
 
             const displayUrl = await buildDisplayUrl(supabase, storageRef, 'preview', requiresWatermark);
             const imageUrl = buildPublicUrl(storageRef);
+            const thumbnailRef = item.thumbnailStoragePath
+              ? parseStoragePath(item.thumbnailStoragePath)
+              : null;
+            const thumbnailUrl = thumbnailRef ? buildPublicUrl(thumbnailRef) : null;
+            const sourceMeta = await createSignedSource(supabase, item.sourceStoragePath);
 
             return {
               id: item.id,
@@ -301,6 +383,13 @@ serve(async (req: Request) => {
               imageUrl,
               displayUrl,
               storagePath: `${storageRef.bucket}/${storageRef.path}`,
+              thumbnailUrl,
+              thumbnailStoragePath: item.thumbnailStoragePath ?? null,
+              sourceStoragePath: item.sourceStoragePath ?? null,
+              sourceDisplayUrl: item.sourceDisplayUrl ?? null,
+              sourceSignedUrl: sourceMeta.signedUrl,
+              sourceSignedUrlExpiresAt: sourceMeta.expiresAt,
+              cropConfig: item.cropConfig ?? null,
               isFavorited: item.isFavorited,
               isDeleted: item.isDeleted,
               downloadCount: item.downloadCount,

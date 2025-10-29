@@ -1,11 +1,15 @@
 import { generateStylePreview } from './stylePreviewApi';
 import { pollPreviewStatusUntilReady } from './previewPolling';
+import type { PreviewCropConfig } from '../../shared/validation/previewSchemas';
 
 export interface GeneratePreviewOptions {
   quality?: 'low' | 'medium' | 'high' | 'auto';
   onStage?: (stage: 'generating' | 'polling' | 'watermarking') => void;
   idempotencyKey?: string;
   accessToken?: string | null;
+  sourceStoragePath?: string | null;
+  sourceDisplayUrl?: string | null;
+  cropConfig?: PreviewCropConfig | null;
 }
 
 export interface GeneratePreviewResult {
@@ -17,6 +21,10 @@ export interface GeneratePreviewResult {
   storageUrl?: string | null;
   storagePath?: string | null;
   softRemaining?: number | null;
+  sourceStoragePath?: string | null;
+  sourceDisplayUrl?: string | null;
+  previewLogId?: string | null;
+  cropConfig?: PreviewCropConfig | null;
 }
 
 export const generateAndWatermarkPreview = async (
@@ -42,6 +50,9 @@ export const generateAndWatermarkPreview = async (
       quality: options.quality,
       idempotencyKey: options.idempotencyKey ?? requestId,
       accessToken: options.accessToken ?? null,
+      sourceStoragePath: options.sourceStoragePath ?? null,
+      sourceDisplayUrl: options.sourceDisplayUrl ?? null,
+      cropConfig: options.cropConfig ?? null,
     }
   });
 
@@ -70,6 +81,10 @@ export const generateAndWatermarkPreview = async (
     priority: generationResult.priority,
     storageUrl: generationResult.storageUrl ?? null,
     storagePath: generationResult.storagePath ?? null,
-    softRemaining: generationResult.softRemaining ?? null
+    softRemaining: generationResult.softRemaining ?? null,
+    sourceStoragePath: generationResult.sourceStoragePath ?? null,
+    sourceDisplayUrl: generationResult.sourceDisplayUrl ?? null,
+    previewLogId: generationResult.previewLogId ?? null,
+    cropConfig: generationResult.cropConfig ?? null
   };
 };
