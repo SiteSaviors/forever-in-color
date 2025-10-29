@@ -2,16 +2,14 @@ import { Suspense, lazy } from 'react';
 import StyleSidebarFallback from '@/sections/studio/components/StyleSidebarFallback';
 import { useStudioEntitlementState } from '@/store/hooks/studio/useStudioEntitlementState';
 import { useStudioPreviewState } from '@/store/hooks/studio/useStudioPreviewState';
+import { useStudioOverlayContext } from '@/sections/studio/experience/context';
 
 const StyleSidebar = lazy(() => import('@/sections/studio/components/StyleSidebar'));
 
-type LeftRailProps = {
-  onOpenMobileDrawer: () => void;
-};
-
-const LeftRail = ({ onOpenMobileDrawer }: LeftRailProps) => {
+const LeftRail = () => {
   const { entitlements, displayRemainingTokens } = useStudioEntitlementState();
   const { currentStyle, hasCroppedImage } = useStudioPreviewState();
+  const { setMobileDrawerOpen } = useStudioOverlayContext();
 
   return (
     <>
@@ -19,7 +17,7 @@ const LeftRail = ({ onOpenMobileDrawer }: LeftRailProps) => {
         <div className="fixed bottom-6 left-1/2 z-40 flex -translate-x-1/2 lg:hidden">
           <button
             type="button"
-            onClick={onOpenMobileDrawer}
+            onClick={() => setMobileDrawerOpen(true)}
             className="flex items-center gap-3 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 px-5 py-3.5 text-white shadow-glow-purple transition duration-150 active:scale-95"
             aria-label="Open style picker"
             style={{

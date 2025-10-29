@@ -19,3 +19,26 @@ export const useStudioExperienceContext = (): StudioExperienceContextValue => {
   }
   return context;
 };
+
+export type StudioOverlayContextValue = {
+  isDownloadUpgradeOpen: boolean;
+  openDownloadUpgrade: () => void;
+  closeDownloadUpgrade: () => void;
+  isCanvasUpsellToastVisible: boolean;
+  showCanvasUpsellToast: () => void;
+  hideCanvasUpsellToast: () => void;
+  isMobileDrawerOpen: boolean;
+  setMobileDrawerOpen: (open: boolean) => void;
+};
+
+const StudioOverlayContext = createContext<StudioOverlayContextValue | null>(null);
+
+export const StudioOverlayProvider = StudioOverlayContext.Provider;
+
+export const useStudioOverlayContext = (): StudioOverlayContextValue => {
+  const context = useContext(StudioOverlayContext);
+  if (!context) {
+    throw new Error('useStudioOverlayContext must be used within a StudioOverlayProvider');
+  }
+  return context;
+};
