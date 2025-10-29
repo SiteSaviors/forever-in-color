@@ -1,6 +1,6 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { clsx } from 'clsx';
-import type { StylePreviewStatus } from '@/store/useFounderStore';
+import type { StylePreviewStatus } from '@/store/founder/storeTypes';
 import { useAuthModal } from '@/store/useAuthModal';
 import { useStudioFeedback } from '@/hooks/useStudioFeedback';
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';

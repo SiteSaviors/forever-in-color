@@ -1,6 +1,6 @@
 import { memo, useMemo } from 'react';
 import { clsx } from 'clsx';
-import type { StyleOption } from '@/store/useFounderStore';
+import type { StyleOption } from '@/store/founder/storeTypes';
 import type { Orientation } from '@/utils/imageUtils';
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
 import { usePreviewEntry, usePreviewCacheEntry } from '@/store/hooks/usePreviewStore';

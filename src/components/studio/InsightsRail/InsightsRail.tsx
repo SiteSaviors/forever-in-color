@@ -1,6 +1,6 @@
 import { memo, useMemo, useState, useEffect, type ReactNode } from 'react';
 import { clsx } from 'clsx';
-import type { EntitlementState, StyleOption } from '@/store/useFounderStore';
+import type { EntitlementState, StyleOption } from '@/store/founder/storeTypes';
 import StoryTeaser from './StoryTeaser';
 // StoryHeader removed per request to reduce duplication in right rail
 import DiscoverGrid from './DiscoverGrid';

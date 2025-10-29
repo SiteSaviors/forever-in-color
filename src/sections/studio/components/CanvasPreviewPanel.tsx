@@ -1,6 +1,6 @@
 import { Suspense, lazy } from 'react';
 import { CheckCircle2 } from 'lucide-react';
-import type { EntitlementState, StylePreviewStatus, StyleOption } from '@/store/useFounderStore';
+import type { EntitlementState, StylePreviewStatus, StyleOption } from '@/store/founder/storeTypes';
 // Orientation type no longer needed in this module
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
 import StudioEmptyState from './StudioEmptyState';

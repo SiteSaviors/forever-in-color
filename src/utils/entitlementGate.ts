@@ -1,6 +1,6 @@
 import { type StyleCatalogEntry } from '@/config/styleCatalog';
 import { STYLE_CORE_BY_ID } from '@/config/styles/registryCore.generated';
-import type { EntitlementState, SessionUser } from '@/store/useFounderStore';
+import type { EntitlementState, SessionUser } from '@/store/founder/storeTypes';
 
 export type GateReason =
   | 'allowed'

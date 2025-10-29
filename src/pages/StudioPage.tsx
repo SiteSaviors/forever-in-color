@@ -1,9 +1,10 @@
 import { Suspense, lazy, useEffect, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import ProductHeroSection from '@/sections/ProductHeroSection';
-import { useFounderStore } from '@/store/useFounderStore';
 import FounderNavigation from '@/components/navigation/FounderNavigation';
 import { LazyMotion, domAnimation } from 'framer-motion';
+import { useStyleCatalogActions, useStyleCatalogState } from '@/store/hooks/useStyleCatalogStore';
+import { useEntitlementsActions } from '@/store/hooks/useEntitlementsStore';
 
 const LaunchflowAccordionLazy = lazy(() => import('@/sections/LaunchpadLayout'));
 const StudioConfiguratorLazy = lazy(() => import('@/sections/StudioConfigurator'));
@@ -29,9 +30,9 @@ const StudioPage = () => {
   const [searchParams] = useSearchParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const preselectedStyleId = useFounderStore((state) => state.preselectedStyleId);
-  const setPreselectedStyle = useFounderStore((state) => state.setPreselectedStyle);
-  const hydrateEntitlements = useFounderStore((state) => state.hydrateEntitlements);
+  const { preselectedStyleId } = useStyleCatalogState();
+  const { setPreselectedStyle } = useStyleCatalogActions();
+  const { hydrateEntitlements } = useEntitlementsActions();
   const [checkoutNotice, setCheckoutNotice] = useState<{ variant: 'success' | 'warning'; message: string } | null>(null);
 
   useEffect(() => {

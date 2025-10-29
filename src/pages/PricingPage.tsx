@@ -5,8 +5,9 @@ import Section from '@/components/layout/Section';
 import TierCard from '@/components/ui/TierCard';
 import PricingBenefitsStrip from '@/components/ui/PricingBenefitsStrip';
 import FloatingOrbs from '@/components/ui/FloatingOrbs';
-import { useFounderStore } from '@/store/useFounderStore';
 import { useAuthModal } from '@/store/useAuthModal';
+import { useEntitlementsActions, useEntitlementsState } from '@/store/hooks/useEntitlementsStore';
+import { useSessionState } from '@/store/hooks/useSessionStore';
 import { createCheckoutSession } from '@/utils/checkoutApi';
 
 type TierId = 'free' | 'creator' | 'plus' | 'pro';
@@ -100,10 +101,9 @@ const PREMIUM_TIERS: Tier[] = [
 ];
 
 const PricingPage = () => {
-  const entitlements = useFounderStore((state) => state.entitlements);
-  const sessionUser = useFounderStore((state) => state.sessionUser);
-  const accessToken = useFounderStore((state) => state.accessToken);
-  const hydrateEntitlements = useFounderStore((state) => state.hydrateEntitlements);
+  const { entitlements } = useEntitlementsState();
+  const { sessionUser, accessToken } = useSessionState();
+  const { hydrateEntitlements } = useEntitlementsActions();
   const openAuthModal = useAuthModal((state) => state.openModal);
   const location = useLocation();
   const navigate = useNavigate();

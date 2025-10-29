@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X, Loader2, ShieldCheck } from 'lucide-react';
 import Button from '@/components/ui/Button';
-import { useFounderStore } from '@/store/useFounderStore';
 import { useAuthModal } from '@/store/useAuthModal';
+import { useAuthGateActions, useAuthGateState } from '@/store/hooks/useAuthGateStore';
 import { emitAuthGateEvent } from '@/utils/telemetry';
 import { getSupabaseClient } from '@/utils/supabaseClient.loader';
 
@@ -18,10 +18,9 @@ const AUTH_GATE_COPY = {
 } as const;
 
 const AuthGateModal = () => {
-  const open = useFounderStore((state) => state.authGateOpen);
-  const setAuthGateOpen = useFounderStore((state) => state.setAuthGateOpen);
+  const { authGateOpen: open } = useAuthGateState();
+  const { setAuthGateOpen, clearAuthGateIntent } = useAuthGateActions();
   const openAuthModal = useAuthModal((state) => state.openModal);
-  const clearAuthGateIntent = useFounderStore((state) => state.clearAuthGateIntent);
 
   const [isGoogleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

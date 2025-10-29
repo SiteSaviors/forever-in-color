@@ -7,6 +7,7 @@ export const useStyleCatalogState = () =>
       styles: state.styles,
       hoveredStyleId: state.hoveredStyleId,
       selectedStyleId: state.selectedStyleId,
+      preselectedStyleId: state.preselectedStyleId,
       currentStyle: state.currentStyle(),
     }),
     shallow
@@ -18,6 +19,8 @@ export const useStyleCatalogActions = () =>
       evaluateStyleGate: state.evaluateStyleGate,
       setShowQuotaModal: state.setShowQuotaModal,
       toggleFavoriteStyle: state.toggleFavoriteStyle,
+      setPreselectedStyle: state.setPreselectedStyle,
+      ensureStylesLoaded: state.ensureStylesLoaded,
     }),
     shallow
   );

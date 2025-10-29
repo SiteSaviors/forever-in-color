@@ -8,7 +8,8 @@ import {
 } from '@/config/styleCatalog';
 import type { GateResult } from '@/utils/entitlementGate';
 import { findStyleMetadata } from '@/utils/entitlementGate';
-import { useFounderStore, type StyleOption } from '@/store/useFounderStore';
+import { useFounderStore } from '@/store/useFounderStore';
+import type { StyleOption } from '@/store/founder/storeTypes';
 
 export type ToneSectionStyle = {
   option: StyleOption;

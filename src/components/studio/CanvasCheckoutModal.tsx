@@ -4,7 +4,7 @@ import { clsx } from 'clsx';
 import { useNavigate } from 'react-router-dom';
 import { CANVAS_SIZE_OPTIONS, getCanvasSizeOption } from '@/utils/canvasSizes';
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
-import { type CanvasModalCloseReason, type FrameColor } from '@/store/useFounderStore';
+import { type CanvasModalCloseReason, type FrameColor } from '@/store/founder/storeTypes';
 import { useCheckoutStore } from '@/store/useCheckoutStore';
 import { ENABLE_STUDIO_V2_CANVAS_MODAL } from '@/config/featureFlags';
 import { trackStudioV2CanvasModalOrientation } from '@/utils/studioV2Analytics';

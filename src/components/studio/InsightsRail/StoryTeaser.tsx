@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import clsx from 'clsx';
-import type { StyleOption } from '@/store/useFounderStore';
+import type { StyleOption } from '@/store/founder/storeTypes';
 import { STUDIO_V2_COPY } from '@/config/studioV2Copy';
 
 type StoryTeaserProps = {
@@ -24,7 +24,7 @@ const StoryTeaser = ({ highlightedStyle, stage }: StoryTeaserProps) => {
             Discover Your Style
           </h2>
           <p className="text-base text-white/75 mt-4 max-w-xs">
-            Discover the magic that makes style_name unique.
+            Upload Your Photo & Select An Art Style
           </p>
         </div>
       </section>

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import type { Orientation } from '@/utils/imageUtils';
-import type { CanvasSize } from '@/store/useFounderStore';
+import type { CanvasSize } from '@/store/founder/storeTypes';
 import { getRoomAsset } from './roomAssets';
 import { useUploadState } from '@/store/hooks/useUploadStore';
 import { useCanvasConfigState } from '@/store/hooks/useCanvasConfigStore';

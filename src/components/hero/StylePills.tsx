@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { clsx } from 'clsx';
-import { useFounderStore } from '@/store/useFounderStore';
+import { useStyleCatalogActions } from '@/store/hooks/useStyleCatalogStore';
 
 type StylePill = {
   id: string;
@@ -34,7 +34,7 @@ const buildAvatarClass = (isActive: boolean, base: string) =>
 
 const StylePills = ({ pills, onStyleChange, className = '' }: StylePillsProps) => {
   const [activeStyleId, setActiveStyleId] = useState(pills[0]?.id || '');
-  const setPreselectedStyle = useFounderStore((state) => state.setPreselectedStyle);
+  const { setPreselectedStyle } = useStyleCatalogActions();
 
   const handlePillClick = (pill: StylePill) => {
     setActiveStyleId(pill.id);

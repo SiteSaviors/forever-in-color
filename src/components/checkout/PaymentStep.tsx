@@ -3,11 +3,11 @@ import { loadStripe, StripeElementsOptions } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import clsx from 'clsx';
 import { useCheckoutStore } from '@/store/useCheckoutStore';
-import { useFounderStore } from '@/store/useFounderStore';
 import { useStyleCatalogState } from '@/store/hooks/useStyleCatalogStore';
 import { useCanvasConfigActions, useCanvasConfigState } from '@/store/hooks/useCanvasConfigStore';
 import { useUploadState } from '@/store/hooks/useUploadStore';
 import { usePreviewEntry } from '@/store/hooks/usePreviewStore';
+import { useSessionState } from '@/store/hooks/useSessionStore';
 import { createOrderPaymentIntent } from '@/utils/checkoutApi';
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
 
@@ -31,7 +31,7 @@ const InnerPaymentForm = ({ onSuccess, onBack }: InnerPaymentProps) => {
     setPaymentIntent,
     clearPaymentIntent,
   } = useCheckoutStore();
-  const accessToken = useFounderStore((state) => state.accessToken);
+  const { accessToken } = useSessionState();
   const { currentStyle } = useStyleCatalogState();
   const { selectedCanvasSize, enhancements } = useCanvasConfigState();
   const { computedTotal } = useCanvasConfigActions();

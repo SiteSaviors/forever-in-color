@@ -1,6 +1,6 @@
 import { TrendingUp, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { type EntitlementTier } from '@/store/useFounderStore';
+import { type EntitlementTier } from '@/store/founder/storeTypes';
 import Button from '@/components/ui/Button';
 
 type TierRecommendationProps = {

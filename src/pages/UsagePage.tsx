@@ -1,15 +1,16 @@
 import { useState } from 'react';
 import { ArrowLeft, Download, BarChart3 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useFounderStore } from '@/store/useFounderStore';
+import { useEntitlementsState } from '@/store/hooks/useEntitlementsStore';
+import { useSessionState } from '@/store/hooks/useSessionStore';
 import TokenHistoryTable from '@/components/usage/TokenHistoryTable';
 import UsageAnalyticsCard from '@/components/usage/UsageAnalyticsCard';
 import TierRecommendation from '@/components/usage/TierRecommendation';
 
 const UsagePage = () => {
   const [activeTab, setActiveTab] = useState<'history' | 'analytics'>('history');
-  const entitlements = useFounderStore((state) => state.entitlements);
-  const sessionUser = useFounderStore((state) => state.sessionUser);
+  const { entitlements } = useEntitlementsState();
+  const { sessionUser } = useSessionState();
 
   const tierLabel = entitlements.tier.charAt(0).toUpperCase() + entitlements.tier.slice(1);
   const remainingDisplay = entitlements.remainingTokens == null ? '∞' : entitlements.remainingTokens;

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Section from '@/components/layout/Section';
-import { useFounderStore } from '@/store/useFounderStore';
+import { useLaunchpadActions, useLaunchpadState } from '@/store/hooks/useLaunchpadStore';
 import { trackLaunchflowOpened } from '@/utils/launchflowTelemetry';
 import GeneratingCanvasAnimation from '@/components/hero/GeneratingCanvasAnimation';
 import StylePills from '@/components/hero/StylePills';
@@ -65,8 +65,8 @@ const STYLE_PILLS = [
 ];
 
 const ProductHeroSection = () => {
-  const setLaunchpadExpanded = useFounderStore((state) => state.setLaunchpadExpanded);
-  const launchpadExpanded = useFounderStore((state) => state.launchpadExpanded);
+  const { setLaunchpadExpanded } = useLaunchpadActions();
+  const { launchpadExpanded } = useLaunchpadState();
   const [currentStyleImage, setCurrentStyleImage] = useState(STYLE_PILLS[0].previewImage);
   const [currentStyleName, setCurrentStyleName] = useState(STYLE_PILLS[0].name);
   const [currentStyleTagline, setCurrentStyleTagline] = useState(STYLE_PILLS[0].tagline);

@@ -1,5 +1,5 @@
 import type { Orientation } from '@/utils/imageUtils';
-import type { FrameColor } from '@/store/useFounderStore';
+import type { FrameColor } from '@/store/founder/storeTypes';
 
 type ArtRect = {
   top: number;

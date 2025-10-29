@@ -1,4 +1,4 @@
-import type { StyleOption } from '@/store/useFounderStore';
+import type { StyleOption } from '@/store/founder/storeTypes';
 
 export type PreviewResult = {
   previewUrl: string;

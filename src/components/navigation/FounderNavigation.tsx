@@ -1,8 +1,10 @@
 import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { clsx } from 'clsx';
-import { useFounderStore } from '@/store/useFounderStore';
 import { useAuthModal } from '@/store/useAuthModal';
+import { useCanvasConfigState } from '@/store/hooks/useCanvasConfigStore';
+import { useEntitlementsState } from '@/store/hooks/useEntitlementsStore';
+import { useSessionActions, useSessionState } from '@/store/hooks/useSessionStore';
 
 const AccountDropdown = lazy(() => import('@/components/navigation/AccountDropdown'));
 
@@ -16,14 +18,12 @@ const NAV_LINKS = [
 const FounderNavigation = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const cartItemCount = useFounderStore(
-    (state) => state.enhancements.filter((enhancement) => enhancement.enabled).length
-  );
-  const entitlements = useFounderStore((state) => state.entitlements);
-  const sessionUser = useFounderStore((state) => state.sessionUser);
-  const sessionHydrated = useFounderStore((state) => state.sessionHydrated);
-  const signOut = useFounderStore((state) => state.signOut);
+  const { enhancements } = useCanvasConfigState();
+  const { entitlements } = useEntitlementsState();
+  const { sessionUser, sessionHydrated } = useSessionState();
+  const { signOut } = useSessionActions();
   const openAuthModal = useAuthModal((state) => state.openModal);
+  const cartItemCount = enhancements.filter((enhancement) => enhancement.enabled).length;
   const [isAtTop, setIsAtTop] = useState(true);
   const [heroVisible, setHeroVisible] = useState(true);
 

@@ -1,24 +1,20 @@
 import { useEffect, type ReactNode } from 'react';
-import { useFounderStore } from '@/store/useFounderStore';
 import AuthModal from '@/components/modals/AuthModal';
 import TokenDecrementToast from '@/components/ui/TokenDecrementToast';
 import QuotaExhaustedModal from '@/components/modals/QuotaExhaustedModal';
 import { devLog, devWarn } from '@/utils/devLogger';
 import { getSupabaseClient, prefetchSupabaseClient } from '@/utils/supabaseClient.loader';
+import { useSessionActions } from '@/store/hooks/useSessionStore';
+import { useEntitlementsActions, useEntitlementsState } from '@/store/hooks/useEntitlementsStore';
 
 type AuthProviderProps = {
   children: ReactNode;
 };
 
 const AuthProvider = ({ children }: AuthProviderProps) => {
-  const setSession = useFounderStore((state) => state.setSession);
-  const showTokenToast = useFounderStore((state) => state.showTokenToast);
-  const setShowTokenToast = useFounderStore((state) => state.setShowTokenToast);
-  const showQuotaModal = useFounderStore((state) => state.showQuotaModal);
-  const setShowQuotaModal = useFounderStore((state) => state.setShowQuotaModal);
-  const hydrateEntitlements = useFounderStore((state) => state.hydrateEntitlements);
-  const entitlements = useFounderStore((state) => state.entitlements);
-  const displayRemainingTokens = useFounderStore((state) => state.getDisplayableRemainingTokens());
+  const { setSession } = useSessionActions();
+  const { entitlements, showTokenToast, showQuotaModal, displayRemainingTokens } = useEntitlementsState();
+  const { setShowTokenToast, setShowQuotaModal, hydrateEntitlements } = useEntitlementsActions();
 
   useEffect(() => {
     let isMounted = true;

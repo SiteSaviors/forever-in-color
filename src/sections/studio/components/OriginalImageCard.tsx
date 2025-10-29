@@ -1,11 +1,12 @@
 import { Check } from 'lucide-react';
 import { clsx } from 'clsx';
-import { useFounderStore } from '@/store/useFounderStore';
+import { useUploadState } from '@/store/hooks/useUploadStore';
+import { useStyleCatalogState } from '@/store/hooks/useStyleCatalogStore';
 import { useHandleStyleSelect } from '@/sections/studio/hooks/useHandleStyleSelect';
 
 export default function OriginalImageCard() {
-  const croppedImage = useFounderStore((state) => state.croppedImage);
-  const selectedStyleId = useFounderStore((state) => state.selectedStyleId);
+  const { croppedImage } = useUploadState();
+  const { selectedStyleId } = useStyleCatalogState();
   const handleStyleSelect = useHandleStyleSelect();
 
   const isSelected = selectedStyleId === 'original-image';

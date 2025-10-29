@@ -1,4 +1,4 @@
-import type { StyleOption, EntitlementTier } from '@/store/useFounderStore';
+import type { StyleOption, EntitlementTier } from '@/store/founder/storeTypes';
 import { type StyleTone } from '@/config/styleCatalog';
 import { loadStyleById } from '@/config/styles/registryLazy';
 

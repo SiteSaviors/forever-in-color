@@ -10,8 +10,9 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { Download, Heart, Trash2, ArrowLeft, Filter, Sparkles, Expand } from 'lucide-react';
 import { clsx } from 'clsx';
-import { useFounderStore } from '@/store/useFounderStore';
 import { useAuthModal } from '@/store/useAuthModal';
+import { useEntitlementsState } from '@/store/hooks/useEntitlementsStore';
+import { useSessionState } from '@/store/hooks/useSessionStore';
 import { useStudioFeedback } from '@/hooks/useStudioFeedback';
 import {
   fetchGalleryItems,
@@ -65,8 +66,8 @@ const GalleryActionButton = ({
 
 const GalleryPage = () => {
   const navigate = useNavigate();
-  const sessionAccessToken = useFounderStore((state) => state.getSessionAccessToken());
-  const entitlements = useFounderStore((state) => state.entitlements);
+  const { accessToken: sessionAccessToken } = useSessionState();
+  const { entitlements } = useEntitlementsState();
   const { showToast, showUpgradeModal, renderFeedback } = useStudioFeedback();
   const openAuthModal = useAuthModal((state) => state.openModal);
 

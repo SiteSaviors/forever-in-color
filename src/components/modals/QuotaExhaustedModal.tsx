@@ -3,7 +3,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { X, Zap, TrendingUp, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Button from '@/components/ui/Button';
-import { type EntitlementTier } from '@/store/useFounderStore';
+import { type EntitlementTier } from '@/store/founder/storeTypes';
 import usePrefersReducedMotion from '@/hooks/usePrefersReducedMotion';
 import { clsx } from 'clsx';
 import './QuotaExhaustedModal.css';
