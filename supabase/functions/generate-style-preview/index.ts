@@ -126,11 +126,17 @@ async function normalizeImageInput(
     parseStorageUrl(image) ?? parseStoragePath(image);
 
   if (!storageRef) {
-    throw new Error('Only Wondertone storage paths are allowed for remote images');
+    throw new Error(`Only Wondertone storage paths are allowed. Received: ${image.substring(0, 50)}...`);
   }
 
   try {
     const { buffer, contentType } = await downloadStorageObject(supabase, storageRef);
+
+    // Prevent stack overflow from huge images
+    if (buffer.byteLength > 50 * 1024 * 1024) {  // 50MB limit
+      throw new Error(`Image too large: ${buffer.byteLength} bytes`);
+    }
+
     const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
     const mime = contentType && contentType.length > 0 ? contentType : 'image/jpeg';
     return `data:${mime};base64,${base64}`;
@@ -975,7 +981,21 @@ serve(async (req) => {
       cacheStatus
     });
     const normalizationStart = Date.now();
-    const normalizedImageUrl = await normalizeImageInput(imageUrl, supabase);
+    let normalizedImageUrl: string;
+    try {
+      normalizedImageUrl = await normalizeImageInput(imageUrl, supabase);
+    } catch (error) {
+      logger.error('Image normalization failed', {
+        requestId,
+        imageUrl: imageUrl.substring(0, 100),
+        error: error instanceof Error ? error.message : String(error)
+      });
+      return await recordPreviewFailure(
+        'invalid_image',
+        'Failed to process image. Please ensure the image is accessible.',
+        400
+      );
+    }
     const normalizationDurationMs = Date.now() - normalizationStart;
     logger.info('Normalization complete', {
       requestId,

@@ -8,6 +8,7 @@ export const useLaunchpadState = () =>
       launchpadSlimMode: state.launchpadSlimMode,
       uploadedImage: state.uploadedImage,
       croppedImage: state.croppedImage,
+      originalImage: state.originalImage,
       cropReadyAt: state.cropReadyAt,
       orientation: state.orientation,
       entitlementsStatus: state.entitlements.status,

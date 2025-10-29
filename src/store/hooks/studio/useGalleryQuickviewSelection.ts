@@ -45,26 +45,6 @@ const preloadImage = async (url: string): Promise<{ width: number; height: numbe
     img.src = url;
   });
 
-const fetchImageAsDataUrl = async (url: string): Promise<string> => {
-  const response = await fetch(url, { credentials: 'include' });
-  if (!response.ok) {
-    throw new Error(`Failed to fetch image: ${response.status}`);
-  }
-  const blob = await response.blob();
-  return await new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      if (typeof reader.result === 'string') {
-        resolve(reader.result);
-      } else {
-        reject(new Error('Failed to convert image to data URL'));
-      }
-    };
-    reader.onerror = () => reject(reader.error ?? new Error('Failed to convert image to data URL'));
-    reader.readAsDataURL(blob);
-  });
-};
-
 const selectBestSourceUrl = (item: GalleryQuickviewItem): string[] => {
   const candidates: string[] = [];
   if (isSignedUrlValid(item) && item.sourceSignedUrl) {
@@ -100,13 +80,11 @@ export const useGalleryQuickviewSelection = () => {
       const requiresWatermarkFlag = requiresWatermark ?? true;
 
       const candidates = selectBestSourceUrl(item);
-      let baseImageUrl = previewUrl;
       let dimensions = { width: 0, height: 0 };
 
       for (const candidate of candidates) {
         try {
           dimensions = await preloadImage(candidate);
-          baseImageUrl = candidate;
           break;
         } catch (error) {
           console.warn('[useGalleryQuickviewSelection] Failed to preload candidate image', {
@@ -119,7 +97,6 @@ export const useGalleryQuickviewSelection = () => {
       if (!dimensions.width || !dimensions.height) {
         try {
           dimensions = await preloadImage(previewUrl);
-          baseImageUrl = previewUrl;
         } catch (error) {
           console.error('[useGalleryQuickviewSelection] Failed to preload fallback preview image', error);
         }
@@ -140,16 +117,13 @@ export const useGalleryQuickviewSelection = () => {
         };
       }
 
-      let baseImageDataUrl = baseImageUrl;
-      try {
-        baseImageDataUrl = await fetchImageAsDataUrl(baseImageUrl);
-      } catch (error) {
-        console.error('[useGalleryQuickviewSelection] Failed to convert base image to data URL', error);
-      }
+      // Use storage path for generation (permanent, works forever)
+      // Use preview URL for display (fast, cached)
+      const sourceForGeneration = item.sourceStoragePath || item.sourceSignedUrl || previewUrl;
 
       const smartCropResult = {
         orientation: targetOrientation,
-        dataUrl: baseImageDataUrl,
+        dataUrl: previewUrl,  // Use preview for display
         region,
         imageDimensions: {
           width: readOptionalNumber(cropConfig, 'imageWidth', dimensions.width),
@@ -164,7 +138,7 @@ export const useGalleryQuickviewSelection = () => {
       }
 
       store.setSmartCropForOrientation(targetOrientation, smartCropResult);
-      store.setOriginalImage(baseImageDataUrl);
+      store.setOriginalImage(previewUrl);
       store.setOriginalImageDimensions({
         width: smartCropResult.imageDimensions.width,
         height: smartCropResult.imageDimensions.height,
@@ -180,7 +154,8 @@ export const useGalleryQuickviewSelection = () => {
         bytes: null,
       });
 
-      store.setCroppedImage(baseImageDataUrl);
+      // Use storage path directly - edge function will download with service role
+      store.setCroppedImage(sourceForGeneration);
       store.setOrientationPreviewPending(false);
       store.markCropReady();
       store.setLaunchpadSlimMode(true);

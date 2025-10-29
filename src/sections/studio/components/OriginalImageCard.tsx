@@ -5,13 +5,13 @@ import { useStyleCatalogState } from '@/store/hooks/useStyleCatalogStore';
 import { useHandleStyleSelect } from '@/sections/studio/hooks/useHandleStyleSelect';
 
 export default function OriginalImageCard() {
-  const { croppedImage } = useUploadState();
+  const { originalImage } = useUploadState();
   const { selectedStyleId } = useStyleCatalogState();
   const handleStyleSelect = useHandleStyleSelect();
 
   const isSelected = selectedStyleId === 'original-image';
 
-  if (!croppedImage) {
+  if (!originalImage) {
     return null;
   }
 
@@ -35,7 +35,7 @@ export default function OriginalImageCard() {
         {/* Thumbnail */}
         <div className="relative w-14 h-14 rounded-lg overflow-hidden bg-slate-800 flex-shrink-0">
           <img
-            src={croppedImage}
+            src={originalImage}
             alt="Original uploaded photo"
             className="w-full h-full object-cover"
           />

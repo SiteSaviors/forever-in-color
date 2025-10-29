@@ -11,8 +11,6 @@ import { executeStartPreview } from '@/features/preview';
 import { buildPreviewIdempotencyKey } from '@/utils/previewIdempotency';
 import { shouldRequireAuthGate } from '@/utils/authGate';
 import { cachePreviewEntry, getCachedPreviewEntry, clearPreviewCache } from '@/store/previewCacheStore';
-import { buildPublicStorageUrl } from '@/utils/storagePaths';
-import { extractStoragePathFromUrl } from '@/utils/storagePaths';
 import type { FounderState, PreviewSlice, StyleOption } from './storeTypes';
 
 export type { PreviewSlice, PreviewState, StartPreviewOptions, StylePreviewCacheEntry, StylePreviewStatus } from './storeTypes';
@@ -302,7 +300,7 @@ export const createPreviewSlice = (
         ? state.originalImageSignedUrl
         : state.originalImagePublicUrl ?? null;
 
-      const storagePathFromSourceImage = extractStoragePathFromUrl(sourceImage);
+      // Use sourceImage as-is (already a valid signed URL, data URI, or storage path after gallery rehydration)
       const imageUrlForRequest = sourceImage;
 
       const requestPayload = {

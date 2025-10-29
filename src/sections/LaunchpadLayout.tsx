@@ -238,6 +238,7 @@ const LaunchflowAccordion = () => {
     launchpadSlimMode,
     uploadedImage,
     croppedImage,
+    originalImage,
     cropReadyAt,
     orientation,
     entitlementsStatus,
@@ -437,7 +438,7 @@ const LaunchflowAccordion = () => {
         {!launchpadExpanded && launchpadSlimMode && (
           <SlimBar
             onEdit={() => openLaunchflow('slim_bar', true)}
-            image={croppedImage}
+            image={originalImage}
             orientationLabel={orientationLabel}
             readyLabel={readyLabel || 'Ready to customize'}
           />
