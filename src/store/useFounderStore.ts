@@ -9,6 +9,7 @@ import { loadInitialStylesLazy, loadStyleCatalogEntry, mergeStyleSnapshot } from
 import { createPreviewSlice } from './founder/previewSlice';
 import { createAuthSlice } from './founder/authSlice';
 import { createFavoritesSlice } from './founder/favoritesSlice';
+import { createGallerySlice } from './founder/gallerySlice';
 import type { CanvasSize, Enhancement, FounderBaseState, FounderState, StyleCarouselCard, StyleOption } from './founder/storeTypes';
 import { createMemoizedSelector } from './utils/memo';
 
@@ -375,6 +376,7 @@ export const useFounderStore = createWithEqualityFn<FounderState>((set, get, api
   },
   ...createPreviewSlice(initialStyles)(set, get, api),
   ...createAuthSlice(set, get, api),
+  ...createGallerySlice(set, get, api),
   setSmartCropForOrientation: (orientation, result) =>
     set((state) => ({
       smartCrops: {

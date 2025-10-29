@@ -28,7 +28,7 @@ export default function StyleSidebarFallback({
   return (
     <aside
       className={clsx(
-        'hidden lg:block lg:w-[420px] bg-slate-950/50 border-r border-white/10 lg:h-screen lg:sticky lg:top-[57px] overflow-y-auto transition-opacity duration-200',
+        'hidden lg:block lg:w-[418px] lg:flex-shrink-0 bg-slate-950/50 border-r border-white/10 lg:h-screen lg:sticky lg:top-[57px] overflow-y-auto transition-opacity duration-200',
         !hasCroppedImage && 'opacity-80 saturate-75'
       )}
     >

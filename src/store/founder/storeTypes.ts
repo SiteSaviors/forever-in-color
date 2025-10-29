@@ -67,6 +67,9 @@ export type StylePreviewCacheEntry = {
   generatedAt: number;
   storageUrl?: string | null;
   storagePath?: string | null;
+  sourceStoragePath?: string | null;
+  sourceDisplayUrl?: string | null;
+  cropConfig?: PreviewResult['cropConfig'];
 };
 
 export type StartPreviewOptions = {
@@ -163,6 +166,40 @@ export type FavoritesSlice = {
   clearFavoriteStyles: () => void;
 };
 
+export type GalleryStatus = 'idle' | 'loading' | 'ready' | 'error';
+
+export type GalleryQuickviewItem = {
+  id: string;
+  styleId: string;
+  styleName: string;
+  orientation: 'square' | 'horizontal' | 'vertical';
+  thumbnailUrl: string | null;
+  imageUrl: string;
+  displayUrl: string;
+  storagePath: string;
+  previewLogId: string | null;
+  sourceStoragePath: string | null;
+  sourceDisplayUrl: string | null;
+  cropConfig: Record<string, unknown> | null;
+  savedAt: string;
+  position: number;
+};
+
+export type GallerySlice = {
+  galleryItems: GalleryQuickviewItem[];
+  galleryStatus: GalleryStatus;
+  galleryError: string | null;
+  galleryRequiresWatermark: boolean | null;
+  lastFetchedAt: number | null;
+  setGalleryItems: (items: GalleryQuickviewItem[], requiresWatermark: boolean | null) => void;
+  setGalleryStatus: (status: GalleryStatus) => void;
+  setGalleryError: (error: string | null) => void;
+  touchGalleryFetchedAt: () => void;
+  clearGallery: () => void;
+  invalidateGallery: () => void;
+  setGalleryRequiresWatermark: (requires: boolean | null) => void;
+};
+
 export type AuthSlice = SessionSlice &
   EntitlementSlice & {
     prefetchAuthClient: () => void;
@@ -243,7 +280,7 @@ export type FounderBaseState = {
   clearFavoriteStyles: () => void;
 };
 
-export type FounderState = FounderBaseState & PreviewSlice & AuthSlice & FavoritesSlice;
+export type FounderState = FounderBaseState & PreviewSlice & AuthSlice & FavoritesSlice & GallerySlice;
 
 /**
  * Helper signature for slice creators. Centralizing here makes generics consistent across slices.

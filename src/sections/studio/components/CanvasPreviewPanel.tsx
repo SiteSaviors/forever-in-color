@@ -5,6 +5,7 @@ import type { EntitlementState, StylePreviewStatus, StyleOption } from '@/store/
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
 import StudioEmptyState from './StudioEmptyState';
 import ActionGrid from '@/components/studio/ActionGrid';
+import GalleryQuickview from '@/sections/studio/experience/GalleryQuickview';
 
 const CanvasInRoomPreview = lazy(() => import('@/components/studio/CanvasInRoomPreview'));
 const StyleForgeOverlay = lazy(() => import('@/components/studio/StyleForgeOverlay'));
@@ -119,7 +120,7 @@ const CanvasPreviewPanel = ({
   const orientationMeta = ORIENTATION_PRESETS[orientation];
 
   return (
-    <main className="w-full lg:flex-1 px-4 py-6 lg:p-8 flex flex-col items-center justify-start">
+    <main className="w-full lg:flex-1 lg:min-w-0 px-4 py-6 lg:p-8 flex flex-col items-center justify-start">
       <div className="w-full max-w-2xl mx-auto">
         <div
           className="relative rounded-3xl overflow-hidden border-2 border-white/20 bg-gradient-preview-bg shadow-2xl transition-all mx-auto"
@@ -227,6 +228,8 @@ const CanvasPreviewPanel = ({
             />
           </div>
         )}
+
+        <GalleryQuickview />
       </div>
 
       <div className="hidden lg:block w-full max-w-2xl mt-8">
