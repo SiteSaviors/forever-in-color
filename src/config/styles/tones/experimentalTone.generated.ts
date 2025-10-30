@@ -138,7 +138,7 @@ export const TONE_STYLES: StyleRegistryEntry[] = [
     disabledReason: null,
   },
   prompt: {
-    numericId: 43,
+    numericId: 28,
     prompt: "Recreate the exact image as a porcelain figurine — high-gloss glaze, smooth sculpted planes, and hand-painted gold trim. Preserve the original pose and expression with refined, slightly idealized anatomy. Add delicate floral or filigree accents around clothing edges. Lighting should include bright highlights and subtle reflections characteristic of kiln-fired ceramic. Present on a small pedestal or tabletop shadow with a soft studio backdrop.",
     updatedAt: "2025-10-30T07:16:07.570425+00",
   },
