@@ -113,7 +113,7 @@ export const TONE_STYLES: StyleRegistryEntry[] = [
   },
   prompt: {
     numericId: 11,
-    prompt: "Recreate this exact image as electric glow neon art — with the subject outlined in glowing lines, surrounded by radiant highlights and pulsing neon energy. Maintain the subject's exact pose, facial details, and composition, while enhancing it with bold contrast, vibrant lighting, and an expressive aura. Use high-energy light trails, edge-lit glow, and a mix of fluorescent and electric tones to evoke a sense of power and presence — like a vivid memory lit from within.",
+    prompt: "Recreate the exact image as a UV-neon drip/splatter painting. Preserve the full structure of the subject with a clean silhouette. Fluorescent accents: hot pink, electric blue, acid green, violet, and citrus orange. Build bold color fields, then layer sprays, splatter bursts, and gravity drips. Add soft neon bloom and thin rim-light glow along fast contours; use overspray speckle sparingly.",
     updatedAt: "2025-10-16 07:13:28.066242+00",
   },
   story: null,
@@ -148,7 +148,7 @@ export const TONE_STYLES: StyleRegistryEntry[] = [
   },
   prompt: {
     numericId: 27,
-    prompt: "Recreate the exact image as a UV-neon drip/splatter painting. Preserve the full structure of the subject with a clean silhouette. Fluorescent accents: hot pink, electric blue, acid green, violet, and citrus orange. Build bold color fields, then layer sprays, splatter bursts, and gravity drips. Add soft neon bloom and thin rim-light glow along fast contours; use overspray speckle sparingly.",
+    prompt: "Recreate the exact image as a blacklight-inspired crayon illustration — bold, waxy, and nightlife-bright. Preserve the full composition, pose, proportions, and facial features. Build forms with thick crayon strokes and layered color stacks; use high-impact hues (hot pink, electric blue, acid green, violet) with a subtle outer glow to simulate UV pop. Keep edges outlined with confident dark marks; add cross-hatch shading and visible paper tooth for texture. Introduce selective white-crayon highlights and soft bloom around the brightest areas. The result should feel like a glow-party sketchbook page — playful, modern, and ultra shareable.",
     updatedAt: "2025-10-16 07:13:28.066242+00",
   },
   story: null,

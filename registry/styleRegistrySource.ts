@@ -467,6 +467,7 @@ export const STYLE_REGISTRY_SOURCE: StyleRegistrySourceEntry[] = [
   {
     id: 'hex-weave',
     name: 'Hex Weave',
+    numericId: 29,
     tone: 'abstract',
     tier: 'free',
     isPremium: false,
@@ -488,6 +489,7 @@ export const STYLE_REGISTRY_SOURCE: StyleRegistrySourceEntry[] = [
   {
     id: 'prisma-tesla',
     name: 'Prisma Tesla',
+    numericId: 30,
     tone: 'abstract',
     tier: 'free',
     isPremium: false,
@@ -509,6 +511,7 @@ export const STYLE_REGISTRY_SOURCE: StyleRegistrySourceEntry[] = [
   {
     id: 'op-art-pulse',
     name: 'Op Art Pulse',
+    numericId: 31,
     tone: 'abstract',
     tier: 'free',
     isPremium: false,
@@ -844,6 +847,7 @@ export const STYLE_REGISTRY_SOURCE: StyleRegistrySourceEntry[] = [
   {
     id: 'casso-cubist',
     name: 'Casso Cubist',
+    numericId: 32,
     tone: 'abstract',
     tier: 'premium',
     isPremium: true,
@@ -866,6 +870,7 @@ export const STYLE_REGISTRY_SOURCE: StyleRegistrySourceEntry[] = [
   {
     id: 'sumi-ink-whisper',
     name: 'Sumi Ink Whisper',
+    numericId: 33,
     tone: 'abstract',
     tier: 'premium',
     isPremium: true,
@@ -888,6 +893,7 @@ export const STYLE_REGISTRY_SOURCE: StyleRegistrySourceEntry[] = [
   {
     id: 'abstract-chorus',
     name: 'Abstract Chorus',
+    numericId: 34,
     tone: 'abstract',
     tier: 'premium',
     isPremium: true,
