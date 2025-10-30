@@ -222,5 +222,45 @@
     "prompt": "Recreate the exact image as a glazed porcelain/ceramic figurine — glossy, delicate, and collectible. Preserve full structure and pose, then smooth forms to rounded, toy-like geometry. Coat surfaces with high-gloss glaze: tight specular highlights, pooling at creases, and tiny pinhole bubbles; add gold luster edge trims sparingly. Use a curated pastel palette with 1–2 jewel accents. Place on a soft tabletop shadow. The result should feel like a premium ceramic keepsake",
     "created_at": "2025-10-16 07:13:27.941975+00",
     "updated_at": "2025-10-16 07:13:28.066242+00"
+  },
+  {
+    "idx": 29,
+    "id": "1dd8cf24-bfc6-4025-a248-9f4a33805ab9",
+    "style_id": 30,
+    "prompt": "Recreate the exact image as a low-poly prism composition—faceted, crisp, and high-impact. Preserve full structure and pose. Triangulate forms with Delaunay-like facets; use finer facets around eyes and mouth, larger facets elsewhere. Assign each triangle a cohesive color ramp with mild hue shift; add slim bevel highlights on key edges, no heavy outlines. Introduce a few spectral light leaks near specular zones; keep skin tones stylized but believable. Background is dark-to-mid with soft bokeh sparkles; no facet overdraw on pupils.",
+    "created_at": "2025-10-30 03:27:34.727397+00",
+    "updated_at": "2025-10-30 03:27:34.727397+00"
+  },
+  {
+    "idx": 30,
+    "id": "e08ee524-9881-44b1-927f-fff6bfd28d0c",
+    "style_id": 31,
+    "prompt": "Recreate the exact image in an optical art style — rhythmic, high-contrast patterns that create vibration and depth. Use a restrained palette (black/white or limited duotone) and control line frequency so features remain readable. Employ gradient line spacing to model volume and a subtle background field that pulses outward from the silhouette. The result should feel kinetic and mesmerizing — a crisp optical illusion that still honors the subject’s identity.",
+    "created_at": "2025-10-30 03:28:33.633157+00",
+    "updated_at": "2025-10-30 03:28:33.633157+00"
+  },
+  {
+    "idx": 31,
+    "id": "f4b12a8d-ed71-4769-a235-946e57265721",
+    "style_id": 32,
+    "prompt": "Recreate the exact image in Synthetic Cubism — bold collage logic with graphic shapes and inserts. Preserve the composition and readable proportions of the subject, then rebuild forms using larger flat planes, cut-paper edges, and selective contour lines. Integrate collage elements (newsprint textures, music-staff scraps, woodgrain, painted labels) as surface inlays; keep them abstract and non-readable. Use a warmer, more playful palette (tan, cream, coral, olive, charcoal) with 1–2 accent colors. Outline only where needed; let overlapping shapes and stamped textures imply volume. The result should feel modern, witty, and constructed — a lively cubist collage that still honors the source image.",
+    "created_at": "2025-10-30 03:29:16.55469+00",
+    "updated_at": "2025-10-30 03:29:16.55469+00"
+  },
+  {
+    "idx": 32,
+    "id": "5f6229fb-e4c1-40c5-a886-452ad61d938e",
+    "style_id": 33,
+    "prompt": "Recreate the exact image as a sumi-ink marbling portrait—fluid, poetic, and atmospheric. Preserve composition and a clean silhouette. Reduce to a desaturated ink base, then advect soft marbling flows along cheek and hair contours; keep eyes, nostrils, and lip edges sharper for identity. Layer delicate gold-foil veins across broad ink pools; use feathered edges and paper grain. Avoid chaotic turbulence over the eye triangle. Add faint bloom around highlights; background remains a calm marbled wash.",
+    "created_at": "2025-10-30 03:30:08.333804+00",
+    "updated_at": "2025-10-30 03:30:08.333804+00"
+  },
+  {
+    "idx": 33,
+    "id": "17630572-81ec-45ba-bc17-ad922b321d58",
+    "style_id": 34,
+    "prompt": "Recreate the exact image as an Orphist color-harmony—prismatic, circular, and musical. Preserve overall structure and a clean silhouette. Build the background with translucent discs and curved arcs that radiate behind and around the silhouette. \\n",
+    "created_at": "2025-10-30 03:30:50.144199+00",
+    "updated_at": "2025-10-30 03:30:50.144199+00"
   }
 ]

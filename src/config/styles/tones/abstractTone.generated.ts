@@ -31,11 +31,6 @@ export const TONE_STYLES: StyleRegistryEntry[] = [
     rolloutPercentage: 100,
     disabledReason: null,
   },
-  prompt: {
-    numericId: 29,
-    prompt: "Recreate the exact image as an isometric hex weave—textile, dimensional, and readable. Preserve the subject’s full composition and a clean silhouette. Implement over/under weaving logic with subtle cast shadows. Increase strand density around eyes and lips for detail; use larger, looser weave on hair and background. Render strands with soft fiber sheen (matte to satin), avoiding photographic texture. Keep pupils and key features partially un-woven for identity; palette stays tasteful with one accent color thread.",
-    updatedAt: "2025-10-30 03:26:58.086611+00",
-  },
   story: null,
 },
 {
@@ -65,11 +60,6 @@ export const TONE_STYLES: StyleRegistryEntry[] = [
     rolloutPercentage: 100,
     disabledReason: null,
   },
-  prompt: {
-    numericId: 30,
-    prompt: "Recreate the exact image as a low-poly prism composition—faceted, crisp, and high-impact. Preserve full structure and pose. Triangulate forms with Delaunay-like facets; use finer facets around eyes and mouth, larger facets elsewhere. Assign each triangle a cohesive color ramp with mild hue shift; add slim bevel highlights on key edges, no heavy outlines. Introduce a few spectral light leaks near specular zones; keep skin tones stylized but believable. Background is dark-to-mid with soft bokeh sparkles; no facet overdraw on pupils.",
-    updatedAt: "2025-10-30 03:27:34.727397+00",
-  },
   story: null,
 },
 {
@@ -98,11 +88,6 @@ export const TONE_STYLES: StyleRegistryEntry[] = [
     isEnabled: true,
     rolloutPercentage: 100,
     disabledReason: null,
-  },
-  prompt: {
-    numericId: 31,
-    prompt: "Recreate the exact image in an optical art style — rhythmic, high-contrast patterns that create vibration and depth. Use a restrained palette (black/white or limited duotone) and control line frequency so features remain readable. Employ gradient line spacing to model volume and a subtle background field that pulses outward from the silhouette. The result should feel kinetic and mesmerizing — a crisp optical illusion that still honors the subject’s identity.",
-    updatedAt: "2025-10-30 03:28:33.633157+00",
   },
   story: null,
 },
@@ -134,11 +119,6 @@ export const TONE_STYLES: StyleRegistryEntry[] = [
     rolloutPercentage: 100,
     disabledReason: null,
   },
-  prompt: {
-    numericId: 32,
-    prompt: "Recreate the exact image in Synthetic Cubism — bold collage logic with graphic shapes and inserts. Preserve the composition and readable proportions of the subject, then rebuild forms using larger flat planes, cut-paper edges, and selective contour lines. Integrate collage elements (newsprint textures, music-staff scraps, woodgrain, painted labels) as surface inlays; keep them abstract and non-readable. Use a warmer, more playful palette (tan, cream, coral, olive, charcoal) with 1–2 accent colors. Outline only where needed; let overlapping shapes and stamped textures imply volume. The result should feel modern, witty, and constructed — a lively cubist collage that still honors the source image.",
-    updatedAt: "2025-10-30 03:29:16.55469+00",
-  },
   story: null,
 },
 {
@@ -169,11 +149,6 @@ export const TONE_STYLES: StyleRegistryEntry[] = [
     rolloutPercentage: 100,
     disabledReason: null,
   },
-  prompt: {
-    numericId: 33,
-    prompt: "Recreate the exact image as a sumi-ink marbling portrait—fluid, poetic, and atmospheric. Preserve composition and a clean silhouette. Reduce to a desaturated ink base, then advect soft marbling flows along cheek and hair contours; keep eyes, nostrils, and lip edges sharper for identity. Layer delicate gold-foil veins across broad ink pools; use feathered edges and paper grain. Avoid chaotic turbulence over the eye triangle. Add faint bloom around highlights; background remains a calm marbled wash.",
-    updatedAt: "2025-10-30 03:30:08.333804+00",
-  },
   story: null,
 },
 {
@@ -203,11 +178,6 @@ export const TONE_STYLES: StyleRegistryEntry[] = [
     isEnabled: true,
     rolloutPercentage: 100,
     disabledReason: null,
-  },
-  prompt: {
-    numericId: 34,
-    prompt: "Recreate the exact image as an Orphist color-harmony—prismatic, circular, and musical. Preserve overall structure and a clean silhouette. Build the background with translucent discs and curved arcs that radiate behind and around the silhouette.",
-    updatedAt: "2025-10-30 03:30:08.333804+00",
   },
   story: null,
 }
