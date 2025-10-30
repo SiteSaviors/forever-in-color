@@ -1,53 +1,57 @@
 ## Experimental Labs – Implementation Blueprint
 
-### Phase 0 – Discovery & Guardrail Alignment
-- Re-read core guardrail docs: README.md, FOUNDER_WORKFLOW.md, agents.md.
-- Validate tone architecture: `STYLE_TONE_DEFINITIONS`, `toneGradients`, `registryLazy`.
-- Confirm Supabase expectations: `preview_styles` schema, prompt sourcing, edge deployment flow.
-- Capture constraints: bundle ceiling (`dist/assets/index-*.js ~567 KB`), telemetry guarantees (`emitStepOneEvent`, gating), VS Code-first workflow.
+### Phase 0 – Discovery & Guardrail Alignment ✅
+- [x] Re-read core guardrail docs (README.md, FOUNDER_WORKFLOW.md, agents.md).  
+  - Reinforced Wondertone mandate (premium UX/perf), VS Code-first workflow, mandatory lint/build/analyze/deps checks, bundle ceiling enforcement, and telemetry guardrails (Step One via `emitStepOneEvent`, no bypassing `startStylePreview`).
+- [x] Validate tone architecture.  
+  - `STYLE_TONE_DEFINITIONS` + `STYLE_TONES_IN_ORDER` drive accordion ordering; new tone requires entry + sort order.  
+  - `toneGradients.ts` supplies ambient/highlight/panel styling per tone; Experimental Labs needs a new gradient entry.  
+  - `registryLazy.ts` lazy-loads tone bundles via explicit `switch` cases—must add `experimental` branch when tone is created.
+- [x] Confirm Supabase expectations.  
+  - Style prompts sourced from `docs/style_prompts_rows.json` → `registry/stylePromptsSource.ts` → Supabase `style_prompts` (migrations 20250627*).  
+  - `generate-style-preview/index.ts` expects valid `style_id`, prompt metadata, caching fields; deployment required after registry updates (`supabase functions deploy generate-style-preview`, etc.).
+- [x] Capture constraints & workflow.  
+  - Bundle budget: production `dist/assets/index-*.js ~567 KB` ceiling (agents.md §5); maintain lazy splits to stay under.  
+  - Maintain telemetry + gating pathways (`ToneStyleCard`, `useToneSections`, `previewSlice`).  
+  - Continue VS Code-first process: branch per task, run scripted checks, no direct pushes to `main`.
 
-### Phase 1 – Tone Definition & Visual System
-- Extend `STYLE_TONE_DEFINITIONS` with `experimental`; craft label, description, icon semantics, sort order (after Signature).
-- Update `STYLE_TONES_IN_ORDER`, ensuring downstream hooks naturally pick up the tone.
-- Add `Experimental Labs` gradient entry in `toneGradients.ts` (panel, ambient, highlight colors); align texture and opacity with existing drawers.
-- Provide a tone icon in `toneIcons.ts` (eg. flask/atom) that fits visual language (stroke widths, animation states).
-- Output: design tokens validated in Storybook/Chromatic for tone header.
+### Phase 1 – Tone Definition & Visual System ✅
+- [x] Extend `STYLE_TONE_DEFINITIONS` with `experimental` (label “Experimental Labs”, Wondertone Lab description, sort order 70, Creator tier).
+- [x] Ensure `STYLE_TONES_IN_ORDER` automatically reflects new tone via sort key.
+- [x] Add Experimental Labs gradient token set in `toneGradients.ts` (crimson/ember palette matching existing texture conventions).
+- [x] Provide Experimental Labs icon in `toneIcons.tsx` (lab flask silhouette with consistent stroke/animation affordances).
+- [ ] Visual validation: run Storybook/Chromatic tone snapshots prior to release (deferred to execution QA).
 
-### Phase 2 – Style Catalog Authoring
-- Define 8 premium transformations (eg. Ice Sculpture, Bronze Statue, Gummy Candy, Action Figure, Lava Core, Marble Bust, Origami Paper, Neon Gel).
-- For each style: finalize `id`/`slug`, tier metadata (`requiredTier: 'creator'`, `defaultUnlocked: false`), badges, marketing copy, story hooks.
-- Provision high-quality base thumbnails & previews (JPG master ≥2048px). Generate optimized `webp`/`avif` derivatives via `sharp`.
-- Insert entries into `registry/styleRegistrySource.ts` with accurate `numericId` placeholders (coordinate with Supabase).
-- Update asset validation map if any style skips preview/thumbnail checks.
+### Phase 2 – Style Catalog Authoring ✅
+- [x] Defined 8 premium transformations (Plush Figure, Candy Gummy, Action Figure, Porcelain Figurine, Ice Sculpture, Bronze Statue, Wax Candle, Sand Sculpture) under the Experimental Labs tone.
+- [x] Finalized IDs/slugs, Creator-tier gating (`requiredTier: 'creator'`, `defaultUnlocked: false`), marketing copy, and reuse of the premium badge.
+- [x] Provisioned placeholder assets (JPG + `webp`/`avif` variants generated via `sharp`) in `public/art-style-thumbnails/`.
+- [x] Added catalog entries to `registry/styleRegistrySource.ts` with numeric IDs 40–47 (supabase coordination pending prompt ingestion).
+- [ ] Story content to be authored separately (deferred).  
+No asset validation overrides required at this stage.
 
-### Phase 3 – Prompt & Supabase Coordination
-- Insert prompt rows into `docs/style_prompts_rows.json` with unique UUIDs, timestamps, and sanitized prompt text for each `style_id`.
-- Mirror rows in Supabase `preview_styles` (numeric IDs 40–47 or next available). Verify prompt indexing & rollout flags.
-- Add telemetry metadata if needed (eg. internal tracking tags via `badges` or `featureFlags.disabledReason`).
-- Sync with backend team to confirm generate-style-preview path handles new transformations (temperature, engine).
+### Phase 3 – Prompt & Supabase Coordination ✅
+- [x] Added Experimental Labs prompt entries (style IDs 40–47) to `docs/style_prompts_rows.json` with UUIDs + UTC timestamps.
+- [ ] Mirror rows in Supabase `preview_styles` (numeric IDs 40–47) and confirm rollout flags (pending edge sync).
+- [x] Telemetry flags unchanged (premium badge reused; no new feature flags required).
+- [ ] Coordinate with backend to verify generate-style-preview handling (deferred to deployment checklist).
 
-### Phase 4 – Code Generation & Typing
-- Run `npm run build:registry` to regenerate:
-  - `src/config/styles/styleRegistry.generated.ts`
-  - `src/config/styles/tones/experimentalTone.generated.ts`
-  - `supabase/functions/_shared/styleRegistry.generated.ts`
-  - `src/config/styles/registryCore.generated.ts`
-- Inspect generated tone file to ensure assets, prompts, badges populated.
-- Update type exports if necessary (enum additions).
-- Commit generated artifacts as part of isolated change set.
+### Phase 4 – Code Generation & Typing ✅
+- [x] Ran `npm run build:registry` generating updated registry bundles (including `experimentalTone.generated.ts` with assets/prompts/badges).
+- [x] Confirmed type union already extended in Phase 1 (`StyleTone` includes `experimental`).
+- [x] Reviewed generated tone file to ensure metadata accuracy.
+- [ ] Commit artifacts in the next change set after final QA (pending).
 
-### Phase 5 – UI Integration & UX Validation
-- Verify `useToneSections` picks up the new tone; ensure gating logic marks section as locked when user lacks tier.
-- Adjust `toneCardStagger`/animation tokens if needed for new tone density.
-- Confirm `StyleAccordion` renders the drawer with correct gradient and extended sort order (set `collapsedTones` defaults if necessary).
-- QA in Studio: open Experimental Labs drawer, scroll, check parallax/hover interactions (ToneStyleCard). Validate favourites or gating states.
-- Ensure `ToneStyleCard` invests iconography/badges for transformations (eg. “Lab” badge or new icon).
+### Phase 5 – UI Integration & UX Validation ⚙️
+- [x] Confirmed `useToneSections` / `StyleAccordion` ingest the new tone automatically via `StyleTone` union + gradient tokens (no additional code required).
+- [x] Verified `ToneStyleCard` badge/icon coverage (premium badge reused, Experimental tone icon in place).
+- [ ] Manual Studio QA (expand Experimental Labs drawer, hover/parallax, gating/favorites) — pending once UI build is run.
 
-### Phase 6 – Telemetry & Analytics
-- Confirm `emitStepOneEvent` events include `tone: 'experimental'` for view/select/locked states.
-- Audit Launchflow analytics / Studio feedback to ensure new tone surfaces in dashboards.
-- Add tracking for style usage in `galleryQuickviewTelemetry` if necessary.
-- Update documentation for analytics team (events dictionary).
+### Phase 6 – Telemetry & Analytics ✅
+- [x] `emitStepOneEvent` now includes `tone` for locked events (StyleAccordion/useHandleStyleSelect), ensuring Experimental Labs appears in view/select/locked analytics.
+- [x] Launchflow/Studio dashboards automatically receive the new tone via existing event pipeline (no additional flags needed).
+- [ ] Gallery Quickview tracking unchanged (no tone-specific metrics requested).
+- [ ] Document tone addition for analytics team (events dictionary update pending rollout notes).
 
 ### Phase 7 – Performance & Regression Suite
 - Run full checks: `npm run lint`, `npm run build`, `npm run build:analyze`, `npm run deps:check`, `npm run test` (if coverage exists).
@@ -66,4 +70,3 @@
 - Monitor Supabase logs & telemetry dashboards for errors or timeouts specific to new prompts.
 - Track adoption metrics via analytics events, gather user feedback on transformations.
 - Schedule follow-up tasks: additional lab styles backlog, dynamic lab promotions, asset refresh cadence.
-

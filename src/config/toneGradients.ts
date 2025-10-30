@@ -148,4 +148,22 @@ export const TONE_GRADIENTS: Record<StyleTone, ToneGradientConfig> = {
         'linear-gradient(135deg, rgba(205,146,255,0.9) 0%, rgba(255,197,184,0.82) 44%, rgba(41,12,62,0.9) 100%)',
     },
   },
+  experimental: {
+    accent: '#ef4444', // Crimson lab glow
+    description: 'Lab crucible - crimson to ember',
+    highlight: 'rgba(239, 68, 68, 0.26)',
+    keyline: 'rgba(248, 113, 113, 0.5)',
+    ambient: {
+      from: 'rgba(248, 113, 113, 0.18)',
+      via: 'rgba(220, 38, 38, 0.14)',
+      to: 'rgba(127, 29, 29, 0.12)',
+    },
+    iconStroke: 'rgba(254, 226, 226, 0.9)',
+    panel: {
+      collapsed:
+        'linear-gradient(135deg, rgba(239,68,68,0.85) 0%, rgba(185,28,28,0.82) 42%, rgba(40,13,13,0.94) 100%)',
+      expanded:
+        'linear-gradient(135deg, rgba(248,113,113,0.9) 0%, rgba(220,38,38,0.85) 44%, rgba(40,13,13,0.9) 100%)',
+    },
+  },
 };

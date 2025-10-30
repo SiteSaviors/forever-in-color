@@ -152,6 +152,14 @@ export const STYLE_TONE_DEFINITIONS: Record<StyleTone, StyleToneDefinition> = {
     sortOrder: 60,
     requiredTier: 'creator',
   },
+  experimental: {
+    id: 'experimental',
+    label: 'Experimental Labs',
+    description: 'Total transformations engineered in the Wondertone Lab.',
+    icon: '🧪',
+    sortOrder: 70,
+    requiredTier: 'creator',
+  },
 };
 
 export const STYLE_TONES_IN_ORDER: StyleTone[] = Object.values(STYLE_TONE_DEFINITIONS)

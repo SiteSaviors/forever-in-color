@@ -158,6 +158,7 @@ export default function StyleAccordion({ hasCroppedImage }: StyleAccordionProps)
     emitStepOneEvent({
       type: 'tone_style_locked',
       styleId: styleId,
+      tone,
       requiredTier: gate.requiredTier ?? null,
     });
   };

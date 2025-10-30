@@ -5,7 +5,8 @@ export type StyleTone =
   | 'abstract'
   | 'stylized'
   | 'electric'
-  | 'signature';
+  | 'signature'
+  | 'experimental';
 
 export type StyleTier = 'free' | 'premium';
 

@@ -17,7 +17,7 @@ export const TONE_STYLES: StyleRegistryEntry[] = [
   description: "Soft washes with gentle light leaks perfect for portraits.",
   marketingCopy: "Give portraits a dreamy wash with soft watercolor gradients.",
   badges: ["trending"],
-  sortOrder: 20,
+  sortOrder: 10,
   assets: {
     thumbnail: "/art-style-thumbnails/watercolor-dreams.jpg",
     thumbnailWebp: "/art-style-thumbnails/watercolor-dreams.webp",
@@ -36,53 +36,178 @@ export const TONE_STYLES: StyleRegistryEntry[] = [
     prompt: "Recreate the exact image in an expressive watercolor style — bold, dynamic, and emotionally vibrant. Preserve the full composition and structure of the subject, including the subject's pose, features, proportions, and spatial arrangement. Use loose, energetic brushwork, vivid splashes of color, and spontaneous paint drips to convey movement and feeling. Let pigments flow and merge unpredictably, creating a painterly abstraction around the subject without distorting the core details. Emphasize contrast, texture, and fluid transitions, with a sense of joyful chaos that enhances — not overwhelms — the subject's presence. The result should feel alive and impressionistic, yet true to the original image.",
     updatedAt: "2025-10-16 07:13:28.066242+00",
   },
-  story: {
-    "narrative": {
-      "headline": "The Story Behind Watercolor Dreams",
-      "paragraph": "Watercolor Dreams bathes your memory in feathered washes and airy light leaks—gentle enough for bedrooms, expressive enough for your feed.",
-      "bullets": [
-        {
-          "label": "Emotion",
-          "value": "Serene daydream",
-          "icon": "sparkle"
-        },
-        {
-          "label": "Perfect for",
-          "value": "Nurseries · reflective corners",
-          "icon": "home"
-        },
-        {
-          "label": "Signature detail",
-          "value": "Hand-splashed watercolor bloom",
-          "icon": "brush"
-        }
-      ]
-    },
-    "palette": [
-      {
-        "id": "wc-coral",
-        "hex": "#f7a7a6",
-        "label": "Blush Coral",
-        "descriptor": "Lifts rosy highlights"
-      },
-      {
-        "id": "wc-lavender",
-        "hex": "#c7b6e9",
-        "label": "Mist Lavender",
-        "descriptor": "Keeps the wash airy"
-      },
-      {
-        "id": "wc-mist",
-        "hex": "#e8eef3",
-        "label": "Cloud Mist",
-        "descriptor": "Adds dreamy negative space"
-      }
-    ],
-    "complementary": {
-      "premium": "pastel-bliss",
-      "fallback": "calm-watercolor"
-    }
+  story: null,
+},
+{
+  id: "gallery-acrylic",
+  slug: "gallery-acrylic",
+  name: "Gallery Acrylic",
+  tone: "trending",
+  tier: "free",
+  category: "style",
+  isPremium: false,
+  defaultUnlocked: true,
+  priceModifier: 0,
+  description: "Rich acrylic layering with bold gallery brushwork and depth.",
+  marketingCopy: "Layer bold acrylic strokes for a gallery-ready canvas packed with depth.",
+  badges: ["trending"],
+  sortOrder: 20,
+  assets: {
+    thumbnail: "/art-style-thumbnails/gallery-acrylic.jpg",
+    thumbnailWebp: "/art-style-thumbnails/gallery-acrylic.webp",
+    thumbnailAvif: "/art-style-thumbnails/gallery-acrylic.avif",
+    preview: "/art-style-thumbnails/gallery-acrylic.jpg",
+    previewWebp: "/art-style-thumbnails/gallery-acrylic.webp",
+    previewAvif: "/art-style-thumbnails/gallery-acrylic.avif",
   },
+  featureFlags: {
+    isEnabled: true,
+    rolloutPercentage: 100,
+    disabledReason: null,
+  },
+  prompt: {
+    numericId: 14,
+    prompt: "Recreate the exact image as a contemporary acrylic painting — bold color, crisp edges, and clean, layered flats. Preserve the subject’s full composition. Render forms with decisive brush and palette-knife strokes; build color in opaque layers (lights over darks) with minimal glazing. Keep transitions intentional: hard edges on graphic planes and tighter details; soft, feathered edges only where needed for depth. Use a modern, saturated palette with high local contrast; avoid oil-style glow or muddy blends. Add subtle canvas tooth and occasional knife ridges to suggest fast-drying acrylic texture. The result should feel fresh, vivid, and gallery-ready — a sharp, modern staple that stays true to the original photo.",
+    updatedAt: "2025-10-16 07:13:28.066242+00",
+  },
+  story: null,
+},
+{
+  id: "3d-storybook",
+  slug: "3d-storybook",
+  name: "3D Storybook",
+  tone: "trending",
+  tier: "free",
+  category: "style",
+  isPremium: false,
+  defaultUnlocked: true,
+  priceModifier: 0,
+  description: "Whimsical 3D illustrated style with storybook charm.",
+  marketingCopy: "Bring characters to life with a whimsical 3D illustration finish.",
+  badges: ["trending"],
+  sortOrder: 30,
+  assets: {
+    thumbnail: "/art-style-thumbnails/3d-storybook.jpg",
+    thumbnailWebp: "/art-style-thumbnails/3d-storybook.webp",
+    thumbnailAvif: "/art-style-thumbnails/3d-storybook.avif",
+    preview: "/art-style-thumbnails/3d-storybook.jpg",
+    previewWebp: "/art-style-thumbnails/3d-storybook.webp",
+    previewAvif: "/art-style-thumbnails/3d-storybook.avif",
+  },
+  featureFlags: {
+    isEnabled: true,
+    rolloutPercentage: 100,
+    disabledReason: null,
+  },
+  prompt: {
+    numericId: 7,
+    prompt: "Recreate the exact image as a stylized 3D illustration — expressive, playful, and visually engaging. Preserve the full composition and structure of the original subject, including accurate shape, proportions, and spatial layout. Render the subject with smooth, rounded modeling, vibrant colors, and soft lighting to create a polished, animated look. Use exaggerated but intentional design elements to enhance personality and charm, whether the subject is a person, pet, vehicle, building, or object. The final image should feel joyful and dynamic, like a scene from a Pixar or Fortnite-style animated world — stylized yet true to the original form.",
+    updatedAt: "2025-10-16 07:13:28.066242+00",
+  },
+  story: null,
+},
+{
+  id: "electric-drip",
+  slug: "electric-drip",
+  name: "Electric Drip",
+  tone: "trending",
+  tier: "free",
+  category: "style",
+  isPremium: false,
+  defaultUnlocked: true,
+  priceModifier: 0,
+  description: "Fluorescent paint pours cascading into neon bloom and kinetic splatter.",
+  marketingCopy: "Coat your portraits in liquid neon drips, gravity streaks, and UV rim light energy.",
+  badges: ["trending"],
+  sortOrder: 40,
+  assets: {
+    thumbnail: "/art-style-thumbnails/electric-drip.jpg",
+    thumbnailWebp: "/art-style-thumbnails/electric-drip.webp",
+    thumbnailAvif: "/art-style-thumbnails/electric-drip.avif",
+    preview: "/art-style-thumbnails/electric-drip.jpg",
+    previewWebp: "/art-style-thumbnails/electric-drip.webp",
+    previewAvif: "/art-style-thumbnails/electric-drip.avif",
+  },
+  featureFlags: {
+    isEnabled: true,
+    rolloutPercentage: 100,
+    disabledReason: null,
+  },
+  prompt: {
+    numericId: 11,
+    prompt: "Recreate the exact image as a UV-neon drip/splatter painting. Preserve the full structure of the subject with a clean silhouette. Fluorescent accents: hot pink, electric blue, acid green, violet, and citrus orange. Build bold color fields, then layer sprays, splatter bursts, and gravity drips. Add soft neon bloom and thin rim-light glow along fast contours; use overspray speckle sparingly.",
+    updatedAt: "2025-10-16 07:13:28.066242+00",
+  },
+  story: null,
+},
+{
+  id: "street-graffiti",
+  slug: "street-graffiti",
+  name: "Street Graffiti",
+  tone: "trending",
+  tier: "free",
+  category: "style",
+  isPremium: false,
+  defaultUnlocked: true,
+  priceModifier: 0,
+  description: "Layered street stencil treatment with bold contrast and urban grit.",
+  marketingCopy: "Hit city walls with crisp stencils, overspray halos, and concrete texture that make portraits pop.",
+  badges: ["trending"],
+  sortOrder: 50,
+  assets: {
+    thumbnail: "/art-style-thumbnails/street-graffiti.jpg",
+    thumbnailWebp: "/art-style-thumbnails/street-graffiti.webp",
+    thumbnailAvif: "/art-style-thumbnails/street-graffiti.avif",
+    preview: "/art-style-thumbnails/street-graffiti.jpg",
+    previewWebp: "/art-style-thumbnails/street-graffiti.webp",
+    previewAvif: "/art-style-thumbnails/street-graffiti.avif",
+  },
+  featureFlags: {
+    isEnabled: true,
+    rolloutPercentage: 100,
+    disabledReason: null,
+  },
+  prompt: {
+    numericId: 26,
+    prompt: "Recreate the exact image as a multi-layer street stencil — bold, high-contrast, and urban. Preserve the full composition and structure of the subject with accurate proportions and a clean silhouette. Reduce forms to 2–4 flat stencil layers (shadow, mid, light, highlight) with crisp cut edges and visible overspray halos. Place on a subtle wall texture (concrete, brick, plywood) with light paint bleed; keep facial/details sharp via tighter inner cuts. The result should feel like a hand-cut stencil hit cleanly on a city wall.",
+    updatedAt: "2025-10-16 07:13:28.066242+00",
+  },
+  story: null,
+},
+{
+  id: "liquid-chrome",
+  slug: "liquid-chrome",
+  name: "Liquid Chrome",
+  tone: "trending",
+  tier: "premium",
+  category: "style",
+  isPremium: true,
+  defaultUnlocked: false,
+  priceModifier: 0,
+  description: "Mercury sheen, stretched highlights.",
+  marketingCopy: "Wrap every contour in fluid metal with reflective chrome gradients and studio-grade specular beams.",
+  badges: ["trending","premium"],
+  requiredTier: "creator",
+  sortOrder: 60,
+  assets: {
+    thumbnail: "/art-style-thumbnails/liquid-chrome.jpg",
+    thumbnailWebp: null,
+    thumbnailAvif: null,
+    preview: "/art-style-thumbnails/liquid-chrome.jpg",
+    previewWebp: null,
+    previewAvif: null,
+  },
+  featureFlags: {
+    isEnabled: true,
+    rolloutPercentage: 100,
+    disabledReason: null,
+  },
+  prompt: {
+    numericId: 50,
+    prompt: "Recreate the exact image as a liquid chrome portrait — mirror-like highlights, smooth metallic gradients, and reflective environment cues. Preserve anatomy and pose while converting surfaces into highly polished metal with stretched specular streaks. Introduce subtle environment reflections in the midtones, using cool blues and warm whites for contrast. Keep background minimal and dark so the chrome silhouette glows.",
+    updatedAt: "2025-10-30T08:02:07.000000+00",
+  },
+  story: null,
 }
 ];
 

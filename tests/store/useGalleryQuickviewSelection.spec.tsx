@@ -185,7 +185,7 @@ let mocks: MockHandles;
     });
 
     expect(mocks.ensureStyleLoaded).toHaveBeenCalledWith(item.styleId);
-    expect(mocks.setOriginalImage).toHaveBeenCalledWith(item.sourceSignedUrl);
+    expect(mocks.setOriginalImage).toHaveBeenCalledWith(item.displayUrl);
     expect(mocks.setOriginalImageSource).toHaveBeenCalledWith({
       storagePath: item.sourceStoragePath,
       publicUrl: item.sourceDisplayUrl,
@@ -195,9 +195,10 @@ let mocks: MockHandles;
       bytes: null,
     });
     expect(mocks.setSmartCropForOrientation).toHaveBeenCalledWith('square', expect.objectContaining({
-      dataUrl: item.sourceSignedUrl,
+      dataUrl: item.displayUrl,
       imageDimensions: { width: 640, height: 640 },
     }));
+    expect(mocks.setCroppedImage).toHaveBeenCalledWith(item.sourceStoragePath);
   });
 
   it('switches orientation when gallery item differs', async () => {
@@ -228,7 +229,7 @@ let mocks: MockHandles;
       await select(staleItem, null, 3);
     });
 
-    expect(mocks.setOriginalImage).toHaveBeenCalledWith(staleItem.sourceDisplayUrl);
+    expect(mocks.setOriginalImage).toHaveBeenCalledWith(staleItem.displayUrl);
     expect(mocks.setOriginalImageSource).toHaveBeenCalledWith({
       storagePath: staleItem.sourceStoragePath,
       publicUrl: staleItem.sourceDisplayUrl,
@@ -237,6 +238,7 @@ let mocks: MockHandles;
       hash: null,
       bytes: null,
     });
+    expect(mocks.setCroppedImage).toHaveBeenCalledWith(staleItem.sourceStoragePath);
   });
 
   it('gracefully falls back to preview when all sources fail', async () => {
@@ -257,6 +259,6 @@ let mocks: MockHandles;
     });
 
     expect(mocks.setOriginalImage).toHaveBeenCalledWith(problematicItem.displayUrl);
-    expect(mocks.setCroppedImage).toHaveBeenCalledWith(problematicItem.displayUrl);
+    expect(mocks.setCroppedImage).toHaveBeenCalledWith(problematicItem.sourceStoragePath);
   });
 });

@@ -54,6 +54,7 @@ export const useHandleStyleSelect = (options?: HandleStyleSelectOptions) => {
         emitStepOneEvent({
           type: 'tone_style_locked',
           styleId,
+          tone: meta?.tone,
           requiredTier: gate.requiredTier ?? null,
         });
         return;

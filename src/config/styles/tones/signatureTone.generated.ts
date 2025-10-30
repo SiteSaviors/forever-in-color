@@ -5,27 +5,247 @@ import type { StyleRegistryEntry } from '../types';
 
 export const TONE_STYLES: StyleRegistryEntry[] = [
 {
-  id: "deco-luxe",
-  slug: "deco-luxe",
-  name: "Deco Luxe",
+  id: "watercolor-dreams",
+  slug: "watercolor-dreams",
+  name: "Watercolor Dreams",
+  tone: "signature",
+  tier: "free",
+  category: "style",
+  isPremium: false,
+  defaultUnlocked: true,
+  priceModifier: 0,
+  description: "Soft washes with gentle light leaks perfect for portraits.",
+  marketingCopy: "Give portraits a dreamy wash with soft watercolor gradients.",
+  badges: ["signature"],
+  sortOrder: 20,
+  assets: {
+    thumbnail: "/art-style-thumbnails/watercolor-dreams.jpg",
+    thumbnailWebp: "/art-style-thumbnails/watercolor-dreams.webp",
+    thumbnailAvif: "/art-style-thumbnails/watercolor-dreams.avif",
+    preview: "/art-style-thumbnails/watercolor-dreams.jpg",
+    previewWebp: "/art-style-thumbnails/watercolor-dreams.webp",
+    previewAvif: "/art-style-thumbnails/watercolor-dreams.avif",
+  },
+  featureFlags: {
+    isEnabled: true,
+    rolloutPercentage: 100,
+    disabledReason: null,
+  },
+  prompt: {
+    numericId: 4,
+    prompt: "Recreate the exact image in an expressive watercolor style — bold, dynamic, and emotionally vibrant. Preserve the full composition and structure of the subject, including the subject's pose, features, proportions, and spatial arrangement. Use loose, energetic brushwork, vivid splashes of color, and spontaneous paint drips to convey movement and feeling. Let pigments flow and merge unpredictably, creating a painterly abstraction around the subject without distorting the core details. Emphasize contrast, texture, and fluid transitions, with a sense of joyful chaos that enhances — not overwhelms — the subject's presence. The result should feel alive and impressionistic, yet true to the original image.",
+    updatedAt: "2025-10-16 07:13:28.066242+00",
+  },
+  story: {
+    "narrative": {
+      "headline": "The Story Behind Watercolor Dreams",
+      "paragraph": "Watercolor Dreams bathes your memory in feathered washes and airy light leaks—gentle enough for bedrooms, expressive enough for your feed.",
+      "bullets": [
+        {
+          "label": "Emotion",
+          "value": "Serene daydream",
+          "icon": "sparkle"
+        },
+        {
+          "label": "Perfect for",
+          "value": "Nurseries · reflective corners",
+          "icon": "home"
+        },
+        {
+          "label": "Signature detail",
+          "value": "Hand-splashed watercolor bloom",
+          "icon": "brush"
+        }
+      ]
+    },
+    "palette": [
+      {
+        "id": "wc-coral",
+        "hex": "#f7a7a6",
+        "label": "Blush Coral",
+        "descriptor": "Lifts rosy highlights"
+      },
+      {
+        "id": "wc-lavender",
+        "hex": "#c7b6e9",
+        "label": "Mist Lavender",
+        "descriptor": "Keeps the wash airy"
+      },
+      {
+        "id": "wc-mist",
+        "hex": "#e8eef3",
+        "label": "Cloud Mist",
+        "descriptor": "Adds dreamy negative space"
+      }
+    ],
+    "complementary": {
+      "premium": "pastel-bliss",
+      "fallback": "calm-watercolor"
+    }
+  },
+},
+{
+  id: "colored-pencil",
+  slug: "colored-pencil",
+  name: "Colored Pencil",
   tone: "signature",
   tier: "premium",
   category: "style",
   isPremium: true,
   defaultUnlocked: false,
   priceModifier: 0,
-  description: "Art Deco elegance with geometric luxury.",
-  marketingCopy: "Unlock gilded Art Deco geometry, mirrored sheen, and couture lighting for statement canvases.",
-  badges: ["luxury"],
+  description: "Layered strokes with paper tooth.",
+  marketingCopy: "Build rich depth with layered colored pencil strokes, delicate hatchwork, and pressed highlights.",
+  badges: ["premium"],
   requiredTier: "creator",
   sortOrder: 110,
   assets: {
-    thumbnail: "/art-style-thumbnails/deco-luxe.jpg",
-    thumbnailWebp: "/art-style-thumbnails/deco-luxe.webp",
-    thumbnailAvif: "/art-style-thumbnails/deco-luxe.avif",
-    preview: "/art-style-thumbnails/deco-luxe.jpg",
-    previewWebp: "/art-style-thumbnails/deco-luxe.webp",
-    previewAvif: "/art-style-thumbnails/deco-luxe.avif",
+    thumbnail: "/art-style-thumbnails/colored-pencil.jpg",
+    thumbnailWebp: "/art-style-thumbnails/colored-pencil.webp",
+    thumbnailAvif: "/art-style-thumbnails/colored-pencil.avif",
+    preview: "/art-style-thumbnails/colored-pencil.jpg",
+    previewWebp: "/art-style-thumbnails/colored-pencil.webp",
+    previewAvif: "/art-style-thumbnails/colored-pencil.avif",
+  },
+  featureFlags: {
+    isEnabled: true,
+    rolloutPercentage: 100,
+    disabledReason: null,
+  },
+  prompt: {
+    numericId: 38,
+    prompt: "Recreate the exact image as a colored pencil illustration — layered, precise, and richly textured. Preserve the full composition and structure of the subject with accurate proportions and clear silhouette. Build form using controlled hatching and cross-hatching, then deepen color with layered glazing and selective burnishing for smooth highlights. The result should feel detailed and handcrafted — a vibrant colored-pencil rendering that stays true to the original photo.",
+    updatedAt: "2025-10-30 17:01:11.820672+00",
+  },
+  story: null,
+},
+{
+  id: "memphis-pop",
+  slug: "memphis-pop",
+  name: "Memphis Pop",
+  tone: "signature",
+  tier: "premium",
+  category: "style",
+  isPremium: true,
+  defaultUnlocked: false,
+  priceModifier: 0,
+  description: "Playful geometry, electric color.",
+  marketingCopy: "Channel bold 80s energy with Memphis-inspired geometry, pattern punches, and high-voltage color.",
+  badges: ["premium"],
+  requiredTier: "creator",
+  sortOrder: 120,
+  assets: {
+    thumbnail: "/art-style-thumbnails/memphis-pop.jpg",
+    thumbnailWebp: "/art-style-thumbnails/memphis-pop.webp",
+    thumbnailAvif: "/art-style-thumbnails/memphis-pop.avif",
+    preview: "/art-style-thumbnails/memphis-pop.jpg",
+    previewWebp: "/art-style-thumbnails/memphis-pop.webp",
+    previewAvif: "/art-style-thumbnails/memphis-pop.avif",
+  },
+  featureFlags: {
+    isEnabled: true,
+    rolloutPercentage: 100,
+    disabledReason: null,
+  },
+  prompt: {
+    numericId: 39,
+    prompt: "Recreate the exact image in a Memphis design pop style — playful, geometric, and high-energy. Preserve the full structure of the subject with accurate proportions and a clean silhouette. Use flat, opaque color planes with crisp black keylines and limited halftone fills. Surround with ’80s motifs (squiggles, dots, checker, zigzags, circles/triangles) arranged on loose grid panels. Palette-lock to six colors: turquoise, lilac, peach, canary, black, white (no extra hues). Keep a clean buffer around face and hands (no patterns crossing features). Favor large, simple background blocks with a few pattern zones for rhythm. No gradients, painterly textures, or photographic shading. The result should feel bright, collectible, and instantly Memphis.",
+    updatedAt: "2025-10-30 17:02:27.536618+00",
+  },
+  story: null,
+},
+{
+  id: "liquid-chrome",
+  slug: "liquid-chrome",
+  name: "Liquid Chrome",
+  tone: "signature",
+  tier: "premium",
+  category: "style",
+  isPremium: true,
+  defaultUnlocked: false,
+  priceModifier: 0,
+  description: "Mercury sheen, stretched highlights.",
+  marketingCopy: "Wrap every contour in fluid metal with reflective chrome gradients and studio-grade specular beams.",
+  badges: ["premium"],
+  requiredTier: "creator",
+  sortOrder: 130,
+  assets: {
+    thumbnail: "/art-style-thumbnails/liquid-chrome.jpg",
+    thumbnailWebp: "/art-style-thumbnails/liquid-chrome.webp",
+    thumbnailAvif: "/art-style-thumbnails/liquid-chrome.avif",
+    preview: "/art-style-thumbnails/liquid-chrome.jpg",
+    previewWebp: "/art-style-thumbnails/liquid-chrome.webp",
+    previewAvif: "/art-style-thumbnails/liquid-chrome.avif",
+  },
+  featureFlags: {
+    isEnabled: true,
+    rolloutPercentage: 100,
+    disabledReason: null,
+  },
+  prompt: {
+    numericId: 40,
+    prompt: "Recreate the exact image as a liquid-chrome smear—glossy, mirrorlike, and sculptural. Preserve proportions and silhouette. Convert forms into high-gloss metallic surfaces; smear normals along graceful flow lines to elongate highlights. Use bright specular streaks and deep blacks; minimal midtones. Keep eyes readable via controlled highlight shapes; avoid melting features beyond recognition. Background is dark and uncluttered with faint reflection/caustic hints; no colored tints unless subtle cyan/steel accents.",
+    updatedAt: "2025-10-30 17:06:26.949228+00",
+  },
+  story: null,
+},
+{
+  id: "glass-ripple",
+  slug: "glass-ripple",
+  name: "Glass Ripple",
+  tone: "signature",
+  tier: "premium",
+  category: "style",
+  isPremium: true,
+  defaultUnlocked: false,
+  priceModifier: 0,
+  description: "Refractive panes with bright rims.",
+  marketingCopy: "Refract portraits through layered glass panes, luminous rim lights, and iridescent ripple caustics.",
+  badges: ["premium"],
+  requiredTier: "creator",
+  sortOrder: 140,
+  assets: {
+    thumbnail: "/art-style-thumbnails/glass-ripple.jpg",
+    thumbnailWebp: "/art-style-thumbnails/glass-ripple.webp",
+    thumbnailAvif: "/art-style-thumbnails/glass-ripple.avif",
+    preview: "/art-style-thumbnails/glass-ripple.jpg",
+    previewWebp: "/art-style-thumbnails/glass-ripple.webp",
+    previewAvif: "/art-style-thumbnails/glass-ripple.avif",
+  },
+  featureFlags: {
+    isEnabled: true,
+    rolloutPercentage: 100,
+    disabledReason: null,
+  },
+  prompt: {
+    numericId: 41,
+    prompt: "Recreate the exact image as refractive ripple glass—sleek, prismatic, and sculptural. Preserve proportions and silhouette. Convert surfaces into clear glass panels with normals derived from soft noise; bend and duplicate features subtly through refraction. Add bright specular rims and clean caustic streaks; apply a slight RGB misregister (1–2 px) for chromatic dispersion. Background remains dark to mid, with faint reflected streaks; glow is minimal.",
+    updatedAt: "2025-10-30 17:07:29.908011+00",
+  },
+  story: null,
+},
+{
+  id: "deco-royale",
+  slug: "deco-royale",
+  name: "Deco Royale",
+  tone: "signature",
+  tier: "premium",
+  category: "style",
+  isPremium: true,
+  defaultUnlocked: false,
+  priceModifier: 0,
+  description: "Stepped geometry, luxe metallics.",
+  marketingCopy: "Crown your subject with stepped Art Deco geometry, lacquered panels, and gilded metallic trims.",
+  badges: ["premium"],
+  requiredTier: "creator",
+  sortOrder: 150,
+  assets: {
+    thumbnail: "/art-style-thumbnails/deco-royale.jpg",
+    thumbnailWebp: "/art-style-thumbnails/deco-royale.webp",
+    thumbnailAvif: "/art-style-thumbnails/deco-royale.avif",
+    preview: "/art-style-thumbnails/deco-royale.jpg",
+    previewWebp: "/art-style-thumbnails/deco-royale.webp",
+    previewAvif: "/art-style-thumbnails/deco-royale.avif",
   },
   featureFlags: {
     isEnabled: true,
@@ -37,152 +257,30 @@ export const TONE_STYLES: StyleRegistryEntry[] = [
     prompt: "Recreate the exact image in a bold, modern Art Deco style — a dramatic fusion of classic glamour and contemporary edge. Maintain the subject's full composition, pose, and spatial layout with high fidelity. Apply rich, dimensional lighting and sharp, clean linework to create a sense of depth and visual focus. Use strong geometric framing, symmetry, and gold accents to echo iconic Deco architecture, balanced with smooth digital gradients and matte finishes. Emphasize a luxury palette — including deep teal, navy, black, gold, blush, and cream — for a sophisticated, high-impact aesthetic. The result should feel like a cinematic poster or luxury magazine cover: expressive, powerful, and timelessly stylish.",
     updatedAt: "2025-10-16 07:13:28.066242+00",
   },
-  story: {
-    "narrative": {
-      "headline": "The Story Behind Neon Splash",
-      "paragraph": "Neon Splash explodes with electric motion—UV drips, kinetic streaks, and stage-worthy glow that turns any capture into nightlife art.",
-      "bullets": [
-        {
-          "label": "Emotion",
-          "value": "Electric adrenaline",
-          "icon": "sparkle"
-        },
-        {
-          "label": "Perfect for",
-          "value": "Game rooms · celebration walls",
-          "icon": "home"
-        },
-        {
-          "label": "Signature detail",
-          "value": "Neon paint trails with UV bloom",
-          "icon": "brush"
-        }
-      ]
-    },
-    "palette": [
-      {
-        "id": "neon-magenta",
-        "hex": "#ff2eb7",
-        "label": "UV Magenta",
-        "descriptor": "Injects night-life energy"
-      },
-      {
-        "id": "neon-cyan",
-        "hex": "#19d4ff",
-        "label": "Electric Cyan",
-        "descriptor": "Slices through the dark"
-      },
-      {
-        "id": "neon-amber",
-        "hex": "#ffb428",
-        "label": "Pulse Amber",
-        "descriptor": "Adds kinetic accents"
-      }
-    ],
-    "complementary": {
-      "premium": "electric-drip",
-      "fallback": "pop-art-bust"
-    }
-  },
+  story: null,
 },
 {
-  id: "signature-aurora",
-  slug: "signature-aurora",
-  name: "Aurora Signature",
-  tone: "signature",
-  tier: "premium",
-  category: "style",
-  isPremium: true,
-  defaultUnlocked: false,
-  priceModifier: 10,
-  description: "Premium aurora gradients layered with hand-painted highlights.",
-  marketingCopy: "Unlock Wondertone’s signature finish with luminous aurora light.",
-  badges: ["exclusive","new"],
-  requiredTier: "plus",
-  sortOrder: 120,
-  assets: {
-    thumbnail: "/art-style-thumbnails/signature-aurora.jpg",
-    thumbnailWebp: null,
-    thumbnailAvif: null,
-    preview: "/art-style-thumbnails/signature-aurora.jpg",
-    previewWebp: null,
-    previewAvif: null,
-  },
-  featureFlags: {
-    isEnabled: true,
-    rolloutPercentage: 100,
-    disabledReason: null,
-  },
-  story: {
-    "narrative": {
-      "headline": "The Story Behind Aurora Signature",
-      "paragraph": "Aurora Signature delivers Wondertone’s flagship glow—aurora gradients, bespoke highlights, and collector polish that elevates any wall.",
-      "bullets": [
-        {
-          "label": "Emotion",
-          "value": "Refined wonder",
-          "icon": "sparkle"
-        },
-        {
-          "label": "Perfect for",
-          "value": "Gallery walls · gifting heirlooms",
-          "icon": "home"
-        },
-        {
-          "label": "Signature detail",
-          "value": "Aurora light ribbons and luxe sheen",
-          "icon": "brush"
-        }
-      ]
-    },
-    "palette": [
-      {
-        "id": "aurora-violet",
-        "hex": "#8c7df2",
-        "label": "Aurora Violet",
-        "descriptor": "Sets the luxe glow"
-      },
-      {
-        "id": "aurora-teal",
-        "hex": "#6ee7d0",
-        "label": "Glacial Teal",
-        "descriptor": "Balances the spectrum"
-      },
-      {
-        "id": "aurora-gold",
-        "hex": "#f9d99d",
-        "label": "Champagne Gold",
-        "descriptor": "Polishes the finish"
-      }
-    ],
-    "complementary": {
-      "premium": null,
-      "fallback": "pastel-bliss"
-    }
-  },
-},
-{
-  id: "porcelain-figurine",
-  slug: "porcelain-figurine",
-  name: "Porcelain Figurine",
+  id: "the-renaissance",
+  slug: "the-renaissance",
+  name: "The Renaissance",
   tone: "signature",
   tier: "premium",
   category: "style",
   isPremium: true,
   defaultUnlocked: false,
   priceModifier: 0,
-  description: "Glazed porcelain keepsake with rounded forms, gold trims, and collector sheen.",
-  marketingCopy: "Transform portraits into heirloom porcelain figurines with pastel glaze, jewel accents, and gilded edges.",
-  badges: ["exclusive"],
+  description: "Old-master light, gilded accents.",
+  marketingCopy: "Invoke old-master drama with layered oil glazes, chiaroscuro lighting, and gilded frame flourishes.",
+  badges: ["premium"],
   requiredTier: "creator",
-  sortOrder: 130,
+  sortOrder: 160,
   assets: {
-    thumbnail: "/art-style-thumbnails/pastel-bliss.jpg",
-    thumbnailWebp: "/art-style-thumbnails/pastel-bliss.webp",
-    thumbnailAvif: "/art-style-thumbnails/pastel-bliss.avif",
-    preview: "/art-style-thumbnails/pastel-bliss.jpg",
-    previewWebp: "/art-style-thumbnails/pastel-bliss.webp",
-    previewAvif: "/art-style-thumbnails/pastel-bliss.avif",
+    thumbnail: "/art-style-thumbnails/the-renaissance.jpg",
+    thumbnailWebp: "/art-style-thumbnails/the-renaissance.webp",
+    thumbnailAvif: "/art-style-thumbnails/the-renaissance.avif",
+    preview: "/art-style-thumbnails/the-renaissance.jpg",
+    previewWebp: "/art-style-thumbnails/the-renaissance.webp",
+    previewAvif: "/art-style-thumbnails/the-renaissance.avif",
   },
   featureFlags: {
     isEnabled: true,
@@ -190,9 +288,44 @@ export const TONE_STYLES: StyleRegistryEntry[] = [
     disabledReason: null,
   },
   prompt: {
-    numericId: 28,
-    prompt: "Recreate the exact image as a glazed porcelain/ceramic figurine — glossy, delicate, and collectible. Preserve full structure and pose, then smooth forms to rounded, toy-like geometry. Coat surfaces with high-gloss glaze: tight specular highlights, pooling at creases, and tiny pinhole bubbles; add gold luster edge trims sparingly. Use a curated pastel palette with 1–2 jewel accents. Place on a soft tabletop shadow. The result should feel like a premium ceramic keepsake",
-    updatedAt: "2025-10-16 07:13:28.066242+00",
+    numericId: 42,
+    prompt: "Recreate the exact image as a baroque/renaissance oil masterwork — rich chiaroscuro, velvety blacks, and tactile brushwork — enhanced with genuine gold-leaf ornament. Preserve the subject’s composition, pose, anatomy, and expression. Paint with layered glazes and controlled impasto; let warm candlelight model the face and hands. Add restrained gilding: garment trim, or frame cartouche that catches specular highlights and casts subtle gilt reflections onto nearby paint. Keep color harmonies in deep umbers, oxblood, ultramarine, and cream. The result should feel museum-caliber: dramatic, devotional, and exquisitely finished.",
+    updatedAt: "2025-10-30 17:15:51.172479+00",
+  },
+  story: null,
+},
+{
+  id: "sanctuary-glow",
+  slug: "sanctuary-glow",
+  name: "Sanctuary Glow",
+  tone: "signature",
+  tier: "premium",
+  category: "style",
+  isPremium: true,
+  defaultUnlocked: false,
+  priceModifier: 0,
+  description: "Luminous stained-glass aura.",
+  marketingCopy: "Cast ethereal stained-glass radiance with prismatic gradients, soft bloom, and cathedral halos.",
+  badges: ["premium"],
+  requiredTier: "creator",
+  sortOrder: 170,
+  assets: {
+    thumbnail: "/art-style-thumbnails/sanctuary-glow.jpg",
+    thumbnailWebp: "/art-style-thumbnails/sanctuary-glow.webp",
+    thumbnailAvif: "/art-style-thumbnails/sanctuary-glow.avif",
+    preview: "/art-style-thumbnails/sanctuary-glow.jpg",
+    previewWebp: "/art-style-thumbnails/sanctuary-glow.webp",
+    previewAvif: "/art-style-thumbnails/sanctuary-glow.avif",
+  },
+  featureFlags: {
+    isEnabled: true,
+    rolloutPercentage: 100,
+    disabledReason: null,
+  },
+  prompt: {
+    numericId: 43,
+    prompt: "Recreate the exact image as a porcelain figurine — high-gloss glaze, smooth sculpted planes, and hand-painted gold trim. Preserve the original pose and expression with refined, slightly idealized anatomy. Add delicate floral or filigree accents around clothing edges. Lighting should include bright highlights and subtle reflections characteristic of kiln-fired ceramic. Present on a small pedestal or tabletop shadow with a soft studio backdrop.",
+    updatedAt: "2025-10-30T07:16:07.570425+00",
   },
   story: null,
 }

@@ -181,6 +181,11 @@ export const TONE_STYLES: StyleRegistryEntry[] = [
     rolloutPercentage: 100,
     disabledReason: null,
   },
+  prompt: {
+    numericId: 35,
+    prompt: "Recreate the exact image in a neon cyber-voxel aesthetic — electric, high-contrast, and nightlife-ready. Preserve the subject’s composition, pose, and facial accuracy while reconstructing forms with dark matte voxels accented by emissive edges and light strips (cyan, magenta, violet). Add subtle scanlines, rim-light glows, and reflected color on nearby blocks; keep background voxels sparse to frame the figure. Maintain legibility by using finer voxel resolution at facial features and hands. The result should feel like a retro-future arcade hero shot — vibrant cubes lit by pure energy.",
+    updatedAt: "2025-10-16 07:13:28.066242+00",
+  },
   story: null,
 },
 {
@@ -210,6 +215,11 @@ export const TONE_STYLES: StyleRegistryEntry[] = [
     isEnabled: true,
     rolloutPercentage: 100,
     disabledReason: null,
+  },
+  prompt: {
+    numericId: 37,
+    prompt: "Recreate the exact image in a retro-future neon synthwave style — dark base, electric accents, and clean silhouette. Preserve the full composition and proportions of the subject. Palette-lock to hot magenta, electric cyan, violet, and indigo with small sunset orange/pink for glow accents; no naturalistic gradients.",
+    updatedAt: "2025-10-16 07:13:28.066242+00",
   },
   story: null,
 },
@@ -242,7 +252,7 @@ export const TONE_STYLES: StyleRegistryEntry[] = [
     disabledReason: null,
   },
   prompt: {
-    numericId: 6,
+    numericId: 36,
     prompt: "Recreate the exact image as an artistic low poly illustration — colorful, faceted, and compositionally accurate. Preserve the full subject structure, including precise pose, facial features, proportions, and spatial layout. Break the image into angular geometric polygons of varied sizes, using bold color blocking and gradient transitions to reflect natural shading. Emphasize artistic abstraction through clean edges and stylized fragmentation, while maintaining visual clarity and realism in the subject. The result should feel modern and decorative — like a vibrant digital mosaic that's both expressive and true to the original form.",
     updatedAt: "2025-10-16 07:13:28.066242+00",
   },

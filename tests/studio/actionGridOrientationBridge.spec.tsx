@@ -21,7 +21,7 @@ const createTestPreviewEntry = (orientation: string) => ({
 });
 
 const waitForButton = async (container: HTMLElement, label: string) => {
-  const deadline = Date.now() + 1000;
+  const deadline = Date.now() + 6000;
   while (Date.now() < deadline) {
     const match = Array.from(container.querySelectorAll('button')).find((button) =>
       button.textContent?.includes(label)

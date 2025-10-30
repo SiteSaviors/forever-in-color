@@ -24,44 +24,45 @@ const mockStyle = (overrides: Partial<StyleOption>): StyleOption => ({
 });
 
 describe('storyLayer copy helpers', () => {
-  it('returns bespoke narrative when defined', () => {
-    const narrative = getNarrative(
+  it('returns bespoke narrative when defined', async () => {
+    const narrative = await getNarrative(
       mockStyle({ id: 'classic-oil-painting', tone: 'classic', name: 'Classic Oil Painting' })
     );
     expect(narrative.headline).toContain('Classic Oil');
   });
 
-  it('falls back to tone narrative when bespoke missing', () => {
-    const narrative = getNarrative(mockStyle({ tone: 'modern', name: 'Modern Edge' }));
+  it('falls back to tone narrative when bespoke missing', async () => {
+    const narrative = await getNarrative(mockStyle({ tone: 'modern', name: 'Modern Edge' }));
     expect(narrative.headline).toContain('Modern Edge');
     expect(narrative.paragraph).toContain('graphic clarity');
   });
 
-  it('returns bespoke palette when available', () => {
-    const palette = getPalette(mockStyle({ id: 'neon-splash', tone: 'electric' }));
+  it('returns bespoke palette when available', async () => {
+    const palette = await getPalette(mockStyle({ id: 'neon-splash', tone: 'electric' }));
     expect(palette[0].label).toBe('UV Magenta');
   });
 
-  it('falls back to tone palette when bespoke missing', () => {
-    const palette = getPalette(mockStyle({ tone: 'stylized' }));
+  it('falls back to tone palette when bespoke missing', async () => {
+    const palette = await getPalette(mockStyle({ tone: 'stylized' }));
     expect(palette).toHaveLength(3);
     expect(palette[0].label).toBe('Storybook Fuchsia');
   });
 
-  it('returns bespoke complementary mapping', () => {
-    const comp = getComplementaryStyles(mockStyle({ id: 'pastel-bliss', tone: 'classic' }));
-    expect(comp.premium).toBe('signature-aurora');
+  it('returns bespoke complementary mapping', async () => {
+    const comp = await getComplementaryStyles(mockStyle({ id: 'pastel-bliss', tone: 'classic' }));
+    expect(comp.premium).toBe('sanctuary-glow');
     expect(comp.fallback).toBe('calm-watercolor');
   });
 
-  it('returns tone complementary when bespoke missing', () => {
-    const comp = getComplementaryStyles(mockStyle({ tone: 'electric' }));
+  it('returns tone complementary when bespoke missing', async () => {
+    const comp = await getComplementaryStyles(mockStyle({ tone: 'electric' }));
     expect(comp.fallback).toBe('neon-splash');
   });
 
   it('builds share caption with tone hook and tier tag', () => {
-    const caption = getShareCaption({ tone: 'signature', styleName: 'Aurora Signature', tier: 'creator' });
-    expect(caption).toContain('Wondertone’s Aurora Signature');
+    const caption = getShareCaption({ tone: 'signature', styleName: 'Sanctuary Glow', tier: 'creator' });
+    expect(caption).toContain('Stained-glass glow');
+    expect(caption).toContain('Wondertone’s Sanctuary Glow');
     expect(caption).toContain('Creator Member');
   });
 

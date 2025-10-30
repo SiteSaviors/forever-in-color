@@ -184,6 +184,7 @@ describe('useGalleryHandlers', () => {
           previewUrl: 'https://cdn.example.com/preview.jpg',
           storagePath: 'preview-cache/user123.jpg',
           storageUrl: null,
+          previewLogId: 'log-123',
         },
         status: 'ready',
       },
@@ -206,6 +207,7 @@ describe('useGalleryHandlers', () => {
 
     expect(saveToGallery).toHaveBeenCalledWith(
       expect.objectContaining({
+        previewLogId: 'log-123',
         styleId: 'style-2',
         orientation: 'square',
         storagePath: 'preview-cache/user123.jpg',
@@ -233,8 +235,10 @@ describe('useGalleryHandlers', () => {
       preview: {
         data: {
           previewUrl: 'https://cdn.example.com/preview.jpg',
-          storagePath: null,
-          storageUrl: 'https://cdn.example.com/preview-cache/user999.jpg',
+          storagePath: 'preview-cache/user999.jpg',
+          storageUrl:
+            'https://fvjganetpyyrguuxjtqi.supabase.co/storage/v1/object/public/preview-cache/user999.jpg',
+          previewLogId: 'log-777',
         },
         status: 'ready',
       },

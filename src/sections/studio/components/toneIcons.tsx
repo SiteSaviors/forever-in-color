@@ -84,6 +84,15 @@ const SignatureIcon = createIcon(
   </>
 );
 
+const ExperimentalIcon = createIcon(
+  <>
+    <path d="M9 3h6" />
+    <path d="M11 3v5.5l-3.2 6.3a3.5 3.5 0 003.2 5.2h2a3.5 3.5 0 003.2-5.2L13 8.5V3" />
+    <path d="M9.5 13.5h5" />
+    <path d="M10.8 16.5h2.4" />
+  </>
+);
+
 export const toneIconMap: Record<StyleTone, React.MemoExoticComponent<(props: ToneIconProps) => JSX.Element>> =
   {
     trending: TrendingIcon,
@@ -93,7 +102,7 @@ export const toneIconMap: Record<StyleTone, React.MemoExoticComponent<(props: To
     stylized: StylizedIcon,
     electric: ElectricIcon,
     signature: SignatureIcon,
+    experimental: ExperimentalIcon,
   };
 
 export const getToneIcon = (tone: StyleTone) => toneIconMap[tone] ?? TrendingIcon;
-

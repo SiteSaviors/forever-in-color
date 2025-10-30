@@ -239,7 +239,7 @@ export const TONE_STYLES: StyleRegistryEntry[] = [
       }
     ],
     "complementary": {
-      "premium": "signature-aurora",
+      "premium": "sanctuary-glow",
       "fallback": "calm-watercolor"
     }
   },
@@ -320,7 +320,7 @@ export const TONE_STYLES: StyleRegistryEntry[] = [
       }
     ],
     "complementary": {
-      "premium": "signature-aurora",
+      "premium": "sanctuary-glow",
       "fallback": "calm-watercolor"
     }
   },

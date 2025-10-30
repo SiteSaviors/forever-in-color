@@ -141,10 +141,10 @@ const tonePalettes: TonePaletteMap = {
 const toneComplementary: ToneComplementaryMap = {
   classic: { premium: 'pastel-bliss', fallback: 'calm-watercolor' },
   trending: { premium: 'pastel-bliss', fallback: 'watercolor-dreams' },
-  modern: { premium: 'signature-aurora', fallback: 'pop-art-bust' },
+  modern: { premium: 'sanctuary-glow', fallback: 'pop-art-bust' },
   stylized: { premium: 'pop-surrealism', fallback: '3d-storybook' },
   electric: { premium: 'electric-drip', fallback: 'neon-splash' },
-  signature: { premium: 'signature-aurora', fallback: 'pastel-bliss' },
+  signature: { premium: 'sanctuary-glow', fallback: 'pastel-bliss' },
 };
 
 const toneShareHooks: Record<Exclude<StyleTone, null>, string> = {
@@ -153,7 +153,7 @@ const toneShareHooks: Record<Exclude<StyleTone, null>, string> = {
   modern: 'Graphic contrast and clean geometry turn this capture into gallery design.',
   stylized: 'Playful illustration energy brings this storybook vignette to life.',
   electric: 'Neon trails and UV bloom light up this portrait with kinetic energy.',
-  signature: 'Wondertone’s signature finish wraps this memory in aurora glow.',
+  signature: 'Stained-glass glow and premium radiance elevate this memory in the Wondertone Lab.',
 };
 
 export async function getNarrative(style: StyleOption): Promise<Narrative> {

@@ -6,6 +6,7 @@ import {
   type StyleTone,
   type StyleToneDefinition,
 } from '@/config/styleCatalog';
+import { TRENDING_HERO_STYLES } from '@/config/trendingStyles';
 import type { GateResult } from '@/utils/entitlementGate';
 import { findStyleMetadata } from '@/utils/entitlementGate';
 import { useFounderStore } from '@/store/useFounderStore';
@@ -151,11 +152,13 @@ export const useToneSections = (): ToneSectionsHookResult => {
 
   const stylesByTone = useMemo(() => {
     const toneMap: Partial<Record<StyleTone, StyleOption[]>> = {};
+    const styleLookup = new Map<string, StyleOption>();
 
     styles.forEach((style) => {
       if (style.id === 'original-image') {
         return;
       }
+      styleLookup.set(style.id, style);
       const metadata = findStyleMetadata(style.id);
       const tone: StyleTone = metadata?.tone ?? 'classic';
       if (!toneMap[tone]) {
@@ -163,6 +166,20 @@ export const useToneSections = (): ToneSectionsHookResult => {
       }
       toneMap[tone]?.push(style);
     });
+
+    const trendingStyles: StyleOption[] = [];
+    TRENDING_HERO_STYLES.forEach((heroId) => {
+      const style = styleLookup.get(heroId);
+      if (style) {
+        trendingStyles.push(style);
+      } else {
+        console.warn('[useToneSections] Missing trending hero style:', heroId);
+      }
+    });
+
+    if (trendingStyles.length > 0) {
+      toneMap.trending = trendingStyles;
+    }
 
     return toneMap;
   }, [styles]);
