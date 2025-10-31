@@ -50,6 +50,87 @@ const selectInstantBreadthItems = (styles: StyleOption[]) => {
 
 ---
 
+# Style Inspiration Section – Phase 2 Planning
+
+## Component Architecture
+- **`StyleInspirationSection`**  
+  - Lives directly under `InstantBreadthStrip` to maintain Launchflow → Studio → inspiration cadence.  
+  - Receives no props initially; it derives curated style arrays internally via store selectors.
+  - Composes: `StyleInspirationHeader`, `StyleInspirationColumns`, and a shared `StyleInspirationCard`.
+
+- **`StyleInspirationHeader`**  
+  - Renders headline/subhead copy: “Need a starting point? Try these creator-approved styles.”  
+  - Optional supporting line for future filters (“Curated by Wondertone creators”).  
+  - Pure presentational component leveraging existing typography tokens (`font-display`, `tracking-tight`).
+
+- **`StyleInspirationColumns`**  
+  - Manages the grid layout (`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3`).  
+  - Accepts structured data: an array of `{ id: string; title: string; description: string; styles: StyleOption[] }`.  
+  - Iterates over column definitions to render `StyleInspirationColumn`.
+
+- **`StyleInspirationColumn`**  
+  - Handles per-column framing: title, descriptor, optional badge (e.g., “Creator picks”).  
+  - Wraps its card list in a `role="list"` container with `aria-label` matching the column headline.  
+  - Cards displayed via `StyleInspirationCard`.
+
+- **`StyleInspirationCard`**  
+  - Stateless thumbnail card using `picture` element and tailwind classes consistent with marquee cards.  
+  - For now, rendered as a `<button type="button">` with no click handler (decorative).  
+  - Accepts `style: StyleOption`, `context?: 'social' | 'print' | 'fun'`, `ariaHidden?: boolean` for future clones.  
+  - Ensures `loading="lazy"`, `alt={`${style.name} thumbnail`}`, and respects reduced-motion (no animated hover if the user opts out).
+
+## Data Selectors & Fallbacks
+- Define curated ID arrays:
+  ```ts
+  const SOCIAL_STYLE_IDS = [...];
+  const PRINT_STYLE_IDS = [...];
+  const FUN_STYLE_IDS = [...];
+  ```
+  (IDs taken from Phase 1 research; keep ≤10 per column).
+- Selector helper similar to Instant Breadth:
+  ```ts
+  const selectCuratedStyles = (styles: StyleOption[], ids: readonly string[]) => {
+    const lookup = new Map(styles.map((style) => [style.id, style]));
+    return ids
+      .map((id) => lookup.get(id))
+      .filter((style): style is StyleOption => Boolean(style));
+  };
+  ```
+- Memoize computed columns via `useMemo` so re-renders remain cheap.  
+- If a curated ID is missing (feature flag off, registry trimmed), simply omit it—no backfill—so founders keep deterministic ordering.  
+- Future-proof: we can extract the selector into a shared utility if multiple sections reuse curated lists.
+
+## Responsive & Styling Guidelines
+- **Section Shell**:  
+  - Background: `bg-slate-950/90` with `border-t border-white/10`, matching but visually distinct from Instant Breadth.  
+  - Padding: `px-6 py-14 lg:py-16`, `max-w-[1800px] mx-auto`.
+
+- **Typography**:  
+  - Headline `text-[28px] sm:text-3xl md:text-[34px] font-display font-semibold`.  
+  - Subhead `text-base sm:text-lg text-white/75`.  
+  - Column titles `text-2xl font-semibold`, descriptors `text-sm text-white/60`.
+
+- **Layout**:  
+  - Columns grid: `grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-3`.  
+  - Each column uses `flex flex-col gap-4` with cards inside a `grid gap-4`.
+  - On mobile, keep columns stacked; consider `overflow-x-auto` for cards if vertical space becomes heavy (defer to Phase 3 decision).
+
+- **Cards**:  
+  - Container classes: `rounded-2xl border border-white/10 bg-white/5/5 overflow-hidden transition-colors`.  
+  - Thumbnail height: `aspect-[4/5]` (or fixed `h-44`) with `object-cover`.  
+  - Title `text-sm sm:text-base font-semibold text-white/90`.  
+  - Hover state (desktop only): subtle border glow `hover:border-white/20`, optional background shift `hover:bg-white/10`; wrap in `motion-safe` utility to respect reduced-motion preference.
+
+- **Accessibility**:  
+  - Use `role="list"` / `role="listitem"` semantics per column.  
+  - Buttons include `aria-label="Preview {style.name}"` but keep click handler absent until we intentionally wire it.  
+  - Ensure focus states visible (`focus-visible:ring-2 focus-visible:ring-purple-400/70`).  
+  - No animations triggered automatically; rely on CSS transitions gated by `motion-safe`.
+
+This plan mirrors Instant Breadth’s architecture, sets the stage for Phase 3 implementation, and keeps the curated experience deterministic and accessible.
+
+---
+
 # Instant Breadth Section – Phase 2 Plan
 
 ## Component Architecture

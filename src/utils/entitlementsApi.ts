@@ -39,16 +39,51 @@ const priorityForTier = (tier: EntitlementTier): EntitlementPriority => {
   }
 };
 
+const coerceNumber = (value: unknown): number | null => {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value === 'string') {
+    const parsed = Number.parseFloat(value);
+    return Number.isNaN(parsed) ? null : parsed;
+  }
+  return null;
+};
+
+const coerceBoolean = (value: unknown): boolean => {
+  if (typeof value === 'boolean') {
+    return value;
+  }
+  if (typeof value === 'string') {
+    return value.toLowerCase() === 'true';
+  }
+  if (typeof value === 'number') {
+    return value !== 0;
+  }
+  return Boolean(value);
+};
+
 export const fetchAuthenticatedEntitlements = async (): Promise<EntitlementSnapshot | null> => {
   const supabaseClient = await getSupabaseClient();
   if (!supabaseClient) {
     throw new Error('Supabase client not configured');
   }
 
-  const { data, error } = await supabaseClient
-    .from('v_entitlements')
-    .select('tier, tokens_quota, remaining_tokens, period_end, dev_override')
-    .maybeSingle();
+  let response;
+  try {
+    response = await supabaseClient
+      .from('v_entitlements')
+      .select('tier,tokens_quota,remaining_tokens,period_end,dev_override')
+      .maybeSingle();
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('Access token unavailable')) {
+      devWarn('entitlementsApi', 'Access token missing while fetching entitlements');
+      return null;
+    }
+    throw error;
+  }
+
+  const { data, error } = response;
 
   devLog('entitlementsApi', 'v_entitlements query result', {
     hasData: !!data,
@@ -69,9 +104,9 @@ export const fetchAuthenticatedEntitlements = async (): Promise<EntitlementSnaps
     return null;
   }
 
-  const tier = mapTier(data.tier as string, Boolean(data.dev_override));
-  const quota = typeof data.tokens_quota === 'number' ? data.tokens_quota : null;
-  const remaining = typeof data.remaining_tokens === 'number' ? data.remaining_tokens : null;
+  const tier = mapTier(data.tier as string, coerceBoolean(data.dev_override));
+  const quota = coerceNumber(data.tokens_quota);
+  const remaining = coerceNumber(data.remaining_tokens);
   const renewAt = data.period_end ?? null;
   const requiresWatermark = tier === 'free';
 
@@ -82,7 +117,7 @@ export const fetchAuthenticatedEntitlements = async (): Promise<EntitlementSnaps
     renewAt,
     priority: priorityForTier(tier),
     requiresWatermark,
-    devOverride: Boolean(data.dev_override)
+    devOverride: coerceBoolean(data.dev_override),
   };
 
   devLog('entitlementsApi', 'Mapped entitlement snapshot', result);

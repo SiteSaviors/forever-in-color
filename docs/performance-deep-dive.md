@@ -40,7 +40,7 @@ Source of truth for ongoing perf work. Each phase captures the commands run, fin
 ### Immediate backlog (Phase 1 outcomes)
 1. Profile `heic2any` usage — add MIME gating and an inline notice to avoid fetching the wasm unless the user uploads HEIC/HEIF.
 2. Map lucide icon usage and prototype a tree-shaken export layer (or inline SVGs) to pull the icon factory out of `index`.
-3. Audit `supabaseClient` imports; confirm we aren’t bundling unused storage/auth helpers.
+3. Audit `supabaseClient` imports; confirm we aren’t bundling unused storage/auth helpers. *(2024-11-30 update: replaced with `wondertoneAuthClient-*.js` at ~84.7 KB minified / 22 KB gzip after removing Postgrest, storage, and realtime code. Baseline was 114 KB / 31 KB gzip.)*
 4. Review Studio entrypoint for eager tone registry hydration; defer non-selected tones where possible.
 
 Next phase: preload/runtime inspection (requestAnimationFrame scheduling, hydration cost, selector churn) once the bundle hotspots above are addressed or sized. 

@@ -56,7 +56,18 @@ export default tseslint.config(
       "no-unused-expressions": "off",
       "no-unused-labels": "off",
       "no-useless-assignment": "off",
+
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "@supabase/supabase-js",
+              message: "Use the Wondertone auth facade in '@/utils/wondertoneAuthClient' instead of importing '@supabase/supabase-js' directly.",
+            },
+          ],
+        },
+      ],
     },
   }
 );
-

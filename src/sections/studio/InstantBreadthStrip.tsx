@@ -302,7 +302,15 @@ const InstantBreadthStrip = () => {
       data-founder-anchor="instant-breadth"
     >
       <div className="mx-auto flex max-w-[1800px] flex-col gap-10 px-6 py-14 sm:gap-12 lg:py-16">
-        <header className="flex flex-col gap-4 text-center items-center pt-8">
+        <header className="relative flex flex-col items-center gap-4 pt-10 text-center">
+          <span
+            className="pointer-events-none absolute -top-16 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(99,102,241,0.35),transparent_70%)] blur-[120px]"
+            aria-hidden="true"
+          />
+          <span
+            className="pointer-events-none absolute -top-6 left-1/2 h-72 w-[420px] -translate-x-1/2 rounded-[220px] bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.18),transparent_65%)] blur-[100px] opacity-80"
+            aria-hidden="true"
+          />
           <h2 className="font-poppins text-[28px] font-bold tracking-tight text-white sm:text-3xl md:text-[48px]">
             One click. 50+ art styles. Museum-quality results.
           </h2>
@@ -325,7 +333,15 @@ const InstantBreadthStrip = () => {
           </p>
         </header>
 
-        <div className="flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-6">
+        <div className="relative flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-6">
+          <span
+            className="pointer-events-none absolute inset-0 rounded-full bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.22),transparent_70%)] blur-[110px] opacity-80"
+            aria-hidden="true"
+          />
+          <span
+            className="pointer-events-none absolute inset-0 rounded-full bg-[radial-gradient(circle_at_bottom,rgba(168,85,247,0.18),transparent_65%)] blur-[120px] opacity-60 animate-pulse"
+            aria-hidden="true"
+          />
           <button
             type="button"
             onClick={handleOpenSample}

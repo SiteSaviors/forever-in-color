@@ -1,16 +1,16 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
 import { trackRuntimeMetric } from '@/utils/telemetry';
+import type { WondertoneAuthClient } from '@/utils/wondertoneAuthClient';
 
-type SupabaseModule = typeof import('./supabaseClient');
+type SupabaseModule = typeof import('./wondertoneAuthClient');
 
-type SupabaseClientInstance = SupabaseClient | null;
+type SupabaseClientInstance = WondertoneAuthClient | null;
 
 let supabaseClientPromise: Promise<SupabaseClientInstance> | null = null;
 let clientLoadedAt: number | null = null;
 
 const importSupabaseClient = async (): Promise<SupabaseClientInstance> => {
-  const module: SupabaseModule = await import('./supabaseClient');
-  const client = module.supabaseClient;
+  const module: SupabaseModule = await import('./wondertoneAuthClient');
+  const client = module.wondertoneAuthClient;
   if (client && clientLoadedAt === null) {
     clientLoadedAt = Date.now();
     trackRuntimeMetric('supabase_client_initialized', {
@@ -42,7 +42,7 @@ export const prefetchSupabaseClient = (): void => {
 };
 
 export const withSupabaseClient = async <T>(
-  callback: (client: SupabaseClient) => Promise<T> | T,
+  callback: (client: WondertoneAuthClient) => Promise<T> | T,
   options: { requireClient?: boolean } = {}
 ): Promise<T | null> => {
   const client = await getSupabaseClient();
