@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback } from 'react';
+import { Suspense, lazy, useCallback, useMemo } from 'react';
 import { OrientationBridgeProvider } from '@/components/studio/orientation/OrientationBridgeProvider';
 import { useStudioFeedback } from '@/hooks/useStudioFeedback';
 import type { CheckoutNotice } from '@/sections/studio/components/StudioHeader';
@@ -47,9 +47,18 @@ const StudioConfigurator = ({ checkoutNotice, onDismissCheckoutNotice }: StudioC
     [showToast]
   );
 
+  const feedbackContextValue = useMemo(
+    () => ({
+      showToast,
+      showUpgradeModal,
+      renderFeedback,
+    }),
+    [renderFeedback, showToast, showUpgradeModal]
+  );
+
   return (
     <OrientationBridgeProvider onOrientationToast={handleOrientationToast}>
-      <StudioExperienceProvider value={{ showToast, showUpgradeModal, renderFeedback }}>
+      <StudioExperienceProvider value={feedbackContextValue}>
         <Suspense fallback={<StudioSkeleton />}>
           <StudioExperience
             checkoutNotice={checkoutNotice}

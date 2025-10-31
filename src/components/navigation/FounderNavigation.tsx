@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { clsx } from 'clsx';
 import { useAuthModal } from '@/store/useAuthModal';
@@ -26,10 +26,18 @@ const FounderNavigation = () => {
   const cartItemCount = enhancements.filter((enhancement) => enhancement.enabled).length;
   const [isAtTop, setIsAtTop] = useState(true);
   const [heroVisible, setHeroVisible] = useState(true);
+  const scrollTickingRef = useRef(false);
 
   useEffect(() => {
-    const handleScroll = () => {
+    const updateIsAtTop = () => {
       setIsAtTop(window.scrollY < 12);
+      scrollTickingRef.current = false;
+    };
+
+    const handleScroll = () => {
+      if (scrollTickingRef.current) return;
+      scrollTickingRef.current = true;
+      window.requestAnimationFrame(updateIsAtTop);
     };
 
     handleScroll();

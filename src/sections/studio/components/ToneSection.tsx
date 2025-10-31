@@ -88,7 +88,7 @@ export default function ToneSection({
 
   const panelBackground = isExpanded ? toneMeta.panel.expanded : toneMeta.panel.collapsed;
   const sectionClassName = clsx(
-    'tone-section-shell rounded-2xl border border-white/10 backdrop-blur-sm transition-all duration-300',
+    'tone-section-shell rounded-2xl border border-white/10 backdrop-blur-sm transition-colors duration-300',
     isExpanded && 'expanded',
     isAnimating && 'animating'
   );

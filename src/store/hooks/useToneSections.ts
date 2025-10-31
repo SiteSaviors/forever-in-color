@@ -251,6 +251,12 @@ export const useToneSections = (): ToneSectionsHookResult => {
     [entitlementVersion]
   );
 
+  useEffect(() => {
+    STYLE_TONES_IN_ORDER.forEach((tone) => {
+      ensureToneEvaluated(tone);
+    });
+  }, [ensureToneEvaluated]);
+
   const sections = useMemo(() => {
     void cacheVersion;
     const normalizedFavoriteSet = favoriteSet;

@@ -28,6 +28,8 @@ const TIER_ORDER: Record<string, number> = {
 
 const PREMIUM_DEFAULT_REQUIRED_TIER: 'creator' | 'plus' | 'pro' = 'creator';
 
+const SIGNATURE_FREE_STYLE_IDS = new Set<string>(['watercolor-dreams']);
+
 /**
  * Find style metadata for entitlement checking.
  * Uses core metadata (eagerly loaded) instead of full catalog.
@@ -111,7 +113,9 @@ export const canGenerateStylePreview = ({
   }
 
   const requiresPremium =
-    styleMeta.tier === 'premium' || styleMeta.isPremium || styleMeta.tone === 'signature';
+    styleMeta.tier === 'premium' ||
+    styleMeta.isPremium ||
+    (styleMeta.tone === 'signature' && !SIGNATURE_FREE_STYLE_IDS.has(styleMeta.id));
 
   if (!requiresPremium) {
     return { allowed: true, reason: 'allowed', style: styleMeta };

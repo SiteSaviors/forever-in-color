@@ -239,7 +239,7 @@ export default function ToneStyleCard({
 
   const hoverEnabled = !previewLocked && !isStyleLocked && !isSelected;
   const cardClassName = clsx(
-    'tone-style-card group relative w-full rounded-xl overflow-hidden transition-all duration-200',
+    'tone-style-card group relative w-full rounded-xl overflow-hidden transition-colors duration-200',
     isHero
       ? 'flex flex-col gap-5 bg-white/10 border border-white/15 px-5 py-5 md:flex-row md:items-center'
       : 'flex items-center gap-4 rounded-lg px-4 py-3.5 md:py-4',
@@ -321,7 +321,7 @@ export default function ToneStyleCard({
             loading="lazy"
             decoding="async"
             className={clsx(
-              'h-full w-full object-cover transition-all duration-200',
+              'h-full w-full object-cover transition-transform duration-200',
               isStyleLocked && 'opacity-60',
               !isStyleLocked && !previewLocked && 'group-hover:scale-105'
             )}
@@ -380,34 +380,7 @@ export default function ToneStyleCard({
           </>
         )}
 
-        {/* Glass overlay with gold border for locked styles */}
-        {isStyleLocked && (
-          <div
-            className={clsx(
-              'absolute inset-0 z-10 rounded-lg flex items-center justify-center',
-              'bg-gradient-to-br from-slate-900/45 to-slate-900/70 backdrop-blur-md',
-              'border border-transparent bg-gradient-border-gold',
-              !prefersReducedMotion && 'motion-safe:group-hover:animate-border-gold',
-              'transition-all duration-300'
-            )}
-          >
-            {/* Shimmer effect on hover */}
-            <div
-              className={clsx(
-                'absolute inset-0 bg-gradient-to-r from-transparent via-white/16 to-transparent translate-x-[-120%] transition-transform duration-700 ease-out',
-                prefersReducedMotion ? '' : 'group-hover:translate-x-[120%]'
-              )}
-            />
-
-            {/* Lock icon with pulsing glow */}
-            <Lock
-              className={clsx(
-                'w-5 h-5 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)] relative z-10',
-                prefersReducedMotion ? '' : 'motion-safe:animate-pulse-slow'
-              )}
-            />
-          </div>
-        )}
+        {/* Gold overlay removed for locked styles */}
 
         {/* Selected Checkmark */}
         {isSelected && !isStyleLocked && !previewLocked && (

@@ -32,7 +32,7 @@ export default function OriginalImageCard() {
         disabled={previewLocked}
         aria-disabled={previewLocked ? 'true' : 'false'}
         className={clsx(
-          'w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200',
+          'w-full flex items-center gap-3 p-3 rounded-lg transition-colors duration-200',
           'focus:outline-none focus:ring-2 focus:ring-purple-400/50',
           isSelected
             ? 'bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-2 border-purple-400'

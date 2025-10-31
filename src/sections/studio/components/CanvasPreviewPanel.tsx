@@ -143,7 +143,7 @@ const CanvasPreviewPanel = ({
           </div>
         )}
         <div
-          className="relative rounded-3xl overflow-hidden border-2 border-white/20 bg-gradient-preview-bg shadow-2xl transition-all mx-auto"
+          className="relative rounded-3xl overflow-hidden border-2 border-white/20 bg-gradient-preview-bg shadow-2xl transition-colors mx-auto"
           style={{
             aspectRatio: orientationMeta.ratio,
             maxHeight: orientation === 'vertical' ? '85vh' : undefined,
