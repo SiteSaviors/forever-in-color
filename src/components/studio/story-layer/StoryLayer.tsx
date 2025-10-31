@@ -22,6 +22,7 @@ import {
   trackShareClick,
 } from '@/utils/storyLayerAnalytics';
 import { useStyleCatalogActions, useStyleCatalogState } from '@/store/hooks/useStyleCatalogStore';
+import { usePreviewLockState } from '@/store/hooks/usePreviewStore';
 
 type StoryLayerProps = {
   style: StyleOption;
@@ -74,6 +75,7 @@ const StoryLayer = forwardRef<HTMLDivElement, StoryLayerProps>(function StoryLay
 
   const { styles } = useStyleCatalogState();
   const { evaluateStyleGate } = useStyleCatalogActions();
+  const { isLocked: previewLocked } = usePreviewLockState();
   const handleStyleSelect = useHandleStyleSelect({
     onGateDenied: ({ gate }) => {
       if (!onUpgradePrompt) return;
@@ -277,6 +279,14 @@ const StoryLayer = forwardRef<HTMLDivElement, StoryLayerProps>(function StoryLay
 
   const handleComplementarySelect = useCallback(
     (styleId: string, tone?: string | null) => {
+      if (previewLocked) {
+        onToast?.({
+          title: 'Preview in progress',
+          description: 'Finish your current Wondertone preview to explore more styles.',
+          variant: 'info',
+        });
+        return;
+      }
       trackComplementaryClick({
         ...analyticsContext,
         targetStyleId: styleId,
@@ -285,7 +295,7 @@ const StoryLayer = forwardRef<HTMLDivElement, StoryLayerProps>(function StoryLay
       });
       handleStyleSelect(styleId, { tone });
     },
-    [analyticsContext, complementaryConfig.fallback, handleStyleSelect]
+    [analyticsContext, complementaryConfig.fallback, handleStyleSelect, onToast, previewLocked]
   );
 
   const handleComplementaryUpgrade = useCallback(

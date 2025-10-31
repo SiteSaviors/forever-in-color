@@ -65,3 +65,12 @@ export const useHasCachedPreview = (styleId: string | null, orientation: Orienta
   useHasCachedPreviewEntry(styleId, orientation);
 
 export { usePreviewReadiness } from './usePreviewReadiness';
+
+export const usePreviewLockState = () =>
+  useFounderStore(
+    (state) => ({
+      isLocked: state.pendingStyleId != null,
+      lockedStyleId: state.pendingStyleId,
+    }),
+    shallow
+  );

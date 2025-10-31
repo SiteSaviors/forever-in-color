@@ -12,6 +12,7 @@ type ActionGridProps = {
   downloadDisabled: boolean;
   createCanvasDisabled: boolean;
   orientationDisabled: boolean;
+  orientationDisabledReason?: string;
   savingToGallery: boolean;
   savedToGallery: boolean;
   isPremiumUser: boolean;
@@ -33,6 +34,7 @@ export function ActionGrid({
   downloadDisabled,
   createCanvasDisabled,
   orientationDisabled,
+  orientationDisabledReason,
   savingToGallery,
   savedToGallery,
   isPremiumUser,
@@ -105,8 +107,13 @@ export function ActionGrid({
           type="button"
           onClick={onChangeOrientation}
           disabled={orientationDisabled}
-          title={orientationDisabled ? 'Complete crop adjustments to change orientation' : 'Adjust crop & layout'}
+          title={
+            orientationDisabled
+              ? orientationDisabledReason ?? 'Complete crop adjustments to change orientation'
+              : 'Adjust crop & layout'
+          }
           className={`${outlineButton} flex items-center gap-3 px-5 py-4`}
+          aria-disabled={orientationDisabled ? 'true' : 'false'}
         >
           <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full border border-white/20 bg-black/60">
             <Crop className="h-5 w-5" />

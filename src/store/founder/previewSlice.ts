@@ -78,8 +78,19 @@ export const createPreviewSlice = (
       const { force = false, orientationOverride } = options;
       const targetOrientation = orientationOverride ?? state.orientation;
 
-      if (state.pendingStyleId && state.pendingStyleId !== style.id) {
-        return;
+      const inFlightStyleId = state.pendingStyleId;
+      if (inFlightStyleId) {
+        const isSameStyle = inFlightStyleId === style.id;
+        const canOverride = force && isSameStyle;
+        if (!canOverride) {
+          if (import.meta.env?.DEV) {
+            console.info(
+              '[startStylePreview] Preview already in progress, ignoring additional request',
+              { inFlightStyleId, requestedStyleId: style.id }
+            );
+          }
+          return;
+        }
       }
 
       set({ selectedStyleId: style.id });
@@ -445,6 +456,10 @@ export const createPreviewSlice = (
 
         if (get().orientation === targetOrientation) {
           set({ orientationPreviewPending: false });
+        }
+      } finally {
+        if (get().pendingStyleId === style.id) {
+          set({ pendingStyleId: null });
         }
       }
     },

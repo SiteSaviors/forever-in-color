@@ -5,6 +5,7 @@ import { useHandleStyleSelect } from '@/sections/studio/hooks/useHandleStyleSele
 import { trackStudioV2CuratedStyleClick } from '@/utils/studioV2Analytics';
 import { getComplementaryStyles } from '@/utils/storyLayer/copy';
 import { useStyleCatalogActions, useStyleCatalogState } from '@/store/hooks/useStyleCatalogStore';
+import { usePreviewLockState } from '@/store/hooks/usePreviewStore';
 
 type CuratedStylesModuleProps = {
   currentStyle: StyleOption;
@@ -20,6 +21,7 @@ const CuratedStylesModule = ({ currentStyle, onGatePrompt }: CuratedStylesModule
   const [revealed, setRevealed] = useState(false);
   const { styles } = useStyleCatalogState();
   const { evaluateStyleGate, setShowQuotaModal } = useStyleCatalogActions();
+  const { isLocked: previewLocked } = usePreviewLockState();
 
   // Lazy-load complementary styles from registry
   const [curated, setCurated] = useState<Awaited<ReturnType<typeof getComplementaryStyles>> | null>(null);
@@ -80,6 +82,9 @@ const CuratedStylesModule = ({ currentStyle, onGatePrompt }: CuratedStylesModule
 
   const handleSelect = useCallback(
     (style: StyleOption, index: number) => {
+      if (previewLocked) {
+        return;
+      }
       const gate = evaluateStyleGate(style.id);
       const allowed = gate.allowed;
       trackStudioV2CuratedStyleClick({
@@ -103,7 +108,7 @@ const CuratedStylesModule = ({ currentStyle, onGatePrompt }: CuratedStylesModule
       }
       handleStyleSelect(style.id);
     },
-    [currentStyle.id, evaluateStyleGate, handleStyleSelect, onGatePrompt, setShowQuotaModal]
+    [currentStyle.id, evaluateStyleGate, handleStyleSelect, onGatePrompt, previewLocked, setShowQuotaModal]
   );
 
   if (!curatedStyles.length) return null;
@@ -123,13 +128,15 @@ const CuratedStylesModule = ({ currentStyle, onGatePrompt }: CuratedStylesModule
       <div className="grid gap-4 md:grid-cols-2">
         {curatedStyles.map((style, index) => {
           const gate = evaluateStyleGate(style.id);
-          const locked = !gate.allowed;
+          const gatedLocked = !gate.allowed;
+          const disabledForLock = previewLocked;
+          const disabled = disabledForLock || gatedLocked;
           return (
             <article
               key={style.id}
               className={clsx(
                 'relative overflow-hidden rounded-[26px] border border-white/12 bg-gradient-to-br from-white/[0.05] via-white/[0.03] to-white/[0.02] p-4 text-white shadow-[0_28px_80px_rgba(8,14,26,0.45)] transition-all duration-500 ease-out motion-safe:hover:-translate-y-1',
-                locked && 'opacity-75',
+                (gatedLocked || disabledForLock) && 'opacity-75',
                 revealed
                   ? 'opacity-100 translate-y-0'
                   : 'opacity-0 translate-y-6'
@@ -144,7 +151,7 @@ const CuratedStylesModule = ({ currentStyle, onGatePrompt }: CuratedStylesModule
                     className="h-full w-full object-cover transition-transform duration-500 motion-safe:group-hover:scale-105"
                     loading="lazy"
                   />
-                  {locked ? (
+                  {gatedLocked ? (
                     <div className="absolute inset-0 flex items-center justify-center bg-slate-950/70 backdrop-blur">
                       <span className="rounded-full border border-white/30 bg-white/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-white/80">
                         Premium
@@ -155,7 +162,7 @@ const CuratedStylesModule = ({ currentStyle, onGatePrompt }: CuratedStylesModule
 
                 <div className="space-y-1">
                   <p className="text-sm uppercase tracking-[0.32em] text-white/50">
-                    {locked ? 'Unlock this look' : 'Curated pairing'}
+                    {gatedLocked ? 'Unlock this look' : 'Curated pairing'}
                   </p>
                   <h5 className="text-lg font-semibold text-white line-clamp-2">{style.name}</h5>
                 </div>
@@ -163,14 +170,21 @@ const CuratedStylesModule = ({ currentStyle, onGatePrompt }: CuratedStylesModule
                 <button
                   type="button"
                   onClick={() => handleSelect(style, index)}
+                  disabled={disabled}
                   className={clsx(
                     'mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition',
-                    locked
+                    gatedLocked
                       ? 'border-white/25 text-white/70 hover:bg-white/10'
                       : 'border-white/20 bg-gradient-to-r from-purple-500/70 to-blue-500/70 text-white shadow-glow-purple hover:shadow-glow-purple'
                   )}
+                  aria-disabled={disabled ? 'true' : 'false'}
+                  title={
+                    disabledForLock
+                      ? 'Finish current preview to explore more styles.'
+                      : undefined
+                  }
                 >
-                  {locked ? 'Unlock Style' : 'Try this style'}
+                  {disabledForLock ? 'Generating preview…' : gatedLocked ? 'Unlock Style' : 'Try this style'}
                   <svg
                     className="h-4 w-4"
                     viewBox="0 0 20 20"

@@ -82,6 +82,7 @@ export type CanvasPreviewPanelProps = {
   onChangeOrientation: () => void;
   downloadDisabled?: boolean;
   canvasLocked?: boolean;
+  previewLocked?: boolean;
 };
 
 const CanvasPreviewPanel = ({
@@ -116,12 +117,31 @@ const CanvasPreviewPanel = ({
   onChangeOrientation,
   downloadDisabled = false,
   canvasLocked = false,
+  previewLocked = false,
 }: CanvasPreviewPanelProps) => {
   const orientationMeta = ORIENTATION_PRESETS[orientation];
+  const orientationActionDisabled =
+    !hasCroppedImage || orientationPreviewPending || orientationChanging || previewLocked;
+  const orientationDisabledReason = previewLocked
+    ? 'Preview in progress – orientation controls will unlock once rendering completes.'
+    : orientationPreviewPending || orientationChanging
+    ? 'Orientation update already in progress'
+    : !hasCroppedImage
+    ? 'Upload & crop a photo first'
+    : undefined;
 
   return (
     <main className="w-full lg:flex-1 lg:min-w-0 px-4 py-6 lg:p-8 flex flex-col items-center justify-start">
       <div className="w-full max-w-[720px] mx-auto">
+        {previewLocked && (
+          <div
+            className="mb-4 w-full rounded-2xl border border-emerald-400/30 bg-emerald-500/10 px-4 py-3 text-center text-xs font-semibold uppercase tracking-[0.24em] text-emerald-100 backdrop-blur-sm"
+            role="status"
+            aria-live="polite"
+          >
+            Wondertone is rendering your preview…
+          </div>
+        )}
         <div
           className="relative rounded-3xl overflow-hidden border-2 border-white/20 bg-gradient-preview-bg shadow-2xl transition-all mx-auto"
           style={{
@@ -220,7 +240,8 @@ const CanvasPreviewPanel = ({
               downloading={downloadingHD}
               downloadDisabled={downloadDisabled}
               createCanvasDisabled={canvasLocked}
-            orientationDisabled={!hasCroppedImage || orientationPreviewPending || orientationChanging}
+              orientationDisabled={orientationActionDisabled}
+              orientationDisabledReason={orientationDisabledReason}
               savingToGallery={savingToGallery}
               savedToGallery={savedToGallery}
               isPremiumUser={isPremiumUser}

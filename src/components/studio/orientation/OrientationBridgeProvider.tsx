@@ -14,7 +14,7 @@ import { CANVAS_SIZE_OPTIONS, getDefaultSizeForOrientation } from '@/utils/canva
 import { cacheSmartCropResult, generateSmartCrop, ORIENTATION_PRESETS, type SmartCropResult } from '@/utils/smartCrop';
 import type { Orientation } from '@/utils/imageUtils';
 import { useUploadActions, useUploadState } from '@/store/hooks/useUploadStore';
-import { usePreviewActions, usePreviewState } from '@/store/hooks/usePreviewStore';
+import { usePreviewActions, usePreviewLockState, usePreviewState } from '@/store/hooks/usePreviewStore';
 import { useCanvasConfigActions, useCanvasConfigState } from '@/store/hooks/useCanvasConfigStore';
 import { useStyleCatalogState } from '@/store/hooks/useStyleCatalogStore';
 
@@ -68,6 +68,7 @@ const OrientationBridgeProvider = ({ children, onOrientationToast }: Orientation
   const { selectedCanvasSize: selectedSize } = useCanvasConfigState();
   const { setCanvasSize } = useCanvasConfigActions();
   const { currentStyle } = useStyleCatalogState();
+  const { isLocked: previewLocked } = usePreviewLockState();
 
   const ensureSmartCropForOrientation = useCallback(
     async (orient: Orientation): Promise<SmartCropResult | null> => {
@@ -159,13 +160,17 @@ const OrientationBridgeProvider = ({ children, onOrientationToast }: Orientation
         !hasCachedPreview(currentStyle.id, targetOrientation);
 
       if (shouldRegeneratePreview && currentStyle) {
-        try {
-          setOrientationPreviewPending(true);
-          await startStylePreview(currentStyle, { force: true, orientationOverride: targetOrientation });
-        } catch (error) {
-          console.error('[OrientationBridge] Failed to regenerate preview for orientation change', error);
-        } finally {
+        if (previewLocked) {
           setOrientationPreviewPending(false);
+        } else {
+          try {
+            setOrientationPreviewPending(true);
+            await startStylePreview(currentStyle, { force: true, orientationOverride: targetOrientation });
+          } catch (error) {
+            console.error('[OrientationBridge] Failed to regenerate preview for orientation change', error);
+          } finally {
+            setOrientationPreviewPending(false);
+          }
         }
       } else {
         setOrientationPreviewPending(false);
@@ -193,6 +198,7 @@ const OrientationBridgeProvider = ({ children, onOrientationToast }: Orientation
       setSmartCropForOrientation,
       startStylePreview,
       hasCachedPreview,
+      previewLocked,
     ]
   );
 

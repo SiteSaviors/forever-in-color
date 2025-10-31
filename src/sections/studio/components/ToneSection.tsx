@@ -15,6 +15,7 @@ import {
 } from '../motion/toneAccordionMotion';
 import type { PrefetchGroupStatus } from '@/sections/studio/hooks/useStyleThumbnailPrefetch';
 import { useStyleCatalogActions } from '@/store/hooks/useStyleCatalogStore';
+import { usePreviewLockState } from '@/store/hooks/usePreviewStore';
 import './ToneSection.css';
 
 type ToneSectionProps = {
@@ -43,6 +44,7 @@ export default function ToneSection({
   const [panelHeight, setPanelHeight] = useState<number | 'auto'>('auto');
   const panelRef = useRef<HTMLDivElement>(null);
   const { ensureStylesLoaded } = useStyleCatalogActions();
+  const { isLocked: previewLocked, lockedStyleId } = usePreviewLockState();
 
   useEffect(() => {
     if (isExpanded && !iconAnimated) {
@@ -203,7 +205,12 @@ export default function ToneSection({
                 <motion.div key={styleEntry.option.id} variants={toneCardVariants}>
                   <ToneStyleCard
                     styleEntry={styleEntry}
-                    onSelect={() => onStyleSelect(styleEntry.option.id, { tone })}
+                    onSelect={() => {
+                      if (previewLocked) return;
+                      onStyleSelect(styleEntry.option.id, { tone });
+                    }}
+                    isLocked={previewLocked}
+                    isLockedActive={previewLocked && styleEntry.option.id === lockedStyleId}
                     prefersReducedMotion={prefersReducedMotion}
                   />
                 </motion.div>

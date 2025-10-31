@@ -14,6 +14,8 @@ type ToneStyleCardProps = {
   layout?: 'default' | 'hero';
   heroDescription?: string;
   prefersReducedMotion?: boolean;
+  isLocked?: boolean;
+  isLockedActive?: boolean;
 };
 
 export default function ToneStyleCard({
@@ -23,9 +25,11 @@ export default function ToneStyleCard({
   layout = 'default',
   heroDescription,
   prefersReducedMotion: prefersReducedMotionProp,
+  isLocked: previewLocked = false,
+  isLockedActive = false,
 }: ToneStyleCardProps) {
   const { option, gate, isSelected, isFavorite, metadataTone, readiness } = styleEntry;
-  const isLocked = !gate.allowed;
+  const isStyleLocked = !gate.allowed;
   const [isAnimating, setIsAnimating] = useState(false);
   const isHero = layout === 'hero';
   const reduceMotionFromContext = useReducedMotion();
@@ -77,7 +81,10 @@ export default function ToneStyleCard({
   const orientationMismatch = readiness.orientationMatches ? 'false' : 'true';
 
   const handleSelect = () => {
-    if (!isLocked) {
+    if (previewLocked) {
+      return;
+    }
+    if (!isStyleLocked) {
       setIsAnimating(true);
       setTimeout(() => setIsAnimating(false), 600);
     }
@@ -140,7 +147,7 @@ export default function ToneStyleCard({
   };
 
   const handlePointerMove: React.PointerEventHandler<HTMLButtonElement> = (event) => {
-    if (prefersReducedMotion || isLocked) return;
+    if (prefersReducedMotion || isStyleLocked || previewLocked) return;
     if (!cardRef.current) return;
     if (!rectRef.current) {
       rectRef.current = cardRef.current.getBoundingClientRect();
@@ -210,43 +217,45 @@ export default function ToneStyleCard({
     );
   };
 
-  const hoverMotion = !prefersReducedMotion && !isLocked
+  const hoverMotion = !prefersReducedMotion && !isStyleLocked && !previewLocked
     ? {
         y: isHero ? -6 : -4,
         scale: isHero ? 1.007 : 1.012,
       }
     : undefined;
 
-  const tapMotion = !prefersReducedMotion && !isLocked
+  const tapMotion = !prefersReducedMotion && !isStyleLocked && !previewLocked
     ? {
         scale: 0.97,
       }
     : undefined;
 
   const thumbnailStyle: CSSProperties =
-    !prefersReducedMotion && !isLocked
+    !prefersReducedMotion && !isStyleLocked && !previewLocked
       ? {
           transform: `translate3d(${parallax.x}px, ${parallax.y}px, 0)`,
         }
       : {};
 
-  const hoverEnabled = !isLocked && !isSelected;
+  const hoverEnabled = !previewLocked && !isStyleLocked && !isSelected;
   const cardClassName = clsx(
     'tone-style-card group relative w-full rounded-xl overflow-hidden transition-all duration-200',
     isHero
       ? 'flex flex-col gap-5 bg-white/10 border border-white/15 px-5 py-5 md:flex-row md:items-center'
       : 'flex items-center gap-4 rounded-lg px-4 py-3.5 md:py-4',
     'focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:ring-offset-2 focus:ring-offset-slate-900',
-    isSelected && !isLocked
+    isSelected && !isStyleLocked
       ? 'bg-gradient-border-selected border-2 border-transparent shadow-lg shadow-purple-500/20'
-      : isLocked
+      : isStyleLocked
       ? 'bg-slate-800/40 border border-white/5 hover:border-purple-400/50 hover:shadow-md hover:shadow-purple-500/10 cursor-pointer'
       : isHero
       ? 'border border-white/20 hover:border-white/30 hover:bg-white/10'
       : 'bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 hover:scale-[1.02]',
     hoverEnabled && 'hover-enabled',
-    isLocked && 'locked',
-    isSelected && 'selected'
+    isStyleLocked && 'locked',
+    isSelected && 'selected',
+    previewLocked && 'tone-style-card--interaction-locked',
+    isLockedActive && 'tone-style-card--active-lock'
   );
 
   const cardStyle = {
@@ -270,9 +279,9 @@ export default function ToneStyleCard({
       onPointerLeave={resetParallax}
       onPointerDown={resetParallax}
       onPointerUp={resetParallax}
-      aria-disabled={isLocked ? 'true' : 'false'}
+      aria-disabled={isStyleLocked || previewLocked ? 'true' : 'false'}
       aria-label={
-        isLocked
+        isStyleLocked
           ? `${option.name} - Locked - Requires ${gate.requiredTier?.toUpperCase()} tier`
           : option.name
       }
@@ -284,9 +293,10 @@ export default function ToneStyleCard({
       whileHover={hoverMotion}
       whileTap={tapMotion}
       transition={toneCardSpring}
+      data-preview-locked={previewLocked ? 'true' : 'false'}
     >
       {/* Ink blot ripple effect on selection */}
-      {isAnimating && !isLocked && (
+      {isAnimating && !isStyleLocked && !previewLocked && (
         <div
           className="absolute inset-0 pointer-events-none z-20 animate-ink-ripple"
           style={{
@@ -312,12 +322,27 @@ export default function ToneStyleCard({
             decoding="async"
             className={clsx(
               'h-full w-full object-cover transition-all duration-200',
-              isLocked && 'opacity-60',
-              !isLocked && 'group-hover:scale-105'
+              isStyleLocked && 'opacity-60',
+              !isStyleLocked && !previewLocked && 'group-hover:scale-105'
             )}
             style={{ aspectRatio: '1', contentVisibility: 'auto' }}
           />
         </picture>
+
+        {previewLocked && isLockedActive && (
+          <div
+            className="tone-style-card__lock-overlay"
+            role="status"
+            aria-live="polite"
+            aria-label="Generating preview"
+          >
+            <span className="tone-style-card__lock-spinner" aria-hidden="true" />
+            <span className="tone-style-card__lock-text">Generating preview…</span>
+          </div>
+        )}
+
+        {previewLocked && !isLockedActive && <div className="tone-style-card__lock-mask" aria-hidden="true" />}
+
         {showReadyIndicator && (
           <>
             <div
@@ -354,8 +379,9 @@ export default function ToneStyleCard({
             </div>
           </>
         )}
+
         {/* Glass overlay with gold border for locked styles */}
-        {isLocked && (
+        {isStyleLocked && (
           <div
             className={clsx(
               'absolute inset-0 z-10 rounded-lg flex items-center justify-center',
@@ -382,8 +408,9 @@ export default function ToneStyleCard({
             />
           </div>
         )}
+
         {/* Selected Checkmark */}
-        {isSelected && !isLocked && (
+        {isSelected && !isStyleLocked && !previewLocked && (
           <div className="absolute inset-0 flex items-center justify-center bg-purple-500/40 backdrop-blur-[1px] animate-in fade-in-0 zoom-in-50 duration-200">
             <svg className="w-6 h-6 text-white drop-shadow-lg" fill="currentColor" viewBox="0 0 20 20">
               <path
@@ -421,7 +448,7 @@ export default function ToneStyleCard({
                 isHero
                   ? 'text-lg uppercase tracking-[0.14em] md:text-xl'
                   : 'text-lg tracking-[0.08em] text-left',
-                isLocked ? 'text-white/55' : 'text-white'
+                isStyleLocked ? 'text-white/55' : 'text-white'
               )}
               style={
                 isHero
@@ -453,7 +480,7 @@ export default function ToneStyleCard({
             isHero
               ? 'text-sm text-left md:text-base md:leading-relaxed'
               : 'mt-0.5 text-sm text-left leading-snug line-clamp-2',
-            isLocked ? 'text-white/35' : 'text-white/70'
+            isStyleLocked ? 'text-white/35' : 'text-white/70'
           )}
           style={{
             textShadow: '0 1px 4px rgba(8, 13, 30, 0.45)',
@@ -462,7 +489,7 @@ export default function ToneStyleCard({
           {isHero ? heroDescription : option.description}
         </p>
         {/* Lock Message */}
-        {isLocked && gate.requiredTier && (
+        {isStyleLocked && gate.requiredTier && (
           <span
             className={clsx(
               'inline-flex items-center gap-2 text-[10px] font-semibold text-purple-200/90',

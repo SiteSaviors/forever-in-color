@@ -23,6 +23,17 @@ export const useHandleStyleSelect = (options?: HandleStyleSelectOptions) => {
   return useCallback(
     (styleId: string, meta?: HandleStyleSelectMeta) => {
       const state = useFounderStore.getState();
+
+      if (state.pendingStyleId) {
+        if (import.meta.env?.DEV) {
+          console.info('[useHandleStyleSelect] Preview in progress – ignoring style select', {
+            pendingStyleId: state.pendingStyleId,
+            requestedStyleId: styleId,
+          });
+        }
+        return;
+      }
+
       state.selectStyle(styleId);
 
       const style = state.styles.find((item) => item.id === styleId);

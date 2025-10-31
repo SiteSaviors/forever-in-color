@@ -190,9 +190,74 @@
   }
 }
 
+.tone-style-card--interaction-locked {
+  pointer-events: none;
+}
+
+.tone-style-card--interaction-locked:not(.tone-style-card--active-lock) .tone-style-card__thumbnail::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(13, 28, 20, 0.6), rgba(17, 34, 24, 0.8));
+  opacity: 0.75;
+  z-index: 15;
+}
+
+.tone-style-card__lock-mask {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(15, 24, 18, 0.6), rgba(9, 12, 10, 0.85));
+  z-index: 16;
+}
+
+.tone-style-card__lock-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  background: linear-gradient(180deg, rgba(15, 28, 21, 0.85), rgba(8, 16, 12, 0.95));
+  z-index: 24;
+  color: #e2f7d9;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: 0.48rem;
+  font-weight: 700;
+}
+
+.tone-style-card__lock-spinner {
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 999px;
+  border: 2px solid rgba(187, 255, 170, 0.2);
+  border-top-color: rgba(187, 255, 170, 0.9);
+  animation: tone-style-card-lock-spin 0.9s linear infinite;
+}
+
+.tone-style-card__lock-text {
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
+  letter-spacing: 0.24em;
+}
+
+@keyframes tone-style-card-lock-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .tone-style-card__thumbnail-ready-frame,
-  .tone-style-card__ready-overlay {
+  .tone-style-card__ready-overlay,
+  .tone-style-card__lock-overlay {
     transition: none;
     animation: none;
   }

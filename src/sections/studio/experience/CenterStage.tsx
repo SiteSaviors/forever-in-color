@@ -63,6 +63,7 @@ const CenterStage = ({
   const overlayStyleName =
     (pendingStyleId ? styles.find((style) => style.id === pendingStyleId)?.name : currentStyle?.name) ??
     'Selected Style';
+  const previewLocked = Boolean(pendingStyleId);
   type OverlayStatus = Exclude<StylePreviewStatus, 'idle'>;
   const overlayStatus: OverlayStatus = stylePreviewStatus === 'idle' ? 'animating' : stylePreviewStatus;
   const displayPreviewUrl = preview?.data?.previewUrl ?? croppedImage ?? undefined;
@@ -117,6 +118,7 @@ const CenterStage = ({
       onChangeOrientation={handleChangeOrientationFromCenter}
       downloadDisabled={downloadDisabled}
       canvasLocked={canvasLocked}
+      previewLocked={previewLocked}
     />
   );
 };

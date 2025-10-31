@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import renderer from 'react-test-renderer';
 import ToneStyleCard from '@/sections/studio/components/ToneStyleCard';
 import type { ToneSectionStyle } from '@/store/hooks/useToneSections';
@@ -81,5 +81,28 @@ describe('ToneStyleCard ready indicator', () => {
 
     const overlays = card.root.findAll((node) => node.props['data-state'] === 'pending');
     expect(overlays).toHaveLength(1);
+  });
+
+  it('blocks selection and shows lock overlay when preview is locked', () => {
+    const onSelect = vi.fn();
+    const card = renderer.create(
+      <ToneStyleCard
+        styleEntry={baseStyleEntry()}
+        onSelect={onSelect}
+        prefersReducedMotion
+        isLocked
+        isLockedActive
+      />
+    );
+
+    const button = card.root.findByType('button');
+    button.props.onClick();
+
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(button.props['aria-disabled']).toBe('true');
+    const overlays = card.root.findAll(
+      (node) => node.props?.className === 'tone-style-card__lock-overlay'
+    );
+    expect(overlays.length).toBe(1);
   });
 });

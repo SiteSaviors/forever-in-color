@@ -3,11 +3,13 @@ import { clsx } from 'clsx';
 import { useUploadState } from '@/store/hooks/useUploadStore';
 import { useStyleCatalogState } from '@/store/hooks/useStyleCatalogStore';
 import { useHandleStyleSelect } from '@/sections/studio/hooks/useHandleStyleSelect';
+import { usePreviewLockState } from '@/store/hooks/usePreviewStore';
 
 export default function OriginalImageCard() {
   const { originalImage } = useUploadState();
   const { selectedStyleId } = useStyleCatalogState();
   const handleStyleSelect = useHandleStyleSelect();
+  const { isLocked: previewLocked } = usePreviewLockState();
 
   const isSelected = selectedStyleId === 'original-image';
 
@@ -17,6 +19,9 @@ export default function OriginalImageCard() {
 
   // FIXED: Remove duplicate analytics emission - handleStyleSelect already emits
   const handleSelect = () => {
+    if (previewLocked) {
+      return;
+    }
     handleStyleSelect('original-image', { tone: 'original' });
   };
 
@@ -24,12 +29,17 @@ export default function OriginalImageCard() {
     <div className="mb-4">
       <button
         onClick={handleSelect}
+        disabled={previewLocked}
+        aria-disabled={previewLocked ? 'true' : 'false'}
         className={clsx(
           'w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200',
           'focus:outline-none focus:ring-2 focus:ring-purple-400/50',
           isSelected
             ? 'bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-2 border-purple-400'
-            : 'bg-white/5 border border-white/10 hover:bg-white/10'
+            : clsx(
+                'bg-white/5 border border-white/10',
+                previewLocked ? 'opacity-60 cursor-not-allowed' : 'hover:bg-white/10'
+              )
         )}
       >
         {/* Thumbnail */}
