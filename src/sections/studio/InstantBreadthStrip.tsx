@@ -132,10 +132,6 @@ const InstantBreadthStrip = () => {
     navigate('/pricing');
   };
 
-  if (!curatedItems.length) {
-    return null;
-  }
-
   const shouldDuplicate = isInteractive && curatedItems.length > 0;
 
   useEffect(() => {
@@ -296,20 +292,24 @@ const InstantBreadthStrip = () => {
     endDrag(event.pointerId);
   };
 
+  if (!curatedItems.length) {
+    return null;
+  }
+
   return (
     <section
-      className="border-t border-white/10 bg-slate-950/95 text-white"
+      className="border-t border-white/10 bg-slate-950/95 bg-[radial-gradient(circle_at_top,rgba(49,72,139,0.28),transparent_55%)] text-white"
       data-founder-anchor="instant-breadth"
     >
       <div className="mx-auto flex max-w-[1800px] flex-col gap-10 px-6 py-14 sm:gap-12 lg:py-16">
-        <header className="flex flex-col gap-4">
-          <h2 className="font-display text-[28px] font-semibold tracking-tight text-white sm:text-3xl md:text-[34px]">
-            Wondertone AI transforms your photos into 50+ premium art styles—instantly.
+        <header className="flex flex-col gap-4 text-center items-center pt-8">
+          <h2 className="font-poppins text-[28px] font-bold tracking-tight text-white sm:text-3xl md:text-[48px]">
+            One click. 50+ art styles. Museum-quality results.
           </h2>
-          <p className="max-w-4xl text-base text-white/80 sm:text-lg">
+          <p className="font-poppins max-w-4xl text-base text-white/80 sm:text-lg">
             Save to your gallery, download &amp; share, or print on museum-quality canvas.
           </p>
-          <p className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-white/60 sm:text-base">
+          <p className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-white/60 sm:text-base">
             <span className="inline-flex items-center gap-2">
               <span aria-hidden="true">✓</span>
               Free preview
@@ -325,7 +325,7 @@ const InstantBreadthStrip = () => {
           </p>
         </header>
 
-        <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-6">
+        <div className="flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-6">
           <button
             type="button"
             onClick={handleOpenSample}
@@ -349,8 +349,8 @@ const InstantBreadthStrip = () => {
         </div>
 
         <div className="relative">
-          <div className="pointer-events-none absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-slate-950/95 via-slate-950/0 to-transparent" />
-          <div className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-slate-950/95 via-slate-950/0 to-transparent" />
+          <div className="pointer-events-none absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-slate-950/95 via-slate-950/50 to-transparent z-10" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-slate-950/95 via-slate-950/50 to-transparent z-10" />
           <div
             className={clsx(
               'px-1 py-2',
@@ -378,27 +378,36 @@ const InstantBreadthStrip = () => {
                 return (
                   <article
                     key={`${item.id}-${index}`}
-                    className="flex w-[160px] flex-shrink-0 flex-col gap-3 sm:w-[200px] md:w-[220px] lg:w-[240px]"
+                    className="group flex w-[160px] flex-shrink-0 flex-col sm:w-[200px] md:w-[220px] lg:w-[240px]"
                     role="listitem"
                     aria-hidden={isClone ? 'true' : undefined}
                   >
-                    <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5">
-                      <picture>
-                        {item.thumbnailAvif ? (
-                          <source srcSet={item.thumbnailAvif} type="image/avif" />
-                        ) : null}
-                        {item.thumbnailWebp ? (
-                          <source srcSet={item.thumbnailWebp} type="image/webp" />
-                        ) : null}
-                        <img
-                          src={item.thumbnail}
-                          alt={`${item.name} thumbnail`}
-                          loading="lazy"
-                          className="h-full w-full object-cover"
-                        />
-                      </picture>
+                    {/* Gold gradient border wrapper */}
+                    <div className="relative p-[2px] rounded-3xl bg-gradient-to-br from-amber-400 via-yellow-500 to-amber-400">
+                      <div className="relative overflow-hidden rounded-3xl bg-white/5 transition-all duration-300 shadow-[0_4px_16px_rgba(0,0,0,0.3)] group-hover:shadow-[0_12px_32px_rgba(0,0,0,0.5)] group-hover:scale-[1.03]">
+                        <picture>
+                          {item.thumbnailAvif ? (
+                            <source srcSet={item.thumbnailAvif} type="image/avif" />
+                          ) : null}
+                          {item.thumbnailWebp ? (
+                            <source srcSet={item.thumbnailWebp} type="image/webp" />
+                          ) : null}
+                          <img
+                            src={item.thumbnail}
+                            alt={`${item.name} thumbnail`}
+                            loading="lazy"
+                            className="h-full w-full object-cover"
+                          />
+                        </picture>
+
+                        {/* Frosted glass style name overlay at bottom */}
+                        <div className="absolute bottom-0 left-0 right-0 bg-black/70 backdrop-blur-md px-3 py-2.5 border-t border-white/10">
+                          <p className="text-xs font-bold text-white uppercase tracking-[0.15em] sm:text-sm">
+                            {item.name}
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                    <p className="text-sm font-semibold text-white/90 sm:text-base">{item.name}</p>
                   </article>
                 );
               })}
