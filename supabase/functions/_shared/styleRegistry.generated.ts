@@ -362,29 +362,37 @@ export const EDGE_STYLE_REGISTRY: EdgeStyleRegistryEntry[] = [
 {
   id: "voxel-arcade",
   name: "Voxel Arcade",
-  numericId: null,
+  numericId: 35,
   tone: "electric",
   tier: "premium",
-  prompt: null,
+  prompt: {
+    numericId: 35,
+    prompt: "Recreate the exact image in a neon cyber-voxel aesthetic — electric, high-contrast, and nightlife-ready. Preserve the subject’s composition, pose, and facial accuracy while reconstructing forms with dark matte voxels accented by emissive edges and light strips (cyan, magenta, violet). Add subtle scanlines, rim-light glows, and reflected color on nearby blocks; keep background voxels sparse to frame the figure. Maintain legibility by using finer voxel resolution at facial features and hands. The result should feel like a retro-future arcade hero shot — vibrant cubes lit by pure energy.",
+    updatedAt: "2025-10-30 05:08:34.764196+00",
+  },
 },
 {
   id: "retro-synthwave",
   name: "Retro Synthwave",
-  numericId: null,
+  numericId: 37,
   tone: "electric",
   tier: "premium",
-  prompt: null,
+  prompt: {
+    numericId: 37,
+    prompt: "Recreate the exact image in a retro-future neon synthwave style — dark base, electric accents, and clean silhouette. Preserve the full composition and proportions of the subject. Palette-lock to hot magenta, electric cyan, violet, and indigo with small sunset orange/pink for glow accents; no naturalistic gradients.",
+    updatedAt: "2025-10-30 05:14:50.092634+00",
+  },
 },
 {
   id: "holowire-prism",
   name: "Holowire Prism",
-  numericId: 6,
+  numericId: 36,
   tone: "electric",
   tier: "premium",
   prompt: {
-    numericId: 6,
-    prompt: "Recreate the exact image as an artistic low poly illustration — colorful, faceted, and compositionally accurate. Preserve the full subject structure, including precise pose, facial features, proportions, and spatial layout. Break the image into angular geometric polygons of varied sizes, using bold color blocking and gradient transitions to reflect natural shading. Emphasize artistic abstraction through clean edges and stylized fragmentation, while maintaining visual clarity and realism in the subject. The result should feel modern and decorative — like a vibrant digital mosaic that's both expressive and true to the original form.",
-    updatedAt: "2025-10-16 07:13:28.066242+00",
+    numericId: 36,
+    prompt: "Recreate the exact image as a neon wireframe overlay — precise, minimal, and high-contrast. Preserve proportions and a clean silhouette, then trace primary forms with thin emissive ribs (cyan/magenta/violet), using denser lines at joints and feature edges. Keep surfaces mostly matte; wireframe floats just above the subject with subtle parallax and a faint floor grid. Do not cross the pupils/emblems; let the wireframe conform around those features. Use mild neon bloom, no heavy glow; background remains dark and uncluttered.",
+    updatedAt: "2025-10-30 05:12:33.691598+00",
   },
 },
 {
@@ -426,11 +434,11 @@ export const EDGE_STYLE_REGISTRY: EdgeStyleRegistryEntry[] = [
 {
   id: "porcelain-figurine",
   name: "Porcelain Figurine",
-  numericId: 43,
+  numericId: 28,
   tone: "experimental",
   tier: "premium",
   prompt: {
-    numericId: 43,
+    numericId: 28,
     prompt: "Recreate the exact image as a porcelain figurine — high-gloss glaze, smooth sculpted planes, and hand-painted gold trim. Preserve the original pose and expression with refined, slightly idealized anatomy. Add delicate floral or filigree accents around clothing edges. Lighting should include bright highlights and subtle reflections characteristic of kiln-fired ceramic. Present on a small pedestal or tabletop shadow with a soft studio backdrop.",
     updatedAt: "2025-10-30T07:16:07.570425+00",
   },
@@ -563,8 +571,8 @@ export const EDGE_STYLE_REGISTRY: EdgeStyleRegistryEntry[] = [
   tier: "premium",
   prompt: {
     numericId: 43,
-    prompt: "Recreate the exact image as a porcelain figurine — high-gloss glaze, smooth sculpted planes, and hand-painted gold trim. Preserve the original pose and expression with refined, slightly idealized anatomy. Add delicate floral or filigree accents around clothing edges. Lighting should include bright highlights and subtle reflections characteristic of kiln-fired ceramic. Present on a small pedestal or tabletop shadow with a soft studio backdrop.",
-    updatedAt: "2025-10-30T07:16:07.570425+00",
+    prompt: "Recreate the exact image as a luminous stained-glass window — leaded panes, jewel tones, and sunlit bloom. Preserve the subject’s pose, proportions, and facial readability while segmenting forms into glass panels bordered by realistic came (lead) lines. Use deep sapphire, ruby, emerald, and amber with faint seed bubbles and subtle internal gradients to simulate real glass. Introduce directional “cathedral” sunlight that passes through the panes, creating haloed edges, color spill, and soft caustic patterns on background surfaces. Keep detail micro-panes for eyes and hands; use larger panes for broader planes. The result should feel sacred and cinematic, as if the portrait were installed high in a grand nave.",
+    updatedAt: "2025-10-30 17:17:20.746361+00",
   },
 }
 ];

@@ -15,9 +15,14 @@ export const createSessionSlice: StateCreator<FounderState, [], [], SessionSlice
     const currentUserId = current.sessionUser?.id ?? null;
     const nextUserId = user?.id ?? null;
     const tokenChanged = current.accessToken !== accessToken;
+    const isAccountChange = current.sessionHydrated && currentUserId !== nextUserId;
 
     if (current.sessionHydrated && currentUserId === nextUserId && !tokenChanged) {
       return;
+    }
+
+    if (isAccountChange) {
+      current.resetPreviews();
     }
 
     set({

@@ -10,7 +10,9 @@ import { TRENDING_HERO_STYLES } from '@/config/trendingStyles';
 import type { GateResult } from '@/utils/entitlementGate';
 import { findStyleMetadata } from '@/utils/entitlementGate';
 import { useFounderStore } from '@/store/useFounderStore';
+import { usePreviewReadiness } from '@/store/hooks/usePreviewStore';
 import type { StyleOption } from '@/store/founder/storeTypes';
+import type { StylePreviewReadiness } from '@/store/selectors/previewReadiness';
 
 export type ToneSectionStyle = {
   option: StyleOption;
@@ -18,6 +20,7 @@ export type ToneSectionStyle = {
   gate: GateResult;
   isSelected: boolean;
   isFavorite: boolean;
+  readiness: StylePreviewReadiness;
 };
 
 export type ToneSection = {
@@ -33,6 +36,17 @@ export type ToneSectionsHookResult = {
   ensureToneEvaluated: (tone: StyleTone) => void;
   isToneEvaluated: (tone: StyleTone) => boolean;
 };
+
+const EMPTY_PREVIEW_READINESS: StylePreviewReadiness = Object.freeze({
+  hasPreview: false,
+  previewUrl: null,
+  orientation: null,
+  orientationMatches: true,
+  source: null,
+  completedAt: null,
+  isRegenerating: false,
+  isOrientationPending: false,
+});
 
 type GateCacheRecord = {
   version: string;
@@ -123,6 +137,8 @@ export const useToneSections = (): ToneSectionsHookResult => {
   });
 
   const [cacheVersion, setCacheVersion] = useState(0);
+
+  const previewReadinessMap = usePreviewReadiness();
 
   const resetCachesForEntitlements = useCallback(() => {
     gateCacheRef.current = {
@@ -251,12 +267,14 @@ export const useToneSections = (): ToneSectionsHookResult => {
 
       const stylesForTone: ToneSectionStyle[] = toneStyles.map((style) => {
         const normalizedId = style.id.trim().toLowerCase();
+        const readiness = previewReadinessMap[style.id] ?? EMPTY_PREVIEW_READINESS;
         return {
           option: style,
           metadataTone: tone,
           gate: gateCache.get(style.id) ?? defaultGate,
           isSelected: selectedStyleId === style.id,
           isFavorite: normalizedFavoriteSet.has(normalizedId),
+          readiness,
         };
       });
 
@@ -288,6 +306,7 @@ export const useToneSections = (): ToneSectionsHookResult => {
     evaluateStyleGate,
     entitlementVersion,
     favoriteSet,
+    previewReadinessMap,
     selectedStyleId,
     stylesByTone,
   ]);

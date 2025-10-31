@@ -24,7 +24,7 @@ export default function ToneStyleCard({
   heroDescription,
   prefersReducedMotion: prefersReducedMotionProp,
 }: ToneStyleCardProps) {
-  const { option, gate, isSelected, isFavorite, metadataTone } = styleEntry;
+  const { option, gate, isSelected, isFavorite, metadataTone, readiness } = styleEntry;
   const isLocked = !gate.allowed;
   const [isAnimating, setIsAnimating] = useState(false);
   const isHero = layout === 'hero';
@@ -35,6 +35,9 @@ export default function ToneStyleCard({
   const rectRef = useRef<DOMRect | null>(null);
   const rafRef = useRef<number | null>(null);
   const pendingParallaxRef = useRef<{ x: number; y: number } | null>(null);
+  const readyTimeoutRef = useRef<number | null>(null);
+  const hasAnimatedReadyRef = useRef(false);
+  const [readyVisualState, setReadyVisualState] = useState<'idle' | 'enter' | 'visible'>('idle');
 
   // Get tone accent color for ink ripple effect
   const toneAccentColor = TONE_GRADIENTS[metadataTone]?.accent || '#8b5cf6';
@@ -68,6 +71,10 @@ export default function ToneStyleCard({
 
   const glowColor = toRgba(toneAccentColor, 0.35);
   const glowSoftColor = toRgba(toneAccentColor, 0.18);
+  const showReadyIndicator = readiness.hasPreview;
+  const ribbonLabel = readiness.isOrientationPending ? 'Preview refreshing' : 'Preview ready';
+  const previewSource = readiness.source ?? 'none';
+  const orientationMismatch = readiness.orientationMatches ? 'false' : 'true';
 
   const handleSelect = () => {
     if (!isLocked) {
@@ -83,8 +90,41 @@ export default function ToneStyleCard({
         cancelAnimationFrame(rafRef.current);
         rafRef.current = null;
       }
+      if (readyTimeoutRef.current !== null) {
+        window.clearTimeout(readyTimeoutRef.current);
+        readyTimeoutRef.current = null;
+      }
     };
   }, []);
+
+  useEffect(() => {
+    if (!showReadyIndicator) {
+      setReadyVisualState('idle');
+      hasAnimatedReadyRef.current = false;
+      if (readyTimeoutRef.current !== null) {
+        window.clearTimeout(readyTimeoutRef.current);
+        readyTimeoutRef.current = null;
+      }
+      return;
+    }
+
+    if (prefersReducedMotion) {
+      setReadyVisualState('visible');
+      hasAnimatedReadyRef.current = true;
+      return;
+    }
+
+    if (!hasAnimatedReadyRef.current) {
+      setReadyVisualState('enter');
+      hasAnimatedReadyRef.current = true;
+      readyTimeoutRef.current = window.setTimeout(() => {
+        setReadyVisualState('visible');
+        readyTimeoutRef.current = null;
+      }, 240);
+    } else {
+      setReadyVisualState('visible');
+    }
+  }, [showReadyIndicator, prefersReducedMotion]);
 
   const scheduleParallaxUpdate = (next: { x: number; y: number }) => {
     pendingParallaxRef.current = next;
@@ -214,6 +254,14 @@ export default function ToneStyleCard({
     '--tone-glow-soft': glowSoftColor,
   } as CSSProperties;
 
+  const thumbnailClassName = clsx(
+    'tone-style-card__thumbnail relative overflow-hidden flex-shrink-0 shadow-lg',
+    isHero ? 'h-28 w-full rounded-2xl md:h-28 md:w-28' : 'h-16 w-16 rounded-2xl md:h-[72px] md:w-[72px]',
+    showReadyIndicator && 'tone-style-card__thumbnail--ready',
+    readyVisualState === 'enter' && 'tone-style-card__thumbnail--enter',
+    readyVisualState === 'visible' && 'tone-style-card__thumbnail--visible'
+  );
+
   return (
     <motion.button
       ref={cardRef}
@@ -228,6 +276,9 @@ export default function ToneStyleCard({
           ? `${option.name} - Locked - Requires ${gate.requiredTier?.toUpperCase()} tier`
           : option.name
       }
+      data-preview-ready={showReadyIndicator ? 'true' : 'false'}
+      data-preview-source={previewSource}
+      data-orientation-mismatch={orientationMismatch}
       className={cardClassName}
       style={cardStyle}
       whileHover={hoverMotion}
@@ -244,13 +295,7 @@ export default function ToneStyleCard({
         />
       )}
       {/* Thumbnail */}
-      <div
-        className={clsx(
-          'relative overflow-hidden flex-shrink-0 shadow-lg',
-          isHero ? 'h-28 w-full rounded-2xl md:h-28 md:w-28' : 'h-16 w-16 rounded-2xl md:h-[72px] md:w-[72px]'
-        )}
-        style={{ ...thumbnailStyle, aspectRatio: isHero ? 'auto' : '1' }}
-      >
+      <div className={thumbnailClassName} style={{ ...thumbnailStyle, aspectRatio: isHero ? 'auto' : '1' }}>
         <picture>
           {option.thumbnailAvif && (
             <source srcSet={option.thumbnailAvif} type="image/avif" />
@@ -273,6 +318,30 @@ export default function ToneStyleCard({
             style={{ aspectRatio: '1', contentVisibility: 'auto' }}
           />
         </picture>
+        {showReadyIndicator && (
+          <div
+            className={clsx(
+              'tone-style-card__thumbnail-ready-frame',
+              readyVisualState === 'enter' && 'is-enter',
+              readyVisualState === 'visible' && 'is-visible'
+            )}
+            aria-hidden="true"
+          />
+        )}
+        {showReadyIndicator && (
+          <div
+            className={clsx(
+              'tone-style-card__ready-ribbon',
+              readyVisualState === 'enter' && 'is-enter',
+              readyVisualState === 'visible' && 'is-visible',
+              readiness.isOrientationPending && 'is-pending'
+            )}
+            aria-label={ribbonLabel}
+            data-state={readiness.isOrientationPending ? 'pending' : 'ready'}
+          >
+            <span>READY</span>
+          </div>
+        )}
         {/* Glass overlay with gold border for locked styles */}
         {isLocked && (
           <div

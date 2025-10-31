@@ -324,8 +324,8 @@ export const TONE_STYLES: StyleRegistryEntry[] = [
   },
   prompt: {
     numericId: 43,
-    prompt: "Recreate the exact image as a porcelain figurine — high-gloss glaze, smooth sculpted planes, and hand-painted gold trim. Preserve the original pose and expression with refined, slightly idealized anatomy. Add delicate floral or filigree accents around clothing edges. Lighting should include bright highlights and subtle reflections characteristic of kiln-fired ceramic. Present on a small pedestal or tabletop shadow with a soft studio backdrop.",
-    updatedAt: "2025-10-30T07:16:07.570425+00",
+    prompt: "Recreate the exact image as a luminous stained-glass window — leaded panes, jewel tones, and sunlit bloom. Preserve the subject’s pose, proportions, and facial readability while segmenting forms into glass panels bordered by realistic came (lead) lines. Use deep sapphire, ruby, emerald, and amber with faint seed bubbles and subtle internal gradients to simulate real glass. Introduce directional “cathedral” sunlight that passes through the panes, creating haloed edges, color spill, and soft caustic patterns on background surfaces. Keep detail micro-panes for eyes and hands; use larger panes for broader planes. The result should feel sacred and cinematic, as if the portrait were installed high in a grand nave.",
+    updatedAt: "2025-10-30 17:17:20.746361+00",
   },
   story: null,
 }
