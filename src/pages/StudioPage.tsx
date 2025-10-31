@@ -5,6 +5,7 @@ import FounderNavigation from '@/components/navigation/FounderNavigation';
 import { LazyMotion, domAnimation } from 'framer-motion';
 import { useStyleCatalogActions, useStyleCatalogState } from '@/store/hooks/useStyleCatalogStore';
 import { useEntitlementsActions } from '@/store/hooks/useEntitlementsStore';
+import InstantBreadthStrip from '@/sections/studio/InstantBreadthStrip';
 
 const LaunchflowAccordionLazy = lazy(() => import('@/sections/LaunchpadLayout'));
 const StudioConfiguratorLazy = lazy(() => import('@/sections/StudioConfigurator'));
@@ -84,6 +85,7 @@ const StudioPage = () => {
             onDismissCheckoutNotice={() => setCheckoutNotice(null)}
           />
         </Suspense>
+        <InstantBreadthStrip />
       </div>
     </LazyMotion>
   );
