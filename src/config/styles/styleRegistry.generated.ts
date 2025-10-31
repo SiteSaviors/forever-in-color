@@ -95,7 +95,7 @@ export const STYLE_REGISTRY: StyleRegistryEntry[] = [
   defaultUnlocked: true,
   priceModifier: 0,
   description: "Traditional oil painting texture with bold brush strokes.",
-  marketingCopy: "Channel the masters with rich brush strokes and museum-ready texture.",
+  marketingCopy: "Timeless elegance—refined brushwork, warm gallery light, and heirloom realism that honors every detail.",
   badges: ["classic"],
   sortOrder: 10,
   assets: {
@@ -118,22 +118,22 @@ export const STYLE_REGISTRY: StyleRegistryEntry[] = [
   },
   story: {
     "narrative": {
-      "headline": "The Story Behind Classic Oil",
+      "headline": "The Story Behind Classic Oil Painting",
       "paragraph": "Classic Oil frames your portrait like a museum piece—rich pigments, heirloom brushwork, and softly lit warmth for timeless display.",
       "bullets": [
         {
           "label": "Emotion",
-          "value": "Heirloom nostalgia",
+          "value": "Timeless Elegance • Heirloom Nostalgia • Romantic Warmth • Classical Prestige",
           "icon": "sparkle"
         },
         {
           "label": "Perfect for",
-          "value": "Dining rooms · heritage walls",
+          "value": "Dining Spaces • Studies • Mantels • Living Rooms ",
           "icon": "home"
         },
         {
           "label": "Signature detail",
-          "value": "Layered old-world brushstrokes",
+          "value": "Layered old-world brushstrokes, Glazed skin tones & selective impasto highlights",
           "icon": "brush"
         }
       ]
@@ -156,11 +156,17 @@ export const STYLE_REGISTRY: StyleRegistryEntry[] = [
         "hex": "#f0ead6",
         "label": "Canvas Cream",
         "descriptor": "Softens skin tones"
+      },
+      {
+        "id": "oil-umber",
+        "hex": "#6B4B2A",
+        "label": "Burnt Umber",
+        "descriptor": "Old-master shadow base"
       }
     ],
     "complementary": {
-      "premium": "pastel-bliss",
-      "fallback": "calm-watercolor"
+      "premium": "the-renaissance",
+      "fallback": "artisan-charcoal"
     }
   },
 },
@@ -174,7 +180,7 @@ export const STYLE_REGISTRY: StyleRegistryEntry[] = [
   isPremium: false,
   defaultUnlocked: true,
   priceModifier: 0,
-  description: "Quiet watercolor washes with soft edges, luminous gradients, and gentle definition.",
+  description: "Serene watercolor washes with gentle definition.",
   marketingCopy: "Paint tranquil portraits with feathered wet-on-wet washes, whispered vignettes, and poised simplicity.",
   badges: ["classic"],
   sortOrder: 20,
@@ -198,38 +204,38 @@ export const STYLE_REGISTRY: StyleRegistryEntry[] = [
   },
   story: {
     "narrative": {
-      "headline": "The Story Behind Watercolor Dreams",
+      "headline": "The Story Behind Calm Watercolor",
       "paragraph": "Watercolor Dreams bathes your memory in feathered washes and airy light leaks—gentle enough for bedrooms, expressive enough for your feed.",
       "bullets": [
         {
           "label": "Emotion",
-          "value": "Serene daydream",
+          "value": "Serene Daydream • Quiet Optimism • Mindful Stillness",
           "icon": "sparkle"
         },
         {
           "label": "Perfect for",
-          "value": "Nurseries · reflective corners",
+          "value": "Reading Nook • Hallways • Bedrooms • Gift Prints",
           "icon": "home"
         },
         {
           "label": "Signature detail",
-          "value": "Hand-splashed watercolor bloom",
+          "value": "Wet-on-wet blends • Feathered edges & blooms • Soft vignette",
           "icon": "brush"
         }
       ]
     },
     "palette": [
       {
-        "id": "wc-coral",
-        "hex": "#f7a7a6",
-        "label": "Blush Coral",
-        "descriptor": "Lifts rosy highlights"
+        "id": "wc-sea-glass",
+        "hex": "#A9D3CF",
+        "label": "Sea Glass",
+        "descriptor": "Cooling calm"
       },
       {
-        "id": "wc-lavender",
-        "hex": "#c7b6e9",
-        "label": "Mist Lavender",
-        "descriptor": "Keeps the wash airy"
+        "id": "wc-warm-sand",
+        "hex": "#EAD9C6",
+        "label": "Warm Sand",
+        "descriptor": "Soft earth balance"
       },
       {
         "id": "wc-mist",
@@ -240,7 +246,7 @@ export const STYLE_REGISTRY: StyleRegistryEntry[] = [
     ],
     "complementary": {
       "premium": "pastel-bliss",
-      "fallback": "calm-watercolor"
+      "fallback": "sumi-ink-whisper"
     }
   },
 },
@@ -278,49 +284,49 @@ export const STYLE_REGISTRY: StyleRegistryEntry[] = [
   },
   story: {
     "narrative": {
-      "headline": "The Story Behind Pastel Bliss",
-      "paragraph": "Pastel Bliss drapes your portrait in soft pastels, tactile grain, and morning-light warmth—ideal for cozy retreats and calming spaces.",
+      "headline": "The Story Behind Gallery Acrylic",
+      "paragraph": "Gallery Acrylic builds your image with confident strokes, stacked color layers, and gel-medium depth. Edges stay crisp where needed, glazing adds luminous blends elsewhere.",
       "bullets": [
         {
           "label": "Emotion",
-          "value": "Weightless calm",
+          "value": "Modern Confidence • Vibrant Energy • Creative Momentum",
           "icon": "sparkle"
         },
         {
           "label": "Perfect for",
-          "value": "Bedrooms · wellness corners",
+          "value": "Statement Piece • Bedrooms • Living Rooms • Studios",
           "icon": "home"
         },
         {
           "label": "Signature detail",
-          "value": "Velvet pastel gradients and soft grain",
+          "value": "Clean graphic edges against soft blends, Layered glazing over crisp planes",
           "icon": "brush"
         }
       ]
     },
     "palette": [
       {
-        "id": "pastel-rose",
-        "hex": "#f8cbd6",
-        "label": "Petal Rose",
-        "descriptor": "Softens portraits"
+        "id": "acrylic-cobalt",
+        "hex": "#2B6CB0",
+        "label": "Cobalt Blue",
+        "descriptor": "Cool depth layer"
       },
       {
-        "id": "pastel-mint",
-        "hex": "#c8eddc",
-        "label": "Mint Haze",
-        "descriptor": "Calms the palette"
+        "id": "acrylic-cad-yellow",
+        "hex": "#D88A1A",
+        "label": "Cadmium Yellow Deep",
+        "descriptor": "Warm energy field"
       },
       {
-        "id": "pastel-cream",
-        "hex": "#fdf2e9",
-        "label": "Sunrise Cream",
-        "descriptor": "Adds daylight warmth"
+        "id": "acrylic-titanium",
+        "hex": "#F4F3EF",
+        "label": "Titanium White",
+        "descriptor": "Sheen and lift"
       }
     ],
     "complementary": {
-      "premium": "sanctuary-glow",
-      "fallback": "calm-watercolor"
+      "premium": "watercolor-dreams",
+      "fallback": "street-graffiti"
     }
   },
 },
@@ -334,8 +340,8 @@ export const STYLE_REGISTRY: StyleRegistryEntry[] = [
   isPremium: false,
   defaultUnlocked: true,
   priceModifier: 0,
-  description: "Soft washes with gentle light leaks perfect for portraits.",
-  marketingCopy: "Give portraits a dreamy wash with soft watercolor gradients.",
+  description: "Expressive watercolor with joyful drips.",
+  marketingCopy: "Bring Your portrait to life with movement—loose washes, vivid splashes, and fluid blends.",
   badges: ["signature"],
   sortOrder: 20,
   assets: {
@@ -359,48 +365,48 @@ export const STYLE_REGISTRY: StyleRegistryEntry[] = [
   story: {
     "narrative": {
       "headline": "The Story Behind Watercolor Dreams",
-      "paragraph": "Watercolor Dreams bathes your memory in feathered washes and airy light leaks—gentle enough for bedrooms, expressive enough for your feed.",
+      "paragraph": "Watercolor Dreams channels expressive wash painting—loose, energetic strokes, vivid splashes, and spontaneous drips that let pigments mingle in motion.",
       "bullets": [
         {
           "label": "Emotion",
-          "value": "Serene daydream",
+          "value": "Creative • Playful • Spontaneous",
           "icon": "sparkle"
         },
         {
           "label": "Perfect for",
-          "value": "Nurseries · reflective corners",
+          "value": "Bedrooms • Entryways • Bright Kitchens",
           "icon": "home"
         },
         {
           "label": "Signature detail",
-          "value": "Hand-splashed watercolor bloom",
+          "value": "Spontaneous drips and splashes",
           "icon": "brush"
         }
       ]
     },
     "palette": [
       {
-        "id": "wc-coral",
-        "hex": "#f7a7a6",
-        "label": "Blush Coral",
-        "descriptor": "Lifts rosy highlights"
+        "id": "wc-mist-blue",
+        "hex": "#9EC5E6",
+        "label": "Mist Blue",
+        "descriptor": "Cooling sky wash"
       },
       {
-        "id": "wc-lavender",
-        "hex": "#c7b6e9",
-        "label": "Mist Lavender",
-        "descriptor": "Keeps the wash airy"
+        "id": "wc-opera-rose",
+        "hex": "#F58CAA",
+        "label": "Opera Rose",
+        "descriptor": "Vibrant splash note"
       },
       {
-        "id": "wc-mist",
-        "hex": "#e8eef3",
-        "label": "Cloud Mist",
-        "descriptor": "Adds dreamy negative space"
+        "id": "wc-sun-ochre",
+        "hex": "#E8C07A",
+        "label": "Sun Ochre",
+        "descriptor": "Warm paper glow"
       }
     ],
     "complementary": {
-      "premium": "pastel-bliss",
-      "fallback": "calm-watercolor"
+      "premium": "gallery-acrylic",
+      "fallback": "fauve-splash"
     }
   },
 },
@@ -414,8 +420,8 @@ export const STYLE_REGISTRY: StyleRegistryEntry[] = [
   isPremium: true,
   defaultUnlocked: false,
   priceModifier: 0,
-  description: "Gentle color washes with soft grain highlights.",
-  marketingCopy: "Create calming canvases with airy pastels and gentle texture.",
+  description: "Airy soft-pastel blends with velvety gradients.",
+  marketingCopy: "A hush of color—powdery pastels, feathered blends, and morning-light warmth for calm, elegant portraits.",
   badges: ["soft"],
   requiredTier: "creator",
   sortOrder: 30,
@@ -440,21 +446,21 @@ export const STYLE_REGISTRY: StyleRegistryEntry[] = [
   story: {
     "narrative": {
       "headline": "The Story Behind Pastel Bliss",
-      "paragraph": "Pastel Bliss drapes your portrait in soft pastels, tactile grain, and morning-light warmth—ideal for cozy retreats and calming spaces.",
+      "paragraph": "Pastel Bliss soothes with soft pastels, tactile grain, and morning-light warmth—ideal for cozy retreats and calming spaces.",
       "bullets": [
         {
           "label": "Emotion",
-          "value": "Weightless calm",
+          "value": "Weightless Calm • Cozy Serenity • Gentle Romance • Dreamy Nostalgia",
           "icon": "sparkle"
         },
         {
           "label": "Perfect for",
-          "value": "Bedrooms · wellness corners",
+          "value": "Bedrooms • Offices • Kitchens • Bathrooms",
           "icon": "home"
         },
         {
           "label": "Signature detail",
-          "value": "Velvet pastel gradients and soft grain",
+          "value": "Velvet pastel gradients, Feathered edge blends, Lifted highlights & gentle haze",
           "icon": "brush"
         }
       ]
@@ -480,8 +486,8 @@ export const STYLE_REGISTRY: StyleRegistryEntry[] = [
       }
     ],
     "complementary": {
-      "premium": "sanctuary-glow",
-      "fallback": "calm-watercolor"
+      "premium": "calm-watercolor",
+      "fallback": "classic-crayon"
     }
   },
 },

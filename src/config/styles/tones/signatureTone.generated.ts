@@ -14,8 +14,8 @@ export const TONE_STYLES: StyleRegistryEntry[] = [
   isPremium: false,
   defaultUnlocked: true,
   priceModifier: 0,
-  description: "Soft washes with gentle light leaks perfect for portraits.",
-  marketingCopy: "Give portraits a dreamy wash with soft watercolor gradients.",
+  description: "Expressive watercolor with joyful drips.",
+  marketingCopy: "Bring Your portrait to life with movement—loose washes, vivid splashes, and fluid blends.",
   badges: ["signature"],
   sortOrder: 20,
   assets: {
@@ -39,48 +39,48 @@ export const TONE_STYLES: StyleRegistryEntry[] = [
   story: {
     "narrative": {
       "headline": "The Story Behind Watercolor Dreams",
-      "paragraph": "Watercolor Dreams bathes your memory in feathered washes and airy light leaks—gentle enough for bedrooms, expressive enough for your feed.",
+      "paragraph": "Watercolor Dreams channels expressive wash painting—loose, energetic strokes, vivid splashes, and spontaneous drips that let pigments mingle in motion.",
       "bullets": [
         {
           "label": "Emotion",
-          "value": "Serene daydream",
+          "value": "Creative • Playful • Spontaneous",
           "icon": "sparkle"
         },
         {
           "label": "Perfect for",
-          "value": "Nurseries · reflective corners",
+          "value": "Bedrooms • Entryways • Bright Kitchens",
           "icon": "home"
         },
         {
           "label": "Signature detail",
-          "value": "Hand-splashed watercolor bloom",
+          "value": "Spontaneous drips and splashes",
           "icon": "brush"
         }
       ]
     },
     "palette": [
       {
-        "id": "wc-coral",
-        "hex": "#f7a7a6",
-        "label": "Blush Coral",
-        "descriptor": "Lifts rosy highlights"
+        "id": "wc-mist-blue",
+        "hex": "#9EC5E6",
+        "label": "Mist Blue",
+        "descriptor": "Cooling sky wash"
       },
       {
-        "id": "wc-lavender",
-        "hex": "#c7b6e9",
-        "label": "Mist Lavender",
-        "descriptor": "Keeps the wash airy"
+        "id": "wc-opera-rose",
+        "hex": "#F58CAA",
+        "label": "Opera Rose",
+        "descriptor": "Vibrant splash note"
       },
       {
-        "id": "wc-mist",
-        "hex": "#e8eef3",
-        "label": "Cloud Mist",
-        "descriptor": "Adds dreamy negative space"
+        "id": "wc-sun-ochre",
+        "hex": "#E8C07A",
+        "label": "Sun Ochre",
+        "descriptor": "Warm paper glow"
       }
     ],
     "complementary": {
-      "premium": "pastel-bliss",
-      "fallback": "calm-watercolor"
+      "premium": "gallery-acrylic",
+      "fallback": "fauve-splash"
     }
   },
 },
