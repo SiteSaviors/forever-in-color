@@ -7,7 +7,6 @@ import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
 import { type CanvasModalCloseReason, type FrameColor } from '@/store/founder/storeTypes';
 import { useCheckoutStore } from '@/store/useCheckoutStore';
 import { ENABLE_STUDIO_V2_CANVAS_MODAL } from '@/config/featureFlags';
-import { trackStudioV2CanvasModalOrientation } from '@/utils/studioV2Analytics';
 import { useCanvasConfigActions, useCanvasConfigState } from '@/store/hooks/useCanvasConfigStore';
 import { useStyleCatalogState } from '@/store/hooks/useStyleCatalogStore';
 import { useUploadState } from '@/store/hooks/useUploadStore';
@@ -80,17 +79,6 @@ const CanvasCheckoutModal = () => {
         closeCanvasModal('dismiss');
       }
     }
-  };
-
-  const handleOrientationSelect = (target: 'vertical' | 'square' | 'horizontal') => {
-    const cropper = (window as typeof window & {
-      __openOrientationCropper?: (orientation?: typeof target) => void;
-    }).__openOrientationCropper;
-    const styleId = currentStyle?.id;
-    if (styleId) {
-      trackStudioV2CanvasModalOrientation({ styleId, orientation: target });
-    }
-    cropper?.(target);
   };
 
   const handlePrimaryCta = () => {
@@ -192,26 +180,25 @@ const CanvasCheckoutModal = () => {
                           <button
                             key={orient}
                             type="button"
-                            onClick={() => handleOrientationSelect(orient)}
-                            disabled={orientationPreviewPending}
+                            disabled
+                            aria-disabled="true"
                             className={clsx(
                               'flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition',
                               active
-                                ? 'border-purple-400 bg-purple-500/20 text-white shadow-glow-purple'
-                                : 'border-white/20 text-white/70 hover:bg-white/10',
-                              orientationPreviewPending && 'cursor-wait opacity-70'
+                                ? 'border-purple-400 bg-purple-500/20 text-white shadow-glow-purple cursor-default'
+                                : 'border-white/15 bg-white/5 text-white/35 cursor-not-allowed'
                             )}
                           >
                             {preset.label}
-                            {active && (
-                              <span className="text-xs text-white/60">✓</span>
-                            )}
+                            {active && <span className="text-xs text-white/60">✓</span>}
                           </button>
                         );
                       })}
                     </div>
                     <p className="text-xs text-white/60">
-                      {orientationPreviewPending ? 'Applying your crop…' : `${orientationLabel} ready for your canvas.`}
+                      {orientationPreviewPending
+                        ? 'Applying your crop…'
+                        : `${orientationLabel} ready for your canvas. Adjust orientation back in the Studio if needed.`}
                     </p>
                   </section>
 
