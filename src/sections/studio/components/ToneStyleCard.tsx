@@ -72,7 +72,7 @@ export default function ToneStyleCard({
   const glowColor = toRgba(toneAccentColor, 0.35);
   const glowSoftColor = toRgba(toneAccentColor, 0.18);
   const showReadyIndicator = readiness.hasPreview;
-  const ribbonLabel = readiness.isOrientationPending ? 'Preview refreshing' : 'Preview ready';
+  const readinessLabel = readiness.isOrientationPending ? 'Preview refreshing' : 'Preview ready';
   const previewSource = readiness.source ?? 'none';
   const orientationMismatch = readiness.orientationMatches ? 'false' : 'true';
 
@@ -319,28 +319,40 @@ export default function ToneStyleCard({
           />
         </picture>
         {showReadyIndicator && (
-          <div
-            className={clsx(
-              'tone-style-card__thumbnail-ready-frame',
-              readyVisualState === 'enter' && 'is-enter',
-              readyVisualState === 'visible' && 'is-visible'
-            )}
-            aria-hidden="true"
-          />
-        )}
-        {showReadyIndicator && (
-          <div
-            className={clsx(
-              'tone-style-card__ready-ribbon',
-              readyVisualState === 'enter' && 'is-enter',
-              readyVisualState === 'visible' && 'is-visible',
-              readiness.isOrientationPending && 'is-pending'
-            )}
-            aria-label={ribbonLabel}
-            data-state={readiness.isOrientationPending ? 'pending' : 'ready'}
-          >
-            <span>READY</span>
-          </div>
+          <>
+            <div
+              className={clsx(
+                'tone-style-card__thumbnail-ready-frame',
+                readyVisualState === 'enter' && 'is-enter',
+                readyVisualState === 'visible' && 'is-visible'
+              )}
+              aria-hidden="true"
+            />
+            <div
+              className={clsx(
+                'tone-style-card__ready-overlay',
+                readyVisualState === 'enter' && 'is-enter',
+                readyVisualState === 'visible' && 'is-visible',
+                readiness.isOrientationPending && 'is-pending'
+              )}
+              aria-label={readinessLabel}
+              data-state={readiness.isOrientationPending ? 'pending' : 'ready'}
+            >
+              <div className="tone-style-card__ready-badge">
+                <span className="tone-style-card__ready-icon" aria-hidden="true">
+                  <svg viewBox="0 0 20 20" focusable="false" className="tone-style-card__ready-icon-svg">
+                    <path
+                      d="M7.833 13.417 4.667 10.25l1.178-1.178 1.988 1.988 6.523-6.523 1.178 1.177-7.701 7.703Z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                </span>
+                <span className="tone-style-card__ready-text">
+                  {readiness.isOrientationPending ? 'Refreshing' : 'Ready'}
+                </span>
+              </div>
+            </div>
+          </>
         )}
         {/* Glass overlay with gold border for locked styles */}
         {isLocked && (

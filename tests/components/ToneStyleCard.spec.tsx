@@ -41,13 +41,13 @@ const renderCard = (overrides: Partial<ToneSectionStyle>): renderer.ReactTestRen
 };
 
 describe('ToneStyleCard ready indicator', () => {
-  it('renders no ready ribbon when preview is unavailable', () => {
+  it('renders no ready overlay when preview is unavailable', () => {
     const tree = renderCard({}).toJSON();
     const serialized = JSON.stringify(tree);
-    expect(serialized).not.toContain('READY');
+    expect(serialized).not.toContain('Ready');
   });
 
-  it('shows ready ribbon and state metadata when preview is available', () => {
+  it('shows ready overlay and state metadata when preview is available', () => {
     const card = renderCard({
       readiness: {
         ...baseStyleEntry().readiness,
@@ -58,9 +58,12 @@ describe('ToneStyleCard ready indicator', () => {
       },
     });
 
-    const ribbons = card.root.findAll((node) => node.props['data-state'] === 'ready');
-    expect(ribbons).toHaveLength(1);
-    expect(ribbons[0].findByType('span').children.join('')).toBe('READY');
+    const overlays = card.root.findAll((node) => node.props['data-state'] === 'ready');
+    expect(overlays).toHaveLength(1);
+    const textNode = overlays[0].find(
+      (node) => node.props?.className === 'tone-style-card__ready-text'
+    );
+    expect(textNode.children.join('').toLowerCase()).toBe('ready');
   });
 
   it('marks pending state when orientation refresh is in progress', () => {
@@ -76,7 +79,7 @@ describe('ToneStyleCard ready indicator', () => {
       },
     });
 
-    const ribbons = card.root.findAll((node) => node.props['data-state'] === 'pending');
-    expect(ribbons).toHaveLength(1);
+    const overlays = card.root.findAll((node) => node.props['data-state'] === 'pending');
+    expect(overlays).toHaveLength(1);
   });
 });
