@@ -29,6 +29,8 @@
 
 .tone-style-card__thumbnail {
   position: relative;
+  border-radius: inherit;
+  overflow: hidden;
 }
 
 .tone-style-card__thumbnail-ready-frame {
@@ -36,6 +38,7 @@
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
+  box-sizing: border-box;
   opacity: 0;
   transform: scale(0.94);
   transition:
@@ -84,42 +87,42 @@
 
 .tone-style-card__ready-ribbon {
   position: absolute;
-  bottom: -10px;
-  right: -22px;
-  width: 120px;
+  bottom: 5px;
+  right: 6px;
+  width: 58px;
   pointer-events: none;
-  transform: translate3d(10px, 12px, 0) rotate(-32deg);
-  transform-origin: center;
+  transform: translate3d(0, -50px, 0) rotate(0deg);
+  transform-origin: bottom right;
   opacity: 0;
   z-index: 20;
   transition:
-    transform 0.22s cubic-bezier(0.33, 1, 0.68, 1),
-    opacity 0.22s ease;
+    transform 0.3s cubic-bezier(0.33, 1, 0.68, 1),
+    opacity 0.3s ease;
 }
 
 .tone-style-card__ready-ribbon span {
   display: block;
-  padding: 0.34rem 0.6rem;
+  padding: 0.25rem 0.45rem;
   background: linear-gradient(135deg, rgba(183, 255, 83, 0.92), rgba(132, 229, 53, 0.78));
   border: 1px solid #2C6512;
   border-radius: 999px;
   text-transform: uppercase;
-  font-size: 0.6rem;
+  font-size: 0.5rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   color: #0f2c08;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
   text-align: center;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
 .tone-style-card__ready-ribbon.is-enter {
-  animation: tone-style-card-ready-ribbon 0.22s cubic-bezier(0.33, 1, 0.68, 1) forwards;
+  animation: tone-style-card-ready-ribbon 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 .tone-style-card__ready-ribbon.is-visible {
   opacity: 1;
-  transform: translate3d(0, 2px, 0) rotate(-32deg);
+  transform: translate3d(0, 0, 0) rotate(0deg);
 }
 
 .tone-style-card__ready-ribbon.is-pending span {
@@ -127,13 +130,17 @@
 }
 
 @keyframes tone-style-card-ready-ribbon {
-  from {
+  0% {
     opacity: 0;
-    transform: translate3d(18px, 18px, 0) rotate(-32deg);
+    transform: translate3d(0, -50px, 0) rotate(0deg);
   }
-  to {
+  50% {
     opacity: 1;
-    transform: translate3d(0, 2px, 0) rotate(-32deg);
+    transform: translate3d(0, 5px, 0) rotate(0deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0deg);
   }
 }
 
