@@ -17,22 +17,22 @@ const PaletteStrip = ({ swatches, onSwatchHover }: PaletteStripProps) => {
           <p className="mt-1 text-sm text-white/70">Signature hues that make this style pop</p>
         </div>
       </div>
-      <div className="mt-6 flex gap-4 overflow-x-auto pb-2">
+      <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
         {swatches.map((swatch, index) => (
           <div
             key={`${swatch.id}-${index}`}
-            className="group relative min-w-[160px] rounded-2xl border border-white/10 bg-white/5 px-4 py-4 transition-transform motion-safe:hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/40"
+            className="group relative rounded-xl border border-white/10 bg-white/[0.08] px-3.5 py-4 transition-transform motion-safe:hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/40"
             tabIndex={0}
             onMouseEnter={() => onSwatchHover?.(swatch)}
             onFocus={() => onSwatchHover?.(swatch)}
             onTouchStart={() => onSwatchHover?.(swatch)}
           >
             <span
-              className="mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-white/20 shadow-innerBrand"
+              className="mb-3 flex h-10 w-10 items-center justify-center rounded-full border border-white/20 shadow-innerBrand"
               style={{ backgroundColor: swatch.hex }}
               aria-label={swatch.label}
             />
-            <p className="text-sm font-semibold text-white">{swatch.label}</p>
+            <p className="text-sm font-semibold text-white leading-snug">{swatch.label}</p>
             <p className="text-xs text-white/60 leading-relaxed">{swatch.descriptor}</p>
           </div>
         ))}
