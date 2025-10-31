@@ -6,6 +6,7 @@ import { LazyMotion, domAnimation } from 'framer-motion';
 import { useStyleCatalogActions, useStyleCatalogState } from '@/store/hooks/useStyleCatalogStore';
 import { useEntitlementsActions } from '@/store/hooks/useEntitlementsStore';
 import InstantBreadthStrip from '@/sections/studio/InstantBreadthStrip';
+import StyleInspirationSection from '@/sections/studio/StyleInspirationSection';
 
 const LaunchflowAccordionLazy = lazy(() => import('@/sections/LaunchpadLayout'));
 const StudioConfiguratorLazy = lazy(() => import('@/sections/StudioConfigurator'));
@@ -86,6 +87,7 @@ const StudioPage = () => {
           />
         </Suspense>
         <InstantBreadthStrip />
+        <StyleInspirationSection />
       </div>
     </LazyMotion>
   );
