@@ -1,0 +1,8 @@
+@keyframes press-marquee {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0%);
+  }
+}

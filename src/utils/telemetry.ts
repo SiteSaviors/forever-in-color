@@ -85,3 +85,25 @@ export function trackOrderStarted(userTier: string, orderTotal: number, hasEnhan
 export function trackRuntimeMetric(name: string, payload?: Record<string, unknown>) {
   console.log('[RuntimeMetric]', { name, payload, timestamp: Date.now() });
 }
+
+export type SocialProofEvent =
+  | {
+      type: 'social_proof_cta_click';
+      surface: 'primary' | 'footnote' | 'spotlight';
+      context?: string;
+    }
+  | {
+      type: 'social_proof_spotlight_interaction';
+      storyId: string;
+      product: string;
+      interaction: 'auto' | 'manual';
+    }
+  | {
+      type: 'social_proof_canvas_link_click';
+      target: 'footnote';
+      href?: string;
+    };
+
+export function trackSocialProofEvent(event: SocialProofEvent) {
+  console.log('[SocialProof]', { ...event, timestamp: Date.now() });
+}
