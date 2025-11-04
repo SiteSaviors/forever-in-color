@@ -8,18 +8,25 @@ type StudioEmptyStateProps = {
 
 const StudioEmptyState = ({ onUpload, onBrowseStyles, launchflowOpen }: StudioEmptyStateProps) => (
   <div className="absolute inset-0 flex items-start justify-center overflow-y-auto p-4 sm:items-center sm:p-6">
-    <div className="relative w-full max-w-[420px] sm:max-w-xl overflow-hidden rounded-[2.5rem] border-2 border-dashed border-white/15 bg-slate-950/70 px-6 py-10 text-center shadow-[0_32px_120px_rgba(35,48,94,0.55)] backdrop-blur-xl sm:px-8 sm:py-12">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(99,102,241,0.2),transparent_60%)] opacity-75" />
-      <div className="relative space-y-5 sm:space-y-6">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-blue-500 shadow-glow-purple sm:h-16 sm:w-16">
-          <svg className="h-6 w-6 text-white sm:h-8 sm:w-8" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8} fill="none">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M12 4v9" />
-          </svg>
+    <div className="relative w-full max-w-[420px] sm:max-w-xl overflow-hidden rounded-[2.5rem] border border-white/15 bg-white/[0.08] px-6 py-10 text-center shadow-[0_35px_140px_rgba(20,24,48,0.55)] backdrop-blur-2xl sm:px-8 sm:py-12">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(170,130,255,0.25),transparent_60%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom,rgba(255,215,146,0.18),transparent_65%)]" />
+      <div className="relative space-y-6 sm:space-y-7">
+        <div className="relative mx-auto flex h-14 items-center justify-center">
+          <div className="absolute inset-0 blur-3xl bg-[radial-gradient(circle,rgba(164,129,255,0.32),transparent)]" aria-hidden="true" />
+          <div className="relative inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/[0.12] px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.32em] text-white/70 shadow-[0_18px_45px_rgba(12,14,32,0.45)]">
+            Wondertone Studio
+            <svg className="h-4 w-4 text-white" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8} fill="none">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M12 4v9" />
+            </svg>
+          </div>
         </div>
-        <div className="space-y-3">
-          <h3 className="text-xl font-semibold text-white sm:text-2xl">Upload your photo to preview here</h3>
-          <p className="text-sm text-white/70 sm:text-base">
-            Launchflow expands inline so you can crop smartly without losing sight of the configurator.
+        <div className="space-y-4">
+          <h3 className="font-poppins text-2xl font-semibold leading-snug text-white sm:text-[32px]">
+            Bring your photo into Wondertone Studio
+          </h3>
+          <p className="text-base text-white/75">
+            Launchflow opens beside the configurator so you crop once and explore every style instantly.
           </p>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
@@ -30,8 +37,8 @@ const StudioEmptyState = ({ onUpload, onBrowseStyles, launchflowOpen }: StudioEm
             className={clsx(
               'rounded-full px-6 py-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950',
               launchflowOpen
-                ? 'cursor-default bg-white/15 text-white/70'
-                : 'bg-gradient-cta text-white shadow-glow-purple hover:shadow-glow-purple'
+                ? 'cursor-default bg-white/15 text-white/60'
+                : 'bg-gradient-to-r from-amber-400 via-purple-400 to-blue-500 text-slate-950 shadow-[0_18px_45px_rgba(71,67,188,0.5)] hover:shadow-[0_18px_55px_rgba(71,67,188,0.6)]'
             )}
           >
             {launchflowOpen ? 'Launchflow open…' : 'Upload photo'}
@@ -39,13 +46,13 @@ const StudioEmptyState = ({ onUpload, onBrowseStyles, launchflowOpen }: StudioEm
           <button
             type="button"
             onClick={onBrowseStyles}
-            className="rounded-full border border-white/30 px-6 py-3 text-sm font-semibold text-white/80 transition hover:border-white/50 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+            className="rounded-full border border-white/25 px-6 py-3 text-sm font-semibold text-white/80 transition hover:border-white/45 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
           >
             Browse styles first
           </button>
         </div>
-        <p className="text-[11px] uppercase tracking-[0.24em] text-white/40">
-          No demo previews • Your photo leads the canvas
+        <p className="text-[11px] font-medium uppercase tracking-[0.28em] text-white/45">
+          Your artwork stays private—every canvas begins with your image.
         </p>
       </div>
     </div>

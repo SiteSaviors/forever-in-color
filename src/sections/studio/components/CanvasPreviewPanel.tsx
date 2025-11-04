@@ -254,10 +254,15 @@ const CanvasPreviewPanel = ({
       </div>
 
       <div className="hidden lg:block w-full max-w-[720px] mt-8">
-        <div className="mb-6 text-center space-y-2">
-          <h3 className="text-2xl font-bold text-white">See It In Your Space</h3>
-          <p className="text-sm text-white/60 max-w-md mx-auto">
-            Visualize how your canvas will look in a real living room
+        <div className="mb-6 text-center space-y-3">
+          <span className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/[0.08] px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.32em] text-white/60">
+            Canvas Preview
+          </span>
+          <h3 className="font-poppins text-[28px] font-semibold text-white sm:text-[32px]">
+            See it in your space
+          </h3>
+          <p className="text-sm text-white/70 max-w-md mx-auto sm:text-base">
+            Visualize your Wondertone canvas in a curated living room scene before you commit to print.
           </p>
         </div>
         <Suspense fallback={<CanvasPreviewFallback />}>
