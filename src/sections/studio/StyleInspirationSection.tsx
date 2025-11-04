@@ -34,6 +34,7 @@
 
 import { memo, useMemo } from 'react';
 import { LazyMotion, domAnimation } from 'framer-motion';
+import { Sparkles } from 'lucide-react';
 import { useStyleCatalogState } from '@/store/hooks/useStyleCatalogStore';
 import usePrefersReducedMotion from '@/hooks/usePrefersReducedMotion';
 import { INSPIRATION_BUCKETS } from '@/config/inspirationBuckets';
@@ -89,18 +90,35 @@ const StyleInspirationSection = () => {
   return (
     <LazyMotion features={domAnimation}>
       <section
-        className="relative bg-slate-950/95 bg-[radial-gradient(circle_at_top,rgba(147,51,234,0.22),transparent_60%)] border-t border-white/5 text-white py-20 lg:py-24"
+        className="relative bg-slate-950/95 bg-[radial-gradient(circle_at_top,rgba(147,51,234,0.22),transparent_60%)] border-t border-white/5 text-white pt-12 pb-20 lg:pt-16 lg:pb-24"
         data-section="style-inspiration"
       >
         <div className="mx-auto max-w-[1800px] px-6">
           {/* Headline */}
-          <header className="text-center mb-16 lg:mb-20">
+          <header className="relative text-center mb-16 lg:mb-20">
+            {/* Animated Crest + Upper Label */}
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <Sparkles className="w-4 h-4 text-purple-300/60" aria-hidden="true" />
+              <span className="text-[10px] tracking-[0.2em] text-white/50 uppercase font-medium">
+                Style Inspiration
+              </span>
+            </div>
+
+            {/* Main Headline */}
             <h2 className="font-poppins text-5xl md:text-6xl font-bold tracking-tight text-white mb-4">
               Need Some Inspiration?
             </h2>
+
+            {/* Subtext */}
             <p className="text-lg text-white/70 max-w-2xl mx-auto">
               Curated collections to kickstart your creative vision
             </p>
+
+            {/* Gradient Fade (Bottom) - Visual Rhythm */}
+            <div
+              className="absolute -bottom-8 left-0 right-0 h-16 bg-gradient-to-b from-transparent via-slate-950/40 to-slate-950/95 pointer-events-none"
+              aria-hidden="true"
+            />
           </header>
 
           {/* Buckets Grid */}
