@@ -102,6 +102,16 @@ export type SocialProofEvent =
       type: 'social_proof_canvas_link_click';
       target: 'footnote';
       href?: string;
+    }
+  | {
+      type: 'canvas_quality_impression';
+      surface: 'studio';
+    }
+  | {
+      type: 'canvas_quality_cta_click';
+      surface: 'pricing' | 'create_canvas';
+      authed: boolean;
+      hasUpload: boolean;
     };
 
 export function trackSocialProofEvent(event: SocialProofEvent) {

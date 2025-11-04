@@ -117,6 +117,12 @@
 
 **Exit criteria:** All CTAs trigger correct flows, analytics verified in dev tools, placeholder code/comments removed.
 
+### Canvas Quality Strip – Analytics Addendum
+- `canvas_quality_impression` → `{ surface: 'studio', timestamp }`
+- `canvas_quality_cta_click` → `{ surface: 'pricing' | 'create_canvas', authed: boolean, hasUpload: boolean, timestamp }`
+
+Both events will reuse the social proof telemetry helper; impression fires once when the strip intersects viewport, CTA event fires on button press.
+
 ---
 
 ## Phase 5 – Performance, A11y & QA Hardening

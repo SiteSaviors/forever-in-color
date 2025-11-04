@@ -6,3 +6,27 @@
     transform: translateX(0%);
   }
 }
+
+.canvas-shimmer {
+  animation: canvas-shimmer 3.8s ease-in-out infinite;
+}
+
+@keyframes canvas-shimmer {
+  0% {
+    transform: translateX(-120%);
+    opacity: 0;
+  }
+  30% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .canvas-shimmer {
+    animation: none;
+  }
+}

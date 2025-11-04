@@ -184,7 +184,7 @@ const SpotlightRail = ({ prefersReducedMotion, onSpotlightCta }: SpotlightRailPr
               type="button"
               onClick={handlePrev}
               aria-label="Previous spotlight stories"
-              className="flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-white/[0.04] text-white/70 transition hover:border-white/30 hover:text-white focus:outline-none focus:ring-2 focus:ring-amber-300/60"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-white/[0.08] text-white/80 shadow-[0_12px_30px_rgba(15,23,42,0.35)] backdrop-blur-lg transition hover:border-white/35 hover:text-white focus:outline-none focus:ring-2 focus:ring-amber-300/60 focus:ring-offset-2 focus:ring-offset-slate-950"
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
@@ -192,7 +192,7 @@ const SpotlightRail = ({ prefersReducedMotion, onSpotlightCta }: SpotlightRailPr
               type="button"
               onClick={handleNext}
               aria-label="Next spotlight stories"
-              className="flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-white/[0.04] text-white/70 transition hover:border-white/30 hover:text-white focus:outline-none focus:ring-2 focus:ring-amber-300/60"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-white/[0.08] text-white/80 shadow-[0_12px_30px_rgba(15,23,42,0.35)] backdrop-blur-lg transition hover:border-white/35 hover:text-white focus:outline-none focus:ring-2 focus:ring-amber-300/60 focus:ring-offset-2 focus:ring-offset-slate-950"
             >
               <ChevronRight className="h-5 w-5" />
             </button>
@@ -201,14 +201,14 @@ const SpotlightRail = ({ prefersReducedMotion, onSpotlightCta }: SpotlightRailPr
             {Array.from({ length: totalPages }).map((_, index) => {
               const isActive = index === currentPage;
               return (
-            <button
-              key={`spotlight-dot-${index}`}
-              onClick={() => handleDotSelect(index)}
-              aria-label={`Go to spotlight set ${index + 1}`}
-              className={`h-2.5 w-2.5 rounded-full transition ${
-                isActive ? 'bg-amber-300' : 'bg-white/20 hover:bg-white/35'
-              }`}
-            />
+                <button
+                  key={`spotlight-dot-${index}`}
+                  onClick={() => handleDotSelect(index)}
+                  aria-label={`Go to spotlight set ${index + 1}`}
+                  className={`h-2.5 w-2.5 rounded-full transition ${
+                    isActive ? 'bg-amber-300' : 'bg-white/20 hover:bg-white/35'
+                  }`}
+                />
               );
             })}
           </div>

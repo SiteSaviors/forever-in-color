@@ -8,6 +8,7 @@ import { useEntitlementsActions } from '@/store/hooks/useEntitlementsStore';
 import InstantBreadthStrip from '@/sections/studio/InstantBreadthStrip';
 import StyleInspirationSection from '@/sections/studio/StyleInspirationSection';
 import SocialProofSection from '@/sections/studio/SocialProofSection';
+import CanvasQualityStrip from '@/sections/studio/CanvasQualityStrip';
 
 const LaunchflowAccordionLazy = lazy(() => import('@/sections/LaunchpadLayout'));
 const StudioConfiguratorLazy = lazy(() => import('@/sections/StudioConfigurator'));
@@ -90,6 +91,7 @@ const StudioPage = () => {
         <InstantBreadthStrip />
         <StyleInspirationSection />
         <SocialProofSection />
+        <CanvasQualityStrip />
       </div>
     </LazyMotion>
   );

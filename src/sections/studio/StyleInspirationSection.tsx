@@ -93,7 +93,7 @@ const StyleInspirationSection = () => {
         className="relative bg-slate-950/95 bg-[radial-gradient(circle_at_top,rgba(147,51,234,0.22),transparent_60%)] border-t border-white/5 text-white pt-12 pb-20 lg:pt-16 lg:pb-24"
         data-section="style-inspiration"
       >
-        <div className="mx-auto max-w-[1800px] px-6">
+        <div className="mx-auto w-full max-w-6xl px-6">
           {/* Headline */}
           <header className="relative text-center mb-16 lg:mb-20">
             {/* Animated Crest + Upper Label */}
@@ -116,7 +116,7 @@ const StyleInspirationSection = () => {
 
             {/* Gradient Fade (Bottom) - Visual Rhythm */}
             <div
-              className="absolute -bottom-8 left-0 right-0 h-16 bg-gradient-to-b from-transparent via-slate-950/40 to-slate-950/95 pointer-events-none"
+              className="pointer-events-none absolute -bottom-8 left-1/2 h-16 w-screen -translate-x-1/2 bg-gradient-to-b from-transparent via-slate-950/40 to-slate-950/95"
               aria-hidden="true"
             />
           </header>
