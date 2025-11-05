@@ -1,11 +1,13 @@
-import { Component, ReactNode, memo } from 'react';
+import { Component, ReactNode, memo, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import usePrefersReducedMotion from '@/hooks/usePrefersReducedMotion';
 import { useAuthModal } from '@/store/useAuthModal';
 import { HERO_STATS, SPOTLIGHTS } from '@/config/socialProofContent';
-import SpotlightRail from './components/SpotlightRail';
 import PressStrip from './components/socialProof/PressStrip';
 import { trackSocialProofEvent } from '@/utils/telemetry';
+import useDeferredRender from '@/hooks/useDeferredRender';
+
+const SpotlightRailLazy = lazy(() => import('./components/SpotlightRail'));
 
 class SocialProofErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
   state = { hasError: false };
@@ -86,7 +88,7 @@ const SocialProofSectionInner = () => {
         </header>
 
         {/* Spotlight rail */}
-        <SpotlightRail
+        <DeferredSpotlightRail
           prefersReducedMotion={prefersReducedMotion}
           onSpotlightCta={handleSpotlightCta}
         />
@@ -141,3 +143,34 @@ const SocialProofSection = () => (
 );
 
 export default SocialProofSection;
+const SpotlightSkeleton = () => (
+  <div className="grid gap-6 lg:grid-cols-3">
+    {Array.from({ length: 3 }).map((_, index) => (
+      <div
+        key={`spotlight-skeleton-${index}`}
+        className="h-[320px] rounded-3xl border border-white/10 bg-white/[0.04] animate-pulse"
+      />
+    ))}
+  </div>
+);
+
+type DeferredSpotlightProps = {
+  prefersReducedMotion: boolean;
+  onSpotlightCta: (story: (typeof SPOTLIGHTS)[number]) => void;
+};
+
+const DeferredSpotlightRail = ({ prefersReducedMotion, onSpotlightCta }: DeferredSpotlightProps) => {
+  const [intersectionRef, isReady] = useDeferredRender({ rootMargin: '200px 0px 0px 0px' });
+
+  return (
+    <div ref={intersectionRef} className="relative">
+      {isReady ? (
+        <Suspense fallback={<SpotlightSkeleton />}>
+          <SpotlightRailLazy prefersReducedMotion={prefersReducedMotion} onSpotlightCta={onSpotlightCta} />
+        </Suspense>
+      ) : (
+        <SpotlightSkeleton />
+      )}
+    </div>
+  );
+};

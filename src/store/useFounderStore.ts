@@ -5,13 +5,14 @@ import {
   trackStudioV2CanvasModalOpen,
   type CanvasSelectionSnapshot,
 } from '@/utils/studioV2Analytics';
-import { loadInitialStylesLazy, loadStyleCatalogEntry, mergeStyleSnapshot } from '@/config/styleCatalog';
+import { loadInitialStylesLazy } from '@/config/styleCatalog';
 import { createPreviewSlice } from './founder/previewSlice';
 import { createAuthSlice } from './founder/authSlice';
 import { createFavoritesSlice } from './founder/favoritesSlice';
 import { createGallerySlice } from './founder/gallerySlice';
 import type { CanvasSize, Enhancement, FounderBaseState, FounderState, StyleCarouselCard, StyleOption } from './founder/storeTypes';
 import { createMemoizedSelector } from './utils/memo';
+import { createLazySliceAccessor } from './utils/createLazySliceAccessor';
 
 export type {
   AuthSlice,
@@ -60,6 +61,9 @@ const createCanvasSelectionSnapshot = (state: FounderBaseState): CanvasSelection
 // NEW: Use lazy loading - only load IDs and names initially
 // Full details (thumbnails, descriptions) loaded on-demand via ensureStyleLoaded()
 const initialStyles: StyleOption[] = loadInitialStylesLazy();
+const styleCatalogEngineAccessor = createLazySliceAccessor(() =>
+  import('./founder/optional/styleCatalogEngine')
+);
 
 const selectCurrentStyle = createMemoizedSelector(
   (styles: StyleOption[], selectedStyleId: string | null | undefined) => {
@@ -553,64 +557,22 @@ export const useFounderStore = createWithEqualityFn<FounderState>((set, get, api
   },
   setCurrentImageHash: (hash) => set({ currentImageHash: hash }),
   ensureStyleLoaded: async (styleId: string) => {
-    const state = get();
-
-    // Fast path: style already loaded
-    if (state.loadedStyleIds.has(styleId)) {
-      return state.styles.find((s) => s.id === styleId) ?? null;
-    }
-
-    // Deduplicate concurrent requests for same style
-    if (state.pendingStyleLoads.has(styleId)) {
-      await state.pendingStyleLoads.get(styleId);
-      return get().styles.find((s) => s.id === styleId) ?? null;
-    }
-
-    // Load style details
-    const loadPromise = (async () => {
-      try {
-        const catalogEntry = await loadStyleCatalogEntry(styleId);
-        if (!catalogEntry) {
-          console.warn(`[ensureStyleLoaded] Style not found: ${styleId}`);
-          return;
-        }
-
-        // Merge full details into existing snapshot
-        set((state) => {
-          const updatedStyles = state.styles.map((s) =>
-            s.id === styleId ? mergeStyleSnapshot(s, catalogEntry) : s
-          );
-          const updatedLoadedIds = new Set(state.loadedStyleIds);
-          updatedLoadedIds.add(styleId);
-
-          return {
-            styles: updatedStyles,
-            loadedStyleIds: updatedLoadedIds,
-          };
-        });
-      } catch (error) {
-        console.error(`[ensureStyleLoaded] Failed to load style ${styleId}:`, error);
-      } finally {
-        // Clean up pending load tracker
-        set((state) => {
-          const updatedPendingLoads = new Map(state.pendingStyleLoads);
-          updatedPendingLoads.delete(styleId);
-          return { pendingStyleLoads: updatedPendingLoads };
-        });
-      }
-    })();
-
-    // Track pending load to prevent duplicates
-    set((state) => ({
-      pendingStyleLoads: new Map(state.pendingStyleLoads).set(styleId, loadPromise),
+    const module = await styleCatalogEngineAccessor.load();
+    const runtime = { set, get };
+    set(() => ({
+      ensureStyleLoaded: (id: string) => module.ensureStyleLoaded(runtime, id),
+      ensureStylesLoaded: (ids: string[]) => module.ensureStylesLoaded(runtime, ids),
     }));
-
-    await loadPromise;
-    return get().styles.find((s) => s.id === styleId) ?? null;
+    return module.ensureStyleLoaded(runtime, styleId);
   },
   ensureStylesLoaded: async (styleIds: string[]) => {
-    // Batch load multiple styles in parallel
-    await Promise.all(styleIds.map((id) => get().ensureStyleLoaded(id)));
+    const module = await styleCatalogEngineAccessor.load();
+    const runtime = { set, get };
+    set(() => ({
+      ensureStyleLoaded: (id: string) => module.ensureStyleLoaded(runtime, id),
+      ensureStylesLoaded: (ids: string[]) => module.ensureStylesLoaded(runtime, ids),
+    }));
+    await module.ensureStylesLoaded(runtime, styleIds);
   },
   ...createFavoritesSlice(set, get, api),
 }));

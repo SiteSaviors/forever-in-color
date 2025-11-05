@@ -17,6 +17,7 @@
     "test": "vitest run",
     "dead-code:check": "npm run dead-code:exports && npm run dead-code:files && npm run dead-code:deps",
     "dead-code:exports": "ts-unused-exports tsconfig.json --excludePathsFromReport=src/main.tsx,src/App.tsx,src/pages",
+    "build:preview-validators": "tsx scripts/generate-preview-validators.ts",
     "dead-code:files": "unimported --flow --init --update",
     "dead-code:deps": "unimported --show-unresolved",
     "dead-code:fix": "npm run lint:unused && npm run dead-code:clean",
@@ -27,10 +28,10 @@
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.2",
-    "@supabase/auth-js": "^2.65.1",
     "@radix-ui/react-dropdown-menu": "^2.1.15",
     "@stripe/react-stripe-js": "^2.6.2",
     "@stripe/stripe-js": "^3.1.0",
+    "@supabase/auth-js": "^2.65.1",
     "@tanstack/react-query": "^5.56.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -51,6 +52,7 @@
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react-swc": "^3.5.0",
+    "ajv": "^8.17.1",
     "autoprefixer": "^10.4.20",
     "depcheck": "^1.4.7",
     "eslint": "^9.9.0",
@@ -73,7 +75,8 @@
     "typescript-eslint": "^8.0.1",
     "unimported": "^1.31.1",
     "vite": "^5.4.1",
-    "vitest": "^1.6.0"
+    "vitest": "^1.6.0",
+    "zod-to-json-schema": "^3.24.6"
   },
   "lint-staged": {
     "*.{ts,tsx}": [

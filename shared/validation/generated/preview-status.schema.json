@@ -1,0 +1,29 @@
+{
+  "type": "object",
+  "properties": {
+    "request_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "preview_url": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "error": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "request_id",
+    "status"
+  ],
+  "additionalProperties": true,
+  "$id": "previewStatus"
+}

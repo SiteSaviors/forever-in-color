@@ -1,18 +1,19 @@
-import { memo, useMemo, useState, useEffect, type ReactNode } from 'react';
+import { memo, useMemo, useState, useEffect, lazy, Suspense, type ReactNode } from 'react';
 import { clsx } from 'clsx';
 import type { EntitlementState, StyleOption } from '@/store/founder/storeTypes';
 import StoryTeaser from './StoryTeaser';
 // StoryHeader removed per request to reduce duplication in right rail
-import DiscoverGrid from './DiscoverGrid';
-import PaletteModule from './PaletteModule';
-import CuratedStylesModule from './CuratedStylesModule';
-import SecondaryCanvasCta from './SecondaryCanvasCta';
-import ShareBadges from './ShareBadges';
+const DiscoverGridLazy = lazy(() => import('./DiscoverGrid'));
+const PaletteModuleLazy = lazy(() => import('./PaletteModule'));
+const CuratedStylesModuleLazy = lazy(() => import('./CuratedStylesModule'));
+const SecondaryCanvasCtaLazy = lazy(() => import('./SecondaryCanvasCta'));
+const ShareBadgesLazy = lazy(() => import('./ShareBadges'));
+const StylePreviewModuleLazy = lazy(() => import('./StylePreviewModule'));
 import { getNarrative, getPalette } from '@/utils/storyLayer/copy';
 import type { Orientation } from '@/utils/imageUtils';
 import type { StudioToastPayload } from '@/hooks/useStudioFeedback';
-import StylePreviewModule from './StylePreviewModule';
 import { useStyleCatalogState } from '@/store/hooks/useStyleCatalogStore';
+import useDeferredRender from '@/hooks/useDeferredRender';
 
 type InsightsRailProps = {
   hasCroppedImage: boolean;
@@ -118,6 +119,15 @@ const PreUploadCuratorTips = ({ upcomingStyleName }: { upcomingStyleName: string
   </div>
 );
 
+const InsightsSkeleton = () => (
+  <div className="space-y-6">
+    <div className="h-6 w-48 animate-pulse rounded-full bg-white/10" />
+    <div className="h-48 animate-pulse rounded-3xl border border-white/10 bg-white/5" />
+    <div className="h-44 animate-pulse rounded-3xl border border-white/10 bg-white/5" />
+    <div className="h-36 animate-pulse rounded-3xl border border-white/10 bg-white/5" />
+  </div>
+);
+
 const useHighlightedStyle = (fallback: StyleOption | null) => {
   const { hoveredStyleId, selectedStyleId, styles } = useStyleCatalogState();
 
@@ -149,8 +159,10 @@ const InsightsRail = ({
   // Lazy-load story data from registry
   const [storyData, setStoryData] = useState<{ narrative: Awaited<ReturnType<typeof getNarrative>>; palette: Awaited<ReturnType<typeof getPalette>> } | null>(null);
 
+  const [intersectionRef, isDeferredReady] = useDeferredRender({ rootMargin: '200px 0px 0px 0px' });
+
   useEffect(() => {
-    if (!highlightedStyle || stage !== 'post-upload') {
+    if (!isDeferredReady || !highlightedStyle || stage !== 'post-upload') {
       setStoryData(null);
       return;
     }
@@ -173,80 +185,66 @@ const InsightsRail = ({
     };
   }, [highlightedStyle, stage]);
 
-  return (
-    <aside
-      className={clsx(
-        'w-full lg:w-[420px] px-4 py-6 lg:p-6 text-white',
-        className
-      )}
-    >
+  const content = (
+    <>
       <DesktopRailShell>
         <StoryTeaser highlightedStyle={highlightedStyle} stage={stage} />
-        <StylePreviewModule
-          highlightedStyle={highlightedStyle}
-          stage={stage}
-          orientation={orientation}
-        />
+        <Suspense fallback={<InsightsSkeleton />}>
+          <StylePreviewModuleLazy
+            highlightedStyle={highlightedStyle}
+            stage={stage}
+            orientation={orientation}
+          />
+        </Suspense>
         {storyData && highlightedStyle ? (
-          <>
-            <DiscoverGrid narrative={storyData.narrative} />
-            <PaletteModule styleId={highlightedStyle.id} swatches={storyData.palette} />
-            <CuratedStylesModule
+          <Suspense fallback={<InsightsSkeleton />}>
+            <DiscoverGridLazy narrative={storyData.narrative} />
+            <PaletteModuleLazy styleId={highlightedStyle.id} swatches={storyData.palette} />
+            <CuratedStylesModuleLazy
               currentStyle={highlightedStyle}
               entitlements={entitlements}
               onGatePrompt={onGatePrompt}
             />
-            <SecondaryCanvasCta
+            <SecondaryCanvasCtaLazy
               styleId={highlightedStyle.id}
-              orientation={orientation}
-              disabled={!hasCroppedImage || !previewReady}
               onRequestCanvas={onRequestCanvas}
-            />
-            <ShareBadges
-              styleId={highlightedStyle.id}
-              styleName={highlightedStyle.name}
-              previewUrl={previewUrl ?? undefined}
-              thumbnailUrl={highlightedStyle.thumbnail ?? undefined}
               onToast={onToast}
             />
-          </>
+            <ShareBadgesLazy previewReady={previewReady} previewUrl={previewUrl} />
+          </Suspense>
         ) : (
-          <>
-            <PreUploadPlaceholder />
-            <PreUploadCuratorTips upcomingStyleName={highlightedStyle?.name ?? null} />
-          </>
+          stage === 'pre-upload' && (
+            <>
+              <PreUploadPlaceholder />
+              <PreUploadCuratorTips upcomingStyleName={highlightedStyle?.name ?? null} />
+            </>
+          )
         )}
       </DesktopRailShell>
-
       <MobileAccordionShell>
         <StoryTeaser highlightedStyle={highlightedStyle} stage={stage} />
-        <StylePreviewModule
-          highlightedStyle={highlightedStyle}
-          stage={stage}
-          orientation={orientation}
-        />
-        {storyData && highlightedStyle ? (
+        {stage === 'post-upload' && storyData && highlightedStyle ? (
           <>
-            <DiscoverGrid narrative={storyData.narrative} />
-            <PaletteModule styleId={highlightedStyle.id} swatches={storyData.palette} />
-            <CuratedStylesModule
-              currentStyle={highlightedStyle}
-              entitlements={entitlements}
-              onGatePrompt={onGatePrompt}
-            />
-            <SecondaryCanvasCta
-              styleId={highlightedStyle.id}
-              orientation={orientation}
-              disabled={!hasCroppedImage || !previewReady}
-              onRequestCanvas={onRequestCanvas}
-            />
-            <ShareBadges
-              styleId={highlightedStyle.id}
-              styleName={highlightedStyle.name}
-              previewUrl={previewUrl ?? undefined}
-              thumbnailUrl={highlightedStyle.thumbnail ?? undefined}
-              onToast={onToast}
-            />
+            <Suspense fallback={<InsightsSkeleton />}>
+              <StylePreviewModuleLazy
+                highlightedStyle={highlightedStyle}
+                stage={stage}
+                orientation={orientation}
+              />
+              <DiscoverGridLazy narrative={storyData.narrative} />
+              <PaletteModuleLazy styleId={highlightedStyle.id} swatches={storyData.palette} />
+              <CuratedStylesModuleLazy
+                currentStyle={highlightedStyle}
+                entitlements={entitlements}
+                onGatePrompt={onGatePrompt}
+              />
+              <SecondaryCanvasCtaLazy
+                styleId={highlightedStyle.id}
+                onRequestCanvas={onRequestCanvas}
+                onToast={onToast}
+              />
+              <ShareBadgesLazy previewReady={previewReady} previewUrl={previewUrl} />
+            </Suspense>
           </>
         ) : (
           <>
@@ -255,6 +253,18 @@ const InsightsRail = ({
           </>
         )}
       </MobileAccordionShell>
+    </>
+  );
+
+  return (
+    <aside
+      ref={intersectionRef}
+      className={clsx(
+        'w-full lg:w-[420px] px-4 py-6 lg:p-6 text-white',
+        className
+      )}
+    >
+      {isDeferredReady ? content : <InsightsSkeleton />}
     </aside>
   );
 };

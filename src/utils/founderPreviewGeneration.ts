@@ -49,6 +49,16 @@ const delay = (ms: number, signal?: AbortSignal) =>
     }, { once: true });
   });
 
+const debugStepOneStage = (stage: FounderPreviewStage, context: Record<string, unknown>) => {
+  if (import.meta.env.DEV) {
+    console.debug('[StepOneSequence]', {
+      stage,
+      ...context,
+      timestamp: Date.now(),
+    });
+  }
+};
+
 export const startFounderPreviewGeneration = async ({
   imageUrl,
   styleId,
@@ -66,12 +76,15 @@ export const startFounderPreviewGeneration = async ({
     throw new Error('No base image available for style generation');
   }
 
+  debugStepOneStage('generating', { styleId, mode: PREVIEW_MODE });
   onStage?.('generating');
 
   if (PREVIEW_MODE === 'stub') {
     await delay(700, signal);
+    debugStepOneStage('polling', { styleId, mode: PREVIEW_MODE });
     onStage?.('polling');
     await delay(600, signal);
+    debugStepOneStage('watermarking', { styleId, mode: PREVIEW_MODE });
     onStage?.('watermarking');
     await delay(500, signal);
     return {
@@ -97,7 +110,10 @@ export const startFounderPreviewGeneration = async ({
     styleId,
     aspectRatio,
     {
-      onStage: (stage) => onStage?.(stage),
+      onStage: (stage) => {
+        debugStepOneStage(stage, { styleId, mode: PREVIEW_MODE });
+        onStage?.(stage);
+      },
       accessToken,
       idempotencyKey,
       sourceStoragePath,

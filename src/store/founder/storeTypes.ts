@@ -105,6 +105,7 @@ export type PreviewSlice = {
   registerAuthGateIntent: (styleId: string, options?: StartPreviewOptions) => void;
   clearAuthGateIntent: () => void;
   resumePendingAuthPreview: () => Promise<void>;
+  abortPreviewGeneration: () => void;
 };
 
 export type SessionUser = {

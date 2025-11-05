@@ -12,7 +12,7 @@ export type StepOneEvent =
 
 export function emitStepOneEvent(event: StepOneEvent) {
   // Placeholder adapter: log to console now, replace with analytics pipeline later.
-  console.log('[FounderTelemetry]', event);
+  console.log('[FounderTelemetry]', { ...event, timestamp: Date.now() });
 }
 
 export type AuthGateEvent =

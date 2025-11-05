@@ -36,6 +36,7 @@ export const usePreviewActions = () =>
       registerAuthGateIntent: state.registerAuthGateIntent,
       clearAuthGateIntent: state.clearAuthGateIntent,
       resumePendingAuthPreview: state.resumePendingAuthPreview,
+      abortPreviewGeneration: state.abortPreviewGeneration,
       hasCachedPreview: (styleId: string, orientation: Orientation) =>
         Boolean(getCachedPreviewEntry(styleId, orientation)),
     }),

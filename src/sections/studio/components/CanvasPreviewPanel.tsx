@@ -5,15 +5,43 @@ import type { EntitlementState, StylePreviewStatus, StyleOption } from '@/store/
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
 import StudioEmptyState from './StudioEmptyState';
 import ActionGrid from '@/components/studio/ActionGrid';
-import GalleryQuickview from '@/sections/studio/experience/GalleryQuickview';
+import useDeferredRender from '@/hooks/useDeferredRender';
 
 const CanvasInRoomPreview = lazy(() => import('@/components/studio/CanvasInRoomPreview'));
 const StyleForgeOverlay = lazy(() => import('@/components/studio/StyleForgeOverlay'));
+const GalleryQuickviewLazy = lazy(() => import('@/sections/studio/experience/GalleryQuickview'));
 // Center-rail narrative modules removed; keep only preview + selling points
 
 const CanvasPreviewFallback = () => (
   <div className="w-full h-[360px] rounded-[2.5rem] bg-slate-800/60 border border-white/10 animate-pulse" />
 );
+
+const GalleryQuickviewSkeleton = () => (
+  <div className="flex gap-4 overflow-hidden">
+    {Array.from({ length: 5 }).map((_, index) => (
+      <div key={`quickview-skeleton-${index}`} className="flex w-[120px] flex-col gap-3 shrink-0 md:w-[110px] sm:w-[96px]">
+        <div className="h-[98px] w-full rounded-2xl bg-white/5 animate-pulse md:h-[92px] sm:h-[84px]" />
+        <div className="h-3 w-[80%] rounded-full bg-white/5 animate-pulse" />
+      </div>
+    ))}
+  </div>
+);
+
+const LazyGalleryQuickview = () => {
+  const [intersectionRef, isReady] = useDeferredRender({ rootMargin: '200px 0px 0px 0px' });
+
+  return (
+    <div ref={intersectionRef} className="w-full">
+      {isReady ? (
+        <Suspense fallback={<GalleryQuickviewSkeleton />}>
+          <GalleryQuickviewLazy />
+        </Suspense>
+      ) : (
+        <GalleryQuickviewSkeleton />
+      )}
+    </div>
+  );
+};
 
 const SellingPointsPanel = ({ onCreateCanvas }: { onCreateCanvas: () => void }) => (
   <div className="rounded-[32px] border border-white/12 bg-slate-950/65 px-8 py-10 shadow-[0_24px_80px_rgba(8,14,32,0.5)] backdrop-blur">
@@ -250,7 +278,7 @@ const CanvasPreviewPanel = ({
           </div>
         )}
 
-        <GalleryQuickview />
+        <LazyGalleryQuickview />
       </div>
 
       <div className="hidden lg:block w-full max-w-[720px] mt-8">
