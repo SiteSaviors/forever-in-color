@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Section from '@/components/layout/Section';
 import { useLaunchpadActions, useLaunchpadState } from '@/store/hooks/useLaunchpadStore';
 import { trackLaunchflowOpened } from '@/utils/launchflowTelemetry';
@@ -8,11 +8,20 @@ import CTADeck from '@/components/hero/CTADeck';
 import TrustStrip from '@/components/hero/TrustStrip';
 import MomentumTicker from '@/components/hero/MomentumTicker';
 import AnimatedTransformBadge from '@/components/hero/AnimatedTransformBadge';
-import { LazyMotion, domAnimation, AnimatePresence, m } from 'framer-motion';
+import usePrefersReducedMotion from '@/hooks/usePrefersReducedMotion';
+import './ProductHeroSection.css';
 
 const DEFAULT_ORIGINAL_IMAGE = '/art-style-hero-generations/family-original.jpg';
 
 // Style pills data
+type HeroStyleView = {
+  id: string;
+  name: string;
+  tagline: string;
+  previewImage: string;
+  originalImage: string;
+};
+
 const STYLE_PILLS = [
   {
     id: 'watercolor-dreams',
@@ -64,15 +73,21 @@ const STYLE_PILLS = [
   },
 ];
 
+const INITIAL_CANVAS_STATE: HeroStyleView = {
+  id: STYLE_PILLS[0].id,
+  name: STYLE_PILLS[0].name,
+  tagline: STYLE_PILLS[0].tagline,
+  previewImage: STYLE_PILLS[0].previewImage,
+  originalImage: STYLE_PILLS[0].originalImage ?? DEFAULT_ORIGINAL_IMAGE,
+};
+
 const ProductHeroSection = () => {
   const { setLaunchpadExpanded } = useLaunchpadActions();
   const { launchpadExpanded } = useLaunchpadState();
-  const [currentStyleImage, setCurrentStyleImage] = useState(STYLE_PILLS[0].previewImage);
-  const [currentStyleName, setCurrentStyleName] = useState(STYLE_PILLS[0].name);
-  const [currentStyleTagline, setCurrentStyleTagline] = useState(STYLE_PILLS[0].tagline);
-  const [currentOriginalImage, setCurrentOriginalImage] = useState(
-    STYLE_PILLS[0].originalImage ?? DEFAULT_ORIGINAL_IMAGE
-  );
+  const prefersReducedMotion = usePrefersReducedMotion();
+
+  const [currentCanvas, setCurrentCanvas] = useState<HeroStyleView>(INITIAL_CANVAS_STATE);
+  const [previousCanvas, setPreviousCanvas] = useState<HeroStyleView | null>(null);
 
   const handleHeroUploadClick = () => {
     if (!launchpadExpanded) {
@@ -88,13 +103,43 @@ const ProductHeroSection = () => {
 
   const handleStyleChange = (styleId: string, previewImage: string, originalImage?: string) => {
     const selectedStyle = STYLE_PILLS.find(pill => pill.id === styleId);
-    if (selectedStyle) {
-      setCurrentStyleImage(previewImage);
-      setCurrentStyleName(selectedStyle.name);
-      setCurrentStyleTagline(selectedStyle.tagline);
-      setCurrentOriginalImage(originalImage ?? selectedStyle.originalImage ?? DEFAULT_ORIGINAL_IMAGE);
+    if (!selectedStyle) {
+      return;
     }
+    const nextCanvas: HeroStyleView = {
+      id: selectedStyle.id,
+      name: selectedStyle.name,
+      tagline: selectedStyle.tagline,
+      previewImage,
+      originalImage: originalImage ?? selectedStyle.originalImage ?? DEFAULT_ORIGINAL_IMAGE,
+    };
+
+    if (nextCanvas.id === currentCanvas.id) {
+      setCurrentCanvas(nextCanvas);
+      return;
+    }
+
+    if (!prefersReducedMotion) {
+      setPreviousCanvas(currentCanvas);
+    } else {
+      setPreviousCanvas(null);
+    }
+    setCurrentCanvas(nextCanvas);
   };
+
+  useEffect(() => {
+    if (!previousCanvas) {
+      return;
+    }
+    if (prefersReducedMotion) {
+      setPreviousCanvas(null);
+      return;
+    }
+    const timeout = window.setTimeout(() => {
+      setPreviousCanvas(null);
+    }, 400);
+    return () => window.clearTimeout(timeout);
+  }, [previousCanvas, prefersReducedMotion]);
 
   return (
     <section
@@ -133,33 +178,42 @@ const ProductHeroSection = () => {
           />
 
           {/* Hero Canvas Panel with Generation Animation */}
-          <LazyMotion features={domAnimation}>
-            <div className="max-w-4xl mx-auto">
-              <AnimatePresence mode="wait">
-                <m.div
-                  key={currentStyleImage}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.4 }}
-                >
+          <div className="max-w-4xl mx-auto">
+            <div
+              className="hero-canvas-stack"
+              data-reduced-motion={prefersReducedMotion ? 'true' : 'false'}
+              data-has-previous={!prefersReducedMotion && previousCanvas ? 'true' : 'false'}
+            >
+              {!prefersReducedMotion && previousCanvas ? (
+                <div className="hero-canvas-layer hero-canvas-layer--previous" aria-hidden="true">
                   <GeneratingCanvasAnimation
-                    defaultStyleImage={currentStyleImage}
-                    originalImage={currentOriginalImage}
-                    styleName={currentStyleName}
-                    styleTagline={currentStyleTagline}
+                    key={`prev-${previousCanvas.id}`}
+                    defaultStyleImage={previousCanvas.previewImage}
+                    originalImage={previousCanvas.originalImage}
+                    styleName={previousCanvas.name}
+                    styleTagline={previousCanvas.tagline}
                     generationDuration={2500}
                   />
-                </m.div>
-              </AnimatePresence>
+                </div>
+              ) : null}
+              <div className="hero-canvas-layer hero-canvas-layer--current">
+                <GeneratingCanvasAnimation
+                  key={`current-${currentCanvas.id}`}
+                  defaultStyleImage={currentCanvas.previewImage}
+                  originalImage={currentCanvas.originalImage}
+                  styleName={currentCanvas.name}
+                  styleTagline={currentCanvas.tagline}
+                  generationDuration={2500}
+                />
+              </div>
             </div>
+          </div>
 
-            {/* Style Pills */}
-            <StylePills
-              pills={STYLE_PILLS}
-              onStyleChange={handleStyleChange}
-            />
-          </LazyMotion>
+          {/* Style Pills */}
+          <StylePills
+            pills={STYLE_PILLS}
+            onStyleChange={handleStyleChange}
+          />
 
           {/* Trust Strip - After visual proof */}
           <TrustStrip

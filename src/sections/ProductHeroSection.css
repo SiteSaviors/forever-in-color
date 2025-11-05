@@ -1,0 +1,54 @@
+.hero-canvas-stack {
+  position: relative;
+}
+
+.hero-canvas-layer {
+  width: 100%;
+  will-change: opacity;
+}
+
+.hero-canvas-layer--previous {
+  position: absolute;
+  inset: 0;
+  opacity: 1;
+  pointer-events: none;
+  animation: hero-canvas-fade-out 0.4s ease forwards;
+}
+
+.hero-canvas-layer--current {
+  position: relative;
+  opacity: 1;
+}
+
+.hero-canvas-stack[data-has-previous='true']:not([data-reduced-motion='true']) .hero-canvas-layer--current {
+  opacity: 0;
+  animation: hero-canvas-fade-in 0.4s ease forwards;
+}
+
+.hero-canvas-stack[data-reduced-motion='true'] .hero-canvas-layer--previous {
+  animation: none;
+}
+
+.hero-canvas-stack[data-reduced-motion='true'] .hero-canvas-layer--current {
+  opacity: 1;
+  animation: none;
+}
+
+@keyframes hero-canvas-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes hero-canvas-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
