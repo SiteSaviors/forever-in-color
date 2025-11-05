@@ -108,8 +108,8 @@ export const SPOTLIGHTS: ReadonlyArray<SpotlightStory> = [
     metric: '+320% engagement in 30 days',
     author: 'Sarah M.',
     product: 'digital',
-    beforeImage: PLACEHOLDER_IMAGE,
-    afterImage: PLACEHOLDER_IMAGE,
+    beforeImage: '/Sarah-Review-Before.jpg',
+    afterImage: '/Sarah-Review-After.jpg',
   },
   {
     id: 'spotlight-portfolio',
@@ -124,12 +124,12 @@ export const SPOTLIGHTS: ReadonlyArray<SpotlightStory> = [
   {
     id: 'spotlight-canvas',
     title: 'From Feed to Frame',
-    quote: '“The canvas looks like a gallery piece and arrived in five days.”',
+    quote: '“We cried seeing our Watercolor Dreams Canvas! It looks exactly like the preview! LOVE IT!”',
     metric: '3 framed prints for the studio',
     author: 'Jamie L.',
     product: 'canvas',
-    beforeImage: PLACEHOLDER_IMAGE,
-    afterImage: PLACEHOLDER_IMAGE,
+    beforeImage: '/Canvas-Review-Before-min.jpg',
+    afterImage: '/Canvas-Review-After-min.jpg',
   },
   {
     id: 'spotlight-brand-refresh',

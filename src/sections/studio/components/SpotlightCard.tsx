@@ -90,7 +90,7 @@ const SpotlightCard = ({ story, prefersReducedMotion, onCtaClick }: SpotlightCar
             src={story.beforeImage}
             alt={beforeWidthPercent > 0 ? `${story.title} original upload` : ''}
             loading="lazy"
-            className="h-full w-full object-cover grayscale contrast-125"
+            className="h-full w-full object-cover"
           />
           {beforeWidthPercent > 0 && !prefersReducedMotion && (
             <div
