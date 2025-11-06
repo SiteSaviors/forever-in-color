@@ -221,9 +221,9 @@ const ProductHeroSection = () => {
             reviewCount={2341}
             customerCount="10,000+"
             customerPhotos={[
-              '/lovable-uploads/0c7d3c87-930b-4e39-98a8-2e9893b05344.png',
-              '/lovable-uploads/c0f1ce8f-22e6-44e5-89d9-2b3327371fea.png',
-              '/lovable-uploads/f9da9750-5b5c-40c0-adeb-92bb010bc33c.png',
+              '/art-style-thumbnails/classic-oil-painting.webp',
+              '/art-style-thumbnails/modern-colorblock.webp',
+              '/art-style-thumbnails/watercolor-dreams.webp',
             ]}
           />
 
