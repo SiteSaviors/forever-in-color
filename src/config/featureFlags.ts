@@ -39,9 +39,7 @@ export const ENABLE_STUDIO_V2_INSIGHTS_RAIL = coerceBoolean(
   import.meta.env.VITE_STUDIO_V2_INSIGHTS_RAIL ?? 'false'
 );
 
-export const ENABLE_STUDIO_V2_CANVAS_MODAL = coerceBoolean(
-  import.meta.env.VITE_STUDIO_V2_CANVAS_MODAL ?? 'false'
-);
+export const ENABLE_STUDIO_V2_CANVAS_MODAL = true;
 
 const ENABLE_STUDIO_V2_EXPERIENCE = coerceBoolean(
   import.meta.env.VITE_STUDIO_V2_EXPERIENCE ?? 'false'

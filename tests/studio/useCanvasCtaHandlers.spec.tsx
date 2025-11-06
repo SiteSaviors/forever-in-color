@@ -15,8 +15,24 @@ vi.mock('@/utils/studioV2Analytics', () => ({
   trackStudioV2OrientationCta: vi.fn(),
 }));
 
+vi.mock('@/store/hooks/useCanvasConfigStore', () => ({
+  useCanvasConfigState: vi.fn(),
+  useCanvasConfigActions: vi.fn(),
+}));
+
+vi.mock('@/store/hooks/useEntitlementsStore', () => ({
+  useEntitlementsState: vi.fn(),
+}));
+
+vi.mock('@/utils/telemetry', () => ({
+  trackOrderStarted: vi.fn(),
+}));
+
 const { useStudioPreviewState } = await import('@/store/hooks/studio/useStudioPreviewState');
 const { trackStudioV2CanvasCtaClick, trackStudioV2OrientationCta } = await import('@/utils/studioV2Analytics');
+const { useCanvasConfigState, useCanvasConfigActions } = await import('@/store/hooks/useCanvasConfigStore');
+const { useEntitlementsState } = await import('@/store/hooks/useEntitlementsStore');
+const { trackOrderStarted } = await import('@/utils/telemetry');
 
 describe('useCanvasCtaHandlers', () => {
   const defaultPreviewState = {
@@ -83,6 +99,16 @@ describe('useCanvasCtaHandlers', () => {
     trackStudioV2CanvasCtaClick.mockClear();
     trackStudioV2OrientationCta.mockClear();
     setupPreviewState();
+    (useCanvasConfigState as vi.Mock).mockReturnValue({
+      enhancements: [],
+    });
+    (useCanvasConfigActions as vi.Mock).mockReturnValue({
+      computedTotal: vi.fn().mockReturnValue(249),
+    });
+    (useEntitlementsState as vi.Mock).mockReturnValue({
+      userTier: 'free',
+    });
+    (trackOrderStarted as vi.Mock).mockClear();
   });
 
   afterEach(() => {
@@ -105,6 +131,8 @@ describe('useCanvasCtaHandlers', () => {
     });
 
     expect(trackStudioV2CanvasCtaClick).toHaveBeenCalledTimes(1);
+    expect(trackOrderStarted).toHaveBeenCalledTimes(1);
+    expect(trackOrderStarted).toHaveBeenCalledWith('free', 249, false);
     expect(onOpenCanvas).toHaveBeenLastCalledWith('center');
 
     unmount();
@@ -172,9 +200,9 @@ describe('useCanvasCtaHandlers', () => {
     });
 
     expect(trackStudioV2CanvasCtaClick).not.toHaveBeenCalled();
+    expect(trackOrderStarted).not.toHaveBeenCalled();
     expect(onOpenCanvas).toHaveBeenCalledWith('center');
 
     unmount();
   });
 });
-

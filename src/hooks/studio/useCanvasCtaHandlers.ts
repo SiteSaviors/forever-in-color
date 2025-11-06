@@ -1,6 +1,9 @@
 import { useCallback, useRef } from 'react';
 import { trackStudioV2CanvasCtaClick, trackStudioV2OrientationCta } from '@/utils/studioV2Analytics';
+import { trackOrderStarted } from '@/utils/telemetry';
 import { useStudioPreviewState } from '@/store/hooks/studio/useStudioPreviewState';
+import { useCanvasConfigActions, useCanvasConfigState } from '@/store/hooks/useCanvasConfigStore';
+import { useEntitlementsState } from '@/store/hooks/useEntitlementsStore';
 
 type CanvasCtaHandlersArgs = {
   onOpenCanvas: (source: 'center' | 'rail') => void;
@@ -21,6 +24,9 @@ export const useCanvasCtaHandlers = ({
     previewHasData,
     previewReady,
   } = useStudioPreviewState();
+  const { enhancements } = useCanvasConfigState();
+  const { computedTotal } = useCanvasConfigActions();
+  const { userTier } = useEntitlementsState();
 
   const centerCanvasThrottleRef = useRef<number>(0);
   const centerOrientationThrottleRef = useRef<number>(0);
@@ -33,23 +39,28 @@ export const useCanvasCtaHandlers = ({
       !!style && hasCroppedImage && !orientationPreviewPending && (previewReady || previewHasData);
 
     if (canTrack && now - centerCanvasThrottleRef.current > 250) {
+      const hasEnabledEnhancements = enhancements.some((item) => item.enabled);
       trackStudioV2CanvasCtaClick({
         styleId: style.id,
         orientation,
         source: 'center',
       });
       centerCanvasThrottleRef.current = now;
+      trackOrderStarted(userTier, computedTotal(), hasEnabledEnhancements);
     }
 
     onOpenCanvas('center');
   }, [
     currentStyle,
+    enhancements,
     hasCroppedImage,
     onOpenCanvas,
     orientation,
     orientationPreviewPending,
     previewHasData,
     previewReady,
+    userTier,
+    computedTotal,
   ]);
 
   const createOrientationHandler = useCallback(
@@ -85,4 +96,3 @@ export const useCanvasCtaHandlers = ({
     handleChangeOrientationFromRail,
   };
 };
-

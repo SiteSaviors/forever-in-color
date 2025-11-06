@@ -5,6 +5,7 @@ import {
   trackStudioV2CanvasModalOpen,
   type CanvasSelectionSnapshot,
 } from '@/utils/studioV2Analytics';
+import { trackCanvasPanelOpen } from '@/utils/telemetry';
 import { loadInitialStylesLazy } from '@/config/styleCatalog';
 import { createPreviewSlice } from './founder/previewSlice';
 import { createAuthSlice } from './founder/authSlice';
@@ -349,6 +350,7 @@ export const useFounderStore = createWithEqualityFn<FounderState>((set, get, api
     state.persistCanvasSelection();
     if (state.canvasModalOpen) return;
     const snapshot = createCanvasSelectionSnapshot(state);
+    trackCanvasPanelOpen(state.entitlements?.tier ?? 'unknown');
     set({
       canvasModalOpen: true,
       canvasModalSource: source,

@@ -8,6 +8,7 @@ import { MemoryRouter } from 'react-router-dom';
 import StudioConfigurator from '@/sections/StudioConfigurator';
 import { useFounderStore } from '@/store/useFounderStore';
 import * as studioAnalytics from '@/utils/studioV2Analytics';
+import * as telemetry from '@/utils/telemetry';
 
 const createTestPreviewEntry = (orientation: string) => ({
   status: 'ready' as const,
@@ -188,6 +189,7 @@ describe('Studio orientation + canvas CTA integration', () => {
 
   it('tracks the center Create Canvas CTA only once across rapid clicks', async () => {
     const canvasAnalyticsSpy = vi.spyOn(studioAnalytics, 'trackStudioV2CanvasCtaClick').mockImplementation(() => {});
+    const canvasPanelSpy = vi.spyOn(telemetry, 'trackCanvasPanelOpen').mockImplementation(() => {});
 
     act(() => {
       root.render(
@@ -206,6 +208,8 @@ describe('Studio orientation + canvas CTA integration', () => {
 
     await waitUntil(() => {
       expect(canvasAnalyticsSpy).toHaveBeenCalledTimes(1);
+      expect(canvasPanelSpy).toHaveBeenCalledTimes(1);
     });
+    expect(canvasPanelSpy).toHaveBeenCalledWith('free');
   });
 });

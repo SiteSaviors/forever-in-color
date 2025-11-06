@@ -126,6 +126,24 @@ Each estimation will be validated during implementation by checking `dist/assets
 - `npm run lint` still fails due to pre-existing hook-order issues in `src/sections/studio/SocialProofSection.tsx` and unused test helpers in `tests/store/previewEngineCore.spec.ts` (unchanged this wave). New warnings: dependency arrays in `useDeferredReveal` mirror existing `useDeferredRender` behaviour.
 - `npm run build` succeeded; `npm run build:analyze` shows `motion-vendors-B5nIO1Xe.js` at **123.35 KB rendered / 41.00 KB gzip** (no immediate shrink yet) and `MarketingRoutes-CW1jkuQ1.js` down to **1.68 KB rendered / 0.72 KB gzip** (was ~1.74 KB rendered). Stats captured in `/tmp/build_wave1.log`.
 
+## Wave 2 – Studio Shell Lightening (Micro Plan)
+O
+   - QA: open/close drawer, swipe to dismiss, ensure auto-close triggers when preview starts; confirm body scroll lock and history back behaviour remain intact.
+
+2. **Phase 2B – CanvasConfig Height Animation**
+   - Convert `CanvasConfig` expand/collapse to CSS `max-height`/opacity transitions with reduced-motion fallback.
+   - Preserve auto-focus timing, auto-scroll into view, and Step One telemetry hookups.
+   - QA: expand/collapse flows on desktop/mobile, check focus-first control behaviour, verify enhancements selection still works.
+
+3. **Phase 2C – Shared CSS Utilities**
+   - Introduce reusable CSS classes (e.g., `.drawer-slide`, `.panel-collapse`) with `data-reveal` attributes to standardise reduced-motion handling across drawer/config.
+   - Document usage in comments to ensure future components stay consistent.
+
+4. **Phase 2D – Metrics & Docs**
+   - Run `npm run build:analyze` and capture Studio chunk deltas (MobileStyleDrawer, CanvasConfig, motion vendors).
+   - Update this doc and `docs/performance-source-of-truth.md` with before/after numbers.
+   - Manual QA checklist: Launchflow upload → Studio preview, drawer interactions on mobile, configurator focus/scroll flows, reduced-motion toggled.
+
 ## Validation Checklist
 - `npm run lint`, `npm run build`, `npm run build:analyze`, `npm run build:registry`, `npm run deps:check`.
 - Manual QA: Launchflow upload → Studio preview gating, Spotlight carousel autoplay, tone accordion gating, gallery quickview reorder.

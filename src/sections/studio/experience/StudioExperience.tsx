@@ -47,6 +47,9 @@ const StudioExperience = ({ checkoutNotice, onDismissCheckoutNotice }: StudioExp
   const hideCanvasUpsell = useCallback(() => {
     setShowCanvasUpsellToast(false);
   }, []);
+  const handleCanvasFallback = useCallback(() => {
+    // Intentional no-op: legacy rail toggle preserved for now but no longer invoked as a fallback.
+  }, []);
   const setMobileDrawerOpen = useCallback((open: boolean) => {
     setMobileStyleDrawerOpen(open);
   }, []);
@@ -61,7 +64,6 @@ const StudioExperience = ({ checkoutNotice, onDismissCheckoutNotice }: StudioExp
   const handleOpenCanvas = useCallback(
     (source: 'center' | 'rail') => {
       if (!hasCroppedImage) {
-        scrollToCanvasOptions();
         return;
       }
 
@@ -83,7 +85,7 @@ const StudioExperience = ({ checkoutNotice, onDismissCheckoutNotice }: StudioExp
 
   const { handleChangeOrientationFromRail } = useCanvasCtaHandlers({
     onOpenCanvas: handleOpenCanvas,
-    onOrientationFallback: handleCanvasConfigToggle,
+    onOrientationFallback: handleCanvasFallback,
     requestOrientationChange,
   });
 
@@ -142,7 +144,7 @@ const StudioExperience = ({ checkoutNotice, onDismissCheckoutNotice }: StudioExp
 
           <CenterStage
             onOpenCanvas={handleOpenCanvas}
-            onCanvasConfigToggle={handleCanvasConfigToggle}
+            onCanvasConfigToggle={handleCanvasFallback}
             onRequestOrientationChange={requestOrientationChange}
             orientationChanging={orientationChanging}
           />

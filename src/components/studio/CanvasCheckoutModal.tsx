@@ -10,6 +10,8 @@ import { ENABLE_STUDIO_V2_CANVAS_MODAL } from '@/config/featureFlags';
 import { useCanvasConfigActions, useCanvasConfigState } from '@/store/hooks/useCanvasConfigStore';
 import { useStyleCatalogState } from '@/store/hooks/useStyleCatalogStore';
 import { useUploadState } from '@/store/hooks/useUploadStore';
+import { useEntitlementsState } from '@/store/hooks/useEntitlementsStore';
+import { trackOrderStarted } from '@/utils/telemetry';
 
 const CanvasInRoomPreview = lazy(() => import('@/components/studio/CanvasInRoomPreview'));
 
@@ -29,6 +31,7 @@ const CanvasCheckoutModal = () => {
     useCanvasConfigActions();
   const { orientation } = useUploadState();
   const { currentStyle } = useStyleCatalogState();
+  const { userTier } = useEntitlementsState();
 
   const resetCheckout = useCheckoutStore((state) => state.resetCheckout);
 
@@ -45,6 +48,7 @@ const CanvasCheckoutModal = () => {
   const total = computedTotal();
   const selectedSizeOption = selectedCanvasSize ? getCanvasSizeOption(selectedCanvasSize) : null;
   const orientationLabel = ORIENTATION_PRESETS[orientation].label;
+  const hasEnabledEnhancements = enhancements.some((item) => item.enabled);
 
   const handleFrameToggle = () => {
     if (!floatingFrame) return;
@@ -82,6 +86,7 @@ const CanvasCheckoutModal = () => {
   };
 
   const handlePrimaryCta = () => {
+    trackOrderStarted(userTier, total, hasEnabledEnhancements);
     resetCheckout();
     handleClose('purchase_complete');
     navigate('/checkout');
