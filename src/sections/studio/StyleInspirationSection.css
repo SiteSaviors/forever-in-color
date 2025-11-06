@@ -1,0 +1,56 @@
+.style-inspiration-section {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+  will-change: opacity, transform;
+}
+
+.style-inspiration-section[data-reveal-ready='false'] {
+  opacity: 0;
+  transform: translateY(32px);
+}
+
+.style-inspiration-section[data-reduced-motion='true'] {
+  transition: none;
+  opacity: 1;
+  transform: none;
+}
+
+.inspiration-bucket {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+  transition-delay: calc(var(--bucket-index, 0) * 0.15s);
+  will-change: opacity, transform;
+}
+
+.inspiration-bucket[data-reveal-ready='true'] {
+  opacity: 1;
+  transform: none;
+}
+
+.inspiration-bucket[data-reduced-motion='true'] {
+  transition: none;
+  opacity: 1;
+  transform: none;
+}
+
+.inspiration-card {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  transition-delay: calc(var(--card-index, 0) * 0.08s + var(--bucket-index, 0) * 0.15s);
+  will-change: opacity, transform;
+}
+
+.inspiration-card[data-reveal-ready='true'] {
+  opacity: 1;
+  transform: none;
+}
+
+.inspiration-card[data-reduced-motion='true'] {
+  transition: none;
+  opacity: 1;
+  transform: none;
+}
+

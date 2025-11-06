@@ -21,8 +21,7 @@
  * @see src/config/inspirationBuckets.ts (configuration)
  */
 
-import { memo } from 'react';
-import { m } from 'framer-motion';
+import { memo, type CSSProperties } from 'react';
 import type { StyleOption } from '@/store/founder/storeTypes';
 
 type InspirationCardProps = {
@@ -32,28 +31,18 @@ type InspirationCardProps = {
   cardIndex: number;
   /** Disable animations if user prefers reduced motion */
   prefersReducedMotion?: boolean;
+  /** Whether the parent bucket should animate into view */
+  revealReady?: boolean;
 };
 
 const InspirationCard = ({
   style,
   cardIndex,
   prefersReducedMotion,
+  revealReady = true,
 }: InspirationCardProps) => {
   // Staggered cascade animation (0.08s per card)
   // Card 0: 0ms, Card 1: 80ms, Card 2: 160ms, etc.
-  const cardVariants = {
-    hidden: { opacity: 0, scale: 0.95 },
-    visible: {
-      opacity: 1,
-      scale: 1,
-      transition: {
-        delay: cardIndex * 0.08, // Cascade delay
-        duration: 0.4,
-        ease: 'easeOut',
-      },
-    },
-  };
-
   // TODO: Phase 4 - Wire up click handler for conversion optimization
   // Non-premium users → Auth modal (openAuthModal('signup'))
   // Premium users → Upload modal or navigate to /create with preselected style
@@ -64,13 +53,14 @@ const InspirationCard = ({
     console.log(`[Inspiration] Card clicked: ${style.id} - interaction coming in Phase 4`);
   };
 
+  const cardStyle = { '--card-index': cardIndex } as CSSProperties;
+
   return (
-    <m.article
-      initial={prefersReducedMotion ? false : 'hidden'}
-      whileInView="visible"
-      viewport={{ once: true, margin: '-50px' }} // Trigger animation 50px before entering viewport
-      variants={cardVariants}
-      className="group relative"
+    <article
+      className="inspiration-card group relative"
+      data-reveal-ready={revealReady ? 'true' : 'false'}
+      data-reduced-motion={prefersReducedMotion ? 'true' : 'false'}
+      style={cardStyle}
     >
       {/* Gold gradient border wrapper (2px outer shell) */}
       <div className="relative p-[2px] rounded-2xl bg-gradient-to-br from-amber-400 via-yellow-500 to-amber-400">
@@ -104,7 +94,7 @@ const InspirationCard = ({
           </div>
         </button>
       </div>
-    </m.article>
+    </article>
   );
 };
 

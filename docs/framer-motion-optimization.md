@@ -121,6 +121,11 @@ Each estimation will be validated during implementation by checking `dist/assets
    - Run `npm run lint`, `npm run build`, `npm run build:analyze`; log new `motion-vendors` size and marketing chunk deltas.
    - Manual QA checklist: hero responsiveness, inspiration scroll on desktop/mobile, `prefers-reduced-motion` toggle via OS settings.
 
+### Phase 1D Notes (2024-11-05 16:48 PT)
+- Removed `LazyMotion` wrapper from `src/routes/MarketingRoutes.tsx`; marketing entry now returns the routed content directly.
+- `npm run lint` still fails due to pre-existing hook-order issues in `src/sections/studio/SocialProofSection.tsx` and unused test helpers in `tests/store/previewEngineCore.spec.ts` (unchanged this wave). New warnings: dependency arrays in `useDeferredReveal` mirror existing `useDeferredRender` behaviour.
+- `npm run build` succeeded; `npm run build:analyze` shows `motion-vendors-B5nIO1Xe.js` at **123.35 KB rendered / 41.00 KB gzip** (no immediate shrink yet) and `MarketingRoutes-CW1jkuQ1.js` down to **1.68 KB rendered / 0.72 KB gzip** (was ~1.74 KB rendered). Stats captured in `/tmp/build_wave1.log`.
+
 ## Validation Checklist
 - `npm run lint`, `npm run build`, `npm run build:analyze`, `npm run build:registry`, `npm run deps:check`.
 - Manual QA: Launchflow upload → Studio preview gating, Spotlight carousel autoplay, tone accordion gating, gallery quickview reorder.

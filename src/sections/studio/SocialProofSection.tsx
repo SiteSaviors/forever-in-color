@@ -33,13 +33,13 @@ class SocialProofErrorBoundary extends Component<{ children: ReactNode }, { hasE
 }
 
 const SocialProofSectionInner = () => {
-  if (!SPOTLIGHTS.length) {
-    return null;
-  }
-
   const prefersReducedMotion = usePrefersReducedMotion();
   const navigate = useNavigate();
   const openAuthModal = useAuthModal((state) => state.openModal);
+
+  if (!SPOTLIGHTS.length) {
+    return null;
+  }
 
   const startPreview = () => {
     trackSocialProofEvent({ type: 'social_proof_cta_click', surface: 'primary' });

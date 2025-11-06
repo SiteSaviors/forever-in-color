@@ -7,8 +7,6 @@ import {
 } from '@/store/founder/previewEngine/core';
 import {
   startStylePreviewEngine,
-  generatePreviewsEngine,
-  resumePendingAuthPreviewEngine,
   abortPreviewGenerationEngine,
 } from '@/store/founder/previewEngine/loader';
 import type { FounderState, StyleOption } from '@/store/founder/storeTypes';
@@ -335,4 +333,3 @@ describe('previewEngine loader proxy', () => {
     expect(state.pendingStyleId).toBeNull();
   });
 });
-

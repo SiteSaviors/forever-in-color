@@ -26,8 +26,7 @@
  * @see src/config/inspirationBuckets.ts (configuration)
  */
 
-import { memo } from 'react';
-import { m } from 'framer-motion';
+import { memo, type CSSProperties } from 'react';
 import { Heart, Award, Palette } from 'lucide-react';
 import InspirationCard from './InspirationCard';
 import type { StyleOption } from '@/store/founder/storeTypes';
@@ -49,6 +48,8 @@ type InspirationBucketProps = {
   index: number;
   /** Disable animations if user prefers reduced motion */
   prefersReducedMotion?: boolean;
+  /** Whether the parent section is ready to reveal (intersection). */
+  revealReady?: boolean;
 };
 
 /**
@@ -83,29 +84,17 @@ const InspirationBucket = ({
   styles,
   index,
   prefersReducedMotion,
+  revealReady = true,
 }: InspirationBucketProps) => {
-  // Staggered bucket entrance animation (0.15s per bucket)
-  // Bucket 0: 0ms, Bucket 1: 150ms, Bucket 2: 300ms
-  const bucketVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        delay: index * 0.15, // Stagger delay
-        duration: 0.6,
-        ease: [0.25, 0.1, 0.25, 1], // Custom cubic-bezier (smooth deceleration)
-      },
-    },
-  };
+  const bucketStyle = { '--bucket-index': index } as CSSProperties;
 
   return (
-    <m.div
-      initial={prefersReducedMotion ? false : 'hidden'}
-      whileInView="visible"
-      viewport={{ once: true, margin: '-100px' }} // Trigger animation 100px before entering viewport
-      variants={bucketVariants}
-      className="group relative rounded-3xl bg-white/[0.02] backdrop-blur-sm border border-white/10 p-6 hover:border-white/20 transition-all duration-500"
+    <div
+      className="inspiration-bucket group relative rounded-3xl bg-white/[0.02] backdrop-blur-sm border border-white/10 p-6 hover:border-white/20 transition-all duration-500"
+      data-reveal-ready={revealReady ? 'true' : 'false'}
+      data-reduced-motion={prefersReducedMotion ? 'true' : 'false'}
+      data-bucket-id={id}
+      style={bucketStyle}
     >
       {/* Accent glow on hover (uses bucket-specific accent color) */}
       <div
@@ -144,10 +133,11 @@ const InspirationBucket = ({
             style={style}
             cardIndex={cardIndex}
             prefersReducedMotion={prefersReducedMotion}
+            revealReady={revealReady}
           />
         ))}
       </div>
-    </m.div>
+    </div>
   );
 };
 
