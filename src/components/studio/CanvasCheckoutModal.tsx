@@ -6,7 +6,6 @@ import { CANVAS_SIZE_OPTIONS, getCanvasSizeOption } from '@/utils/canvasSizes';
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
 import { type CanvasModalCloseReason, type FrameColor } from '@/store/founder/storeTypes';
 import { useCheckoutStore } from '@/store/useCheckoutStore';
-import { ENABLE_STUDIO_V2_CANVAS_MODAL } from '@/config/featureFlags';
 import { useCanvasConfigActions, useCanvasConfigState } from '@/store/hooks/useCanvasConfigStore';
 import { useStyleCatalogState } from '@/store/hooks/useStyleCatalogStore';
 import { useUploadState } from '@/store/hooks/useUploadStore';
@@ -91,8 +90,6 @@ const CanvasCheckoutModal = () => {
     handleClose('purchase_complete');
     navigate('/checkout');
   };
-
-  if (!ENABLE_STUDIO_V2_CANVAS_MODAL) return null;
 
   const enhancementsSummary = enhancements
     .filter((item) => item.enabled)

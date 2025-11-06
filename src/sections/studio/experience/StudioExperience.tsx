@@ -1,7 +1,6 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react';
 import StudioHeader, { type CheckoutNotice } from '@/sections/studio/components/StudioHeader';
 import CenterStage from '@/sections/studio/experience/CenterStage';
-import { ENABLE_STUDIO_V2_CANVAS_MODAL } from '@/config/featureFlags';
 import {
   StudioOverlayProvider,
   useStudioExperienceContext,
@@ -13,7 +12,6 @@ import { useOrientationBridge } from '@/components/studio/orientation/useOrienta
 import LeftRail from '@/sections/studio/experience/LeftRail';
 import RightRail from '@/sections/studio/experience/RightRail';
 import StudioOverlays from '@/sections/studio/experience/StudioOverlays';
-import { useCanvasCtaHandlers } from '@/hooks/studio/useCanvasCtaHandlers';
 import { useWelcomeBannerHandlers } from '@/hooks/studio/useWelcomeBannerHandlers';
 
 const TokenWarningBanner = lazy(() => import('@/components/studio/TokenWarningBanner'));
@@ -33,7 +31,6 @@ const StudioExperience = ({ checkoutNotice, onDismissCheckoutNotice }: StudioExp
   const [showDownloadUpgradeModal, setShowDownloadUpgradeModal] = useState(false);
   const [mobileStyleDrawerOpen, setMobileStyleDrawerOpen] = useState(false);
   const [showCanvasUpsellToast, setShowCanvasUpsellToast] = useState(false);
-  const [canvasConfigExpanded, setCanvasConfigExpanded] = useState(true);
 
   const openDownloadUpgrade = useCallback(() => {
     setShowDownloadUpgradeModal(true);
@@ -48,7 +45,7 @@ const StudioExperience = ({ checkoutNotice, onDismissCheckoutNotice }: StudioExp
     setShowCanvasUpsellToast(false);
   }, []);
   const handleCanvasFallback = useCallback(() => {
-    // Intentional no-op: legacy rail toggle preserved for now but no longer invoked as a fallback.
+    // Modal is the sole entry point; fallback no longer needed but retained for parity.
   }, []);
   const setMobileDrawerOpen = useCallback((open: boolean) => {
     setMobileStyleDrawerOpen(open);
@@ -56,38 +53,16 @@ const StudioExperience = ({ checkoutNotice, onDismissCheckoutNotice }: StudioExp
 
   const { showReturningBanner, handleEditFromWelcome, handleDismissWelcome } = useWelcomeBannerHandlers();
 
-  const scrollToCanvasOptions = useCallback(() => {
-    const canvasPanel = document.getElementById('canvas-options-panel');
-    canvasPanel?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, []);
-
   const handleOpenCanvas = useCallback(
     (source: 'center' | 'rail') => {
       if (!hasCroppedImage) {
         return;
       }
 
-      if (ENABLE_STUDIO_V2_CANVAS_MODAL) {
-        openCanvasModal(source);
-        return;
-      }
-
-      scrollToCanvasOptions();
+      openCanvasModal(source);
     },
-    [hasCroppedImage, openCanvasModal, scrollToCanvasOptions]
+    [hasCroppedImage, openCanvasModal]
   );
-
-  const handleCanvasConfigToggle = useCallback(() => {
-    setCanvasConfigExpanded((prev) => !prev);
-    const canvasPanel = document.getElementById('canvas-options-panel');
-    canvasPanel?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }, []);
-
-  const { handleChangeOrientationFromRail } = useCanvasCtaHandlers({
-    onOpenCanvas: handleOpenCanvas,
-    onOrientationFallback: handleCanvasFallback,
-    requestOrientationChange,
-  });
 
   const overlayContextValue = useMemo(
     () => ({
@@ -151,9 +126,6 @@ const StudioExperience = ({ checkoutNotice, onDismissCheckoutNotice }: StudioExp
 
           <RightRail
             onRequestCanvas={handleOpenCanvas}
-            onChangeOrientation={handleChangeOrientationFromRail}
-            onCanvasConfigToggle={handleCanvasConfigToggle}
-            canvasConfigExpanded={canvasConfigExpanded}
           />
         </div>
 

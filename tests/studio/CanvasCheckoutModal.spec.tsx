@@ -12,17 +12,23 @@ vi.mock('@/components/studio/CanvasInRoomPreview', () => ({
 
 vi.mock('@radix-ui/react-dialog', () => {
   const Root = ({ children }: { children: React.ReactNode }) => <div data-dialog-root>{children}</div>;
-  const Portal = ({ children }: { children: React.ReactNode }) => <div data-dialog-portal>{children}</div>;
-  const Overlay = ({ children, ...rest }: any) => (
-    <div data-dialog-overlay {...rest}>
-      {children}
-    </div>
-  );
-  const Content = ({ children, ...rest }: any) => (
-    <div data-dialog-content {...rest}>
-      {children}
-    </div>
-  );
+type BasicProps = {
+  children?: React.ReactNode;
+};
+
+type OverlayProps = BasicProps & React.HTMLAttributes<HTMLDivElement>;
+
+const Portal = ({ children }: BasicProps) => <div data-dialog-portal>{children}</div>;
+const Overlay = ({ children, ...rest }: OverlayProps) => (
+  <div data-dialog-overlay {...rest}>
+    {children}
+  </div>
+);
+const Content = ({ children, ...rest }: OverlayProps) => (
+  <div data-dialog-content {...rest}>
+    {children}
+  </div>
+);
   const Title = ({ children }: { children: React.ReactNode }) => <div data-dialog-title>{children}</div>;
   const Description = ({ children }: { children: React.ReactNode }) => (
     <div data-dialog-description>{children}</div>

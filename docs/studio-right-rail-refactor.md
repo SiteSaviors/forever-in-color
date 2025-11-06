@@ -100,13 +100,16 @@
 
 ### Phase 3 – Legacy Rail Deactivation (Code Still Present)
 - **3A – Deactivate Scroll & Toggle:** Remove `handleCanvasConfigToggle` usage from center CTA fallbacks and guard any remaining references behind a null implementation. Keep `StickyOrderRail` import but unused to avoid bundle shifts during this step.
+- _Status:_ Center CTA already relies on the no-op fallback, and the legacy `handleCanvasConfigToggle` is now guarded to short-circuit when the modal path is enabled (`StudioExperience.tsx:80`), preserving historical behaviour only when the rail path is explicitly reactivated.
 - **3B – Insights Rail Verification:** Confirm visually (screenshots) that insights rail is untouched; ensure props passed to `InsightsRail` are unchanged.
 - Metrics checkpoint: rerun `npm run build:analyze` to ensure no unexpected chunk growth.
 
 ### Phase 4 – Component Extraction & Cleanup
 - **4A – Remove `StickyOrderRail` References:** Delete the lazy import from `RightRail.tsx`, prune props (`canvasConfigExpanded`, toggle handlers), and remove fallback components tied to the order rail. Replace with a single insights-rail render.
+- _Status:_ `RightRail` now exclusively renders the insights module (legacy rail imports/fallbacks removed), and `StudioExperience` no longer tracks `canvasConfigExpanded` or passes orientation/toggle props. ✅ Tests: `npm run test -- tests/studio/actionGridOrientationBridge.spec.tsx tests/studio/useCanvasCtaHandlers.spec.tsx tests/studio/CanvasCheckoutModal.spec.tsx tests/studio/SecondaryCanvasCta.spec.tsx tests/store/openCanvasModalTelemetry.spec.ts`.
 - **4B – Delete `CanvasConfig.tsx` + `StickyOrderRail.tsx`:** After verifying zero references with `rg`, remove files, update barrel exports, and tidy related docs/tests. Ensure `CanvasCheckoutModal` retains all functionality previously hosted in the rail.
 - **4C – Flag Purge:** Delete `ENABLE_STUDIO_V2_CANVAS_MODAL` / `ENABLE_STUDIO_V2` from `featureFlags.ts`, remove associated env vars from `.env.example`, and adjust any docs referencing phased rollout.
+- _Status:_ Modal flag now fully removed—Studio always opens the checkout modal path with no feature toggles, docs updated, and `.env` cleaned. QA runs: `npm run lint` (warnings only), `npm run build`, `npm run build:analyze`, `npm run deps:check` (expected `zod`/`ajv` notices from earlier schema work).
 - QA checkpoint: full `npm run lint`, `npm run build`, `npm run build:analyze`, `npm run deps:check`.
 
 ### Phase 5 – Final Verification & Documentation

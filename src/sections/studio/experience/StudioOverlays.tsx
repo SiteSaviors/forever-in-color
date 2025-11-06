@@ -1,5 +1,4 @@
 import { Suspense, lazy } from 'react';
-import { ENABLE_STUDIO_V2_CANVAS_MODAL } from '@/config/featureFlags';
 import { useStudioOverlayContext } from '@/sections/studio/experience/context';
 import { useStudioEntitlementState } from '@/store/hooks/studio/useStudioEntitlementState';
 import { useStudioPreviewState } from '@/store/hooks/studio/useStudioPreviewState';
@@ -59,11 +58,9 @@ const StudioOverlays = ({ onRequestCanvas }: StudioOverlaysProps) => {
         />
       </Suspense>
 
-      {ENABLE_STUDIO_V2_CANVAS_MODAL && (
-        <Suspense fallback={null}>
-          <CanvasCheckoutModalLazy />
-        </Suspense>
-      )}
+      <Suspense fallback={null}>
+        <CanvasCheckoutModalLazy />
+      </Suspense>
     </>
   );
 };

@@ -35,25 +35,6 @@ export const AUTH_GATE_ROLLOUT_PERCENT = coercePercentage(
   import.meta.env.VITE_AUTH_GATE_ROLLOUT ?? '0'
 );
 
-export const ENABLE_STUDIO_V2_INSIGHTS_RAIL = coerceBoolean(
-  import.meta.env.VITE_STUDIO_V2_INSIGHTS_RAIL ?? 'false'
-);
-
-export const ENABLE_STUDIO_V2_CANVAS_MODAL = true;
-
-const ENABLE_STUDIO_V2_EXPERIENCE = coerceBoolean(
-  import.meta.env.VITE_STUDIO_V2_EXPERIENCE ?? 'false'
-);
-
-/**
- * Master switch for the Studio v2 experience. Setting `VITE_STUDIO_V2_EXPERIENCE`
- * to true enables all v2 modules at once; otherwise toggles can be managed
- * individually during phased rollout.
- */
-export const ENABLE_STUDIO_V2 = ENABLE_STUDIO_V2_EXPERIENCE
-  ? true
-  : ENABLE_STUDIO_V2_INSIGHTS_RAIL && ENABLE_STUDIO_V2_CANVAS_MODAL;
-
 export const ENABLE_HEIC_EDGE_CONVERSION = coerceBoolean(
   import.meta.env.VITE_HEIC_EDGE_CONVERSION ?? 'false'
 );
