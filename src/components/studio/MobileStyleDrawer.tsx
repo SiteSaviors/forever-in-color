@@ -1,10 +1,10 @@
-import { AnimatePresence, m } from 'framer-motion';
 import { X } from 'lucide-react';
 import { Suspense, lazy, useEffect, useRef, useState, type TouchEvent } from 'react';
 import { usePreviewState } from '@/store/hooks/usePreviewStore';
 import OriginalImageCard from '@/sections/studio/components/OriginalImageCard';
 import StyleAccordionFallback from '@/sections/studio/components/StyleAccordionFallback';
 import usePrefersReducedMotion from '@/hooks/usePrefersReducedMotion';
+import './MobileStyleDrawer.css';
 
 const StyleAccordion = lazy(() => import('@/sections/studio/components/StyleAccordion'));
 
@@ -25,6 +25,9 @@ export default function MobileStyleDrawer({
 }: MobileStyleDrawerProps) {
   const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
   const touchStartYRef = useRef<number | null>(null);
+  const exitTimerRef = useRef<number | null>(null);
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const [shouldRender, setShouldRender] = useState(isOpen);
 
   // Subscribe to store state for smart auto-close
   const { pendingStyleId, stylePreviewStatus } = usePreviewState();
@@ -103,11 +106,42 @@ export default function MobileStyleDrawer({
     return () => window.removeEventListener('orientationchange', handleOrientationChange);
   }, [isOpen, onClose]);
 
-  const prefersReducedMotion = usePrefersReducedMotion();
+  useEffect(() => {
+    if (isOpen) {
+      if (exitTimerRef.current) {
+        window.clearTimeout(exitTimerRef.current);
+        exitTimerRef.current = null;
+      }
+      setShouldRender(true);
+      return;
+    }
 
-  const transition = prefersReducedMotion
-    ? { duration: 0.15, ease: 'easeOut' }
-    : { type: 'spring', damping: 30, stiffness: 300 };
+    if (prefersReducedMotion) {
+      setShouldRender(false);
+      return;
+    }
+
+    exitTimerRef.current = window.setTimeout(() => {
+      setShouldRender(false);
+      exitTimerRef.current = null;
+    }, 250);
+
+    return () => {
+      if (exitTimerRef.current) {
+        window.clearTimeout(exitTimerRef.current);
+        exitTimerRef.current = null;
+      }
+    };
+  }, [isOpen, prefersReducedMotion]);
+
+  useEffect(() => {
+    return () => {
+      if (exitTimerRef.current) {
+        window.clearTimeout(exitTimerRef.current);
+        exitTimerRef.current = null;
+      }
+    };
+  }, []);
 
   const handleTouchStart = (event: TouchEvent<HTMLDivElement>) => {
     touchStartYRef.current = event.touches[0]?.clientY ?? null;
@@ -130,30 +164,24 @@ export default function MobileStyleDrawer({
   };
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          <m.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+    <>
+      {shouldRender && (
+        <div
+          className="mobile-style-drawer"
+          data-open={isOpen ? 'true' : 'false'}
+          data-reduced-motion={prefersReducedMotion ? 'true' : 'false'}
+        >
+          <div
+            className="mobile-style-drawer__scrim"
             onClick={onClose}
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50"
             aria-hidden="true"
           />
 
-          <m.div
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={transition}
-            className="fixed inset-x-0 bottom-0 z-50 flex flex-col overflow-hidden border-t border-white/15 bg-slate-950/95 backdrop-blur-2xl shadow-[0_-24px_60px_rgba(8,14,29,0.65)] rounded-t-[2.25rem]"
+          <div
+            className="mobile-style-drawer__panel"
             style={{
               maxHeight: `min(85vh, ${viewportHeight * 0.85}px)`,
               paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-              overscrollBehavior: 'contain',
-              WebkitOverflowScrolling: 'touch',
             }}
             role="dialog"
             aria-modal="true"
@@ -245,9 +273,9 @@ export default function MobileStyleDrawer({
                 </Suspense>
               </div>
             </div>
-          </m.div>
-        </>
+          </div>
+        </div>
       )}
-    </AnimatePresence>
+    </>
   );
 }
