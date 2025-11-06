@@ -193,7 +193,7 @@ export const SPOTLIGHTS: ReadonlyArray<SpotlightStory> = [
   },
 ] as const;
 
-const isDev = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV;
+const isDev = import.meta.env.DEV;
 
 if (isDev) {
   const digitalCount = SPOTLIGHTS.filter((story) => story.product === 'digital').length;

@@ -387,6 +387,7 @@ export const AVAILABLE_TONES = [
   'signature',
   'abstract',
   'trending',
+  'experimental',
   'original',
 ] as const;
 `;

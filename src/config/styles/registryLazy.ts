@@ -145,6 +145,9 @@ export async function loadToneStyles(
         case 'classic':
           module = await import('./tones/classicTone.generated.js');
           break;
+        case 'experimental':
+          module = await import('./tones/experimentalTone.generated.js');
+          break;
         case 'modern':
           module = await import('./tones/modernTone.generated.js');
           break;
