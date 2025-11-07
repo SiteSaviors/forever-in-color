@@ -27,34 +27,68 @@ const FounderNavigation = () => {
   const [isAtTop, setIsAtTop] = useState(true);
   const [heroVisible, setHeroVisible] = useState(true);
   const scrollTickingRef = useRef(false);
+  const scrollRafIdRef = useRef<number | null>(null);
+  const heroElementRef = useRef<HTMLElement | null>(null);
+  const heroVisibilityRef = useRef<boolean>(true);
+  const isAtTopRef = useRef<boolean>(true);
 
   useEffect(() => {
     const updateIsAtTop = () => {
-      setIsAtTop(window.scrollY < 12);
+      const nextIsAtTop = window.scrollY < 12;
+      if (isAtTopRef.current !== nextIsAtTop) {
+        isAtTopRef.current = nextIsAtTop;
+        setIsAtTop(nextIsAtTop);
+      }
       scrollTickingRef.current = false;
     };
 
     const handleScroll = () => {
       if (scrollTickingRef.current) return;
       scrollTickingRef.current = true;
-      window.requestAnimationFrame(updateIsAtTop);
+      scrollRafIdRef.current = window.requestAnimationFrame(updateIsAtTop);
+    };
+
+    const handlePageHide = () => {
+      if (scrollRafIdRef.current !== null) {
+        window.cancelAnimationFrame(scrollRafIdRef.current);
+        scrollRafIdRef.current = null;
+      }
+      scrollTickingRef.current = false;
     };
 
     handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('pagehide', handlePageHide);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('pagehide', handlePageHide);
+      if (scrollRafIdRef.current !== null) {
+        window.cancelAnimationFrame(scrollRafIdRef.current);
+        scrollRafIdRef.current = null;
+      }
+    };
   }, []);
 
   useEffect(() => {
-    const heroElement = document.querySelector('[data-founder-hero]') as HTMLElement | null;
+    if (!heroElementRef.current || !document.body.contains(heroElementRef.current)) {
+      heroElementRef.current = document.querySelector('[data-founder-hero]') as HTMLElement | null;
+    }
+
+    const heroElement = heroElementRef.current;
+
     if (!heroElement) {
+      heroVisibilityRef.current = true;
       setHeroVisible(true);
       return;
     }
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        setHeroVisible(entry.intersectionRatio > 0.15);
+        const isVisible = entry.intersectionRatio > 0.15;
+        if (heroVisibilityRef.current !== isVisible) {
+          heroVisibilityRef.current = isVisible;
+          setHeroVisible(isVisible);
+        }
       },
       {
         threshold: [0, 0.15, 0.35, 0.6],
@@ -165,10 +199,20 @@ const FounderNavigation = () => {
                     const anchor = document.querySelector<HTMLElement>(
                       `[data-founder-anchor="${link.id}"]`
                     );
-                    if (anchor) {
-                      event.preventDefault();
-                      anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
+        if (anchor) {
+          const rect = anchor.getBoundingClientRect();
+          const threshold = 48;
+          if (Math.abs(rect.top) <= threshold) {
+            event.preventDefault();
+            return;
+          }
+
+          event.preventDefault();
+          requestAnimationFrame(() => {
+            anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          });
+          return;
+        }
                   }
                 }}
               >
