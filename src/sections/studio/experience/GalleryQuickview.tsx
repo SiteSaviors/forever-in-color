@@ -656,7 +656,7 @@ const GalleryQuickviewModern = () => {
       </div>
 
       {loading && !hasItems && (
-        <div className="flex gap-4 overflow-hidden">
+        <div className="flex gap-2 overflow-hidden">
           {Array.from({ length: PLACEHOLDER_COUNT }).map((_, index) => (
             <SkeletonCard key={`skeleton-${index}`} />
           ))}
@@ -683,7 +683,7 @@ const GalleryQuickviewModern = () => {
             <div
               ref={listRef}
               className={clsx(
-                'flex gap-4 overflow-x-auto scroll-smooth pb-1 pl-2 pr-2',
+                'flex gap-1 overflow-x-auto scroll-smooth pb-1 pl-2 pr-2',
                 'snap-x snap-mandatory scrollbar-hide',
                 'min-w-0'
               )}

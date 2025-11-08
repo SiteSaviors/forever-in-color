@@ -260,7 +260,7 @@ const InsightsRail = ({
     <aside
       ref={intersectionRef}
       className={clsx(
-        'w-full lg:w-[420px] px-4 py-6 lg:p-6 text-white',
+        'w-full lg:w-[400px] px-5 py-6 lg:p-6 text-white',
         className
       )}
     >
