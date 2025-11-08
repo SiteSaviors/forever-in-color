@@ -68,6 +68,23 @@ export default function StyleAccordion({ hasCroppedImage }: StyleAccordionProps)
     [prefetchGroups]
   );
 
+  // Collapse all tones except trending on initial desktop load
+  useEffect(() => {
+    if (!isDesktop || toneSections.length === 0) return;
+    setCollapsedTones((previous) => {
+      if (previous.size > 0) {
+        return previous;
+      }
+      const next = new Set<StyleTone>();
+      toneSections.forEach(({ tone }) => {
+        if (tone !== 'trending') {
+          next.add(tone);
+        }
+      });
+      return next;
+    });
+  }, [isDesktop, toneSections]);
+
   useEffect(() => {
     if (isDesktop || !activeTone) return;
     ensureToneEvaluated(activeTone);

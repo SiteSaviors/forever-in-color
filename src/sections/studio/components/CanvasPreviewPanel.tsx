@@ -159,7 +159,7 @@ const CanvasPreviewPanel = ({
     : undefined;
 
   return (
-    <main className="w-full lg:flex-1 lg:min-w-0 px-4 py-6 lg:p-8 flex flex-col items-center justify-start">
+    <main className="w-full lg:flex-1 lg:min-w-0 px-4 py-6 lg:px-6 lg:py-8 lg:sticky lg:top-[57px] lg:h-[calc(100vh-57px)] lg:overflow-y-auto flex flex-col items-center justify-start">
       <div className="w-full max-w-[720px] mx-auto">
         {previewLocked && (
           <div

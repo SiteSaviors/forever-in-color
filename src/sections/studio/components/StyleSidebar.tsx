@@ -31,11 +31,11 @@ const StyleSidebar = ({
   return (
     <aside
       className={clsx(
-        'hidden lg:block lg:w-[390px] lg:flex-shrink-0 bg-slate-950/50 border-r border-white/10 lg:h-screen lg:sticky lg:top-[57px] overflow-y-auto transition-opacity duration-200',
+        'hidden lg:block lg:w-[390px] lg:flex-shrink-0 bg-slate-950/50 border-r border-white/10 lg:sticky lg:top-[57px] transition-opacity duration-200',
         !hasCroppedImage && 'opacity-80 saturate-75'
       )}
     >
-      <div className="style-sidebar-shell relative p-6 space-y-6">
+      <div className="style-sidebar-shell relative p-6 pb-0 space-y-6">
         {/* Header */}
         <div className="relative space-y-1.5">
           <p className="text-[10px] uppercase tracking-[0.38em] text-white/50">Studio Curations</p>
@@ -79,7 +79,7 @@ const StyleSidebar = ({
         </Suspense>
 
         {/* Upgrade CTA */}
-        <div className="p-4 rounded-xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 border-2 border-purple-400/30 shadow-lg">
+        <div className="p-4 mb-6 rounded-xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 border-2 border-purple-400/30 shadow-lg">
           <p className="text-sm font-semibold text-white mb-2">Want unlimited generations?</p>
           <p className="text-xs text-white/70 mb-3">Upgrade to Creator for unlimited style switching</p>
           <Link

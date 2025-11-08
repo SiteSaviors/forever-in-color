@@ -6,7 +6,7 @@
 .tone-ambient-container::before {
   content: '';
   position: absolute;
-  inset: -20%;
+  inset: -20% -20% 0 -20%;
   border-radius: inherit;
   background:
     radial-gradient(120% 80% at 0% 0%, var(--tone-ambient-from, rgba(59,130,246,0.12)), transparent 68%),

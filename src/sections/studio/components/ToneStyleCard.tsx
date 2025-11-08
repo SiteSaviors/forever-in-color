@@ -419,8 +419,8 @@ export default function ToneStyleCard({
               className={clsx(
                 'font-display drop-shadow-[0_1px_6px_rgba(10,15,35,0.45)]',
                 isHero
-                  ? 'text-lg uppercase tracking-[0.14em] md:text-xl'
-                  : 'text-lg tracking-[0.08em] text-left',
+                  ? 'text-xl font-bold uppercase tracking-[0.14em] md:text-xl'
+                  : 'text-xl font-bold tracking-[0.01em] text-left',
                 isStyleLocked ? 'text-white/55' : 'text-white'
               )}
               style={
@@ -451,12 +451,13 @@ export default function ToneStyleCard({
         <p
           className={clsx(
             isHero
-              ? 'text-sm text-left md:text-base md:leading-relaxed'
-              : 'mt-0.5 text-sm text-left leading-snug line-clamp-2',
-            isStyleLocked ? 'text-white/35' : 'text-white/70'
+              ? 'text-sm text-left font-medium md:text-base md:leading-snug'
+              : 'mt-0.5 text-[13px] font-medium text-left leading-snug line-clamp-2',
+            isStyleLocked ? 'text-white' : 'text-white/80'
           )}
           style={{
-            textShadow: '0 1px 4px rgba(8, 13, 30, 0.45)',
+          fontFamily: '"poppins", "Inter", sans-serif',
+          textShadow: '0 1px 4px rgba(8, 13, 30, 0.45)',
           }}
         >
           {isHero ? heroDescription : option.description}

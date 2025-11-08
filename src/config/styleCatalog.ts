@@ -105,7 +105,7 @@ export const STYLE_TONE_DEFINITIONS: Record<StyleTone, StyleToneDefinition> = {
   trending: {
     id: 'trending',
     label: 'Trending Styles',
-    description: 'Most-loved styles from the Wondertone community this week.',
+    description: 'Most-loved styles from our Community.',
     icon: '📈',
     sortOrder: 10,
   },
@@ -119,7 +119,7 @@ export const STYLE_TONE_DEFINITIONS: Record<StyleTone, StyleToneDefinition> = {
   modern: {
     id: 'modern',
     label: 'Modern Styles',
-    description: 'Fresh, design-forward looks for contemporary art lovers.',
+    description: 'Fresh looks for contemporary art lovers.',
     icon: '✨',
     sortOrder: 30,
   },
@@ -140,14 +140,14 @@ export const STYLE_TONE_DEFINITIONS: Record<StyleTone, StyleToneDefinition> = {
   electric: {
     id: 'electric',
     label: 'Neon Glitch Styles',
-    description: 'High-voltage neon, synthwave, and glitch-inspired treatments.',
+    description: 'High-voltage and glitch-inspired treatments.',
     icon: '⚡',
     sortOrder: 50,
   },
   signature: {
     id: 'signature',
     label: 'Signature Styles',
-    description: 'Premium exclusives crafted by the Wondertone studio.',
+    description: 'Premium exclusives from the Wondertone Studio.',
     icon: '⭐',
     sortOrder: 60,
     requiredTier: 'creator',
@@ -155,7 +155,7 @@ export const STYLE_TONE_DEFINITIONS: Record<StyleTone, StyleToneDefinition> = {
   experimental: {
     id: 'experimental',
     label: 'Experimental Labs',
-    description: 'Total transformations engineered in the Wondertone Lab.',
+    description: 'Total transformations created by Wondertone AI.',
     icon: '🧪',
     sortOrder: 70,
     requiredTier: 'creator',

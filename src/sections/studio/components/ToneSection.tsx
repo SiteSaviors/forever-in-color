@@ -136,7 +136,7 @@ export default function ToneSection({
             <div className="flex items-center gap-3">
               <h3
                 className={clsx(
-                  'font-display text-[0.98rem] md:text-[1.2rem] lg:text-[1.45rem] leading-snug font-bold capitalized tracking-[0.04em] text-white drop-shadow-[0_1px_6px_rgba(8,12,28,0.45)]'
+                  'font-display text-[1.1rem] md:text-[1.2rem] lg:text-[1.35rem] leading-snug font-bold capitalized tracking-[0.02em] text-white drop-shadow-[0_1px_6px_rgba(8,12,28,0.45)]'
                 )}
               >
                 {definition.label}
@@ -145,9 +145,9 @@ export default function ToneSection({
                 <Lock className="h-4 w-4 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]" aria-hidden="true" />
               )}
             </div>
-            <p className="mt-1 text-xs text-white/75 md:text-sm md:leading-relaxed drop-shadow-[0_1px_4px_rgba(8,12,28,0.4)]">
-              {definition.description}
-            </p>
+            <p className="mt-1 font-poppins text-[0.9rem] text-white/75 tracking-[0.001em] leading-snug md:leading-[1.5] md:text-[0.3 rem] md:leading-[1.0] drop-shadow-[0_1px_4px_rgba(8,12,28,0.4)]">
+             {definition.description}
+           </p>
           </div>
           <div className="flex flex-col items-center gap-1 self-start pt-1">
             <motion.span
