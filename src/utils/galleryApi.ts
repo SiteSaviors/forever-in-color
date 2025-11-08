@@ -181,7 +181,7 @@ export async function fetchGalleryItems(
 export async function deleteGalleryItem(
   itemId: string,
   accessToken?: string | null
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{ success: boolean; error?: string; status?: number }> {
   try {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -203,15 +203,20 @@ export async function deleteGalleryItem(
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-      return { success: false, error: errorData.error || `Failed to delete (${response.status})` };
+      return {
+        success: false,
+        error: errorData.error || `Failed to delete (${response.status})`,
+        status: response.status,
+      };
     }
 
-    return { success: true };
+    return { success: true, status: response.status };
   } catch (error) {
     console.error('[galleryApi] deleteGalleryItem error:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
+      status: undefined,
     };
   }
 }

@@ -24,3 +24,32 @@ export const trackGalleryQuickviewAnimationComplete = (artId: string) => {
 export const trackGalleryQuickviewFetchError = (error: string) => {
   sendAnalyticsEvent('gallery_quickview_fetch_error', { error });
 };
+
+export const trackGalleryQuickviewDeleteModeChanged = (payload: {
+  active: boolean;
+  surface: 'desktop' | 'mobile';
+}) => {
+  sendAnalyticsEvent('gallery_quickview_delete_mode_changed', payload);
+};
+
+export const trackGalleryQuickviewDeleteRequested = (payload: {
+  artId: string;
+  styleId: string;
+  position: number;
+  surface: 'desktop' | 'mobile';
+  hasUpload: boolean;
+}) => {
+  sendAnalyticsEvent('gallery_quickview_delete_requested', payload);
+};
+
+export const trackGalleryQuickviewDeleteResult = (payload: {
+  artId: string;
+  styleId: string;
+  success: boolean;
+  surface: 'desktop' | 'mobile';
+  durationMs: number;
+  status?: number;
+  errorCode?: 'auth' | 'network' | 'server' | 'unknown';
+}) => {
+  sendAnalyticsEvent('gallery_quickview_delete_result', payload);
+};

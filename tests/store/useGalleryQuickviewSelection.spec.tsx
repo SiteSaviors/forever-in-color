@@ -185,7 +185,7 @@ let mocks: MockHandles;
     });
 
     expect(mocks.ensureStyleLoaded).toHaveBeenCalledWith(item.styleId);
-    expect(mocks.setOriginalImage).toHaveBeenCalledWith(item.displayUrl);
+    expect(mocks.setOriginalImage).toHaveBeenCalledWith(item.sourceSignedUrl);
     expect(mocks.setOriginalImageSource).toHaveBeenCalledWith({
       storagePath: item.sourceStoragePath,
       publicUrl: item.sourceDisplayUrl,
@@ -229,7 +229,7 @@ let mocks: MockHandles;
       await select(staleItem, null, 3);
     });
 
-    expect(mocks.setOriginalImage).toHaveBeenCalledWith(staleItem.displayUrl);
+    expect(mocks.setOriginalImage).toHaveBeenCalledWith(staleItem.sourceDisplayUrl);
     expect(mocks.setOriginalImageSource).toHaveBeenCalledWith({
       storagePath: staleItem.sourceStoragePath,
       publicUrl: staleItem.sourceDisplayUrl,

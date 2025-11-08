@@ -60,6 +60,7 @@ export const useGalleryQuickview = () => {
     setGalleryError,
     clearGallery,
     invalidateGallery,
+    removeGalleryItem,
   } = useFounderStore(
     (state) => ({
       galleryItems: state.galleryItems,
@@ -72,6 +73,7 @@ export const useGalleryQuickview = () => {
       setGalleryError: state.setGalleryError,
       clearGallery: state.clearGallery,
       invalidateGallery: state.invalidateGallery,
+      removeGalleryItem: state.removeGalleryItem,
     }),
     shallow
   );
@@ -182,5 +184,6 @@ export const useGalleryQuickview = () => {
     requiresWatermark: galleryRequiresWatermark,
     refresh,
     invalidate: invalidateGallery,
+    removeItem: removeGalleryItem,
   };
 };

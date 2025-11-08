@@ -8,9 +8,9 @@ interface ImportMetaEnv {
   readonly VITE_STORY_LAYER_ENABLED?: string;
   readonly VITE_AUTH_GATE_ROLLOUT?: string;
   readonly VITE_HEIC_EDGE_CONVERSION?: string;
+  readonly VITE_ENABLE_QUICKVIEW_DELETE_MODE?: string;
 }
 
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
-

@@ -38,3 +38,7 @@ export const AUTH_GATE_ROLLOUT_PERCENT = coercePercentage(
 export const ENABLE_HEIC_EDGE_CONVERSION = coerceBoolean(
   import.meta.env.VITE_HEIC_EDGE_CONVERSION ?? 'false'
 );
+
+export const ENABLE_QUICKVIEW_DELETE_MODE = coerceBoolean(
+  import.meta.env.VITE_ENABLE_QUICKVIEW_DELETE_MODE ?? 'false'
+);

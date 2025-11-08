@@ -80,11 +80,15 @@ export const handleGalleryQuickviewSelection = async (
   const requiresWatermarkFlag = requiresWatermark ?? true;
 
   const candidates = selectBestSourceUrl(item);
+  let resolvedOriginalImageUrl: string | null = null;
   let dimensions = { width: 0, height: 0 };
 
   for (const candidate of candidates) {
     try {
       dimensions = await preloadImage(candidate);
+      if (!resolvedOriginalImageUrl) {
+        resolvedOriginalImageUrl = candidate;
+      }
       break;
     } catch (error) {
       console.warn('[useGalleryQuickviewSelection] Failed to preload candidate image', {
@@ -97,6 +101,9 @@ export const handleGalleryQuickviewSelection = async (
   if (!dimensions.width || !dimensions.height) {
     try {
       dimensions = await preloadImage(previewUrl);
+      if (!resolvedOriginalImageUrl) {
+        resolvedOriginalImageUrl = previewUrl;
+      }
     } catch (error) {
       console.error('[useGalleryQuickviewSelection] Failed to preload fallback preview image', error);
     }
@@ -136,13 +143,19 @@ export const handleGalleryQuickviewSelection = async (
   }
 
   store.setSmartCropForOrientation(targetOrientation, smartCropResult);
-  store.setOriginalImage(previewUrl);
+  const signedValid = isSignedUrlValid(item);
+  if (!resolvedOriginalImageUrl) {
+    resolvedOriginalImageUrl =
+      item.sourceDisplayUrl ??
+      (signedValid ? item.sourceSignedUrl ?? null : null) ??
+      previewUrl;
+  }
+
+  store.setOriginalImage(resolvedOriginalImageUrl);
   store.setOriginalImageDimensions({
     width: smartCropResult.imageDimensions.width,
     height: smartCropResult.imageDimensions.height,
   });
-
-  const signedValid = isSignedUrlValid(item);
   store.setOriginalImageSource({
     storagePath: item.sourceStoragePath ?? null,
     publicUrl: item.sourceDisplayUrl ?? null,

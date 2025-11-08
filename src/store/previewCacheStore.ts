@@ -18,6 +18,7 @@ type PreviewCacheState = {
   setEntry: (styleId: string, entry: StylePreviewCacheEntry) => void;
   getEntry: (styleId: string, orientation: Orientation) => StylePreviewCacheEntry | undefined;
   hasEntry: (styleId: string, orientation: Orientation) => boolean;
+  deleteEntriesForStyle: (styleId: string) => void;
   clear: () => void;
 };
 
@@ -109,6 +110,24 @@ export const previewCacheStore = createStore<PreviewCacheState>()((set, get) => 
     return entry;
   },
   hasEntry: (styleId, orientation) => Boolean(get().cache[styleId]?.[orientation]),
+  deleteEntriesForStyle: (styleId) => {
+    set((state) => {
+      if (!state.cache[styleId]) {
+        return state;
+      }
+
+      const nextCache: PreviewCacheMap = { ...state.cache };
+      delete nextCache[styleId];
+
+      const prefix = `${styleId}:`;
+      const nextOrder = state.order.filter((value) => !value.startsWith(prefix));
+
+      return {
+        cache: nextCache,
+        order: nextOrder,
+      };
+    });
+  },
   clear: () => {
     set({
       cache: {},
@@ -137,6 +156,11 @@ export const getCachedPreviewEntry = (styleId: string, orientation: Orientation)
 
 export const hasCachedPreviewEntry = (styleId: string, orientation: Orientation) =>
   previewCacheStore.getState().hasEntry(styleId, orientation);
+
+export const deletePreviewCacheEntries = (styleId: string | null) => {
+  if (!styleId) return;
+  previewCacheStore.getState().deleteEntriesForStyle(styleId);
+};
 
 export const clearPreviewCache = () => previewCacheStore.getState().clear();
 

@@ -576,5 +576,70 @@ export const useFounderStore = createWithEqualityFn<FounderState>((set, get, api
     }));
     await module.ensureStylesLoaded(runtime, styleIds);
   },
+  restoreOriginalImagePreview: (styleId = null) => {
+    const state = get();
+    const source = state.originalImage ?? state.croppedImage ?? state.uploadedImage;
+    if (!source) {
+      return false;
+    }
+
+    if (styleId) {
+      state.setPreviewState(styleId, { status: 'idle' });
+    }
+
+    if (state.selectedStyleId !== 'original-image') {
+      state.selectStyle('original-image');
+    }
+
+    const timestamp = Date.now();
+    state.setPreviewState('original-image', {
+      status: 'ready',
+      data: {
+        previewUrl: source,
+        watermarkApplied: false,
+        startedAt: timestamp,
+        completedAt: timestamp,
+      },
+      orientation: state.orientation,
+    });
+
+    set({
+      pendingStyleId: null,
+      previewStatus: 'ready',
+      stylePreviewStatus: 'idle',
+      stylePreviewMessage: null,
+      stylePreviewError: null,
+      stylePreviewStartAt: null,
+      orientationPreviewPending: false,
+    });
+
+    return true;
+  },
+  resetPreviewToEmptyState: (styleId = null) => {
+    const state = get();
+    if (styleId) {
+      state.setPreviewState(styleId, { status: 'idle' });
+    }
+    state.setPreviewState('original-image', { status: 'idle' });
+
+    state.clearSmartCrops();
+    state.setOriginalImageSource(null);
+    state.setOriginalImageDimensions(null);
+    state.setOriginalImage(null);
+    state.setCroppedImage(null);
+    state.setUploadedImage(null);
+
+    set({
+      selectedStyleId: null,
+      pendingStyleId: null,
+      previewStatus: 'idle',
+      stylePreviewStatus: 'idle',
+      stylePreviewMessage: null,
+      stylePreviewError: null,
+      stylePreviewStartAt: null,
+      orientationPreviewPending: false,
+      launchpadSlimMode: false,
+    });
+  },
   ...createFavoritesSlice(set, get, api),
 }));

@@ -202,6 +202,7 @@ export type GallerySlice = {
   clearGallery: () => void;
   invalidateGallery: () => void;
   setGalleryRequiresWatermark: (requires: boolean | null) => void;
+  removeGalleryItem: (id: string) => void;
 };
 
 export type AuthSlice = SessionSlice &
@@ -291,6 +292,8 @@ export type FounderBaseState = {
   shouldAutoGeneratePreviews: () => boolean;
   ensureStyleLoaded: (styleId: string) => Promise<StyleOption | null>;
   ensureStylesLoaded: (styleIds: string[]) => Promise<void>;
+  restoreOriginalImagePreview: (styleId?: string | null) => boolean;
+  resetPreviewToEmptyState: (styleId?: string | null) => void;
   favoriteStyles: string[];
   toggleFavoriteStyle: (styleId: string) => void;
   isStyleFavorite: (styleId: string) => boolean;

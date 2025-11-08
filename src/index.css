@@ -30,3 +30,18 @@
     animation: none;
   }
 }
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes quickview-wiggle {
+    0% {
+      transform: rotate(-1.8deg) scale(0.99);
+    }
+    100% {
+      transform: rotate(1.8deg) scale(0.99);
+    }
+  }
+
+  .quickview-card-wiggle {
+    animation: quickview-wiggle 0.5s ease-in-out infinite alternate;
+  }
+}

@@ -49,4 +49,26 @@ export const createGallerySlice: StateCreator<FounderState, [], [], GallerySlice
     set({
       galleryRequiresWatermark: requires,
     }),
+  removeGalleryItem: (id) =>
+    set((state) => {
+      if (!state.galleryItems.length) {
+        return state;
+      }
+
+      const nextItems = state.galleryItems.filter((item) => item.id !== id);
+      if (nextItems.length === state.galleryItems.length) {
+        return state;
+      }
+
+      const reindexed = nextItems.map((item, index) => ({
+        ...item,
+        position: index,
+      }));
+
+      return {
+        galleryItems: reindexed,
+        lastFetchedAt: Date.now(),
+        galleryStatus: reindexed.length ? state.galleryStatus : 'idle',
+      };
+    }),
 });

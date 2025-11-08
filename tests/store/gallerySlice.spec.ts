@@ -69,4 +69,34 @@ describe('gallerySlice', () => {
     expect(state.galleryStatus).toBe('idle');
     expect(state.lastFetchedAt).toBeNull();
   });
+
+  it('removes a gallery item and reindexes remaining positions', () => {
+    const { setGalleryItems, removeGalleryItem } = useFounderStore.getState();
+    const items = [
+      sampleItem({ id: 'item-1', position: 0 }),
+      sampleItem({ id: 'item-2', position: 1 }),
+      sampleItem({ id: 'item-3', position: 2 }),
+    ];
+    setGalleryItems(items, false);
+    const previousFetchedAt = useFounderStore.getState().lastFetchedAt ?? 0;
+
+    removeGalleryItem('item-2');
+
+    const state = useFounderStore.getState();
+    expect(state.galleryItems).toHaveLength(2);
+    expect(state.galleryItems.map((item) => item.id)).toEqual(['item-1', 'item-3']);
+    expect(state.galleryItems.map((item) => item.position)).toEqual([0, 1]);
+    expect(state.lastFetchedAt ?? 0).toBeGreaterThanOrEqual(previousFetchedAt);
+    expect(state.galleryStatus).toBe('ready');
+  });
+
+  it('sets gallery status to idle when last item is removed', () => {
+    const { setGalleryItems, removeGalleryItem } = useFounderStore.getState();
+    setGalleryItems([sampleItem()], false);
+    removeGalleryItem('item-1');
+
+    const state = useFounderStore.getState();
+    expect(state.galleryItems).toHaveLength(0);
+    expect(state.galleryStatus).toBe('idle');
+  });
 });
