@@ -78,8 +78,8 @@ export function ActionGrid({
             <Download className="h-5 w-5" />
           </div>
           <div className="flex flex-1 flex-col text-left">
-            <span className="text-sm font-semibold leading-tight">Download Image</span>
-            <span className="text-xs text-white/70">
+            <span className="font-poppins text-sm font-semibold leading-tight">Download Image</span>
+            <span className="font-poppins text-xs text-white/70">
               {isPremiumUser ? '4K JPEG' : 'Upgrade for HD'}
             </span>
           </div>

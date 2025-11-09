@@ -1,6 +1,5 @@
 import {
   createContext,
-  lazy,
   Suspense,
   useCallback,
   useContext,
@@ -17,8 +16,7 @@ import { useUploadActions, useUploadState } from '@/store/hooks/useUploadStore';
 import { usePreviewActions, usePreviewLockState, usePreviewState } from '@/store/hooks/usePreviewStore';
 import { useCanvasConfigActions, useCanvasConfigState } from '@/store/hooks/useCanvasConfigStore';
 import { useStyleCatalogState } from '@/store/hooks/useStyleCatalogStore';
-
-const CropperModal = lazy(() => import('@/components/launchpad/cropper/CropperModal'));
+import CropperModal from '@/components/launchpad/cropper/CropperModal';
 
 type OrientationBridgeProviderProps = {
   children: ReactNode;

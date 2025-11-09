@@ -1,5 +1,6 @@
 import { memo, useMemo, useState, useEffect, lazy, Suspense, type ReactNode } from 'react';
 import { clsx } from 'clsx';
+import { useReducedMotion } from 'framer-motion';
 import type { EntitlementState, StyleOption } from '@/store/founder/storeTypes';
 import StoryTeaser from './StoryTeaser';
 // StoryHeader removed per request to reduce duplication in right rail
@@ -8,7 +9,7 @@ const PaletteModuleLazy = lazy(() => import('./PaletteModule'));
 const CuratedStylesModuleLazy = lazy(() => import('./CuratedStylesModule'));
 const SecondaryCanvasCtaLazy = lazy(() => import('./SecondaryCanvasCta'));
 const ShareBadgesLazy = lazy(() => import('./ShareBadges'));
-const StylePreviewModuleLazy = lazy(() => import('./StylePreviewModule'));
+const OriginalComparisonModuleLazy = lazy(() => import('./OriginalComparisonModule'));
 import { getNarrative, getPalette } from '@/utils/storyLayer/copy';
 import type { Orientation } from '@/utils/imageUtils';
 import type { StudioToastPayload } from '@/hooks/useStudioFeedback';
@@ -153,6 +154,7 @@ const InsightsRail = ({
   className,
 }: InsightsRailProps) => {
   const highlightedStyle = useHighlightedStyle(currentStyle);
+  const prefersReducedMotion = useReducedMotion();
   const stage: 'pre-upload' | 'post-upload' =
     hasCroppedImage && previewReady ? 'post-upload' : 'pre-upload';
 
@@ -190,10 +192,11 @@ const InsightsRail = ({
       <DesktopRailShell>
         <StoryTeaser highlightedStyle={highlightedStyle} stage={stage} />
         <Suspense fallback={<InsightsSkeleton />}>
-          <StylePreviewModuleLazy
-            highlightedStyle={highlightedStyle}
+          <OriginalComparisonModuleLazy
             stage={stage}
             orientation={orientation}
+            styledPreviewUrl={previewUrl}
+            prefersReducedMotion={prefersReducedMotion}
           />
         </Suspense>
         {storyData && highlightedStyle ? (
@@ -226,10 +229,11 @@ const InsightsRail = ({
         {stage === 'post-upload' && storyData && highlightedStyle ? (
           <>
             <Suspense fallback={<InsightsSkeleton />}>
-              <StylePreviewModuleLazy
-                highlightedStyle={highlightedStyle}
+              <OriginalComparisonModuleLazy
                 stage={stage}
                 orientation={orientation}
+                styledPreviewUrl={previewUrl}
+                prefersReducedMotion={prefersReducedMotion}
               />
               <DiscoverGridLazy narrative={storyData.narrative} />
               <PaletteModuleLazy styleId={highlightedStyle.id} swatches={storyData.palette} />

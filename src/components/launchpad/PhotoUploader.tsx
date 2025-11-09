@@ -1,4 +1,4 @@
-import { ChangeEvent, DragEvent, useCallback, useEffect, useMemo, useRef, useState, lazy, Suspense } from 'react';
+import { ChangeEvent, DragEvent, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { clsx } from 'clsx';
 import Card from '@/components/ui/Card';
 import { readFileAsDataURL, getImageDimensions, determineOrientationFromDimensions, type FileDataUrlResult } from '@/utils/imageUtils';
@@ -11,13 +11,11 @@ import type { Orientation } from '@/utils/imageUtils';
 import { useUploadActions, useUploadState } from '@/store/hooks/useUploadStore';
 import { usePreviewActions } from '@/store/hooks/usePreviewStore';
 import { persistOriginalUpload } from '@/utils/sourceUploadApi';
+import CropperModal from '@/components/launchpad/cropper/CropperModal';
 
 const SAMPLE_IMAGE = 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=900&q=80';
 
 type UploadStage = 'idle' | 'analyzing' | 'preview' | 'cropper' | 'complete';
-
-const loadCropperModal = () => import('@/components/launchpad/cropper/CropperModal');
-const CropperModal = lazy(loadCropperModal);
 
 const PhotoUploader = () => {
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -266,14 +264,12 @@ const PhotoUploader = () => {
 
   const handleCustomizeCrop = () => {
     if (!originalImage) return;
-    void loadCropperModal();
     setCropperOpen(true);
     setStage('cropper');
   };
 
   const handleOpenCropper = () => {
     if (!originalImage) return;
-    void loadCropperModal();
     setCropperOpen(true);
     setStage('cropper');
   };
