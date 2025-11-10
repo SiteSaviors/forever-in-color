@@ -289,8 +289,8 @@ const CanvasPreviewPanel = ({
           <h3 className="font-poppins text-[28px] font-semibold text-white sm:text-[32px]">
             See it in your space
           </h3>
-          <p className="text-sm text-white/70 max-w-md mx-auto sm:text-base">
-            Visualize your Wondertone canvas in a curated living room scene before you commit to print.
+          <p className="font-poppins text-sm text-white/70 max-w-md mx-auto sm:text-base">
+            Visualize your artwork in a curated living room setting.
           </p>
         </div>
         <Suspense fallback={<CanvasPreviewFallback />}>

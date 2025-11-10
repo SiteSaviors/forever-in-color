@@ -62,7 +62,7 @@ const MobileAccordionShell = ({ children }: { children: ReactNode }) => (
 );
 
 const DesktopRailShell = ({ children }: { children: ReactNode }) => (
-  <section className="hidden lg:block lg:sticky lg:top-[57px]">
+  <section className="hidden lg:block">
     <div className="space-y-8">{children}</div>
   </section>
 );
@@ -264,7 +264,7 @@ const InsightsRail = ({
     <aside
       ref={intersectionRef}
       className={clsx(
-        'w-full lg:w-[400px] px-5 py-6 lg:p-6 text-white',
+        'w-full lg:w-[400px] px-5 py-6 lg:p-6 text-white lg:sticky lg:top-[57px] lg:h-[calc(100vh-57px)] lg:overflow-y-auto',
         className
       )}
     >

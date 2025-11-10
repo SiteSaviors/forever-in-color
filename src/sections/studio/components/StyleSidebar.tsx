@@ -31,11 +31,11 @@ const StyleSidebar = ({
   return (
     <aside
       className={clsx(
-        'hidden lg:block lg:w-[390px] lg:flex-shrink-0 bg-slate-950/50 border-r border-white/10 lg:sticky lg:top-[57px] transition-opacity duration-200',
+        'hidden lg:block lg:w-[390px] lg:flex-shrink-0 bg-slate-950/50 border-r border-white/10 lg:sticky lg:top-[57px] lg:max-h-[calc(100vh-57px)] lg:overflow-y-auto transition-opacity duration-200',
         !hasCroppedImage && 'opacity-80 saturate-75'
       )}
     >
-      <div className="style-sidebar-shell relative p-6 pb-0 space-y-6">
+      <div className="style-sidebar-shell relative px-6 pt-6 pb-0">
         {/* Header */}
         <div className="relative space-y-1.5">
           <p className="text-[10px] uppercase tracking-[0.38em] text-white/50">Studio Curations</p>
@@ -44,7 +44,7 @@ const StyleSidebar = ({
         </div>
 
         {/* Token Counter */}
-        <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/10 via-transparent to-white/5 p-5 shadow-inner">
+        <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/10 via-transparent to-white/5 p-5 shadow-inner mt-6">
           <div
             aria-hidden="true"
             className="pointer-events-none absolute -inset-10 opacity-40 blur-2xl"
@@ -71,15 +71,19 @@ const StyleSidebar = ({
         </div>
 
         {/* ✅ NEW: Original Image always visible (not a style, just your photo) */}
-        <OriginalImageCard />
+        <div className="mt-6">
+          <OriginalImageCard />
+        </div>
 
         {/* ✅ Accordion with tone-based styles */}
-        <Suspense fallback={<StyleAccordionFallback />}>
-          <StyleAccordion hasCroppedImage={hasCroppedImage} />
-        </Suspense>
+        <div className="mt-6">
+          <Suspense fallback={<StyleAccordionFallback />}>
+            <StyleAccordion hasCroppedImage={hasCroppedImage} />
+          </Suspense>
+        </div>
 
         {/* Upgrade CTA */}
-        <div className="p-4 mb-6 rounded-xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 border-2 border-purple-400/30 shadow-lg">
+        <div className="p-4 mt-6 rounded-xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 border-2 border-purple-400/30 shadow-lg">
           <p className="text-sm font-semibold text-white mb-2">Want unlimited generations?</p>
           <p className="text-xs text-white/70 mb-3">Upgrade to Creator for unlimited style switching</p>
           <Link

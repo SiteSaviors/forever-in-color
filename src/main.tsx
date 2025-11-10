@@ -5,14 +5,17 @@ import './styles/tailwind.css';
 import AppShellSkeleton from '@/components/skeletons/AppShellSkeleton';
 import StudioShellSkeleton from '@/components/skeletons/StudioShellSkeleton';
 import StudioProviders from '@/routes/StudioProviders';
+import AuthProvider from '@/providers/AuthProvider';
 
 const MarketingRoutes = lazy(() => import('@/routes/MarketingRoutes'));
 const StudioRoutes = lazy(() => import('@/routes/StudioRoutes'));
 
 const MarketingContainer = () => (
-  <Suspense fallback={<AppShellSkeleton />}>
-    <MarketingRoutes />
-  </Suspense>
+  <AuthProvider>
+    <Suspense fallback={<AppShellSkeleton />}>
+      <MarketingRoutes />
+    </Suspense>
+  </AuthProvider>
 );
 
 const StudioContainer = () => (

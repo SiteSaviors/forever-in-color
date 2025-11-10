@@ -23,10 +23,10 @@ const StudioEmptyState = ({ onUpload, onBrowseStyles, launchflowOpen }: StudioEm
         </div>
         <div className="space-y-4">
           <h3 className="font-poppins text-2xl font-semibold leading-snug text-white sm:text-[32px]">
-            Bring your photo into Wondertone Studio
+            Upload Any Photo Into Wondertone Studio
           </h3>
-          <p className="text-base text-white/75">
-            Launchflow opens beside the configurator so you crop once and explore every style instantly.
+          <p className="font-poppins text-base text-white/75">
+            Choose between 50+ art styles to start your creation.
           </p>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
@@ -52,7 +52,7 @@ const StudioEmptyState = ({ onUpload, onBrowseStyles, launchflowOpen }: StudioEm
           </button>
         </div>
         <p className="text-[11px] font-medium uppercase tracking-[0.28em] text-white/45">
-          Your artwork stays private—every canvas begins with your image.
+          Your image and artwork stays private—always.
         </p>
       </div>
     </div>
