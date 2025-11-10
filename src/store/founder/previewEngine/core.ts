@@ -213,7 +213,12 @@ export const startStylePreviewFlow = async (
     } else {
       latest.setPreviewState(style.id, { status: 'idle' });
     }
-    latest.registerAuthGateIntent(style.id, options);
+    useAuthModal.getState().registerGateIntent({
+      styleId: style.id,
+      options: options ?? null,
+      source: 'preview',
+      autoOpen: true,
+    });
     set({
       pendingStyleId: null,
       stylePreviewStatus: 'idle',
@@ -609,29 +614,20 @@ export const generatePreviewsFlow = async (
 };
 
 export const resumePendingAuthPreviewFlow = async (runtime: PreviewEngineRuntime): Promise<void> => {
-  const { get, set } = runtime;
+  const { get } = runtime;
   const state = get();
   const authModal = useAuthModal.getState();
   const consumedIntent = authModal.consumePendingIntent();
-  const styleId = consumedIntent?.styleId ?? state.pendingAuthStyleId;
-  if (!styleId) {
+  if (!consumedIntent) {
     return;
   }
 
-  const style = state.styles.find((entry) => entry.id === styleId);
+  const style = state.styles.find((entry) => entry.id === consumedIntent.styleId);
   if (!style) {
-    set({ pendingAuthStyleId: null, pendingAuthOptions: null, authGateOpen: false });
     return;
   }
 
-  set({ authGateOpen: false });
-
-  try {
-    const resumeOptions = consumedIntent?.options ?? state.pendingAuthOptions ?? undefined;
-    await state.startStylePreview(style, resumeOptions);
-  } finally {
-    set({ pendingAuthStyleId: null, pendingAuthOptions: null });
-  }
+  await state.startStylePreview(style, consumedIntent.options ?? undefined);
 };
 
 export const abortPreviewGenerationFlow = (runtime: PreviewEngineRuntime): void => {

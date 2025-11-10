@@ -99,7 +99,6 @@ type MutableState = FounderState & {
   incrementGenerationCount: ReturnType<typeof vi.fn>;
   setShowTokenToast: ReturnType<typeof vi.fn>;
   setPreviewStatus: ReturnType<typeof vi.fn>;
-  registerAuthGateIntent: ReturnType<typeof vi.fn>;
   startStylePreview: ReturnType<typeof vi.fn>;
   getCachedStylePreview: ReturnType<typeof vi.fn>;
   setCurrentImageHash: ReturnType<typeof vi.fn>;
@@ -117,9 +116,6 @@ const createState = (): MutableState => {
     stylePreviewError: null as string | null,
     stylePreviewStartAt: null as number | null,
     firstPreviewCompleted: false,
-    authGateOpen: false,
-    pendingAuthStyleId: null as string | null,
-    pendingAuthOptions: null,
     entitlements: {
       status: 'ready' as const,
       tier: 'free',
@@ -172,7 +168,6 @@ const createState = (): MutableState => {
   state.setPreviewStatus = vi.fn((status) => {
     state.previewStatus = status;
   });
-  state.registerAuthGateIntent = vi.fn();
   state.startStylePreview = vi.fn(() => Promise.resolve());
   state.setCurrentImageHash = vi.fn((hash: string) => {
     state.currentImageHash = hash;
@@ -272,16 +267,19 @@ describe('previewEngine/core', () => {
     );
   });
 
-  it('resumes pending auth preview via store action', async () => {
+  it('resumes pending auth preview via auth modal intent', async () => {
     const state = createState();
-    state.pendingAuthStyleId = baseStyle.id;
     state.startStylePreview = vi.fn(() => Promise.resolve());
+    mockAuthModalState.consumePendingIntent.mockReturnValue({
+      styleId: baseStyle.id,
+      options: { force: true },
+    });
     const runtime = buildRuntime(state);
 
     await resumePendingAuthPreviewFlow(runtime);
 
-    expect(state.startStylePreview).toHaveBeenCalledWith(baseStyle, undefined);
-    expect(state.pendingAuthStyleId).toBeNull();
+    expect(mockAuthModalState.consumePendingIntent).toHaveBeenCalled();
+    expect(state.startStylePreview).toHaveBeenCalledWith(baseStyle, { force: true });
   });
 
   it('generates previews for styles needing regeneration', async () => {

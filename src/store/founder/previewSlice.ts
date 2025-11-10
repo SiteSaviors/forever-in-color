@@ -1,6 +1,5 @@
 import type { StateCreator } from 'zustand';
 import { cachePreviewEntry, getCachedPreviewEntry, clearPreviewCache } from '@/store/previewCacheStore';
-import { useAuthModal } from '@/store/useAuthModal';
 import type { FounderState, PreviewSlice, StyleOption } from './storeTypes';
 import {
   startStylePreviewEngine,
@@ -27,9 +26,6 @@ export const createPreviewSlice = (
     stylePreviewError: null,
     stylePreviewStartAt: null,
     firstPreviewCompleted: false,
-    authGateOpen: false,
-    pendingAuthStyleId: null,
-    pendingAuthOptions: null,
     setPreviewStatus: (status) => set({ previewStatus: status }),
     setPreviewState: (id, previewState) =>
       set((state) => ({
@@ -54,45 +50,6 @@ export const createPreviewSlice = (
     getCachedStylePreview: (styleId, orientation) => getCachedPreviewEntry(styleId, orientation),
     clearStylePreviewCache: () => {
       clearPreviewCache();
-    },
-    setAuthGateOpen: (open) => {
-      if (open) {
-        const pendingStyleId = get().pendingAuthStyleId ?? get().pendingStyleId;
-        if (pendingStyleId) {
-          useAuthModal.getState().registerGateIntent({
-            styleId: pendingStyleId,
-            options: get().pendingAuthOptions ?? null,
-            source: 'preview',
-            autoOpen: true,
-          });
-        }
-        set({ authGateOpen: true });
-      } else {
-        useAuthModal.getState().clearGateIntent('dismiss');
-        set({ authGateOpen: false });
-      }
-    },
-    registerAuthGateIntent: (styleId, options) => {
-      const normalizedOptions = options ?? null;
-      useAuthModal.getState().registerGateIntent({
-        styleId,
-        options: normalizedOptions,
-        source: 'preview',
-        autoOpen: true,
-      });
-      set({
-        authGateOpen: true,
-        pendingAuthStyleId: styleId,
-        pendingAuthOptions: normalizedOptions,
-      });
-    },
-    clearAuthGateIntent: () => {
-      useAuthModal.getState().clearGateIntent('dismiss');
-      set({
-        authGateOpen: false,
-        pendingAuthStyleId: null,
-        pendingAuthOptions: null,
-      });
     },
     startStylePreview: async (style, options = {}) =>
       startStylePreviewEngine({ set, get, abortControllerRef }, style, options),

@@ -33,8 +33,6 @@ export const usePreviewActions = () =>
       setStylePreviewState: state.setStylePreviewState,
       setOrientationPreviewPending: state.setOrientationPreviewPending,
       shouldAutoGeneratePreviews: state.shouldAutoGeneratePreviews,
-      registerAuthGateIntent: state.registerAuthGateIntent,
-      clearAuthGateIntent: state.clearAuthGateIntent,
       resumePendingAuthPreview: state.resumePendingAuthPreview,
       abortPreviewGeneration: state.abortPreviewGeneration,
       hasCachedPreview: (styleId: string, orientation: Orientation) =>

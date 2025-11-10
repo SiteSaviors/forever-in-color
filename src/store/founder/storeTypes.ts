@@ -88,9 +88,6 @@ export type PreviewSlice = {
   stylePreviewError: string | null;
   stylePreviewStartAt: number | null;
   firstPreviewCompleted: boolean;
-  authGateOpen: boolean;
-  pendingAuthStyleId: string | null;
-  pendingAuthOptions: StartPreviewOptions | null;
   setPreviewStatus: (status: PreviewSlice['previewStatus']) => void;
   setPreviewState: (id: string, previewState: PreviewState) => void;
   setPendingStyle: (styleId: string | null) => void;
@@ -101,9 +98,6 @@ export type PreviewSlice = {
   startStylePreview: (style: StyleOption, options?: StartPreviewOptions) => Promise<void>;
   resetPreviews: () => void;
   generatePreviews: (ids?: string[], options?: { force?: boolean; orientationOverride?: Orientation }) => Promise<void>;
-  setAuthGateOpen: (open: boolean) => void;
-  registerAuthGateIntent: (styleId: string, options?: StartPreviewOptions) => void;
-  clearAuthGateIntent: () => void;
   resumePendingAuthPreview: () => Promise<void>;
   abortPreviewGeneration: () => void;
 };
