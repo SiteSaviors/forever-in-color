@@ -10,6 +10,10 @@ type SignInResult =
       message: string;
     };
 
+type HandleProviderSignInOptions = {
+  completeGateIntent?: boolean;
+};
+
 const DEFAULT_ERROR_COPY: Record<AuthProviderMethod, string> = {
   google: 'Google sign-in failed. Please try again.',
   microsoft: 'Microsoft sign-in failed. Please try again.',
@@ -18,8 +22,10 @@ const DEFAULT_ERROR_COPY: Record<AuthProviderMethod, string> = {
 };
 
 export const handleProviderSignIn = async (
-  provider: Exclude<AuthProviderMethod, 'email'>
+  provider: Exclude<AuthProviderMethod, 'email'>,
+  options: HandleProviderSignInOptions = {}
 ): Promise<SignInResult> => {
+  const shouldCompleteGateIntent = options.completeGateIntent ?? true;
   const providerConfig = getEnabledProviders().find((entry) => entry.id === provider);
 
   if (!providerConfig) {
@@ -47,7 +53,9 @@ export const handleProviderSignIn = async (
       throw error;
     }
 
-    useAuthModal.getState().completeGateIntent(provider);
+    if (shouldCompleteGateIntent) {
+      useAuthModal.getState().completeGateIntent(provider);
+    }
     return { success: true };
   } catch (error) {
     console.error('[OAuth] Sign-in failed', error);

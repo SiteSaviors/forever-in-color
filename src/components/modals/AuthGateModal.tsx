@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X, Loader2, ShieldCheck } from 'lucide-react';
 import Button from '@/components/ui/Button';
@@ -9,7 +9,7 @@ import { handleProviderSignIn } from '@/utils/oauthProvider';
 const AUTH_GATE_COPY = {
   headline: 'Your Photo Is Ready For Styling!',
   subhead: 'Create a Free Account to Continue (10 Free Tokens A Month!)',
-  cta_secondary: 'Continue with email',
+  cta_secondary: 'Sign Up with email',
   dividerLabel: 'OR',
   legal: 'By continuing, you agree to Terms & Privacy',
   trust_signal: 'No credit card required • Cancel anytime',
@@ -37,7 +37,8 @@ const AuthGateModal = () => {
         id: 'google',
         supabaseId: 'google',
         label: 'Google',
-        cta: 'Continue with Google',
+        cta: 'Sign Up with Google',
+        iconType: 'lucide',
         icon: ShieldCheck,
         buttonTheme: 'light',
         enabled: true,
@@ -121,8 +122,21 @@ const AuthGateModal = () => {
 
               <div className="space-y-3">
                 {providers.map((provider) => {
-                  const ProviderIcon = provider.icon;
                   const isLoading = loadingProvider === provider.id;
+                  let iconNode: ReactNode;
+                  if (provider.iconType === 'asset') {
+                    iconNode = (
+                      <img
+                        src={provider.iconSrc}
+                        alt=""
+                        className="h-4 w-4 object-contain"
+                        aria-hidden="true"
+                      />
+                    );
+                  } else {
+                    const ProviderIcon = provider.icon;
+                    iconNode = <ProviderIcon className="h-4 w-4" aria-hidden="true" />;
+                  }
                   return (
                     <button
                       key={provider.id}
@@ -132,7 +146,7 @@ const AuthGateModal = () => {
                       className="group relative flex w-full items-center gap-3 rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-left text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200/70 disabled:opacity-60"
                     >
                       <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/15 bg-slate-950/60 text-white/80 shadow-[inset_0_0_12px_rgba(255,255,255,0.12)]">
-                        <ProviderIcon className="h-4 w-4" aria-hidden="true" />
+                        {iconNode}
                       </span>
                       <span className="flex-1">{provider.cta}</span>
                       {isLoading ? <Loader2 className="h-4 w-4 animate-spin text-white/80" /> : null}
