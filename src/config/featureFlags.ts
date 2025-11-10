@@ -42,3 +42,15 @@ export const ENABLE_HEIC_EDGE_CONVERSION = coerceBoolean(
 export const ENABLE_QUICKVIEW_DELETE_MODE = coerceBoolean(
   import.meta.env.VITE_ENABLE_QUICKVIEW_DELETE_MODE ?? 'false'
 );
+
+export const ENABLE_AUTH_GOOGLE = coerceBoolean(
+  import.meta.env.VITE_AUTH_GOOGLE_ENABLED ?? 'true'
+);
+
+export const ENABLE_AUTH_MICROSOFT = coerceBoolean(
+  import.meta.env.VITE_AUTH_MICROSOFT_ENABLED ?? 'false'
+);
+
+export const ENABLE_AUTH_FACEBOOK = coerceBoolean(
+  import.meta.env.VITE_AUTH_FACEBOOK_ENABLED ?? 'false'
+);

@@ -6,6 +6,7 @@ type AccountDropdownProps = {
   sessionHydrated: boolean;
   isAuthenticated: boolean;
   userEmail: string;
+  displayName: string;
   tierLabel: string;
   remainingTokenDisplay: string;
   onNavigate: (path: string) => void;
@@ -50,6 +51,7 @@ const AccountDropdown = ({
   sessionHydrated,
   isAuthenticated,
   userEmail,
+  displayName,
   tierLabel,
   remainingTokenDisplay,
   onNavigate,
@@ -76,7 +78,10 @@ const AccountDropdown = ({
       <div className="space-y-2 px-3 pb-3 text-sm text-white/80">
         {isAuthenticated ? (
           <>
-            <p className="font-semibold text-white">{userEmail}</p>
+            <div className="space-y-0.5">
+              <p className="font-semibold text-white">{displayName}</p>
+              <p className="text-xs text-white/50">{userEmail}</p>
+            </div>
             <div className="flex items-center justify-between text-xs text-white/60">
               <span>Tier</span>
               <span className="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-white/70">

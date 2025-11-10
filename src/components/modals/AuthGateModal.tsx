@@ -1,18 +1,19 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X, Loader2, ShieldCheck } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { useAuthModal } from '@/store/useAuthModal';
-import { getSupabaseClient } from '@/utils/supabaseClient.loader';
+import { getEnabledProviders, type OAuthProviderConfig, type ProviderId } from '@/config/oauthProviders';
+import { handleProviderSignIn } from '@/utils/oauthProvider';
 
 const AUTH_GATE_COPY = {
-  headline: 'Your photo is ready for AI styling!',
-  subhead: 'Create a free account to continue (10 styles/month free)',
-  cta_primary: 'Continue with Google',
-  cta_secondary: 'Sign in with email',
+  headline: 'Your Photo Is Ready For Styling!',
+  subhead: 'Create a Free Account to Continue (10 Free Tokens A Month!)',
+  cta_secondary: 'Continue with email',
+  dividerLabel: 'OR',
   legal: 'By continuing, you agree to Terms & Privacy',
   trust_signal: 'No credit card required • Cancel anytime',
-  progress_indicator: 'Photo uploaded ✓ • Cropped ✓ • Sign in to generate →',
+  progress_indicator: 'Photo uploaded • Sign in to generate',
 } as const;
 
 const AuthGateModal = () => {
@@ -23,8 +24,26 @@ const AuthGateModal = () => {
     openModal: state.openModal,
   }));
 
-  const [isGoogleLoading, setGoogleLoading] = useState(false);
+  const [loadingProvider, setLoadingProvider] = useState<ProviderId | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const providers = useMemo(() => {
+    const enabled = getEnabledProviders();
+    if (enabled.length > 0) {
+      return enabled;
+    }
+    // Fallback ensures at least Google button renders even if flags misconfigured.
+    return [
+      {
+        id: 'google',
+        supabaseId: 'google',
+        label: 'Google',
+        cta: 'Continue with Google',
+        icon: ShieldCheck,
+        buttonTheme: 'light',
+        enabled: true,
+      } satisfies OAuthProviderConfig,
+    ];
+  }, []);
 
   const closingProgrammaticallyRef = useRef(false);
 
@@ -48,40 +67,20 @@ const AuthGateModal = () => {
 
   useEffect(() => {
     if (!gateOpen) {
-      setGoogleLoading(false);
+      setLoadingProvider(null);
       setError(null);
     }
   }, [gateOpen]);
 
-  const handleGoogleSignIn = async () => {
-    try {
-      setGoogleLoading(true);
-      setError(null);
-      const supabase = await getSupabaseClient();
-      if (!supabase) {
-        throw new Error('Authentication is not configured.');
-      }
-
-      const redirectTo = `${window.location.origin}/create`;
-      const { error: oauthError } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo,
-        },
-      });
-
-      if (oauthError) {
-        throw oauthError;
-      }
-
+  const handleProviderClick = async (providerId: ProviderId) => {
+    setError(null);
+    setLoadingProvider(providerId);
+    const result = await handleProviderSignIn(providerId);
+    setLoadingProvider(null);
+    if (!result.success) {
+      setError(result.message);
+    } else {
       closingProgrammaticallyRef.current = true;
-      completeGateIntent('google');
-      // Supabase will redirect. Ensure pending preview is retained if the tab stays open.
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Google sign-in failed. Please try again.';
-      setError(message);
-    } finally {
-      setGoogleLoading(false);
     }
   };
 
@@ -94,9 +93,9 @@ const AuthGateModal = () => {
   return (
     <Dialog.Root open={gateOpen} onOpenChange={handleDialogOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-[60] bg-slate-950/80 backdrop-blur-sm" />
+        <Dialog.Overlay className="fixed inset-0 z-[60] bg-slate-950/85 backdrop-blur-lg" />
         <Dialog.Content className="fixed inset-0 z-[61] flex items-center justify-center px-4 py-6">
-          <div className="relative w-full max-w-lg animate-fadeIn rounded-3xl border border-white/10 bg-gradient-to-br from-slate-950 via-slate-900/95 to-slate-950 p-8 shadow-[0_35px_120px_rgba(76,29,149,0.45)]">
+          <div className="relative w-full max-w-lg animate-fadeIn rounded-[32px] border border-white/10 bg-gradient-to-br from-slate-950 via-slate-900/95 to-slate-950 p-8 shadow-[0_35px_120px_rgba(76,29,149,0.45)]">
             <button
               type="button"
               onClick={() => handleDismiss('close')}
@@ -107,33 +106,49 @@ const AuthGateModal = () => {
             </button>
 
             <div className="space-y-6">
-              <div className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-white/60">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.35em] text-white/60">
                 {AUTH_GATE_COPY.progress_indicator}
               </div>
 
               <div className="space-y-3">
-                <Dialog.Title className="text-3xl font-semibold text-white">
+                <Dialog.Title className="font-display text-[2rem] font-semibold tracking-tight text-white">
                   {AUTH_GATE_COPY.headline}
                 </Dialog.Title>
-                <Dialog.Description className="text-sm text-white/70">
+                <Dialog.Description className="text-base text-white/70">
                   {AUTH_GATE_COPY.subhead}
                 </Dialog.Description>
               </div>
 
-              <div className="space-y-4">
-                <Button
-                  onClick={handleGoogleSignIn}
-                  disabled={isGoogleLoading}
-                  className="flex w-full items-center justify-center gap-2 bg-white text-slate-900 hover:bg-white/90"
-                >
-                  {isGoogleLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                  {AUTH_GATE_COPY.cta_primary}
-                </Button>
+              <div className="space-y-3">
+                {providers.map((provider) => {
+                  const ProviderIcon = provider.icon;
+                  const isLoading = loadingProvider === provider.id;
+                  return (
+                    <button
+                      key={provider.id}
+                      type="button"
+                      onClick={() => handleProviderClick(provider.id)}
+                      disabled={isLoading}
+                      className="group relative flex w-full items-center gap-3 rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-left text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200/70 disabled:opacity-60"
+                    >
+                      <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/15 bg-slate-950/60 text-white/80 shadow-[inset_0_0_12px_rgba(255,255,255,0.12)]">
+                        <ProviderIcon className="h-4 w-4" aria-hidden="true" />
+                      </span>
+                      <span className="flex-1">{provider.cta}</span>
+                      {isLoading ? <Loader2 className="h-4 w-4 animate-spin text-white/80" /> : null}
+                    </button>
+                  );
+                })}
+
+                <div className="flex items-center gap-3 text-white/40">
+                  <span className="h-px flex-1 bg-white/15" />
+                  <span className="text-xs uppercase tracking-[0.35em]">{AUTH_GATE_COPY.dividerLabel}</span>
+                  <span className="h-px flex-1 bg-white/15" />
+                </div>
 
                 <Button
-                  variant="ghost"
                   onClick={handleEmailSignIn}
-                  className="w-full border-white/20 bg-transparent text-white hover:bg-white/10"
+                  className="w-full rounded-2xl bg-gradient-to-r from-amber-300 via-amber-400 to-rose-300 text-slate-950 shadow-[0_12px_40px_rgba(255,196,0,0.35)] hover:brightness-105"
                 >
                   {AUTH_GATE_COPY.cta_secondary}
                 </Button>
@@ -145,14 +160,15 @@ const AuthGateModal = () => {
                 </p>
               ) : null}
 
-              <div className="flex items-center gap-3 rounded-2xl border border-purple-400/20 bg-purple-500/10 px-4 py-3 text-sm text-purple-100">
-                <ShieldCheck className="h-5 w-5 flex-shrink-0" />
-                <span>{AUTH_GATE_COPY.trust_signal}</span>
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-3 rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-white/80">
+                  <ShieldCheck className="h-5 w-5 flex-shrink-0 text-white/70" />
+                  <span>{AUTH_GATE_COPY.trust_signal}</span>
+                </div>
+                <p className="text-center text-xs text-white/50">
+                  {AUTH_GATE_COPY.legal}
+                </p>
               </div>
-
-              <p className="text-center text-xs text-white/50">
-                {AUTH_GATE_COPY.legal}
-              </p>
 
             </div>
           </div>

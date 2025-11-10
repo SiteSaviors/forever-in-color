@@ -1,11 +1,11 @@
 import { create } from 'zustand';
 import type { StartPreviewOptions } from '@/store/founder/storeTypes';
-import { emitAuthGateEvent } from '@/utils/telemetry';
+import { emitAuthGateEvent, type AuthProviderMethod } from '@/utils/telemetry';
 
 export type AuthModalMode = 'signin' | 'signup' | 'gate';
 export type AuthModalSource = 'preview' | 'pricing' | 'gallery' | 'canvas' | 'nav' | string;
 type AuthGateDismissReason = 'dismiss' | 'close';
-type AuthGateMethod = 'google' | 'email';
+type AuthGateMethod = AuthProviderMethod;
 
 type StoredGateIntent = {
   styleId: string;

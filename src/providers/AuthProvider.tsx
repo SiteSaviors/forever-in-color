@@ -6,6 +6,7 @@ import { devLog, devWarn } from '@/utils/devLogger';
 import { getSupabaseClient, prefetchSupabaseClient } from '@/utils/supabaseClient.loader';
 import { useSessionActions } from '@/store/hooks/useSessionStore';
 import { useEntitlementsActions, useEntitlementsState } from '@/store/hooks/useEntitlementsStore';
+import { syncUserProfile, extractFullName, extractAvatarUrl } from '@/utils/syncUserProfile';
 
 type AuthProviderProps = {
   children: ReactNode;
@@ -96,22 +97,33 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
         hasAccessToken: !!session?.access_token,
       });
 
+      if (session?.user) {
+        void syncUserProfile(session.user);
+      }
+
       setSession(
         session?.user
           ? {
               id: session.user.id,
               email: session.user.email ?? null,
+              fullName: extractFullName(session.user),
+              avatarUrl: extractAvatarUrl(session.user),
             }
           : null,
         session?.access_token ?? null
       );
 
       const { data: listener } = supabaseClient.auth.onAuthStateChange((_event, nextSession) => {
+        if (nextSession?.user) {
+          void syncUserProfile(nextSession.user);
+        }
         setSession(
           nextSession?.user
             ? {
                 id: nextSession.user.id,
                 email: nextSession.user.email ?? null,
+                fullName: extractFullName(nextSession.user),
+                avatarUrl: extractAvatarUrl(nextSession.user),
               }
             : null,
           nextSession?.access_token ?? null

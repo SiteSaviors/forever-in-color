@@ -135,7 +135,8 @@ const FounderNavigation = () => {
     return Math.max(0, value).toString();
   }, [entitlements.remainingTokens]);
 
-  const accountInitial = sessionUser?.email?.charAt(0).toUpperCase() ?? '✦';
+  const displayName = sessionUser?.fullName?.trim() || sessionUser?.email || 'Wondertone Creator';
+  const accountInitial = displayName.charAt(0).toUpperCase() || '✦';
   const userEmail = sessionUser?.email ?? 'Wondertone Creator';
   const isAuthenticated = Boolean(sessionUser);
   const accountLabel = isAuthenticated ? 'Account menu' : 'Sign in';
@@ -276,6 +277,7 @@ const FounderNavigation = () => {
                 sessionHydrated={sessionHydrated}
                 isAuthenticated={isAuthenticated}
                 userEmail={userEmail}
+                displayName={displayName}
                 tierLabel={tierLabel}
                 remainingTokenDisplay={remainingTokenDisplay}
                 onNavigate={(path) => navigate(path)}

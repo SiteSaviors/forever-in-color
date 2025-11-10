@@ -9,6 +9,9 @@ interface ImportMetaEnv {
   readonly VITE_AUTH_GATE_ROLLOUT?: string;
   readonly VITE_HEIC_EDGE_CONVERSION?: string;
   readonly VITE_ENABLE_QUICKVIEW_DELETE_MODE?: string;
+  readonly VITE_AUTH_GOOGLE_ENABLED?: string;
+  readonly VITE_AUTH_MICROSOFT_ENABLED?: string;
+  readonly VITE_AUTH_FACEBOOK_ENABLED?: string;
 }
 
 interface ImportMeta {

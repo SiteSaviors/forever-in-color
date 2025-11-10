@@ -15,9 +15,11 @@ export function emitStepOneEvent(event: StepOneEvent) {
   console.log('[FounderTelemetry]', { ...event, timestamp: Date.now() });
 }
 
+export type AuthProviderMethod = 'google' | 'microsoft' | 'facebook' | 'email';
+
 export type AuthGateEvent =
   | { type: 'auth_modal_shown'; surface: 'preview'; styleId?: string | null }
-  | { type: 'auth_modal_completed'; method: 'google' | 'email' }
+  | { type: 'auth_modal_completed'; method: AuthProviderMethod }
   | { type: 'auth_modal_abandoned'; reason: 'dismiss' | 'close' };
 
 export function emitAuthGateEvent(event: AuthGateEvent) {
