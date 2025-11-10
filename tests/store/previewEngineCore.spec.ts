@@ -63,6 +63,19 @@ vi.mock('@/features/preview', () => ({
   executeStartPreview: vi.fn(),
 }));
 
+const mockAuthModalState = {
+  registerGateIntent: vi.fn(),
+  clearGateIntent: vi.fn(),
+  completeGateIntent: vi.fn(),
+  consumePendingIntent: vi.fn(() => null),
+};
+
+vi.mock('@/store/useAuthModal', () => ({
+  useAuthModal: {
+    getState: () => mockAuthModalState,
+  },
+}));
+
 const baseStyle: StyleOption = {
   id: 'oil',
   name: 'Oil Painting',
@@ -190,6 +203,11 @@ const buildRuntime = (state: MutableState): PreviewEngineRuntime => {
 describe('previewEngine/core', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    mockAuthModalState.registerGateIntent.mockReset();
+    mockAuthModalState.clearGateIntent.mockReset();
+    mockAuthModalState.completeGateIntent.mockReset();
+    mockAuthModalState.consumePendingIntent.mockReset();
+    mockAuthModalState.consumePendingIntent.mockReturnValue(null);
     (globalThis as unknown as { window: typeof globalThis }).window = {
       setTimeout,
       clearTimeout,

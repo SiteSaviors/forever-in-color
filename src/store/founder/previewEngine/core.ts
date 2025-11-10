@@ -1,5 +1,6 @@
 import { ENABLE_PREVIEW_QUERY_EXPERIMENT } from '@/config/featureFlags';
 import { executeStartPreview } from '@/features/preview';
+import { useAuthModal } from '@/store/useAuthModal';
 import { fetchPreviewForStyle } from '@/utils/previewClient';
 import { startFounderPreviewGeneration } from '@/utils/founderPreviewGeneration';
 import type { Orientation } from '@/utils/imageUtils';
@@ -610,7 +611,9 @@ export const generatePreviewsFlow = async (
 export const resumePendingAuthPreviewFlow = async (runtime: PreviewEngineRuntime): Promise<void> => {
   const { get, set } = runtime;
   const state = get();
-  const styleId = state.pendingAuthStyleId;
+  const authModal = useAuthModal.getState();
+  const consumedIntent = authModal.consumePendingIntent();
+  const styleId = consumedIntent?.styleId ?? state.pendingAuthStyleId;
   if (!styleId) {
     return;
   }
@@ -624,7 +627,8 @@ export const resumePendingAuthPreviewFlow = async (runtime: PreviewEngineRuntime
   set({ authGateOpen: false });
 
   try {
-    await state.startStylePreview(style, state.pendingAuthOptions ?? undefined);
+    const resumeOptions = consumedIntent?.options ?? state.pendingAuthOptions ?? undefined;
+    await state.startStylePreview(style, resumeOptions);
   } finally {
     set({ pendingAuthStyleId: null, pendingAuthOptions: null });
   }

@@ -140,7 +140,7 @@ const PricingPage = () => {
     }
 
     if (!sessionUser) {
-      openAuthModal('signup');
+      openAuthModal('signup', { source: 'pricing' });
       return;
     }
 

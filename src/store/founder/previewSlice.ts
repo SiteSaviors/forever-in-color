@@ -1,6 +1,6 @@
 import type { StateCreator } from 'zustand';
 import { cachePreviewEntry, getCachedPreviewEntry, clearPreviewCache } from '@/store/previewCacheStore';
-import { emitAuthGateEvent } from '@/utils/telemetry';
+import { useAuthModal } from '@/store/useAuthModal';
 import type { FounderState, PreviewSlice, StyleOption } from './storeTypes';
 import {
   startStylePreviewEngine,
@@ -55,6 +55,45 @@ export const createPreviewSlice = (
     clearStylePreviewCache: () => {
       clearPreviewCache();
     },
+    setAuthGateOpen: (open) => {
+      if (open) {
+        const pendingStyleId = get().pendingAuthStyleId ?? get().pendingStyleId;
+        if (pendingStyleId) {
+          useAuthModal.getState().registerGateIntent({
+            styleId: pendingStyleId,
+            options: get().pendingAuthOptions ?? null,
+            source: 'preview',
+            autoOpen: true,
+          });
+        }
+        set({ authGateOpen: true });
+      } else {
+        useAuthModal.getState().clearGateIntent('dismiss');
+        set({ authGateOpen: false });
+      }
+    },
+    registerAuthGateIntent: (styleId, options) => {
+      const normalizedOptions = options ?? null;
+      useAuthModal.getState().registerGateIntent({
+        styleId,
+        options: normalizedOptions,
+        source: 'preview',
+        autoOpen: true,
+      });
+      set({
+        authGateOpen: true,
+        pendingAuthStyleId: styleId,
+        pendingAuthOptions: normalizedOptions,
+      });
+    },
+    clearAuthGateIntent: () => {
+      useAuthModal.getState().clearGateIntent('dismiss');
+      set({
+        authGateOpen: false,
+        pendingAuthStyleId: null,
+        pendingAuthOptions: null,
+      });
+    },
     startStylePreview: async (style, options = {}) =>
       startStylePreviewEngine({ set, get, abortControllerRef }, style, options),
     resetPreviews: () =>
@@ -75,22 +114,6 @@ export const createPreviewSlice = (
       }),
     generatePreviews: async (ids, options = {}) =>
       generatePreviewsEngine({ set, get, abortControllerRef }, ids, options),
-    setAuthGateOpen: (open) => set({ authGateOpen: open }),
-    registerAuthGateIntent: (styleId, options) => {
-      set({
-        authGateOpen: true,
-        pendingAuthStyleId: styleId,
-        pendingAuthOptions: options ? { ...options } : null,
-      });
-      emitAuthGateEvent({
-        type: 'auth_modal_shown',
-        surface: 'preview',
-        styleId,
-      });
-    },
-    clearAuthGateIntent: () => {
-      set({ pendingAuthStyleId: null, pendingAuthOptions: null });
-    },
     resumePendingAuthPreview: async () =>
       resumePendingAuthPreviewEngine({ set, get, abortControllerRef }),
     abortPreviewGeneration: () => {

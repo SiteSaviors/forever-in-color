@@ -170,7 +170,10 @@ describe('useGalleryHandlers', () => {
       await getHandlers().handleSaveToGallery();
     });
 
-    expect(openAuthModal).toHaveBeenCalledWith('signup');
+    expect(openAuthModal).toHaveBeenCalledWith('signup', {
+      source: 'gallery-save',
+      styleId: 'style-1',
+    });
     expect(saveToGallery).not.toHaveBeenCalled();
 
     unmount();

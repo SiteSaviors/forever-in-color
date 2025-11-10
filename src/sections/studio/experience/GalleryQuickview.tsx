@@ -517,7 +517,7 @@ const GalleryQuickviewModern = () => {
     };
 
     if (!sessionAccessToken) {
-      openAuthModal('signin');
+      openAuthModal('signin', { source: 'gallery-quickview' });
       emitFailure('auth', 'Please sign in to manage your gallery.');
       return;
     }
@@ -562,7 +562,7 @@ const GalleryQuickviewModern = () => {
     } catch (rawError) {
       const { message, code, status } = resolveDeleteError(rawError);
       if (code === 'auth') {
-        openAuthModal('signin');
+        openAuthModal('signin', { source: 'gallery-quickview' });
       }
       emitFailure(code, message, status);
     } finally {

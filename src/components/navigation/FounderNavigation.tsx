@@ -1,7 +1,7 @@
 import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { clsx } from 'clsx';
-import { useAuthModal } from '@/store/useAuthModal';
+import { useAuthModal, type AuthModalMode } from '@/store/useAuthModal';
 import { useCanvasConfigState } from '@/store/hooks/useCanvasConfigStore';
 import { useEntitlementsState } from '@/store/hooks/useEntitlementsStore';
 import { useSessionActions, useSessionState } from '@/store/hooks/useSessionStore';
@@ -23,6 +23,7 @@ const FounderNavigation = () => {
   const { sessionUser, sessionHydrated } = useSessionState();
   const { signOut } = useSessionActions();
   const openAuthModal = useAuthModal((state) => state.openModal);
+  const openNavAuthModal = (mode?: AuthModalMode) => openAuthModal(mode, { source: 'nav' });
   const cartItemCount = enhancements.filter((enhancement) => enhancement.enabled).length;
   const [isAtTop, setIsAtTop] = useState(true);
   const [heroVisible, setHeroVisible] = useState(true);
@@ -145,7 +146,7 @@ const FounderNavigation = () => {
         if (isAuthenticated) {
           navigate('/studio/usage');
         } else {
-          openAuthModal('signin');
+          openNavAuthModal('signin');
         }
       }}
       className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/5 text-white transition-all duration-200 hover:scale-105 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/80"
@@ -278,7 +279,7 @@ const FounderNavigation = () => {
                 tierLabel={tierLabel}
                 remainingTokenDisplay={remainingTokenDisplay}
                 onNavigate={(path) => navigate(path)}
-                onOpenAuthModal={openAuthModal}
+                onOpenAuthModal={openNavAuthModal}
                 onSignOut={signOut}
                 canUpgrade={entitlements.tier !== 'pro'}
               />

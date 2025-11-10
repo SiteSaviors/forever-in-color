@@ -37,7 +37,10 @@ export const useGalleryHandlers = () => {
     }
 
     if (!sessionUser) {
-      openAuthModal('signup');
+      openAuthModal('signup', {
+        source: 'gallery-save',
+        styleId: currentStyle?.id ?? undefined,
+      });
       return;
     }
 

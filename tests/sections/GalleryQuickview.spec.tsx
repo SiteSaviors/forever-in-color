@@ -260,7 +260,7 @@ describe('GalleryQuickview (flag-enabled UI)', () => {
     renderComponent();
     openDeleteModal();
     expect(screen.getByText(/Delete “Liquid Chrome”/i)).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: /No, keep it/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Keep preview/i }));
     expect(screen.queryByText(/Delete “Liquid Chrome”/i)).not.toBeInTheDocument();
   });
 
@@ -278,7 +278,7 @@ describe('GalleryQuickview (flag-enabled UI)', () => {
     renderComponent();
     openDeleteModal();
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /Yes, delete it/i }));
+      fireEvent.click(screen.getByRole('button', { name: /Delete preview/i }));
     });
 
     await waitFor(() => expect(deleteGalleryItemMock).toHaveBeenCalledWith('item-1', 'access-token'));
@@ -306,7 +306,7 @@ describe('GalleryQuickview (flag-enabled UI)', () => {
     renderComponent();
     openDeleteModal();
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /Yes, delete it/i }));
+      fireEvent.click(screen.getByRole('button', { name: /Delete preview/i }));
     });
 
     await waitFor(() => expect(deleteGalleryItemMock).toHaveBeenCalled());
@@ -323,11 +323,11 @@ describe('GalleryQuickview (flag-enabled UI)', () => {
     renderComponent();
     openDeleteModal();
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /Yes, delete it/i }));
+      fireEvent.click(screen.getByRole('button', { name: /Delete preview/i }));
     });
 
     await waitFor(() => expect(deleteGalleryItemMock).toHaveBeenCalled());
-    expect(openAuthModalMock).toHaveBeenCalledWith('signin');
+    expect(openAuthModalMock).toHaveBeenCalledWith('signin', { source: 'gallery-quickview' });
     expect(showToastMock).toHaveBeenCalledWith(
       expect.objectContaining({ title: 'Delete failed', variant: 'error' })
     );
@@ -342,10 +342,10 @@ describe('GalleryQuickview (flag-enabled UI)', () => {
     renderComponent();
     openDeleteModal();
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /Yes, delete it/i }));
+      fireEvent.click(screen.getByRole('button', { name: /Delete preview/i }));
     });
     expect(deleteGalleryItemMock).not.toHaveBeenCalled();
-    expect(openAuthModalMock).toHaveBeenCalledWith('signin');
+    expect(openAuthModalMock).toHaveBeenCalledWith('signin', { source: 'gallery-quickview' });
     expect(showToastMock).toHaveBeenCalledWith(
       expect.objectContaining({ title: 'Delete failed', description: 'Please sign in to manage your gallery.' })
     );
@@ -362,7 +362,7 @@ describe('GalleryQuickview (flag-enabled UI)', () => {
     renderComponent();
     openDeleteModal();
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /Yes, delete it/i }));
+      fireEvent.click(screen.getByRole('button', { name: /Delete preview/i }));
     });
     expect(deleteGalleryItemMock).not.toHaveBeenCalled();
     expect(showToastMock).toHaveBeenCalledWith(

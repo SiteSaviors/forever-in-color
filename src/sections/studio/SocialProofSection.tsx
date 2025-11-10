@@ -52,7 +52,7 @@ const SocialProofSectionInner = () => {
       surface: 'spotlight',
       context: story.id,
     });
-    openAuthModal('signup');
+    openAuthModal('signup', { source: 'social-proof', styleId: story.id });
   };
 
   const handleCanvasLink = (target: 'footnote', href?: string) => {

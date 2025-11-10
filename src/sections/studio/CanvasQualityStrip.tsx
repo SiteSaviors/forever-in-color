@@ -139,7 +139,7 @@ const CanvasQualityStrip = () => {
     });
 
     if (!sessionUser) {
-      openAuthModal('signup');
+      openAuthModal('signup', { source: 'canvas-quality' });
       setCtaBusy(false);
       return;
     }

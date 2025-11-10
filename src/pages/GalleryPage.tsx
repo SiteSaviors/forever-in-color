@@ -109,7 +109,7 @@ const GalleryPage = () => {
     if (!accessToken) {
       if (!authPrompted) {
         setAuthPrompted(true);
-        openAuthModal('signup');
+        openAuthModal('signup', { source: 'gallery-page' });
       }
       setItems([]);
       setTotal(0);

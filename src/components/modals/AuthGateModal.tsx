@@ -3,8 +3,6 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { X, Loader2, ShieldCheck } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { useAuthModal } from '@/store/useAuthModal';
-import { useAuthGateActions, useAuthGateState } from '@/store/hooks/useAuthGateStore';
-import { emitAuthGateEvent } from '@/utils/telemetry';
 import { getSupabaseClient } from '@/utils/supabaseClient.loader';
 
 const AUTH_GATE_COPY = {
@@ -18,24 +16,25 @@ const AUTH_GATE_COPY = {
 } as const;
 
 const AuthGateModal = () => {
-  const { authGateOpen: open } = useAuthGateState();
-  const { setAuthGateOpen, clearAuthGateIntent } = useAuthGateActions();
-  const openAuthModal = useAuthModal((state) => state.openModal);
+  const { gateOpen, clearGateIntent, completeGateIntent, openModal } = useAuthModal((state) => ({
+    gateOpen: state.gateOpen,
+    clearGateIntent: state.clearGateIntent,
+    completeGateIntent: state.completeGateIntent,
+    openModal: state.openModal,
+  }));
 
   const [isGoogleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const closingProgrammaticallyRef = useRef(false);
 
-  const finalizeClose = () => {
+  const finalizeClose = (reason: 'dismiss' | 'close') => {
     closingProgrammaticallyRef.current = true;
-    setAuthGateOpen(false);
-    clearAuthGateIntent();
+    clearGateIntent(reason);
   };
 
   const handleDismiss = (reason: 'dismiss' | 'close') => {
-    emitAuthGateEvent({ type: 'auth_modal_abandoned', reason });
-    finalizeClose();
+    finalizeClose(reason);
   };
 
   const handleDialogOpenChange = (next: boolean) => {
@@ -48,11 +47,11 @@ const AuthGateModal = () => {
   };
 
   useEffect(() => {
-    if (!open) {
+    if (!gateOpen) {
       setGoogleLoading(false);
       setError(null);
     }
-  }, [open]);
+  }, [gateOpen]);
 
   const handleGoogleSignIn = async () => {
     try {
@@ -75,8 +74,8 @@ const AuthGateModal = () => {
         throw oauthError;
       }
 
-      emitAuthGateEvent({ type: 'auth_modal_completed', method: 'google' });
-      finalizeClose();
+      closingProgrammaticallyRef.current = true;
+      completeGateIntent('google');
       // Supabase will redirect. Ensure pending preview is retained if the tab stays open.
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Google sign-in failed. Please try again.';
@@ -87,13 +86,13 @@ const AuthGateModal = () => {
   };
 
   const handleEmailSignIn = () => {
-    emitAuthGateEvent({ type: 'auth_modal_completed', method: 'email' });
-    finalizeClose();
-    openAuthModal('signup');
+    closingProgrammaticallyRef.current = true;
+    completeGateIntent('email');
+    openModal('signup');
   };
 
   return (
-    <Dialog.Root open={open} onOpenChange={handleDialogOpenChange}>
+    <Dialog.Root open={gateOpen} onOpenChange={handleDialogOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-[60] bg-slate-950/80 backdrop-blur-sm" />
         <Dialog.Content className="fixed inset-0 z-[61] flex items-center justify-center px-4 py-6">

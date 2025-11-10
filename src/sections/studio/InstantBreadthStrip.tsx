@@ -125,7 +125,7 @@ const InstantBreadthStrip = () => {
   );
 
   const handleOpenSample = () => {
-    openAuthModal('signup');
+    openAuthModal('signup', { source: 'instant-breadth' });
   };
 
   const handleNavigatePricing = () => {
