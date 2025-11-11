@@ -1,4 +1,4 @@
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import clsx from 'clsx';
 import { useCheckoutStore } from '@/store/useCheckoutStore';
 
@@ -11,7 +11,7 @@ type ContactErrors = Partial<Record<'firstName' | 'lastName' | 'email', string>>
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const ContactForm = ({ onNext }: ContactFormProps) => {
-  const { contact, setContact, setStep } = useCheckoutStore();
+  const { contact, setContact } = useCheckoutStore();
   const [formState, setFormState] = useState(contact);
   const [errors, setErrors] = useState<ContactErrors>({});
 
@@ -35,11 +35,14 @@ const ContactForm = ({ onNext }: ContactFormProps) => {
     return Object.keys(nextErrors).length === 0;
   };
 
+  useEffect(() => {
+    setFormState(contact);
+  }, [contact]);
+
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
     if (!validate()) return;
     setContact(formState);
-    setStep('shipping');
     onNext?.();
   };
 
@@ -128,7 +131,7 @@ const ContactForm = ({ onNext }: ContactFormProps) => {
           type="submit"
           className="rounded-xl bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-500 px-6 py-3 text-sm font-semibold text-white shadow-[0_18px_45px_rgba(99,102,241,0.45)] transition hover:scale-[1.02]"
         >
-          Continue to shipping
+          Continue to Shipping
         </button>
       </div>
     </form>

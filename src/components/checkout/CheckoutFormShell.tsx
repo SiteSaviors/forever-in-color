@@ -46,9 +46,14 @@ const CheckoutFormShell = () => {
           <p className="mt-2 text-sm text-white/60">{copy.description}</p>
         </div>
 
-        {step === 'contact' && <ContactForm />}
+        {step === 'contact' && <ContactForm onNext={() => setStep('shipping')} />}
 
-        {step === 'shipping' && <ShippingForm />}
+        {step === 'shipping' && (
+          <ShippingForm
+            onNext={() => setStep('payment')}
+            onBack={() => setStep('contact')}
+          />
+        )}
 
         {step === 'payment' && (
           <PaymentStep

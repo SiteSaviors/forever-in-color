@@ -32,7 +32,17 @@ export type ProgressiveDisclosureEvent =
   | { type: 'cta_canvas_click'; userTier: string; timestamp: number }
   | { type: 'canvas_panel_open'; userTier: string; timestamp: number }
   | { type: 'download_success'; userTier: string; styleId: string; timestamp: number }
-  | { type: 'order_started'; userTier: string; orderTotal: number; hasEnhancements: boolean; timestamp: number };
+  | { type: 'order_started'; userTier: string; orderTotal: number; hasEnhancements: boolean; timestamp: number }
+  | { type: 'checkout_step_view'; step: string; userTier: string; timestamp: number }
+  | { type: 'checkout_exit'; action: 'stay' | 'leave'; step: string; reason: string; timestamp: number }
+  | {
+      type: 'order_completed';
+      userTier: string;
+      orderTotal: number;
+      hasEnhancements: boolean;
+      shippingCountry?: string | null;
+      timestamp: number;
+    };
 
 export function trackDownloadCTAClick(userTier: string, isPremium: boolean) {
   const event: ProgressiveDisclosureEvent = {
@@ -79,6 +89,44 @@ export function trackOrderStarted(userTier: string, orderTotal: number, hasEnhan
     userTier,
     orderTotal,
     hasEnhancements,
+    timestamp: Date.now(),
+  };
+  console.log('[ProgressiveDisclosure]', event);
+}
+
+export function trackOrderCompleted(
+  userTier: string,
+  orderTotal: number,
+  hasEnhancements: boolean,
+  shippingCountry?: string | null
+) {
+  const event: ProgressiveDisclosureEvent = {
+    type: 'order_completed',
+    userTier,
+    orderTotal,
+    hasEnhancements,
+    shippingCountry,
+    timestamp: Date.now(),
+  };
+  console.log('[ProgressiveDisclosure]', event);
+}
+
+export function trackCheckoutStepView(step: string, userTier: string) {
+  const event: ProgressiveDisclosureEvent = {
+    type: 'checkout_step_view',
+    step,
+    userTier,
+    timestamp: Date.now(),
+  };
+  console.log('[ProgressiveDisclosure]', event);
+}
+
+export function trackCheckoutExit(action: 'stay' | 'leave', step: string, reason: string) {
+  const event: ProgressiveDisclosureEvent = {
+    type: 'checkout_exit',
+    action,
+    step,
+    reason,
     timestamp: Date.now(),
   };
   console.log('[ProgressiveDisclosure]', event);

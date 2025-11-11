@@ -1,17 +1,22 @@
-import type { User } from '@supabase/supabase-js';
 import { getSupabaseClient } from '@/utils/supabaseClient.loader';
 
-export const extractFullName = (user: User): string | null => {
+type ProfileUser = {
+  id: string;
+  email: string | null;
+  user_metadata?: Record<string, unknown>;
+};
+
+export const extractFullName = (user: ProfileUser): string | null => {
   const metadata = user.user_metadata ?? {};
   return metadata.full_name ?? metadata.name ?? metadata.user_name ?? null;
 };
 
-export const extractAvatarUrl = (user: User): string | null => {
+export const extractAvatarUrl = (user: ProfileUser): string | null => {
   const metadata = user.user_metadata ?? {};
   return metadata.avatar_url ?? metadata.picture ?? metadata.image_url ?? null;
 };
 
-export const syncUserProfile = async (user: User | null): Promise<void> => {
+export const syncUserProfile = async (user: ProfileUser | null): Promise<void> => {
   if (!user) return;
 
   const fullName = extractFullName(user);

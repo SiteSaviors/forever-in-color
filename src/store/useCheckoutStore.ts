@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type CheckoutStep = 'contact' | 'shipping' | 'payment' | 'review';
+export type CheckoutStep = 'canvas' | 'contact' | 'shipping' | 'payment' | 'review' | 'success';
 
 export type ContactInfo = {
   firstName: string;
@@ -18,6 +18,10 @@ export type ShippingInfo = {
   country: string;
 };
 
+type ResetCheckoutOptions = {
+  step?: CheckoutStep;
+};
+
 type CheckoutState = {
   step: CheckoutStep;
   contact: ContactInfo;
@@ -28,6 +32,7 @@ type CheckoutState = {
   paymentIntentSecret: string | null;
   paymentAmount: number | null;
   paymentCurrency: string;
+  inModalCheckout: boolean;
   setStep: (step: CheckoutStep) => void;
   setContact: (contact: Partial<ContactInfo>) => void;
   setShipping: (shipping: Partial<ShippingInfo>) => void;
@@ -40,36 +45,58 @@ type CheckoutState = {
     currency: string;
   }) => void;
   clearPaymentIntent: () => void;
-  resetCheckout: () => void;
+  resetCheckout: (options?: ResetCheckoutOptions) => void;
+  enterModalCheckout: () => void;
+  leaveModalCheckout: () => void;
 };
 
-const defaultContact: ContactInfo = {
+const createDefaultContact = (): ContactInfo => ({
   firstName: '',
   lastName: '',
   email: '',
   phone: '',
-};
+});
 
-const defaultShipping: ShippingInfo = {
+const createDefaultShipping = (): ShippingInfo => ({
   addressLine1: '',
   addressLine2: '',
   city: '',
   region: '',
   postalCode: '',
   country: 'US',
-};
+});
 
-export const useCheckoutStore = create<CheckoutState>((set) => ({
-  step: 'contact',
-  contact: defaultContact,
-  shipping: defaultShipping,
+const buildBaseResetState = () => ({
+  contact: createDefaultContact(),
+  shipping: createDefaultShipping(),
   saveToProfile: true,
   marketingOptIn: false,
   paymentIntentId: null,
   paymentIntentSecret: null,
   paymentAmount: null,
-  paymentCurrency: 'usd',
-  setStep: (step) => set({ step }),
+  paymentCurrency: 'usd' as CheckoutState['paymentCurrency'],
+});
+
+const isModalOnlyStep = (step: CheckoutStep) => step === 'canvas' || step === 'success';
+const isPageOnlyStep = (step: CheckoutStep) => step === 'review';
+
+export const useCheckoutStore = create<CheckoutState>((set) => ({
+  step: 'contact',
+  ...buildBaseResetState(),
+  inModalCheckout: false,
+  setStep: (step) =>
+    set((state) => {
+      if (!state.inModalCheckout && isModalOnlyStep(step)) {
+        return {};
+      }
+      if (state.inModalCheckout && isPageOnlyStep(step)) {
+        return {};
+      }
+      if (state.step === step) {
+        return {};
+      }
+      return { step };
+    }),
   setContact: (contact) =>
     set((state) => ({
       contact: {
@@ -92,18 +119,6 @@ export const useCheckoutStore = create<CheckoutState>((set) => ({
     })),
   setSaveToProfile: (value) => set({ saveToProfile: value }),
   setMarketingOptIn: (value) => set({ marketingOptIn: value }),
-  resetCheckout: () =>
-    set({
-      step: 'contact',
-      contact: defaultContact,
-      shipping: defaultShipping,
-      saveToProfile: true,
-      marketingOptIn: false,
-      paymentIntentId: null,
-      paymentIntentSecret: null,
-      paymentAmount: null,
-      paymentCurrency: 'usd',
-    }),
   setPaymentIntent: ({ id, clientSecret, amount, currency }) =>
     set({
       paymentIntentId: id,
@@ -117,5 +132,22 @@ export const useCheckoutStore = create<CheckoutState>((set) => ({
       paymentIntentSecret: null,
       paymentAmount: null,
       paymentCurrency: 'usd',
+    }),
+  resetCheckout: (options) =>
+    set((state) => ({
+      ...buildBaseResetState(),
+      step: options?.step ?? (state.inModalCheckout ? 'canvas' : 'contact'),
+    })),
+  enterModalCheckout: () =>
+    set({
+      ...buildBaseResetState(),
+      step: 'canvas',
+      inModalCheckout: true,
+    }),
+  leaveModalCheckout: () =>
+    set({
+      ...buildBaseResetState(),
+      step: 'contact',
+      inModalCheckout: false,
     }),
 }));

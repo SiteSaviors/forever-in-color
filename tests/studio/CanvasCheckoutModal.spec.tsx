@@ -5,6 +5,7 @@ import { act } from 'react';
 import { createRoot, Root } from 'react-dom/client';
 import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest';
 import CanvasCheckoutModal from '@/components/studio/CanvasCheckoutModal';
+import type { CheckoutStep, ShippingInfo } from '@/store/useCheckoutStore';
 
 vi.mock('@/components/studio/CanvasInRoomPreview', () => ({
   default: () => <div data-testid="canvas-preview" />,
@@ -43,7 +44,33 @@ const toggleEnhancementMock = vi.fn();
 const setLivingCanvasModalOpenMock = vi.fn();
 const computedTotalMock = vi.fn();
 const resetCheckoutMock = vi.fn();
+const setStepMock = vi.fn();
+const enterModalCheckoutMock = vi.fn();
+const leaveModalCheckoutMock = vi.fn();
 const navigateMock = vi.fn();
+
+const checkoutStoreMock: {
+  step: CheckoutStep;
+  setStep: typeof setStepMock;
+  resetCheckout: typeof resetCheckoutMock;
+  enterModalCheckout: typeof enterModalCheckoutMock;
+  leaveModalCheckout: typeof leaveModalCheckoutMock;
+  shipping: ShippingInfo;
+} = {
+  step: 'canvas',
+  setStep: setStepMock,
+  resetCheckout: resetCheckoutMock,
+  enterModalCheckout: enterModalCheckoutMock,
+  leaveModalCheckout: leaveModalCheckoutMock,
+  shipping: {
+    addressLine1: '',
+    addressLine2: '',
+    city: '',
+    region: '',
+    postalCode: '',
+    country: 'US',
+  },
+};
 
 vi.mock('react-router-dom', async (importOriginal) => {
   const actual = await importOriginal<typeof import('react-router-dom')>();
@@ -93,8 +120,8 @@ vi.mock('@/store/hooks/useEntitlementsStore', () => ({
 }));
 
 vi.mock('@/store/useCheckoutStore', () => ({
-  useCheckoutStore: (selector: (state: { resetCheckout: () => void }) => unknown) =>
-    selector({ resetCheckout: resetCheckoutMock }),
+  useCheckoutStore: (selector?: (state: typeof checkoutStoreMock) => unknown) =>
+    selector ? selector(checkoutStoreMock) : checkoutStoreMock,
 }));
 
 vi.mock('@/utils/telemetry', () => ({
@@ -118,8 +145,12 @@ describe('CanvasCheckoutModal telemetry', () => {
     root = createRoot(container);
     computedTotalMock.mockReturnValue(249);
     resetCheckoutMock.mockClear();
+    setStepMock.mockClear();
+    enterModalCheckoutMock.mockClear();
+    leaveModalCheckoutMock.mockClear();
     navigateMock.mockClear();
     (trackOrderStarted as vi.Mock).mockClear();
+    checkoutStoreMock.step = 'canvas';
   });
 
   afterEach(() => {
@@ -132,12 +163,12 @@ describe('CanvasCheckoutModal telemetry', () => {
     setLivingCanvasModalOpenMock.mockClear();
   });
 
-  it('emits trackOrderStarted before navigating to checkout', async () => {
+  it('advances to contact step and records telemetry on first CTA click', async () => {
     act(() => {
       root.render(<CanvasCheckoutModal />);
     });
 
-    const cta = findButton(document.body, 'Complete Your Order');
+    const cta = findButton(document.body, 'Continue to Contact & Shipping');
     expect(cta).toBeTruthy();
 
     await act(async () => {
@@ -145,7 +176,8 @@ describe('CanvasCheckoutModal telemetry', () => {
     });
 
     expect(trackOrderStarted).toHaveBeenCalledWith('pro', 249, true);
-    expect(resetCheckoutMock).toHaveBeenCalledTimes(1);
-    expect(navigateMock).toHaveBeenCalledWith('/checkout');
+    expect(setStepMock).toHaveBeenCalledWith('contact');
+    expect(resetCheckoutMock).not.toHaveBeenCalled();
+    expect(navigateMock).not.toHaveBeenCalled();
   });
 });

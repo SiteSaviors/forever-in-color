@@ -1,4 +1,4 @@
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import clsx from 'clsx';
 import { useCheckoutStore } from '@/store/useCheckoutStore';
 
@@ -17,7 +17,7 @@ const COUNTRIES = [
 ];
 
 const ShippingForm = ({ onNext, onBack }: ShippingFormProps) => {
-  const { shipping, setShipping, setStep } = useCheckoutStore();
+  const { shipping, setShipping } = useCheckoutStore();
   const [formState, setFormState] = useState(shipping);
   const [errors, setErrors] = useState<ShippingErrors>({});
 
@@ -44,11 +44,14 @@ const ShippingForm = ({ onNext, onBack }: ShippingFormProps) => {
     return Object.keys(nextErrors).length === 0;
   };
 
+  useEffect(() => {
+    setFormState(shipping);
+  }, [shipping]);
+
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
     if (!validate()) return;
     setShipping(formState);
-    setStep('payment');
     onNext?.();
   };
 
@@ -171,7 +174,6 @@ const ShippingForm = ({ onNext, onBack }: ShippingFormProps) => {
         <button
           type="button"
           onClick={() => {
-            setStep('contact');
             onBack?.();
           }}
           className="rounded-xl border border-white/15 px-6 py-3 text-sm font-semibold text-white/80 transition hover:border-white/40"
