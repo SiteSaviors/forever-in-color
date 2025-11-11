@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { Suspense, lazy, useMemo } from 'react';
 import Card from '@/components/ui/Card';
 import { getCanvasSizeOption } from '@/utils/canvasSizes';
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
@@ -7,6 +7,8 @@ import { useCanvasConfigState } from '@/store/hooks/useCanvasConfigStore';
 import { useUploadState } from '@/store/hooks/useUploadStore';
 import { usePreviewEntry } from '@/store/hooks/usePreviewStore';
 import { useEntitlementsState } from '@/store/hooks/useEntitlementsStore';
+
+const CanvasInRoomPreview = lazy(() => import('@/components/studio/CanvasInRoomPreview'));
 
 const CheckoutSummary = () => {
   const { currentStyle } = useStyleCatalogState();
@@ -30,17 +32,23 @@ const CheckoutSummary = () => {
     <div className="space-y-6">
       <Card glass className="overflow-hidden border border-white/10 bg-white/5">
         <div className="relative aspect-square w-full bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950">
-          {previewUrl ? (
-            <img
-              src={previewUrl}
-              alt={currentStyle?.name ?? 'Wondertone preview'}
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center text-white/40 text-sm tracking-[0.35em] uppercase">
-              Preview Coming Soon
-            </div>
-          )}
+          <Suspense
+            fallback={
+              previewUrl ? (
+                <img
+                  src={previewUrl}
+                  alt={currentStyle?.name ?? 'Wondertone preview'}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center text-sm uppercase tracking-[0.35em] text-white/40">
+                  Preview Coming Soon
+                </div>
+              )
+            }
+          >
+            <CanvasInRoomPreview className="absolute inset-0" />
+          </Suspense>
           <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full bg-black/60 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-white/80 backdrop-blur">
             {orientationLabel}
           </div>

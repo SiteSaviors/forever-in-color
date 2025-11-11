@@ -58,7 +58,7 @@ export default function DownloadUpgradeModal({ isOpen, onClose }: DownloadUpgrad
             <div className="flex items-start gap-3">
               <Sparkles className="w-5 h-5 text-brand-indigo flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-white font-semibold">50-500 generations per month</p>
+                <p className="text-white font-semibold">50-400 generations per month</p>
                 <p className="text-sm text-white/60">Create more art with increased monthly quotas</p>
               </div>
             </div>

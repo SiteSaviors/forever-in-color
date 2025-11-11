@@ -87,8 +87,10 @@ const CanvasCheckoutModal = () => {
   const handlePrimaryCta = () => {
     trackOrderStarted(userTier, total, hasEnabledEnhancements);
     resetCheckout();
-    handleClose('purchase_complete');
-    navigate('/checkout');
+    setTimeout(() => {
+      navigate('/checkout');
+      handleClose('purchase_complete');
+    }, 16);
   };
 
   const enhancementsSummary = enhancements

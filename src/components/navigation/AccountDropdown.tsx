@@ -1,4 +1,4 @@
-import { Suspense, forwardRef, type ComponentPropsWithoutRef } from 'react';
+import { Suspense, forwardRef, useState, type ComponentPropsWithoutRef } from 'react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 
 type AccountDropdownProps = {
@@ -58,20 +58,28 @@ const AccountDropdown = ({
   onOpenAuthModal,
   onSignOut,
   canUpgrade,
-}: AccountDropdownProps) => (
-  <DropdownMenu.Root>
-    <DropdownMenu.Trigger asChild>
-      <AccountButton
-        accountInitial={accountInitial}
-        label={isAuthenticated ? 'Account menu' : 'Sign in'}
-      />
-    </DropdownMenu.Trigger>
-    <DropdownMenu.Portal>
-      <DropdownMenu.Content
-        sideOffset={12}
-        align="end"
-        className="z-[9999] w-64 rounded-2xl border border-white/10 bg-slate-950/95 p-3 shadow-[0_25px_80px_rgba(76,29,149,0.45)] backdrop-blur-xl"
-      >
+}: AccountDropdownProps) => {
+  const [open, setOpen] = useState(false);
+
+  const handleMenuAction = (callback: () => void) => {
+    setOpen(false);
+    callback();
+  };
+
+  return (
+    <DropdownMenu.Root open={open} onOpenChange={setOpen}>
+      <DropdownMenu.Trigger asChild>
+        <AccountButton
+          accountInitial={accountInitial}
+          label={isAuthenticated ? 'Account menu' : 'Sign in'}
+        />
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content
+          sideOffset={12}
+          align="end"
+          className="z-[9999] w-64 rounded-2xl border border-white/10 bg-slate-950/95 p-3 shadow-[0_25px_80px_rgba(76,29,149,0.45)] backdrop-blur-xl"
+        >
       <DropdownMenu.Label className="px-3 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-white/40">
         {sessionHydrated ? (isAuthenticated ? 'Signed In' : 'Guest Mode') : 'Loading…'}
       </DropdownMenu.Label>
@@ -105,28 +113,19 @@ const AccountDropdown = ({
           <>
             <DropdownMenu.Item
               className="cursor-pointer rounded-xl px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
-              onSelect={(event) => {
-                event.preventDefault();
-                onNavigate('/studio/gallery');
-              }}
+              onSelect={() => handleMenuAction(() => onNavigate('/studio/gallery'))}
             >
               My Gallery
             </DropdownMenu.Item>
             <DropdownMenu.Item
               className="cursor-pointer rounded-xl px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
-              onSelect={(event) => {
-                event.preventDefault();
-                onNavigate('/studio/usage');
-              }}
+              onSelect={() => handleMenuAction(() => onNavigate('/studio/usage'))}
             >
               Token History
             </DropdownMenu.Item>
             <DropdownMenu.Item
               className="cursor-pointer rounded-xl px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
-              onSelect={(event) => {
-                event.preventDefault();
-                void onSignOut();
-              }}
+              onSelect={() => handleMenuAction(() => { void onSignOut(); })}
             >
               Sign out
             </DropdownMenu.Item>
@@ -135,28 +134,19 @@ const AccountDropdown = ({
           <div className="flex flex-col gap-2">
             <DropdownMenu.Item
               className="cursor-pointer rounded-xl px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
-              onSelect={(event) => {
-                event.preventDefault();
-                onOpenAuthModal('signin');
-              }}
+              onSelect={() => handleMenuAction(() => onOpenAuthModal('signin'))}
             >
               Sign in
             </DropdownMenu.Item>
             <DropdownMenu.Item
               className="cursor-pointer rounded-xl px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
-              onSelect={(event) => {
-                event.preventDefault();
-                onOpenAuthModal('signup');
-              }}
+              onSelect={() => handleMenuAction(() => onOpenAuthModal('signup'))}
             >
               Create account
             </DropdownMenu.Item>
             <DropdownMenu.Item
               className="cursor-pointer rounded-xl px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
-              onSelect={(event) => {
-                event.preventDefault();
-                onNavigate('/pricing');
-              }}
+              onSelect={() => handleMenuAction(() => onNavigate('/pricing'))}
             >
               Explore plans
             </DropdownMenu.Item>
@@ -176,10 +166,11 @@ const AccountDropdown = ({
           </button>
         </div>
       )}
-      </DropdownMenu.Content>
-    </DropdownMenu.Portal>
-  </DropdownMenu.Root>
-);
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
+  );
+};
 
 export { AccountButton };
 export type { AccountDropdownProps };

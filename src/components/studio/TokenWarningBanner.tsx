@@ -10,9 +10,9 @@ import './TokenWarningBanner.css';
 import { useEntitlementsState } from '@/store/hooks/useEntitlementsStore';
 
 const TIER_RECOMMENDATIONS: Record<EntitlementTier, { nextTier: string; quota: number; price: string } | null> = {
-  free: { nextTier: 'Creator', quota: 50, price: '$9.99/mo' },
-  creator: { nextTier: 'Plus', quota: 250, price: '$29.99/mo' },
-  plus: { nextTier: 'Pro', quota: 500, price: '$59.99/mo' },
+  free: { nextTier: 'Creator', quota: 50, price: '$7.99/mo' },
+  creator: { nextTier: 'Plus', quota: 150, price: '$19.99/mo' },
+  plus: { nextTier: 'Pro', quota: 400, price: '$49.99/mo' },
   pro: null,
   dev: null,
 };

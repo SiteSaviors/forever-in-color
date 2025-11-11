@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import FounderNavigation from '@/components/navigation/FounderNavigation';
 import Section from '@/components/layout/Section';
@@ -49,7 +49,7 @@ const PREMIUM_TIERS: Tier[] = [
     name: 'Creator',
     tagline: 'Turn milestone memories into ready-to-print art',
     description: 'Unlock watermark-free previews, download-ready exports, and elevated social proof modules.',
-    price: '$9.99',
+    price: '$7.99',
     priceDetail: 'per month',
     tokensPerMonth: 50,
     tokensLabel: 'Tokens',
@@ -67,12 +67,12 @@ const PREMIUM_TIERS: Tier[] = [
     name: 'Plus',
     tagline: 'For artist studios and memory pros managing multiple clients',
     description: 'High-throughput generations, batch downloads, and concierge support for mobile pop-ups or live events.',
-    price: '$29.99',
+    price: '$19.99',
     priceDetail: 'per month',
-    tokensPerMonth: 250,
+    tokensPerMonth: 150,
     tokensLabel: 'Tokens',
     features: [
-      '250 premium generations / month',
+      '150 premium generations / month',
       'Batch watermarked & clean exports',
       'Dedicated live preview operator tools',
       'Priority queue (2× speed boost)',
@@ -85,12 +85,12 @@ const PREMIUM_TIERS: Tier[] = [
     name: 'Pro',
     tagline: 'Scale-ready plan for franchise studios & enterprise gifting',
     description: 'Unlock Wondertone concierge, white-label experiences, and 500 tokens for large activations.',
-    price: '$59.99',
+    price: '$49.99',
     priceDetail: 'per month',
-    tokensPerMonth: 500,
+    tokensPerMonth: 400,
     tokensLabel: 'Tokens',
     features: [
-      '500 premium generations / month',
+      '400 premium generations / month',
       'Wondertone concierge team & white-label support',
       'Real-time teleprompter prompts for live events',
       'Priority queue (3× speed boost)',
@@ -101,6 +101,7 @@ const PREMIUM_TIERS: Tier[] = [
 ];
 
 const PricingPage = () => {
+  const PENDING_CHECKOUT_TIER_KEY = 'wt_pending_checkout_tier';
   const { entitlements } = useEntitlementsState();
   const { sessionUser, accessToken } = useSessionState();
   const { hydrateEntitlements } = useEntitlementsActions();
@@ -130,20 +131,7 @@ const PricingPage = () => {
 
   const currentTier = entitlements.tier;
 
-  const handleSelectTier = async (tier: TierId) => {
-    setErrorMessage(null);
-    setSuccessMessage(null);
-
-    if (tier === 'free') {
-      navigate('/create');
-      return;
-    }
-
-    if (!sessionUser) {
-      openAuthModal('signup', { source: 'pricing' });
-      return;
-    }
-
+  const startCheckout = useCallback(async (tier: TierId) => {
     try {
       setLoadingTier(tier);
       const { url } = await createCheckoutSession({
@@ -159,7 +147,48 @@ const PricingPage = () => {
     } finally {
       setLoadingTier(null);
     }
-  };
+  }, [accessToken]);
+
+  const handleSelectTier = useCallback(async (tier: TierId) => {
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
+    if (tier === 'free') {
+      navigate('/create');
+      return;
+    }
+
+    if (!sessionUser) {
+      try {
+        window.sessionStorage.setItem(PENDING_CHECKOUT_TIER_KEY, tier);
+      } catch {
+        // ignore storage issues
+      }
+      openAuthModal('signup', { source: 'pricing' });
+      return;
+    }
+
+    await startCheckout(tier);
+  }, [navigate, openAuthModal, sessionUser, startCheckout]);
+
+  useEffect(() => {
+    if (!sessionUser || !accessToken) return;
+    let pendingTier: TierId | null = null;
+    try {
+      const stored = window.sessionStorage.getItem(PENDING_CHECKOUT_TIER_KEY);
+      pendingTier = stored ? (stored as TierId) : null;
+    } catch {
+      pendingTier = null;
+    }
+    if (pendingTier) {
+      try {
+        window.sessionStorage.removeItem(PENDING_CHECKOUT_TIER_KEY);
+      } catch {
+        // ignore
+      }
+      void handleSelectTier(pendingTier);
+    }
+  }, [sessionUser, accessToken, handleSelectTier]);
 
 
   return (

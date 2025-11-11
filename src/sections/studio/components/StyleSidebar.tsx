@@ -31,7 +31,7 @@ const StyleSidebar = ({
   return (
     <aside
       className={clsx(
-        'hidden lg:block lg:w-[390px] lg:flex-shrink-0 bg-slate-950/50 border-r border-white/10 lg:sticky lg:top-[57px] lg:max-h-[calc(100vh-57px)] lg:overflow-y-auto transition-opacity duration-200',
+        'hidden lg:block lg:w-[390px] lg:flex-shrink-0 bg-slate-950/50 border-r border-white/10 lg:sticky lg:top-[57px] lg:max-h-[calc(100vh+3.5rem-57px)] lg:overflow-y-auto transition-opacity duration-200',
         !hasCroppedImage && 'opacity-80 saturate-75'
       )}
     >

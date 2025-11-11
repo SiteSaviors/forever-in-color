@@ -9,6 +9,7 @@ import AuthProvider from '@/providers/AuthProvider';
 
 const MarketingRoutes = lazy(() => import('@/routes/MarketingRoutes'));
 const StudioRoutes = lazy(() => import('@/routes/StudioRoutes'));
+const CheckoutPage = lazy(() => import('@/pages/CheckoutPage'));
 
 const MarketingContainer = () => (
   <AuthProvider>
@@ -26,12 +27,20 @@ const StudioContainer = () => (
   </StudioProviders>
 );
 
+const CheckoutContainer = () => (
+  <StudioProviders>
+    <Suspense fallback={<StudioShellSkeleton />}>
+      <CheckoutPage />
+    </Suspense>
+  </StudioProviders>
+);
+
 const App = () => {
   return (
     <Routes>
       <Route path="/create/*" element={<StudioContainer />} />
       <Route path="/studio/usage/*" element={<StudioContainer />} />
-      <Route path="/checkout/*" element={<StudioContainer />} />
+      <Route path="/checkout/*" element={<CheckoutContainer />} />
       <Route path="/*" element={<MarketingContainer />} />
     </Routes>
   );

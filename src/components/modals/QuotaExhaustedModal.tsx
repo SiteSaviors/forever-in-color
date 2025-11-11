@@ -29,22 +29,22 @@ const TIER_DATA: Record<string, TierInfo> = {
   creator: {
     name: 'Creator',
     quota: 50,
-    price: '$9.99/month',
+    price: '$7.99/month',
     features: ['50 watermark-free tokens', 'Living Canvas downloads', 'Priority queue', 'Creator badge'],
     gradient: 'from-purple-500/20 via-indigo-500/20 to-blue-500/20',
   },
   plus: {
     name: 'Plus',
-    quota: 250,
-    price: '$29.99/month',
-    features: ['250 premium tokens', 'Batch exports', 'Priority queue (2× speed)', 'Shared brand assets'],
+    quota: 150,
+    price: '$19.99/month',
+    features: ['150 premium tokens', 'Batch exports', 'Priority queue (2× speed)', 'Shared brand assets'],
     gradient: 'from-cyan-500/20 via-blue-500/20 to-indigo-500/20',
   },
   pro: {
     name: 'Pro',
-    quota: 500,
-    price: '$59.99/month',
-    features: ['500 premium tokens', 'Wondertone concierge', 'Priority queue (3× speed)', '48h Living Canvas'],
+    quota: 400,
+    price: '$49.99/month',
+    features: ['400 premium tokens', 'Wondertone concierge', 'Priority queue (3× speed)', '48h Living Canvas'],
     gradient: 'from-orange-500/20 via-pink-500/20 to-red-500/20',
   },
 };
@@ -72,20 +72,20 @@ const QuotaExhaustedModal = ({
       case 'creator':
         return {
           title: "You've Used All 50 Tokens",
-          subtitle: 'Scale up with Plus for 250 tokens/month and batch download capabilities!',
+          subtitle: 'Scale up with Plus for 150 tokens/month and batch download capabilities!',
           showUpgrade: true,
           recommendedTier: 'plus',
         };
       case 'plus':
         return {
-          title: "You've Reached Your 250 Token Limit",
-          subtitle: 'Unlock Pro tier for 500 tokens/month and white-glove concierge support!',
+          title: "You've Reached Your 150 Token Limit",
+          subtitle: 'Unlock Pro tier for 400 tokens/month and white-glove concierge support!',
           showUpgrade: true,
           recommendedTier: 'pro',
         };
       case 'pro':
         return {
-          title: "You've Used All 500 Tokens",
+          title: "You've Used All 400 Tokens",
           subtitle: 'Contact our team for enterprise solutions with custom token packages',
           showUpgrade: false,
           showContact: true,
