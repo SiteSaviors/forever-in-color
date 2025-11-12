@@ -1,6 +1,7 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { clsx } from 'clsx';
+import { Frame, Maximize2, Compass, Sparkles, Edit3, Package, Flag, Shield } from 'lucide-react';
 import { useScrollVisibility } from '@/hooks/useScrollVisibility';
 import { CANVAS_SIZE_OPTIONS, getCanvasSizeOption } from '@/utils/canvasSizes';
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
@@ -109,8 +110,7 @@ const CanvasCheckoutModal = () => {
   const closingReasonRef = useRef<CanvasModalCloseReason | null>(null);
   const { canvasModalOpen, selectedCanvasSize, selectedFrame, enhancements, orientationPreviewPending } =
     useCanvasConfigState();
-  const { closeCanvasModal, setCanvasSize, setFrame, toggleEnhancement, setLivingCanvasModalOpen, computedTotal } =
-    useCanvasConfigActions();
+  const { closeCanvasModal, setCanvasSize, setFrame, toggleEnhancement, computedTotal } = useCanvasConfigActions();
   const { orientation, smartCrops } = useUploadState();
   const { currentStyle } = useStyleCatalogState();
   const { userTier } = useEntitlementsState();
@@ -128,10 +128,6 @@ const CanvasCheckoutModal = () => {
 
   const floatingFrame = useMemo(
     () => enhancements.find((item) => item.id === 'floating-frame'),
-    [enhancements]
-  );
-  const livingCanvas = useMemo(
-    () => enhancements.find((item) => item.id === 'living-canvas'),
     [enhancements]
   );
 
@@ -208,15 +204,6 @@ const CanvasCheckoutModal = () => {
     },
     [floatingFrame, selectedFrame, toggleEnhancement, setFrame]
   );
-
-  const handleLivingCanvasToggle = () => {
-    if (!livingCanvas) return;
-    if (!livingCanvas.enabled) {
-      setLivingCanvasModalOpen(true);
-    } else {
-      toggleEnhancement('living-canvas');
-    }
-  };
 
   const [exitPromptReason, setExitPromptReason] = useState<CanvasModalCloseReason | null>(null);
   const [mobilePreviewExpanded, setMobilePreviewExpanded] = useState(false);
@@ -552,9 +539,159 @@ const CanvasCheckoutModal = () => {
 
   const renderTestimonialCard = () => (
     <section className="rounded-3xl border border-dashed border-white/12 bg-white/5 p-6 text-sm text-white/60 transition hover:border-white/40 hover:bg-white/10">
-      “The print arrived museum-ready. Zero nails, instant conversation starter.” — Avery M.
+      "The print arrived museum-ready. Zero nails, instant conversation starter." — Avery M.
     </section>
   );
+
+  const renderPremiumTrustBar = () => {
+    return (
+      <div className="group relative overflow-hidden rounded-2xl border-2 border-white/20 bg-gradient-to-br from-white/8 via-white/4 to-white/6 p-5 shadow-[0_0_24px_rgba(168,85,247,0.12)] transition-all duration-300 hover:border-white/30 hover:shadow-[0_0_32px_rgba(168,85,247,0.18)]">
+        {/* Premium gradient overlay */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-emerald-500/8" />
+
+        {/* Subtle glow on hover */}
+        <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-purple-400/12 via-transparent to-emerald-400/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+        <div className="relative grid grid-cols-1 gap-5 sm:grid-cols-3 sm:divide-x sm:divide-white/15">
+          {/* Free Shipping */}
+          <div className="flex flex-col items-center gap-2.5 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-600/15 shadow-[0_0_16px_rgba(168,85,247,0.2)] transition-transform duration-300 group-hover:scale-105">
+              <Package className="h-6 w-6 text-purple-300" strokeWidth={2} />
+            </div>
+            <div className="space-y-0.5">
+              <p className="font-display text-base font-semibold text-white">Free Shipping</p>
+              <p className="text-xs text-white/55">On all orders</p>
+            </div>
+          </div>
+
+          {/* Made in USA */}
+          <div className="flex flex-col items-center gap-2.5 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/15 shadow-[0_0_16px_rgba(59,130,246,0.2)] transition-transform duration-300 group-hover:scale-105">
+              <Flag className="h-6 w-6 text-blue-300" strokeWidth={2} />
+            </div>
+            <div className="space-y-0.5">
+              <p className="font-display text-base font-semibold text-white">Made in USA</p>
+              <p className="text-xs text-white/55">Handcrafted quality</p>
+            </div>
+          </div>
+
+          {/* Money-Back Guarantee */}
+          <div className="flex flex-col items-center gap-2.5 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/15 shadow-[0_0_16px_rgba(52,211,153,0.2)] transition-transform duration-300 group-hover:scale-105">
+              <Shield className="h-6 w-6 text-emerald-300" strokeWidth={2} />
+            </div>
+            <div className="space-y-0.5">
+              <p className="font-display text-base font-semibold text-white">Money-Back Guarantee</p>
+              <p className="text-xs text-white/55">100-day protection</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderEnhancedOrderSummary = () => {
+    const handleScrollToFrame = () => {
+      const frameSection = document.querySelector('[data-section="frame-selection"]');
+      const modalContent = document.querySelector('[data-modal-content]');
+      if (frameSection && modalContent) {
+        const offset = (frameSection as HTMLElement).offsetTop - 20;
+        modalContent.scrollTo({ top: offset, behavior: 'smooth' });
+      }
+    };
+
+    const handleScrollToSize = () => {
+      const sizeSection = document.querySelector('[data-section="size-selection"]');
+      const modalContent = document.querySelector('[data-modal-content]');
+      if (sizeSection && modalContent) {
+        const offset = (sizeSection as HTMLElement).offsetTop - 20;
+        modalContent.scrollTo({ top: offset, behavior: 'smooth' });
+      }
+    };
+
+    const frameLabel = selectedFrame === 'none'
+      ? 'Gallery wrap'
+      : `${selectedFrame.charAt(0).toUpperCase() + selectedFrame.slice(1)} floating frame`;
+
+    return (
+      <section className="space-y-4 rounded-3xl border border-white/12 bg-gradient-to-br from-white/5 via-white/3 to-transparent p-6 transition hover:border-white/20">
+        <div className="space-y-2">
+          <p className="text-xs uppercase tracking-[0.28em] text-white/45">Order Summary</p>
+
+          <div className="space-y-3 text-sm">
+            {/* Canvas Size */}
+            <div className="flex items-center justify-between text-white/75">
+              <div className="flex items-center gap-2">
+                <Maximize2 className="h-4 w-4 text-purple-300/60" />
+                <span>{selectedSizeOption ? `${selectedSizeOption.label} Canvas` : 'Size pending'}</span>
+              </div>
+              <button
+                type="button"
+                onClick={handleScrollToSize}
+                disabled={orientationPreviewPending}
+                className={clsx(
+                  'flex items-center gap-1 text-xs font-semibold transition',
+                  orientationPreviewPending
+                    ? 'cursor-not-allowed text-purple-300/40'
+                    : 'text-purple-300 hover:text-purple-200'
+                )}
+              >
+                <Edit3 className="h-3 w-3" />
+                Edit
+              </button>
+            </div>
+
+            {/* Frame */}
+            <div className="flex items-center justify-between text-white/75">
+              <div className="flex items-center gap-2">
+                <Frame className="h-4 w-4 text-purple-300/60" />
+                <span>{frameLabel}</span>
+              </div>
+              <button
+                type="button"
+                onClick={handleScrollToFrame}
+                disabled={orientationPreviewPending}
+                className={clsx(
+                  'flex items-center gap-1 text-xs font-semibold transition',
+                  orientationPreviewPending
+                    ? 'cursor-not-allowed text-purple-300/40'
+                    : 'text-purple-300 hover:text-purple-200'
+                )}
+              >
+                <Edit3 className="h-3 w-3" />
+                Edit
+              </button>
+            </div>
+
+            {/* Orientation */}
+            <div className="flex items-center gap-2 text-white/75">
+              <Compass className="h-4 w-4 text-purple-300/60" />
+              <span>Orientation: {orientationLabel}</span>
+            </div>
+
+            {/* Enhancements */}
+            {enhancementsSummary.length > 0 && (
+              <div className="flex items-center gap-2 text-white/75">
+                <Sparkles className="h-4 w-4 text-purple-300/60" />
+                <span>Enhancements: {enhancementsSummary.join(', ')}</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Total Price with Animation */}
+        <div className="flex items-center justify-between border-t border-white/10 pt-3">
+          <span className="text-sm font-semibold text-white/70">Total</span>
+          <span
+            key={total}
+            className="font-display text-2xl font-bold text-white motion-safe:animate-[pulse_400ms_ease-in-out]"
+          >
+            {currency.format(total)}
+          </span>
+        </div>
+      </section>
+    );
+  };
 
   return (
     <Dialog.Root open={canvasModalOpen} onOpenChange={handleOpenChange}>
@@ -640,7 +777,19 @@ const CanvasCheckoutModal = () => {
                 </div>
               </div>
 
-              <div data-modal-content className="w-full max-h-[80vh] overflow-y-auto px-6 py-8 lg:w-[56%]">
+              <div data-modal-content className="relative w-full max-h-[80vh] overflow-y-auto px-6 py-8 lg:w-[56%]">
+                {/* Close button - positioned at true top-right corner */}
+                <button
+                  type="button"
+                  onClick={() => requestClose('cancel')}
+                  className="absolute right-6 top-6 z-10 rounded-full p-2 text-white/60 transition hover:bg-white/10 hover:text-white"
+                  aria-label="Close"
+                >
+                  <svg className="h-5 w-5" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6} fill="none">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+
                 <div className="lg:hidden">
                   <button
                     type="button"
@@ -729,32 +878,25 @@ const CanvasCheckoutModal = () => {
                 </div>
                 {isCanvasStep && (
                   <div className="space-y-8">
-                    <header className="space-y-4 pb-6">
-                      <Dialog.Title className="font-display text-[36px] font-semibold leading-tight tracking-tight text-white">
-                        Turn Your Memory Into a Masterpiece
+                    <header className="space-y-3 pb-6">
+                      <Dialog.Title className="font-display text-[32px] font-semibold leading-tight tracking-tight text-white">
+                        ✨ Turn Your Memory Into a Masterpiece
                       </Dialog.Title>
-                      <Dialog.Description className="font-display text-base leading-relaxed text-white/80">
-                        Museum-grade canvas. Arrives ready to hang. Ships in 5-7 days.
+                      <Dialog.Description className="font-poppins text-[16px] font-semibold leading-relaxed text-white/80">
+                        Museum-grade canvas. Arrives ready to hang. Ships in 3-5 days.
                       </Dialog.Description>
                       <CanvasCheckoutStepIndicator
                         showTimer={false}
                         timerSeed={timerSeed}
                         timerRunning={canvasModalOpen && isCanvasStep}
                       />
-                      <button
-                        type="button"
-                        onClick={() => requestClose('cancel')}
-                        className="absolute right-5 top-5 rounded-full p-2 text-white/60 transition hover:bg-white/10 hover:text-white"
-                        aria-label="Close"
-                      >
-                        <svg className="h-5 w-5" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6} fill="none">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
                     </header>
 
-                    <section className="space-y-4">
-                      <p className="text-xs uppercase tracking-[0.28em] text-white/45">1 · Choose Frame</p>
+                    <section className="space-y-4" data-section="frame-selection">
+                      <div className="space-y-2">
+                        <h3 className="font-display text-xl font-semibold text-white">1. Choose Your Frame</h3>
+                        <p className="font-poppins text-sm text-white/60">Select the finish that makes your art shine.</p>
+                      </div>
                       <div className="flex gap-3">
                         {FRAME_OPTIONS.map((option) => {
                           const active = selectedFrame === option.id;
@@ -808,10 +950,10 @@ const CanvasCheckoutModal = () => {
                       </div>
                     </section>
 
-                    <section className="space-y-6">
+                    <section className="space-y-6" data-section="size-selection">
                       <div className="space-y-2">
-                        <h3 className="font-display text-xl font-semibold text-white">Choose Your Size</h3>
-                        <p className="text-sm text-white/60">
+                        <h3 className="font-display text-xl font-semibold text-white">2. Choose Your Size</h3>
+                        <p className="font-poppins text-sm text-white/60">
                           Museum-quality canvas, handcrafted frame, ready to hang
                         </p>
                       </div>
@@ -866,37 +1008,9 @@ const CanvasCheckoutModal = () => {
                       </div>
                     </section>
 
-                    {/* Trust signal: Quality guarantee near size selection */}
-                    <TrustSignal context="canvas_quality" className="mt-4" />
-
-                    <section className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <p className="text-xs uppercase tracking-[0.28em] text-white/45">Living Canvas AR</p>
-                        <span className="text-xs font-semibold text-white/70">
-                          {livingCanvas ? `+ ${currency.format(livingCanvas.price)}` : ''}
-                        </span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={handleLivingCanvasToggle}
-                        className={clsx(
-                          'w-full rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition',
-                          livingCanvas?.enabled
-                            ? 'border-purple-400 bg-purple-500/15 text-white'
-                            : 'border-white/20 bg-white/5 text-white/70 hover:bg-white/10'
-                        )}
-                      >
-                        {livingCanvas?.enabled ? 'Included in your order' : 'Add Living Canvas augmented moment'}
-                      </button>
-                    </section>
-
-                    {renderOrderSummaryCard()}
-                    {renderTrustSignals()}
-                    {renderTestimonialCard()}
-
-                    <footer className="flex flex-col gap-3 border-t border-white/10 bg-slate-950/80 pt-4 mt-6">
-                      {/* Trust signal: Final reassurance before commitment */}
-                      <TrustSignal context="cta_strip" />
+                    {/* SECTION 1: Premium Trust Bar + Primary CTA - Immediate Action */}
+                    <footer className="space-y-4 border-t border-white/10 pt-6 mt-8">
+                      {renderPremiumTrustBar()}
 
                       <button
                         type="button"
@@ -904,12 +1018,57 @@ const CanvasCheckoutModal = () => {
                         disabled={canvasAdvanceDisabled}
                         className={clsx(
                           'w-full rounded-[26px] border border-purple-400 bg-gradient-to-r from-purple-500 via-purple-500 to-blue-500 py-4 text-base font-semibold text-white shadow-glow-purple transition',
-                          canvasAdvanceDisabled ? 'cursor-not-allowed opacity-40' : 'hover:shadow-glow-purple'
+                          canvasAdvanceDisabled
+                            ? 'cursor-not-allowed opacity-40'
+                            : 'hover:shadow-glow-purple motion-safe:hover:scale-[1.01]'
                         )}
                       >
                         {USE_NEW_CTA_COPY ? 'Begin Production →' : 'Continue to Contact & Shipping →'}
                       </button>
                     </footer>
+
+                    {/* SECTION 2: Enhanced Order Summary - Config Review */}
+                    <div className="mt-6">
+                      {renderEnhancedOrderSummary()}
+                    </div>
+
+                    {/* SECTION 3: Testimonials - Compact Social Proof */}
+                    <div className="mt-6 space-y-3">
+                      <StaticTestimonial
+                        quote="This canvas completely transformed our living room. The quality is absolutely stunning."
+                        author="Sarah M."
+                        location="Austin, TX"
+                        verified={true}
+                        canvasImageUrl="/testimonials/canvas-1.jpg"
+                        layout="horizontal"
+                        imagePosition="left"
+                      />
+
+                      <StaticTestimonial
+                        quote="The print arrived museum-ready. Zero nails, instant conversation starter."
+                        author="Avery M."
+                        location="Brooklyn, NY"
+                        verified={true}
+                        canvasImageUrl="/testimonials/canvas-2.jpg"
+                        layout="horizontal"
+                        imagePosition="right"
+                      />
+
+                      <StaticTestimonial
+                        quote="Museum-quality print. Everyone asks where we got it."
+                        author="James K."
+                        location="Seattle, WA"
+                        verified={true}
+                        canvasImageUrl="/testimonials/canvas-3.jpg"
+                        layout="horizontal"
+                        imagePosition="left"
+                      />
+                    </div>
+
+                    {/* SECTION 4: Micro Trust Row - Final Reassurance */}
+                    <p className="mt-4 text-center text-[11px] leading-relaxed text-white/45">
+                      ⭐ 4.9/5 from 1,200+ collectors · 🚚 5-day insured shipping · 🛡️ 100-day guarantee
+                    </p>
                   </div>
                 )}
                 {isContactStep && (

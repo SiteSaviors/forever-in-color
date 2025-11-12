@@ -8,8 +8,8 @@ export const MODAL_CHECKOUT_STEPS: Array<{
   label: string;
   description: string;
 }> = [
-  { id: 'canvas', label: 'Your Masterpiece', description: 'Setup' },
-  { id: 'contact', label: 'Contact Info', description: 'Who' },
+  { id: 'canvas', label: 'Create Your Masterpiece', description: 'Setup' },
+  { id: 'contact', label: 'Contact\nInfo', description: 'Who' },
   { id: 'shipping', label: 'Shipping Address', description: 'Where' },
   { id: 'payment', label: 'Make It Official', description: 'Secure' },
 ];
@@ -65,106 +65,155 @@ const CanvasCheckoutStepIndicatorComponent: React.FC<CanvasCheckoutStepIndicator
     };
   }, [showTimer, timerSeed, timerRunning]);
 
-  const timeMessage = useMemo(() => {
-    if (!showTimer) return null;
-    if (elapsedSeconds < 120) return '~2 min remaining';
-    if (elapsedSeconds < 180) return '~1 min remaining';
-    return 'Take your time—no rush';
-  }, [showTimer, elapsedSeconds]);
+  const dynamicMessage = useMemo(() => {
+    if (elapsedSeconds < 120) return '≈2 minutes total';
+    return 'Looking perfect so far';
+  }, [elapsedSeconds]);
 
   return (
-    <div className="space-y-2">
-      {/* Progress Header (Desktop Only) */}
-      <div className="hidden lg:flex items-center justify-between text-sm text-white/60 px-1 font-medium">
-        <span>4 steps to your masterpiece</span>
-        <span className="text-white/50">Looking great so far</span>
+    <div className="space-y-4">
+      {/* Mobile: Compact dots with counter */}
+      <div className="flex lg:hidden items-center justify-between px-1">
+        <span className="text-xs text-white/60 font-medium">Only 4 steps</span>
+        <div className="flex items-center gap-2">
+          {MODAL_CHECKOUT_STEPS.map((_, i) => (
+            <div
+              key={i}
+              className={clsx(
+                'h-2 w-2 rounded-full transition-all duration-300',
+                i < activeIndex && 'bg-emerald-400',
+                i === activeIndex && 'bg-purple-400 ring-4 ring-purple-400/20 scale-125',
+                i > activeIndex && 'bg-white/20'
+              )}
+            />
+          ))}
+          <span className="text-xs text-white/60 font-medium ml-1">
+            {activeIndex + 1} / 4
+          </span>
+        </div>
       </div>
 
-      {/* Step Indicator - Unified Pill Design */}
-      <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 px-6 py-4">
-        {/* Progress Bar with Spring Easing */}
-        <div
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-purple-400 via-fuchsia-400 to-emerald-300 transition-[width] duration-700"
-          style={{
-            width: `${progress}%`,
-            transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
-          }}
-        />
+      {/* Desktop: Luminescent Spine */}
+      <div className="hidden lg:block">
+        {/* Header Copy */}
+        <div className="flex items-center justify-between font-poppins text-xs text-white/60 px-1 font-medium mb-2">
+          <span>Only 4 curated steps</span>
+          <span className="text-white/50">{dynamicMessage}</span>
+        </div>
 
-        {/* Traveling Glow */}
-        <div
-          className="pointer-events-none absolute bottom-0 h-[2px] w-12 blur-sm bg-gradient-to-r from-transparent via-purple-300 to-transparent opacity-80 transition-[left] duration-700"
-          style={{
-            left: `calc(${progress}% - 24px)`,
-            transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
-          }}
-        />
+        {/* Spine Capsule */}
+        <div className="relative overflow-visible rounded-full border border-white/10 bg-white/5 px-4 py-1.5">
+          {/* Connecting Line - Background */}
+          <div className="absolute left-8 right-8 top-1/2 -translate-y-1/2 h-0.5 bg-white/10" />
 
-        {/* Steps Grid */}
-        <div className="grid grid-cols-4 gap-3">
-          {MODAL_CHECKOUT_STEPS.map((item, index) => {
-            const isActive = index === activeIndex;
-            const isComplete = index < activeIndex;
-            const canNavigate = isComplete;
-            const stepNumber = index + 1;
+          {/* Connecting Line - Progress Gradient */}
+          <div
+            className="pointer-events-none absolute left-8 top-1/2 -translate-y-1/2 h-0.5 bg-gradient-to-r from-purple-400 via-fuchsia-400 to-emerald-300 transition-[width] duration-700"
+            style={{
+              width: `calc(${progress}% * (100% - 64px) / 100)`,
+              transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+            }}
+          />
 
-            const handleClick = () => {
-              if (!canNavigate) return;
-              setStep(item.id);
-            };
+          {/* Shimmer Effect */}
+          <div className="pointer-events-none absolute left-8 right-8 top-1/2 -translate-y-1/2 h-0.5 overflow-hidden">
+            <div
+              className="absolute h-full w-24 bg-gradient-to-r from-transparent via-white/40 to-transparent motion-safe:animate-[shimmer-sweep_3s_ease-in-out_infinite]"
+              style={{
+                animation: 'shimmer-sweep 3s ease-in-out infinite',
+              }}
+            />
+          </div>
 
-            return (
-              <button
-                type="button"
-                key={item.id}
-                onClick={handleClick}
-                disabled={!canNavigate}
-                aria-current={isActive ? 'step' : undefined}
-                className={clsx(
-                  'group flex flex-col items-center gap-2 text-center transition focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/50 rounded-xl disabled:cursor-default',
-                  canNavigate && 'cursor-pointer'
-                )}
-                aria-disabled={!canNavigate}
-              >
-                {/* Numbered Circle */}
-                <div className="relative">
-                  <div
+          {/* Nodes Container */}
+          <div className="relative flex items-center justify-between">
+            {MODAL_CHECKOUT_STEPS.map((item, index) => {
+              const isActive = index === activeIndex;
+              const isComplete = index < activeIndex;
+              const canNavigate = isComplete;
+              const stepNumber = index + 1;
+
+              const handleClick = () => {
+                if (!canNavigate) return;
+                setStep(item.id);
+              };
+
+              return (
+                <div key={item.id} className="relative flex flex-col items-center">
+                  {/* Node Circle */}
+                  <button
+                    type="button"
+                    onClick={handleClick}
+                    disabled={!canNavigate}
+                    aria-current={isActive ? 'step' : undefined}
+                    aria-disabled={!canNavigate}
                     className={clsx(
-                      'flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold transition-all duration-500',
+                      'relative flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950',
                       isComplete && [
                         'bg-emerald-400 text-slate-900 shadow-[0_0_20px_rgba(52,211,153,0.6)]',
+                        'cursor-pointer hover:scale-105 hover:shadow-[0_0_30px_rgba(52,211,153,0.8)]',
                       ],
                       isActive && [
                         'bg-purple-500 text-white shadow-[0_0_25px_rgba(139,92,246,0.7)]',
                         'motion-safe:animate-pulse',
                       ],
-                      !isActive && !isComplete && ['bg-white/10 text-white/30']
+                      !isActive && !isComplete && ['bg-white/10 text-white/30 cursor-default']
                     )}
                   >
                     {isComplete ? (
                       <span className="motion-safe:animate-scale-in">✓</span>
+                    ) : isActive ? (
+                      <span className="relative">
+                        <span className="absolute inset-0 flex items-center justify-center">
+                          <span className="h-1.5 w-1.5 rounded-full bg-white" />
+                        </span>
+                        {stepNumber}
+                      </span>
                     ) : (
                       stepNumber
                     )}
-                  </div>
-                </div>
+                  </button>
 
-                {/* Step Label */}
-                <p
-                  className={clsx(
-                    'text-xs font-semibold uppercase leading-snug tracking-[0.08em] transition-colors',
-                    isActive && 'text-white',
-                    isComplete && !isActive && 'text-emerald-100',
-                    !isActive && !isComplete && 'text-white/35'
-                  )}
-                >
-                  {item.label}
-                </p>
-              </button>
-            );
-          })}
+                  {/* Label Below */}
+                  <p
+                    className={clsx(
+                      'absolute top-9 w-24 text-center text-[10px] font-semibold uppercase leading-tight tracking-wider whitespace-pre-line transition-colors',
+                      isActive && 'text-white',
+                      isComplete && !isActive && 'text-emerald-100',
+                      !isActive && !isComplete && 'text-white/35'
+                    )}
+                  >
+                    {item.label}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
+
+      {/* Shimmer Keyframes */}
+      <style jsx>{`
+        @keyframes shimmer-sweep {
+          0% {
+            transform: translateX(-100%);
+            opacity: 0;
+          }
+          50% {
+            opacity: 0.6;
+          }
+          100% {
+            transform: translateX(400%);
+            opacity: 0;
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          [style*='shimmer-sweep'] {
+            animation: none !important;
+          }
+        }
+      `}</style>
     </div>
   );
 };
