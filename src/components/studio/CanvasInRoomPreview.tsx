@@ -7,10 +7,18 @@ import { useCanvasConfigState } from '@/store/hooks/useCanvasConfigStore';
 import { usePreviewState, usePreviewEntry, usePreviewCacheEntry } from '@/store/hooks/usePreviewStore';
 import { useStyleCatalogState } from '@/store/hooks/useStyleCatalogStore';
 
+type ArtRect = {
+  top: number;
+  left: number;
+  width: number;
+  height: number;
+};
+
 export interface CanvasInRoomPreviewProps {
   showDimensions?: boolean;
   className?: string;
   customRoomAssetSrc?: string;
+  customArtRectPct?: ArtRect;
 }
 
 const TRANSITIONS = {
@@ -49,6 +57,7 @@ const CanvasInRoomPreview = ({
   showDimensions = false,
   className = '',
   customRoomAssetSrc,
+  customArtRectPct,
 }: CanvasInRoomPreviewProps) => {
   const { orientation, orientationChanging, croppedImage, uploadedImage } = useUploadState();
   const { selectedFrame, selectedCanvasSize: selectedSize } = useCanvasConfigState();
@@ -71,10 +80,13 @@ const CanvasInRoomPreview = ({
     };
   }, [cachedEntry, currentStyle, previewEntry]);
 
-  const roomAsset = useMemo(
+  const defaultRoomAsset = useMemo(
     () => getRoomAsset(orientation, selectedFrame),
     [orientation, selectedFrame]
   );
+
+  const roomAssetSrc = customRoomAssetSrc ?? defaultRoomAsset.src;
+  const artRectPct = customArtRectPct ?? defaultRoomAsset.artRectPct;
 
   const canvasScale = useMemo(
     () => SIZE_SCALE_MAP[selectedSize] ?? 1,
@@ -166,8 +178,6 @@ const CanvasInRoomPreview = ({
     if (!containerSize.width || !containerSize.height) return null;
 
     const squareSize = Math.min(containerSize.width, containerSize.height);
-    const { artRectPct } = roomAsset;
-
     const baseWidth = squareSize * artRectPct.width;
     const baseHeight = squareSize * artRectPct.height;
 
@@ -189,7 +199,7 @@ const CanvasInRoomPreview = ({
       width: scaledWidth,
       height: scaledHeight,
     };
-  }, [roomAsset, containerSize, canvasScale]);
+  }, [artRectPct, containerSize, canvasScale]);
 
   const boxShadow = useMemo(
     () => SHADOW_LOOKUP[ORIENTATION_SHADOW[orientation]],
@@ -213,7 +223,7 @@ const CanvasInRoomPreview = ({
       }}
     >
       <img
-        src={customRoomAssetSrc ?? roomAsset.src}
+        src={roomAssetSrc}
         alt="Ambient living room background"
         className="absolute inset-0 h-full w-full select-none object-cover"
         draggable={false}

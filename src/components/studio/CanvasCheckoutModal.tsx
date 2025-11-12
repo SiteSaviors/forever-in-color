@@ -42,7 +42,33 @@ const currency = new Intl.NumberFormat('en-US', {
   currency: 'USD',
 });
 
-const orientationOrder: Array<'vertical' | 'square' | 'horizontal'> = ['vertical', 'square', 'horizontal'];
+type FrameOption = {
+  id: FrameColor;
+  label: string;
+  subtitle: string;
+  thumbnail: string;
+};
+
+const FRAME_OPTIONS: FrameOption[] = [
+  {
+    id: 'none',
+    label: 'No Frame',
+    subtitle: 'Gallery-wrap canvas',
+    thumbnail: '/frame-swatches/no-frame.webp',
+  },
+  {
+    id: 'black',
+    label: 'Black Floating',
+    subtitle: 'Modern shadow gap',
+    thumbnail: '/frame-swatches/black-frame-thumbnail.webp',
+  },
+  {
+    id: 'white',
+    label: 'White Floating',
+    subtitle: 'Bright airy trim',
+    thumbnail: '/frame-swatches/white-frame-thumbnail.webp',
+  },
+];
 
 // Testimonial data with canvas images (user will provide actual assets)
 const CANVAS_TESTIMONIALS = [
@@ -123,6 +149,9 @@ const CanvasCheckoutModal = () => {
   const total = computedTotal();
   const selectedSizeOption = selectedCanvasSize ? getCanvasSizeOption(selectedCanvasSize) : null;
   const checkoutPreviewAsset = selectedCanvasSize ? CANVAS_PREVIEW_ASSETS[selectedCanvasSize] : null;
+  const frameKey = selectedFrame ?? 'none';
+  const previewRoomSrc = checkoutPreviewAsset?.roomSrc[frameKey] ?? checkoutPreviewAsset?.roomSrc.none;
+  const previewArtRect = checkoutPreviewAsset?.artRectPct[frameKey] ?? checkoutPreviewAsset?.artRectPct.none;
   const orientationLabel = ORIENTATION_PRESETS[orientation].label;
   const hasEnabledEnhancements = enhancements.some((item) => item.enabled);
   const shippingCountry = shipping?.country ?? null;
@@ -157,13 +186,28 @@ const CanvasCheckoutModal = () => {
     },
   ];
 
-  const handleFrameToggle = () => {
-    if (!floatingFrame) return;
-    const nextEnabled = !floatingFrame.enabled;
-    toggleEnhancement('floating-frame');
-    const nextFrame: FrameColor = nextEnabled ? (selectedFrame === 'white' ? 'white' : 'black') : 'none';
-    setFrame(nextFrame);
-  };
+  const handleFrameSelect = useCallback(
+    (frame: FrameColor) => {
+      if (frame === 'none') {
+        if (floatingFrame?.enabled) {
+          toggleEnhancement('floating-frame');
+        }
+        if (selectedFrame !== 'none') {
+          setFrame('none');
+        }
+        return;
+      }
+
+      if (!floatingFrame?.enabled) {
+        toggleEnhancement('floating-frame');
+      }
+
+      if (selectedFrame !== frame) {
+        setFrame(frame);
+      }
+    },
+    [floatingFrame, selectedFrame, toggleEnhancement, setFrame]
+  );
 
   const handleLivingCanvasToggle = () => {
     if (!livingCanvas) return;
@@ -558,7 +602,8 @@ const CanvasCheckoutModal = () => {
                         <CanvasInRoomPreview
                           enableHoverEffect
                           showDimensions={false}
-                          customRoomAssetSrc={checkoutPreviewAsset ?? undefined}
+                          customRoomAssetSrc={previewRoomSrc}
+                          customArtRectPct={previewArtRect}
                         />
                       </Suspense>
                       {orientationPreviewPending && (
@@ -651,7 +696,8 @@ const CanvasCheckoutModal = () => {
                           <CanvasInRoomPreview
                             enableHoverEffect
                             showDimensions={false}
-                            customRoomAssetSrc={checkoutPreviewAsset ?? undefined}
+                            customRoomAssetSrc={previewRoomSrc}
+                            customArtRectPct={previewArtRect}
                           />
                         </Suspense>
                         {orientationPreviewPending && (
@@ -707,36 +753,46 @@ const CanvasCheckoutModal = () => {
                       </button>
                     </header>
 
-                    <section className="space-y-3">
-                      <p className="text-xs uppercase tracking-[0.28em] text-white/45">Orientation</p>
-                      <div className="flex flex-wrap gap-3">
-                        {orientationOrder.map((orient) => {
-                          const preset = ORIENTATION_PRESETS[orient];
-                          const active = orientation === orient;
+                    <section className="space-y-4">
+                      <p className="text-xs uppercase tracking-[0.28em] text-white/45">1 · Choose Frame</p>
+                      <div className="grid gap-3 sm:grid-cols-3">
+                        {FRAME_OPTIONS.map((option) => {
+                          const active = selectedFrame === option.id;
+                          const isDisabled = option.id !== 'none' && orientationPreviewPending;
                           return (
                             <button
-                              key={orient}
+                              key={option.id}
                               type="button"
-                              disabled
-                              aria-disabled="true"
+                              onClick={() => handleFrameSelect(option.id)}
+                              disabled={isDisabled}
                               className={clsx(
-                                'flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition',
+                                'group flex w-full items-center gap-4 rounded-2xl border py-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300/80 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950',
                                 active
-                                  ? 'border-purple-400 bg-purple-500/20 text-white shadow-glow-purple cursor-default'
-                                  : 'border-white/15 bg-white/5 text-white/35 cursor-not-allowed'
+                                  ? 'border-purple-400 bg-purple-500/15 text-white shadow-glow-purple'
+                                  : 'border-white/15 bg-white/5 text-white/70 hover:border-white/30 hover:bg-white/10',
+                                isDisabled && 'cursor-not-allowed opacity-40'
                               )}
                             >
-                              {preset.label}
-                              {active && <span className="text-xs text-white/60">✓</span>}
+                              <span className="h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-white/5">
+                                <img
+                                  src={option.thumbnail}
+                                  alt={`${option.label} thumbnail`}
+                                  className="h-full w-full object-cover"
+                                  draggable={false}
+                                />
+                              </span>
+                              <div className="flex flex-1 flex-col">
+                                <p className="text-sm font-semibold text-white">{option.label}</p>
+                                <p className="text-[11px] text-white/60">{option.subtitle}</p>
+                              </div>
                             </button>
                           );
                         })}
                       </div>
                       <p className="text-xs text-white/60">
-                        {orientationPreviewPending
-                          ? 'Applying your crop…'
-                          : `${orientationLabel} ready for your canvas. Adjust orientation back in the Studio if needed.`}
+                        Orientation locked to {orientationLabel}. Adjust in Studio if you need a different crop.
                       </p>
+                      <TrustSignal context="artisan_craft" className="mt-1" />
                     </section>
 
                     <section className="space-y-4">
@@ -794,47 +850,6 @@ const CanvasCheckoutModal = () => {
 
                     {/* Trust signal: Quality guarantee near size selection */}
                     <TrustSignal context="canvas_quality" className="mt-4" />
-
-                    <section className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <p className="text-xs uppercase tracking-[0.28em] text-white/45">Floating Frame</p>
-                        <button
-                          type="button"
-                          onClick={handleFrameToggle}
-                          className={clsx(
-                            'rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] transition',
-                            floatingFrame?.enabled
-                              ? 'border-purple-400 bg-purple-500/20 text-white'
-                              : 'border-white/20 text-white/60 hover:bg-white/10'
-                          )}
-                        >
-                          {floatingFrame?.enabled ? 'Remove Frame' : 'Add Frame'}
-                        </button>
-                      </div>
-                      {floatingFrame?.enabled ? (
-                        <div className="flex gap-3">
-                          {(['black', 'white'] as FrameColor[]).map((frame) => (
-                            <button
-                              key={frame}
-                              type="button"
-                              onClick={() => setFrame(frame)}
-                              className={clsx(
-                                'flex-1 rounded-2xl border px-4 py-3 text-sm font-semibold capitalize transition',
-                                selectedFrame === frame
-                                  ? 'border-purple-400 bg-purple-500/20 text-white'
-                                  : 'border-white/20 bg-white/5 text-white/70 hover:bg-white/10'
-                              )}
-                            >
-                              {frame} Frame
-                            </button>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-xs text-white/55">Elevate with a floating frame in black or white.</p>
-                      )}
-                      {/* Trust signal: Artisan craftsmanship */}
-                      <TrustSignal context="artisan_craft" className="mt-3" />
-                    </section>
 
                     <section className="space-y-3">
                       <div className="flex items-center justify-between">

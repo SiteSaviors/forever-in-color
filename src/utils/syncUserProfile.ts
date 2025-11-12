@@ -33,17 +33,28 @@ export const syncUserProfile = async (user: ProfileUser | null): Promise<void> =
   }
 
   try {
-    await supabase
-      .from('profiles')
-      .upsert(
-        {
-          id: user.id,
-          email: user.email,
-          full_name: fullName,
-          avatar_url: avatarUrl,
-        },
-        { onConflict: 'id' }
-      );
+    type UpsertFn = (payload: Record<string, unknown>, options?: Record<string, unknown>) => Promise<unknown>;
+    const tableFactory = (supabase as { from?: (table: string) => { upsert?: UpsertFn } }).from;
+    if (!tableFactory) {
+      console.warn('[syncUserProfile] Supabase client does not support from()');
+      return;
+    }
+
+    const table = tableFactory('profiles');
+    if (!table?.upsert) {
+      console.warn('[syncUserProfile] Supabase client does not support upsert()');
+      return;
+    }
+
+    await table.upsert(
+      {
+        id: user.id,
+        email: user.email,
+        full_name: fullName,
+        avatar_url: avatarUrl,
+      },
+      { onConflict: 'id' }
+    );
   } catch (error) {
     console.error('[syncUserProfile] Failed to sync profile metadata', error);
   }
