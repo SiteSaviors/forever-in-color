@@ -7,18 +7,12 @@ export type CheckoutNotice = {
 
 type StudioHeaderProps = {
   currentStyleName?: string;
-  showReturningBanner: boolean;
-  onEditWelcome: () => void;
-  onDismissWelcome: () => void;
   checkoutNotice?: CheckoutNotice | null;
   onDismissCheckoutNotice?: () => void;
 };
 
 const StudioHeader = ({
   currentStyleName,
-  showReturningBanner,
-  onEditWelcome,
-  onDismissWelcome,
   checkoutNotice,
   onDismissCheckoutNotice,
 }: StudioHeaderProps) => {
@@ -37,38 +31,6 @@ const StudioHeader = ({
           </div>
         </div>
       </div>
-
-      {showReturningBanner && (
-        <div className="max-w-[1800px] mx-auto px-6 pt-4">
-          <div className="flex flex-col gap-3 rounded-2xl border border-emerald-400/30 bg-emerald-500/15 px-5 py-4 text-white shadow-[0_15px_45px_rgba(16,185,129,0.25)] backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex flex-col gap-1">
-              <p className="text-sm font-semibold text-emerald-100">Welcome back! Your photo is ready to style.</p>
-              <p className="text-xs text-emerald-200/80">
-                Edit the crop or jump straight into exploring new canvases.
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={onEditWelcome}
-                className="rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 px-4 py-2 text-sm font-semibold text-white shadow-[0_10px_30px_rgba(16,185,129,0.35)] transition hover:scale-105"
-              >
-                Edit photo
-              </button>
-              <button
-                type="button"
-                onClick={onDismissWelcome}
-                className="flex h-8 w-8 items-center justify-center rounded-full text-emerald-200/70 transition hover:bg-white/10 hover:text-white"
-                aria-label="Dismiss returning user message"
-              >
-                <svg className="h-4 w-4" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8} fill="none">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M18 6L6 18M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {checkoutNotice?.message && (
         <div className="max-w-[1800px] mx-auto px-6 pt-4">

@@ -53,6 +53,49 @@
   }
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes badge-shimmer {
+    0% {
+      background-position: -200% center;
+    }
+    100% {
+      background-position: 200% center;
+    }
+  }
+
+  .badge-shimmer-once {
+    background-size: 200% 100%;
+    animation: badge-shimmer 1.5s ease-in-out 1;
+  }
+
+  @keyframes scale-in {
+    0% {
+      opacity: 0;
+      transform: scale(0.5);
+    }
+    60% {
+      transform: scale(1.1);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .animate-scale-in {
+    animation: scale-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}
+
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
@@ -74,5 +117,21 @@
 
   .quickview-card-wiggle {
     animation: quickview-wiggle 0.5s ease-in-out infinite alternate;
+  }
+
+  @keyframes frame-shimmer {
+    0% {
+      filter: brightness(1) drop-shadow(0 0 0px rgba(168, 85, 247, 0));
+    }
+    50% {
+      filter: brightness(1.15) drop-shadow(0 0 15px rgba(168, 85, 247, 0.6));
+    }
+    100% {
+      filter: brightness(1) drop-shadow(0 0 0px rgba(168, 85, 247, 0));
+    }
+  }
+
+  .frame-shimmer {
+    animation: frame-shimmer 300ms ease-out;
   }
 }

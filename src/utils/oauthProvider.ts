@@ -1,7 +1,8 @@
 import { getSupabaseClient } from '@/utils/supabaseClient.loader';
 import { useAuthModal } from '@/store/useAuthModal';
-import { getEnabledProviders } from '@/config/oauthProviders';
+import { getEnabledProviders, OAUTH_PROVIDERS } from '@/config/oauthProviders';
 import type { AuthProviderMethod } from '@/utils/telemetry';
+import type { WondertoneAuthClient } from '@/utils/wondertoneAuthClient';
 
 type SignInResult =
   | { success: true }
@@ -12,6 +13,7 @@ type SignInResult =
 
 type HandleProviderSignInOptions = {
   completeGateIntent?: boolean;
+  supabaseClient?: WondertoneAuthClient | null;
 };
 
 const DEFAULT_ERROR_COPY: Record<AuthProviderMethod, string> = {
@@ -26,7 +28,9 @@ export const handleProviderSignIn = async (
   options: HandleProviderSignInOptions = {}
 ): Promise<SignInResult> => {
   const shouldCompleteGateIntent = options.completeGateIntent ?? true;
-  const providerConfig = getEnabledProviders().find((entry) => entry.id === provider);
+  const providerConfig =
+    getEnabledProviders().find((entry) => entry.id === provider) ??
+    OAUTH_PROVIDERS.find((entry) => entry.id === provider);
 
   if (!providerConfig) {
     return {
@@ -36,7 +40,7 @@ export const handleProviderSignIn = async (
   }
 
   try {
-    const supabase = await getSupabaseClient();
+    const supabase = options.supabaseClient ?? (await getSupabaseClient());
     if (!supabase) {
       throw new Error('Authentication is not configured.');
     }

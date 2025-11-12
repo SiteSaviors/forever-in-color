@@ -33,25 +33,17 @@ export const syncUserProfile = async (user: ProfileUser | null): Promise<void> =
   }
 
   try {
-    await Promise.all([
-      supabase.auth.updateUser({
-        data: {
-          ...(fullName ? { full_name: fullName } : {}),
-          ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
+    await supabase
+      .from('profiles')
+      .upsert(
+        {
+          id: user.id,
+          email: user.email,
+          full_name: fullName,
+          avatar_url: avatarUrl,
         },
-      }),
-      supabase
-        .from('profiles')
-        .upsert(
-          {
-            id: user.id,
-            email: user.email,
-            full_name: fullName,
-            avatar_url: avatarUrl,
-          },
-          { onConflict: 'id' }
-        ),
-    ]);
+        { onConflict: 'id' }
+      );
   } catch (error) {
     console.error('[syncUserProfile] Failed to sync profile metadata', error);
   }

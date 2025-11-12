@@ -76,7 +76,9 @@ const AuthGateModal = () => {
   const handleProviderClick = async (providerId: ProviderId) => {
     setError(null);
     setLoadingProvider(providerId);
-    const result = await handleProviderSignIn(providerId);
+    const result = await handleProviderSignIn(providerId, {
+      completeGateIntent: true,
+    });
     setLoadingProvider(null);
     if (!result.success) {
       setError(result.message);

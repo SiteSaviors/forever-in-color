@@ -10,6 +10,7 @@ import { useStyleCatalogState } from '@/store/hooks/useStyleCatalogStore';
 export interface CanvasInRoomPreviewProps {
   showDimensions?: boolean;
   className?: string;
+  customRoomAssetSrc?: string;
 }
 
 const TRANSITIONS = {
@@ -47,6 +48,7 @@ const SHADOW_LOOKUP: Record<ShadowPreset, string> = {
 const CanvasInRoomPreview = ({
   showDimensions = false,
   className = '',
+  customRoomAssetSrc,
 }: CanvasInRoomPreviewProps) => {
   const { orientation, orientationChanging, croppedImage, uploadedImage } = useUploadState();
   const { selectedFrame, selectedCanvasSize: selectedSize } = useCanvasConfigState();
@@ -79,10 +81,15 @@ const CanvasInRoomPreview = ({
     [selectedSize]
   );
 
+  const orientationAspectRatio = useMemo(() => {
+    if (orientation === 'vertical') return '3 / 4';
+    if (orientation === 'horizontal') return '4 / 3';
+    return '1 / 1';
+  }, [orientation]);
+
   // Server returns watermarked image for free users, clean for paid users
   // No client-side watermarking needed - just display what server provides
-  const displayImage =
-    previewUrl ?? croppedImage ?? uploadedImage ?? fallbackStyleImage ?? null;
+  const displayImage = previewUrl ?? croppedImage ?? uploadedImage ?? fallbackStyleImage ?? null;
 
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -201,12 +208,12 @@ const CanvasInRoomPreview = ({
       ref={containerRef}
       className={`canvas-in-room-preview relative w-full overflow-hidden ${className}`}
       style={{
-        aspectRatio: '1 / 1',
+        aspectRatio: orientationAspectRatio,
         minHeight: '400px',
       }}
     >
       <img
-        src={roomAsset.src}
+        src={customRoomAssetSrc ?? roomAsset.src}
         alt="Ambient living room background"
         className="absolute inset-0 h-full w-full select-none object-cover"
         draggable={false}

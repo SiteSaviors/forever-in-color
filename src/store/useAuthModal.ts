@@ -76,7 +76,7 @@ const initialGateIntent = readStoredGateIntent();
 const shouldAutoOpenGate = Boolean(initialGateIntent?.autoOpen);
 
 export const useAuthModal = create<AuthModalState>((set, get) => ({
-  open: shouldAutoOpenGate,
+  open: false,
   mode: shouldAutoOpenGate ? 'gate' : 'signin',
   source: initialGateIntent?.source ?? null,
   pendingStyleId: initialGateIntent?.styleId ?? null,
@@ -122,7 +122,7 @@ export const useAuthModal = create<AuthModalState>((set, get) => ({
       autoOpen,
     });
     set({
-      open: autoOpen,
+      open: false,
       mode: 'gate',
       source: normalizedSource,
       pendingStyleId: styleId,

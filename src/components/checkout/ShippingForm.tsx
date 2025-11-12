@@ -1,5 +1,6 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { FormEvent, memo, useEffect, useMemo, useState } from 'react';
 import clsx from 'clsx';
+import { shallow } from 'zustand/shallow';
 import { useCheckoutStore } from '@/store/useCheckoutStore';
 
 type ShippingFormProps = {
@@ -16,8 +17,14 @@ const COUNTRIES = [
   { code: 'AU', label: 'Australia' },
 ];
 
-const ShippingForm = ({ onNext, onBack }: ShippingFormProps) => {
-  const { shipping, setShipping } = useCheckoutStore();
+const ShippingFormComponent = ({ onNext, onBack }: ShippingFormProps) => {
+  const { shipping, setShipping } = useCheckoutStore(
+    (state) => ({
+      shipping: state.shipping,
+      setShipping: state.setShipping,
+    }),
+    shallow
+  );
   const [formState, setFormState] = useState(shipping);
   const [errors, setErrors] = useState<ShippingErrors>({});
 
@@ -184,11 +191,13 @@ const ShippingForm = ({ onNext, onBack }: ShippingFormProps) => {
           type="submit"
           className="rounded-xl bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-500 px-6 py-3 text-sm font-semibold text-white shadow-[0_18px_45px_rgba(99,102,241,0.45)] transition hover:scale-[1.02]"
         >
-          Continue to payment
+          Continue to Payment →
         </button>
       </div>
     </form>
   );
 };
+
+const ShippingForm = memo(ShippingFormComponent);
 
 export default ShippingForm;

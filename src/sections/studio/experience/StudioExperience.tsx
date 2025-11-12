@@ -12,7 +12,6 @@ import { useOrientationBridge } from '@/components/studio/orientation/useOrienta
 import LeftRail from '@/sections/studio/experience/LeftRail';
 import RightRail from '@/sections/studio/experience/RightRail';
 import StudioOverlays from '@/sections/studio/experience/StudioOverlays';
-import { useWelcomeBannerHandlers } from '@/hooks/studio/useWelcomeBannerHandlers';
 
 const TokenWarningBanner = lazy(() => import('@/components/studio/TokenWarningBanner'));
 
@@ -50,8 +49,6 @@ const StudioExperience = ({ checkoutNotice, onDismissCheckoutNotice }: StudioExp
   const setMobileDrawerOpen = useCallback((open: boolean) => {
     setMobileStyleDrawerOpen(open);
   }, []);
-
-  const { showReturningBanner, handleEditFromWelcome, handleDismissWelcome } = useWelcomeBannerHandlers();
 
   const handleOpenCanvas = useCallback(
     (source: 'center' | 'rail') => {
@@ -103,9 +100,6 @@ const StudioExperience = ({ checkoutNotice, onDismissCheckoutNotice }: StudioExp
       >
         <StudioHeader
           currentStyleName={currentStyle?.name}
-          showReturningBanner={showReturningBanner}
-          onEditWelcome={handleEditFromWelcome}
-          onDismissWelcome={handleDismissWelcome}
           checkoutNotice={checkoutNotice}
           onDismissCheckoutNotice={onDismissCheckoutNotice}
         />

@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { FormEvent, memo, useEffect, useMemo, useState } from 'react';
 import { loadStripe, StripeElementsOptions } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import clsx from 'clsx';
@@ -8,6 +8,7 @@ import { useCanvasConfigActions, useCanvasConfigState } from '@/store/hooks/useC
 import { useUploadState } from '@/store/hooks/useUploadStore';
 import { usePreviewEntry } from '@/store/hooks/usePreviewStore';
 import { useSessionState } from '@/store/hooks/useSessionStore';
+import { shallow } from 'zustand/shallow';
 import { createOrderPaymentIntent } from '@/utils/checkoutApi';
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
 
@@ -17,9 +18,10 @@ const stripePromise = publishableKey ? loadStripe(publishableKey) : null;
 type InnerPaymentProps = {
   onSuccess: () => void;
   onBack: () => void;
+  returnUrl?: string;
 };
 
-const InnerPaymentForm = ({ onSuccess, onBack }: InnerPaymentProps) => {
+const InnerPaymentFormComponent = ({ onSuccess, onBack, returnUrl }: InnerPaymentProps) => {
   const stripe = useStripe();
   const elements = useElements();
   const {
@@ -30,7 +32,18 @@ const InnerPaymentForm = ({ onSuccess, onBack }: InnerPaymentProps) => {
     paymentCurrency,
     setPaymentIntent,
     clearPaymentIntent,
-  } = useCheckoutStore();
+  } = useCheckoutStore(
+    (state) => ({
+      contact: state.contact,
+      shipping: state.shipping,
+      paymentIntentSecret: state.paymentIntentSecret,
+      paymentAmount: state.paymentAmount,
+      paymentCurrency: state.paymentCurrency,
+      setPaymentIntent: state.setPaymentIntent,
+      clearPaymentIntent: state.clearPaymentIntent,
+    }),
+    shallow
+  );
   const { accessToken } = useSessionState();
   const { currentStyle } = useStyleCatalogState();
   const { selectedCanvasSize, enhancements } = useCanvasConfigState();
@@ -79,6 +92,9 @@ const InnerPaymentForm = ({ onSuccess, onBack }: InnerPaymentProps) => {
       return;
     }
 
+    const controller = new AbortController();
+    let canceled = false;
+
     const run = async () => {
       try {
         setLoadingIntent(true);
@@ -96,7 +112,9 @@ const InnerPaymentForm = ({ onSuccess, onBack }: InnerPaymentProps) => {
             currency: 'usd',
           },
           accessToken,
+          signal: controller.signal,
         });
+        if (canceled) return;
         setPaymentIntent({
           id: response.paymentIntentId,
           clientSecret: response.clientSecret,
@@ -104,6 +122,9 @@ const InnerPaymentForm = ({ onSuccess, onBack }: InnerPaymentProps) => {
           currency: response.currency,
         });
       } catch (intentError) {
+        if (controller.signal.aborted || canceled) {
+          return;
+        }
         console.error('[checkout] failed to create payment intent', intentError);
         const message =
           intentError instanceof Error
@@ -111,11 +132,18 @@ const InnerPaymentForm = ({ onSuccess, onBack }: InnerPaymentProps) => {
             : 'Unable to prepare secure payment. Please try again.';
         setError(message);
       } finally {
-        setLoadingIntent(false);
+        if (!canceled) {
+          setLoadingIntent(false);
+        }
       }
     };
 
     void run();
+
+    return () => {
+      canceled = true;
+      controller.abort();
+    };
   }, [
     paymentIntentSecret,
     loadingIntent,
@@ -140,7 +168,8 @@ const InnerPaymentForm = ({ onSuccess, onBack }: InnerPaymentProps) => {
     const { error: stripeError } = await stripe.confirmPayment({
       elements,
       confirmParams: {
-        return_url: `${window.location.origin}/checkout?payment=success`,
+        return_url:
+          returnUrl ?? `${window.location.origin}/checkout?payment=success`,
         payment_method_data: {
           billing_details: {
             name: `${contact.firstName} ${contact.lastName}`.trim(),
@@ -223,20 +252,23 @@ const InnerPaymentForm = ({ onSuccess, onBack }: InnerPaymentProps) => {
             submitting ? 'opacity-60' : 'hover:scale-[1.02]'
           )}
         >
-          {submitting ? 'Processing…' : `Pay ${amountLabel}`}
+          {submitting ? 'Processing…' : 'Make It Official →'}
         </button>
       </div>
     </form>
   );
 };
 
+const InnerPaymentForm = memo(InnerPaymentFormComponent);
+
 type PaymentStepProps = {
   onSuccess: () => void;
   onBack: () => void;
+  returnUrl?: string;
 };
 
-const PaymentStep = ({ onSuccess, onBack }: PaymentStepProps) => {
-  const { paymentIntentSecret } = useCheckoutStore();
+const PaymentStep = ({ onSuccess, onBack, returnUrl }: PaymentStepProps) => {
+  const paymentIntentSecret = useCheckoutStore((state) => state.paymentIntentSecret);
 
   if (!publishableKey || !stripePromise) {
     return (
@@ -266,7 +298,7 @@ const PaymentStep = ({ onSuccess, onBack }: PaymentStepProps) => {
     <div className="space-y-6">
       {options ? (
         <Elements stripe={stripePromise} options={options} key={paymentIntentSecret ?? 'empty'}>
-          <InnerPaymentForm onSuccess={onSuccess} onBack={onBack} />
+          <InnerPaymentForm onSuccess={onSuccess} onBack={onBack} returnUrl={returnUrl} />
         </Elements>
       ) : (
         <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/60">

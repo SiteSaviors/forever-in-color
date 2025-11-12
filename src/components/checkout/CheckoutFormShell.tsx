@@ -1,4 +1,4 @@
-import { Fragment, useMemo } from 'react';
+import { Fragment, useCallback, useMemo } from 'react';
 import Card from '@/components/ui/Card';
 import { useCheckoutStore } from '@/store/useCheckoutStore';
 import CheckoutProgress from '@/components/checkout/CheckoutProgress';
@@ -6,6 +6,7 @@ import ContactForm from '@/components/checkout/ContactForm';
 import ShippingForm from '@/components/checkout/ShippingForm';
 import PaymentStep from '@/components/checkout/PaymentStep';
 import ReviewCard from '@/components/checkout/ReviewCard';
+import { shallow } from 'zustand/shallow';
 
 const stepCopy: Record<
   ReturnType<typeof useCheckoutStore.getState>['step'],
@@ -30,9 +31,22 @@ const stepCopy: Record<
 };
 
 const CheckoutFormShell = () => {
-  const { step, setStep } = useCheckoutStore();
+  const { step, setStep } = useCheckoutStore(
+    (state) => ({
+      step: state.step,
+      setStep: state.setStep,
+    }),
+    shallow
+  );
   const copy = stepCopy[step];
   const headline = useMemo(() => copy.title, [copy.title]);
+  const handleContactNext = useCallback(() => setStep('shipping'), [setStep]);
+  const handleShippingNext = useCallback(() => setStep('payment'), [setStep]);
+  const handleShippingBack = useCallback(() => setStep('contact'), [setStep]);
+  const handlePaymentSuccess = useCallback(() => setStep('review'), [setStep]);
+  const handlePaymentBack = useCallback(() => setStep('shipping'), [setStep]);
+  const handleReviewBackToContact = useCallback(() => setStep('contact'), [setStep]);
+  const handleReviewBackToShipping = useCallback(() => setStep('shipping'), [setStep]);
 
   return (
     <Fragment>
@@ -46,26 +60,20 @@ const CheckoutFormShell = () => {
           <p className="mt-2 text-sm text-white/60">{copy.description}</p>
         </div>
 
-        {step === 'contact' && <ContactForm onNext={() => setStep('shipping')} />}
+        {step === 'contact' && <ContactForm onNext={handleContactNext} />}
 
         {step === 'shipping' && (
-          <ShippingForm
-            onNext={() => setStep('payment')}
-            onBack={() => setStep('contact')}
-          />
+          <ShippingForm onNext={handleShippingNext} onBack={handleShippingBack} />
         )}
 
         {step === 'payment' && (
-          <PaymentStep
-            onSuccess={() => setStep('review')}
-            onBack={() => setStep('shipping')}
-          />
+          <PaymentStep onSuccess={handlePaymentSuccess} onBack={handlePaymentBack} />
         )}
 
         {step === 'review' && (
           <ReviewCard
-            onBackToContact={() => setStep('contact')}
-            onBackToShipping={() => setStep('shipping')}
+            onBackToContact={handleReviewBackToContact}
+            onBackToShipping={handleReviewBackToShipping}
           />
         )}
 

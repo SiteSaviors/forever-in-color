@@ -132,6 +132,58 @@ export function trackCheckoutExit(action: 'stay' | 'leave', step: string, reason
   console.log('[ProgressiveDisclosure]', event);
 }
 
+// Checkout Recommendation Analytics
+export type CheckoutRecommendationEvent =
+  | {
+      type: 'recommendation_shown';
+      sizeId: string;
+      orientation: string;
+      isRecommended: boolean;
+      isMostPopular: boolean;
+      timestamp: number;
+    }
+  | {
+      type: 'recommendation_selected';
+      sizeId: string;
+      wasRecommended: boolean;
+      wasMostPopular: boolean;
+      timestamp: number;
+    };
+
+export function trackCheckoutRecommendationShown(
+  sizeId: string,
+  orientation: string,
+  isRecommended: boolean,
+  isMostPopular: boolean
+) {
+  const event: CheckoutRecommendationEvent = {
+    type: 'recommendation_shown',
+    sizeId,
+    orientation,
+    isRecommended,
+    isMostPopular,
+    timestamp: Date.now(),
+  };
+  console.log('[CheckoutRecommendation]', event);
+  // TODO: Send to analytics pipeline (PostHog, Mixpanel, etc.)
+}
+
+export function trackCheckoutRecommendationSelected(
+  sizeId: string,
+  wasRecommended: boolean,
+  wasMostPopular: boolean
+) {
+  const event: CheckoutRecommendationEvent = {
+    type: 'recommendation_selected',
+    sizeId,
+    wasRecommended,
+    wasMostPopular,
+    timestamp: Date.now(),
+  };
+  console.log('[CheckoutRecommendation]', event);
+  // TODO: Send to analytics pipeline
+}
+
 export function trackRuntimeMetric(name: string, payload?: Record<string, unknown>) {
   console.log('[RuntimeMetric]', { name, payload, timestamp: Date.now() });
 }

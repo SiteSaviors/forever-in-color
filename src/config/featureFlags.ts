@@ -54,3 +54,19 @@ export const ENABLE_AUTH_MICROSOFT = coerceBoolean(
 export const ENABLE_AUTH_FACEBOOK = coerceBoolean(
   import.meta.env.VITE_AUTH_FACEBOOK_ENABLED ?? 'false'
 );
+
+/**
+ * Canvas Checkout Optimization Flags
+ * Phase 7: Feature flags for A/B testing checkout improvements
+ */
+export const SHOW_SIZE_RECOMMENDATIONS = coerceBoolean(
+  import.meta.env.VITE_SHOW_SIZE_RECOMMENDATIONS ?? 'true'
+);
+
+export const USE_NEW_CTA_COPY = coerceBoolean(
+  import.meta.env.VITE_USE_NEW_CTA_COPY ?? 'true'
+);
+
+export const SHOW_STATIC_TESTIMONIALS = coerceBoolean(
+  import.meta.env.VITE_SHOW_STATIC_TESTIMONIALS ?? 'true'
+);

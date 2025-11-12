@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import clsx from 'clsx';
 import { useCheckoutStore, CheckoutStep } from '@/store/useCheckoutStore';
 
@@ -9,8 +9,8 @@ const STEPS: Array<{ id: CheckoutStep; label: string; description: string }> = [
   { id: 'review', label: 'Review', description: 'Final glance' },
 ];
 
-const CheckoutProgress = () => {
-  const { step } = useCheckoutStore();
+const CheckoutProgressComponent = () => {
+  const step = useCheckoutStore((state) => state.step);
   const activeIndex = useMemo(() => STEPS.findIndex((item) => item.id === step), [step]);
 
   return (
@@ -55,5 +55,7 @@ const CheckoutProgress = () => {
     </div>
   );
 };
+
+const CheckoutProgress = memo(CheckoutProgressComponent);
 
 export default CheckoutProgress;

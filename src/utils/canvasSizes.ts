@@ -69,3 +69,40 @@ export const getDefaultSizeForOrientation = (orientation: CanvasOrientation): Ca
   // Choose the second tier (index 1) as default to anchor on popular price point; fallback to first.
   return options[1]?.id ?? options[0].id;
 };
+
+/**
+ * Context copy for each canvas size
+ * Provides room-placement guidance to help users visualize where each size works best
+ */
+export const CANVAS_SIZE_CONTEXT_COPY: Record<CanvasSizeKey, string> = {
+  // Portrait
+  'portrait-12x16': 'Perfect for gallery walls',
+  'portrait-18x24': 'Beautiful above a console',
+  'portrait-24x36': 'Statement piece for living rooms',
+  'portrait-30x40': 'Grand vertical presence',
+  'portrait-32x48': 'Dramatic focal point',
+  'portrait-40x60': 'Gallery-scale masterpiece',
+
+  // Landscape
+  'landscape-16x12': 'Great for entryway moments',
+  'landscape-24x18': 'Ideal for above your desk',
+  'landscape-36x24': 'Perfect above your sofa',
+  'landscape-40x30': 'Living room focal wall',
+  'landscape-48x32': 'Commanding great room feature',
+  'landscape-60x40': 'Expansive horizontal showcase',
+
+  // Square
+  'square-16x16': 'Ideal for bedroom accents',
+  'square-24x24': 'Perfect above your sofa',
+  'square-32x32': 'Living room focal point',
+  'square-36x36': 'Creates powerful presence',
+};
+
+/**
+ * Get context copy for a canvas size
+ * @param sizeKey - Canvas size identifier
+ * @returns Contextual copy string or empty string if not found
+ */
+export function getCanvasSizeContextCopy(sizeKey: CanvasSizeKey): string {
+  return CANVAS_SIZE_CONTEXT_COPY[sizeKey] || '';
+}

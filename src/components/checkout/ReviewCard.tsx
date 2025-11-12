@@ -1,14 +1,22 @@
+import { memo } from 'react';
 import Card from '@/components/ui/Card';
 import { useCheckoutStore } from '@/store/useCheckoutStore';
 import { format } from 'date-fns';
+import { shallow } from 'zustand/shallow';
 
 type ReviewCardProps = {
   onBackToContact: () => void;
   onBackToShipping: () => void;
 };
 
-const ReviewCard = ({ onBackToContact, onBackToShipping }: ReviewCardProps) => {
-  const { contact, shipping } = useCheckoutStore();
+const ReviewCardComponent = ({ onBackToContact, onBackToShipping }: ReviewCardProps) => {
+  const { contact, shipping } = useCheckoutStore(
+    (state) => ({
+      contact: state.contact,
+      shipping: state.shipping,
+    }),
+    shallow
+  );
   const estimatedShipDate = format(
     new Date(Date.now() + 4 * 24 * 60 * 60 * 1000),
     'MMMM d'
@@ -85,5 +93,7 @@ const ReviewCard = ({ onBackToContact, onBackToShipping }: ReviewCardProps) => {
     </Card>
   );
 };
+
+const ReviewCard = memo(ReviewCardComponent);
 
 export default ReviewCard;

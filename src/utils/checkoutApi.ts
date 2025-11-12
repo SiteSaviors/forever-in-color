@@ -119,9 +119,11 @@ export type OrderPaymentIntentResponse = {
 export const createOrderPaymentIntent = async ({
   payload,
   accessToken,
+  signal,
 }: {
   payload: OrderPaymentIntentRequest;
   accessToken: string | null;
+  signal?: AbortSignal;
 }): Promise<OrderPaymentIntentResponse> => {
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
     throw new Error('Supabase configuration missing');
@@ -138,6 +140,7 @@ export const createOrderPaymentIntent = async ({
     },
     credentials: accessToken ? 'include' : 'omit',
     body: JSON.stringify(payload),
+    signal,
   });
 
   if (!response.ok) {
