@@ -54,11 +54,11 @@ export const CanvasSizeCardComponent: React.FC<CanvasSizeCardProps> = ({
       type="button"
       onClick={onSelect}
       className={clsx(
-        'relative rounded-2xl border px-4 py-4 text-left transition-all duration-200',
+        'relative rounded-2xl border px-5 py-5 text-left transition-all duration-200',
         // Base states
         isSelected
           ? 'border-purple-400 bg-purple-500/15 text-white shadow-glow-purple'
-          : 'border-white/15 bg-white/5 text-white/75 hover:bg-white/10',
+          : 'border-white/15 bg-white/5 text-white/75 hover:bg-white/10 hover:border-white/30',
         // Recommended enhancement (when NOT selected)
         isRecommended && !isSelected && [
           'border-purple-400/70',
@@ -67,8 +67,8 @@ export const CanvasSizeCardComponent: React.FC<CanvasSizeCardProps> = ({
         ],
         // Hover transforms
         isRecommended && !isSelected
-          ? 'hover:scale-[1.015]'
-          : !isSelected && 'hover:scale-[1.01]',
+          ? 'hover:scale-[1.02]'
+          : !isSelected && 'hover:scale-[1.02]',
         // CRITICAL: Allow badge overflow
         'overflow-visible'
       )}
@@ -77,7 +77,7 @@ export const CanvasSizeCardComponent: React.FC<CanvasSizeCardProps> = ({
       {badgeText && (
         <span
           className={clsx(
-            'absolute -top-2 left-3 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider shadow-lg',
+            'absolute -top-2 left-3 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider shadow-lg',
             badgeIsRecommended
               ? 'bg-gradient-to-r from-purple-500 to-fuchsia-500 text-white'
               : 'bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-900',
@@ -99,21 +99,21 @@ export const CanvasSizeCardComponent: React.FC<CanvasSizeCardProps> = ({
       {/* Card Content */}
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <p className="text-sm font-semibold text-white">{option.label}</p>
+          <p className="text-lg font-bold text-white">{option.label}</p>
           {option.nickname && (
             <p className="text-xs uppercase tracking-[0.32em] text-white/45">
               {option.nickname}
             </p>
           )}
           {contextCopy && (
-            <p className="text-[11px] text-white/60 leading-snug">{contextCopy}</p>
+            <p className="text-xs text-white/75 leading-snug">{contextCopy}</p>
           )}
         </div>
         <div className="text-right space-y-0.5">
-          <span className="block text-sm font-semibold text-white/80">
+          <span className="font-display block text-xl font-bold text-white/90">
             {currency.format(option.price)}
           </span>
-          <p className="text-[10px] uppercase tracking-wider text-purple-300/60">
+          <p className="text-[11px] uppercase tracking-wider text-purple-300/60">
             Museum-Grade
           </p>
         </div>

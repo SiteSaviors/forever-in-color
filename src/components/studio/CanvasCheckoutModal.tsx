@@ -729,15 +729,15 @@ const CanvasCheckoutModal = () => {
                 </div>
                 {isCanvasStep && (
                   <div className="space-y-8">
-                    <header className="space-y-2">
-                      <Dialog.Title className="font-display text-[34px] font-semibold text-white">
-                        Bring Your Art Home
+                    <header className="space-y-4 pb-6">
+                      <Dialog.Title className="font-display text-[36px] font-semibold leading-tight tracking-tight text-white">
+                        Turn Your Memory Into a Masterpiece
                       </Dialog.Title>
-                      <Dialog.Description className="text-sm text-white/70">
-                        Premium canvas, handcrafted frame, and a ready-to-hang finish—all curated for your Wondertone style.
+                      <Dialog.Description className="font-display text-base leading-relaxed text-white/80">
+                        Museum-grade canvas. Arrives ready to hang. Ships in 5-7 days.
                       </Dialog.Description>
                       <CanvasCheckoutStepIndicator
-                        showTimer
+                        showTimer={false}
                         timerSeed={timerSeed}
                         timerRunning={canvasModalOpen && isCanvasStep}
                       />
@@ -808,9 +808,14 @@ const CanvasCheckoutModal = () => {
                       </div>
                     </section>
 
-                    <section className="space-y-4">
-                      <p className="text-xs uppercase tracking-[0.28em] text-white/45">Canvas Size</p>
-                      <div className="grid gap-3 sm:grid-cols-2">
+                    <section className="space-y-6">
+                      <div className="space-y-2">
+                        <h3 className="font-display text-xl font-semibold text-white">Choose Your Size</h3>
+                        <p className="text-sm text-white/60">
+                          Museum-quality canvas, handcrafted frame, ready to hang
+                        </p>
+                      </div>
+                      <div className="grid gap-4 sm:grid-cols-2">
                         {sizeOptions.map((option) => {
                           const isRecommended = option.id === recommendation.recommendedSize;
                           const isMostPopular = option.id === recommendation.mostPopularSize;

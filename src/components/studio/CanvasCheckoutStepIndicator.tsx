@@ -9,8 +9,8 @@ export const MODAL_CHECKOUT_STEPS: Array<{
   description: string;
 }> = [
   { id: 'canvas', label: 'Your Masterpiece', description: 'Setup' },
-  { id: 'contact', label: 'Delivery Details', description: 'Who' },
-  { id: 'shipping', label: 'Delivery Details', description: 'Where' },
+  { id: 'contact', label: 'Contact Info', description: 'Who' },
+  { id: 'shipping', label: 'Shipping Address', description: 'Where' },
   { id: 'payment', label: 'Make It Official', description: 'Secure' },
 ];
 
@@ -74,26 +74,14 @@ const CanvasCheckoutStepIndicatorComponent: React.FC<CanvasCheckoutStepIndicator
 
   return (
     <div className="space-y-2">
-      {/* Time Estimate Header (Desktop Only) */}
-      {timeMessage && (
-        <div className="hidden lg:flex items-center justify-between text-xs text-white/50 px-1">
-          <span>Your progress</span>
-          <span className="flex items-center gap-1">
-            <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            {timeMessage}
-          </span>
-        </div>
-      )}
+      {/* Progress Header (Desktop Only) */}
+      <div className="hidden lg:flex items-center justify-between text-sm text-white/60 px-1 font-medium">
+        <span>4 steps to your masterpiece</span>
+        <span className="text-white/50">Looking great so far</span>
+      </div>
 
       {/* Step Indicator - Unified Pill Design */}
-      <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 px-6 py-5">
+      <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 px-6 py-4">
         {/* Progress Bar with Spring Easing */}
         <div
           className="pointer-events-none absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-purple-400 via-fuchsia-400 to-emerald-300 transition-[width] duration-700"
@@ -164,7 +152,7 @@ const CanvasCheckoutStepIndicatorComponent: React.FC<CanvasCheckoutStepIndicator
                 {/* Step Label */}
                 <p
                   className={clsx(
-                    'text-[11px] font-semibold uppercase leading-tight tracking-[0.08em] transition-colors',
+                    'text-xs font-semibold uppercase leading-snug tracking-[0.08em] transition-colors',
                     isActive && 'text-white',
                     isComplete && !isActive && 'text-emerald-100',
                     !isActive && !isComplete && 'text-white/35'
