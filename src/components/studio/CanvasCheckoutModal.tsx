@@ -2,12 +2,15 @@ import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } fro
 import * as Dialog from '@radix-ui/react-dialog';
 import { clsx } from 'clsx';
 import { Frame, Maximize2, Compass, Sparkles, Edit3, Package, Flag, Shield } from 'lucide-react';
-import { useScrollVisibility } from '@/hooks/useScrollVisibility';
 import { CANVAS_SIZE_OPTIONS, getCanvasSizeOption } from '@/utils/canvasSizes';
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
-import { type CanvasModalCloseReason, type FrameColor } from '@/store/founder/storeTypes';
+import { type CanvasModalCloseReason } from '@/store/founder/storeTypes';
 import { useCheckoutStore } from '@/store/useCheckoutStore';
-import { useCanvasConfigActions, useCanvasConfigState } from '@/store/hooks/useCanvasConfigStore';
+import {
+  useCanvasConfigActions,
+  useCanvasModalStatus,
+  useCanvasSelection,
+} from '@/store/hooks/useCanvasConfigStore';
 import { useStyleCatalogState } from '@/store/hooks/useStyleCatalogStore';
 import { useUploadState } from '@/store/hooks/useUploadStore';
 import { useEntitlementsState } from '@/store/hooks/useEntitlementsStore';
@@ -17,22 +20,17 @@ import {
   trackCheckoutStepView,
   trackCheckoutExit,
   trackCheckoutRecommendationShown,
-  trackCheckoutRecommendationSelected,
 } from '@/utils/telemetry';
-import {
-  SHOW_SIZE_RECOMMENDATIONS,
-  USE_NEW_CTA_COPY,
-  SHOW_STATIC_TESTIMONIALS,
-} from '@/config/featureFlags';
+import { USE_NEW_CTA_COPY, SHOW_STATIC_TESTIMONIALS } from '@/config/featureFlags';
 import CanvasCheckoutStepIndicator from '@/components/studio/CanvasCheckoutStepIndicator';
-import CanvasSizeCard from '@/components/studio/CanvasSizeCard';
 import StaticTestimonial from '@/components/studio/StaticTestimonial';
-import CanvasTestimonialGrid from '@/components/studio/CanvasTestimonialGrid';
-import TrustSignal from '@/components/checkout/TrustSignals';
 import ContactForm from '@/components/checkout/ContactForm';
 import ShippingForm from '@/components/checkout/ShippingForm';
 import PaymentStep from '@/components/checkout/PaymentStep';
 import { getCanvasRecommendation } from '@/utils/canvasRecommendations';
+import CanvasCheckoutPreviewColumn from '@/components/studio/CanvasCheckoutPreviewColumn';
+import CanvasFrameSelector from '@/components/studio/CanvasFrameSelector';
+import CanvasSizeSelector from '@/components/studio/CanvasSizeSelector';
 import { CANVAS_PREVIEW_ASSETS } from '@/utils/canvasPreviewAssets';
 import { shallow } from 'zustand/shallow';
 
@@ -42,34 +40,6 @@ const currency = new Intl.NumberFormat('en-US', {
   style: 'currency',
   currency: 'USD',
 });
-
-type FrameOption = {
-  id: FrameColor;
-  label: string;
-  subtitle: string;
-  thumbnail: string;
-};
-
-const FRAME_OPTIONS: FrameOption[] = [
-  {
-    id: 'none',
-    label: 'Gallery Wrap',
-    subtitle: 'Gallery-wrap canvas',
-    thumbnail: '/frame-swatches/no-frame.webp',
-  },
-  {
-    id: 'black',
-    label: 'Black Floating',
-    subtitle: 'Modern shadow gap',
-    thumbnail: '/frame-swatches/black-frame-thumbnail.webp',
-  },
-  {
-    id: 'white',
-    label: 'White Floating',
-    subtitle: 'Bright airy trim',
-    thumbnail: '/frame-swatches/white-frame-thumbnail.webp',
-  },
-];
 
 // Testimonial data with canvas images (user will provide actual assets)
 const CANVAS_TESTIMONIALS = [
@@ -108,9 +78,9 @@ const CANVAS_TESTIMONIALS = [
 
 const CanvasCheckoutModal = () => {
   const closingReasonRef = useRef<CanvasModalCloseReason | null>(null);
-  const { canvasModalOpen, selectedCanvasSize, selectedFrame, enhancements, orientationPreviewPending } =
-    useCanvasConfigState();
-  const { closeCanvasModal, setCanvasSize, setFrame, toggleEnhancement, computedTotal } = useCanvasConfigActions();
+  const { canvasModalOpen, orientationPreviewPending } = useCanvasModalStatus();
+  const { selectedCanvasSize, selectedFrame, enhancements } = useCanvasSelection();
+  const { closeCanvasModal, computedTotal } = useCanvasConfigActions();
   const { orientation, smartCrops } = useUploadState();
   const { currentStyle } = useStyleCatalogState();
   const { userTier } = useEntitlementsState();
@@ -130,6 +100,7 @@ const CanvasCheckoutModal = () => {
     () => enhancements.find((item) => item.id === 'floating-frame'),
     [enhancements]
   );
+  const floatingFrameEnabled = Boolean(floatingFrame?.enabled);
 
   // Canvas size recommendation based on image resolution + orientation
   const recommendation = useMemo(() => {
@@ -144,10 +115,13 @@ const CanvasCheckoutModal = () => {
   const sizeOptions = CANVAS_SIZE_OPTIONS[orientation];
   const total = computedTotal();
   const selectedSizeOption = selectedCanvasSize ? getCanvasSizeOption(selectedCanvasSize) : null;
-  const checkoutPreviewAsset = selectedCanvasSize ? CANVAS_PREVIEW_ASSETS[selectedCanvasSize] : null;
+  const previewAsset = useMemo(() => {
+    if (!selectedCanvasSize) return null;
+    return CANVAS_PREVIEW_ASSETS[selectedCanvasSize] ?? null;
+  }, [selectedCanvasSize]);
   const frameKey = selectedFrame ?? 'none';
-  const previewRoomSrc = checkoutPreviewAsset?.roomSrc[frameKey] ?? checkoutPreviewAsset?.roomSrc.none;
-  const previewArtRect = checkoutPreviewAsset?.artRectPct[frameKey] ?? checkoutPreviewAsset?.artRectPct.none;
+  const previewRoomSrc = previewAsset?.roomSrc[frameKey] ?? previewAsset?.roomSrc.none;
+  const previewArtRect = previewAsset?.artRectPct[frameKey] ?? previewAsset?.artRectPct.none;
   const orientationLabel = ORIENTATION_PRESETS[orientation].label;
   const hasEnabledEnhancements = enhancements.some((item) => item.enabled);
   const shippingCountry = shipping?.country ?? null;
@@ -182,29 +156,6 @@ const CanvasCheckoutModal = () => {
     },
   ];
 
-  const handleFrameSelect = useCallback(
-    (frame: FrameColor) => {
-      if (frame === 'none') {
-        if (floatingFrame?.enabled) {
-          toggleEnhancement('floating-frame');
-        }
-        if (selectedFrame !== 'none') {
-          setFrame('none');
-        }
-        return;
-      }
-
-      if (!floatingFrame?.enabled) {
-        toggleEnhancement('floating-frame');
-      }
-
-      if (selectedFrame !== frame) {
-        setFrame(frame);
-      }
-    },
-    [floatingFrame, selectedFrame, toggleEnhancement, setFrame]
-  );
-
   const [exitPromptReason, setExitPromptReason] = useState<CanvasModalCloseReason | null>(null);
   const [mobilePreviewExpanded, setMobilePreviewExpanded] = useState(false);
   const [shareFeedback, setShareFeedback] = useState<string | null>(null);
@@ -214,6 +165,13 @@ const CanvasCheckoutModal = () => {
   const recommendationLoggedRef = useRef<Set<string>>(new Set());
   const drawerPulseTimeoutRef = useRef<number | null>(null);
   const drawerPulseCleanupTimeoutRef = useRef<number | null>(null);
+
+  const handleFrameShimmer = useCallback(() => {
+    setTriggerFrameShimmer(true);
+    window.setTimeout(() => {
+      setTriggerFrameShimmer(false);
+    }, 300);
+  }, []);
 
   const commitClose = useCallback(
     (reason: CanvasModalCloseReason) => {
@@ -253,11 +211,6 @@ const CanvasCheckoutModal = () => {
   const orderCompletionTrackedRef = useRef(false);
   const mobilePreviewDragStartRef = useRef<number | null>(null);
   const mobilePreviewDragHandledRef = useRef(false);
-  const previewHeaderRef = useRef<HTMLDivElement>(null);
-
-  // Show sticky guarantee when scrolled past preview header
-  const showStickyGuarantee = useScrollVisibility(previewHeaderRef, 0.65);
-
   useEffect(() => {
     if (canvasModalOpen) {
       if (!modalSessionActiveRef.current) {
@@ -414,6 +367,27 @@ const CanvasCheckoutModal = () => {
       drawerPulseCleanupTimeoutRef.current = null;
     }
   }, []);
+
+  const handleAutoExpandDrawer = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    if (hasAutoExpandedOnce) return;
+    if (window.innerWidth >= 1024) return;
+
+    setMobilePreviewExpanded(true);
+    setHasAutoExpandedOnce(true);
+
+    clearDrawerPulseTimeouts();
+    drawerPulseTimeoutRef.current = window.setTimeout(() => {
+      const drawer = document.querySelector('[data-mobile-drawer]');
+      if (drawer) {
+        drawer.classList.add('motion-safe:animate-[pulse_600ms_ease-in-out_2]');
+        drawerPulseCleanupTimeoutRef.current = window.setTimeout(() => {
+          drawer.classList.remove('motion-safe:animate-[pulse_600ms_ease-in-out_2]');
+          drawerPulseCleanupTimeoutRef.current = null;
+        }, 1200);
+      }
+    }, 100);
+  }, [clearDrawerPulseTimeouts, hasAutoExpandedOnce, setHasAutoExpandedOnce, setMobilePreviewExpanded]);
 
   const handleMobilePreviewDragMove = useCallback(
     (event: PointerEvent) => {
@@ -716,66 +690,15 @@ const CanvasCheckoutModal = () => {
         >
           <div className="relative w-full max-w-[1200px] overflow-hidden rounded-[32px] border border-white/10 bg-slate-950/95 shadow-[0_40px_120px_rgba(5,10,25,0.7)]">
             <div className="flex flex-col gap-10 lg:flex-row">
-              <div className="hidden w-full border-b border-white/10 bg-slate-950/80 px-6 py-8 lg:block lg:w-[44%] lg:border-b-0 lg:border-r lg:max-h-[80vh] lg:overflow-y-auto scrollbar-hide">
-                <div className="space-y-6">
-                  <div ref={previewHeaderRef} className="flex items-center gap-3">
-                    {currentStyle?.thumbnail ? (
-                      <img
-                        src={currentStyle.thumbnail}
-                        alt={`${currentStyle.name} thumbnail`}
-                        className="h-12 w-12 rounded-2xl border border-white/15 object-cover"
-                      />
-                    ) : null}
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.32em] text-white/45">Current Style</p>
-                      <p className="text-base font-semibold text-white">
-                        {currentStyle?.name ?? 'Wondertone Canvas'}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="space-y-3">
-                    <div className={clsx('relative', triggerFrameShimmer && 'frame-shimmer')}>
-                      <Suspense fallback={<div className="h-64 rounded-3xl bg-white/5" />}>
-                        <CanvasInRoomPreview
-                          enableHoverEffect
-                          showDimensions={false}
-                          customRoomAssetSrc={previewRoomSrc}
-                          customArtRectPct={previewArtRect}
-                        />
-                      </Suspense>
-                      {orientationPreviewPending && (
-                        <div className="absolute inset-0 flex items-center justify-center rounded-3xl bg-slate-950/70 text-sm font-semibold text-white/80">
-                          Adapting preview…
-                        </div>
-                      )}
-                      {isSuccessStep && !orientationPreviewPending && (
-                        <div className="pointer-events-none absolute inset-0 flex flex-col justify-between rounded-3xl bg-gradient-to-b from-slate-950/50 via-transparent to-slate-950/80 p-4">
-                          <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/90 px-3 py-1 text-xs font-semibold text-white shadow-[0_0_25px_rgba(16,185,129,0.45)]">
-                            <span className="text-[10px]">✦</span> Ordered & in production
-                          </div>
-                          <p className="text-xs text-white/80">Tracking will arrive once it ships.</p>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Social Proof: Canvas testimonial grid */}
-                    {SHOW_STATIC_TESTIMONIALS && (
-                      <div className="mt-8 space-y-5">
-                        <h3 className="font-display text-center text-lg font-semibold leading-tight text-white">
-                          Join 10,000+ creators who fell in love
-                        </h3>
-                        <CanvasTestimonialGrid testimonials={CANVAS_TESTIMONIALS} />
-                      </div>
-                    )}
-
-                    {/* Sticky guarantee: Fades in after scrolling past header */}
-                    <TrustSignal
-                      context="sticky_guarantee"
-                      style={{ opacity: showStickyGuarantee ? 1 : 0 }}
-                    />
-                  </div>
-                </div>
-              </div>
+              <CanvasCheckoutPreviewColumn
+                currentStyle={currentStyle ?? undefined}
+                triggerFrameShimmer={triggerFrameShimmer}
+                isSuccessStep={isSuccessStep}
+                showStaticTestimonials={SHOW_STATIC_TESTIMONIALS}
+                testimonials={CANVAS_TESTIMONIALS}
+                previewRoomAssetSrc={previewRoomSrc}
+                previewArtRectPct={previewArtRect}
+              />
 
               <div data-modal-content className="relative w-full max-h-[80vh] overflow-y-auto px-6 py-8 lg:w-[56%]">
                 {/* Close button - positioned at true top-right corner */}
@@ -843,7 +766,6 @@ const CanvasCheckoutModal = () => {
                       <div className={clsx('relative', triggerFrameShimmer && 'frame-shimmer')}>
                         <Suspense fallback={<div className="h-56 rounded-3xl bg-white/5" />}>
                           <CanvasInRoomPreview
-                            enableHoverEffect
                             showDimensions={false}
                             customRoomAssetSrc={previewRoomSrc}
                             customArtRectPct={previewArtRect}
@@ -897,57 +819,9 @@ const CanvasCheckoutModal = () => {
                         <h3 className="font-display text-xl font-semibold text-white">1. Choose Your Frame</h3>
                         <p className="font-poppins text-sm text-white/60">Select the finish that makes your art shine.</p>
                       </div>
-                      <div className="flex gap-3">
-                        {FRAME_OPTIONS.map((option) => {
-                          const active = selectedFrame === option.id;
-                          const isDisabled = option.id !== 'none' && orientationPreviewPending;
-                          return (
-                            <button
-                              key={option.id}
-                              type="button"
-                              onClick={() => handleFrameSelect(option.id)}
-                              disabled={isDisabled}
-                              className={clsx(
-                                'group flex flex-1 items-center gap-3 rounded-full border px-5 py-3 text-left transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300/80 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950',
-                                active
-                                  ? 'scale-[1.02] border-purple-400 bg-purple-500/15 text-white shadow-glow-purple'
-                                  : 'border-white/15 bg-white/5 text-white/70 hover:scale-[1.02] hover:border-white/30 hover:bg-white/10',
-                                !active && 'active:scale-[0.98]',
-                                isDisabled && 'cursor-not-allowed opacity-40'
-                              )}
-                            >
-                              <span
-                                className={clsx(
-                                  'h-12 w-12 shrink-0 overflow-hidden rounded-full border bg-white/5',
-                                  active ? 'border-purple-400/50' : 'border-white/10'
-                                )}
-                              >
-                                <img
-                                  src={option.thumbnail}
-                                  alt={`${option.label} thumbnail`}
-                                  className="h-full w-full object-cover"
-                                  draggable={false}
-                                />
-                              </span>
-                              <p className="font-display text-base font-semibold text-white">{option.label}</p>
-                              {active && (
-                                <svg
-                                  className="ml-auto h-5 w-5 shrink-0 text-purple-400"
-                                  viewBox="0 0 20 20"
-                                  fill="currentColor"
-                                  aria-hidden="true"
-                                >
-                                  <path
-                                    fillRule="evenodd"
-                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                    clipRule="evenodd"
-                                  />
-                                </svg>
-                              )}
-                            </button>
-                          );
-                        })}
-                      </div>
+                      <CanvasFrameSelector />
+                      <p className="text-xs text-white/60">
+                      </p>
                     </section>
 
                     <section className="space-y-6" data-section="size-selection">
@@ -957,55 +831,12 @@ const CanvasCheckoutModal = () => {
                           Museum-quality canvas, handcrafted frame, ready to hang
                         </p>
                       </div>
-                      <div className="grid gap-4 sm:grid-cols-2">
-                        {sizeOptions.map((option) => {
-                          const isRecommended = option.id === recommendation.recommendedSize;
-                          const isMostPopular = option.id === recommendation.mostPopularSize;
-
-                          const handleSizeSelect = () => {
-                            setCanvasSize(option.id);
-                            trackCheckoutRecommendationSelected(option.id, isRecommended, isMostPopular);
-
-                            // Trigger frame shimmer if frame is enabled
-                            if (floatingFrame?.enabled) {
-                              setTriggerFrameShimmer(true);
-                              setTimeout(() => setTriggerFrameShimmer(false), 300);
-                            }
-
-                            // Auto-expand mobile drawer on first selection
-                            if (!hasAutoExpandedOnce && typeof window !== 'undefined' && window.innerWidth < 1024) {
-                              setMobilePreviewExpanded(true);
-                              setHasAutoExpandedOnce(true);
-
-                              // Brief pulse hint
-                              clearDrawerPulseTimeouts();
-                              drawerPulseTimeoutRef.current = window.setTimeout(() => {
-                                const drawer = document.querySelector('[data-mobile-drawer]');
-                                if (drawer) {
-                                  drawer.classList.add('motion-safe:animate-[pulse_600ms_ease-in-out_2]');
-                                  drawerPulseCleanupTimeoutRef.current = window.setTimeout(() => {
-                                    drawer.classList.remove('motion-safe:animate-[pulse_600ms_ease-in-out_2]');
-                                    drawerPulseCleanupTimeoutRef.current = null;
-                                  }, 1200);
-                                }
-                              }, 100);
-                            }
-                          };
-
-                          return (
-                            <CanvasSizeCard
-                              key={option.id}
-                              option={option}
-                              isSelected={selectedCanvasSize === option.id}
-                              isRecommended={SHOW_SIZE_RECOMMENDATIONS && isRecommended}
-                              isMostPopular={SHOW_SIZE_RECOMMENDATIONS && isMostPopular}
-                              onSelect={handleSizeSelect}
-                              showSocialProof={false}
-                              _enableCountAnimation={false}
-                            />
-                          );
-                        })}
-                      </div>
+                      <CanvasSizeSelector
+                        floatingFrameEnabled={floatingFrameEnabled}
+                        onFrameShimmer={handleFrameShimmer}
+                        hasAutoExpandedOnce={hasAutoExpandedOnce}
+                        onAutoExpandDrawer={handleAutoExpandDrawer}
+                      />
                     </section>
 
                     {/* SECTION 1: Premium Trust Bar + Primary CTA - Immediate Action */}
