@@ -3,7 +3,7 @@ import Card from '@/components/ui/Card';
 import { getCanvasSizeOption } from '@/utils/canvasSizes';
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
 import { useStyleCatalogState } from '@/store/hooks/useStyleCatalogStore';
-import { useCanvasConfigState } from '@/store/hooks/useCanvasConfigStore';
+import { useCanvasSelection } from '@/store/hooks/useCanvasConfigStore';
 import { useUploadState } from '@/store/hooks/useUploadStore';
 import { usePreviewEntry } from '@/store/hooks/usePreviewStore';
 import { useEntitlementsState } from '@/store/hooks/useEntitlementsStore';
@@ -12,7 +12,7 @@ const CanvasInRoomPreview = lazy(() => import('@/components/studio/CanvasInRoomP
 
 const CheckoutSummary = () => {
   const { currentStyle } = useStyleCatalogState();
-  const { selectedCanvasSize, enhancements } = useCanvasConfigState();
+  const { selectedCanvasSize, enhancements } = useCanvasSelection();
   const enabledEnhancements = enhancements.filter((item) => item.enabled);
   const { orientation, croppedImage } = useUploadState();
   const { entitlements } = useEntitlementsState();

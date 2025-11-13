@@ -193,7 +193,7 @@ const CanvasCheckoutStepIndicatorComponent: React.FC<CanvasCheckoutStepIndicator
       </div>
 
       {/* Shimmer Keyframes */}
-      <style jsx>{`
+      <style>{`
         @keyframes shimmer-sweep {
           0% {
             transform: translateX(-100%);

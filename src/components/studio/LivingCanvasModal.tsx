@@ -1,10 +1,10 @@
 import { Sparkles, Video } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
-import { useCanvasConfigActions, useCanvasConfigState } from '@/store/hooks/useCanvasConfigStore';
+import { useCanvasConfigActions, useLivingCanvasStatus } from '@/store/hooks/useCanvasConfigStore';
 
 const LivingCanvasModal = () => {
-  const { livingCanvasModalOpen, livingCanvasEnabled } = useCanvasConfigState();
+  const { livingCanvasModalOpen, livingCanvasEnabled } = useLivingCanvasStatus();
   const { setLivingCanvasModalOpen, setEnhancementEnabled } = useCanvasConfigActions();
   const open = livingCanvasModalOpen && !livingCanvasEnabled;
 

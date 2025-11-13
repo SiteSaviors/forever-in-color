@@ -1,5 +1,4 @@
-import { memo, useMemo, RefObject } from 'react';
-import { clsx } from 'clsx';
+import { memo, useMemo } from 'react';
 import { useCanvasSelection } from '@/store/hooks/useCanvasConfigStore';
 import { useUploadState } from '@/store/hooks/useUploadStore';
 import { getCanvasSizeOption } from '@/utils/canvasSizes';
@@ -12,12 +11,11 @@ const currency = new Intl.NumberFormat('en-US', {
 
 type CanvasOrderSummaryProps = {
   total: number;
-  frameSelectionRef: RefObject<HTMLElement>;
-  sizeSelectionRef: RefObject<HTMLElement>;
-  onScrollToRef: (ref: RefObject<HTMLElement>) => void;
+  onEditFrame: () => void;
+  onEditSize: () => void;
 };
 
-const CanvasOrderSummaryComponent = ({ total, frameSelectionRef, sizeSelectionRef, onScrollToRef }: CanvasOrderSummaryProps) => {
+const CanvasOrderSummaryComponent = ({ total, onEditFrame, onEditSize }: CanvasOrderSummaryProps) => {
   const { selectedCanvasSize, selectedFrame, enhancements } = useCanvasSelection();
   const { orientation } = useUploadState();
 
@@ -28,29 +26,24 @@ const CanvasOrderSummaryComponent = ({ total, frameSelectionRef, sizeSelectionRe
 
   const frameLabel = useMemo(() => {
     if (!selectedFrame || selectedFrame === 'none') return 'Gallery wrap';
-    return `${selectedFrame.charAt(0).toUpperCase() + selectedFrame.slice(1)} floating frame`;
+    const formatted = `${selectedFrame.charAt(0).toUpperCase()}${selectedFrame.slice(1)}`;
+    return `${formatted} floating frame`;
   }, [selectedFrame]);
 
   const orientationLabel = ORIENTATION_PRESETS[orientation].label;
-
   const enhancementsSummary = enhancements.filter((item) => item.enabled).map((item) => item.name);
 
   return (
     <section className="space-y-4 rounded-3xl border border-white/12 bg-gradient-to-br from-white/5 via-white/3 to-transparent p-6 transition hover:border-white/20">
       <div className="space-y-2">
         <p className="text-xs uppercase tracking-[0.28em] text-white/45">Order Summary</p>
-
         <div className="space-y-3 text-sm">
           <div className="flex items-center justify-between text-white/75">
             <div className="flex items-center gap-2">
               <span className="text-xs uppercase tracking-[0.3em] text-white/45">Canvas</span>
-              <span>{selectedSizeOption ? `${selectedSizeOption.label}` : 'Size pending'}</span>
+              <span>{selectedSizeOption ? selectedSizeOption.label : 'Size pending'}</span>
             </div>
-            <button
-              type="button"
-              onClick={() => onScrollToRef(sizeSelectionRef)}
-              className="flex items-center gap-1 text-xs font-semibold text-purple-300 transition hover:text-purple-200"
-            >
+            <button type="button" onClick={onEditSize} className="text-xs font-semibold text-purple-300 transition hover:text-purple-200">
               Edit
             </button>
           </div>
@@ -60,11 +53,7 @@ const CanvasOrderSummaryComponent = ({ total, frameSelectionRef, sizeSelectionRe
               <span className="text-xs uppercase tracking-[0.3em] text-white/45">Frame</span>
               <span>{frameLabel}</span>
             </div>
-            <button
-              type="button"
-              onClick={() => onScrollToRef(frameSelectionRef)}
-              className="flex items-center gap-1 text-xs font-semibold text-purple-300 transition hover:text-purple-200"
-            >
+            <button type="button" onClick={onEditFrame} className="text-xs font-semibold text-purple-300 transition hover:text-purple-200">
               Edit
             </button>
           </div>
@@ -74,17 +63,10 @@ const CanvasOrderSummaryComponent = ({ total, frameSelectionRef, sizeSelectionRe
             <span>{orientationLabel}</span>
           </div>
 
-          {enhancementsSummary.length > 0 ? (
-            <div className="flex items-center gap-2 text-white/75">
-              <span className="text-xs uppercase tracking-[0.3em] text-white/45">Enhancements</span>
-              <span>{enhancementsSummary.join(', ')}</span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 text-white/60 text-xs">
-              <span className="uppercase tracking-[0.3em]">Enhancements</span>
-              <span>None</span>
-            </div>
-          )}
+          <div className="flex items-start gap-2 text-white/75">
+            <span className="text-xs uppercase tracking-[0.3em] text-white/45">Enhancements</span>
+            <span>{enhancementsSummary.length ? enhancementsSummary.join(', ') : 'None'}</span>
+          </div>
         </div>
       </div>
       <div className="flex items-center justify-between border-t border-white/10 pt-3">

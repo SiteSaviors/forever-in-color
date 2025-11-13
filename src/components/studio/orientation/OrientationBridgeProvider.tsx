@@ -14,7 +14,7 @@ import { cacheSmartCropResult, generateSmartCrop, ORIENTATION_PRESETS, type Smar
 import type { Orientation } from '@/utils/imageUtils';
 import { useUploadActions, useUploadState } from '@/store/hooks/useUploadStore';
 import { usePreviewActions, usePreviewLockState, usePreviewState } from '@/store/hooks/usePreviewStore';
-import { useCanvasConfigActions, useCanvasConfigState } from '@/store/hooks/useCanvasConfigStore';
+import { useCanvasConfigActions, useCanvasSelection } from '@/store/hooks/useCanvasConfigStore';
 import { useStyleCatalogState } from '@/store/hooks/useStyleCatalogStore';
 import CropperModal from '@/components/launchpad/cropper/CropperModal';
 
@@ -63,7 +63,7 @@ const OrientationBridgeProvider = ({ children, onOrientationToast }: Orientation
     setOrientationPreviewPending,
     hasCachedPreview,
   } = usePreviewActions();
-  const { selectedCanvasSize: selectedSize } = useCanvasConfigState();
+  const { selectedCanvasSize: selectedSize } = useCanvasSelection();
   const { setCanvasSize } = useCanvasConfigActions();
   const { currentStyle } = useStyleCatalogState();
   const { isLocked: previewLocked } = usePreviewLockState();

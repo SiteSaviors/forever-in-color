@@ -17,6 +17,7 @@ vi.mock('@/utils/studioV2Analytics', () => ({
 
 vi.mock('@/store/hooks/useCanvasConfigStore', () => ({
   useCanvasConfigState: vi.fn(),
+  useCanvasSelection: vi.fn(),
   useCanvasConfigActions: vi.fn(),
 }));
 
@@ -30,7 +31,7 @@ vi.mock('@/utils/telemetry', () => ({
 
 const { useStudioPreviewState } = await import('@/store/hooks/studio/useStudioPreviewState');
 const { trackStudioV2CanvasCtaClick, trackStudioV2OrientationCta } = await import('@/utils/studioV2Analytics');
-const { useCanvasConfigState, useCanvasConfigActions } = await import('@/store/hooks/useCanvasConfigStore');
+const { useCanvasConfigState, useCanvasSelection, useCanvasConfigActions } = await import('@/store/hooks/useCanvasConfigStore');
 const { useEntitlementsState } = await import('@/store/hooks/useEntitlementsStore');
 const { trackOrderStarted } = await import('@/utils/telemetry');
 
@@ -102,6 +103,7 @@ describe('useCanvasCtaHandlers', () => {
     (useCanvasConfigState as vi.Mock).mockReturnValue({
       enhancements: [],
     });
+    (useCanvasSelection as vi.Mock).mockReturnValue({ enhancements: [] });
     (useCanvasConfigActions as vi.Mock).mockReturnValue({
       computedTotal: vi.fn().mockReturnValue(249),
     });

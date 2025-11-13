@@ -2,7 +2,7 @@ import { useCallback, useRef } from 'react';
 import { trackStudioV2CanvasCtaClick, trackStudioV2OrientationCta } from '@/utils/studioV2Analytics';
 import { trackOrderStarted } from '@/utils/telemetry';
 import { useStudioPreviewState } from '@/store/hooks/studio/useStudioPreviewState';
-import { useCanvasConfigActions, useCanvasConfigState } from '@/store/hooks/useCanvasConfigStore';
+import { useCanvasConfigActions, useCanvasSelection } from '@/store/hooks/useCanvasConfigStore';
 import { useEntitlementsState } from '@/store/hooks/useEntitlementsStore';
 
 type CanvasCtaHandlersArgs = {
@@ -24,7 +24,7 @@ export const useCanvasCtaHandlers = ({
     previewHasData,
     previewReady,
   } = useStudioPreviewState();
-  const { enhancements } = useCanvasConfigState();
+  const { enhancements } = useCanvasSelection();
   const { computedTotal } = useCanvasConfigActions();
   const { userTier } = useEntitlementsState();
 

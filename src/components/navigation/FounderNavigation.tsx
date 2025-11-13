@@ -2,7 +2,7 @@ import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { clsx } from 'clsx';
 import { useAuthModal, type AuthModalMode } from '@/store/useAuthModal';
-import { useCanvasConfigState } from '@/store/hooks/useCanvasConfigStore';
+import { useCanvasSelection } from '@/store/hooks/useCanvasConfigStore';
 import { useEntitlementsState } from '@/store/hooks/useEntitlementsStore';
 import { useSessionActions, useSessionState } from '@/store/hooks/useSessionStore';
 
@@ -18,7 +18,7 @@ const NAV_LINKS = [
 const FounderNavigation = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { enhancements } = useCanvasConfigState();
+  const { enhancements } = useCanvasSelection();
   const { entitlements } = useEntitlementsState();
   const { sessionUser, sessionHydrated } = useSessionState();
   const { signOut } = useSessionActions();

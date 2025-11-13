@@ -81,15 +81,22 @@ vi.mock('react-router-dom', async (importOriginal) => {
 });
 
 vi.mock('@/store/hooks/useCanvasConfigStore', () => ({
-  useCanvasConfigState: vi.fn(() => ({
+  useCanvasConfigState: vi.fn(),
+  useCanvasModalStatus: vi.fn(() => ({
     canvasModalOpen: true,
+    orientationPreviewPending: false,
+  })),
+  useCanvasSelection: vi.fn(() => ({
     selectedCanvasSize: '16x20',
     selectedFrame: 'none',
     enhancements: [
       { id: 'floating-frame', name: 'Floating Frame', price: 59, description: '', enabled: true },
       { id: 'living-canvas', name: 'Living Canvas', price: 49, description: '', enabled: false },
     ],
-    orientationPreviewPending: false,
+  })),
+  useLivingCanvasStatus: vi.fn(() => ({
+    livingCanvasModalOpen: false,
+    livingCanvasEnabled: false,
   })),
   useCanvasConfigActions: vi.fn(() => ({
     closeCanvasModal: closeCanvasModalMock,

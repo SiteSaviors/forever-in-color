@@ -1,9 +1,8 @@
-import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState, type RefObject } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { clsx } from 'clsx';
-import { Frame, Maximize2, Compass, Sparkles, Edit3, Package, Flag, Shield } from 'lucide-react';
+import { Package, Flag, Shield } from 'lucide-react';
 import { CANVAS_SIZE_OPTIONS, getCanvasSizeOption } from '@/utils/canvasSizes';
-import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
 import { type CanvasModalCloseReason } from '@/store/founder/storeTypes';
 import { useCheckoutStore } from '@/store/useCheckoutStore';
 import {
@@ -31,6 +30,7 @@ import { getCanvasRecommendation } from '@/utils/canvasRecommendations';
 import CanvasCheckoutPreviewColumn from '@/components/studio/CanvasCheckoutPreviewColumn';
 import CanvasFrameSelector from '@/components/studio/CanvasFrameSelector';
 import CanvasSizeSelector from '@/components/studio/CanvasSizeSelector';
+import CanvasOrderSummary from '@/components/studio/CanvasOrderSummary';
 import { CANVAS_PREVIEW_ASSETS } from '@/utils/canvasPreviewAssets';
 import { shallow } from 'zustand/shallow';
 
@@ -122,7 +122,6 @@ const CanvasCheckoutModal = () => {
   const frameKey = selectedFrame ?? 'none';
   const previewRoomSrc = previewAsset?.roomSrc[frameKey] ?? previewAsset?.roomSrc.none;
   const previewArtRect = previewAsset?.artRectPct[frameKey] ?? previewAsset?.artRectPct.none;
-  const orientationLabel = ORIENTATION_PRESETS[orientation].label;
   const hasEnabledEnhancements = enhancements.some((item) => item.enabled);
   const shippingCountry = shipping?.country ?? null;
   const isCanvasStep = step === 'canvas';
@@ -161,6 +160,8 @@ const CanvasCheckoutModal = () => {
   const [shareFeedback, setShareFeedback] = useState<string | null>(null);
   const [triggerFrameShimmer, setTriggerFrameShimmer] = useState(false);
   const [hasAutoExpandedOnce, setHasAutoExpandedOnce] = useState(false);
+  const frameSectionRef = useRef<HTMLElement | null>(null);
+  const sizeSectionRef = useRef<HTMLElement | null>(null);
   const [timerSeed, setTimerSeed] = useState<number | null>(null);
   const recommendationLoggedRef = useRef<Set<string>>(new Set());
   const drawerPulseTimeoutRef = useRef<number | null>(null);
@@ -171,6 +172,13 @@ const CanvasCheckoutModal = () => {
     window.setTimeout(() => {
       setTriggerFrameShimmer(false);
     }, 300);
+  }, []);
+
+  const scrollToSection = useCallback((sectionRef: RefObject<HTMLElement>) => {
+    const modalContent = document.querySelector('[data-modal-content]');
+    if (modalContent && sectionRef.current) {
+      modalContent.scrollTo({ top: sectionRef.current.offsetTop - 20, behavior: 'smooth' });
+    }
   }, []);
 
   const commitClose = useCallback(
@@ -353,10 +361,6 @@ const CanvasCheckoutModal = () => {
     setStep('contact');
   };
 
-  const enhancementsSummary = enhancements
-    .filter((item) => item.enabled)
-    .map((item) => item.name);
-
   const clearDrawerPulseTimeouts = useCallback(() => {
     if (drawerPulseTimeoutRef.current) {
       window.clearTimeout(drawerPulseTimeoutRef.current);
@@ -473,25 +477,6 @@ const CanvasCheckoutModal = () => {
     };
   }, [leaveModalCheckout, endMobilePreviewDrag, clearDrawerPulseTimeouts]);
 
-  const renderOrderSummaryCard = () => (
-    <section className="space-y-4 rounded-3xl border border-white/12 bg-white/5 p-5 transition hover:border-white/30 hover:bg-white/10 focus-within:border-purple-300/60">
-      <div className="space-y-2">
-        <p className="text-xs uppercase tracking-[0.28em] text-white/45">Order Summary</p>
-        <div className="space-y-1 text-sm text-white/75">
-          <p>{selectedSizeOption ? `${selectedSizeOption.label} Canvas` : 'Canvas size pending'}</p>
-          <p>Frame: {selectedFrame === 'none' ? 'No frame' : `${selectedFrame} floating frame`}</p>
-          <p>Orientation: {orientationLabel}</p>
-          <p>Enhancements: {enhancementsSummary.length ? enhancementsSummary.join(', ') : 'None'}</p>
-        </div>
-      </div>
-      <div className="flex items-center justify-between border-t border-white/10 pt-3">
-        <span className="text-sm font-semibold text-white/70">Total</span>
-        <span className="text-xl font-bold text-white">{currency.format(total)}</span>
-      </div>
-      <div className="h-12 rounded-2xl border border-dashed border-white/15 bg-transparent" />
-    </section>
-  );
-
   const renderTrustSignals = () => (
     <section className="rounded-3xl border border-white/12 bg-white/5 p-5 text-sm text-white/70 transition hover:border-white/30 hover:bg-white/10">
       <div className="grid gap-3 text-center sm:grid-cols-3">
@@ -564,108 +549,7 @@ const CanvasCheckoutModal = () => {
     );
   };
 
-  const renderEnhancedOrderSummary = () => {
-    const handleScrollToFrame = () => {
-      const frameSection = document.querySelector('[data-section="frame-selection"]');
-      const modalContent = document.querySelector('[data-modal-content]');
-      if (frameSection && modalContent) {
-        const offset = (frameSection as HTMLElement).offsetTop - 20;
-        modalContent.scrollTo({ top: offset, behavior: 'smooth' });
-      }
-    };
 
-    const handleScrollToSize = () => {
-      const sizeSection = document.querySelector('[data-section="size-selection"]');
-      const modalContent = document.querySelector('[data-modal-content]');
-      if (sizeSection && modalContent) {
-        const offset = (sizeSection as HTMLElement).offsetTop - 20;
-        modalContent.scrollTo({ top: offset, behavior: 'smooth' });
-      }
-    };
-
-    const frameLabel = selectedFrame === 'none'
-      ? 'Gallery wrap'
-      : `${selectedFrame.charAt(0).toUpperCase() + selectedFrame.slice(1)} floating frame`;
-
-    return (
-      <section className="space-y-4 rounded-3xl border border-white/12 bg-gradient-to-br from-white/5 via-white/3 to-transparent p-6 transition hover:border-white/20">
-        <div className="space-y-2">
-          <p className="text-xs uppercase tracking-[0.28em] text-white/45">Order Summary</p>
-
-          <div className="space-y-3 text-sm">
-            {/* Canvas Size */}
-            <div className="flex items-center justify-between text-white/75">
-              <div className="flex items-center gap-2">
-                <Maximize2 className="h-4 w-4 text-purple-300/60" />
-                <span>{selectedSizeOption ? `${selectedSizeOption.label} Canvas` : 'Size pending'}</span>
-              </div>
-              <button
-                type="button"
-                onClick={handleScrollToSize}
-                disabled={orientationPreviewPending}
-                className={clsx(
-                  'flex items-center gap-1 text-xs font-semibold transition',
-                  orientationPreviewPending
-                    ? 'cursor-not-allowed text-purple-300/40'
-                    : 'text-purple-300 hover:text-purple-200'
-                )}
-              >
-                <Edit3 className="h-3 w-3" />
-                Edit
-              </button>
-            </div>
-
-            {/* Frame */}
-            <div className="flex items-center justify-between text-white/75">
-              <div className="flex items-center gap-2">
-                <Frame className="h-4 w-4 text-purple-300/60" />
-                <span>{frameLabel}</span>
-              </div>
-              <button
-                type="button"
-                onClick={handleScrollToFrame}
-                disabled={orientationPreviewPending}
-                className={clsx(
-                  'flex items-center gap-1 text-xs font-semibold transition',
-                  orientationPreviewPending
-                    ? 'cursor-not-allowed text-purple-300/40'
-                    : 'text-purple-300 hover:text-purple-200'
-                )}
-              >
-                <Edit3 className="h-3 w-3" />
-                Edit
-              </button>
-            </div>
-
-            {/* Orientation */}
-            <div className="flex items-center gap-2 text-white/75">
-              <Compass className="h-4 w-4 text-purple-300/60" />
-              <span>Orientation: {orientationLabel}</span>
-            </div>
-
-            {/* Enhancements */}
-            {enhancementsSummary.length > 0 && (
-              <div className="flex items-center gap-2 text-white/75">
-                <Sparkles className="h-4 w-4 text-purple-300/60" />
-                <span>Enhancements: {enhancementsSummary.join(', ')}</span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Total Price with Animation */}
-        <div className="flex items-center justify-between border-t border-white/10 pt-3">
-          <span className="text-sm font-semibold text-white/70">Total</span>
-          <span
-            key={total}
-            className="font-display text-2xl font-bold text-white motion-safe:animate-[pulse_400ms_ease-in-out]"
-          >
-            {currency.format(total)}
-          </span>
-        </div>
-      </section>
-    );
-  };
 
   return (
     <Dialog.Root open={canvasModalOpen} onOpenChange={handleOpenChange}>
@@ -814,7 +698,7 @@ const CanvasCheckoutModal = () => {
                       />
                     </header>
 
-                    <section className="space-y-4" data-section="frame-selection">
+                    <section className="space-y-4" data-section="frame-selection" ref={frameSectionRef}>
                       <div className="space-y-2">
                         <h3 className="font-display text-xl font-semibold text-white">1. Choose Your Frame</h3>
                         <p className="font-poppins text-sm text-white/60">Select the finish that makes your art shine.</p>
@@ -824,7 +708,7 @@ const CanvasCheckoutModal = () => {
                       </p>
                     </section>
 
-                    <section className="space-y-6" data-section="size-selection">
+                    <section className="space-y-6" data-section="size-selection" ref={sizeSectionRef}>
                       <div className="space-y-2">
                         <h3 className="font-display text-xl font-semibold text-white">2. Choose Your Size</h3>
                         <p className="font-poppins text-sm text-white/60">
@@ -860,7 +744,11 @@ const CanvasCheckoutModal = () => {
 
                     {/* SECTION 2: Enhanced Order Summary - Config Review */}
                     <div className="mt-6">
-                      {renderEnhancedOrderSummary()}
+                      <CanvasOrderSummary
+                        total={total}
+                        onEditFrame={() => scrollToSection(frameSectionRef)}
+                        onEditSize={() => scrollToSection(sizeSectionRef)}
+                      />
                     </div>
 
                     {/* SECTION 3: Testimonials - Compact Social Proof */}
@@ -930,7 +818,13 @@ const CanvasCheckoutModal = () => {
                   </div>
                 </div>
                 <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-                  <div className="space-y-6 lg:flex-1">{renderOrderSummaryCard()}</div>
+                  <div className="space-y-6 lg:flex-1">
+                    <CanvasOrderSummary
+                      total={total}
+                      onEditFrame={() => scrollToSection(frameSectionRef)}
+                      onEditSize={() => scrollToSection(sizeSectionRef)}
+                    />
+                  </div>
                   <div className="space-y-6 lg:w-[300px]">
                     {renderTrustSignals()}
                     {renderTestimonialCard()}
@@ -966,7 +860,13 @@ const CanvasCheckoutModal = () => {
                   </div>
                 </div>
                 <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-                  <div className="space-y-6 lg:flex-1">{renderOrderSummaryCard()}</div>
+                  <div className="space-y-6 lg:flex-1">
+                    <CanvasOrderSummary
+                      total={total}
+                      onEditFrame={() => scrollToSection(frameSectionRef)}
+                      onEditSize={() => scrollToSection(sizeSectionRef)}
+                    />
+                  </div>
                   <div className="space-y-6 lg:w-[300px]">
                     {renderTrustSignals()}
                     {renderTestimonialCard()}
@@ -1014,7 +914,13 @@ const CanvasCheckoutModal = () => {
                   </div>
                 </div>
                 <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-                  <div className="space-y-6 lg:flex-1">{renderOrderSummaryCard()}</div>
+                  <div className="space-y-6 lg:flex-1">
+                    <CanvasOrderSummary
+                      total={total}
+                      onEditFrame={() => scrollToSection(frameSectionRef)}
+                      onEditSize={() => scrollToSection(sizeSectionRef)}
+                    />
+                  </div>
                   <div className="space-y-6 lg:w-[300px]">
                     {renderTrustSignals()}
                     {renderTestimonialCard()}
@@ -1067,7 +973,13 @@ const CanvasCheckoutModal = () => {
                   ) : null}
                 </div>
                 <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-                  <div className="space-y-6 lg:flex-1">{renderOrderSummaryCard()}</div>
+                  <div className="space-y-6 lg:flex-1">
+                    <CanvasOrderSummary
+                      total={total}
+                      onEditFrame={() => scrollToSection(frameSectionRef)}
+                      onEditSize={() => scrollToSection(sizeSectionRef)}
+                    />
+                  </div>
                   <div className="space-y-6 lg:w-[300px]">
                     {renderTrustSignals()}
                     {renderTestimonialCard()}
