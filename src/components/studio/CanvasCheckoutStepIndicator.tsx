@@ -117,12 +117,7 @@ const CanvasCheckoutStepIndicatorComponent: React.FC<CanvasCheckoutStepIndicator
 
           {/* Shimmer Effect */}
           <div className="pointer-events-none absolute left-8 right-8 top-1/2 -translate-y-1/2 h-0.5 overflow-hidden">
-            <div
-              className="absolute h-full w-24 bg-gradient-to-r from-transparent via-white/40 to-transparent motion-safe:animate-[shimmer-sweep_3s_ease-in-out_infinite]"
-              style={{
-                animation: 'shimmer-sweep 3s ease-in-out infinite',
-              }}
-            />
+            <div className="absolute h-full w-24 bg-gradient-to-r from-transparent via-white/40 to-transparent motion-safe:animate-[shimmer-sweep_3s_ease-in-out_infinite]" />
           </div>
 
           {/* Nodes Container */}
@@ -192,28 +187,6 @@ const CanvasCheckoutStepIndicatorComponent: React.FC<CanvasCheckoutStepIndicator
         </div>
       </div>
 
-      {/* Shimmer Keyframes */}
-      <style>{`
-        @keyframes shimmer-sweep {
-          0% {
-            transform: translateX(-100%);
-            opacity: 0;
-          }
-          50% {
-            opacity: 0.6;
-          }
-          100% {
-            transform: translateX(400%);
-            opacity: 0;
-          }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          [style*='shimmer-sweep'] {
-            animation: none !important;
-          }
-        }
-      `}</style>
     </div>
   );
 };

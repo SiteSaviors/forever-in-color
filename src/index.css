@@ -135,3 +135,17 @@
     animation: frame-shimmer 300ms ease-out;
   }
 }
+
+@keyframes shimmer-sweep {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateX(400%);
+    opacity: 0;
+  }
+}

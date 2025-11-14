@@ -1,10 +1,15 @@
-import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { clsx } from 'clsx';
 import { useAuthModal, type AuthModalMode } from '@/store/useAuthModal';
 import { useCanvasSelection } from '@/store/hooks/useCanvasConfigStore';
-import { useEntitlementsState } from '@/store/hooks/useEntitlementsStore';
+import { useEntitlementsActions, useEntitlementsState } from '@/store/hooks/useEntitlementsStore';
 import { useSessionActions, useSessionState } from '@/store/hooks/useSessionStore';
+import TokenBalanceDrawer from '@/components/navigation/TokenBalanceDrawer';
+import MembershipConfirmationModal from '@/components/navigation/MembershipConfirmationModal';
+import OrdersPopover from '@/components/navigation/OrdersPopover';
+import { trackTokenDrawerOpened } from '@/utils/telemetry';
+import { createBillingPortalSession } from '@/utils/billingPortal';
 
 const AccountDropdown = lazy(() => import('@/components/navigation/AccountDropdown'));
 
@@ -20,7 +25,8 @@ const FounderNavigation = () => {
   const navigate = useNavigate();
   const { enhancements } = useCanvasSelection();
   const { entitlements } = useEntitlementsState();
-  const { sessionUser, sessionHydrated } = useSessionState();
+  const { hydrateEntitlements } = useEntitlementsActions();
+  const { sessionUser, sessionHydrated, accessToken } = useSessionState();
   const { signOut } = useSessionActions();
   const openAuthModal = useAuthModal((state) => state.openModal);
   const openNavAuthModal = (mode?: AuthModalMode) => openAuthModal(mode, { source: 'nav' });
@@ -32,6 +38,10 @@ const FounderNavigation = () => {
   const heroElementRef = useRef<HTMLElement | null>(null);
   const heroVisibilityRef = useRef<boolean>(true);
   const isAtTopRef = useRef<boolean>(true);
+  const [tokenDrawerOpen, setTokenDrawerOpen] = useState(false);
+  const [membershipModalOpen, setMembershipModalOpen] = useState(false);
+  const [portalIntent, setPortalIntent] = useState<'cancel' | 'update' | null>(null);
+  const entitlementsLoading = entitlements.status !== 'ready';
 
   useEffect(() => {
     const updateIsAtTop = () => {
@@ -69,6 +79,43 @@ const FounderNavigation = () => {
       }
     };
   }, []);
+
+  useEffect(() => {
+    const handleKeydown = (event: KeyboardEvent) => {
+      if (event.altKey && event.key.toLowerCase() === 't') {
+        event.preventDefault();
+        setTokenDrawerOpen(true);
+      }
+    };
+    window.addEventListener('keydown', handleKeydown);
+    return () => {
+      window.removeEventListener('keydown', handleKeydown);
+    };
+  }, []);
+
+  const handlePortalRequest = useCallback(
+    async (intent: 'cancel' | 'update') => {
+      if (!accessToken) {
+        openNavAuthModal('signin');
+        return;
+      }
+      setPortalIntent(intent);
+      try {
+        const { url } = await createBillingPortalSession({
+          accessToken,
+          returnUrl: window.location.href,
+        });
+        window.location.href = url;
+      } catch (error) {
+        console.error('[FounderNavigation] billing portal error', error);
+        alert('Unable to open billing portal at the moment. Please try again.');
+      } finally {
+        setPortalIntent(null);
+        void hydrateEntitlements();
+      }
+    },
+    [accessToken, hydrateEntitlements, openNavAuthModal]
+  );
 
   useEffect(() => {
     if (!heroElementRef.current || !document.body.contains(heroElementRef.current)) {
@@ -225,7 +272,15 @@ const FounderNavigation = () => {
           </nav>
 
           <div className="flex items-center gap-3 sm:gap-4">
-            <div className="hidden sm:flex items-center gap-2 rounded-full border border-white/10 bg-gradient-to-r from-purple-500/60 via-indigo-500/70 to-blue-500/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-white shadow-[0_14px_45px_rgba(99,102,241,0.35)] transition-all duration-200 hover:scale-[1.02] hover:shadow-[0_18px_55px_rgba(99,102,241,0.5)]">
+            <button
+              type="button"
+              onClick={() => {
+                setTokenDrawerOpen(true);
+              }}
+              className="hidden sm:flex items-center gap-2 rounded-full border border-white/10 bg-gradient-to-r from-purple-500/60 via-indigo-500/70 to-blue-500/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-white shadow-[0_14px_45px_rgba(99,102,241,0.35)] transition-all duration-200 hover:scale-[1.02] hover:shadow-[0_18px_55px_rgba(99,102,241,0.5)] focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/80"
+              aria-label="Open token balance"
+              title="View token balance"
+            >
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/20 text-white">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -243,33 +298,35 @@ const FounderNavigation = () => {
                 </svg>
               </span>
               <span>Tokens {tokensRemaining}</span>
-            </div>
+            </button>
 
             <button
               type="button"
-              className="relative flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white transition-all duration-200 hover:scale-105 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/80"
-              aria-label="View cart"
+              onClick={() => {
+                setTokenDrawerOpen(true);
+              }}
+              className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-gradient-to-br from-purple-500/60 via-indigo-500/70 to-blue-500/70 text-white transition hover:scale-105 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/80 sm:hidden"
+              aria-label="Open token balance"
+              title="View token balance"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="1.7"
+                strokeWidth="1.6"
                 className="h-5 w-5"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M3 5h2l1.68 9.02c.12.66.7 1.15 1.37 1.15h8.9c.66 0 1.24-.47 1.37-1.13L19 7H6"
-                />
-                <circle cx="9" cy="19" r="1.2" />
-                <circle cx="16" cy="19" r="1.2" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m6-6H6" />
               </svg>
-              <span className="absolute -right-1 -top-1 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-gradient-to-r from-purple-500 via-pink-500 to-amber-400 px-1.5 text-[10px] font-semibold text-black shadow-[0_0_15px_rgba(249,115,22,0.45)]">
-                {cartItemCount}
-              </span>
             </button>
+
+            <OrdersPopover
+              cartCount={cartItemCount}
+              onNavigateToCheckout={() => {
+                navigate('/create#canvas-checkout');
+              }}
+            />
 
             <Suspense fallback={accountFallback}>
               <AccountDropdown
@@ -283,12 +340,37 @@ const FounderNavigation = () => {
                 onNavigate={(path) => navigate(path)}
                 onOpenAuthModal={openNavAuthModal}
                 onSignOut={signOut}
+                onManageMembership={() => setMembershipModalOpen(true)}
                 canUpgrade={entitlements.tier !== 'pro'}
               />
             </Suspense>
           </div>
         </div>
       </div>
+      <TokenBalanceDrawer
+        open={tokenDrawerOpen}
+        onOpenChange={(next) => {
+          setTokenDrawerOpen(next);
+          if (next) {
+            trackTokenDrawerOpened(entitlements.tier, entitlements.remainingTokens ?? null);
+          }
+        }}
+        tierLabel={tierLabel}
+        remainingTokens={entitlements.remainingTokens ?? null}
+        renewAt={entitlements.renewAt ?? null}
+        onManageMembership={() => setMembershipModalOpen(true)}
+        isLoading={entitlementsLoading}
+      />
+      <MembershipConfirmationModal
+        open={membershipModalOpen}
+        onOpenChange={setMembershipModalOpen}
+        tierLabel={tierLabel}
+        renewAt={entitlements.renewAt ?? null}
+        remainingTokens={entitlements.remainingTokens ?? null}
+        quota={entitlements.quota ?? null}
+        onRequestPortal={handlePortalRequest}
+        intentLoading={portalIntent}
+      />
     </div>
   );
 };

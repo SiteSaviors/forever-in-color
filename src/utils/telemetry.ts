@@ -44,6 +44,23 @@ export type ProgressiveDisclosureEvent =
       timestamp: number;
     };
 
+export type MembershipSurfaceEvent = {
+  type: 'token_drawer_opened';
+  userTier: string;
+  remainingTokens: number | null;
+  timestamp: number;
+};
+
+export function trackTokenDrawerOpened(userTier: string, remainingTokens: number | null) {
+  const event: MembershipSurfaceEvent = {
+    type: 'token_drawer_opened',
+    userTier,
+    remainingTokens,
+    timestamp: Date.now(),
+  };
+  console.log('[MembershipSurface]', event);
+}
+
 export function trackDownloadCTAClick(userTier: string, isPremium: boolean) {
   const event: ProgressiveDisclosureEvent = {
     type: 'cta_download_click',

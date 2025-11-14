@@ -1,7 +1,7 @@
 import { Suspense, forwardRef, useState, type ComponentPropsWithoutRef } from 'react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 
-type AccountDropdownProps = {
+export type AccountDropdownProps = {
   accountInitial: string;
   sessionHydrated: boolean;
   isAuthenticated: boolean;
@@ -12,6 +12,7 @@ type AccountDropdownProps = {
   onNavigate: (path: string) => void;
   onOpenAuthModal: (mode: 'signin' | 'signup') => void;
   onSignOut: () => Promise<void> | void;
+  onManageMembership: () => void;
   canUpgrade: boolean;
 };
 
@@ -57,6 +58,7 @@ const AccountDropdown = ({
   onNavigate,
   onOpenAuthModal,
   onSignOut,
+  onManageMembership,
   canUpgrade,
 }: AccountDropdownProps) => {
   const [open, setOpen] = useState(false);
@@ -125,6 +127,12 @@ const AccountDropdown = ({
             </DropdownMenu.Item>
             <DropdownMenu.Item
               className="cursor-pointer rounded-xl px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+              onSelect={() => handleMenuAction(onManageMembership)}
+            >
+              Manage membership
+            </DropdownMenu.Item>
+            <DropdownMenu.Item
+              className="cursor-pointer rounded-xl px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
               onSelect={() => handleMenuAction(() => { void onSignOut(); })}
             >
               Sign out
@@ -173,7 +181,6 @@ const AccountDropdown = ({
 };
 
 export { AccountButton };
-export type { AccountDropdownProps };
 
 const AccountDropdownWrapper = (props: AccountDropdownProps) => (
   <Suspense

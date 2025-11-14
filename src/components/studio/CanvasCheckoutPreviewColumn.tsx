@@ -3,27 +3,17 @@ import { clsx } from 'clsx';
 import { useCanvasModalStatus, useCanvasSelection } from '@/store/hooks/useCanvasConfigStore';
 import { useScrollVisibility } from '@/hooks/useScrollVisibility';
 import TrustSignal from '@/components/checkout/TrustSignals';
-import CanvasTestimonialGrid from '@/components/studio/CanvasTestimonialGrid';
+import CanvasQualityAssurance from '@/components/studio/CanvasQualityAssurance';
 import { CANVAS_PREVIEW_ASSETS } from '@/utils/canvasPreviewAssets';
 import type { StyleOption } from '@/store/founder/storeTypes';
 
 const CanvasInRoomPreview = lazy(() => import('@/components/studio/CanvasInRoomPreview'));
-
-type Testimonial = {
-  id: string;
-  canvasImageUrl: string;
-  quote: string;
-  author: string;
-  location?: string;
-  verified?: boolean;
-};
 
 type CanvasCheckoutPreviewColumnProps = {
   currentStyle?: StyleOption;
   triggerFrameShimmer: boolean;
   isSuccessStep: boolean;
   showStaticTestimonials: boolean;
-  testimonials: Testimonial[];
   previewRoomAssetSrc?: string;
   previewArtRectPct?: ArtRect;
 };
@@ -33,7 +23,6 @@ const CanvasCheckoutPreviewColumnComponent = ({
   triggerFrameShimmer,
   isSuccessStep,
   showStaticTestimonials,
-  testimonials,
   previewRoomAssetSrc,
   previewArtRectPct,
 }: CanvasCheckoutPreviewColumnProps) => {
@@ -106,12 +95,14 @@ const CanvasCheckoutPreviewColumnComponent = ({
           </div>
 
           {showStaticTestimonials && (
-            <div className="mt-8 space-y-5">
-              <h3 className="font-display text-center text-lg font-semibold leading-tight text-white">
-                Join 10,000+ creators who fell in love
-              </h3>
-              <CanvasTestimonialGrid testimonials={testimonials} />
-            </div>
+            <CanvasQualityAssurance
+              className="mt-8"
+              productionImages={{
+                canvasTexture: '/images/quality/canvas-texture.webp',
+                handStretching: '/images/quality/hand-stretching.webp',
+                backHardware: '/images/quality/back-hardware.webp',
+              }}
+            />
           )}
 
           <TrustSignal

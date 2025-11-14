@@ -10,28 +10,28 @@ import type { FrameColor } from '@/store/founder/storeTypes';
 export type FrameOption = {
   id: FrameColor;
   label: string;
-  subtitle: string;
   thumbnail: string;
+  subtitle: string;
 };
 
 const FRAME_OPTIONS: FrameOption[] = [
   {
     id: 'none',
     label: 'Gallery Wrap',
-    subtitle: 'Gallery-wrap canvas',
     thumbnail: '/frame-swatches/no-frame.webp',
+    subtitle: 'Wrapped edges, ready to hang',
   },
   {
     id: 'black',
     label: 'Black Floating',
-    subtitle: 'Modern shadow gap',
     thumbnail: '/frame-swatches/black-frame-thumbnail.webp',
+    subtitle: 'Adds depth with a modern profile',
   },
   {
     id: 'white',
     label: 'White Floating',
-    subtitle: 'Bright airy trim',
     thumbnail: '/frame-swatches/white-frame-thumbnail.webp',
+    subtitle: 'Bright gallery look with crisp lines',
   },
 ];
 
@@ -98,10 +98,7 @@ const CanvasFrameSelectorComponent = () => {
                 draggable={false}
               />
             </span>
-            <div className="flex flex-col">
-              <p className="font-display text-base font-semibold text-white">{option.label}</p>
-              <p className="text-[11px] text-white/60">{option.subtitle}</p>
-            </div>
+            <p className="font-display text-base font-semibold text-white">{option.label}</p>
             {active && (
               <svg
                 className="ml-auto h-5 w-5 shrink-0 text-purple-400"

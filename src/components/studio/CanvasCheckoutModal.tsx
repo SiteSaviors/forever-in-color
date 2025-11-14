@@ -1,7 +1,6 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState, type RefObject } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { clsx } from 'clsx';
-import { Package, Flag, Shield } from 'lucide-react';
 import { CANVAS_SIZE_OPTIONS, getCanvasSizeOption } from '@/utils/canvasSizes';
 import { type CanvasModalCloseReason } from '@/store/founder/storeTypes';
 import { useCheckoutStore } from '@/store/useCheckoutStore';
@@ -20,7 +19,7 @@ import {
   trackCheckoutExit,
   trackCheckoutRecommendationShown,
 } from '@/utils/telemetry';
-import { USE_NEW_CTA_COPY, SHOW_STATIC_TESTIMONIALS } from '@/config/featureFlags';
+import { SHOW_STATIC_TESTIMONIALS } from '@/config/featureFlags';
 import CanvasCheckoutStepIndicator from '@/components/studio/CanvasCheckoutStepIndicator';
 import StaticTestimonial from '@/components/studio/StaticTestimonial';
 import ContactForm from '@/components/checkout/ContactForm';
@@ -31,6 +30,7 @@ import CanvasCheckoutPreviewColumn from '@/components/studio/CanvasCheckoutPrevi
 import CanvasFrameSelector from '@/components/studio/CanvasFrameSelector';
 import CanvasSizeSelector from '@/components/studio/CanvasSizeSelector';
 import CanvasOrderSummary from '@/components/studio/CanvasOrderSummary';
+import CheckoutFooter from '@/components/studio/CheckoutFooter';
 import { CANVAS_PREVIEW_ASSETS } from '@/utils/canvasPreviewAssets';
 import { shallow } from 'zustand/shallow';
 
@@ -40,41 +40,6 @@ const currency = new Intl.NumberFormat('en-US', {
   style: 'currency',
   currency: 'USD',
 });
-
-// Testimonial data with canvas images (user will provide actual assets)
-const CANVAS_TESTIMONIALS = [
-  {
-    id: 'tm1',
-    canvasImageUrl: '/testimonials/canvas-1.jpg', // Placeholder - user will provide
-    quote: 'This canvas completely transformed our living room. The quality is absolutely stunning.',
-    author: 'Sarah M.',
-    location: 'Austin, TX',
-    verified: true,
-  },
-  {
-    id: 'tm2',
-    canvasImageUrl: '/testimonials/canvas-2.jpg', // Placeholder - user will provide
-    quote: 'Museum-quality print. Everyone asks where we got it.',
-    author: 'James K.',
-    location: 'Seattle, WA',
-    verified: true,
-  },
-  {
-    id: 'tm3',
-    canvasImageUrl: '/testimonials/canvas-3.jpg', // Placeholder - user will provide
-    quote: 'The colors are even richer in person. Totally worth it.',
-    author: 'Jordan T.',
-    location: 'Brooklyn, NY',
-    verified: true,
-  },
-  {
-    id: 'tm4',
-    canvasImageUrl: '/testimonials/canvas-4.jpg', // Placeholder - user will provide
-    quote: 'Best investment for our home. The frame is gorgeous.',
-    author: 'Avery M.',
-    verified: true,
-  },
-];
 
 const CanvasCheckoutModal = () => {
   const closingReasonRef = useRef<CanvasModalCloseReason | null>(null);
@@ -129,7 +94,6 @@ const CanvasCheckoutModal = () => {
   const isShippingStep = step === 'shipping';
   const isPaymentStep = step === 'payment';
   const isSuccessStep = step === 'success';
-  const canvasAdvanceDisabled = !selectedCanvasSize || orientationPreviewPending;
   const handleContactNext = useCallback(() => setStep('shipping'), [setStep]);
   const handleShippingBack = useCallback(() => setStep('contact'), [setStep]);
   const handleShippingNext = useCallback(() => setStep('payment'), [setStep]);
@@ -340,7 +304,7 @@ const CanvasCheckoutModal = () => {
     });
   }, [canvasModalOpen, step, sizeOptions, recommendation, orientation]);
 
-  const handlePrimaryCta = () => {
+  const handlePrimaryCta = useCallback(() => {
     if (step !== 'canvas') {
       return;
     }
@@ -359,7 +323,7 @@ const CanvasCheckoutModal = () => {
     }
 
     setStep('contact');
-  };
+  }, [hasEnabledEnhancements, setStep, step, total, userTier]);
 
   const clearDrawerPulseTimeouts = useCallback(() => {
     if (drawerPulseTimeoutRef.current) {
@@ -502,54 +466,6 @@ const CanvasCheckoutModal = () => {
     </section>
   );
 
-  const renderPremiumTrustBar = () => {
-    return (
-      <div className="group relative overflow-hidden rounded-2xl border-2 border-white/20 bg-gradient-to-br from-white/8 via-white/4 to-white/6 p-5 shadow-[0_0_24px_rgba(168,85,247,0.12)] transition-all duration-300 hover:border-white/30 hover:shadow-[0_0_32px_rgba(168,85,247,0.18)]">
-        {/* Premium gradient overlay */}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-emerald-500/8" />
-
-        {/* Subtle glow on hover */}
-        <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-purple-400/12 via-transparent to-emerald-400/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-
-        <div className="relative grid grid-cols-1 gap-5 sm:grid-cols-3 sm:divide-x sm:divide-white/15">
-          {/* Free Shipping */}
-          <div className="flex flex-col items-center gap-2.5 text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-600/15 shadow-[0_0_16px_rgba(168,85,247,0.2)] transition-transform duration-300 group-hover:scale-105">
-              <Package className="h-6 w-6 text-purple-300" strokeWidth={2} />
-            </div>
-            <div className="space-y-0.5">
-              <p className="font-display text-base font-semibold text-white">Free Shipping</p>
-              <p className="text-xs text-white/55">On all orders</p>
-            </div>
-          </div>
-
-          {/* Made in USA */}
-          <div className="flex flex-col items-center gap-2.5 text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/15 shadow-[0_0_16px_rgba(59,130,246,0.2)] transition-transform duration-300 group-hover:scale-105">
-              <Flag className="h-6 w-6 text-blue-300" strokeWidth={2} />
-            </div>
-            <div className="space-y-0.5">
-              <p className="font-display text-base font-semibold text-white">Made in USA</p>
-              <p className="text-xs text-white/55">Handcrafted quality</p>
-            </div>
-          </div>
-
-          {/* Money-Back Guarantee */}
-          <div className="flex flex-col items-center gap-2.5 text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/15 shadow-[0_0_16px_rgba(52,211,153,0.2)] transition-transform duration-300 group-hover:scale-105">
-              <Shield className="h-6 w-6 text-emerald-300" strokeWidth={2} />
-            </div>
-            <div className="space-y-0.5">
-              <p className="font-display text-base font-semibold text-white">Money-Back Guarantee</p>
-              <p className="text-xs text-white/55">100-day protection</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-
 
   return (
     <Dialog.Root open={canvasModalOpen} onOpenChange={handleOpenChange}>
@@ -579,7 +495,6 @@ const CanvasCheckoutModal = () => {
                 triggerFrameShimmer={triggerFrameShimmer}
                 isSuccessStep={isSuccessStep}
                 showStaticTestimonials={SHOW_STATIC_TESTIMONIALS}
-                testimonials={CANVAS_TESTIMONIALS}
                 previewRoomAssetSrc={previewRoomSrc}
                 previewArtRectPct={previewArtRect}
               />
@@ -670,15 +585,6 @@ const CanvasCheckoutModal = () => {
                         )}
                       </div>
 
-                      {/* Social Proof: Universal testimonial */}
-                      {SHOW_STATIC_TESTIMONIALS && (
-                        <StaticTestimonial
-                          quote="This canvas completely transformed our living room. The quality is absolutely stunning, and every guest asks where we got it."
-                          author="Sarah M."
-                          location="Austin, TX"
-                          className="mt-3"
-                        />
-                      )}
                     </div>
                   </div>
                 </div>
@@ -723,33 +629,15 @@ const CanvasCheckoutModal = () => {
                       />
                     </section>
 
-                    {/* SECTION 1: Premium Trust Bar + Primary CTA - Immediate Action */}
-                    <footer className="space-y-4 border-t border-white/10 pt-6 mt-8">
-                      {renderPremiumTrustBar()}
-
-                      <button
-                        type="button"
-                        onClick={handlePrimaryCta}
-                        disabled={canvasAdvanceDisabled}
-                        className={clsx(
-                          'w-full rounded-[26px] border border-purple-400 bg-gradient-to-r from-purple-500 via-purple-500 to-blue-500 py-4 text-base font-semibold text-white shadow-glow-purple transition',
-                          canvasAdvanceDisabled
-                            ? 'cursor-not-allowed opacity-40'
-                            : 'hover:shadow-glow-purple motion-safe:hover:scale-[1.01]'
-                        )}
-                      >
-                        {USE_NEW_CTA_COPY ? 'Begin Production →' : 'Continue to Contact & Shipping →'}
-                      </button>
-                    </footer>
-
-                    {/* SECTION 2: Enhanced Order Summary - Config Review */}
-                    <div className="mt-6">
+                    {/* SECTION 1: Premium Trust Bar + Order Review + CTA */}
+                    <CheckoutFooter onPrimaryCta={handlePrimaryCta}>
                       <CanvasOrderSummary
                         total={total}
                         onEditFrame={() => scrollToSection(frameSectionRef)}
                         onEditSize={() => scrollToSection(sizeSectionRef)}
+                        orientationPreviewPending={orientationPreviewPending}
                       />
-                    </div>
+                    </CheckoutFooter>
 
                     {/* SECTION 3: Testimonials - Compact Social Proof */}
                     <div className="mt-6 space-y-3">
@@ -758,7 +646,7 @@ const CanvasCheckoutModal = () => {
                         author="Sarah M."
                         location="Austin, TX"
                         verified={true}
-                        canvasImageUrl="/testimonials/canvas-1.jpg"
+                        canvasImageUrl="/images/checkout/checkout-testimonial-1.webp"
                         layout="horizontal"
                         imagePosition="left"
                       />
@@ -768,7 +656,7 @@ const CanvasCheckoutModal = () => {
                         author="Avery M."
                         location="Brooklyn, NY"
                         verified={true}
-                        canvasImageUrl="/testimonials/canvas-2.jpg"
+                        canvasImageUrl="/images/checkout/checkout-testimonial-2.webp"
                         layout="horizontal"
                         imagePosition="right"
                       />
@@ -778,7 +666,7 @@ const CanvasCheckoutModal = () => {
                         author="James K."
                         location="Seattle, WA"
                         verified={true}
-                        canvasImageUrl="/testimonials/canvas-3.jpg"
+                        canvasImageUrl="/images/checkout/checkout-testimonial-3.jpg"
                         layout="horizontal"
                         imagePosition="left"
                       />
@@ -823,6 +711,7 @@ const CanvasCheckoutModal = () => {
                       total={total}
                       onEditFrame={() => scrollToSection(frameSectionRef)}
                       onEditSize={() => scrollToSection(sizeSectionRef)}
+                      orientationPreviewPending={orientationPreviewPending}
                     />
                   </div>
                   <div className="space-y-6 lg:w-[300px]">
@@ -865,6 +754,7 @@ const CanvasCheckoutModal = () => {
                       total={total}
                       onEditFrame={() => scrollToSection(frameSectionRef)}
                       onEditSize={() => scrollToSection(sizeSectionRef)}
+                      orientationPreviewPending={orientationPreviewPending}
                     />
                   </div>
                   <div className="space-y-6 lg:w-[300px]">
@@ -919,6 +809,7 @@ const CanvasCheckoutModal = () => {
                       total={total}
                       onEditFrame={() => scrollToSection(frameSectionRef)}
                       onEditSize={() => scrollToSection(sizeSectionRef)}
+                      orientationPreviewPending={orientationPreviewPending}
                     />
                   </div>
                   <div className="space-y-6 lg:w-[300px]">
@@ -978,6 +869,7 @@ const CanvasCheckoutModal = () => {
                       total={total}
                       onEditFrame={() => scrollToSection(frameSectionRef)}
                       onEditSize={() => scrollToSection(sizeSectionRef)}
+                      orientationPreviewPending={orientationPreviewPending}
                     />
                   </div>
                   <div className="space-y-6 lg:w-[300px]">

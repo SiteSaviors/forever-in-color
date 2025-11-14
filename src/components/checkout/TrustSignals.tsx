@@ -130,23 +130,7 @@ const CtaStripSignal: React.FC<BaseSignalProps> = memo(({ className, style }) =>
  * Sticky Guarantee Trust Signal
  * Desktop-only sticky badge with money-back promise
  */
-const StickyGuaranteeSignal: React.FC<BaseSignalProps> = memo(({ className, style }) => {
-  return (
-    <div
-      className={clsx(
-        'hidden lg:block rounded-2xl border border-purple-400/30 bg-gradient-to-br from-purple-500/10 to-fuchsia-500/10 p-4 text-center transition-opacity duration-500',
-        className
-      )}
-      style={{ maxWidth: '280px', ...style }}
-    >
-      <p className="text-xs uppercase tracking-[0.32em] text-purple-300/70 mb-1">
-        Your Protection
-      </p>
-      <p className="text-sm font-semibold text-white">💳 30-Day Money-Back</p>
-      <p className="text-xs text-white/60 mt-1">Plus 100-day remake guarantee</p>
-    </div>
-  );
-});
+const StickyGuaranteeSignal: React.FC<BaseSignalProps> = memo(() => null);
 
 /**
  * Trust Signal Components
