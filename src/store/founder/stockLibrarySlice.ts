@@ -234,7 +234,15 @@ export const createStockLibrarySlice: StateCreator<FounderState, [], [], StockLi
         [tier]: !state.accessFilters[tier],
       };
       persistFilters(nextFilters, state.orientationFilters);
-      return { accessFilters: nextFilters };
+      return {
+        accessFilters: nextFilters,
+        stockImages: [],
+        hasNextPage: false,
+        nextCursor: null,
+        currentPage: 0,
+        stockStatus: 'idle',
+        stockError: null,
+      };
     }),
   toggleOrientationFilter: (orientation) =>
     set((state) => {
@@ -243,7 +251,15 @@ export const createStockLibrarySlice: StateCreator<FounderState, [], [], StockLi
         [orientation]: !state.orientationFilters[orientation],
       };
       persistFilters(state.accessFilters, nextOrientations);
-      return { orientationFilters: nextOrientations };
+      return {
+        orientationFilters: nextOrientations,
+        stockImages: [],
+        hasNextPage: false,
+        nextCursor: null,
+        currentPage: 0,
+        stockStatus: 'idle',
+        stockError: null,
+      };
     }),
   resetFilters: () =>
     set(() => {

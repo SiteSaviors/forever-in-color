@@ -68,10 +68,10 @@ const StockGridBrowser = () => {
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
-  // Initial fetch when category or search changes
+  // Initial fetch when category, search, or filters change
   useEffect(() => {
     void fetchStockImages();
-  }, [selectedCategory, searchQuery, fetchStockImages]);
+  }, [selectedCategory, searchQuery, accessFilters, orientationFilters, fetchStockImages]);
 
   // IntersectionObserver for infinite scroll
   useEffect(() => {

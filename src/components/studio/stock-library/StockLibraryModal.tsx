@@ -29,8 +29,6 @@ const StockLibraryModal = () => {
   const continueWithStockImage = useFounderStore((state) => state.continueWithStockImage);
   const setView = useFounderStore((state) => state.setView);
   const uploadedImage = useFounderStore((state) => state.uploadedImage);
-  const hasFiltersApplied = useFounderStore((state) => state.hasActiveFilters());
-  const resetFilters = useFounderStore((state) => state.resetFilters);
 
   const wasOpenRef = useRef(false);
 
@@ -95,21 +93,15 @@ const StockLibraryModal = () => {
         >
           {/* Header with search and close */}
           <div className="flex flex-col border-b border-white/5">
-            <div className="flex items-center justify-center px-8 py-6 gap-3">
-              {/* Search field (centered) */}
-              <div className="flex-1 flex justify-center">
+            <div className="relative flex items-center justify-center px-8 py-6">
+              {/* Search field with integrated filter button */}
+              <div className="relative flex items-center justify-center">
                 <StockSearchField />
+                {/* Filter button positioned at right edge of search bar */}
+                <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                  <StockFilterPopover />
+                </div>
               </div>
-              <StockFilterPopover />
-              {hasFiltersApplied && (
-                <button
-                  type="button"
-                  onClick={resetFilters}
-                  className="text-xs font-semibold uppercase tracking-[0.22em] text-rose-200/80 transition hover:text-rose-100 focus:outline-none focus:ring-2 focus:ring-rose-300/70 focus:ring-offset-2 focus:ring-offset-slate-950"
-                >
-                  Reset
-                </button>
-              )}
 
               {/* Close button */}
               <button
