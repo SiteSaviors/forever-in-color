@@ -18,9 +18,12 @@ Wondertone is a premium e-commerce platform that transforms personal photos into
 ### Essential Commands
 ```bash
 npm run dev                 # Start Vite dev server (port 4175, binds to ::)
+npm run preview             # Preview production build locally
 npm run build               # Production build (runs build:registry first)
 npm run lint                # Run ESLint
+npm run lint:unused         # Fix unused imports automatically
 npm test                    # Run Vitest tests
+npm test -- --watch         # Run tests in watch mode
 ```
 
 ### Build Variants
@@ -29,12 +32,17 @@ npm run build:registry      # Generate style registry from source (required befo
 npm run build:analyze       # Build + open bundle analyzer (dist/stats.html)
 npm run build:dev           # Development mode build
 npm run validate:registry   # Verify registry output is up-to-date
+npm run build:preview-validators # Generate JSON Schema validators from Zod
 ```
 
-### Code Quality
+### Code Quality & Analysis
 ```bash
 npm run dead-code:check     # Check for unused exports, files, and deps
+npm run dead-code:exports   # Check unused exports only
+npm run dead-code:files     # Check unimported files
+npm run dead-code:deps      # Check unresolved imports
 npm run dead-code:fix       # Auto-remove unused imports/exports
+npm run dead-code:clean     # Remove unused code via unimported
 npm run deps:analyze        # Find circular dependencies
 npm run deps:check          # Check for unused dependencies
 ```
@@ -43,6 +51,65 @@ npm run deps:check          # Check for unused dependencies
 ```bash
 npm run thumbnails:generate # Generate WebP/AVIF variants for style assets
 ```
+
+## Environment Variables
+
+### Required for Development
+```bash
+VITE_SUPABASE_URL           # Supabase project URL (required)
+VITE_SUPABASE_ANON_KEY      # Supabase anonymous key (required)
+```
+
+### Feature Flags
+See [src/config/featureFlags.ts](src/config/featureFlags.ts) for complete definitions. Key flags:
+
+```bash
+VITE_REQUIRE_AUTH_FOR_PREVIEW=false       # Auth gate for previews
+VITE_AUTH_GATE_ROLLOUT=0                  # Auth gate rollout percentage (0-100)
+VITE_ENABLE_PREVIEW_QUERY=false           # React Query preview scaffolding
+VITE_STORY_LAYER_ENABLED=true             # Style story layer
+VITE_HEIC_EDGE_CONVERSION=false           # HEIC conversion via edge function
+VITE_ENABLE_QUICKVIEW_DELETE_MODE=false   # Gallery delete UI
+
+# OAuth Providers
+VITE_AUTH_GOOGLE_ENABLED=true
+VITE_AUTH_MICROSOFT_ENABLED=false
+VITE_AUTH_FACEBOOK_ENABLED=false
+
+# Canvas Checkout Features
+VITE_SHOW_SIZE_RECOMMENDATIONS=true
+VITE_USE_NEW_CTA_COPY=true
+VITE_SHOW_STATIC_TESTIMONIALS=true
+```
+
+### Build Configuration
+```bash
+VERBOSE_SOURCEMAPS=true     # Enable detailed sourcemaps in builds
+ANALYZE=1                   # Enable bundle analyzer during build
+```
+
+### Edge Function Configuration
+```bash
+WT_PREVIEW_ALLOWED_ORIGINS  # CORS origins for preview edge function
+```
+
+## Git Hooks & Pre-commit Workflow
+
+The project uses Husky for automated git hooks:
+
+```bash
+npm run prepare             # Install git hooks (runs automatically after npm install)
+```
+
+### Pre-commit Hook
+Automatically runs on `git commit`:
+- ESLint with auto-fix on staged `.ts` and `.tsx` files
+- Adds fixed files back to the commit
+
+### Lint-Staged Configuration
+Configured in package.json to run ESLint on TypeScript files before commit.
+
+**Important**: Hooks ensure code quality but can be bypassed with `--no-verify` if needed for emergency commits. Avoid this in normal workflow.
 
 ## Architecture
 
@@ -96,13 +163,70 @@ Styles are defined in `registry/styleRegistrySource.ts` and transformed into:
 
 ### Supabase Integration
 - **Client:** [src/utils/supabaseClient.ts](src/utils/supabaseClient.ts) (also duplicated at [src/store/utils/supabaseClient.ts](src/store/utils/supabaseClient.ts))
+- **Important:** Never import `@supabase/supabase-js` directly - use `@/utils/wondertoneAuthClient` facade (enforced by ESLint)
 - **Auth:** [src/providers/AuthProvider.tsx](src/providers/AuthProvider.tsx)
-- **Edge functions:**
-  - `generate-style-preview` - AI preview generation + caching
-  - `create-payment` / `create-checkout-session` - Stripe checkout
-  - `remove-watermark` - token-gated watermark removal
-  - `purchase-tokens` - token purchases
-  - `stripe-webhook` - payment webhooks
+
+#### Edge Functions (supabase/functions/)
+
+**Preview Generation:**
+- `generate-style-preview` - AI preview generation + caching (v1)
+- `generate-style-preview-v2` - V2 preview implementation
+
+**Payments & Billing:**
+- `create-payment` - Payment initiation
+- `create-checkout-session` - Stripe checkout session
+- `create-order-payment-intent` - Order payment intent creation
+- `stripe-webhook` - Payment webhooks handler
+- `create-billing-portal` - Stripe billing portal access
+
+**Features:**
+- `remove-watermark` - Token-gated watermark removal
+- `purchase-tokens` - Token purchase processing
+- `convert-heic` - HEIC/HEIF image conversion
+- `get-gallery` - User gallery retrieval
+- `save-to-gallery` - Save preview to user gallery
+- `persist-original-upload` - Upload persistence to storage
+
+**Edge function patterns:**
+- Functions share code via `supabase/functions/_shared/`
+- Style registry synced to `_shared/styleRegistry.generated.ts`
+- Edge functions use service role key for database access
+- CORS configuration via `WT_PREVIEW_ALLOWED_ORIGINS` environment variable
+
+### Database Schema
+
+Core tables in Supabase Postgres (see `supabase/migrations/` for full schema):
+
+**`profiles`** - User profiles with Stripe integration
+- Fields: `id`, `stripe_customer_id`, `dev_override`, timestamps
+- RLS: Users can read own profile, service role has full access
+
+**`subscriptions`** - Subscription tiers and quotas
+- Fields: `user_id`, `tier` (free/creator/plus/pro), `tokens_quota`, period dates
+- Related view: `v_entitlements` calculates remaining tokens
+
+**`preview_logs`** - Preview generation tracking
+- Fields: `idempotency_key`, `user_id`, `anon_token`, `style_id`, `outcome`, `tokens_spent`
+- Indexes: user/anon lookups, outcome filtering
+
+**`preview_cache_entries`** - Preview result caching
+- Fields: `cache_key`, `style_id`, `image_digest`, `preview_url`, `ttl_expires_at`
+- Used by edge functions to avoid duplicate AI generation
+
+**`anonymous_tokens`** - Anonymous user tracking
+- Fields: `token`, `free_tokens_remaining`, `ip_ua_hash`, `month_bucket`
+
+**`user_gallery`** - Saved user previews
+- Tracks user's favorited/saved style previews
+
+**`heic_conversion_cache`** - HEIC conversion results
+- Caches converted images to avoid re-processing
+
+**Key patterns:**
+- All tables use RLS (Row Level Security)
+- Service role bypasses RLS for edge functions
+- `updated_at` triggers on all tables
+- Entitlements calculated via `v_entitlements` view
 
 ### Suspense & Fallbacks
 Studio surfaces use React.Suspense with dedicated skeletons:

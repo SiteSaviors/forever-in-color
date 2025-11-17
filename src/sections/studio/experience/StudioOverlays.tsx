@@ -3,12 +3,14 @@ import { useStudioOverlayContext } from '@/sections/studio/experience/context';
 import { useStudioEntitlementState } from '@/store/hooks/studio/useStudioEntitlementState';
 import { useStudioPreviewState } from '@/store/hooks/studio/useStudioPreviewState';
 import { useStudioUiState } from '@/store/hooks/studio/useStudioUiState';
+import { useFounderStore } from '@/store/useFounderStore';
 
 const LivingCanvasModal = lazy(() => import('@/components/studio/LivingCanvasModal'));
 const DownloadUpgradeModal = lazy(() => import('@/components/modals/DownloadUpgradeModal'));
 const MobileStyleDrawer = lazy(() => import('@/components/studio/MobileStyleDrawer'));
 const CanvasUpsellToast = lazy(() => import('@/components/studio/CanvasUpsellToast'));
 const CanvasCheckoutModalLazy = lazy(() => import('@/components/studio/CanvasCheckoutModal'));
+const StockLibraryModal = lazy(() => import('@/components/studio/stock-library/StockLibraryModal'));
 
 type StudioOverlaysProps = {
   onRequestCanvas: (source: 'center' | 'rail') => void;
@@ -26,6 +28,7 @@ const StudioOverlays = ({ onRequestCanvas }: StudioOverlaysProps) => {
   const { entitlements, displayRemainingTokens } = useStudioEntitlementState();
   const { hasCroppedImage } = useStudioPreviewState();
   const { livingCanvasModalOpen } = useStudioUiState();
+  const stockLibraryModalOpen = useFounderStore((state) => state.stockLibraryModalOpen);
 
   return (
     <>
@@ -60,6 +63,10 @@ const StudioOverlays = ({ onRequestCanvas }: StudioOverlaysProps) => {
 
       <Suspense fallback={null}>
         <CanvasCheckoutModalLazy />
+      </Suspense>
+
+      <Suspense fallback={null}>
+        {stockLibraryModalOpen && <StockLibraryModal />}
       </Suspense>
     </>
   );

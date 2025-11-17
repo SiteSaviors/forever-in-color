@@ -12,8 +12,8 @@ import { useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
 import { useStyleCatalogState } from '@/store/hooks/useStyleCatalogStore';
 import type { StyleOption } from '@/store/founder/storeTypes';
-import { useAuthModal } from '@/store/useAuthModal';
 import usePrefersReducedMotion from '@/hooks/usePrefersReducedMotion';
+import { useFounderStore } from '@/store/useFounderStore';
 
 const INSTANT_BREADTH_STYLE_IDS = [
   'classic-oil-painting',
@@ -71,7 +71,7 @@ const normalizeOffset = (value: number, segment: number) => {
 const InstantBreadthStrip = () => {
   const { styles } = useStyleCatalogState();
   const navigate = useNavigate();
-  const openAuthModal = useAuthModal((state) => state.openModal);
+  const openStockLibrary = useFounderStore((state) => state.openStockLibrary);
   const prefersReducedMotion = usePrefersReducedMotion();
 
   const curatedItems = useMemo(() => selectInstantBreadthItems(styles), [styles]);
@@ -125,7 +125,7 @@ const InstantBreadthStrip = () => {
   );
 
   const handleOpenSample = () => {
-    openAuthModal('signup', { source: 'instant-breadth' });
+    openStockLibrary();
   };
 
   const handleNavigatePricing = () => {
@@ -350,7 +350,7 @@ const InstantBreadthStrip = () => {
               'hover:border-white/40 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70'
             )}
           >
-            Try a Sample →
+            Browse Our Library →
           </button>
           <button
             type="button"

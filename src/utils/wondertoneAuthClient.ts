@@ -32,6 +32,7 @@ export type WondertoneAuthClient = {
     select: <T = unknown>(columns: string) => {
       maybeSingle: () => Promise<{ data: T | null; error: { message: string } | null; count: number | null }>;
     };
+    upsert: (payload: Record<string, unknown>, options?: { onConflict?: string }) => Promise<unknown>;
   };
 };
 
@@ -107,8 +108,8 @@ export const createWondertoneAuthClient = (
       const { data } = await authClient.getSession();
       return data.session?.access_token ?? null;
     },
-    from: (table: string) => ({
-      select: <T = unknown>(columns: string) => ({
+    from: (table: string) => {
+      const select = <T = unknown>(columns: string) => ({
         maybeSingle: async () => {
           if (!restUrl) {
             return {
@@ -184,8 +185,38 @@ export const createWondertoneAuthClient = (
             count: null,
           };
         },
-      }),
-    }),
+      });
+      const upsert = async (payload: Record<string, unknown>, options?: { onConflict?: string }) => {
+        if (!restUrl) {
+          throw new Error('Supabase REST URL is not configured');
+        }
+
+        const headers = await buildAuthHeaders(authClient, anonKey);
+        headers.Accept = 'application/json';
+        headers['Content-Type'] = 'application/json';
+        headers.Prefer = 'return=representation,resolution=merge-duplicates';
+
+        const requestUrl = new URL(`${restUrl}/${table}`);
+        if (options?.onConflict) {
+          requestUrl.searchParams.set('on_conflict', options.onConflict);
+        }
+
+        const response = await fetchImpl(requestUrl.toString(), {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text().catch(() => null);
+          throw new Error(errorText || `Supabase request failed (${response.status})`);
+        }
+
+        return response.json().catch(() => null);
+      };
+
+      return { select, upsert };
+    },
   };
 
   return client;

@@ -14,6 +14,7 @@ import CanvasPreviewPanel from '@/sections/studio/components/CanvasPreviewPanel'
 import { useDownloadHandlers } from '@/hooks/studio/useDownloadHandlers';
 import { useGalleryHandlers } from '@/hooks/studio/useGalleryHandlers';
 import { useCanvasCtaHandlers } from '@/hooks/studio/useCanvasCtaHandlers';
+import { useFounderStore } from '@/store/useFounderStore';
 
 type CenterStageProps = {
   onOpenCanvas: (source: 'center' | 'rail') => void;
@@ -47,6 +48,7 @@ const CenterStage = ({
   const { launchpadExpanded } = useStudioUiState();
   const { isPremiumUser } = useStudioEntitlementState();
   const { setLaunchpadExpanded } = useStudioActions();
+  const openStockLibrary = useFounderStore((state) => state.openStockLibrary);
   const previewEntry = usePreviewEntry(currentStyleId ?? null);
   const previewOrientationLabel = previewEntry?.orientation
     ? ORIENTATION_PRESETS[previewEntry.orientation].label
@@ -83,9 +85,8 @@ const CenterStage = ({
 
   const handleBrowseStylesFromEmptyState = useCallback(() => {
     trackLaunchflowEmptyStateInteraction('browse_styles');
-    const stylesAnchor = document.querySelector<HTMLElement>('[data-founder-anchor="styles"]');
-    stylesAnchor?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, []);
+    openStockLibrary();
+  }, [openStockLibrary]);
 
   return (
     <CanvasPreviewPanel

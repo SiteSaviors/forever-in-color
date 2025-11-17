@@ -1,0 +1,147 @@
+import { useMemo, useState, useId } from 'react';
+import * as Popover from '@radix-ui/react-popover';
+import { Check, Filter } from 'lucide-react';
+import { useFounderStore } from '@/store/useFounderStore';
+
+const FILTER_ICON_CLASSES =
+  'rounded-full border border-white/15 bg-gradient-to-r from-slate-900/60 via-slate-900/40 to-slate-900/60 p-3 text-white/80 shadow-[0_10px_30px_rgba(2,6,23,0.35)] transition hover:border-white/30 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950';
+
+const ToggleChip = ({
+  label,
+  active,
+  onToggle,
+}: {
+  label: string;
+  active: boolean;
+  onToggle: () => void;
+}) => {
+  const inputId = useId();
+  return (
+    <label
+      htmlFor={inputId}
+      className="group relative inline-flex cursor-pointer rounded-full bg-gradient-to-r from-fuchsia-500/60 via-purple-500/60 to-cyan-400/60 p-[1px] focus-within:outline-none focus-within:ring-2 focus-within:ring-fuchsia-300/70 focus-within:ring-offset-2 focus-within:ring-offset-slate-950"
+    >
+      <input
+        id={inputId}
+        type="checkbox"
+        checked={active}
+        onChange={() => onToggle()}
+        className="sr-only"
+      />
+      <span
+        className={`flex items-center gap-3 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+          active
+            ? 'bg-slate-950/90 text-white shadow-[0_6px_20px_rgba(120,80,255,0.25)]'
+            : 'bg-slate-900/70 text-white/55 hover:text-white/80'
+        }`}
+      >
+        <span
+          className={`flex h-5 w-5 items-center justify-center rounded-full border border-white/40 transition ${
+            active
+              ? 'bg-gradient-to-r from-fuchsia-500 to-purple-500 text-white'
+              : 'text-transparent'
+          }`}
+          aria-hidden="true"
+        >
+          {active && <Check className="h-3 w-3" />}
+        </span>
+        <span className="text-left leading-tight">{label}</span>
+      </span>
+    </label>
+  );
+};
+
+const StockFilterPopover = () => {
+  const [open, setOpen] = useState(false);
+  const accessFilters = useFounderStore((state) => state.accessFilters);
+  const orientationFilters = useFounderStore((state) => state.orientationFilters);
+  const toggleAccess = useFounderStore((state) => state.toggleAccessFilter);
+  const toggleOrientation = useFounderStore((state) => state.toggleOrientationFilter);
+  const resetFilters = useFounderStore((state) => state.resetFilters);
+  const hasActiveFilters = useFounderStore((state) => state.hasActiveFilters());
+
+  const badgeCount = useMemo(() => {
+    const accessDisabled = Object.values(accessFilters).filter((value) => !value).length;
+    const orientationDisabled = Object.values(orientationFilters).filter((value) => !value).length;
+    return accessDisabled + orientationDisabled;
+  }, [accessFilters, orientationFilters]);
+
+  return (
+    <Popover.Root open={open} onOpenChange={setOpen}>
+      <Popover.Trigger asChild>
+        <button type="button" className={`relative ${FILTER_ICON_CLASSES}`} aria-label="Filter stock images">
+          <Filter className="h-5 w-5" />
+          {badgeCount > 0 && (
+            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[10px] font-semibold text-white">
+              {badgeCount}
+            </span>
+          )}
+        </button>
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Content
+          align="end"
+          sideOffset={12}
+          className="z-[90] focus:outline-none"
+          collisionPadding={16}
+        >
+          <div className="w-[270px] rounded-3xl border border-white/10 bg-[radial-gradient(circle_at_top,_rgba(147,51,234,0.3),_rgba(2,6,23,0.95))] p-5 shadow-[0_25px_60px_rgba(4,7,29,0.65)]">
+            <div className="space-y-5 text-sm text-white/80">
+              <div>
+                <p className="text-xs uppercase tracking-[0.24em] text-white/50">Access</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                <ToggleChip label="Free" active={accessFilters.free} onToggle={() => toggleAccess('free')} />
+                <ToggleChip
+                  label="Premium"
+                  active={accessFilters.premium}
+                  onToggle={() => toggleAccess('premium')}
+                />
+              </div>
+            </div>
+
+            <div>
+              <p className="text-xs uppercase tracking-[0.24em] text-white/50">Orientation</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <ToggleChip
+                  label="Portrait"
+                  active={orientationFilters.vertical}
+                  onToggle={() => toggleOrientation('vertical')}
+                />
+                <ToggleChip
+                  label="Horizontal"
+                  active={orientationFilters.horizontal}
+                  onToggle={() => toggleOrientation('horizontal')}
+                />
+                <ToggleChip
+                  label="Square"
+                  active={orientationFilters.square}
+                  onToggle={() => toggleOrientation('square')}
+                />
+              </div>
+            </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  resetFilters();
+                  setOpen(false);
+                }}
+                className={`w-full rounded-full border px-4 py-2 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-300/80 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 ${
+                  hasActiveFilters
+                    ? 'border-white/30 text-white hover:border-white/60'
+                    : 'border-white/10 text-white/40 cursor-not-allowed'
+                }`}
+                disabled={!hasActiveFilters}
+              >
+                Reset filters
+              </button>
+            </div>
+          </div>
+          <Popover.Arrow className="z-[90] fill-slate-900/80" />
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
+  );
+};
+
+export default StockFilterPopover;

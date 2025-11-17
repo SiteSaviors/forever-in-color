@@ -12,8 +12,7 @@ import { useUploadActions, useUploadState } from '@/store/hooks/useUploadStore';
 import { usePreviewActions } from '@/store/hooks/usePreviewStore';
 import { persistOriginalUpload } from '@/utils/sourceUploadApi';
 import CropperModal from '@/components/launchpad/cropper/CropperModal';
-
-const SAMPLE_IMAGE = 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=900&q=80';
+import { useFounderStore } from '@/store/useFounderStore';
 
 type UploadStage = 'idle' | 'analyzing' | 'preview' | 'cropper' | 'complete';
 
@@ -47,6 +46,7 @@ const PhotoUploader = () => {
     getSessionAccessToken,
   } = useUploadActions();
   const { generatePreviews, resetPreviews, shouldAutoGeneratePreviews } = usePreviewActions();
+  const openStockLibrary = useFounderStore((state) => state.openStockLibrary);
   const [isCropperOpen, setCropperOpen] = useState(false);
   const [stage, setStage] = useState<UploadStage>('idle');
   const [pendingOrientation, setPendingOrientation] = useState<Orientation>('square');
@@ -143,25 +143,8 @@ const PhotoUploader = () => {
     await processDataUrl(result);
   };
 
-  const handleSamplePhoto = async () => {
-    emitStepOneEvent({ type: 'upload_started' });
-    setDragging(false);
-    setStage('analyzing');
-    const response = await fetch(SAMPLE_IMAGE);
-    const blob = await response.blob();
-    const reader = new FileReader();
-    const dataUrl = await new Promise<string>((resolve, reject) => {
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = () => reject(reader.error);
-      reader.readAsDataURL(blob);
-    });
-    const { width, height } = await getImageDimensions(dataUrl);
-    await processDataUrl({
-      dataUrl,
-      width,
-      height,
-      source: 'local',
-    });
+  const handleSamplePhoto = () => {
+    openStockLibrary();
   };
 
   useEffect(() => {
@@ -397,7 +380,7 @@ const PhotoUploader = () => {
                   onClick={handleSamplePhoto}
                   className="flex-1 border-2 border-white/30 text-white font-medium px-6 py-4 rounded-xl hover:bg-white/10 hover:border-white/50 transition-all duration-200"
                 >
-                  Try a Sample
+                  Browse Our Library
                 </button>
               </div>
               <p className="text-xs text-center text-white/50">

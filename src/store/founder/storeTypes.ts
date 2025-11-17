@@ -201,6 +201,139 @@ export type GallerySlice = {
   removeGalleryItem: (id: string) => void;
 };
 
+// Stock Library Types
+export type StockCategory =
+  | 'all'
+  | 'nature-outdoors'
+  | 'animals-wildlife'
+  | 'people-portraits'
+  | 'food-culture'
+  | 'abstract-texture'
+  | 'scifi-fantasy'
+  | 'classic-vintage';
+
+export const STOCK_CATEGORIES: Record<
+  Exclude<StockCategory, 'all'>,
+  { id: StockCategory; name: string; description: string }
+> = {
+  'nature-outdoors': {
+    id: 'nature-outdoors',
+    name: 'Nature & Outdoors',
+    description: 'Mountains, forests, oceans, and natural vistas',
+  },
+  'animals-wildlife': {
+    id: 'animals-wildlife',
+    name: 'Animals & Wildlife',
+    description: 'Pets, wildlife, and animal portraits',
+  },
+  'people-portraits': {
+    id: 'people-portraits',
+    name: 'People & Portraits',
+    description: 'Human portraits and lifestyle photography',
+  },
+  'food-culture': {
+    id: 'food-culture',
+    name: 'Food & Culture',
+    description: 'Culinary scenes and cultural moments',
+  },
+  'abstract-texture': {
+    id: 'abstract-texture',
+    name: 'Abstract & Texture',
+    description: 'Patterns, textures, and abstract compositions',
+  },
+  'scifi-fantasy': {
+    id: 'scifi-fantasy',
+    name: 'Sci-Fi & Fantasy',
+    description: 'Futuristic and fantastical imagery',
+  },
+  'classic-vintage': {
+    id: 'classic-vintage',
+    name: 'Classic & Vintage',
+    description: 'Timeless and nostalgic photography',
+  },
+};
+
+export type StockImage = {
+  id: string;
+  category: StockCategory;
+  title: string;
+  tags: string[];
+  thumbnailUrl: string;
+  fullUrl: string;
+  aspectRatio: number;
+  orientation: 'horizontal' | 'vertical' | 'square';
+  toneHints: string[];
+  colorPalette: string[];
+  curatedRank: number;
+  requiredTier?: 'free' | 'creator' | 'plus' | 'pro' | null;
+};
+
+export type StockLibraryView = 'category-selector' | 'grid-browser';
+export type StockLibraryStatus = 'idle' | 'loading' | 'ready' | 'error';
+
+export type StockLibrarySlice = {
+  // Modal state
+  stockLibraryModalOpen: boolean;
+  currentView: StockLibraryView;
+
+  // Category/filter state
+  selectedCategory: StockCategory;
+  searchQuery: string;
+  sortMode: 'recommended' | 'popular';
+  accessFilters: {
+    free: boolean;
+    premium: boolean;
+  };
+  orientationFilters: {
+    horizontal: boolean;
+    vertical: boolean;
+    square: boolean;
+  };
+
+  // Pagination state
+  stockImages: StockImage[];
+  hasNextPage: boolean;
+  nextCursor: string | null;
+  currentPage: number;
+
+  // Loading/error state
+  stockStatus: StockLibraryStatus;
+  stockError: string | null;
+
+  // Applied image tracking
+  appliedStockImageId: string | null;
+  appliedStockImage: StockImage | null;
+
+  // Modal session tracking
+  modalOpenedAt: number | null;
+  viewedImageIds: Set<string>;
+
+  // Actions
+  openStockLibrary: () => void;
+  closeStockLibrary: () => void;
+  closeStockLibraryWithReason: (reason: 'dismiss' | 'upload_own' | 'esc_key' | 'backdrop') => void;
+  setView: (view: StockLibraryView) => void;
+  setCategory: (category: StockCategory) => void;
+  setSearchQuery: (query: string) => void;
+  setSortMode: (mode: 'recommended' | 'popular') => void;
+  toggleAccessFilter: (tier: 'free' | 'premium') => void;
+  toggleOrientationFilter: (orientation: 'horizontal' | 'vertical' | 'square') => void;
+  resetFilters: () => void;
+  appendStockImages: (images: StockImage[], nextCursor: string | null) => void;
+  resetStockImages: () => void;
+  setStockStatus: (status: StockLibraryStatus) => void;
+  setStockError: (error: string | null) => void;
+  applyStockImage: (image: StockImage) => void;
+  clearAppliedStockImage: () => void;
+  continueWithStockImage: () => Promise<void>;
+  markImageViewed: (imageId: string) => void;
+  fetchStockImages: () => Promise<void>;
+  fetchNextPage: () => Promise<void>;
+  retryFetch: () => void;
+  getActiveFilterCount: () => number;
+  hasActiveFilters: () => boolean;
+};
+
 export type AuthSlice = SessionSlice &
   EntitlementSlice & {
     prefetchAuthClient: () => void;
@@ -297,7 +430,7 @@ export type FounderBaseState = {
   clearFavoriteStyles: () => void;
 };
 
-export type FounderState = FounderBaseState & PreviewSlice & AuthSlice & FavoritesSlice & GallerySlice;
+export type FounderState = FounderBaseState & PreviewSlice & AuthSlice & FavoritesSlice & GallerySlice & StockLibrarySlice;
 
 /**
  * Helper signature for slice creators. Centralizing here makes generics consistent across slices.

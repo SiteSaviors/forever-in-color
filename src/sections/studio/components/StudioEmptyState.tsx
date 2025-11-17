@@ -48,7 +48,7 @@ const StudioEmptyState = ({ onUpload, onBrowseStyles, launchflowOpen }: StudioEm
             onClick={onBrowseStyles}
             className="rounded-full border border-white/25 px-6 py-3 text-sm font-semibold text-white/80 transition hover:border-white/45 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
           >
-            Browse styles first
+            Browse Our Library
           </button>
         </div>
         <p className="text-[11px] font-medium uppercase tracking-[0.28em] text-white/45">

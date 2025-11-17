@@ -11,6 +11,7 @@ import { createPreviewSlice } from './founder/previewSlice';
 import { createAuthSlice } from './founder/authSlice';
 import { createFavoritesSlice } from './founder/favoritesSlice';
 import { createGallerySlice } from './founder/gallerySlice';
+import { createStockLibrarySlice } from './founder/stockLibrarySlice';
 import type { CanvasSize, Enhancement, FounderBaseState, FounderState, StyleCarouselCard, StyleOption } from './founder/storeTypes';
 import { createMemoizedSelector } from './utils/memo';
 import { createLazySliceAccessor } from './utils/createLazySliceAccessor';
@@ -30,6 +31,11 @@ export type {
   FounderState,
   FrameColor,
   SessionUser,
+  StockCategory,
+  StockImage,
+  StockLibrarySlice,
+  StockLibraryStatus,
+  StockLibraryView,
   StyleCarouselCard,
   StyleOption,
   StylePreviewStatus,
@@ -389,6 +395,7 @@ export const useFounderStore = createWithEqualityFn<FounderState>((set, get, api
   ...createPreviewSlice(initialStyles)(set, get, api),
   ...createAuthSlice(set, get, api),
   ...createGallerySlice(set, get, api),
+  ...createStockLibrarySlice(set, get, api),
   setSmartCropForOrientation: (orientation, result) =>
     set((state) => ({
       smartCrops: {
