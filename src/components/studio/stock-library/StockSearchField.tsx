@@ -28,7 +28,7 @@ const StockSearchField = () => {
   }, [debouncedQuery, setSearchQuery]);
 
   return (
-    <div className="relative w-full max-w-[2400px]">
+    <div className="relative w-full max-w-[900px]">
       {/* Search icon (left) - surfaced above glassmorphism */}
       <div className="pointer-events-none absolute left-6 top-1/2 z-10 -translate-y-1/2 text-white/80 drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
         <Search className="h-5 w-5" />
@@ -40,7 +40,7 @@ const StockSearchField = () => {
         value={rawQuery}
         onChange={(e) => setRawQuery(e.target.value)}
         placeholder="What will you create?"
-        className="h-14 w-full rounded-full border-2 border-white/10 bg-white/5 pl-14 pr-20 text-center text-lg text-white placeholder:text-white/40 backdrop-blur-sm transition-all focus:border-white/20 focus:bg-white/10 focus:outline-none focus:ring-0"
+        className="h-14 w-full rounded-full border-2 border-white/15 bg-white/8 pl-14 pr-20 text-center text-lg text-white placeholder:text-white/50 backdrop-blur-md transition-all focus:border-white/25 focus:bg-white/12 focus:shadow-[0_0_30px_rgba(147,51,234,0.15)] focus:outline-none focus:ring-0"
         style={{
           fontFamily: 'Playfair Display, serif',
         }}

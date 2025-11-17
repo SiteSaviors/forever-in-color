@@ -92,8 +92,29 @@ const StockLibraryModal = () => {
           onEscapeKeyDown={handleEscapeKeyDown as never}
         >
           {/* Header with search and close */}
-          <div className="flex flex-col border-b border-white/5">
+          <div className="border-b border-white/5">
             <div className="relative flex items-center justify-center px-8 py-6">
+              {/* Back to categories button (only visible in grid browser) */}
+              {currentView === 'grid-browser' && (
+                <div className="absolute left-6 top-1/2 -translate-y-1/2">
+                  <button
+                    type="button"
+                    onClick={handleBackToCategories}
+                    className="group relative rounded-full bg-gradient-to-r from-purple-500/40 via-fuchsia-500/40 to-indigo-500/40 p-[1px] shadow-[0_4px_20px_rgba(168,85,247,0.2)] transition-all duration-300 hover:from-purple-500/60 hover:via-fuchsia-500/60 hover:to-indigo-500/60 hover:shadow-[0_6px_28px_rgba(168,85,247,0.35)] focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:ring-offset-2 focus:ring-offset-slate-950 active:scale-95"
+                  >
+                    <span className="flex items-center gap-2.5 rounded-full bg-slate-950/90 px-5 py-2.5 backdrop-blur-md transition-all duration-300 group-hover:bg-slate-900/95">
+                      <ChevronLeft className="h-4 w-4 text-purple-300 transition-transform duration-300 group-hover:-translate-x-0.5 group-hover:text-purple-200" />
+                      <span
+                        className="text-sm font-semibold tracking-wide text-white/90 transition-colors duration-300 group-hover:text-white"
+                        style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}
+                      >
+                        Back to categories
+                      </span>
+                    </span>
+                  </button>
+                </div>
+              )}
+
               {/* Search field with integrated filter button */}
               <div className="relative flex items-center justify-center">
                 <StockSearchField />
@@ -107,26 +128,12 @@ const StockLibraryModal = () => {
               <button
                 type="button"
                 onClick={() => handleClose('dismiss')}
-                className="absolute right-6 top-6 rounded-full p-2 text-white/60 transition-colors hover:bg-white/10 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/20"
+                className="absolute right-6 top-1/2 -translate-y-1/2 rounded-full p-2 text-white/60 transition-colors hover:bg-white/10 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/20"
                 aria-label="Close stock library"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
-
-            {/* Back button (only visible in grid browser) */}
-            {currentView === 'grid-browser' && (
-              <div className="border-t border-white/5 px-8 py-3">
-                <button
-                  type="button"
-                  onClick={handleBackToCategories}
-                  className="flex items-center gap-2 text-sm text-white/60 transition-colors hover:text-white focus:outline-none focus:ring-2 focus:ring-white/20 rounded-lg px-3 py-2 -ml-3"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                  Back to categories
-                </button>
-              </div>
-            )}
           </div>
 
           {/* Content area (scrollable) */}

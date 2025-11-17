@@ -233,11 +233,29 @@ const StockGridBrowser = () => {
   return (
     <div className="w-full pb-8">
       {/* Results count */}
-      <div className="mb-6 flex items-center justify-between">
-        <p className="text-sm text-white/60">
-          {filteredImages.length} {filteredImages.length === 1 ? 'image' : 'images'}
-          {searchQuery && ` matching "${searchQuery}"`}
-        </p>
+      <div className="mb-8 flex items-center justify-between">
+        <div className="space-y-2">
+          <p
+            className="text-xl font-semibold text-white"
+            style={{ fontFamily: 'Playfair Display, serif' }}
+          >
+            Showing{' '}
+            <motion.span
+              key={filteredImages.length}
+              initial={{ y: -10, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+              className="inline-block"
+            >
+              {filteredImages.length}
+            </motion.span>{' '}
+            {filteredImages.length === 1 ? 'Result' : 'Results'}
+            {searchQuery && (
+              <span className="text-white/60"> for "{searchQuery}"</span>
+            )}
+          </p>
+          <div className="h-px w-32 bg-gradient-to-r from-purple-500/30 via-white/10 to-transparent" />
+        </div>
       </div>
 
       {/* Image Grid */}
@@ -248,7 +266,7 @@ const StockGridBrowser = () => {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
-          className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4"
+          className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 lg:gap-5 xl:gap-6"
         >
           {filteredImages.map((image, index) => {
             const requiredTier = (image.requiredTier ?? 'free') as 'free' | 'creator' | 'plus' | 'pro';
@@ -262,6 +280,7 @@ const StockGridBrowser = () => {
               isLocked={isLocked}
               onApply={handleApplyImage}
               cardIndex={index}
+              gridColumns={4}
             />
           );
           })}
