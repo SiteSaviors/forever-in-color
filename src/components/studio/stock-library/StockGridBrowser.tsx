@@ -21,10 +21,11 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AlertCircle, ImageOff, Loader2, Search } from 'lucide-react';
+import { AlertCircle, ImageOff, Loader2, Search, X } from 'lucide-react';
 import { useFounderStore } from '@/store/useFounderStore';
 import { useStudioEntitlementState } from '@/store/hooks/studio/useStudioEntitlementState';
 import { useStudioFeedback } from '@/hooks/useStudioFeedback';
+import { STOCK_CATEGORIES } from '@/store/founder/storeTypes';
 import StockImageCard from './StockImageCard';
 import StockLibrarySkeleton from './StockLibrarySkeleton';
 
@@ -43,6 +44,13 @@ const isTierSatisfied = (
   const currentScore = current ? TIER_ORDER[current] ?? -1 : -1;
   const requiredScore = TIER_ORDER[required] ?? Number.MAX_SAFE_INTEGER;
   return currentScore >= requiredScore;
+};
+
+// Get display name for category ID
+const getCategoryDisplayName = (categoryId: string): string => {
+  if (categoryId === 'all') return 'All Categories';
+  const category = Object.values(STOCK_CATEGORIES).find((cat) => cat.id === categoryId);
+  return category?.name ?? categoryId;
 };
 
 const StockGridBrowser = () => {
@@ -235,25 +243,74 @@ const StockGridBrowser = () => {
       {/* Results count */}
       <div className="mb-8 flex items-center justify-between">
         <div className="space-y-2">
-          <p
-            className="text-xl font-semibold text-white"
-            style={{ fontFamily: 'Playfair Display, serif' }}
-          >
-            Showing{' '}
-            <motion.span
-              key={filteredImages.length}
-              initial={{ y: -10, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              className="inline-block"
+          <div className="flex flex-wrap items-center gap-3">
+            <p
+              className="text-xl font-semibold text-white"
+              style={{ fontFamily: 'Playfair Display, serif' }}
             >
-              {filteredImages.length}
-            </motion.span>{' '}
-            {filteredImages.length === 1 ? 'Result' : 'Results'}
-            {searchQuery && (
-              <span className="text-white/60"> for "{searchQuery}"</span>
+              Showing{' '}
+              <motion.span
+                key={filteredImages.length}
+                initial={{ y: -10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                className="inline-block"
+              >
+                {filteredImages.length}
+              </motion.span>{' '}
+              {filteredImages.length === 1 ? 'Result' : 'Results'}
+              {selectedCategory && (
+                <span className="text-purple-300"> in {getCategoryDisplayName(selectedCategory)}</span>
+              )}
+              {searchQuery && (
+                <span className="text-white/60"> for "{searchQuery}"</span>
+              )}
+            </p>
+
+            {/* Active filter badges */}
+            {(!accessFilters.free || !accessFilters.premium) && (
+              <motion.span
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="inline-flex items-center gap-1.5 rounded-full border border-purple-400/30 bg-purple-500/20 px-3 py-1 text-xs font-medium text-purple-200"
+              >
+                {accessFilters.free && !accessFilters.premium && 'Free only'}
+                {!accessFilters.free && accessFilters.premium && 'Premium only'}
+                <button
+                  type="button"
+                  onClick={() => resetFilters()}
+                  className="ml-0.5 rounded-full p-0.5 transition-colors hover:bg-white/10"
+                  aria-label="Clear filter"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </motion.span>
             )}
-          </p>
+
+            {(!orientationFilters.horizontal || !orientationFilters.vertical || !orientationFilters.square) && (
+              <motion.span
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="inline-flex items-center gap-1.5 rounded-full border border-purple-400/30 bg-purple-500/20 px-3 py-1 text-xs font-medium text-purple-200"
+              >
+                {[
+                  orientationFilters.horizontal && 'Landscape',
+                  orientationFilters.vertical && 'Portrait',
+                  orientationFilters.square && 'Square',
+                ]
+                  .filter(Boolean)
+                  .join(', ')}
+                <button
+                  type="button"
+                  onClick={() => resetFilters()}
+                  className="ml-0.5 rounded-full p-0.5 transition-colors hover:bg-white/10"
+                  aria-label="Clear filter"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </motion.span>
+            )}
+          </div>
           <div className="h-px w-32 bg-gradient-to-r from-purple-500/30 via-white/10 to-transparent" />
         </div>
       </div>

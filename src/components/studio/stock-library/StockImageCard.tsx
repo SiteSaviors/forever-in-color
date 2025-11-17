@@ -16,7 +16,7 @@
 
 import { memo, useCallback, useEffect } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { Check, Crown } from 'lucide-react';
+import { Check, Crown, X } from 'lucide-react';
 import type { StockImage } from '@/store/founder/storeTypes';
 import { useFounderStore } from '@/store/useFounderStore';
 
@@ -137,6 +137,19 @@ const StockImageCard = ({ image, isApplied, onApply, cardIndex, isLocked, gridCo
             }}
             className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(168,85,247,0.3),rgba(124,58,237,0.15))] backdrop-blur-sm flex items-center justify-center"
           >
+            {/* Undo/Deselect Chip */}
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.3, type: 'spring', stiffness: 300, damping: 25 }}
+              className="absolute top-3 left-3"
+            >
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-white/30 bg-slate-900/90 px-3 py-1.5 text-xs font-semibold text-white shadow-lg backdrop-blur-sm transition-all hover:border-white/50 hover:bg-slate-800/95">
+                <X className="h-3 w-3" />
+                Undo
+              </span>
+            </motion.div>
+
             {/* Checkmark Circle */}
             <motion.div
               initial={{ scale: 0.5, rotate: -180 }}
