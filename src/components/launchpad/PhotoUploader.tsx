@@ -62,6 +62,15 @@ const PhotoUploader = () => {
   }, [cropReadyAt]);
 
   const orientationMeta = useMemo(() => ORIENTATION_PRESETS[orientation], [orientation]);
+  const finalizedPreviewBounds = useMemo(() => {
+    if (orientation === 'horizontal') {
+      return { maxWidth: 'min(92vw, 900px)', maxHeight: 'min(65vh, 620px)' };
+    }
+    if (orientation === 'vertical') {
+      return { maxWidth: 'min(70vw, 520px)', maxHeight: 'min(75vh, 720px)' };
+    }
+    return { maxWidth: 'min(88vw, 640px)', maxHeight: 'min(70vh, 680px)' };
+  }, [orientation]);
 
   const orientationMessage = useMemo(() => {
     if (!croppedImage) return null;
@@ -390,10 +399,11 @@ const PhotoUploader = () => {
           ) : (
             <div className="space-y-4 animate-scaleIn">
               <div
-                className="relative overflow-hidden border-2 border-white/20 bg-black/20 shadow-lg rounded-xl"
+                className="relative mx-auto overflow-hidden border-2 border-white/20 bg-black/20 shadow-lg rounded-xl"
                 style={{
                   aspectRatio: orientationMeta.ratio,
-                  maxHeight: orientation === 'vertical' ? '75vh' : undefined
+                  width: '100%',
+                  ...finalizedPreviewBounds,
                 }}
               >
                 <img src={croppedImage} alt="Your photo" className="h-full w-full object-cover" />

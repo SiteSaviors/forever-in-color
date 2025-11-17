@@ -54,7 +54,7 @@ const ToggleChip = ({
         >
           {active && <Check className="h-3 w-3" strokeWidth={3} />}
         </span>
-        <span className="text-left leading-tight">{label}</span>
+        <span className="font-poppins text-left leading-tight">{label}</span>
       </span>
     </label>
   );
@@ -155,14 +155,14 @@ const StockFilterPopover = () => {
                   resetFilters();
                   setOpen(false);
                 }}
-                className={`w-full rounded-full border px-4 py-2.5 text-sm font-semibold transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-300/80 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 ${
+                className={`w-full rounded-full border px-4 py-2.5 text-sm font-poppins font-semibold transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-300/80 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 ${
                   hasActiveFilters
                     ? 'border-white/30 text-white hover:border-white/60 hover:bg-white/5 hover:shadow-[0_0_15px_rgba(168,85,247,0.2)]'
                     : 'border-white/10 text-white/40 cursor-not-allowed'
                 }`}
                 disabled={!hasActiveFilters}
               >
-                Reset filters
+                Reset Filters
               </button>
             </div>
           </div>

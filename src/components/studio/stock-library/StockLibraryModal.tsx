@@ -149,26 +149,28 @@ const StockLibraryModal = () => {
           </div>
 
           {/* Footer CTA (always visible, disabled until image applied) */}
-          <div className="flex flex-col items-center gap-3 border-t border-white/5 px-8 py-6 sm:flex-row sm:justify-between">
+          <div className="flex flex-col items-center gap-4 border-t border-white/5 px-8 py-6 sm:flex-row sm:justify-between">
             <button
               type="button"
               onClick={() => handleClose('upload_own')}
-              className="rounded-full bg-gradient-to-r from-fuchsia-500 via-purple-500 to-indigo-500 px-8 py-3 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(168,85,247,0.45)] transition duration-200 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-purple-200 focus:ring-offset-2 focus:ring-offset-slate-950"
+              className="rounded-full bg-gradient-to-r from-fuchsia-500 via-purple-500 to-indigo-500 px-12 py-4 text-base font-semibold tracking-tight text-white shadow-[0_12px_30px_rgba(168,85,247,0.45)] transition duration-200 hover:scale-[1.02] hover:shadow-[0_16px_40px_rgba(168,85,247,0.55)] focus:outline-none focus:ring-2 focus:ring-purple-200 focus:ring-offset-2 focus:ring-offset-slate-950"
+              style={{ fontFamily: 'Poppins, sans-serif' }}
             >
-              Upload my own photo
+              Upload My Own Photo
             </button>
 
             <button
               type="button"
               disabled={!appliedStockImageId}
               onClick={continueWithStockImage}
-              className={`rounded-full px-6 py-3 text-sm font-semibold shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-purple-400/70 focus:ring-offset-2 focus:ring-offset-slate-950 ${
+              className={`rounded-full px-12 py-4 text-base font-semibold tracking-tight shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-950 ${
                 appliedStockImageId
-                  ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700 hover:shadow-xl cursor-pointer'
-                  : 'bg-white/10 text-white/40 cursor-not-allowed'
+                  ? 'bg-gradient-to-r from-green-500 to-emerald-400 text-white hover:from-green-600 hover:to-emerald-500 hover:shadow-[0_12px_30px_rgba(34,197,94,0.4)] focus:ring-green-400/70 cursor-pointer'
+                  : 'bg-white/10 text-white/40 cursor-not-allowed focus:ring-white/20'
               }`}
+              style={{ fontFamily: 'Poppins, sans-serif' }}
             >
-              Continue with this image
+              Continue With Image
             </button>
           </div>
 
