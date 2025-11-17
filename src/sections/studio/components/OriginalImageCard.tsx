@@ -3,6 +3,7 @@ import { clsx } from 'clsx';
 import { useUploadState } from '@/store/hooks/useUploadStore';
 import { useStyleCatalogState } from '@/store/hooks/useStyleCatalogStore';
 import { useHandleStyleSelect } from '@/sections/studio/hooks/useHandleStyleSelect';
+import { useFounderStore } from '@/store/useFounderStore';
 import { usePreviewLockState } from '@/store/hooks/usePreviewStore';
 
 export default function OriginalImageCard() {
@@ -10,6 +11,7 @@ export default function OriginalImageCard() {
   const { selectedStyleId } = useStyleCatalogState();
   const handleStyleSelect = useHandleStyleSelect();
   const { isLocked: previewLocked } = usePreviewLockState();
+  const clearSelectedStyle = useFounderStore((state) => state.clearSelectedStyle);
 
   const isSelected = selectedStyleId === 'original-image';
 
@@ -20,6 +22,10 @@ export default function OriginalImageCard() {
   // FIXED: Remove duplicate analytics emission - handleStyleSelect already emits
   const handleSelect = () => {
     if (previewLocked) {
+      return;
+    }
+    if (isSelected) {
+      clearSelectedStyle();
       return;
     }
     handleStyleSelect('original-image', { tone: 'original' });

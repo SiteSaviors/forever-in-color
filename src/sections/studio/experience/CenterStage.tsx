@@ -48,7 +48,10 @@ const CenterStage = ({
   const { launchpadExpanded } = useStudioUiState();
   const { isPremiumUser } = useStudioEntitlementState();
   const { setLaunchpadExpanded } = useStudioActions();
-  const openStockLibrary = useFounderStore((state) => state.openStockLibrary);
+  const { openStockLibrary, requestUpload } = useFounderStore((state) => ({
+    openStockLibrary: state.openStockLibrary,
+    requestUpload: state.requestUpload,
+  }));
   const previewEntry = usePreviewEntry(currentStyleId ?? null);
   const previewOrientationLabel = previewEntry?.orientation
     ? ORIENTATION_PRESETS[previewEntry.orientation].label
@@ -88,6 +91,12 @@ const CenterStage = ({
     openStockLibrary();
   }, [openStockLibrary]);
 
+  const handleUploadNewPhotoFromCanvas = useCallback(() => {
+    requestUpload();
+    const launchflowSection = document.getElementById('launchflow');
+    launchflowSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [requestUpload]);
+
   return (
     <CanvasPreviewPanel
       overlayStyleName={overlayStyleName}
@@ -111,6 +120,7 @@ const CenterStage = ({
       savedToGallery={savedToGallery}
       launchpadExpanded={launchpadExpanded}
       onOpenLaunchflow={handleOpenLaunchflowFromEmptyState}
+      onRequestUpload={handleUploadNewPhotoFromCanvas}
       onBrowseStyles={handleBrowseStylesFromEmptyState}
       onDownloadClick={handleDownloadHD}
       downloadingHD={downloadingHD}

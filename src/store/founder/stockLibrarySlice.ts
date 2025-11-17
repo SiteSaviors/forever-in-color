@@ -17,6 +17,7 @@ import { fetchStockImages as fetchStockImagesApi } from '@/utils/stockLibraryApi
 import { persistOriginalUpload } from '@/utils/sourceUploadApi';
 import { getImageDimensions } from '@/utils/imageUtils';
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
+import { createPreviewLog } from '@/utils/previewLogApi';
 
 const FILTER_STORAGE_KEY = 'stock_library_filters';
 
@@ -396,8 +397,23 @@ export const createStockLibrarySlice: StateCreator<FounderState, [], [], StockLi
           bytes: persistResult.bytes,
         });
         get().setCurrentImageHash(persistResult.hash);
+
+        const previewLogResponse = await createPreviewLog({
+          storagePath: persistResult.storagePath,
+          orientation: appliedStockImage.orientation,
+          displayUrl: persistResult.publicUrl,
+          accessToken,
+        });
+
+        if (previewLogResponse.ok) {
+          get().setOriginalImagePreviewLogId(previewLogResponse.previewLogId);
+        } else {
+          console.warn('[stockLibrarySlice] Failed to create preview log', previewLogResponse.error);
+          get().setOriginalImagePreviewLogId(null);
+        }
       } else {
         console.warn('[stockLibrarySlice] Failed to persist stock image', persistResult.error);
+        get().setOriginalImagePreviewLogId(null);
       }
 
       await get().generatePreviews(undefined, { force: true });

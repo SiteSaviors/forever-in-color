@@ -1,5 +1,5 @@
 import { Suspense, lazy } from 'react';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, UploadCloud, Images, Crop, Bookmark, BookmarkCheck } from 'lucide-react';
 import type { EntitlementState, StylePreviewStatus, StyleOption } from '@/store/founder/storeTypes';
 // Orientation type no longer needed in this module
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
@@ -99,6 +99,7 @@ export type CanvasPreviewPanelProps = {
   savedToGallery: boolean;
   launchpadExpanded: boolean;
   onOpenLaunchflow: () => void;
+  onRequestUpload?: () => void;
   onBrowseStyles: () => void;
   // entitlements retained in signature historically, but not used in center rail now
   entitlements?: EntitlementState;
@@ -136,6 +137,7 @@ const CanvasPreviewPanel = ({
   launchpadExpanded,
   onOpenLaunchflow,
   onBrowseStyles,
+  onRequestUpload,
   // entitlements not used
   _entitlements,
   onDownloadClick,
@@ -157,6 +159,12 @@ const CanvasPreviewPanel = ({
     : !hasCroppedImage
     ? 'Upload & crop a photo first'
     : undefined;
+
+  const showPreStyleCtas = Boolean(
+    croppedImage && !previewLocked && (previewStateStatus !== 'ready' || !previewHasData || !currentStyle)
+  );
+  const showSecondaryActions = Boolean(croppedImage && !previewLocked);
+  const orientationSubtitle = `${orientationMeta.label} • Adjust crop`;
 
   return (
     <main className="w-full lg:flex-1 lg:min-w-0 px-4 py-6 lg:px-6 lg:py-8 lg:sticky lg:top-[57px] lg:h-[calc(100vh-57px)] lg:overflow-y-auto flex flex-col items-center justify-start">
@@ -258,22 +266,54 @@ const CanvasPreviewPanel = ({
           )}
         </div>
 
+        {showPreStyleCtas && (
+          <div className="mt-6 w-full max-w-[720px]">
+            <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
+              <button
+                type="button"
+                onClick={onRequestUpload ?? onOpenLaunchflow}
+                className="inline-flex flex-1 items-center justify-center gap-3 rounded-full bg-gradient-to-r from-fuchsia-500 via-purple-500 to-blue-500 px-6 py-4 text-sm font-semibold text-white shadow-[0_15px_40px_rgba(129,69,255,0.35)] transition hover:shadow-[0_20px_45px_rgba(129,69,255,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-200/80 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+                aria-label="Upload a new photo"
+              >
+                <UploadCloud className="h-5 w-5" aria-hidden="true" />
+                <span>Upload New Photo</span>
+              </button>
+              <button
+                type="button"
+                onClick={onBrowseStyles}
+                className="inline-flex flex-1 items-center justify-center gap-3 rounded-full bg-gradient-to-r from-fuchsia-500 via-purple-500 to-blue-500 px-6 py-4 text-sm font-semibold text-white shadow-[0_15px_40px_rgba(129,69,255,0.35)] transition hover:shadow-[0_18px_45px_rgba(129,69,255,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-200/80 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+                aria-label="Browse our stock image library"
+              >
+                <Images className="h-5 w-5" aria-hidden="true" />
+                <span>Browse Library</span>
+              </button>
+            </div>
+          </div>
+        )}
+
         {previewStateStatus === 'ready' && currentStyle && (
           <div className="mt-6 w-full max-w-[720px]">
             <ActionGrid
               onDownload={onDownloadClick}
               onCreateCanvas={onCreateCanvas}
-              onChangeOrientation={onChangeOrientation}
-              onSaveToGallery={onSaveToGallery}
               downloading={downloadingHD}
               downloadDisabled={downloadDisabled}
               createCanvasDisabled={canvasLocked}
+              isPremiumUser={isPremiumUser}
+            />
+          </div>
+        )}
+
+        {showSecondaryActions && (
+          <div className="mt-4 w-full max-w-[720px]">
+            <SecondaryActionRow
+              orientationSubtitle={orientationSubtitle}
+              onChangeOrientation={onChangeOrientation}
               orientationDisabled={orientationActionDisabled}
               orientationDisabledReason={orientationDisabledReason}
+              onSaveToGallery={onSaveToGallery}
               savingToGallery={savingToGallery}
               savedToGallery={savedToGallery}
-              isPremiumUser={isPremiumUser}
-              orientationLabel={orientationMeta.label}
             />
           </div>
         )}
@@ -310,3 +350,69 @@ const CanvasPreviewPanel = ({
 };
 
 export default CanvasPreviewPanel;
+
+type SecondaryActionRowProps = {
+  orientationSubtitle: string;
+  onChangeOrientation: () => void;
+  orientationDisabled: boolean;
+  orientationDisabledReason?: string;
+  onSaveToGallery: () => void;
+  savingToGallery: boolean;
+  savedToGallery: boolean;
+};
+
+const outlineButtonClasses =
+  'inline-flex flex-1 items-center justify-between gap-3 rounded-full border border-white/15 bg-white/5 px-6 py-4 text-sm font-semibold text-white/85 backdrop-blur transition hover:border-white/30 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950';
+
+const SecondaryActionRow = ({
+  orientationSubtitle,
+  onChangeOrientation,
+  orientationDisabled,
+  orientationDisabledReason,
+  onSaveToGallery,
+  savingToGallery,
+  savedToGallery,
+}: SecondaryActionRowProps) => (
+  <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
+    <button
+      type="button"
+      onClick={onChangeOrientation}
+      disabled={orientationDisabled}
+      title={
+        orientationDisabled
+          ? orientationDisabledReason ?? 'Complete crop adjustments to change orientation'
+          : 'Adjust crop & layout'
+      }
+      className={outlineButtonClasses}
+      aria-disabled={orientationDisabled ? 'true' : 'false'}
+    >
+      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-white/20 bg-black/60">
+        <Crop className="h-4 w-4" />
+      </div>
+      <div className="flex flex-1 flex-col text-left">
+        <span className="text-sm font-semibold leading-tight">Change Orientation</span>
+        <span className="text-xs text-white/60">{orientationSubtitle}</span>
+      </div>
+    </button>
+
+    <button
+      type="button"
+      onClick={onSaveToGallery}
+      disabled={savingToGallery}
+      title={savedToGallery ? 'Already saved to your gallery' : 'Save this artwork'}
+      className={outlineButtonClasses}
+    >
+      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-white/20 bg-black/60">
+        {savedToGallery ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+      </div>
+      <div className="flex flex-1 flex-col text-left">
+        <span className="text-sm font-semibold leading-tight">
+          {savedToGallery ? 'Saved to Art Gallery' : savingToGallery ? 'Saving…' : 'Save to Art Gallery'}
+        </span>
+        <span className="text-xs text-white/60">
+          {savedToGallery ? 'Ready to revisit anytime' : 'Keep this photo handy'}
+        </span>
+      </div>
+    </button>
+  </div>
+);

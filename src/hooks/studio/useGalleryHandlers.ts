@@ -13,6 +13,8 @@ export const useGalleryHandlers = () => {
   const { currentStyle, preview, orientation } = useStudioPreviewState();
   const { sessionUser, sessionAccessToken } = useStudioUserState();
   const openAuthModal = useAuthModal((state) => state.openModal);
+  const originalImageStoragePath = useFounderStore((state) => state.originalImageStoragePath);
+  const originalImagePreviewLogId = useFounderStore((state) => state.originalImagePreviewLogId);
 
   const [savingToGallery, setSavingToGallery] = useState(false);
   const [savedToGallery, setSavedToGallery] = useState(false);
@@ -27,15 +29,6 @@ export const useGalleryHandlers = () => {
   }, []);
 
   const handleSaveToGallery = useCallback(async () => {
-    if (!currentStyle || !preview?.data?.previewUrl) {
-      showToast({
-        title: 'Nothing to save',
-        description: 'Generate a preview before saving to your gallery.',
-        variant: 'warning',
-      });
-      return;
-    }
-
     if (!sessionUser) {
       openAuthModal('signup', {
         source: 'gallery-save',
@@ -46,29 +39,38 @@ export const useGalleryHandlers = () => {
 
     setSavingToGallery(true);
 
-    const storagePath =
-      preview.data.storagePath ??
-      (preview.data.storageUrl ? extractStoragePathFromUrl(preview.data.storageUrl) : null) ??
-      extractStoragePathFromUrl(preview.data.previewUrl);
+    const hasPreviewPayload = Boolean(currentStyle && preview?.data?.previewUrl);
+    const targetStyleId = hasPreviewPayload && currentStyle ? currentStyle.id : 'original-image';
+    const targetStyleName = hasPreviewPayload && currentStyle ? currentStyle.name : 'Original Image';
+
+    const previewStoragePath = hasPreviewPayload && preview?.data
+      ? preview.data.storagePath ??
+        (preview.data.storageUrl ? extractStoragePathFromUrl(preview.data.storageUrl) : null) ??
+        extractStoragePathFromUrl(preview.data.previewUrl)
+      : null;
+
+    const storagePath = hasPreviewPayload ? previewStoragePath : originalImageStoragePath;
 
     if (!storagePath) {
-      console.error('[useGalleryHandlers] Missing storage path when saving to gallery', preview.data);
       showToast({
-        title: 'Save failed',
-        description: 'Unable to save preview. Please regenerate and try again.',
-        variant: 'error',
+        title: 'Upload required',
+        description: 'Upload or select a photo before saving to your gallery.',
+        variant: 'warning',
       });
       setSavingToGallery(false);
       return;
     }
 
-    const previewLogId = preview.data.previewLogId;
+    const previewLogId = hasPreviewPayload ? preview?.data?.previewLogId : originalImagePreviewLogId;
     if (!previewLogId) {
-      console.error('[useGalleryHandlers] Missing previewLogId for gallery save', preview.data);
+      console.warn('[useGalleryHandlers] Missing previewLogId for gallery save', {
+        hasPreviewPayload,
+        previewData: preview?.data,
+      });
       showToast({
-        title: 'Save failed',
-        description: 'Unable to save preview metadata. Please regenerate and try again.',
-        variant: 'error',
+        title: 'Upload finalizing',
+        description: 'Please wait a moment and try saving again.',
+        variant: 'info',
       });
       setSavingToGallery(false);
       return;
@@ -76,8 +78,8 @@ export const useGalleryHandlers = () => {
 
     const result = await saveToGallery({
       previewLogId,
-      styleId: currentStyle.id,
-      styleName: currentStyle.name,
+      styleId: targetStyleId,
+      styleName: targetStyleName,
       orientation,
       storagePath,
       accessToken: sessionAccessToken || null,
@@ -98,8 +100,8 @@ export const useGalleryHandlers = () => {
       showToast({
         title: result.alreadyExists ? 'Already saved' : 'Saved to gallery',
         description: result.alreadyExists
-          ? 'This preview already lives in your gallery.'
-          : `${currentStyle.name} is now in your gallery.`,
+          ? 'This image already lives in your gallery.'
+          : `${targetStyleName} is now in your gallery.`,
         variant: result.alreadyExists ? 'info' : 'success',
       });
       useFounderStore.getState().invalidateGallery();
@@ -115,7 +117,9 @@ export const useGalleryHandlers = () => {
     currentStyle,
     openAuthModal,
     orientation,
+    originalImageStoragePath,
     preview,
+    originalImagePreviewLogId,
     sessionAccessToken,
     sessionUser,
     showToast,

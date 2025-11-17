@@ -241,6 +241,7 @@ export const useFounderStore = createWithEqualityFn<FounderState>((set, get, api
   originalImageSignedUrlExpiresAt: null,
   originalImageHash: null,
   originalImageBytes: null,
+  originalImagePreviewLogId: null,
   smartCrops: {},
   loadedStyleIds: new Set<string>(),
   pendingStyleLoads: new Map<string, Promise<void>>(),
@@ -275,6 +276,13 @@ export const useFounderStore = createWithEqualityFn<FounderState>((set, get, api
     }
     set({ selectedStyleId: id });
     get().loadCanvasSelectionForStyle(id);
+  },
+  clearSelectedStyle: () => {
+    const state = get();
+    if (state.selectedStyleId) {
+      state.persistCanvasSelection();
+    }
+    set({ selectedStyleId: null });
   },
   toggleEnhancement: (id) => {
     set((state) => {
@@ -475,6 +483,7 @@ export const useFounderStore = createWithEqualityFn<FounderState>((set, get, api
   setOriginalImage: (dataUrl) =>
     set({
       originalImage: dataUrl,
+      originalImagePreviewLogId: null,
       ...(dataUrl === null
         ? {
             originalImageStoragePath: null,
@@ -496,6 +505,7 @@ export const useFounderStore = createWithEqualityFn<FounderState>((set, get, api
       originalImageHash: payload?.hash ?? null,
       originalImageBytes: payload?.bytes ?? null,
     }),
+  setOriginalImagePreviewLogId: (previewLogId) => set({ originalImagePreviewLogId: previewLogId }),
   setOrientation: (orientation) => {
     const current = get();
     if (current.orientation === orientation) return;

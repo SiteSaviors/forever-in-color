@@ -356,6 +356,7 @@ export type FounderBaseState = {
   originalImageSignedUrlExpiresAt: number | null;
   originalImageHash: string | null;
   originalImageBytes: number | null;
+  originalImagePreviewLogId: string | null;
   smartCrops: Partial<Record<Orientation, SmartCropResult>>;
   orientation: Orientation;
   orientationTip: string | null;
@@ -393,6 +394,7 @@ export type FounderBaseState = {
     hash: string | null;
     bytes: number | null;
   } | null) => void;
+  setOriginalImagePreviewLogId: (previewLogId: string | null) => void;
   setSmartCropForOrientation: (orientation: Orientation, result: SmartCropResult) => void;
   clearSmartCrops: () => void;
   setOrientation: (orientation: Orientation) => void;
@@ -413,6 +415,7 @@ export type FounderBaseState = {
   openCanvasModal: (source: CanvasModalSource) => void;
   closeCanvasModal: (reason: CanvasModalCloseReason) => void;
   selectStyle: (id: string) => void;
+  clearSelectedStyle: () => void;
   toggleEnhancement: (id: string) => void;
   setEnhancementEnabled: (id: string, enabled: boolean) => void;
   computedTotal: () => number;

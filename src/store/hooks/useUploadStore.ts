@@ -26,6 +26,7 @@ export const useUploadActions = () =>
       setOriginalImage: state.setOriginalImage,
       setOriginalImageDimensions: state.setOriginalImageDimensions,
       setOriginalImageSource: state.setOriginalImageSource,
+      setOriginalImagePreviewLogId: state.setOriginalImagePreviewLogId,
       setOrientation: state.setOrientation,
       setOrientationTip: state.setOrientationTip,
       setOrientationChanging: state.setOrientationChanging,

@@ -11,6 +11,7 @@ import type { Orientation } from '@/utils/imageUtils';
 import { useUploadActions, useUploadState } from '@/store/hooks/useUploadStore';
 import { usePreviewActions } from '@/store/hooks/usePreviewStore';
 import { persistOriginalUpload } from '@/utils/sourceUploadApi';
+import { createPreviewLog } from '@/utils/previewLogApi';
 import CropperModal from '@/components/launchpad/cropper/CropperModal';
 import { useFounderStore } from '@/store/useFounderStore';
 
@@ -35,6 +36,7 @@ const PhotoUploader = () => {
     setOriginalImage,
     setOriginalImageDimensions,
     setOriginalImageSource,
+    setOriginalImagePreviewLogId,
     setOrientation,
     setOrientationTip,
     markCropReady,
@@ -192,11 +194,28 @@ const PhotoUploader = () => {
             hash: persistResult.hash,
             bytes: persistResult.bytes,
           });
+
+          const previewLogResult = await createPreviewLog({
+            storagePath: persistResult.storagePath,
+            orientation: targetOrientation,
+            displayUrl: persistResult.publicUrl,
+            cropConfig: result.region,
+            accessToken: getSessionAccessToken(),
+          });
+
+          if (previewLogResult.ok) {
+            setOriginalImagePreviewLogId(previewLogResult.previewLogId);
+          } else {
+            console.warn('[PhotoUploader] Unable to create preview log', previewLogResult.error);
+            setOriginalImagePreviewLogId(null);
+          }
         } else {
           console.warn('[PhotoUploader] Persist original upload failed', persistResult);
+          setOriginalImagePreviewLogId(null);
         }
       } catch (error) {
         console.error('[PhotoUploader] Unexpected error persisting original upload', error);
+        setOriginalImagePreviewLogId(null);
       }
     }
 
