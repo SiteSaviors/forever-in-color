@@ -33,11 +33,23 @@ const EASINGS = {
   SMOOTH: 'cubic-bezier(0.4, 0.0, 0.2, 1)',
 } as const;
 
-const SIZE_SCALE_MAP: Record<CanvasSize, number> = {
-  '8x10': 0.75,
-  '12x16': 0.9,
-  '16x20': 1,
-  '20x24': 1.15,
+const SIZE_SCALE_MAP: Partial<Record<CanvasSize, number>> = {
+  'portrait-12x16': 0.75,
+  'portrait-18x24': 0.85,
+  'portrait-24x36': 1,
+  'portrait-30x40': 1.1,
+  'portrait-32x48': 1.2,
+  'portrait-40x60': 1.35,
+  'landscape-16x12': 0.75,
+  'landscape-24x18': 0.85,
+  'landscape-36x24': 1,
+  'landscape-40x30': 1.1,
+  'landscape-48x32': 1.2,
+  'landscape-60x40': 1.35,
+  'square-16x16': 0.8,
+  'square-24x24': 1,
+  'square-32x32': 1.15,
+  'square-36x36': 1.25,
 };
 
 type ShadowPreset = 'subtle' | 'medium' | 'dramatic';
@@ -90,10 +102,10 @@ const CanvasInRoomPreview = ({
   const roomAssetSrc = customRoomAssetSrc ?? defaultRoomAsset.src;
   const artRectPct = customArtRectPct ?? defaultRoomAsset.artRectPct;
 
-  const canvasScale = useMemo(
-    () => SIZE_SCALE_MAP[selectedSize] ?? 1,
-    [selectedSize]
-  );
+  const canvasScale = useMemo(() => {
+    if (!selectedSize) return 1;
+    return SIZE_SCALE_MAP[selectedSize] ?? 1;
+  }, [selectedSize]);
 
   const orientationAspectRatio = useMemo(() => {
     if (orientation === 'vertical') return '3 / 4';
@@ -292,7 +304,7 @@ const CanvasInRoomPreview = ({
             ) : null}
           </div>
 
-          {showDimensions && (
+          {showDimensions && selectedSize && (
             <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 rounded-full bg-white/90 px-3 py-1.5 shadow-md backdrop-blur-sm">
               <span className="text-xs font-semibold tracking-wide text-slate-700">
                 {selectedSize.replace('x', '×')}″

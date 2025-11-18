@@ -8,6 +8,7 @@ export const useUploadState = () =>
       originalImageDimensions: state.originalImageDimensions,
       smartCrops: state.smartCrops,
       croppedImage: state.croppedImage,
+      uploadedImage: state.uploadedImage,
       orientation: state.orientation,
       orientationTip: state.orientationTip,
       orientationChanging: state.orientationChanging,
