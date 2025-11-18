@@ -53,3 +53,18 @@ export const trackGalleryQuickviewDeleteResult = (payload: {
 }) => {
   sendAnalyticsEvent('gallery_quickview_delete_result', payload);
 };
+
+export const trackGalleryQuickviewSourceFallback = (payload: {
+  artId: string;
+  styleId: string;
+  reason: 'missing_source' | 'expired_signed_url' | 'invalid_dimensions';
+}) => {
+  sendAnalyticsEvent('gallery_qv_source_fallback', payload);
+};
+
+export const trackGalleryQuickviewDataUriUsage = (payload: {
+  artId: string;
+  styleId: string;
+}) => {
+  sendAnalyticsEvent('gallery_qv_data_uri_usage', payload);
+};

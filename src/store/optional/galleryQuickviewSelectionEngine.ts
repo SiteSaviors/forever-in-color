@@ -1,16 +1,24 @@
 import { emitStepOneEvent } from '@/utils/telemetry';
-import { trackGalleryQuickviewThumbnailClick } from '@/utils/galleryQuickviewTelemetry';
+import {
+  trackGalleryQuickviewThumbnailClick,
+  trackGalleryQuickviewSourceFallback,
+} from '@/utils/galleryQuickviewTelemetry';
 import { buildPublicStorageUrl } from '@/utils/storagePaths';
 import type { GalleryQuickviewItem } from '@/store/founder/storeTypes';
 import type { FounderState } from '@/store/founder/storeTypes';
+import {
+  resolveDisplayImage,
+  resolveSourceImage,
+  buildSmartCropResult,
+  hydratePreviewState,
+  isSourceSignedUrlValid,
+} from '@/store/optional/galleryQuickviewHelpers';
 
 const orientationMap = {
   square: 'square' as const,
   horizontal: 'horizontal' as const,
   vertical: 'vertical' as const,
 };
-
-const SIGNED_URL_BUFFER_MS = 5_000;
 
 const toNumber = (value: unknown, fallback = 0): number => {
   const parsed = Number(value);
@@ -19,11 +27,6 @@ const toNumber = (value: unknown, fallback = 0): number => {
 
 const readOptionalNumber = (config: Record<string, unknown>, key: string, fallback: number): number =>
   toNumber(config[key], fallback);
-
-const isSignedUrlValid = (item: GalleryQuickviewItem): boolean => {
-  if (!item.sourceSignedUrl || !item.sourceSignedUrlExpiresAt) return false;
-  return item.sourceSignedUrlExpiresAt > Date.now() + SIGNED_URL_BUFFER_MS;
-};
 
 const preloadImage = async (url: string): Promise<{ width: number; height: number }> =>
   new Promise((resolve, reject) => {
@@ -44,20 +47,32 @@ const preloadImage = async (url: string): Promise<{ width: number; height: numbe
     img.src = url;
   });
 
-const selectBestSourceUrl = (item: GalleryQuickviewItem): string[] => {
-  const candidates: string[] = [];
-  if (isSignedUrlValid(item) && item.sourceSignedUrl) {
-    candidates.push(item.sourceSignedUrl);
+const dedupe = (values: Array<string | null | undefined>): string[] => {
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const value of values) {
+    if (!value) continue;
+    if (seen.has(value)) continue;
+    seen.add(value);
+    result.push(value);
   }
-  if (item.sourceDisplayUrl) {
-    candidates.push(item.sourceDisplayUrl);
-  }
-  const publicSource = buildPublicStorageUrl(item.sourceStoragePath ?? null);
-  if (publicSource) {
-    candidates.push(publicSource);
-  }
-  candidates.push(item.displayUrl ?? item.imageUrl);
-  return candidates;
+  return result;
+};
+
+const buildDimensionCandidates = (
+  item: GalleryQuickviewItem,
+  displayImageUrl: string
+): string[] => {
+  const signedUrl = isSourceSignedUrlValid(item) ? item.sourceSignedUrl : null;
+  return dedupe([
+    signedUrl,
+    item.sourceDisplayUrl,
+    buildPublicStorageUrl(item.sourceStoragePath ?? null),
+    item.displayUrl,
+    item.imageUrl,
+    buildPublicStorageUrl(item.storagePath ?? null),
+    displayImageUrl,
+  ]);
 };
 
 export const handleGalleryQuickviewSelection = async (
@@ -76,19 +91,15 @@ export const handleGalleryQuickviewSelection = async (
   await store.ensureStyleLoaded(item.styleId);
 
   const targetOrientation = orientationMap[item.orientation] ?? 'square';
-  const previewUrl = item.displayUrl ?? item.imageUrl;
+  const displayImageUrl = resolveDisplayImage(item);
   const requiresWatermarkFlag = requiresWatermark ?? true;
 
-  const candidates = selectBestSourceUrl(item);
-  let resolvedOriginalImageUrl: string | null = null;
+  const candidates = buildDimensionCandidates(item, displayImageUrl);
   let dimensions = { width: 0, height: 0 };
 
   for (const candidate of candidates) {
     try {
       dimensions = await preloadImage(candidate);
-      if (!resolvedOriginalImageUrl) {
-        resolvedOriginalImageUrl = candidate;
-      }
       break;
     } catch (error) {
       console.warn('[useGalleryQuickviewSelection] Failed to preload candidate image', {
@@ -100,12 +111,14 @@ export const handleGalleryQuickviewSelection = async (
 
   if (!dimensions.width || !dimensions.height) {
     try {
-      dimensions = await preloadImage(previewUrl);
-      if (!resolvedOriginalImageUrl) {
-        resolvedOriginalImageUrl = previewUrl;
-      }
+      dimensions = await preloadImage(displayImageUrl);
     } catch (error) {
       console.error('[useGalleryQuickviewSelection] Failed to preload fallback preview image', error);
+      trackGalleryQuickviewSourceFallback({
+        artId: item.id,
+        styleId: item.styleId,
+        reason: 'invalid_dimensions',
+      });
     }
   }
 
@@ -124,87 +137,27 @@ export const handleGalleryQuickviewSelection = async (
     };
   }
 
-  const sourceForGeneration = item.sourceStoragePath || item.sourceSignedUrl || previewUrl;
+  const smartCropResult = buildSmartCropResult(targetOrientation, displayImageUrl, region, {
+    width: readOptionalNumber(cropConfig, 'imageWidth', dimensions.width),
+    height: readOptionalNumber(cropConfig, 'imageHeight', dimensions.height),
+  });
 
-  const smartCropResult = {
-    orientation: targetOrientation,
-    dataUrl: previewUrl,
-    region,
-    imageDimensions: {
-      width: readOptionalNumber(cropConfig, 'imageWidth', dimensions.width),
-      height: readOptionalNumber(cropConfig, 'imageHeight', dimensions.height),
-    },
-    generatedAt: Date.now(),
-    generatedBy: 'manual' as const,
-  };
-
-  if (store.orientation !== targetOrientation) {
-    store.setOrientation(targetOrientation);
+  const sourceResolution = await resolveSourceImage(item, displayImageUrl);
+  if (sourceResolution.fallbackReason) {
+    trackGalleryQuickviewSourceFallback({
+      artId: item.id,
+      styleId: item.styleId,
+      reason: sourceResolution.fallbackReason,
+    });
   }
 
-  store.setSmartCropForOrientation(targetOrientation, smartCropResult);
-  const signedValid = isSignedUrlValid(item);
-  if (!resolvedOriginalImageUrl) {
-    resolvedOriginalImageUrl =
-      item.sourceDisplayUrl ??
-      (signedValid ? item.sourceSignedUrl ?? null : null) ??
-      previewUrl;
-  }
-
-  store.setOriginalImage(resolvedOriginalImageUrl);
-  store.setOriginalImageDimensions({
-    width: smartCropResult.imageDimensions.width,
-    height: smartCropResult.imageDimensions.height,
-  });
-  store.setOriginalImageSource({
-    storagePath: item.sourceStoragePath ?? null,
-    publicUrl: item.sourceDisplayUrl ?? null,
-    signedUrl: signedValid ? item.sourceSignedUrl ?? null : null,
-    signedUrlExpiresAt: signedValid ? item.sourceSignedUrlExpiresAt ?? null : null,
-    hash: null,
-    bytes: null,
-  });
-
-  store.setCroppedImage(sourceForGeneration);
-  store.setOrientationPreviewPending(false);
-  store.markCropReady();
-  store.setLaunchpadSlimMode(true);
-
-  store.selectStyle(item.styleId);
-  store.setPendingStyle(null);
-  store.setStylePreviewState('idle', null, null);
-  store.setPreviewStatus('ready');
-
-  const previewResult = {
-    previewUrl,
-    watermarkApplied: requiresWatermarkFlag,
-    startedAt: Date.now(),
-    completedAt: Date.now(),
-    storageUrl: item.displayUrl ?? item.imageUrl,
-    storagePath: item.storagePath,
-    sourceStoragePath: item.sourceStoragePath ?? null,
-    sourceDisplayUrl: item.sourceDisplayUrl ?? null,
-    previewLogId: item.previewLogId ?? null,
-    cropConfig: item.cropConfig ?? null,
-    softRemaining: null,
-  };
-
-  store.cacheStylePreview(item.styleId, {
-    url: previewUrl,
+  hydratePreviewState(store, {
     orientation: targetOrientation,
-    generatedAt: Date.now(),
-    storageUrl: previewResult.storageUrl,
-    storagePath: previewResult.storagePath,
-    sourceStoragePath: previewResult.sourceStoragePath,
-    sourceDisplayUrl: previewResult.sourceDisplayUrl,
-    previewLogId: previewResult.previewLogId ?? null,
-    cropConfig: previewResult.cropConfig,
-  });
-
-  store.setPreviewState(item.styleId, {
-    status: 'ready',
-    data: previewResult,
-    orientation: targetOrientation,
+    smartCropResult,
+    displayImageUrl,
+    sourceImageUrl: sourceResolution.source,
+    requiresWatermark: requiresWatermarkFlag,
+    item,
   });
 
   emitStepOneEvent({ type: 'preview', styleId: item.styleId, status: 'complete' });
