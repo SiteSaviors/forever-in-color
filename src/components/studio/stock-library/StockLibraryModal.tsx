@@ -11,6 +11,7 @@ import { useEffect, useCallback, useRef } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X, ChevronLeft } from 'lucide-react';
 import { useFounderStore } from '@/store/useFounderStore';
+import { useStockLibraryModal, useStockLibraryPagination, useStockSelection } from '@/store/hooks/useStockLibraryStore';
 import { trackStockModalOpened } from '@/utils/stockLibraryTelemetry';
 import StockCategorySelector from './StockCategorySelector';
 import StockSearchField from './StockSearchField';
@@ -21,13 +22,9 @@ import StockGridBrowser from './StockGridBrowser';
 type CloseReason = 'dismiss' | 'upload_own' | 'esc_key' | 'backdrop';
 
 const StockLibraryModal = () => {
-  const stockLibraryModalOpen = useFounderStore((state) => state.stockLibraryModalOpen);
-  const currentView = useFounderStore((state) => state.currentView);
-  const stockStatus = useFounderStore((state) => state.stockStatus);
-  const appliedStockImageId = useFounderStore((state) => state.appliedStockImageId);
-  const closeStockLibraryWithReason = useFounderStore((state) => state.closeStockLibraryWithReason);
-  const continueWithStockImage = useFounderStore((state) => state.continueWithStockImage);
-  const setView = useFounderStore((state) => state.setView);
+  const { stockLibraryModalOpen, currentView, closeStockLibraryWithReason, setView } = useStockLibraryModal();
+  const { stockStatus } = useStockLibraryPagination();
+  const { appliedStockImageId, continueWithStockImage } = useStockSelection();
   const uploadedImage = useFounderStore((state) => state.uploadedImage);
 
   const wasOpenRef = useRef(false);

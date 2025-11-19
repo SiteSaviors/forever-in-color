@@ -18,7 +18,7 @@
 
 import { useMemo } from 'react';
 import { motion, LayoutGroup } from 'framer-motion';
-import { useFounderStore } from '@/store/useFounderStore';
+import { useStockLibraryFilters, useStockLibraryModal } from '@/store/hooks/useStockLibraryStore';
 import { STOCK_CATEGORIES, type StockCategory } from '@/store/founder/storeTypes';
 import { trackStockCategorySelected } from '@/utils/stockLibraryTelemetry';
 
@@ -30,8 +30,8 @@ type CategoryCard = {
 };
 
 const StockCategorySelector = () => {
-  const setCategory = useFounderStore((state) => state.setCategory);
-  const setView = useFounderStore((state) => state.setView);
+  const { setCategory } = useStockLibraryFilters();
+  const { setView } = useStockLibraryModal();
 
   // Build category cards
   const categories = useMemo<CategoryCard[]>(() => {

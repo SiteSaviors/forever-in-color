@@ -22,7 +22,11 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertCircle, ImageOff, Loader2, Search, X } from 'lucide-react';
-import { useFounderStore } from '@/store/useFounderStore';
+import {
+  useStockLibraryFilters,
+  useStockLibraryPagination,
+  useStockSelection,
+} from '@/store/hooks/useStockLibraryStore';
 import { useStudioEntitlementState } from '@/store/hooks/studio/useStudioEntitlementState';
 import { useStudioFeedback } from '@/hooks/useStudioFeedback';
 import { STOCK_CATEGORIES } from '@/store/founder/storeTypes';
@@ -54,22 +58,23 @@ const getCategoryDisplayName = (categoryId: string): string => {
 };
 
 const StockGridBrowser = () => {
-  const stockImages = useFounderStore((state) => state.stockImages);
-  const stockStatus = useFounderStore((state) => state.stockStatus);
-  const stockError = useFounderStore((state) => state.stockError);
-  const hasNextPage = useFounderStore((state) => state.hasNextPage);
-  const selectedCategory = useFounderStore((state) => state.selectedCategory);
-  const searchQuery = useFounderStore((state) => state.searchQuery);
-  const appliedStockImageId = useFounderStore((state) => state.appliedStockImageId);
-  const accessFilters = useFounderStore((state) => state.accessFilters);
-  const orientationFilters = useFounderStore((state) => state.orientationFilters);
-  const resetFilters = useFounderStore((state) => state.resetFilters);
-
-  const fetchStockImages = useFounderStore((state) => state.fetchStockImages);
-  const fetchNextPage = useFounderStore((state) => state.fetchNextPage);
-  const applyStockImage = useFounderStore((state) => state.applyStockImage);
-  const clearAppliedStockImage = useFounderStore((state) => state.clearAppliedStockImage);
-  const retryFetch = useFounderStore((state) => state.retryFetch);
+  const {
+    stockImages,
+    stockStatus,
+    stockError,
+    hasNextPage,
+    fetchStockImages,
+    fetchNextPage,
+    retryFetch,
+  } = useStockLibraryPagination();
+  const {
+    selectedCategory,
+    searchQuery,
+    accessFilters,
+    orientationFilters,
+    resetFilters,
+  } = useStockLibraryFilters();
+  const { appliedStockImageId, applyStockImage, clearAppliedStockImage } = useStockSelection();
   const { userTier } = useStudioEntitlementState();
   const { showUpgradeModal } = useStudioFeedback();
 

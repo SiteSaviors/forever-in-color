@@ -13,14 +13,14 @@
 
 import React, { useEffect, useState } from 'react';
 import { Search } from 'lucide-react';
-import { useFounderStore } from '@/store/useFounderStore';
+import { useStockLibraryFilters } from '@/store/hooks/useStockLibraryStore';
 import { useDebounce } from '@/hooks/useDebounce';
 
 const StockSearchField = () => {
   const [rawQuery, setRawQuery] = useState('');
   const debouncedQuery = useDebounce(rawQuery, 300);
 
-  const setSearchQuery = useFounderStore((state) => state.setSearchQuery);
+  const { setSearchQuery } = useStockLibraryFilters();
 
   // Update store with debounced query
   useEffect(() => {

@@ -1,7 +1,7 @@
 import { useMemo, useState, useId } from 'react';
 import * as Popover from '@radix-ui/react-popover';
 import { Check, Filter } from 'lucide-react';
-import { useFounderStore } from '@/store/useFounderStore';
+import { useStockLibraryFilters } from '@/store/hooks/useStockLibraryStore';
 
 const FILTER_ICON_CLASSES =
   'rounded-full border border-white/15 bg-gradient-to-r from-slate-900/60 via-slate-900/40 to-slate-900/60 p-2.5 text-white/80 shadow-[0_10px_30px_rgba(2,6,23,0.35)] backdrop-blur-sm transition-all duration-200 hover:border-white/30 hover:text-white hover:shadow-[0_0_20px_rgba(168,85,247,0.3),0_10px_30px_rgba(2,6,23,0.35)] hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950';
@@ -62,18 +62,19 @@ const ToggleChip = ({
 
 const StockFilterPopover = () => {
   const [open, setOpen] = useState(false);
-  const accessFilters = useFounderStore((state) => state.accessFilters);
-  const orientationFilters = useFounderStore((state) => state.orientationFilters);
-  const toggleAccess = useFounderStore((state) => state.toggleAccessFilter);
-  const toggleOrientation = useFounderStore((state) => state.toggleOrientationFilter);
-  const resetFilters = useFounderStore((state) => state.resetFilters);
-  const hasActiveFilters = useFounderStore((state) => state.hasActiveFilters());
+  const {
+    accessFilters,
+    orientationFilters,
+    toggleAccessFilter,
+    toggleOrientationFilter,
+    resetFilters,
+    hasActiveFilters,
+    disabledFilterCount,
+  } = useStockLibraryFilters();
 
   const badgeCount = useMemo(() => {
-    const accessDisabled = Object.values(accessFilters).filter((value) => !value).length;
-    const orientationDisabled = Object.values(orientationFilters).filter((value) => !value).length;
-    return accessDisabled + orientationDisabled;
-  }, [accessFilters, orientationFilters]);
+    return disabledFilterCount;
+  }, [disabledFilterCount]);
 
   return (
     <Popover.Root open={open} onOpenChange={setOpen}>
@@ -111,12 +112,8 @@ const StockFilterPopover = () => {
               <div>
                 <p className="mb-2.5 text-xs font-semibold uppercase tracking-[0.24em] text-white/60">Access</p>
                 <div className="flex flex-wrap gap-2">
-                  <ToggleChip label="Free" active={accessFilters.free} onToggle={() => toggleAccess('free')} />
-                  <ToggleChip
-                    label="Premium"
-                    active={accessFilters.premium}
-                    onToggle={() => toggleAccess('premium')}
-                  />
+                  <ToggleChip label="Free" active={accessFilters.free} onToggle={() => toggleAccessFilter('free')} />
+                  <ToggleChip label="Premium" active={accessFilters.premium} onToggle={() => toggleAccessFilter('premium')} />
                 </div>
               </div>
 
@@ -130,17 +127,17 @@ const StockFilterPopover = () => {
                   <ToggleChip
                     label="Portrait"
                     active={orientationFilters.vertical}
-                    onToggle={() => toggleOrientation('vertical')}
+                    onToggle={() => toggleOrientationFilter('vertical')}
                   />
                   <ToggleChip
                     label="Horizontal"
                     active={orientationFilters.horizontal}
-                    onToggle={() => toggleOrientation('horizontal')}
+                    onToggle={() => toggleOrientationFilter('horizontal')}
                   />
                   <ToggleChip
                     label="Square"
                     active={orientationFilters.square}
-                    onToggle={() => toggleOrientation('square')}
+                    onToggle={() => toggleOrientationFilter('square')}
                   />
                 </div>
               </div>

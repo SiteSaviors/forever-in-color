@@ -19,13 +19,15 @@ export const createStockLibrarySelectionSlice: StockLibrarySliceCreator = (set, 
       appliedStockImage: null,
     }),
   continueWithStockImage: async () => {
-    const state = get();
-    const { appliedStockImage } = state;
+    const { appliedStockImage } = get();
 
     if (!appliedStockImage) {
       console.warn('[stockLibrarySlice] continueWithStockImage called with no applied image');
       return;
     }
+
+    // Close the modal immediately so the UI responds instantly while work continues.
+    set({ stockLibraryModalOpen: false });
 
     try {
       const { dataUrl, width, height } = await fetchImageAsDataUrl(appliedStockImage.fullUrl);
@@ -85,16 +87,19 @@ export const createStockLibrarySelectionSlice: StockLibrarySliceCreator = (set, 
       await get().generatePreviews(undefined, { force: true });
     } catch (error) {
       console.error('[stockLibrarySlice] Unable to apply stock image', error);
+      // Re-open the modal if something fails so the user can retry.
+      set({ stockLibraryModalOpen: true });
       return;
     }
 
-    const durationMs = state.modalOpenedAt ? Date.now() - state.modalOpenedAt : 0;
+    const latestState = get();
+    const durationMs = latestState.modalOpenedAt ? Date.now() - latestState.modalOpenedAt : 0;
     emitStockModalClosed({
       reason: 'continue',
       durationMs,
-      imagesViewed: state.viewedImageIds.size,
+      imagesViewed: latestState.viewedImageIds.size,
       imageApplied: true,
-      category: state.selectedCategory,
+      category: latestState.selectedCategory,
     });
 
     set({

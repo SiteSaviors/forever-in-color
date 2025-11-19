@@ -133,5 +133,24 @@
   - Applied-image slice must continue to await `generatePreviews` after successful persistence/logging to keep preview store coherent before modal closes.
 
 ## Phase 5 – Risk & QA Planning *(🔜)*
-- Highlight high-risk areas (dual-surface state, persisted filters schema, applied-image flow).
-- Draft QA matrix + instrumentation strategy for rollout.
+- **High-risk areas**
+  - **Dual-surface consumers**: Launchpad and Studio both rely on `useFounderStore` selectors; splitting slices must not change selector names/signatures or we risk only one surface updating.
+  - **Persisted filters schema**: `localStorage` entry (`stock_library_filters`) has implicit shape `{ accessFilters, orientationFilters }`. Any schema change needs migration logic or versioning to avoid breaking existing user preferences.
+  - **Applied-image pipeline**: touches Supabase storage, preview logs, and preview generation—bugs here could double-charge tokens or leave previews stuck. Sequencing must remain identical.
+  - **Telemetry accuracy**: `trackStockModalClosed` relies on `modalOpenedAt` + `viewedImageIds`; splitting slices should not reset these fields prematurely.
+- **QA matrix**
+  1. **Entry points**: open the modal from Studio and Launchpad; ensure `trackStockModalOpened` fires with correct `source`, and closing via X/backdrop/ESC routes the right reason.
+  2. **Filters with persistence**: toggle access/orientation filters, reload page to confirm persisted state survives. Use both surfaces to ensure they read the same defaults.
+  3. **Search + pagination**: search for a term (happy path) → verify results + telemetry; trigger an API error (simulate) to see error UI + retry functionality. Scroll to load multiple pages and ensure `trackStockScrolled` increments correctly.
+  4. **Applied image flow**: select free vs premium images (with entitlement gating), test continue CTA success path and failure path (simulate `persistOriginalUpload` rejection) to ensure modal resets and telemetries remain accurate.
+  5. **Telemetry spot checks**: capture payloads in dev tools or mocked telemetry to confirm `reason`, duration, images-viewed counts before and after refactor.
+- **Instrumentation / rollout**
+  - Add temporary dev-only logging or counters (e.g., `console.info('[stock-refactor] fetchNextPage page=', page)`) to confirm new slices are wired identically, gated by `import.meta.env.DEV`.
+  - Consider wrapping telemetry helpers so we can emit both the legacy and new event payloads during QA (A/B) to detect drift.
+  - Use feature flags or environment toggles to allow reverting to the monolithic slice quickly if errors spike, even though the goal is to delete the flag after validation.
+
+## Phase 6 – Implementation Snapshot *(✅ Complete)*
+- Slice files live under `src/store/founder/slices/stockLibrary/` (`modalSlice.ts`, `filtersSlice.ts`, `paginationSlice.ts`, `selectionSlice.ts`) and are composed in `stockLibrarySlice.ts`.
+- Shared utilities now live in `/utils/stockLibrary/{filterPersistence,assetFetch,telemetry}.ts`.
+- Selector hooks (`useStockLibraryModal`, `useStockLibraryFilters`, `useStockLibraryPagination`, `useStockSelection`) wrap all state/actions; future UI must consume these hooks instead of `useFounderStore` directly.
+- New documentation should reference these hooks/slices for any enhancements (filter tabs, saved favorites, etc.) to avoid UI churn.
