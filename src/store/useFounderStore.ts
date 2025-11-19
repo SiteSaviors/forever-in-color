@@ -1,19 +1,15 @@
 import { createWithEqualityFn } from 'zustand/traditional';
-import { CANVAS_SIZE_OPTIONS, getCanvasSizeOption, getDefaultSizeForOrientation } from '@/utils/canvasSizes';
-import {
-  trackStudioV2CanvasModalClose,
-  trackStudioV2CanvasModalOpen,
-  type CanvasSelectionSnapshot,
-} from '@/utils/studioV2Analytics';
-import { trackCanvasPanelOpen } from '@/utils/telemetry';
+import { getCanvasSizeOption, getDefaultSizeForOrientation } from '@/utils/canvasSizes';
 import { loadInitialStylesLazy } from '@/config/styleCatalog';
 import { createPreviewSlice } from './founder/previewSlice';
 import { createAuthSlice } from './founder/authSlice';
 import { createFavoritesSlice } from './founder/favoritesSlice';
 import { createGallerySlice } from './founder/gallerySlice';
 import { createStockLibrarySlice } from './founder/stockLibrarySlice';
-import type { CanvasSize, Enhancement, FounderBaseState, FounderState, StyleCarouselCard, StyleOption } from './founder/storeTypes';
-import { createMemoizedSelector } from './utils/memo';
+import { createCanvasConfigSlice } from '@/store/founder/slices/canvas/canvasConfigSlice';
+import { createCanvasModalSlice } from '@/store/founder/slices/canvas/canvasModalSlice';
+import { createUploadPipelineSlice } from '@/store/founder/slices/canvas/uploadPipelineSlice';
+import type { Enhancement, FounderState, StyleCarouselCard, StyleOption } from './founder/storeTypes';
 import { createLazySliceAccessor } from './utils/createLazySliceAccessor';
 
 export type {
@@ -52,35 +48,12 @@ const ENABLE_AUTO_PREVIEWS = false;
 const DEFAULT_SQUARE_SIZE = getDefaultSizeForOrientation('square');
 const DEFAULT_SQUARE_PRICE = getCanvasSizeOption(DEFAULT_SQUARE_SIZE)?.price ?? 0;
 
-const createCanvasSelectionSnapshot = (state: FounderBaseState): CanvasSelectionSnapshot => {
-  const enabledEnhancements = state.enhancements
-    .filter((item) => item.enabled)
-    .map((item) => item.id);
-
-  return {
-    canvasSize: state.selectedCanvasSize,
-    frame: state.selectedFrame,
-    enhancements: enabledEnhancements,
-    orientation: state.orientation,
-  };
-};
-
 // NEW: Use lazy loading - only load IDs and names initially
 // Full details (thumbnails, descriptions) loaded on-demand via ensureStyleLoaded()
 const initialStyles: StyleOption[] = loadInitialStylesLazy();
 const styleCatalogEngineAccessor = createLazySliceAccessor(() =>
   import('./founder/optional/styleCatalogEngine')
 );
-
-const selectCurrentStyle = createMemoizedSelector(
-  (styles: StyleOption[], selectedStyleId: string | null | undefined) => {
-    if (!selectedStyleId) {
-      return undefined;
-    }
-    return styles.find((style) => style.id === selectedStyleId);
-  }
-);
-
 
 const mockEnhancements: Enhancement[] = [
   {
@@ -213,193 +186,30 @@ const mockCarouselData: StyleCarouselCard[] = [
   },
 ];
 
+/**
+ * Founder Store (monolithic for now)
+ *
+ * NOTE: Sections are annotated to guide the canvas store refactor (see docs/FOUNDER_STORE_RESEARCH.md).
+ *  - Canvas Config Core (Phase 3.1 target)
+ *  - Canvas Modal Lifecycle (Phase 3.2 target)
+ *  - Upload / Orientation Pipeline (Phase 3.3 target)
+ */
 export const useFounderStore = createWithEqualityFn<FounderState>((set, get, api) => ({
+  // ── Canvas Config Core (Phase 3.1 extraction candidate) ────────────────────────
   styles: initialStyles,
-  enhancements: mockEnhancements,
-  selectedStyleId: null,
+  ...createCanvasConfigSlice(mockEnhancements)(set, get, api),
+  ...createCanvasModalSlice(set, get, api),
+  ...createUploadPipelineSlice(set, get, api),
   basePrice: DEFAULT_SQUARE_PRICE,
   livingCanvasModalOpen: false,
-  uploadedImage: null,
-  croppedImage: null,
-  currentImageHash: null,
-  orientation: 'square',
-  orientationTip: null,
-  cropReadyAt: null,
-  isDragging: false,
   celebrationAt: null,
   styleCarouselData: mockCarouselData,
   hoveredStyleId: null,
   preselectedStyleId: null,
-  launchpadExpanded: false,
-  launchpadSlimMode: false,
-  uploadIntentAt: null,
-  originalImage: null,
-  originalImageDimensions: null,
-  originalImageStoragePath: null,
-  originalImagePublicUrl: null,
-  originalImageSignedUrl: null,
-  originalImageSignedUrlExpiresAt: null,
-  originalImageHash: null,
-  originalImageBytes: null,
-  originalImagePreviewLogId: null,
-  smartCrops: {},
   loadedStyleIds: new Set<string>(),
   pendingStyleLoads: new Map<string, Promise<void>>(),
-  orientationChanging: false,
-  orientationPreviewPending: false,
-  setOrientationChanging: (loading) => set({ orientationChanging: loading }),
-  setOrientationPreviewPending: (pending) => set({ orientationPreviewPending: pending }),
-  setLaunchpadExpanded: (expanded) => set({ launchpadExpanded: expanded }),
-  setLaunchpadSlimMode: (slim) => set({ launchpadSlimMode: slim }),
-  selectedCanvasSize: null,
-  setCanvasSize: (size) => {
-    set({ selectedCanvasSize: size });
-    get().persistCanvasSelection();
-  },
-  selectedFrame: 'none',
-  setFrame: (frame) => {
-    set({ selectedFrame: frame });
-    get().persistCanvasSelection();
-  },
-  canvasModalOpen: false,
-  canvasModalSource: null,
-  canvasModalOpenedAt: null,
-  lastCanvasModalSource: null,
-  canvasSelections: {},
-  selectStyle: (id) => {
-    const state = get();
-    if (state.selectedStyleId) {
-      state.persistCanvasSelection();
-    }
-    if (state.canvasModalOpen) {
-      state.closeCanvasModal('cancel');
-    }
-    set({ selectedStyleId: id });
-    get().loadCanvasSelectionForStyle(id);
-  },
-  clearSelectedStyle: () => {
-    const state = get();
-    if (state.selectedStyleId) {
-      state.persistCanvasSelection();
-    }
-    set({ selectedStyleId: null });
-  },
-  toggleEnhancement: (id) => {
-    set((state) => {
-      const enhancements = state.enhancements.map((item) =>
-        item.id === id ? { ...item, enabled: !item.enabled } : item
-      );
-      const livingCanvasEnabled = enhancements.find((item) => item.id === 'living-canvas')?.enabled ?? false;
-      return {
-        enhancements,
-        livingCanvasModalOpen: livingCanvasEnabled ? false : state.livingCanvasModalOpen,
-      };
-    });
-    get().persistCanvasSelection();
-  },
-  setEnhancementEnabled: (id, enabled) => {
-    set((state) => ({
-      enhancements: state.enhancements.map((item) =>
-        item.id === id ? { ...item, enabled } : item
-      ),
-      livingCanvasModalOpen: id === 'living-canvas' && enabled ? false : state.livingCanvasModalOpen,
-    }));
-    get().persistCanvasSelection();
-  },
-  persistCanvasSelection: () => {
-    const state = get();
-    const styleId = state.selectedStyleId;
-    if (!styleId) return;
-    const snapshot = createCanvasSelectionSnapshot(state);
-    set({
-      canvasSelections: {
-        ...state.canvasSelections,
-        [styleId]: {
-          size: (snapshot.canvasSize as CanvasSize | null),
-          frame: snapshot.frame,
-          enhancements: [...snapshot.enhancements],
-        },
-      },
-    });
-  },
-  loadCanvasSelectionForStyle: (styleId) => {
-    if (!styleId) return;
-    const state = get();
-    const selection = state.canvasSelections[styleId];
-    const defaultSize = getDefaultSizeForOrientation(state.orientation);
-    const nextSize = selection?.size ?? defaultSize;
-    const nextFrame = selection?.frame ?? 'none';
-    const enabledIds = new Set(selection?.enhancements ?? []);
-
-    const enhancements = state.enhancements.map((item) => ({
-      ...item,
-      enabled: enabledIds.has(item.id),
-    }));
-
-    const update: Partial<FounderBaseState> = {
-      selectedCanvasSize: nextSize,
-      selectedFrame: nextFrame,
-      enhancements,
-    };
-
-    if (!selection) {
-      (update as Partial<FounderBaseState>).canvasSelections = {
-        ...state.canvasSelections,
-        [styleId]: {
-          size: nextSize,
-          frame: nextFrame,
-          enhancements: Array.from(enabledIds),
-        },
-      };
-    }
-
-    set(update);
-  },
-  openCanvasModal: (source) => {
-    const state = get();
-    if (!state.croppedImage) return;
-    const style = state.currentStyle();
-    if (!style) return;
-    state.loadCanvasSelectionForStyle(style.id);
-    state.persistCanvasSelection();
-    if (state.canvasModalOpen) return;
-    const snapshot = createCanvasSelectionSnapshot(state);
-    trackCanvasPanelOpen(state.entitlements?.tier ?? 'unknown');
-    set({
-      canvasModalOpen: true,
-      canvasModalSource: source,
-      canvasModalOpenedAt: Date.now(),
-      lastCanvasModalSource: source,
-    });
-    trackStudioV2CanvasModalOpen({
-      styleId: style.id,
-      sourceCTA: source,
-      canvasSize: snapshot.canvasSize,
-      frame: snapshot.frame,
-      enhancements: snapshot.enhancements,
-      orientation: snapshot.orientation,
-    });
-  },
-  closeCanvasModal: (reason) => {
-    const state = get();
-    if (!state.canvasModalOpen) return;
-    const style = state.currentStyle();
-    const snapshot = createCanvasSelectionSnapshot(state);
-    const openedAt = state.canvasModalOpenedAt ?? Date.now();
-    set({
-      canvasModalOpen: false,
-      canvasModalSource: null,
-      canvasModalOpenedAt: null,
-    });
-    if (style) {
-      trackStudioV2CanvasModalClose({
-        styleId: style.id,
-        reason,
-        timeSpentMs: Math.max(0, Date.now() - openedAt),
-        configuredItems: snapshot,
-      });
-    }
-  },
+  // ── Canvas Modal Lifecycle (Phase 3.2 extraction candidate) ────────────────────
+  ...createCanvasModalSlice(set, get, api),
   ...createPreviewSlice(initialStyles)(set, get, api),
   ...createAuthSlice(set, get, api),
   ...createGallerySlice(set, get, api),
@@ -451,130 +261,11 @@ export const useFounderStore = createWithEqualityFn<FounderState>((set, get, api
 
       return next;
     }),
+  // ── Upload / Orientation Pipeline (Phase 3.3 extraction candidate) ────────────
   setLivingCanvasModalOpen: (open) => set({ livingCanvasModalOpen: open }),
-  setUploadedImage: (dataUrl) =>
-    set({
-      uploadedImage: dataUrl,
-      currentImageHash: null,
-      pendingStyleId: null,
-      stylePreviewStatus: 'idle',
-      stylePreviewMessage: null,
-      stylePreviewError: null,
-      stylePreviewStartAt: null,
-      orientationPreviewPending: false,
-      launchpadExpanded: true,
-      ...(dataUrl === null
-        ? {
-            originalImageStoragePath: null,
-            originalImagePublicUrl: null,
-            originalImageSignedUrl: null,
-            originalImageSignedUrlExpiresAt: null,
-            originalImageHash: null,
-            originalImageBytes: null,
-          }
-        : {}),
-    }),
-  setCroppedImage: (dataUrl) =>
-    set({
-      croppedImage: dataUrl,
-      currentImageHash: null,
-      launchpadSlimMode: !!dataUrl,
-    }),
-  setOriginalImage: (dataUrl) =>
-    set({
-      originalImage: dataUrl,
-      originalImagePreviewLogId: null,
-      ...(dataUrl === null
-        ? {
-            originalImageStoragePath: null,
-            originalImagePublicUrl: null,
-            originalImageSignedUrl: null,
-            originalImageSignedUrlExpiresAt: null,
-            originalImageHash: null,
-            originalImageBytes: null,
-          }
-        : {}),
-    }),
-  setOriginalImageDimensions: (dimensions) => set({ originalImageDimensions: dimensions }),
-  setOriginalImageSource: (payload) =>
-    set({
-      originalImageStoragePath: payload?.storagePath ?? null,
-      originalImagePublicUrl: payload?.publicUrl ?? null,
-      originalImageSignedUrl: payload?.signedUrl ?? null,
-      originalImageSignedUrlExpiresAt: payload?.signedUrlExpiresAt ?? null,
-      originalImageHash: payload?.hash ?? null,
-      originalImageBytes: payload?.bytes ?? null,
-    }),
-  setOriginalImagePreviewLogId: (previewLogId) => set({ originalImagePreviewLogId: previewLogId }),
-  setOrientation: (orientation) => {
-    const current = get();
-    if (current.orientation === orientation) return;
-
-    const availableOptions = CANVAS_SIZE_OPTIONS[orientation];
-    const hasCurrentSize = current.selectedCanvasSize
-      ? availableOptions.some((option) => option.id === current.selectedCanvasSize)
-      : false;
-
-    const nextCanvasSize = hasCurrentSize ? current.selectedCanvasSize : null;
-
-    set({ orientation, selectedCanvasSize: nextCanvasSize });
-
-    const updated = get();
-    if (updated.pendingStyleId) return;
-
-    const styleId = updated.selectedStyleId;
-    if (!styleId) {
-      set({ orientationPreviewPending: false });
-      return;
-    }
-
-    if (styleId === 'original-image') {
-      const source = updated.croppedImage ?? updated.uploadedImage;
-      if (source) {
-        const timestamp = Date.now();
-        updated.setPreviewState(styleId, {
-          status: 'ready',
-          data: {
-            previewUrl: source,
-            watermarkApplied: false,
-            startedAt: timestamp,
-            completedAt: timestamp,
-          },
-          orientation,
-        });
-      }
-      set({ orientationPreviewPending: false });
-      return;
-    }
-
-    set({ orientationPreviewPending: true });
-  },
-  setOrientationTip: (tip) => set({ orientationTip: tip }),
-  markCropReady: () =>
-    set((state) => ({
-      cropReadyAt: Date.now(),
-      launchpadSlimMode: true,
-      launchpadExpanded: state.launchpadExpanded,
-    })),
-  setDragging: (isDragging) => set({ isDragging }),
-  computedTotal: () => {
-    const { enhancements, styles, selectedStyleId, selectedCanvasSize } = get();
-    const styleMod = styles.find((style) => style.id === selectedStyleId)?.priceModifier ?? 0;
-    const sizePrice = getCanvasSizeOption(selectedCanvasSize)?.price;
-    const enhancementsTotal = enhancements
-      .filter((item) => item.enabled)
-      .reduce((sum, item) => sum + item.price, 0);
-    return (sizePrice ?? 0) + styleMod + enhancementsTotal;
-  },
-  currentStyle: () => {
-    const state = get();
-    return selectCurrentStyle(state.styles, state.selectedStyleId);
-  },
-  livingCanvasEnabled: () => get().enhancements.find((item) => item.id === 'living-canvas')?.enabled ?? false,
   shouldAutoGeneratePreviews: () => {
     return ENABLE_AUTO_PREVIEWS;
   },
-  setCurrentImageHash: (hash) => set({ currentImageHash: hash }),
   ensureStyleLoaded: async (styleId: string) => {
     const module = await styleCatalogEngineAccessor.load();
     const runtime = { set, get };
@@ -592,71 +283,6 @@ export const useFounderStore = createWithEqualityFn<FounderState>((set, get, api
       ensureStylesLoaded: (ids: string[]) => module.ensureStylesLoaded(runtime, ids),
     }));
     await module.ensureStylesLoaded(runtime, styleIds);
-  },
-  restoreOriginalImagePreview: (styleId = null) => {
-    const state = get();
-    const source = state.originalImage ?? state.croppedImage ?? state.uploadedImage;
-    if (!source) {
-      return false;
-    }
-
-    if (styleId) {
-      state.setPreviewState(styleId, { status: 'idle' });
-    }
-
-    if (state.selectedStyleId !== 'original-image') {
-      state.selectStyle('original-image');
-    }
-
-    const timestamp = Date.now();
-    state.setPreviewState('original-image', {
-      status: 'ready',
-      data: {
-        previewUrl: source,
-        watermarkApplied: false,
-        startedAt: timestamp,
-        completedAt: timestamp,
-      },
-      orientation: state.orientation,
-    });
-
-    set({
-      pendingStyleId: null,
-      previewStatus: 'ready',
-      stylePreviewStatus: 'idle',
-      stylePreviewMessage: null,
-      stylePreviewError: null,
-      stylePreviewStartAt: null,
-      orientationPreviewPending: false,
-    });
-
-    return true;
-  },
-  resetPreviewToEmptyState: (styleId = null) => {
-    const state = get();
-    if (styleId) {
-      state.setPreviewState(styleId, { status: 'idle' });
-    }
-    state.setPreviewState('original-image', { status: 'idle' });
-
-    state.clearSmartCrops();
-    state.setOriginalImageSource(null);
-    state.setOriginalImageDimensions(null);
-    state.setOriginalImage(null);
-    state.setCroppedImage(null);
-    state.setUploadedImage(null);
-
-    set({
-      selectedStyleId: null,
-      pendingStyleId: null,
-      previewStatus: 'idle',
-      stylePreviewStatus: 'idle',
-      stylePreviewMessage: null,
-      stylePreviewError: null,
-      stylePreviewStartAt: null,
-      orientationPreviewPending: false,
-      launchpadSlimMode: false,
-    });
   },
   ...createFavoritesSlice(set, get, api),
 }));

@@ -2,7 +2,7 @@ import { Suspense, lazy, useEffect, useMemo, useRef, useState, useCallback } fro
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { clsx } from 'clsx';
 import { useAuthModal, type AuthModalMode } from '@/store/useAuthModal';
-import { useCanvasSelection } from '@/store/hooks/useCanvasConfigStore';
+import { useCanvasConfigState } from '@/store/hooks/useFounderCanvasStore';
 import { useEntitlementsActions, useEntitlementsState } from '@/store/hooks/useEntitlementsStore';
 import { useSessionActions, useSessionState } from '@/store/hooks/useSessionStore';
 import TokenBalanceDrawer from '@/components/navigation/TokenBalanceDrawer';
@@ -23,7 +23,9 @@ const NAV_LINKS = [
 const FounderNavigation = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { enhancements } = useCanvasSelection();
+  const { enhancements } = useCanvasConfigState((state) => ({
+    enhancements: state.enhancements,
+  }));
   const { entitlements } = useEntitlementsState();
   const { hydrateEntitlements } = useEntitlementsActions();
   const { sessionUser, sessionHydrated, accessToken } = useSessionState();

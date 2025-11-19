@@ -4,7 +4,7 @@ import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-
 import clsx from 'clsx';
 import { useCheckoutStore } from '@/store/useCheckoutStore';
 import { useStyleCatalogState } from '@/store/hooks/useStyleCatalogStore';
-import { useCanvasConfigActions, useCanvasSelection } from '@/store/hooks/useCanvasConfigStore';
+import { useCanvasConfigState } from '@/store/hooks/useFounderCanvasStore';
 import { useUploadState } from '@/store/hooks/useUploadStore';
 import { usePreviewEntry } from '@/store/hooks/usePreviewStore';
 import { useSessionState } from '@/store/hooks/useSessionStore';
@@ -46,8 +46,11 @@ const InnerPaymentFormComponent = ({ onSuccess, onBack, returnUrl }: InnerPaymen
   );
   const { accessToken } = useSessionState();
   const { currentStyle } = useStyleCatalogState();
-  const { selectedCanvasSize, enhancements } = useCanvasSelection();
-  const { computedTotal } = useCanvasConfigActions();
+  const { selectedCanvasSize, enhancements, computedTotal } = useCanvasConfigState((state) => ({
+    selectedCanvasSize: state.selectedCanvasSize,
+    enhancements: state.enhancements,
+    computedTotal: state.computedTotal,
+  }));
   const enabledEnhancements = useMemo(
     () => enhancements.filter((item) => item.enabled),
     [enhancements]

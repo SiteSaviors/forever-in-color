@@ -1,7 +1,7 @@
 import { memo, useMemo } from 'react';
 import { clsx } from 'clsx';
 import { Frame, Maximize2, Compass, Sparkles, Edit3 } from 'lucide-react';
-import { useCanvasSelection } from '@/store/hooks/useCanvasConfigStore';
+import { useCanvasConfigState } from '@/store/hooks/useFounderCanvasStore';
 import { useUploadState } from '@/store/hooks/useUploadStore';
 import { getCanvasSizeOption } from '@/utils/canvasSizes';
 import { ORIENTATION_PRESETS } from '@/utils/smartCrop';
@@ -24,7 +24,11 @@ const CanvasOrderSummaryComponent = ({
   onEditSize,
   orientationPreviewPending = false,
 }: CanvasOrderSummaryProps) => {
-  const { selectedCanvasSize, selectedFrame, enhancements } = useCanvasSelection();
+  const { selectedCanvasSize, selectedFrame, enhancements } = useCanvasConfigState((state) => ({
+    selectedCanvasSize: state.selectedCanvasSize,
+    selectedFrame: state.selectedFrame,
+    enhancements: state.enhancements,
+  }));
   const { orientation } = useUploadState();
 
   const selectedSizeOption = useMemo(() => {

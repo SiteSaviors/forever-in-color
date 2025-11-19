@@ -2,11 +2,7 @@ import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState, type
 import { CANVAS_SIZE_OPTIONS, getCanvasSizeOption } from '@/utils/canvasSizes';
 import { type CanvasModalCloseReason } from '@/store/founder/storeTypes';
 import { useCheckoutStore } from '@/store/useCheckoutStore';
-import {
-  useCanvasConfigActions,
-  useCanvasModalStatus,
-  useCanvasSelection,
-} from '@/store/hooks/useCanvasConfigStore';
+import { useCanvasConfigState, useCanvasModalState, useUploadPipelineState } from '@/store/hooks/useFounderCanvasStore';
 import { useStyleCatalogState } from '@/store/hooks/useStyleCatalogStore';
 import { useUploadState } from '@/store/hooks/useUploadStore';
 import { useEntitlementsState } from '@/store/hooks/useEntitlementsStore';
@@ -40,9 +36,19 @@ const currency = new Intl.NumberFormat('en-US', {
 
 const CanvasCheckoutModal = () => {
   const closingReasonRef = useRef<CanvasModalCloseReason | null>(null);
-  const { canvasModalOpen, orientationPreviewPending } = useCanvasModalStatus();
-  const { selectedCanvasSize, selectedFrame, enhancements } = useCanvasSelection();
-  const { closeCanvasModal, computedTotal } = useCanvasConfigActions();
+  const { canvasModalOpen, closeCanvasModal } = useCanvasModalState((state) => ({
+    canvasModalOpen: state.canvasModalOpen,
+    closeCanvasModal: state.closeCanvasModal,
+  }));
+  const { orientationPreviewPending } = useUploadPipelineState((state) => ({
+    orientationPreviewPending: state.orientationPreviewPending,
+  }));
+  const { selectedCanvasSize, selectedFrame, enhancements, computedTotal } = useCanvasConfigState((state) => ({
+    selectedCanvasSize: state.selectedCanvasSize,
+    selectedFrame: state.selectedFrame,
+    enhancements: state.enhancements,
+    computedTotal: state.computedTotal,
+  }));
   const { orientation, smartCrops } = useUploadState();
   const { currentStyle } = useStyleCatalogState();
   const { userTier } = useEntitlementsState();
@@ -307,8 +313,8 @@ const CanvasCheckoutModal = () => {
     }
 
     // Scroll to top of modal on step transition
-    const modalContent = document.querySelector('[data-modal-content]');
-    if (modalContent) {
+    const modalContent = document.querySelector('[data-modal-content]') as HTMLElement | null;
+    if (modalContent && typeof modalContent.scrollTo === 'function') {
       modalContent.scrollTo({
         top: 0,
         behavior: 'smooth',

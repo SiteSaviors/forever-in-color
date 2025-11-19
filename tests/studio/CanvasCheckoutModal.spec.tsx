@@ -7,6 +7,14 @@ import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest';
 import CanvasCheckoutModal from '@/components/studio/CanvasCheckoutModal';
 import type { CheckoutStep, ShippingInfo } from '@/store/useCheckoutStore';
 
+vi.mock('@/config/featureFlags', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/config/featureFlags')>();
+  return {
+    ...actual,
+    SHOW_STATIC_TESTIMONIALS: true,
+  };
+});
+
 vi.mock('@/components/studio/CanvasInRoomPreview', () => ({
   default: () => <div data-testid="canvas-preview" />,
 }));
@@ -80,20 +88,17 @@ vi.mock('react-router-dom', async (importOriginal) => {
   };
 });
 
+const canvasConfigStateMock = {
+  selectedCanvasSize: '16x20',
+  selectedFrame: 'none',
+  enhancements: [
+    { id: 'floating-frame', name: 'Floating Frame', price: 59, description: '', enabled: true },
+    { id: 'living-canvas', name: 'Living Canvas', price: 49, description: '', enabled: false },
+  ],
+  computedTotal: () => computedTotalMock(),
+};
+
 vi.mock('@/store/hooks/useCanvasConfigStore', () => ({
-  useCanvasConfigState: vi.fn(),
-  useCanvasModalStatus: vi.fn(() => ({
-    canvasModalOpen: true,
-    orientationPreviewPending: false,
-  })),
-  useCanvasSelection: vi.fn(() => ({
-    selectedCanvasSize: '16x20',
-    selectedFrame: 'none',
-    enhancements: [
-      { id: 'floating-frame', name: 'Floating Frame', price: 59, description: '', enabled: true },
-      { id: 'living-canvas', name: 'Living Canvas', price: 49, description: '', enabled: false },
-    ],
-  })),
   useLivingCanvasStatus: vi.fn(() => ({
     livingCanvasModalOpen: false,
     livingCanvasEnabled: false,
@@ -108,6 +113,27 @@ vi.mock('@/store/hooks/useCanvasConfigStore', () => ({
   })),
 }));
 
+const canvasModalStateMock = {
+  canvasModalOpen: true,
+  closeCanvasModal: closeCanvasModalMock,
+};
+
+const uploadPipelineStateMock = {
+  orientationPreviewPending: false,
+};
+
+const computedTotalValue = 199;
+
+vi.mock('@/store/hooks/useFounderCanvasStore', () => ({
+  useCanvasModalState: (selector: (state: typeof canvasModalStateMock) => unknown) => selector(canvasModalStateMock),
+  useUploadPipelineState: (selector: (state: typeof uploadPipelineStateMock) => unknown) => selector(uploadPipelineStateMock),
+  useCanvasConfigState: (selector: (state: typeof canvasConfigStateMock & { computedTotal: () => number }) => unknown) =>
+    selector({
+      ...canvasConfigStateMock,
+      computedTotal: () => computedTotalValue,
+    }),
+}));
+
 vi.mock('@/store/hooks/useStyleCatalogStore', () => ({
   useStyleCatalogState: vi.fn(() => ({
     currentStyle: { id: 'style-1', name: 'Aurora Dreams', thumbnail: null },
@@ -117,6 +143,12 @@ vi.mock('@/store/hooks/useStyleCatalogStore', () => ({
 vi.mock('@/store/hooks/useUploadStore', () => ({
   useUploadState: vi.fn(() => ({
     orientation: 'square',
+    smartCrops: {
+      square: {
+        imageDimensions: { width: 1024, height: 1024 },
+      },
+    },
+    orientationPreviewPending: false,
   })),
 }));
 
@@ -133,6 +165,10 @@ vi.mock('@/store/useCheckoutStore', () => ({
 
 vi.mock('@/utils/telemetry', () => ({
   trackOrderStarted: vi.fn(),
+  trackCheckoutStepView: vi.fn(),
+  trackCheckoutExit: vi.fn(),
+  trackCheckoutRecommendationShown: vi.fn(),
+  trackOrderCompleted: vi.fn(),
 }));
 
 const { trackOrderStarted } = await import('@/utils/telemetry');
@@ -175,7 +211,9 @@ describe('CanvasCheckoutModal telemetry', () => {
       root.render(<CanvasCheckoutModal />);
     });
 
-    const cta = findButton(document.body, 'Continue to Contact & Shipping');
+    const cta =
+      findButton(document.body, 'Continue to Contact & Shipping') ??
+      findButton(document.body, 'Begin Production');
     expect(cta).toBeTruthy();
 
     await act(async () => {

@@ -1,8 +1,9 @@
 import { shallow } from 'zustand/shallow';
 import { useFounderStore } from '@/store/useFounderStore';
+import { useUploadPipelineState } from '@/store/hooks/useFounderCanvasStore';
 
 export const useUploadState = () =>
-  useFounderStore(
+  useUploadPipelineState(
     (state) => ({
       originalImage: state.originalImage,
       originalImageDimensions: state.originalImageDimensions,
@@ -12,6 +13,7 @@ export const useUploadState = () =>
       orientation: state.orientation,
       orientationTip: state.orientationTip,
       orientationChanging: state.orientationChanging,
+      orientationPreviewPending: state.orientationPreviewPending,
       cropReadyAt: state.cropReadyAt,
       isDragging: state.isDragging,
       uploadIntentAt: state.uploadIntentAt,

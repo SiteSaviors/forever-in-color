@@ -2,7 +2,7 @@ import { useCallback, useRef } from 'react';
 import { trackStudioV2CanvasCtaClick, trackStudioV2OrientationCta } from '@/utils/studioV2Analytics';
 import { trackOrderStarted } from '@/utils/telemetry';
 import { useStudioPreviewState } from '@/store/hooks/studio/useStudioPreviewState';
-import { useCanvasConfigActions, useCanvasSelection } from '@/store/hooks/useCanvasConfigStore';
+import { useCanvasConfigState } from '@/store/hooks/useFounderCanvasStore';
 import { useEntitlementsState } from '@/store/hooks/useEntitlementsStore';
 
 type CanvasCtaHandlersArgs = {
@@ -24,8 +24,10 @@ export const useCanvasCtaHandlers = ({
     previewHasData,
     previewReady,
   } = useStudioPreviewState();
-  const { enhancements } = useCanvasSelection();
-  const { computedTotal } = useCanvasConfigActions();
+  const { enhancements, computedTotal } = useCanvasConfigState((state) => ({
+    enhancements: state.enhancements,
+    computedTotal: state.computedTotal,
+  }));
   const { userTier } = useEntitlementsState();
 
   const centerCanvasThrottleRef = useRef<number>(0);

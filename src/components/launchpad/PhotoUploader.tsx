@@ -54,6 +54,12 @@ const PhotoUploader = () => {
   const [pendingOrientation, setPendingOrientation] = useState<Orientation>('square');
   const lastHandledUploadIntentRef = useRef<number | null>(null);
   const previousOriginalRef = useRef<string | null>(null);
+  const emitStepOne = useCallback((payload: Parameters<typeof emitStepOneEvent>[0]) => {
+    if (import.meta.env.DEV) {
+      console.info('[canvas-store][step-one]', payload);
+    }
+    emitStepOneEvent(payload);
+  }, []);
 
   const cropReadyLabel = useMemo(() => {
     if (!cropReadyAt) return null;
@@ -98,14 +104,14 @@ const PhotoUploader = () => {
     setDragging(false);
     const file = event.dataTransfer.files?.[0];
     if (!file) return;
-    emitStepOneEvent({ type: 'upload_started' });
+    emitStepOne({ type: 'upload_started' });
     setStage('analyzing');
     const accessToken = getSessionAccessToken();
     const result = await readFileAsDataURL(file, {
       accessToken,
-      onConversionStart: () => emitStepOneEvent({ type: 'conversion', status: 'start' }),
-      onConversionSuccess: (meta) => emitStepOneEvent({ type: 'conversion', status: 'success', cacheHit: meta.cacheHit }),
-      onConversionError: () => emitStepOneEvent({ type: 'conversion', status: 'error' }),
+      onConversionStart: () => emitStepOne({ type: 'conversion', status: 'start' }),
+      onConversionSuccess: (meta) => emitStepOne({ type: 'conversion', status: 'success', cacheHit: meta.cacheHit }),
+      onConversionError: () => emitStepOne({ type: 'conversion', status: 'error' }),
     });
     await processDataUrl(result);
   };
@@ -133,7 +139,7 @@ const PhotoUploader = () => {
     setOrientation(detectedOrientation);
     setPendingOrientation(detectedOrientation);
     setOrientationTip(ORIENTATION_PRESETS[detectedOrientation].description);
-    emitStepOneEvent({ type: 'upload_success', value: detectedOrientation });
+    emitStepOne({ type: 'upload_success', value: detectedOrientation });
 
     // Note: AIAnalysisOverlay will call setStage('preview') when animation completes
   };
@@ -141,15 +147,15 @@ const PhotoUploader = () => {
   const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    emitStepOneEvent({ type: 'upload_started' });
+    emitStepOne({ type: 'upload_started' });
     setDragging(false);
     setStage('analyzing');
     const accessToken = getSessionAccessToken();
     const result = await readFileAsDataURL(file, {
       accessToken,
-      onConversionStart: () => emitStepOneEvent({ type: 'conversion', status: 'start' }),
-      onConversionSuccess: (meta) => emitStepOneEvent({ type: 'conversion', status: 'success', cacheHit: meta.cacheHit }),
-      onConversionError: () => emitStepOneEvent({ type: 'conversion', status: 'error' }),
+      onConversionStart: () => emitStepOne({ type: 'conversion', status: 'start' }),
+      onConversionSuccess: (meta) => emitStepOne({ type: 'conversion', status: 'success', cacheHit: meta.cacheHit }),
+      onConversionError: () => emitStepOne({ type: 'conversion', status: 'error' }),
     });
     await processDataUrl(result);
   };
@@ -228,7 +234,7 @@ const PhotoUploader = () => {
 
     setOrientationTip(ORIENTATION_PRESETS[targetOrientation].description);
     markCropReady();
-    emitStepOneEvent({ type: 'substep', value: source === 'auto' ? 'complete' : 'crop' });
+    emitStepOne({ type: 'substep', value: source === 'auto' ? 'complete' : 'crop' });
     setStage('complete');
 
     // Populate "Original Image" style with user's cropped photo immediately

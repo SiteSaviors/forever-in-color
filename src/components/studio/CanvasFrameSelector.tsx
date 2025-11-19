@@ -1,10 +1,8 @@
 import { memo, useMemo } from 'react';
 import { clsx } from 'clsx';
-import {
-  useCanvasConfigActions,
-  useCanvasModalStatus,
-  useCanvasSelection,
-} from '@/store/hooks/useCanvasConfigStore';
+import { useCanvasConfigActions } from '@/store/hooks/useCanvasConfigStore';
+import { useCanvasConfigState } from '@/store/hooks/useFounderCanvasStore';
+import { useUploadState } from '@/store/hooks/useUploadStore';
 import type { FrameColor } from '@/store/founder/storeTypes';
 
 export type FrameOption = {
@@ -36,8 +34,11 @@ const FRAME_OPTIONS: FrameOption[] = [
 ];
 
 const CanvasFrameSelectorComponent = () => {
-  const { selectedFrame, enhancements } = useCanvasSelection();
-  const { orientationPreviewPending } = useCanvasModalStatus();
+  const { selectedFrame, enhancements } = useCanvasConfigState((state) => ({
+    selectedFrame: state.selectedFrame,
+    enhancements: state.enhancements,
+  }));
+  const { orientationPreviewPending } = useUploadState();
   const { setFrame, toggleEnhancement } = useCanvasConfigActions();
 
   const floatingFrame = useMemo(

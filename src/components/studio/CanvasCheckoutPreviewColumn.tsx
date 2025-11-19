@@ -1,6 +1,7 @@
 import { memo, Suspense, lazy, useMemo, useRef } from 'react';
 import { clsx } from 'clsx';
-import { useCanvasModalStatus, useCanvasSelection } from '@/store/hooks/useCanvasConfigStore';
+import { useCanvasConfigState } from '@/store/hooks/useFounderCanvasStore';
+import { useUploadState } from '@/store/hooks/useUploadStore';
 import { useScrollVisibility } from '@/hooks/useScrollVisibility';
 import TrustSignal from '@/components/checkout/TrustSignals';
 import CanvasQualityAssurance from '@/components/studio/CanvasQualityAssurance';
@@ -26,8 +27,11 @@ const CanvasCheckoutPreviewColumnComponent = ({
   previewRoomAssetSrc,
   previewArtRectPct,
 }: CanvasCheckoutPreviewColumnProps) => {
-  const { selectedCanvasSize, selectedFrame } = useCanvasSelection();
-  const { orientationPreviewPending } = useCanvasModalStatus();
+  const { selectedCanvasSize, selectedFrame } = useCanvasConfigState((state) => ({
+    selectedCanvasSize: state.selectedCanvasSize,
+    selectedFrame: state.selectedFrame,
+  }));
+  const { orientationPreviewPending } = useUploadState();
   const previewHeaderRef = useRef<HTMLDivElement>(null);
   const showStickyGuarantee = useScrollVisibility(previewHeaderRef, 0.65);
 

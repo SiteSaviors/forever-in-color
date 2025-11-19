@@ -1,7 +1,8 @@
 import { memo, type ReactNode } from 'react';
 import { clsx } from 'clsx';
 import { Package, Flag, Shield } from 'lucide-react';
-import { useCanvasConfigState, useCanvasConfigActions } from '@/store/hooks/useCanvasConfigStore';
+import { useCanvasConfigState } from '@/store/hooks/useFounderCanvasStore';
+import { useUploadState } from '@/store/hooks/useUploadStore';
 import { USE_NEW_CTA_COPY } from '@/config/featureFlags';
 
 const currency = new Intl.NumberFormat('en-US', {
@@ -15,11 +16,11 @@ interface CheckoutFooterProps {
 }
 
 const CheckoutFooterComponent = ({ onPrimaryCta, children }: CheckoutFooterProps) => {
-  const { selectedCanvasSize, orientationPreviewPending } = useCanvasConfigState((state) => ({
+  const { selectedCanvasSize, computedTotal } = useCanvasConfigState((state) => ({
     selectedCanvasSize: state.selectedCanvasSize,
-    orientationPreviewPending: state.orientationPreviewPending,
+    computedTotal: state.computedTotal,
   }));
-  const { computedTotal } = useCanvasConfigActions();
+  const { orientationPreviewPending } = useUploadState();
 
   const total = computedTotal();
   const canvasReady = Boolean(selectedCanvasSize) && !orientationPreviewPending;

@@ -20,7 +20,7 @@
   - Mobile (<lg): preview column collapses into the mobile drawer (`Your Canvas` button + animated drawer). Orientation preview pending overlay disables interactions.
 
 - **Radix Dialog wiring**
-  - `Dialog.Root open={canvasModalOpen}` – tied to `useCanvasModalStatus`.
+  - `Dialog.Root open={canvasModalOpen}` – tied to `useCanvasModalState`.
   - `onOpenChange={handleOpenChange}` – closes modal by invoking `requestClose` with reason `'dismiss'` when overlay attempts to close.
   - `Dialog.Overlay` intercepts pointer down to route to `requestClose('backdrop')`.
   - `onEscapeKeyDown` and `onPointerDownOutside` also prevent default and route to `requestClose`.
@@ -28,10 +28,10 @@
 
 ## Phase 1 – State, Store, and Effect Inventory *(Research)*
 - **External store & selector hooks**
-  - `useCanvasModalStatus()` → reads `canvasModalOpen`, `orientationPreviewPending`.
-  - `useCanvasSelection()` → reads `selectedCanvasSize`, `selectedFrame`, `enhancements`.
-  - `useCanvasConfigActions()` → mutates via `closeCanvasModal(reason)` and reads computed selectors: `computedTotal()`.
-  - `useUploadState()` → reads `orientation`, `smartCrops`.
+  - `useCanvasModalState()` → reads `canvasModalOpen` and exposes `closeCanvasModal`.
+  - `useCanvasConfigState()` → reads `selectedCanvasSize`, `selectedFrame`, `enhancements`, and `computedTotal()`.
+  - `useCanvasConfigActions()` → mutates via `setCanvasSize`, `setFrame`, `toggleEnhancement`, `setLivingCanvasModalOpen`.
+  - `useUploadState()` / `useUploadPipelineState()` → read `orientation`, `smartCrops`, and `orientationPreviewPending`.
   - `useStyleCatalogState()` → reads `currentStyle` for preview column.
   - `useEntitlementsState()` → reads `userTier` for telemetry / pricing.
   - `useCheckoutStore()` (Zustand) with shallow selector → reads `step`, `shipping`, exposes actions `setStep`, `enterModalCheckout`, `leaveModalCheckout`.

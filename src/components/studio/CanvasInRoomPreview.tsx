@@ -3,7 +3,7 @@ import type { Orientation } from '@/utils/imageUtils';
 import type { CanvasSize } from '@/store/founder/storeTypes';
 import { getRoomAsset } from './roomAssets';
 import { useUploadState } from '@/store/hooks/useUploadStore';
-import { useCanvasSelection } from '@/store/hooks/useCanvasConfigStore';
+import { useCanvasConfigState } from '@/store/hooks/useFounderCanvasStore';
 import { usePreviewState, usePreviewEntry, usePreviewCacheEntry } from '@/store/hooks/usePreviewStore';
 import { useStyleCatalogState } from '@/store/hooks/useStyleCatalogStore';
 
@@ -74,7 +74,10 @@ const CanvasInRoomPreview = ({
   enableHoverEffect: _enableHoverEffect,
 }: CanvasInRoomPreviewProps) => {
   const { orientation, orientationChanging, croppedImage, uploadedImage } = useUploadState();
-  const { selectedFrame, selectedCanvasSize: selectedSize } = useCanvasSelection();
+  const { selectedFrame, selectedCanvasSize: selectedSize } = useCanvasConfigState((state) => ({
+    selectedFrame: state.selectedFrame,
+    selectedCanvasSize: state.selectedCanvasSize,
+  }));
   const { previewStatus } = usePreviewState();
   const { currentStyle } = useStyleCatalogState();
   const previewEntry = usePreviewEntry(currentStyle?.id ?? null);

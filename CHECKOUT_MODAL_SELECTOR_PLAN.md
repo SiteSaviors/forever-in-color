@@ -4,7 +4,7 @@
 | Phase | Scope | Status | Notes |
 | --- | --- | --- | --- |
 | 2.1 | Hook API groundwork | ✅ | `useCanvasConfigState` now mirrors `useFounderStore` selectors; `useLegacy` shim removed after migrations. |
-| 2.2 | Dedicated helper hooks | ✅ | Added `useCanvasModalStatus`, `useCanvasSelection`, and living canvas helpers for ergonomic selectors. |
+| 2.2 | Dedicated helper hooks | ✅ | Interim helper hooks enabled migrations; now superseded by `useFounderCanvasStore` selectors + upload hooks. |
 | 2.3 | Incremental consumer migration | ✅ | Canvas modal, previews, checkout summary, and partner components now consume scoped selectors/helpers. |
 | 2.4 | Cleanup & validation | ✅ | Legacy hook deleted, store imports updated, baseline lint/build/deps checks run post-migration. |
 | 3.1 | Preview column extraction | ✅ | PreviewColumn memoized with local selector usage; derived preview assets scoped internally. |

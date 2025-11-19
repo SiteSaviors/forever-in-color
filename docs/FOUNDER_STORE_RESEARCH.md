@@ -130,7 +130,24 @@
 | Restore/reset preview helpers | `restoreOriginalImagePreview` and `resetPreviewToEmptyState` leave store in expected baseline state without extra preview generation. | Unit tests around the new slice functions. |
 
 ### Rollout & Instrumentation
-- Ship new slices behind a short-lived env flag (`ENABLE_CANVAS_STORE_REWRITE`) mirroring the checkout modal approach, enabling instant rollback.
+- Short-lived env flag handled the initial rollout; the rewrite now rides 100% of traffic with the flag removed in Phase 5.2.
 - Add DEV-only `console.info` statements inside new slice actions (guarded by `import.meta.env.DEV`) to trace ordering during QA.
 - Create lightweight unit tests for `persistCanvasSelection`, `openCanvasModal`, and `setOrientation` in their new slice files to catch regressions early.
-- Monitor analytics dashboards (modal open count, Step One completion rate) before/after flipping the flag; any regression reverts via flag without redeploy.
+- Monitor analytics dashboards (modal open count, Step One completion rate) each time slices change; we rely on staging soak tests instead of flag flips now.
+
+## Micro-Phased Execution Plan (De-risked)
+
+| Phase | Scope | Key Actions | Guardrails |
+| --- | --- | --- | --- |
+| **Phase 1.1 – Documentation Lock** | Finalize research artifacts and inline comments. | Land this doc, annotate `useFounderStore.ts` around upcoming slice boundaries for future contributors. | No code behavior changes. |
+| **Phase 1.2 – Proxy Hooks (✅ Done)** | Create `useCanvasConfigState`, `useCanvasModalState`, `useUploadPipelineState` that proxy to the current store. | Export from `src/store/hooks/useFounderStore.ts` (or new hook file). Add Storybook/dev notes to start migrating consumers gradually. | Hooks must strictly mirror existing selectors. |
+| **Phase 2.1 – Utility Extraction (✅ Done)** | Move helpers (selection snapshot, telemetry wrappers) into `/utils/canvas/`. | Ensure new modules have unit smoke tests; update imports in `useFounderStore.ts`. | Pure refactor; run lint/build to confirm no drift. |
+| **Phase 2.2 – Preview/Orientation Helpers (✅ Done)** | Extract `restoreOriginalImagePreview`, `resetPreviewToEmptyState`, orientation helpers into utility functions shared later. | Keep functions colocated temporarily but gated behind barrel export for slices. | Maintain sequence (state update → preview update). |
+| **Phase 3.1 – `canvasConfigSlice` Stub (✅ Done)** | Implement slice factory returning current config state/actions, but still composed inside `useFounderStore`. | Add unit tests for `persistCanvasSelection`, `loadCanvasSelectionForStyle`. | Ensure exported API identical (types + behavior). |
+| **Phase 3.2 – `canvasModalSlice` Stub (✅ Done)** | Move modal state + telemetry into slice file; `useFounderStore` spreads it in. | Double-check analytics payload logging via DEV instrumentation. | Keep gating via entitlements + snapshots exactly as before. |
+| **Phase 3.3 – `uploadPipelineSlice` Stub (✅ Done)** | Extract upload/orientation pipeline into slice while keeping preview slice dependencies injected. | Add integration test (mock preview slice) verifying `setOrientation` toggles `orientationPreviewPending`. | Confirm Step One telemetry still triggered (manual QA). |
+| **Phase 4.1 – Hook Adoption (Canvas Modal) (✅ Done)** | Move `CanvasCheckoutModal` + `StudioConfigurator` to the slice hooks. | Temporary flag verified parity in staging before removal. | Telemetry payloads matched baseline snapshots. |
+| **Phase 4.2 – Hook Adoption (Canvas Config) (✅ Done)** | Migrate canvas selection consumers (Checkout rails, `StudioConfigurator`, CTA widgets). | Use proxy hooks to minimize churn; keep gating by flag. | Compare `canvasSelections` snapshots pre/post. |
+| **Phase 4.3 – Hook Adoption (Upload Pipeline) (✅ Done)** | Update Launchpad, `PhotoUploader`, `SmartCropPreview`, and preview helpers to use dedicated hook. | Add DEV logging for Step One events to ensure ordering unchanged. | Manual QA per Phase 5 matrix. |
+| **Phase 5.1 – Flag Burn-in & Analytics Audit (✅ Done)** | Staged soak with rewrite enabled; compared telemetry to pre-refactor runs. | Captured `trackCanvasPanelOpen` & Step One metrics. | No regressions, flag retired post-soak. |
+| **Phase 5.2 – Cleanup & Flag Removal (✅ Done)** | Remove proxy hooks + legacy selectors, delete flag, finalize tests/docs. | Update docs to reference new slices/hooks only. | Ensure dep graph clean, run full test suite. |

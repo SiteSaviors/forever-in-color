@@ -4,7 +4,8 @@ import { CANVAS_SIZE_OPTIONS } from '@/utils/canvasSizes';
 import { getCanvasRecommendation } from '@/utils/canvasRecommendations';
 import { SHOW_SIZE_RECOMMENDATIONS } from '@/config/featureFlags';
 import { useUploadState } from '@/store/hooks/useUploadStore';
-import { useCanvasConfigActions, useCanvasSelection } from '@/store/hooks/useCanvasConfigStore';
+import { useCanvasConfigActions } from '@/store/hooks/useCanvasConfigStore';
+import { useCanvasConfigState } from '@/store/hooks/useFounderCanvasStore';
 import { trackCheckoutRecommendationSelected } from '@/utils/telemetry';
 
 type CanvasSizeSelectorProps = {
@@ -21,7 +22,9 @@ const CanvasSizeSelectorComponent = ({
   onAutoExpandDrawer,
 }: CanvasSizeSelectorProps) => {
   const { orientation, smartCrops } = useUploadState();
-  const { selectedCanvasSize } = useCanvasSelection();
+  const { selectedCanvasSize } = useCanvasConfigState((state) => ({
+    selectedCanvasSize: state.selectedCanvasSize,
+  }));
   const { setCanvasSize } = useCanvasConfigActions();
 
   const sizeOptions = CANVAS_SIZE_OPTIONS[orientation];
