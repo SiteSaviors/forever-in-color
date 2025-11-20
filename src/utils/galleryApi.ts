@@ -31,6 +31,20 @@ export interface GalleryListResponse {
   requiresWatermark?: boolean;
 }
 
+export interface GallerySourceParams {
+  previewLogId?: string | null;
+  sourceStoragePath?: string | null;
+  accessToken?: string | null;
+}
+
+export type GallerySourceResponse = {
+  signedUrl: string;
+  expiresAt: number | null;
+  storagePath: string;
+  previewLogId: string | null;
+  ttlSeconds: number | null;
+};
+
 export interface SaveToGalleryParams {
   previewLogId?: string;
   styleId: string;
@@ -55,6 +69,17 @@ const STORAGE_PATH_REGEX = /(preview-cache(?:-public|-premium)?\/.+)$/;
 const extractStoragePathFromUrl = (url: string): string | null => {
   const match = url.match(STORAGE_PATH_REGEX);
   return match ? match[1] : null;
+};
+
+const buildAuthHeaders = (accessToken?: string | null): Record<string, string> => {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    apikey: import.meta.env.VITE_SUPABASE_ANON_KEY as string,
+  };
+  if (accessToken) {
+    headers.Authorization = `Bearer ${accessToken}`;
+  }
+  return headers;
 };
 
 /**
@@ -219,6 +244,38 @@ export async function deleteGalleryItem(
       status: undefined,
     };
   }
+}
+
+export async function fetchGallerySource(params: GallerySourceParams): Promise<GallerySourceResponse> {
+  const { previewLogId, sourceStoragePath, accessToken } = params;
+
+  if (!previewLogId && !sourceStoragePath) {
+    throw new Error('previewLogId or sourceStoragePath is required');
+  }
+
+  const response = await fetch(`${SUPABASE_URL}/functions/v1/get-gallery-source`, {
+    method: 'POST',
+    headers: buildAuthHeaders(accessToken),
+    body: JSON.stringify({
+      previewLogId: previewLogId ?? null,
+      sourceStoragePath: sourceStoragePath ?? null,
+      mode: 'signed_url',
+    }),
+  });
+
+  if (!response.ok) {
+    const errorPayload = await response.json().catch(() => null);
+    const message =
+      (errorPayload && (errorPayload.error || errorPayload.message)) ??
+      `Failed to fetch gallery source (${response.status})`;
+    throw new Error(message);
+  }
+
+  const data = (await response.json()) as GallerySourceResponse;
+  if (!data?.signedUrl) {
+    throw new Error('Gallery source response missing signed URL');
+  }
+  return data;
 }
 
 /**

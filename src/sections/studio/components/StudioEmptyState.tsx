@@ -7,12 +7,12 @@ type StudioEmptyStateProps = {
 };
 
 const StudioEmptyState = ({ onUpload, onBrowseStyles, launchflowOpen }: StudioEmptyStateProps) => (
-  <div className="absolute inset-0 flex items-start justify-center overflow-y-auto p-4 sm:items-center sm:p-6">
-    <div className="relative w-full max-w-[420px] sm:max-w-xl overflow-hidden rounded-[2.5rem] border border-white/15 bg-white/[0.08] px-6 py-10 text-center shadow-[0_35px_140px_rgba(20,24,48,0.55)] backdrop-blur-2xl sm:px-8 sm:py-12">
+  <div className="absolute inset-0 flex flex-col items-center justify-center p-4 sm:p-6">
+    <div className="relative w-full max-w-[420px] sm:max-w-xl overflow-hidden rounded-[2.5rem] border border-white/15 bg-white/[0.08] px-5 py-8 text-center shadow-[0_35px_140px_rgba(20,24,48,0.55)] backdrop-blur-2xl sm:px-8 sm:py-12">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(170,130,255,0.25),transparent_60%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom,rgba(255,215,146,0.18),transparent_65%)]" />
-      <div className="relative space-y-6 sm:space-y-7">
-        <div className="relative mx-auto flex h-14 items-center justify-center">
+      <div className="relative space-y-5 sm:space-y-7">
+        <div className="relative mx-auto flex h-12 sm:h-14 items-center justify-center">
           <div className="absolute inset-0 blur-3xl bg-[radial-gradient(circle,rgba(164,129,255,0.32),transparent)]" aria-hidden="true" />
           <div className="relative inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/[0.12] px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.32em] text-white/70 shadow-[0_18px_45px_rgba(12,14,32,0.45)]">
             Wondertone Studio
@@ -21,11 +21,11 @@ const StudioEmptyState = ({ onUpload, onBrowseStyles, launchflowOpen }: StudioEm
             </svg>
           </div>
         </div>
-        <div className="space-y-4">
-          <h3 className="font-poppins text-2xl font-semibold leading-snug text-white sm:text-[32px]">
+        <div className="space-y-3 sm:space-y-4">
+          <h3 className="font-poppins text-xl font-semibold leading-snug text-white sm:text-[32px]">
             Upload Any Photo Into Wondertone Studio
           </h3>
-          <p className="font-poppins text-base text-white/75">
+          <p className="font-poppins text-sm text-white/75 sm:text-base">
             Choose between 50+ art styles to start your creation.
           </p>
         </div>
@@ -35,7 +35,7 @@ const StudioEmptyState = ({ onUpload, onBrowseStyles, launchflowOpen }: StudioEm
             onClick={onUpload}
             disabled={launchflowOpen}
             className={clsx(
-              'rounded-full px-6 py-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950',
+              'rounded-full px-5 py-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950',
               launchflowOpen
                 ? 'cursor-default bg-white/15 text-white/60'
                 : 'bg-gradient-to-r from-amber-400 via-purple-400 to-blue-500 text-slate-950 shadow-[0_18px_45px_rgba(71,67,188,0.5)] hover:shadow-[0_18px_55px_rgba(71,67,188,0.6)]'
@@ -51,7 +51,7 @@ const StudioEmptyState = ({ onUpload, onBrowseStyles, launchflowOpen }: StudioEm
             Browse Our Library
           </button>
         </div>
-        <p className="text-[11px] font-medium uppercase tracking-[0.28em] text-white/45">
+        <p className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.28em] text-white/45">
           Your image and artwork stays private—always.
         </p>
       </div>

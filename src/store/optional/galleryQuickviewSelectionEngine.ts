@@ -14,6 +14,8 @@ import {
   isSourceSignedUrlValid,
 } from '@/store/optional/galleryQuickviewHelpers';
 
+const isGalleryDebugEnabled = import.meta.env.DEV;
+
 const orientationMap = {
   square: 'square' as const,
   horizontal: 'horizontal' as const,
@@ -93,6 +95,7 @@ export const handleGalleryQuickviewSelection = async (
   const targetOrientation = orientationMap[item.orientation] ?? 'square';
   const displayImageUrl = resolveDisplayImage(item);
   const requiresWatermarkFlag = requiresWatermark ?? true;
+  const accessToken = typeof store.getSessionAccessToken === 'function' ? store.getSessionAccessToken() : null;
 
   const candidates = buildDimensionCandidates(item, displayImageUrl);
   let dimensions = { width: 0, height: 0 };
@@ -142,7 +145,22 @@ export const handleGalleryQuickviewSelection = async (
     height: readOptionalNumber(cropConfig, 'imageHeight', dimensions.height),
   });
 
-  const sourceResolution = await resolveSourceImage(item, displayImageUrl);
+  const sourceResolution = await resolveSourceImage(item, displayImageUrl, {
+    accessToken,
+  });
+  if (isGalleryDebugEnabled) {
+    const expiresInMs = item.sourceSignedUrlExpiresAt ? item.sourceSignedUrlExpiresAt - Date.now() : null;
+    console.info('[GalleryRecall]', {
+      artId: item.id,
+      styleId: item.styleId,
+      position,
+      sourceStoragePath: item.sourceStoragePath ?? null,
+      hasSignedUrl: Boolean(item.sourceSignedUrl),
+      signedUrlExpiresInMs: expiresInMs,
+      usedDataUri: sourceResolution.usedDataUri,
+      fallbackReason: sourceResolution.fallbackReason ?? null,
+    });
+  }
   if (sourceResolution.fallbackReason) {
     trackGalleryQuickviewSourceFallback({
       artId: item.id,

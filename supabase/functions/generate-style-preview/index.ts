@@ -31,6 +31,7 @@ import {
 } from '../_shared/storageUtils.ts';
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+const PREVIEW_DEBUG_LOGS = Deno.env.get('WT_PREVIEW_DEBUG_LOGS') === 'true';
 
 const parsePositiveInt = (value: string | undefined, fallback: number): number => {
   if (!value) return fallback;
@@ -114,9 +115,15 @@ const extractBearerToken = (headerValue?: string | null): string | null => {
   return trimmed;
 };
 
+type NormalizeContext = {
+  requestId?: string;
+  sourceStoragePath?: string | null;
+};
+
 async function normalizeImageInput(
   image: string,
-  supabase: ReturnType<typeof createClient>
+  supabase: ReturnType<typeof createClient>,
+  context?: NormalizeContext
 ): Promise<string> {
   if (image.startsWith('data:image/')) {
     return image;
@@ -146,6 +153,15 @@ async function normalizeImageInput(
       path: storageRef.path,
       message: error instanceof Error ? error.message : String(error),
     });
+    if (PREVIEW_DEBUG_LOGS) {
+      console.log('[preview-debug] normalize_failure', {
+        requestId: context?.requestId ?? null,
+        sourceStoragePath: context?.sourceStoragePath ?? null,
+        bucket: storageRef.bucket,
+        path: storageRef.path,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
     throw error instanceof Error ? error : new Error(String(error));
   }
 }
@@ -983,7 +999,10 @@ serve(async (req) => {
     const normalizationStart = Date.now();
     let normalizedImageUrl: string;
     try {
-      normalizedImageUrl = await normalizeImageInput(imageUrl, supabase);
+      normalizedImageUrl = await normalizeImageInput(imageUrl, supabase, {
+        requestId,
+        sourceStoragePath,
+      });
     } catch (error) {
       logger.error('Image normalization failed', {
         requestId,

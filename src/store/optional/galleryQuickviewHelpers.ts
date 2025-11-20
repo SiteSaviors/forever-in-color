@@ -4,8 +4,30 @@ import type { GalleryQuickviewItem } from '@/store/founder/storeTypes';
 import type { Orientation } from '@/utils/imageUtils';
 import type { FounderState } from '@/store/founder/storeTypes';
 import type { SmartCropResult } from '@/utils/smartCrop';
+import { fetchGallerySource } from '@/utils/galleryApi';
 
 const SIGNED_URL_BUFFER_MS = 5_000;
+const SOURCE_CACHE_TTL_MS = 5 * 60 * 1000;
+
+const gallerySourceCache = new Map<string, { dataUri: string; expiresAt: number }>();
+
+const getCachedSourceDataUri = (storagePath: string | null | undefined): string | null => {
+  if (!storagePath) return null;
+  const entry = gallerySourceCache.get(storagePath);
+  if (!entry) return null;
+  if (entry.expiresAt <= Date.now()) {
+    gallerySourceCache.delete(storagePath);
+    return null;
+  }
+  return entry.dataUri;
+};
+
+const cacheSourceDataUri = (storagePath: string, dataUri: string) => {
+  gallerySourceCache.set(storagePath, {
+    dataUri,
+    expiresAt: Date.now() + SOURCE_CACHE_TTL_MS,
+  });
+};
 
 const dataUriPrefix = 'data:';
 
@@ -61,7 +83,11 @@ const convertToDataUri = async (url: string): Promise<string> => {
 type SourceResolution = {
   source: string;
   usedDataUri: boolean;
-  fallbackReason?: 'missing_source' | 'expired_signed_url';
+  fallbackReason?: 'missing_source' | 'expired_signed_url' | 'invalid_dimensions';
+};
+
+type ResolveSourceImageOptions = {
+  accessToken?: string | null;
 };
 
 const toDataUriWithTelemetry = async (
@@ -79,12 +105,52 @@ const toDataUriWithTelemetry = async (
   return { value: dataUri, usedDataUri: true };
 };
 
+const resolveStoredSourceImage = async (
+  item: GalleryQuickviewItem,
+  options?: ResolveSourceImageOptions
+): Promise<SourceResolution | null> => {
+  const storagePath = item.sourceStoragePath ?? null;
+  if (!storagePath) {
+    return null;
+  }
+
+  const cached = getCachedSourceDataUri(storagePath);
+  if (cached) {
+    return { source: cached, usedDataUri: true };
+  }
+
+  const accessToken = options?.accessToken ?? null;
+  if (!accessToken) {
+    console.warn('[GalleryQuickview] Missing access token for gallery source retrieval');
+    return null;
+  }
+
+  try {
+    const response = await fetchGallerySource({
+      previewLogId: item.previewLogId ?? null,
+      sourceStoragePath: storagePath,
+      accessToken,
+    });
+    if (response?.signedUrl) {
+      const { value } = await toDataUriWithTelemetry(response.signedUrl, item);
+      cacheSourceDataUri(storagePath, value);
+      return { source: value, usedDataUri: true };
+    }
+  } catch (error) {
+    console.error('[GalleryQuickview] Failed to retrieve gallery source', error);
+  }
+
+  return null;
+};
+
 export const resolveSourceImage = async (
   item: GalleryQuickviewItem,
-  displayImageUrl: string
+  displayImageUrl: string,
+  options?: ResolveSourceImageOptions
 ): Promise<SourceResolution> => {
-  if (item.sourceStoragePath) {
-    return { source: item.sourceStoragePath, usedDataUri: false };
+  const storedSource = await resolveStoredSourceImage(item, options);
+  if (storedSource) {
+    return storedSource;
   }
 
   const signedValid = isSourceSignedUrlValid(item);
