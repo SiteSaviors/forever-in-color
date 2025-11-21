@@ -1,6 +1,6 @@
 import { useCallback, useRef } from 'react';
 import { trackStudioV2CanvasCtaClick, trackStudioV2OrientationCta } from '@/utils/studioV2Analytics';
-import { trackOrderStarted } from '@/utils/telemetry';
+import { trackOrderStarted, trackRuntimeMetric } from '@/utils/telemetry';
 import { useStudioPreviewState } from '@/store/hooks/studio/useStudioPreviewState';
 import { useCanvasConfigState } from '@/store/hooks/useFounderCanvasStore';
 import { useEntitlementsState } from '@/store/hooks/useEntitlementsStore';
@@ -28,7 +28,7 @@ export const useCanvasCtaHandlers = ({
     enhancements: state.enhancements,
     computedTotal: state.computedTotal,
   }));
-  const { userTier } = useEntitlementsState();
+  const { userTier, hasPremiumAccess } = useEntitlementsState();
 
   const centerCanvasThrottleRef = useRef<number>(0);
   const centerOrientationThrottleRef = useRef<number>(0);
@@ -48,6 +48,11 @@ export const useCanvasCtaHandlers = ({
         source: 'center',
       });
       centerCanvasThrottleRef.current = now;
+      trackRuntimeMetric('canvas_cta_click', {
+        styleId: style.id,
+        orientation,
+        hasPremiumAccess,
+      });
       trackOrderStarted(userTier, computedTotal(), hasEnabledEnhancements);
     }
 
@@ -62,6 +67,7 @@ export const useCanvasCtaHandlers = ({
     previewHasData,
     previewReady,
     userTier,
+    hasPremiumAccess,
     computedTotal,
   ]);
 

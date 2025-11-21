@@ -85,6 +85,8 @@ export const canGenerateStylePreview = ({
   entitlements,
   sessionUser,
 }: GateParams): GateResult => {
+  const hasPremiumAccess = entitlements.hasPremiumAccess ?? entitlements.tier !== 'free';
+
   if (entitlements.status !== 'ready') {
     if (sessionUser) {
       return {
@@ -123,7 +125,7 @@ export const canGenerateStylePreview = ({
 
   const requiredTier = styleMeta.requiredTier ?? PREMIUM_DEFAULT_REQUIRED_TIER;
 
-  if (entitlements.tier === 'dev') {
+  if (entitlements.tier === 'dev' || hasPremiumAccess) {
     return { allowed: true, reason: 'allowed', style: styleMeta };
   }
 

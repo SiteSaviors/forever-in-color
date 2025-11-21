@@ -61,6 +61,7 @@ export const useGalleryQuickview = () => {
     clearGallery,
     invalidateGallery,
     removeGalleryItem,
+    entitlementsHasPremiumAccess,
   } = useFounderStore(
     (state) => ({
       galleryItems: state.galleryItems,
@@ -74,6 +75,7 @@ export const useGalleryQuickview = () => {
       clearGallery: state.clearGallery,
       invalidateGallery: state.invalidateGallery,
       removeGalleryItem: state.removeGalleryItem,
+      entitlementsHasPremiumAccess: state.entitlements.hasPremiumAccess ?? state.entitlements.tier !== 'free',
     }),
     shallow
   );
@@ -120,7 +122,10 @@ export const useGalleryQuickview = () => {
           const mappedItems = response.items.slice(0, QUICKVIEW_LIMIT).map(mapGalleryItem);
 
           if (mountedRef.current) {
-            setGalleryItems(mappedItems, response.requiresWatermark ?? null);
+            const fallbackRequires = !entitlementsHasPremiumAccess;
+            const requiresWatermark =
+              typeof response.requiresWatermark === 'boolean' ? response.requiresWatermark : fallbackRequires;
+            setGalleryItems(mappedItems, requiresWatermark);
             if (!loadTrackedRef.current) {
               trackGalleryQuickviewLoad(mappedItems.length);
               loadTrackedRef.current = true;
@@ -149,6 +154,7 @@ export const useGalleryQuickview = () => {
       setGalleryError,
       setGalleryItems,
       clearGallery,
+      entitlementsHasPremiumAccess,
     ]
   );
 
@@ -181,7 +187,8 @@ export const useGalleryQuickview = () => {
     loading,
     ready,
     error: galleryError,
-    requiresWatermark: galleryRequiresWatermark,
+    requiresWatermark:
+      typeof galleryRequiresWatermark === 'boolean' ? galleryRequiresWatermark : !entitlementsHasPremiumAccess,
     refresh,
     invalidate: invalidateGallery,
     removeItem: removeGalleryItem,

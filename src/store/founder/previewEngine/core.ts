@@ -121,6 +121,7 @@ export const startStylePreviewFlow = async (
   }
 
   const entitlementState = get().entitlements;
+  const hasPremiumAccess = entitlementState.hasPremiumAccess ?? entitlementState.tier !== 'free';
 
   if (entitlementState.status === 'error') {
     set({
@@ -159,7 +160,7 @@ export const startStylePreviewFlow = async (
       status: 'ready',
       data: {
         previewUrl: cached.url,
-        watermarkApplied: get().entitlements.requiresWatermark,
+        watermarkApplied: !hasPremiumAccess,
         startedAt: cached.generatedAt ?? timestamp,
         completedAt: cached.generatedAt ?? timestamp,
         storageUrl: cached.storageUrl ?? cached.url,
@@ -347,6 +348,8 @@ export const startStylePreviewFlow = async (
     });
 
     const timestamp = Date.now();
+    const computedRequiresWatermark =
+      typeof result.requiresWatermark === 'boolean' ? result.requiresWatermark : !hasPremiumAccess;
     get().cacheStylePreview(style.id, {
       url: result.previewUrl,
       orientation: targetOrientation,
@@ -362,7 +365,7 @@ export const startStylePreviewFlow = async (
       status: 'ready',
       data: {
         previewUrl: result.previewUrl,
-        watermarkApplied: result.requiresWatermark,
+        watermarkApplied: computedRequiresWatermark,
         startedAt: timestamp,
         completedAt: timestamp,
         storageUrl: result.storageUrl ?? null,
@@ -375,9 +378,18 @@ export const startStylePreviewFlow = async (
       orientation: targetOrientation,
     });
 
+    if (
+      typeof result.remainingTokens !== 'number' &&
+      typeof (result as { premiumTokens?: number }).premiumTokens !== 'number' &&
+      typeof (result as { freeMonthlyTokens?: number }).freeMonthlyTokens !== 'number'
+    ) {
+      get().consumePreviewToken();
+    }
+
     get().updateEntitlementsFromResponse({
       remainingTokens: result.remainingTokens,
-      requiresWatermark: result.requiresWatermark,
+      requiresWatermark: computedRequiresWatermark,
+      hasPremiumAccess: !computedRequiresWatermark,
       tier: result.tier,
       priority: result.priority,
       softRemaining: result.softRemaining,

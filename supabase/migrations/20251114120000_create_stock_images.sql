@@ -1,6 +1,15 @@
+-- Create helper function for updated_at timestamp
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
 -- Create stock_images table for curated royalty-free stock library
 CREATE TABLE IF NOT EXISTS public.stock_images (
-  id TEXT PRIMARY KEY,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   category TEXT NOT NULL CHECK (category IN (
     'all',
     'nature-outdoors',
@@ -50,14 +59,6 @@ CREATE TRIGGER set_stock_images_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
--- Seed data: Placeholder "Coming soon" entries for each category
--- These will be replaced with real stock images when assets are uploaded
-INSERT INTO public.stock_images (id, category, title, tags, thumbnail_url, full_url, aspect_ratio, orientation, tone_hints, curated_rank) VALUES
-  ('placeholder-nature-001', 'nature-outdoors', 'Coming Soon - Nature & Outdoors', ARRAY['placeholder'], '', '', 1.5, 'horizontal', ARRAY[], 999),
-  ('placeholder-animals-001', 'animals-wildlife', 'Coming Soon - Animals & Wildlife', ARRAY['placeholder'], '', '', 1.0, 'square', ARRAY[], 999),
-  ('placeholder-people-001', 'people-portraits', 'Coming Soon - People & Portraits', ARRAY['placeholder'], '', '', 0.67, 'vertical', ARRAY[], 999),
-  ('placeholder-food-001', 'food-culture', 'Coming Soon - Food & Culture', ARRAY['placeholder'], '', '', 1.33, 'horizontal', ARRAY[], 999),
-  ('placeholder-abstract-001', 'abstract-texture', 'Coming Soon - Abstract & Texture', ARRAY['placeholder'], '', '', 1.0, 'square', ARRAY[], 999),
-  ('placeholder-scifi-001', 'scifi-fantasy', 'Coming Soon - Sci-Fi & Fantasy', ARRAY['placeholder'], '', '', 1.78, 'horizontal', ARRAY[], 999),
-  ('placeholder-classic-001', 'classic-vintage', 'Coming Soon - Classic & Vintage', ARRAY['placeholder'], '', '', 1.5, 'horizontal', ARRAY[], 999)
-ON CONFLICT (id) DO NOTHING;
+-- Seed data: Skipped because table already exists with data
+-- The stock_images table was created previously and may have different schema
+-- Placeholder seed data removed to avoid conflicts

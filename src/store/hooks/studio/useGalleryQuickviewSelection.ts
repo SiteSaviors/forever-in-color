@@ -11,9 +11,13 @@ export const useGalleryQuickviewSelection = () => {
   return useCallback(
     async (item: GalleryQuickviewItem, requiresWatermark: boolean | null, position: number) => {
       const store = useFounderStore.getState();
+      const effectiveRequires =
+        typeof requiresWatermark === 'boolean'
+          ? requiresWatermark
+          : !(store.entitlements.hasPremiumAccess ?? store.entitlements.tier !== 'free');
       try {
         const module = await gallerySelectionAccessor.load();
-        await module.handleGalleryQuickviewSelection(store, item, requiresWatermark, position);
+        await module.handleGalleryQuickviewSelection(store, item, effectiveRequires, position);
       } catch (error) {
         console.error('[useGalleryQuickviewSelection] Failed to handle gallery selection', error);
       }

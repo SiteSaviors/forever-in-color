@@ -7,6 +7,9 @@ export type EntitlementSnapshot = {
   tier: EntitlementTier;
   quota: number | null;
   remainingTokens: number | null;
+  premiumTokens: number | null;
+  freeMonthlyTokens: number | null;
+  hasPremiumAccess: boolean;
   renewAt: string | null;
   priority: EntitlementPriority;
   requiresWatermark: boolean;
@@ -63,6 +66,17 @@ const coerceBoolean = (value: unknown): boolean => {
   return Boolean(value);
 };
 
+const EXTENDED_COLUMNS = 'tier,tokens_quota,remaining_tokens,premium_tokens,free_monthly_tokens,has_premium_access,period_start,period_end,dev_override';
+const LEGACY_COLUMNS = 'tier,tokens_quota,remaining_tokens,period_end,dev_override';
+
+const fetchEntitlementsRow = async (columns: string) => {
+  const supabaseClient = await getSupabaseClient();
+  if (!supabaseClient) {
+    throw new Error('Supabase client not configured');
+  }
+  return supabaseClient.from('v_entitlements').select(columns).maybeSingle();
+};
+
 export const fetchAuthenticatedEntitlements = async (): Promise<EntitlementSnapshot | null> => {
   const supabaseClient = await getSupabaseClient();
   if (!supabaseClient) {
@@ -70,11 +84,9 @@ export const fetchAuthenticatedEntitlements = async (): Promise<EntitlementSnaps
   }
 
   let response;
+  let usedLegacyFallback = false;
   try {
-    response = await supabaseClient
-      .from('v_entitlements')
-      .select('tier,tokens_quota,remaining_tokens,period_end,dev_override')
-      .maybeSingle();
+    response = await fetchEntitlementsRow(EXTENDED_COLUMNS);
   } catch (error) {
     if (error instanceof Error && error.message.includes('Access token unavailable')) {
       devWarn('entitlementsApi', 'Access token missing while fetching entitlements');
@@ -83,7 +95,18 @@ export const fetchAuthenticatedEntitlements = async (): Promise<EntitlementSnaps
     throw error;
   }
 
-  const { data, error } = response;
+  let { data, error } = response;
+
+  if (error && error.message?.includes('column') &&
+      (error.message?.includes('premium_tokens') ||
+       error.message?.includes('free_monthly_tokens') ||
+       error.message?.includes('has_premium_access'))) {
+    devWarn('entitlementsApi', 'Premium token columns missing; falling back to legacy entitlement view');
+    usedLegacyFallback = true;
+    const fallbackResponse = await fetchEntitlementsRow(LEGACY_COLUMNS);
+    data = fallbackResponse.data;
+    error = fallbackResponse.error;
+  }
 
   devLog('entitlementsApi', 'v_entitlements query result', {
     hasData: !!data,
@@ -105,15 +128,24 @@ export const fetchAuthenticatedEntitlements = async (): Promise<EntitlementSnaps
   }
 
   const tier = mapTier(data.tier as string, coerceBoolean(data.dev_override));
-  const quota = coerceNumber(data.tokens_quota);
-  const remaining = coerceNumber(data.remaining_tokens);
+  const quota = coerceNumber((data as Record<string, unknown>).tokens_quota);
+  const remaining = coerceNumber((data as Record<string, unknown>).remaining_tokens);
+  const premiumTokens =
+    coerceNumber((data as Record<string, unknown>).premium_tokens) ?? remaining;
+  const freeMonthlyTokens = coerceNumber((data as Record<string, unknown>).free_monthly_tokens);
+  const rawHasPremium = (data as Record<string, unknown>).has_premium_access;
+  const hasPremiumAccess =
+    typeof rawHasPremium !== 'undefined' ? coerceBoolean(rawHasPremium) : tier !== 'free';
   const renewAt = data.period_end ?? null;
-  const requiresWatermark = tier === 'free';
+  const requiresWatermark = !hasPremiumAccess;
 
   const result = {
     tier,
     quota,
     remainingTokens: remaining,
+    premiumTokens: usedLegacyFallback ? remaining : premiumTokens,
+    freeMonthlyTokens: usedLegacyFallback ? null : freeMonthlyTokens,
+    hasPremiumAccess: usedLegacyFallback ? tier !== 'free' : hasPremiumAccess,
     renewAt,
     priority: priorityForTier(tier),
     requiresWatermark,

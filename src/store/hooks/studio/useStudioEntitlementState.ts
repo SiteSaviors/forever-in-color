@@ -7,7 +7,9 @@ export const useStudioEntitlementState = () =>
       const entitlements = state.entitlements;
       const displayRemainingTokens = state.getDisplayableRemainingTokens();
       const userTier = entitlements.tier;
-      const requiresWatermark = entitlements.requiresWatermark;
+      const hasPremiumAccess = entitlements.hasPremiumAccess ?? entitlements.tier !== 'free';
+      const requiresWatermark =
+        typeof entitlements.requiresWatermark === 'boolean' ? entitlements.requiresWatermark : !hasPremiumAccess;
 
       return {
         entitlements,
@@ -16,7 +18,8 @@ export const useStudioEntitlementState = () =>
         generationCount: state.generationCount,
         userTier,
         requiresWatermark,
-        isPremiumUser: !requiresWatermark,
+        isPremiumUser: hasPremiumAccess,
+        hasPremiumAccess,
       };
     },
     shallow

@@ -67,14 +67,14 @@ const buildEntitlementVersion = (
   tier: string,
   status: string,
   remainingTokens: number | null,
-  requiresWatermark: boolean,
+  hasPremiumAccess: boolean,
   lastSyncedAt: number | null
 ) => {
   return [
     tier ?? 'none',
     status ?? 'unknown',
     remainingTokens ?? 'null',
-    requiresWatermark ? 'wm:1' : 'wm:0',
+    hasPremiumAccess ? 'premium:1' : 'premium:0',
     lastSyncedAt ?? 'sync:none',
   ].join('|');
 };
@@ -88,7 +88,7 @@ export const useToneSections = (): ToneSectionsHookResult => {
     entitlementsTier,
     entitlementsStatus,
     entitlementsRemainingTokens,
-    entitlementsRequiresWatermark,
+    entitlementsHasPremiumAccess,
     entitlementsLastSyncedAt,
   ] = useFounderStore(
     (state) => [
@@ -99,7 +99,7 @@ export const useToneSections = (): ToneSectionsHookResult => {
       state.entitlements.tier,
       state.entitlements.status,
       state.entitlements.remainingTokens,
-      state.entitlements.requiresWatermark,
+      state.entitlements.hasPremiumAccess,
       state.entitlements.lastSyncedAt,
     ],
     shallow
@@ -111,14 +111,14 @@ export const useToneSections = (): ToneSectionsHookResult => {
         entitlementsTier,
         entitlementsStatus,
         entitlementsRemainingTokens,
-        entitlementsRequiresWatermark,
+        entitlementsHasPremiumAccess,
         entitlementsLastSyncedAt
       ),
     [
       entitlementsTier,
       entitlementsStatus,
       entitlementsRemainingTokens,
-      entitlementsRequiresWatermark,
+      entitlementsHasPremiumAccess,
       entitlementsLastSyncedAt,
     ]
   );

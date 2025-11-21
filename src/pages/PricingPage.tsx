@@ -19,10 +19,7 @@ type TierId = 'free' | 'creator' | 'plus' | 'pro';
 type Tier = {
   id: TierId;
   name: string;
-  tagline: string;
-  description: string;
   price: string;
-  priceCents: number;
   priceDetail: string;
   tokensPerMonth: number;
   tokensLabel?: string;
@@ -33,8 +30,6 @@ type Tier = {
 const FREE_TIER: Tier = {
   id: 'free',
   name: 'Wondertone Free',
-  tagline: 'Perfect for exploring styles and testing ideas',
-  description: 'Begin your creative journey with 10 watermarked generations per month and full access to our core features.',
   price: '$0',
   priceDetail: 'Forever',
   tokensPerMonth: 10,
@@ -52,51 +47,45 @@ const PREMIUM_TIERS: Tier[] = [
   {
     id: 'creator',
     name: 'Creator',
-    tagline: 'Turn milestone memories into ready-to-print art',
-    description: 'Unlock watermark-free previews, download-ready exports, and elevated social proof modules.',
     price: '$7.99',
     priceDetail: 'per month',
     tokensPerMonth: 50,
     tokensLabel: 'Tokens',
     features: [
-      'Watermark-free previews & downloads',
-      '50 premium generations per month',
+      '50 premium generations each month',
+      'Watermark-free previews & HD downloads',
       'Living Canvas AR downloads',
-      'Priority in Wondertone queues',
-      'Creator badge in Studio & marketplace',
+      'Priority notifications from Wondertone queues',
+      'Creator badge inside Studio & marketplace',
     ],
     gradient: 'from-[#6c3df2]/85 via-[#4a50ff]/85 to-[#1ca7ff]/85',
   },
   {
     id: 'plus',
     name: 'Plus',
-    tagline: 'For artist studios and memory pros managing multiple clients',
-    description: 'High-throughput generations, batch downloads, and concierge support for mobile pop-ups or live events.',
     price: '$19.99',
     priceDetail: 'per month',
     tokensPerMonth: 150,
     tokensLabel: 'Tokens',
     features: [
-      '150 premium generations / month',
-      'Batch watermarked & clean exports',
+      '150 premium generations per month',
+      'Batch clean + watermarked exports',
+      'Shared brand assets & style kits',
       'Dedicated live preview operator tools',
       'Priority queue (2× speed boost)',
-      'Shared brand assets & style kits',
     ],
     gradient: 'from-[#31a8ff]/85 via-[#09d3ef]/80 to-[#26f0b9]/80',
   },
   {
     id: 'pro',
     name: 'Pro',
-    tagline: 'Scale-ready plan for franchise studios & enterprise gifting',
-    description: 'Unlock Wondertone concierge, white-label experiences, and 500 tokens for large activations.',
     price: '$49.99',
     priceDetail: 'per month',
     tokensPerMonth: 400,
     tokensLabel: 'Tokens',
     features: [
-      '400 premium generations / month',
-      'Wondertone concierge team & white-label support',
+      '400 premium generations per month',
+      'Wondertone concierge & white-label support',
       'Real-time teleprompter prompts for live events',
       'Priority queue (3× speed boost)',
       'Guaranteed Living Canvas production in 48h',
@@ -203,8 +192,6 @@ const SubscriptionSection = ({
             key={tier.id}
             id={tier.id}
             name={tier.name}
-            tagline={tier.tagline}
-            description={tier.description}
             price={tier.price}
             priceDetail={tier.priceDetail}
             tokensPerMonth={tier.tokensPerMonth}
@@ -224,8 +211,6 @@ const SubscriptionSection = ({
           key={FREE_TIER.id}
           id={FREE_TIER.id}
           name={FREE_TIER.name}
-          tagline={FREE_TIER.tagline}
-          description={FREE_TIER.description}
           price={FREE_TIER.price}
           priceDetail={FREE_TIER.priceDetail}
           tokensPerMonth={FREE_TIER.tokensPerMonth}
@@ -235,7 +220,6 @@ const SubscriptionSection = ({
           isCurrent={FREE_TIER.id === currentTier}
           isLoading={loadingTier === FREE_TIER.id}
           onSelect={() => onSelectTier(FREE_TIER.id)}
-          variant="wide"
         />
       </div>
     </PricingSection>
@@ -297,18 +281,7 @@ const PricingPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [pricingMode, setPricingMode] = useState<PricingMode>(() => {
-    if (typeof window === 'undefined') return 'subscription';
-    try {
-      const stored = window.sessionStorage.getItem('wt_pricing_mode');
-      if (stored === 'subscription' || stored === 'payg') {
-        return stored;
-      }
-    } catch {
-      // ignore storage errors
-    }
-    return 'subscription';
-  });
+  const [pricingMode, setPricingMode] = useState<PricingMode>('subscription');
   const [loadingTier, setLoadingTier] = useState<TierId | null>(null);
   const [loadingTokenPackId, setLoadingTokenPackId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -414,11 +387,6 @@ const PricingPage = () => {
           ? 'Showing subscription plans with monthly memberships.'
           : 'Showing pay as you go token packs.'
       );
-      try {
-        window.sessionStorage.setItem('wt_pricing_mode', mode);
-      } catch {
-        // ignore storage errors
-      }
     },
     []
   );
@@ -538,8 +506,8 @@ const PricingPage = () => {
 
               {/* Subheadline */}
               <p className="mx-auto max-w-3xl text-base leading-relaxed text-white/75 md:text-lg">
-                Scale from personal keepsakes to live pop-up studios with membership tiers designed for emotion-rich art.
-                All plans include Wondertone&apos;s{' '}
+                Scale from personal keepsakes to live pop-up studios with monthly memberships or pay-as-you-go packs built
+                for emotion-rich art. Every option includes Wondertone&apos;s{' '}
                 <span className="font-semibold text-purple-300">Living Canvas engine</span>,{' '}
                 <span className="font-semibold text-cyan-300">curated style library</span>, and{' '}
                 <span className="font-semibold text-pink-300">social momentum intelligence</span>.

@@ -97,8 +97,10 @@ const GalleryPage = () => {
   const [authPrompted, setAuthPrompted] = useState(false);
   const LIGHTBOX_ANIMATION_MS = 220;
 
-  // Check if user has access to clean (watermark-free) downloads
-  const requiresWatermark = entitlements.requiresWatermark;
+  // Determine premium access for watermark-free downloads
+  const hasPremiumAccess = entitlements.hasPremiumAccess ?? entitlements.tier !== 'free';
+  const requiresWatermark =
+    typeof entitlements.requiresWatermark === 'boolean' ? entitlements.requiresWatermark : !hasPremiumAccess;
 
   // Fetch gallery items
   const loadGallery = useCallback(async () => {

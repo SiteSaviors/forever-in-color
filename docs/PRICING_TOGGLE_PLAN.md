@@ -4,7 +4,7 @@ This document tracks the phased approach for introducing a Subscription ↔ Pay�
 
 ## Phase 0 – Inventory & References *(Completed)*
 - **PricingPage structure**: renders hero, free-tier spotlight, premium tier grid, and `PricingBenefitsStrip` inside a gradient Section with FloatingOrbs + FounderNavigation. State tracked locally (`loadingTier`, `errorMessage`, `successMessage`) plus derived `currentTier` from `useEntitlementsState`.
-- **Tier data contracts**: `FREE_TIER` and `PREMIUM_TIERS` share `{id, name, tagline, description, price, priceDetail, tokensPerMonth, tokensLabel, features, gradient}`. Tier IDs limited to `'free' | 'creator' | 'plus' | 'pro'`.
+- **Tier data contracts**: `FREE_TIER` and `PREMIUM_TIERS` share `{id, name, price, priceDetail, priceCents, tokensPerMonth, tokensLabel, features, gradient}`. Tier IDs limited to `'free' | 'creator' | 'plus' | 'pro'`.
 - **CTA + auth flow**:
   - `handleSelectTier` routes `free` to `/create`; paid tiers clear toast state, then gate on auth. If no `sessionUser`, it stores the tier in `sessionStorage` (`wt_pending_checkout_tier`) and opens `useAuthModal('signup', { source: 'pricing' })`.
   - `startCheckout` calls `createCheckoutSession` with `tier`, `accessToken`, and success/cancel URLs; on success it `window.location.href = url`.
@@ -121,36 +121,40 @@ This document tracks the phased approach for introducing a Subscription ↔ Pay�
 
 # Implementation Plan
 
-## Phase A – Toggle Foundations
-1. **Toggle component**: Build `PricingModeToggle` (buttons with animated thumb, aria attributes). Default mode: “Subscribe & Save”.
-2. **State wiring**: Add `pricingMode` state + optional sessionStorage hydration in `PricingPage.tsx`.
-3. **Hero integration**: Insert toggle beneath subheadline, alongside a subtle helper caption explaining each mode; ensure responsive styling.
+## Phase A – Toggle Foundations *(Completed / Polished)*
+1. **Toggle component**: `PricingModeToggle` now includes reduced-motion awareness (disables thumb animation when `prefers-reduced-motion` applies) and Storybook coverage for regression testing.
+2. **State wiring**: `PricingPage` reads an initial mode from `sessionStorage` (`wt_pricing_mode`) and persists user selections for subsequent visits within a session.
+3. **Hero integration**: Toggle plus helper caption sits below the subheadline, communicating the benefits of each mode and adapting copy based on the current selection.
 
-## Phase B – Subscription Section Refactor
-1. **Extract subscription renderer**: Encapsulate free tier + premium tier grid in a component that only renders when `pricingMode === 'subscription'`.
-2. **Animate entry/exit**: Apply CSS transitions (fade/slide) so switching modes feels smooth without shifting layout.
-3. **Regression check**: Ensure `TierCard` behavior is untouched (IDs, tokens, CTA copy).
+## Phase B – Subscription Section Refactor *(Completed / Polished)*
+1. **Shared wrapper**: Introduced `PricingSection` and updated `SubscriptionSection` with an `isVisible` prop so all pricing sections share the same fade/transition primitives.
+2. **Rendering logic**: `PricingPage` now renders `<SubscriptionSection isVisible={pricingMode === 'subscription'} />`, ensuring the DOM stays clean when the payg mode is active.
+3. **Regression tests**: Added `tests/pricing/SubscriptionSection.spec.tsx` plus Storybook coverage to ensure the section unmounts when invisible and still renders all tiers when shown.
 
 ## Phase C – Pay-As-You-Go Section
-1. **Data model**: Add `TOKEN_PACKS` array with the three packs (25/$4.99, 50/$9.99, 100/$17.99) including bullet descriptions and gradient themes.
-2. **Card component**: Implement `TokenPackCard` mirroring TierCard glass aesthetic, with props `{ id, name, tokens, price, badge, bullets, gradient, ctaLabel, isLoading, onSelect }`.
-3. **CTA behavior**: Add `loadingTokenPackId` state; on select, gate via auth/session storage (similar to `handleSelectTier` but storing `wt_pending_token_pack`). Authenticated users call `createOrderCheckoutSession` with metadata `{ purchaseType: 'token_pack', sku }`.
-4. **Success handling**: Reuse existing success/cancel query param effect but extend messaging when the purchase type is pay-as-you-go (e.g., “Tokens are being added to your studio…”). Call `hydrateEntitlements` after success.
+**Status:** C.1–C.3 completed (C.4 in place).
+
+1. **Data model**: Added `TokenPack` type and `TOKEN_PACKS` constant in `PricingPage` with ids (`pack-25/50/100`), SKUs, price strings, gradients, badges, and bullet copy mirroring the desired UX.
+2. **Card component + rendering**: Added `TokenPackCard` plus `TokenPackSection` that reuses `PricingSection` and renders cards when `pricingMode === 'payg'`.
+3. **CTA behavior**: `PricingPage` tracks `loadingTokenPackId`, stores pending pack IDs (sessionStorage), fires telemetry placeholders via `trackRuntimeMetric`, and uses a shared checkout URL helper + `createOrderCheckoutSession` metadata to kick off auth-gated purchases.
+4. **Success handling**: Success/cancel effects read `type=token_pack` to display the correct toast copy (“Token purchase complete…”), still calling `hydrateEntitlements` after success.
 
 ## Phase D – Entitlement Integration
-1. **State updates**: Extend `EntitlementState` with `premiumTokens`, `freeMonthlyTokens`, and `hasPremiumAccess`. Update `hydrateEntitlements` + selectors to map new fields.
-2. **Derived logic**: Update `requiresWatermark` to reference `hasPremiumAccess`; ensure style gating, gallery downloads, and CTA helpers consume the new flag.
-3. **Token consumption**: Ensure preview generation/token spend flows decrement the premium bucket first and refresh entitlements post-transaction.
-4. **Backend coordination**: Validate Supabase responses include new fields; document SKU → token mapping for webhooks.
+**Status:** D.1–D.4 completed (backend steps documented below).
 
-## Phase E – Telemetry & Persistence
-1. **Events**: Emit `trackPricingToggle(mode)` on toggle and `trackTokenPackCheckoutStart` on payg CTA. Add placeholders if analytics helpers don’t exist yet.
-2. **State persistence**: Optionally store the last selected mode in `sessionStorage` (future-friendly, though default remains subscription every load—only reuse value across toggles within a session).
+1. **State updates**: `EntitlementState` now tracks `premiumTokens`, `freeMonthlyTokens`, and `hasPremiumAccess`; `hydrateEntitlements` and `updateEntitlementsFromResponse` map the new fields, and `useEntitlementsState` exposes them to consumers.
+2. **Derived logic**: Style gating now respects `hasPremiumAccess` (updated `canGenerateStylePreview` and tone-section caches). Preview pipeline + CTA telemetry now use the flag, and gallery/checkout surfaces were wired to derive `requiresWatermark` from premium access (GalleryPage, quickview hooks, studio entitlement hook). Gallery selection specs were updated with fetch/data URI mocks (`npm run test -- useGalleryQuickviewSelection`).
+3. **Token consumption** *(Done)*: Added `consumePreviewToken` + bucket math so preview flows deduct premium credits before free tokens (with tests) and fallback when backend responses lack the new fields.
+4. **Backend coordination & QA**: Authored `docs/SUPABASE_TOKEN_PACK_RUNBOOK.md` with the Supabase view SQL, Stripe SKU mapping, webhook expectations, and QA matrix (free top-up, premium depletion, subscriber top-ups, gallery download checks). Pending backend work should follow that runbook; once deployed, rerun the QA scenarios enumerated there.
 
-## Phase F – Styling & Motion Polish
-1. **Responsive tuning**: Test toggle + cards at 375px, 768px, 1024px; adjust spacing, `min-h`, and button sizes accordingly.
-2. **Reduced motion**: Wrap transitions with `prefers-reduced-motion` checks.
-3. **Accessibility passes**: Keyboard focus, aria-live announcements when switching sections, ensure hidden cards are removed from DOM.
+## Phase E – Telemetry & Persistence *(Completed)*
+1. **Events**: `trackPricingToggle` fires whenever the user flips the pricing toggle; `trackTokenPackCheckoutStart` records pay-as-you-go CTA clicks with pack metadata.
+2. **State persistence**: The toggle already stores the last mode in `sessionStorage` (`wt_pricing_mode`) and rehydrates on load while still defaulting to subscription when nothing is stored.
+
+## Phase F – Styling & Motion Polish *(Completed)*
+1. **Responsive tuning**: Token-pack cards now enforce consistent min-heights/flex layouts, grids include mobile padding, and toggle helper copy scales for 375/768/1024 breakpoints.
+2. **Reduced motion**: Pricing sections and token-pack animations respect `motion-reduce`, disabling fades/transforms when the OS prefers reduced motion.
+3. **Accessibility**: Added `aria-live` status messaging for the pricing toggle, ensured sections unmount cleanly, and preserved keyboard focus rings so toggling communicates changes to screen readers.
 
 ## Phase G – Verification & Docs
 1. **Run required commands**: `npm run lint`, `npm run build`, `npm run build:analyze`, `npm run deps:check`.

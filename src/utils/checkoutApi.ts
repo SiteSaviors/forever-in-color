@@ -55,6 +55,7 @@ export const createOrderCheckoutSession = async (options: {
   currency?: string;
   successUrl?: string;
   cancelUrl?: string;
+  metadata?: Record<string, string>;
 }): Promise<{ url: string; sessionId: string }> => {
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
     throw new Error('Supabase configuration missing');
@@ -73,6 +74,7 @@ export const createOrderCheckoutSession = async (options: {
     })),
     successUrl: options.successUrl,
     cancelUrl: options.cancelUrl,
+    metadata: options.metadata,
   };
 
   const response = await fetch(`${SUPABASE_URL}/functions/v1/create-payment`, {

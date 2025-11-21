@@ -19,6 +19,8 @@ export interface FounderPreviewResult {
   previewUrl: string;
   requiresWatermark: boolean;
   remainingTokens: number | null;
+  premiumTokens?: number | null;
+  freeMonthlyTokens?: number | null;
   tier?: string;
   priority?: string;
   storageUrl?: string | null;

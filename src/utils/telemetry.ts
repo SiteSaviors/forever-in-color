@@ -236,3 +236,13 @@ export type SocialProofEvent =
 export function trackSocialProofEvent(event: SocialProofEvent) {
   console.log('[SocialProof]', { ...event, timestamp: Date.now() });
 }
+
+type PricingMode = 'subscription' | 'payg';
+
+export function trackPricingToggle(mode: PricingMode) {
+  console.log('[PricingToggle]', { mode, timestamp: Date.now() });
+}
+
+export function trackTokenPackCheckoutStart(payload: { packId: string; tokens: number; priceCents: number }) {
+  console.log('[TokenPackCheckout]', { ...payload, timestamp: Date.now() });
+}

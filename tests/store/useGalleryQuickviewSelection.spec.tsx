@@ -10,6 +10,8 @@ import type { GalleryQuickviewItem } from '@/store/founder/storeTypes';
 
 vi.mock('@/utils/galleryQuickviewTelemetry', () => ({
   trackGalleryQuickviewThumbnailClick: vi.fn(),
+  trackGalleryQuickviewDataUriUsage: vi.fn(),
+  trackGalleryQuickviewSourceFallback: vi.fn(),
 }));
 
 vi.mock('@/utils/telemetry', () => ({
@@ -17,6 +19,7 @@ vi.mock('@/utils/telemetry', () => ({
 }));
 
 const originalImageCtor = global.Image;
+const originalFetch = global.fetch;
 
 const configureImageMock = (handlers: Record<string, { succeed: boolean; width: number; height: number }>) => {
   class MockImage {
@@ -123,6 +126,12 @@ let mocks: MockHandles;
 
   beforeEach(() => {
     vi.clearAllMocks();
+    global.fetch = vi.fn(async () =>
+      Promise.resolve({
+        ok: true,
+        blob: async () => new Blob(['mock-image'], { type: 'image/jpeg' }),
+      } as Response)
+    );
     configureImageMock({
       'https://signed.example.com/source.jpg': { succeed: true, width: 800, height: 600 },
       'https://cdn.example.com/source.jpg': { succeed: true, width: 800, height: 600 },
@@ -174,6 +183,7 @@ let mocks: MockHandles;
     useFounderStore.setState(initialFns);
     mocks = undefined as unknown as MockHandles;
     restoreImageMock();
+    global.fetch = originalFetch;
   });
 
   it('hydrates from a valid signed URL', async () => {
@@ -185,7 +195,7 @@ let mocks: MockHandles;
     });
 
     expect(mocks.ensureStyleLoaded).toHaveBeenCalledWith(item.styleId);
-    expect(mocks.setOriginalImage).toHaveBeenCalledWith(item.sourceSignedUrl);
+    expect(mocks.setOriginalImage).toHaveBeenCalledWith(expect.stringMatching(/^data:/));
     expect(mocks.setOriginalImageSource).toHaveBeenCalledWith({
       storagePath: item.sourceStoragePath,
       publicUrl: item.sourceDisplayUrl,
@@ -198,7 +208,7 @@ let mocks: MockHandles;
       dataUrl: item.displayUrl,
       imageDimensions: { width: 640, height: 640 },
     }));
-    expect(mocks.setCroppedImage).toHaveBeenCalledWith(item.sourceStoragePath);
+    expect(mocks.setCroppedImage).toHaveBeenCalledWith(expect.stringMatching(/^data:/));
   });
 
   it('switches orientation when gallery item differs', async () => {
@@ -229,7 +239,7 @@ let mocks: MockHandles;
       await select(staleItem, null, 3);
     });
 
-    expect(mocks.setOriginalImage).toHaveBeenCalledWith(staleItem.sourceDisplayUrl);
+    expect(mocks.setOriginalImage).toHaveBeenCalledWith(expect.stringMatching(/^data:/));
     expect(mocks.setOriginalImageSource).toHaveBeenCalledWith({
       storagePath: staleItem.sourceStoragePath,
       publicUrl: staleItem.sourceDisplayUrl,
@@ -238,7 +248,7 @@ let mocks: MockHandles;
       hash: null,
       bytes: null,
     });
-    expect(mocks.setCroppedImage).toHaveBeenCalledWith(staleItem.sourceStoragePath);
+    expect(mocks.setCroppedImage).toHaveBeenCalledWith(expect.stringMatching(/^data:/));
   });
 
   it('gracefully falls back to preview when all sources fail', async () => {
@@ -258,7 +268,7 @@ let mocks: MockHandles;
       await select(problematicItem, false, 4);
     });
 
-    expect(mocks.setOriginalImage).toHaveBeenCalledWith(problematicItem.displayUrl);
-    expect(mocks.setCroppedImage).toHaveBeenCalledWith(problematicItem.sourceStoragePath);
+    expect(mocks.setOriginalImage).toHaveBeenCalledWith(expect.stringMatching(/^data:/));
+    expect(mocks.setCroppedImage).toHaveBeenCalledWith(expect.stringMatching(/^data:/));
   });
 });

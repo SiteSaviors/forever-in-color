@@ -15,9 +15,9 @@ begin
       when 'creator' then
         new.tokens_quota := 50;
       when 'plus' then
-        new.tokens_quota := 250;
+        new.tokens_quota := 150;
       when 'pro' then
-        new.tokens_quota := 500;
+        new.tokens_quota := 400;
       when 'free' then
         new.tokens_quota := 10;
       else
@@ -45,10 +45,10 @@ where tier = 'creator' and tokens_quota = 10;
 
 -- Fix existing Plus accounts
 update public.subscriptions
-set tokens_quota = 250
-where tier = 'plus' and tokens_quota = 10;
+set tokens_quota = 150
+where tier = 'plus' and (tokens_quota = 10 or tokens_quota = 250);
 
 -- Fix existing Pro accounts
 update public.subscriptions
-set tokens_quota = 500
-where tier = 'pro' and tokens_quota = 10;
+set tokens_quota = 400
+where tier = 'pro' and (tokens_quota = 10 or tokens_quota = 500);

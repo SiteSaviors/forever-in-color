@@ -127,6 +127,9 @@ export type EntitlementState = {
   tier: EntitlementTier;
   quota: number | null;
   remainingTokens: number | null;
+  premiumTokens: number | null;
+  freeMonthlyTokens: number | null;
+  hasPremiumAccess: boolean;
   requiresWatermark: boolean;
   priority: EntitlementPriority;
   renewAt: string | null;
@@ -144,6 +147,9 @@ export type EntitlementSlice = {
   hydrateEntitlements: () => Promise<void>;
   updateEntitlementsFromResponse: (payload: {
     remainingTokens?: number | null;
+    premiumTokens?: number | null;
+    freeMonthlyTokens?: number | null;
+    hasPremiumAccess?: boolean;
     requiresWatermark?: boolean;
     tier?: string;
     priority?: string;
@@ -154,6 +160,7 @@ export type EntitlementSlice = {
   canUseStyle: (styleId: string | null) => boolean;
   getGenerationLimit: () => number;
   getDisplayableRemainingTokens: () => number | null;
+  consumePreviewToken: () => void;
 };
 
 export type FavoritesSlice = {
